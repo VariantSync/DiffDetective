@@ -14,7 +14,7 @@ The output of the tool consists of all pattern matches found and different metri
 Paul Maximilian Bittner, Alexander Schultheiß, Thomas Thüm, Timo Kehrer, Jeffrey Young, and Lukas Linsbauer.\
 TODO
 
-### The original edit patterns
+### Edit Patterns
 **Concepts, Operations, and Feasibility of a Projection-Based Variation Control System.**\
 Stefan Stănciulescu, Thorsten Berger, Eric Walkingshaw, and Andrzej Wąsowski.\
 https://ieeexplore.ieee.org/document/7816478
