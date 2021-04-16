@@ -26,7 +26,7 @@ public class TreeGDAnalyzer extends GDAnalyzer {
             new RemFromPCAtomicPattern(),
             new WrapCodeAtomicPattern(),
             new UnwrapCodeAtomicPattern(),
-            new ChangeMappingAtomicPattern(),
+            new ChangePCAtomicPattern(),
     };
 
     public static final EditPattern[] SEMANTIC_PATTERNS = new SemanticPattern[]{

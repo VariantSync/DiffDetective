@@ -7,10 +7,10 @@ import evaluation.FeatureContext;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ChangeMappingAtomicPattern extends AtomicPattern{
-    public static final String PATTERN_NAME = "ChangeMapping";
+public class ChangePCAtomicPattern extends AtomicPattern{
+    public static final String PATTERN_NAME = "ChangePC";
 
-    public ChangeMappingAtomicPattern() {
+    public ChangePCAtomicPattern() {
         this.name = PATTERN_NAME;
     }
 
