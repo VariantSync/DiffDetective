@@ -27,6 +27,7 @@ public class DiffNode {
     public static final String TRUE_LITERAL_NAME = "__true__";
     public static final String INVALID_ANNOTATION = "__INVALID_ANNOTATION__";
 
+    // merge into one label "diffType_codeType"
     public DiffType diffType;
     public CodeType codeType;
 
