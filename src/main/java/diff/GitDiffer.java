@@ -244,7 +244,7 @@ public class GitDiffer {
         DiffNode lastCode = null;
         boolean validDiff = true;
 
-        DiffNode root = DiffNode.createRoot();
+        final DiffNode root = DiffNode.createRoot();
         beforeStack.push(root);
         afterStack.push(root);
 
@@ -359,7 +359,7 @@ public class GitDiffer {
         }
 
         if (validDiff) {
-            return new DiffTree(codeNodes, annotationNodes);
+            return new DiffTree(root, codeNodes, annotationNodes);
         } else {
             return null;
         }
