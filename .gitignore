@@ -107,8 +107,9 @@ buildNumber.properties
 # End of https://www.toptal.com/developers/gitignore/api/intellij+all,maven
 
 
-repositories/*
-!repositories/*.zip
+/repositories/*
+/repositories/Marlin_old/
+!/repositories/*.zip
 
 *.csv
 *.ser
