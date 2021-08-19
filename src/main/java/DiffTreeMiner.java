@@ -8,14 +8,13 @@ import org.pmw.tinylog.Configurator;
 import org.pmw.tinylog.Level;
 import org.pmw.tinylog.Logger;
 import org.pmw.tinylog.writers.ConsoleWriter;
+import util.LineGraphExport;
 import util.ExportUtils;
-import util.StringUtils;
 import util.Yield;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
 
 public class DiffTreeMiner {
     private static void setupLogger(final Level loggingLevel) {
@@ -71,13 +70,14 @@ public class DiffTreeMiner {
 
         final StringBuilder lineGraph = new StringBuilder();
         int treeCounter = 0;
-        int commitDiffCounter = 1;
+//        int commitDiffCounter = 1;
         for (CommitDiff diff : yieldDiff) {
-            Logger.info("Exporting CommitDiff #" + commitDiffCounter);
-            ++commitDiffCounter;
-
-            treeCounter = diff.toLineGraphFormat(lineGraph, treeCounter);
+//            Logger.info("Exporting CommitDiff #" + commitDiffCounter);
+//            ++commitDiffCounter;
+            treeCounter = LineGraphExport.toLineGraphFormat(diff, lineGraph, treeCounter);
         }
+
+        Logger.info("Exported " + treeCounter + " diff trees!");
 
         try {
             ExportUtils.write(outputPath, lineGraph.toString());
