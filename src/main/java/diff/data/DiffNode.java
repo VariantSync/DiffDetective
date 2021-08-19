@@ -27,7 +27,6 @@ public class DiffNode {
     public static final String TRUE_LITERAL_NAME = "__true__";
     public static final String INVALID_ANNOTATION = "__INVALID_ANNOTATION__";
 
-    // merge into one label "diffType_codeType"
     public DiffType diffType;
     public CodeType codeType;
 
@@ -455,8 +454,15 @@ public class DiffNode {
         return this.codeType.equals(CodeType.ROOT);
     }
 
-    public String toLineGraphFormat(int id) {
-        return "v " + id + " " + diffType + "_" + codeType;
+    /**
+     * @return An integer that uniquely identifiers this DiffNode within its patch.
+     */
+    public int getID() {
+        return 1 + fromLine;
+    }
+
+    public String toLineGraphFormat() {
+        return "v " + getID() + " " + diffType + "_" + codeType;
     }
 
     @Override

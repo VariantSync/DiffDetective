@@ -15,26 +15,16 @@ public class DiffTree {
         final static String AFTER_PARENT = "AFTER_PARENT";
         final static String BEFORE_AND_AFTER_PARENT = "BEFORE_AND_AFTER_PARENT";
 
-        final Map<DiffNode, Integer> nodeIds = new HashMap<>();
         final StringBuilder nodesString = new StringBuilder();
         final StringBuilder edgesString = new StringBuilder();
-
-        private int nextNodeId = 0;
 
         private String edgeToLineGraph(int fromNodeId, int toNodeId, final String name) {
             return "e " + fromNodeId + " " + toNodeId + " " + name;
         }
 
-        private void createIDsForNodes(List<DiffNode> nodes) {
-            for (final DiffNode node : nodes) {
-                nodeIds.put(node, nextNodeId);
-                ++nextNodeId;
-            }
-        }
-
         private void visit(DiffNode node) {
-            final int nodeId = nodeIds.get(node);
-            nodesString.append(node.toLineGraphFormat(nodeId)).append(StringUtils.LINEBREAK);
+            final int nodeId = node.getID();
+            nodesString.append(node.toLineGraphFormat()).append(StringUtils.LINEBREAK);
 
             final DiffNode beforeParent = node.getBeforeParent();
             final DiffNode afterParent = node.getAfterParent();
@@ -44,33 +34,40 @@ public class DiffTree {
             // If the node has exactly one parent
             if (hasBeforeParent && hasAfterParent && beforeParent == afterParent) {
                 edgesString
-                        .append(edgeToLineGraph(nodeId, nodeIds.get(beforeParent), BEFORE_AND_AFTER_PARENT))
+                        .append(edgeToLineGraph(nodeId, beforeParent.getID(), BEFORE_AND_AFTER_PARENT))
                         .append(StringUtils.LINEBREAK);
             } else {
                 if (hasBeforeParent) {
                     edgesString
-                            .append(edgeToLineGraph(nodeId, nodeIds.get(beforeParent), BEFORE_PARENT))
+                            .append(edgeToLineGraph(nodeId, beforeParent.getID(), BEFORE_PARENT))
                             .append(StringUtils.LINEBREAK);
                 }
                 if (hasAfterParent) {
                     edgesString
-                            .append(edgeToLineGraph(nodeId, nodeIds.get(afterParent), AFTER_PARENT))
+                            .append(edgeToLineGraph(nodeId, afterParent.getID(), AFTER_PARENT))
                             .append(StringUtils.LINEBREAK);
                 }
             }
         }
 
         public String export(List<DiffNode> nodes) {
-            Logger.info("    Creating IDs");
-            createIDsForNodes(nodes);
+            // assert unique ids
+            Set<Integer> ids = new HashSet<>();
+            for (DiffNode d : nodes) {
+                if (ids.contains(d.getID())) {
+                    throw new RuntimeException("Found duplicate ID for " + d);
+                } else {
+                    ids.add(d.getID());
+                }
+            }
 
-            Logger.info("    Building Strings");
+            //Logger.info("    Building Strings");
             for (DiffNode node : nodes) {
                 visit(node);
             }
 
-            Logger.info("    Return");
-            return nodesString + StringUtils.LINEBREAK + edgesString;
+            //Logger.info("    Return");
+            return nodesString.toString() + edgesString;
         }
     }
 
