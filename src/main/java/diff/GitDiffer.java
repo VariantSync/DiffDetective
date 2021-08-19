@@ -14,11 +14,13 @@ import org.eclipse.jgit.treewalk.CanonicalTreeParser;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.pmw.tinylog.Logger;
+import util.Yield;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Stack;
 import java.util.regex.Matcher;
@@ -86,6 +88,32 @@ public class GitDiffer {
             return null;
         }
         return gitDiff;
+    }
+
+    public Yield<CommitDiff> yieldGitDiff() {
+        final Iterable<RevCommit> commitsIterable;
+        try {
+            commitsIterable = git.log().call();
+        } catch (GitAPIException e) {
+            Logger.warn("Could not get log for git repository {}", git.toString());
+            return null;
+        }
+
+        final Iterator<RevCommit> commitsIterator = commitsIterable.iterator();
+        return new Yield<>(
+                () -> {
+                    RevCommit c = commitsIterator.next();
+                    while (c != null && !diffFilter.filter(c)) {
+                        c = commitsIterator.next();
+                    }
+                    try {
+                        return c == null ? null : createCommitDiff(c);
+                    } catch (IOException exception) {
+                        Logger.error(exception);
+                        return null;
+                    }
+                }
+        );
     }
 
     /**
