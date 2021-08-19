@@ -50,6 +50,10 @@ public class PatchDiff {
         return diffTree;
     }
 
+    public boolean isValid() {
+        return diffTree != null;
+    }
+
     @Override
     public String toString() {
         return commitDiff.getAbbreviatedCommitHash() + ", " + path;
