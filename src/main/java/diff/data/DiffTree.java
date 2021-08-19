@@ -11,9 +11,9 @@ import java.util.*;
  */
 public class DiffTree {
     private static class DiffTreeToLineGraphExporter {
-        final static String BEFORE_PARENT = "BEFORE_PARENT";
-        final static String AFTER_PARENT = "AFTER_PARENT";
-        final static String BEFORE_AND_AFTER_PARENT = "BEFORE_AND_AFTER_PARENT";
+        final static String BEFORE_PARENT = "b";
+        final static String AFTER_PARENT = "a";
+        final static String BEFORE_AND_AFTER_PARENT = "ba";
 
         final StringBuilder nodesString = new StringBuilder();
         final StringBuilder edgesString = new StringBuilder();
