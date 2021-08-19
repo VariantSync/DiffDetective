@@ -54,10 +54,13 @@ public class CommitDiff {
     public int toLineGraphFormat(final StringBuilder lineGraph, int treeCounter) {
         for (final PatchDiff patchDiff : getPatchDiffs()) {
             if (patchDiff.isValid()) {
-                Logger.info("  Exporting DiffTree #" + treeCounter);
+                //Logger.info("  Exporting DiffTree #" + treeCounter);
                 lineGraph
-                        .append("t # ").append(treeCounter).append(StringUtils.LINEBREAK)
-                        .append(patchDiff.getDiffTree().toLineGraphFormat()).append(StringUtils.LINEBREAK)
+//                        .append("t # ").append(treeCounter)
+                        .append("t # ").append(patchDiff.getFileName()).append(" # ").append(getCommitHash())
+                        .append(StringUtils.LINEBREAK)
+                        .append(patchDiff.getDiffTree().toLineGraphFormat())
+                        .append(StringUtils.LINEBREAK)
                         .append(StringUtils.LINEBREAK);
                 ++treeCounter;
             } else {
