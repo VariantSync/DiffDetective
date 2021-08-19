@@ -455,6 +455,10 @@ public class DiffNode {
         return this.codeType.equals(CodeType.ROOT);
     }
 
+    public String toLineGraphFormat(int id) {
+        return "v " + id + " " + diffType + "_" + codeType;
+    }
+
     @Override
     public String toString() {
         String s;

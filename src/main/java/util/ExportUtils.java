@@ -2,7 +2,12 @@ package util;
 
 import org.pmw.tinylog.Logger;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.StringJoiner;
 
 /**
@@ -49,5 +54,17 @@ public class ExportUtils {
 
         writer.flush();
         writer.close();
+    }
+
+    /**
+     * Writes the given text to the given file.
+     * Creates a new file and assumes there exists no file yet at the given path.
+     * @param p File to create and fill with text.
+     * @param text Text to write to file.
+     * @throws IOException if an I/O error occurs writing to or creating the file, or the text cannot be encoded using the specified charset.
+     *                     Also throws if the given file already exists.
+     */
+    public static void write(final Path p, final String text) throws IOException {
+        Files.writeString(p, text, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
     }
 }
