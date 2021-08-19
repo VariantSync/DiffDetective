@@ -170,8 +170,8 @@ public class GitDiffer {
         DiffTree diffTree = createDiffTree(diffString, true, true);
 
         if (diffTree == null) {
-            Logger.warn("Something went wrong parsing patch {}, {}!",
-                    commitDiff.getAbbreviatedCommitHash(), diffEntry.getOldPath());
+            Logger.warn("Something went wrong parsing patch for file {} at commit {}!",
+                    diffEntry.getOldPath(), commitDiff.getAbbreviatedCommitHash());
         }
 
         if (saveMemory) {
