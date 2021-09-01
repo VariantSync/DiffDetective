@@ -1,3 +1,4 @@
+import de.ovgu.featureide.fm.core.analysis.cnf.generator.configuration.util.Pair;
 import diff.DiffFilter;
 import diff.GitDiffer;
 import diff.data.*;
@@ -10,6 +11,7 @@ import org.pmw.tinylog.Logger;
 import org.pmw.tinylog.writers.ConsoleWriter;
 import util.LineGraphExport;
 import util.ExportUtils;
+import util.DebugData;
 import util.Yield;
 
 import java.io.IOException;
@@ -70,14 +72,20 @@ public class DiffTreeMiner {
 
         final StringBuilder lineGraph = new StringBuilder();
         int treeCounter = 0;
+        final DebugData debugData = new DebugData();
 //        int commitDiffCounter = 1;
         for (CommitDiff diff : yieldDiff) {
 //            Logger.info("Exporting CommitDiff #" + commitDiffCounter);
 //            ++commitDiffCounter;
-            treeCounter = LineGraphExport.toLineGraphFormat(diff, lineGraph, treeCounter);
+            final Pair<DebugData, Integer> res = LineGraphExport.toLineGraphFormat(diff, lineGraph, treeCounter);
+            debugData.mappend(res.getKey());
+            treeCounter = res.getValue();
         }
 
         Logger.info("Exported " + treeCounter + " diff trees!");
+        Logger.info("Exported " + debugData.numExportedNonNodes + " nodes of diff type NON.");
+        Logger.info("Exported " + debugData.numExportedAddNodes + " nodes of diff type ADD.");
+        Logger.info("Exported " + debugData.numExportedRemNodes + " nodes of diff type REM.");
 
         try {
             ExportUtils.write(outputPath, lineGraph.toString());
