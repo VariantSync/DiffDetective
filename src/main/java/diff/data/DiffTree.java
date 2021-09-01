@@ -1,9 +1,6 @@
 package diff.data;
 
-import org.pmw.tinylog.Logger;
-import util.StringUtils;
-
-import java.util.*;
+import java.util.List;
 
 /**
  * Implementation of the diff tree.

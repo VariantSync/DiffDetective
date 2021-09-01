@@ -1,7 +1,7 @@
 import de.ovgu.featureide.fm.core.analysis.cnf.generator.configuration.util.Pair;
 import diff.DiffFilter;
 import diff.GitDiffer;
-import diff.data.*;
+import diff.data.CommitDiff;
 import load.GitLoader;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.diff.DiffEntry;
@@ -9,9 +9,9 @@ import org.pmw.tinylog.Configurator;
 import org.pmw.tinylog.Level;
 import org.pmw.tinylog.Logger;
 import org.pmw.tinylog.writers.ConsoleWriter;
-import util.LineGraphExport;
-import util.ExportUtils;
 import util.DebugData;
+import util.ExportUtils;
+import util.LineGraphExport;
 import util.Yield;
 
 import java.io.IOException;

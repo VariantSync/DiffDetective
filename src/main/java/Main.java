@@ -1,14 +1,11 @@
-import analysis.*;
-import analysis.data.CommitDiffAnalysisResult;
+import analysis.GDAnalysisUtils;
+import analysis.GDAnalyzer;
+import analysis.TreeGDAnalyzer;
 import analysis.data.GDAnalysisResult;
-import analysis.data.PatchDiffAnalysisResult;
-import analysis.data.PatternMatch;
-import diff.GDUtils;
-import diff.data.GitDiff;
 import diff.DiffFilter;
-import evaluation.FeatureContext;
-import evaluation.GDEvaluator;
 import diff.GitDiffer;
+import diff.data.GitDiff;
+import evaluation.GDEvaluator;
 import load.GitLoader;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.diff.DiffEntry;
@@ -16,13 +13,6 @@ import org.pmw.tinylog.Configurator;
 import org.pmw.tinylog.Level;
 import org.pmw.tinylog.Logger;
 import org.pmw.tinylog.writers.ConsoleWriter;
-import pattern.atomic.*;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
 
 /**
  * The main class used to run DiffDetective

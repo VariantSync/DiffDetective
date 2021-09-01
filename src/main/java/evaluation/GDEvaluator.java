@@ -12,7 +12,7 @@ import org.prop4j.Node;
 import org.prop4j.Not;
 import org.prop4j.explain.solvers.SatSolver;
 import org.prop4j.explain.solvers.SatSolverFactory;
-import pattern.*;
+import pattern.EditPattern;
 import util.ExportUtils;
 
 import java.io.*;

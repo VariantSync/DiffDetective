@@ -1,6 +1,8 @@
 package analysis;
 
-import analysis.data.*;
+import analysis.data.CommitDiffAnalysisResult;
+import analysis.data.GDAnalysisResult;
+import analysis.data.PatchDiffAnalysisResult;
 import diff.data.CommitDiff;
 import diff.data.GitDiff;
 import diff.data.PatchDiff;
