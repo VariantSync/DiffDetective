@@ -20,24 +20,15 @@ public class DiffTreeLineGraphExporter {
         this.debugData = new DebugData();
     }
 
-    private void visit(DiffNode node) {
+    private void visit(DiffNode node, LineGraphExport.Options options) {
         switch (node.diffType) {
-            case ADD: {
-                ++debugData.numExportedAddNodes;
-                break;
-            }
-            case REM: {
-                ++debugData.numExportedRemNodes;
-                break;
-            }
-            case NON: {
-                ++debugData.numExportedNonNodes;
-                break;
-            }
+            case ADD -> ++debugData.numExportedAddNodes;
+            case REM -> ++debugData.numExportedRemNodes;
+            case NON -> ++debugData.numExportedNonNodes;
         }
 
         final int nodeId = node.getID();
-        nodesString.append(node.toLineGraphFormat()).append(StringUtils.LINEBREAK);
+        nodesString.append(node.toLineGraphFormat(options)).append(StringUtils.LINEBREAK);
 
         final DiffNode beforeParent = node.getBeforeParent();
         final DiffNode afterParent = node.getAfterParent();
@@ -63,13 +54,13 @@ public class DiffTreeLineGraphExporter {
         }
     }
 
-    public String export() {
-        visit(diffTree.getRoot());
+    public String export(LineGraphExport.Options options) {
+        visit(diffTree.getRoot(), options);
         for (DiffNode codeNode : diffTree.getCodeNodes()) {
-            visit(codeNode);
+            visit(codeNode, options);
         }
         for (DiffNode annotationNode : diffTree.getAnnotationNodes()) {
-            visit(annotationNode);
+            visit(annotationNode, options);
         }
 
         final String result = nodesString.toString() + edgesString;

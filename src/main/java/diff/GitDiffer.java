@@ -299,19 +299,23 @@ public class GitDiffer {
 
             // check if this is a multiline macro
             if (MultilineMacro.continuesMultilineDefinition(currentLine)) {
+                lastCode = null;
+
                 // header
                 if (codeType.isConditionalMacro()) {
                     if (diffType != DiffNode.DiffType.ADD) {
-                        beforeMLMacro = new MultilineMacro(currentLine, i);
+                        beforeMLMacro = new MultilineMacro(currentLine, i, beforeStack.peek(), afterStack.peek());
                     }
                     if (diffType != DiffNode.DiffType.REM) {
-                        afterMLMacro = new MultilineMacro(currentLine, i);
+                        afterMLMacro = new MultilineMacro(currentLine, i, beforeStack.peek(), afterStack.peek());
                     }
                 } else { // body
                     if (diffType != DiffNode.DiffType.ADD) {
+                        assert beforeMLMacro != null;
                         beforeMLMacro.lines.add(currentLine);
                     }
                     if (diffType != DiffNode.DiffType.REM) {
+                        assert afterMLMacro != null;
                         afterMLMacro.lines.add(currentLine);
                     }
                 }
@@ -329,7 +333,8 @@ public class GitDiffer {
                         // we have one single end line for both multi line macros
                         beforeMLMacro.lines.add(currentLine);
                         beforeMLMacro.endLineInDiff = i;
-                        DiffNode mlNode = beforeMLMacro.toDiffNode(beforeStack.peek(), afterStack.peek());
+                        beforeMLMacro.diffType = DiffNode.DiffType.NON;
+                        DiffNode mlNode = beforeMLMacro.toDiffNode();
 
                         if (!pushNodeToStack(
                                 mlNode,
@@ -346,13 +351,17 @@ public class GitDiffer {
                             break;
                         }
 
+                        annotationNodes.add(mlNode);
+                        addChildrenToParents(mlNode);
+
                         beforeMLMacro = null;
                         afterMLMacro = null;
                     } else {
                         if (inBeforeMLMacro && diffType != DiffNode.DiffType.ADD) {
                             beforeMLMacro.lines.add(currentLine);
                             beforeMLMacro.endLineInDiff = i;
-                            DiffNode beforeMLNode = beforeMLMacro.toDiffNode(beforeStack.peek(), afterStack.peek());
+                            beforeMLMacro.diffType = DiffNode.DiffType.REM;
+                            DiffNode beforeMLNode = beforeMLMacro.toDiffNode();
 
                             if (!pushNodeToStack(
                                     beforeMLNode,
@@ -362,13 +371,16 @@ public class GitDiffer {
                                 break;
                             }
 
+                            annotationNodes.add(beforeMLNode);
+                            addChildrenToParents(beforeMLNode);
                             beforeMLMacro = null;
                         }
 
                         if (afterMLMacro != null && diffType != DiffNode.DiffType.REM) {
                             afterMLMacro.lines.add(currentLine);
                             afterMLMacro.endLineInDiff = i;
-                            DiffNode afterMLNode = afterMLMacro.toDiffNode(beforeStack.peek(), afterStack.peek());
+                            afterMLMacro.diffType = DiffNode.DiffType.ADD;
+                            DiffNode afterMLNode = afterMLMacro.toDiffNode();
 
                             if (!pushNodeToStack(
                                     afterMLNode,
@@ -378,6 +390,8 @@ public class GitDiffer {
                                 break;
                             }
 
+                            annotationNodes.add(afterMLNode);
+                            addChildrenToParents(afterMLNode);
                             afterMLMacro = null;
                         }
                     }

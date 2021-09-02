@@ -26,7 +26,7 @@ public class DiffTreeMiner {
         configurator.activate();
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         setupLogger(Level.DEBUG);
 
         final Path outputPath = Paths.get("difftrees.lg");
@@ -47,6 +47,11 @@ public class DiffTreeMiner {
                 .allowedChangeTypes(DiffEntry.ChangeType.MODIFY)
                 .allowedFileExtensions("c", "cpp", "h", "pde")
                 .build();
+
+        final LineGraphExport.Options exportOptions = new LineGraphExport.Options(
+                LineGraphExport.NodePrintStyle.Type,
+                true
+        );
 
         /* ************************ *\
         |      END OF ARGUMENTS      |
@@ -77,7 +82,7 @@ public class DiffTreeMiner {
         for (CommitDiff diff : yieldDiff) {
 //            Logger.info("Exporting CommitDiff #" + commitDiffCounter);
 //            ++commitDiffCounter;
-            final Pair<DebugData, Integer> res = LineGraphExport.toLineGraphFormat(diff, lineGraph, treeCounter);
+            final Pair<DebugData, Integer> res = LineGraphExport.toLineGraphFormat(diff, lineGraph, treeCounter, exportOptions);
             debugData.mappend(res.getKey());
             treeCounter = res.getValue();
         }

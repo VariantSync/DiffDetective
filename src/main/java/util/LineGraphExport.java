@@ -5,14 +5,27 @@ import diff.data.CommitDiff;
 import diff.data.DiffTree;
 import diff.data.PatchDiff;
 import diff.data.transformation.CollapseNonEditedSubtrees;
+import diff.data.transformation.DiffTreeTransformer;
 import org.pmw.tinylog.Logger;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class LineGraphExport {
-    public static Pair<DebugData, String> toLineGraphFormat(final DiffTree diffTree) {
-        new CollapseNonEditedSubtrees().transform(diffTree);
+    public enum NodePrintStyle {
+        Type, Pretty, Verbose
+    }
+    public static record Options(NodePrintStyle nodePrintStyle, boolean collapseNonEditedSubtrees) {
+
+    }
+
+    public static Pair<DebugData, String> toLineGraphFormat(final DiffTree diffTree, final Options options) {
+        if (options.collapseNonEditedSubtrees) {
+            new CollapseNonEditedSubtrees().transform(diffTree);
+        }
 
         final DiffTreeLineGraphExporter exporter = new DiffTreeLineGraphExporter(diffTree);
-        final String result = exporter.export();
+        final String result = exporter.export(options);
         return new Pair<>(exporter.getDebugData(), result);
     }
 
@@ -23,14 +36,14 @@ public class LineGraphExport {
      * @param treeCounter The number of the first diff tree to export.
      * @return The number of the next diff tree to export (updated value of treeCounter).
      */
-    public static Pair<DebugData, Integer> toLineGraphFormat(final CommitDiff commitDiff, final StringBuilder lineGraph, int treeCounter) {
+    public static Pair<DebugData, Integer> toLineGraphFormat(final CommitDiff commitDiff, final StringBuilder lineGraph, int treeCounter, final Options options) {
         final DebugData debugData = new DebugData();
 
         final String hash = commitDiff.getCommitHash();
         for (final PatchDiff patchDiff : commitDiff.getPatchDiffs()) {
             if (patchDiff.isValid()) {
                 //Logger.info("  Exporting DiffTree #" + treeCounter);
-                final Pair<DebugData, String> patchDiffLg = toLineGraphFormat(patchDiff.getDiffTree());
+                final Pair<DebugData, String> patchDiffLg = toLineGraphFormat(patchDiff.getDiffTree(), options);
                 debugData.mappend(patchDiffLg.getKey());
 
                 lineGraph

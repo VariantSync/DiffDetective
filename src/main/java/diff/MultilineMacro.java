@@ -8,21 +8,24 @@ import java.util.Objects;
 
 public class MultilineMacro {
     public List<String> lines;
-    final DiffNode.DiffType diffType;
+    DiffNode.DiffType diffType;
     int startLineInDiff, endLineInDiff;
+    DiffNode beforeParent, afterParent;
 
-    public MultilineMacro(String header, int lineFrom) {
+    public MultilineMacro(String header, int lineFrom, DiffNode beforeParent, DiffNode afterParent) {
         this(
                 header,
                 DiffNode.getDiffType(header),
-                lineFrom);
+                lineFrom, beforeParent, afterParent);
     }
 
-    private MultilineMacro(String line, DiffNode.DiffType diffType, int lineFrom) {
+    private MultilineMacro(String line, DiffNode.DiffType diffType, int lineFrom, DiffNode beforeParent, DiffNode afterParent) {
         this.lines = new ArrayList<>();
         lines.add(line);
         this.diffType = diffType;
         this.startLineInDiff = lineFrom;
+        this.beforeParent = beforeParent;
+        this.afterParent = afterParent;
     }
 
     public int getLineFrom() {
@@ -51,7 +54,7 @@ public class MultilineMacro {
         }
     }
 
-    public DiffNode toDiffNode(DiffNode beforeParent, DiffNode afterParent) {
+    public DiffNode toDiffNode() {
         final StringBuilder asSingleLine = new StringBuilder(diffType.name);
 
         for (int l = 0; l < lines.size(); ++l) {
@@ -63,7 +66,11 @@ public class MultilineMacro {
             }
         }
 
-        return DiffNode.fromLine(asSingleLine.toString(), beforeParent, afterParent);
+        final DiffNode result = DiffNode.fromLine(asSingleLine.toString(), beforeParent, afterParent);
+        result.setFromLine(startLineInDiff);
+        result.setToLine(endLineInDiff);
+        result.setIsMultilineMacro(true);
+        return result;
     }
 
     @Override

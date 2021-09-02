@@ -1,8 +1,8 @@
 package diff.data;
 
-import org.apache.commons.lang3.builder.Diff;
 import org.pmw.tinylog.Logger;
 import org.prop4j.*;
+import util.LineGraphExport;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,11 +31,13 @@ public class DiffNode {
 
     public DiffType diffType;
     public CodeType codeType;
+    private boolean isMultilineMacro = false;
 
     private int fromLine = -1; // including
     private int toLine = -1; // excluding
 
     private Node featureMapping;
+    private String content;
 
     private DiffNode beforeParent;
     private DiffNode afterParent;
@@ -43,7 +45,7 @@ public class DiffNode {
     private final List<DiffNode> children;
 
     public DiffNode(DiffType diffType, CodeType codeType, int fromLine, int toLine,
-                    Node featureMapping, DiffNode beforeParent, DiffNode afterParent) {
+                    Node featureMapping, DiffNode beforeParent, DiffNode afterParent, String content) {
         this.diffType = diffType;
         this.codeType = codeType;
         this.fromLine = fromLine;
@@ -52,6 +54,7 @@ public class DiffNode {
         this.beforeParent = beforeParent;
         this.afterParent = afterParent;
         this.children = new ArrayList<>();
+        this.content = content;
     }
 
     public void addChild(DiffNode child){
@@ -79,6 +82,7 @@ public class DiffNode {
         DiffNode diffNode = new DiffNode();
         diffNode.diffType = getDiffType(line);
         diffNode.codeType = getCodeType(line);
+        diffNode.content = line.substring(1);
 
         if (diffNode.isCode() || diffNode.isEndif() || diffNode.isElse()) {
             diffNode.featureMapping = null;
@@ -214,7 +218,8 @@ public class DiffNode {
                 // new True() sadly does not work
                 new Literal(TRUE_LITERAL_NAME),
                 null,
-                null
+                null,
+                ""
         );
     }
 
@@ -370,6 +375,14 @@ public class DiffNode {
         children.clear();
     }
 
+    public void setIsMultilineMacro(boolean isMultilineMacro) {
+        this.isMultilineMacro = isMultilineMacro;
+    }
+
+    public boolean isMultilineMacro() {
+        return isMultilineMacro;
+    }
+
     /**
      * Gets the feature mapping of the node after the patch
      * @return the feature mapping of the node after the patch
@@ -428,6 +441,9 @@ public class DiffNode {
         public boolean isConditionalMacro() {
             return this == IF || this == ELIF;
         }
+        public boolean isMacro() {
+            return this != ROOT && this != CODE;
+        }
     }
 
     public boolean isRem() {
@@ -473,8 +489,12 @@ public class DiffNode {
         return ((1 + fromLine) << ID_LINE_NUMBER_OFFSET) + diffType.ordinal();
     }
 
-    public String toLineGraphFormat() {
-        return "v " + getID() + " " + diffType + "_" + codeType;
+    public String toLineGraphFormat(LineGraphExport.Options options) {
+        return "v " + getID() + " " + switch (options.nodePrintStyle()) {
+            case Type -> diffType + "_" + codeType;
+            case Pretty -> "\"" + (codeType.isMacro() ? (codeType.name + " " + getFeatureMapping()) : content.trim()) + "\"";
+            case Verbose -> diffType + "_" + codeType + "_\"" + (codeType.isMacro() ? (codeType.name + " " + getFeatureMapping()) : content.trim()) + "\"";
+        };
     }
 
     @Override

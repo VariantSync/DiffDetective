@@ -6,6 +6,7 @@ import org.pmw.tinylog.Logger;
 import util.DebugData;
 import util.ExportUtils;
 import util.LineGraphExport;
+import util.StringUtils;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -30,18 +31,28 @@ public class TestMultiLineMacros {
 
     @Test
     public void test() throws IOException {
+        final LineGraphExport.Options exportOptions = new LineGraphExport.Options(
+                LineGraphExport.NodePrintStyle.Verbose,
+                false
+        );
         final Path p = resDir.resolve("mldiff1.txt");
         final String fullDiff = readAsString(p);
 
-        final DiffTree tree =
-                GitDiffer.createDiffTree(fullDiff, true, true);
+        final DiffTree tree = GitDiffer.createDiffTree(
+                fullDiff,
+                true,
+                true);
 
-        final Pair<DebugData, String> result = LineGraphExport.toLineGraphFormat(tree);
+        final Pair<DebugData, String> result = LineGraphExport.toLineGraphFormat(tree, exportOptions);
         final DebugData debugData = result.getKey();
         Logger.info("Parsed " + debugData.numExportedNonNodes + " nodes of diff type NON.");
         Logger.info("Parsed " + debugData.numExportedAddNodes + " nodes of diff type ADD.");
         Logger.info("Parsed " + debugData.numExportedRemNodes + " nodes of diff type REM.");
 
-        ExportUtils.write(resDir.resolve("gen").resolve("mldiff1tree.lg"), result.getValue().toString());
+        final String lg = "t # 1" +
+                StringUtils.LINEBREAK +
+                result.getValue();
+
+        ExportUtils.write(resDir.resolve("gen").resolve("mldiff1tree.lg"), lg);
     }
 }
