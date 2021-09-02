@@ -20,6 +20,7 @@ public class CollapseNonEditedSubtrees implements DiffTreeTransformer {
 
     private boolean collapse(DiffNode subtree) {
         if (subtree.isNon()) {
+            // If all children are collapsable / can be collapsed and are only children of this node ...
             for (final DiffNode child : subtree.getChildren()) {
                 if (!(
                         collapse(child)
@@ -31,6 +32,7 @@ public class CollapseNonEditedSubtrees implements DiffTreeTransformer {
                 }
             }
 
+            // ... remove all children.
             removedNodes.addAll(subtree.getChildren());
             subtree.dropChildren();
             return true;
