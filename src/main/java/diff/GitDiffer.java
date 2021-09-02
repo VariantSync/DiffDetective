@@ -79,7 +79,7 @@ public class GitDiffer {
                 if (!diffFilter.filter(c)) {
                     continue;
                 }
-                CommitDiff commitDiff = createCommitDiff(c);
+                CommitDiff commitDiff = createCommitDiffFromFirstParent(git, diffFilter, c, !saveMemory);
                 gitDiff.addCommitDiff(commitDiff);
             }
             gitDiff.setCommitAmount(commitAmount);
@@ -107,7 +107,7 @@ public class GitDiffer {
                         c = commitsIterator.next();
                     }
                     try {
-                        return c == null ? null : createCommitDiff(c);
+                        return c == null ? null : createCommitDiffFromFirstParent(git, diffFilter, c, !saveMemory);
                     } catch (IOException exception) {
                         Logger.error(exception);
                         return null;
@@ -121,27 +121,51 @@ public class GitDiffer {
      * For this, the git diff is retrieved using JGit.
      * For each file in the diff, a PatchDiff is created.
      *
+     * @param git The git repo which the commit stems from.
      * @param currentCommit The commit from which to create a CommitDiff
+     * @param keepFullDiffs  If true, the PatchDiff will contain the full diff as a string. Set to false if you want to
+     *                       reduce memory consumption.
      * @return The CommitDiff of the given commit
      * @throws IOException When problems with the git repository occur
      */
-    private CommitDiff createCommitDiff(RevCommit currentCommit) throws IOException {
-        CommitDiff commitDiff = new CommitDiff(currentCommit);
-
+    public static CommitDiff createCommitDiffFromFirstParent(
+            Git git,
+            DiffFilter diffFilter,
+            RevCommit currentCommit,
+            boolean keepFullDiffs) throws IOException {
         if (currentCommit.getParentCount() == 0) {
             Logger.warn("Commit {} does not have parents",
                     currentCommit.getId().abbreviate(7).name());
-            return commitDiff;
+            return new CommitDiff(currentCommit);
         }
+        return createCommitDiff(git, diffFilter, currentCommit.getParent(0), currentCommit, keepFullDiffs);
+    }
 
-        RevCommit prevCommit = currentCommit.getParent(0);
+    /**
+     * Creates a CommitDiff from a given commit.
+     * For this, the git diff is retrieved using JGit.
+     * For each file in the diff, a PatchDiff is created.
+     *
+     * @param git The git repo which the commit stems from.
+     * @param keepFullDiffs  If true, the PatchDiff will contain the full diff as a string. Set to false if you want to
+     *                       reduce memory consumption.
+     * @return The CommitDiff of the given commit
+     * @throws IOException When problems with the git repository occur
+     */
+    public static CommitDiff createCommitDiff(
+            Git git,
+            DiffFilter diffFilter,
+            RevCommit parentCommit,
+            RevCommit childCommit,
+            boolean keepFullDiffs) throws IOException {
+        CommitDiff commitDiff = new CommitDiff(childCommit);
 
         // get TreeParsers
         CanonicalTreeParser currentTreeParser = new CanonicalTreeParser();
         CanonicalTreeParser prevTreeParser = new CanonicalTreeParser();
         try (ObjectReader reader = git.getRepository().newObjectReader()) {
-            currentTreeParser.reset(reader, currentCommit.getTree());
-            prevTreeParser.reset(reader, prevCommit.getTree());
+            currentTreeParser.reset(reader, childCommit.getTree());
+            prevTreeParser.reset(reader, parentCommit.getTree());
         }
 
 
@@ -159,7 +183,7 @@ public class GitDiffer {
                 }
 
                 diffFormatter.format(diffEntry);
-                String gitDiff = new String(outputStream.toByteArray(), StandardCharsets.UTF_8);
+                String gitDiff = outputStream.toString(StandardCharsets.UTF_8);
 
                 Pattern headerPattern = Pattern.compile(DIFF_HEADER_REGEX, Pattern.MULTILINE);
                 Matcher matcher = headerPattern.matcher(gitDiff);
@@ -167,10 +191,14 @@ public class GitDiffer {
                     gitDiff = gitDiff.substring(matcher.end() + 1);
                 }
 
-                String beforeFullFile = getBeforeFullFile(prevCommit, diffEntry.getOldPath());
+                String beforeFullFile = getBeforeFullFile(git, parentCommit, diffEntry.getOldPath());
 
-                commitDiff.addPatchDiff(createPatchDiff(commitDiff, diffEntry, gitDiff,
-                        beforeFullFile));
+                commitDiff.addPatchDiff(createPatchDiff(
+                        commitDiff,
+                        diffEntry,
+                        gitDiff,
+                        beforeFullFile,
+                        keepFullDiffs));
                 outputStream.reset();
             }
         }
@@ -184,10 +212,16 @@ public class GitDiffer {
      * @param diffEntry      The DiffEntry of the file that was changed in the commit
      * @param gitDiff        The git diff of the file that was changed
      * @param beforeFullFile The full file before the change
+     * @param keepFullDiffs  If true, the PatchDiff will contain the full diff as a string. Set to false if you want to
+     *                       reduce memory consumption.
      * @return The PatchDiff of the given DiffEntry
      */
-    private PatchDiff createPatchDiff(CommitDiff commitDiff, DiffEntry diffEntry, String gitDiff,
-                                      String beforeFullFile) {
+    private static PatchDiff createPatchDiff(
+            CommitDiff commitDiff,
+            DiffEntry diffEntry,
+            String gitDiff,
+            String beforeFullFile,
+            boolean keepFullDiffs) {
         String fullDiff = getFullDiff(beforeFullFile, gitDiff);
 
         // this could be used to combine multiple lines that end with "\" but it does not work
@@ -202,15 +236,15 @@ public class GitDiffer {
                     diffEntry.getOldPath(), commitDiff.getAbbreviatedCommitHash());
         }
 
-        if (saveMemory) {
+        if (keepFullDiffs) {
+            return new PatchDiff(commitDiff, diffEntry, fullDiff, diffTree);
+        } else {
             // not storing the full diff reduces memory usage by around 40-50%
             return new PatchDiff(commitDiff, diffEntry, "", diffTree);
-        } else {
-            return new PatchDiff(commitDiff, diffEntry, fullDiff, diffTree);
         }
     }
 
-    private String combineMultiLines(String fullDiff) {
+    private static String combineMultiLines(String fullDiff) {
         String MULTI_LINE_BREAK_REGEX = "\\\\$\\s*^[ +-]\\s*";
         Pattern pattern = Pattern.compile(MULTI_LINE_BREAK_REGEX, Pattern.MULTILINE);
         return pattern.matcher(fullDiff).replaceAll("");
@@ -229,7 +263,7 @@ public class GitDiffer {
      *                                  or remained unchanged) should be ignored
      * @return The DiffTree created from the given git diff
      */
-    private DiffTree createDiffTree(String fullDiff,
+    public static DiffTree createDiffTree(String fullDiff,
                                     boolean collapseMultipleCodeLines,
                                     boolean ignoreEmptyLines) {
         String[] fullDiffLines = fullDiff.split(NEW_LINE_REGEX);
@@ -342,7 +376,7 @@ public class GitDiffer {
 
     /**
      * Pops elements from the given stack until an if node is popped or the stack is empty.
-     * @param stack
+     * @param stack The stack to pop the first if node from.
      * @return false if the stack is empty afterwards. Returns true otherwise (i.e., if an if code be popped).
      */
     private static boolean popIf(final Stack<DiffNode> stack) {
@@ -375,7 +409,7 @@ public class GitDiffer {
      *
      * @param diffNode The DiffNode to be added as a child to its parents
      */
-    private void addChildrenToParents(DiffNode diffNode) {
+    private static void addChildrenToParents(DiffNode diffNode) {
         if (diffNode.getAfterParent() != null) {
             diffNode.getAfterParent().addChild(diffNode);
         }
@@ -392,7 +426,7 @@ public class GitDiffer {
      * @param gitDiff    The git diff containing only the changed lines
      * @return A full git diff containing the complete file and all changes
      */
-    private String getFullDiff(String beforeFile, String gitDiff) {
+    public static String getFullDiff(String beforeFile, String gitDiff) {
         String[] beforeLines = beforeFile.split("(\\r\\n|\\r|\\n)", -1);
         String[] diffLines = gitDiff.split("(\\r\\n|\\r|\\n)");
 
@@ -444,9 +478,8 @@ public class GitDiffer {
      * @return The full content of the file before the commit
      * @throws IOException When accessing the file failed
      */
-    private String getBeforeFullFile(RevCommit commit, String filename) throws IOException {
+    public static String getBeforeFullFile(Git git, RevCommit commit, String filename) throws IOException {
         RevTree tree = commit.getTree();
-
 
         try (TreeWalk treeWalk = new TreeWalk(git.getRepository())) {
             treeWalk.addTree(tree);
@@ -460,7 +493,7 @@ public class GitDiffer {
             ObjectLoader loader = git.getRepository().open(objectId);
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
             loader.copyTo(stream);
-            return new String(stream.toByteArray(), StandardCharsets.UTF_8);
+            return stream.toString(StandardCharsets.UTF_8);
         }
     }
 }
