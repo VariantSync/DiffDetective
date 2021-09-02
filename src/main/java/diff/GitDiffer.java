@@ -250,6 +250,8 @@ public class GitDiffer {
 
         for (int i = 0; i < fullDiffLines.length; i++) {
             if (ignoreEmptyLines && (fullDiffLines[i].length() == 0
+                    // TODO: Why substring(1) here? Because of + or - at the beginning of a line (i.e., when an empty
+                    //       line was added or removed)?
                     || fullDiffLines[i].substring(1).isEmpty())) {
                 // discard empty lines
                 continue;
@@ -273,38 +275,25 @@ public class GitDiffer {
                 codeNodes.add(newNode);
                 addChildrenToParents(newNode);
                 lastCode = newNode;
-
             } else if (newNode.isEndif()) {
                 lastCode = null;
                 if (!newNode.isAdd()) {
-
                     // set corresponding line of now closed annotation
                     beforeStack.peek().setToLine(i);
 
                     // pop the relevant stacks until an if node is popped
-                    DiffNode popped;
-                    do {
-                        popped = beforeStack.pop();
-                    } while (!popped.isIf() && !popped.isRoot());
-
-                    if (beforeStack.isEmpty()) {
+                    if (!popIf(beforeStack)) {
                         Logger.warn("(before-) stack is empty!");
                         validDiff = false;
                         break;
                     }
                 }
                 if (!newNode.isRem()) {
-
                     // set corresponding line of now closed annotation
                     afterStack.peek().setToLine(i);
 
                     // pop the relevant stacks until an if node is popped
-                    DiffNode popped;
-                    do {
-                        popped = afterStack.pop();
-                    } while (!popped.isIf() && !popped.isRoot());
-
-                    if (afterStack.isEmpty()) {
+                    if (!popIf(afterStack)) {
                         Logger.warn("(after-) stack is empty!");
                         validDiff = false;
                         break;
@@ -317,30 +306,16 @@ public class GitDiffer {
 
                 // push the node to the relevant stacks
                 if (!newNode.isAdd()) {
-                    if ((newNode.isElif() || newNode.isElse()) && beforeStack.size() == 1) {
-                        Logger.warn("#else or #elif without if!");
+                    if (!updateLineToOfPreviousScope(newNode, beforeStack, i)) {
                         validDiff = false;
                         break;
                     }
-
-                    // set corresponding line of now closed annotation
-                    if ((newNode.isElif() || newNode.isElse())) {
-                        beforeStack.peek().setToLine(i - 1);
-                    }
-                    beforeStack.push(newNode);
                 }
                 if (!newNode.isRem()) {
-                    if ((newNode.isElif() || newNode.isElse()) && afterStack.size() == 1) {
-                        Logger.warn("#else or #elif without if!");
+                    if (!updateLineToOfPreviousScope(newNode, afterStack, i)) {
                         validDiff = false;
                         break;
                     }
-
-                    // set corresponding line of now closed annotation
-                    if ((newNode.isElif() || newNode.isElse())) {
-                        afterStack.peek().setToLine(i - 1);
-                    }
-                    afterStack.push(newNode);
                 }
 
                 newNode.setFromLine(i);
@@ -363,6 +338,36 @@ public class GitDiffer {
         } else {
             return null;
         }
+    }
+
+    /**
+     * Pops elements from the given stack until an if node is popped or the stack is empty.
+     * @param stack
+     * @return false if the stack is empty afterwards. Returns true otherwise (i.e., if an if code be popped).
+     */
+    private static boolean popIf(final Stack<DiffNode> stack) {
+        // pop the relevant stacks until an if node is popped
+        DiffNode popped;
+        do {
+            popped = stack.pop();
+        } while (!popped.isIf() && !popped.isRoot());
+
+        return !stack.isEmpty();
+    }
+
+    private static boolean updateLineToOfPreviousScope(final DiffNode newNode, final Stack<DiffNode> stack, int currentLine) {
+        if (newNode.isElif() || newNode.isElse()) {
+            if (stack.size() == 1) {
+                Logger.warn("#else or #elif without if!");
+                return false;
+            }
+
+            // set corresponding line of now closed annotation
+            stack.peek().setToLine(currentLine - 1);
+        }
+
+        stack.push(newNode);
+        return true;
     }
 
     /**
