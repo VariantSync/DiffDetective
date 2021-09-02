@@ -15,6 +15,8 @@ import java.util.regex.Pattern;
  * Includes methods for creating a node by getting its code type and diff type and for getting the feature mapping of the node.
  */
 public class DiffNode {
+    private static final short ID_LINE_NUMBER_OFFSET = 16;
+
     final static String ifRegex = "^[+-]?\\s*#\\s*if.*$";
     final static String endifRegex = "^[+-]?\\s*#\\s*endif.*$";
     final static String elseRegex = "^[+-]?\\s*#\\s*else.*$";
@@ -468,7 +470,7 @@ public class DiffNode {
      * @return An integer that uniquely identifiers this DiffNode within its patch.
      */
     public int getID() {
-        return 1 + fromLine;
+        return ((1 + fromLine) << ID_LINE_NUMBER_OFFSET) + diffType.ordinal();
     }
 
     public String toLineGraphFormat() {
