@@ -15,7 +15,6 @@ import java.util.regex.Pattern;
  * Includes methods for creating a node by getting its code type and diff type and for getting the feature mapping of the node.
  */
 public class DiffNode {
-
     final static String ifRegex = "^[+-]?\\s*#\\s*if.*$";
     final static String endifRegex = "^[+-]?\\s*#\\s*endif.*$";
     final static String elseRegex = "^[+-]?\\s*#\\s*else.*$";
@@ -173,7 +172,7 @@ public class DiffNode {
         return fm;
     }
 
-    private static CodeType getCodeType(String line) {
+    public static CodeType getCodeType(String line) {
         if (line.matches(ifRegex)) {
             return CodeType.IF;
 
@@ -191,7 +190,7 @@ public class DiffNode {
         }
     }
 
-    private static DiffType getDiffType(String line) {
+    public static DiffType getDiffType(String line) {
         if (line.startsWith(addCharacter)) {
             return DiffType.ADD;
         } else if (line.startsWith(remCharacter)) {
@@ -422,6 +421,10 @@ public class DiffNode {
 
         CodeType(String name) {
             this.name = name;
+        }
+
+        public boolean isConditionalMacro() {
+            return this == IF || this == ELIF;
         }
     }
 
