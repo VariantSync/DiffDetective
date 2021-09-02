@@ -1,5 +1,6 @@
 package diff.data;
 
+import org.apache.commons.lang3.builder.Diff;
 import org.pmw.tinylog.Logger;
 import org.prop4j.*;
 
@@ -355,6 +356,19 @@ public class DiffNode {
         return children;
     }
 
+    public void dropChildren() {
+        for (final DiffNode child : children) {
+            if (child.beforeParent == this) {
+                child.beforeParent = null;
+            }
+            if (child.afterParent == this) {
+                child.afterParent = null;
+            }
+        }
+
+        children.clear();
+    }
+
     /**
      * Gets the feature mapping of the node after the patch
      * @return the feature mapping of the node after the patch
@@ -409,8 +423,6 @@ public class DiffNode {
         CodeType(String name) {
             this.name = name;
         }
-
-
     }
 
     public boolean isRem() {

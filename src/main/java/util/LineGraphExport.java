@@ -4,10 +4,13 @@ import de.ovgu.featureide.fm.core.analysis.cnf.generator.configuration.util.Pair
 import diff.data.CommitDiff;
 import diff.data.DiffTree;
 import diff.data.PatchDiff;
+import diff.data.transformation.CollapseNonEditedSubtrees;
 import org.pmw.tinylog.Logger;
 
 public class LineGraphExport {
     public static Pair<DebugData, String> toLineGraphFormat(final DiffTree diffTree) {
+        new CollapseNonEditedSubtrees().transform(diffTree);
+
         final DiffTreeLineGraphExporter exporter = new DiffTreeLineGraphExporter(diffTree);
         final String result = exporter.export();
         return new Pair<>(exporter.getDebugData(), result);
