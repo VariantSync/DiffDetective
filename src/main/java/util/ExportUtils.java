@@ -50,7 +50,7 @@ public class ExportUtils {
             for(Object[] o : objects){
                 sj.add(o[i].toString());
             }
-            writer.write(sj.toString() + "\n");
+            writer.write(sj + "\n");
         }
 
         writer.flush();
@@ -66,6 +66,7 @@ public class ExportUtils {
      *                     Also throws if the given file already exists.
      */
     public static void write(final Path p, final String text) throws IOException {
+        p.getParent().toFile().mkdirs();
         Files.writeString(p, text, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
     }
 }
