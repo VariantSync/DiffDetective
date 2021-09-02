@@ -14,7 +14,6 @@
     </properties>
 
     <dependencies>
-
         <dependency>
             <groupId>org.sat4j</groupId>
             <artifactId>core</artifactId>
@@ -44,28 +43,9 @@
         </dependency>
 
         <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-            <version>2.6</version>
-        </dependency>
-
-        <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
             <version>3.12.0</version>
-        </dependency>
-
-
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.7.30</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-simple</artifactId>
-            <version>1.7.30</version>
         </dependency>
 
         <dependency>
@@ -79,12 +59,5 @@
             <artifactId>maven-compiler-plugin</artifactId>
             <version>3.8.1</version>
         </dependency>
-
-        <dependency>
-            <groupId>org.parboiled</groupId>
-            <artifactId>parboiled-java</artifactId>
-            <version>1.1.8</version>
-        </dependency>
     </dependencies>
-
 </project>
