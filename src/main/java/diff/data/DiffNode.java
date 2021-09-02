@@ -339,11 +339,6 @@ public class DiffNode {
         this.fromLine = fromLine;
     }
 
-    public void setCorrespondingLine(int lineNumber) {
-        this.fromLine = lineNumber;
-        this.toLine = lineNumber + 1;
-    }
-
     public int getFromLine() {
         return fromLine;
     }
