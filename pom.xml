@@ -25,9 +25,9 @@
         <dependency>
             <groupId>de.ovgu.featureide</groupId>
             <artifactId>lib.fm</artifactId>
-            <version>3.7.0</version>
+            <version>3.7.2</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}/lib/de.ovgu.featureide.lib.fm-v3.7.0.jar</systemPath>
+            <systemPath>${project.basedir}/lib/de.ovgu.featureide.lib.fm-v3.7.2.jar</systemPath>
         </dependency>
 
         <dependency>
@@ -39,7 +39,7 @@
         <dependency>
             <groupId>org.eclipse.jgit</groupId>
             <artifactId>org.eclipse.jgit</artifactId>
-            <version>5.10.0.202012080955-r</version>
+            <version>5.11.1.202105131744-r</version>
         </dependency>
 
         <dependency>
