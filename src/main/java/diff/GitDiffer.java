@@ -306,13 +306,13 @@ public class GitDiffer {
 
                 // push the node to the relevant stacks
                 if (!newNode.isAdd()) {
-                    if (!updateLineToOfPreviousScope(newNode, beforeStack, i)) {
+                    if (!pushNodeToStack(newNode, beforeStack, i)) {
                         validDiff = false;
                         break;
                     }
                 }
                 if (!newNode.isRem()) {
-                    if (!updateLineToOfPreviousScope(newNode, afterStack, i)) {
+                    if (!pushNodeToStack(newNode, afterStack, i)) {
                         validDiff = false;
                         break;
                     }
@@ -355,7 +355,7 @@ public class GitDiffer {
         return !stack.isEmpty();
     }
 
-    private static boolean updateLineToOfPreviousScope(final DiffNode newNode, final Stack<DiffNode> stack, int currentLine) {
+    private static boolean pushNodeToStack(final DiffNode newNode, final Stack<DiffNode> stack, int currentLine) {
         if (newNode.isElif() || newNode.isElse()) {
             if (stack.size() == 1) {
                 Logger.warn("#else or #elif without if!");
