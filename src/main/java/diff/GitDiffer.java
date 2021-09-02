@@ -250,6 +250,7 @@ public class GitDiffer {
         return pattern.matcher(fullDiff).replaceAll("");
     }
 
+
     /**
      * Implementation of the diff tree algorithm.
      * This implementation has options to collapse multiple code lines into one node and to
@@ -274,27 +275,121 @@ public class GitDiffer {
         Stack<DiffNode> beforeStack = new Stack<>();
         Stack<DiffNode> afterStack = new Stack<>();
 
-
         DiffNode lastCode = null;
         boolean validDiff = true;
+
+        MultilineMacro beforeMLMacro = null, afterMLMacro = null;
 
         final DiffNode root = DiffNode.createRoot();
         beforeStack.push(root);
         afterStack.push(root);
 
         for (int i = 0; i < fullDiffLines.length; i++) {
-            if (ignoreEmptyLines && (fullDiffLines[i].length() == 0
+            String currentLine = fullDiffLines[i];
+            final DiffNode.CodeType codeType = DiffNode.getCodeType(currentLine);
+            final DiffNode.DiffType diffType = DiffNode.getDiffType(currentLine);
+
+            if (ignoreEmptyLines && (currentLine.length() == 0
                     // TODO: Why substring(1) here? Because of + or - at the beginning of a line (i.e., when an empty
                     //       line was added or removed)?
-                    || fullDiffLines[i].substring(1).isEmpty())) {
+                    || currentLine.substring(1).isEmpty())) {
                 // discard empty lines
                 continue;
             }
 
+            // check if this is a multiline macro
+            if (MultilineMacro.continuesMultilineDefinition(currentLine)) {
+                // header
+                if (codeType.isConditionalMacro()) {
+                    if (diffType != DiffNode.DiffType.ADD) {
+                        beforeMLMacro = new MultilineMacro(currentLine, i);
+                    }
+                    if (diffType != DiffNode.DiffType.REM) {
+                        afterMLMacro = new MultilineMacro(currentLine, i);
+                    }
+                } else { // body
+                    if (diffType != DiffNode.DiffType.ADD) {
+                        beforeMLMacro.lines.add(currentLine);
+                    }
+                    if (diffType != DiffNode.DiffType.REM) {
+                        afterMLMacro.lines.add(currentLine);
+                    }
+                }
+
+                continue;
+            } else {
+                boolean inBeforeMLMacro = beforeMLMacro != null;
+                boolean inAfterMLMacro = afterMLMacro != null;
+
+                // check if last line of a multi macro
+                if (inBeforeMLMacro || inAfterMLMacro) {
+                    if (inBeforeMLMacro && inAfterMLMacro
+                            && diffType == DiffNode.DiffType.NON
+                            && beforeMLMacro.equals(afterMLMacro)) {
+                        // we have one single end line for both multi line macros
+                        beforeMLMacro.lines.add(currentLine);
+                        beforeMLMacro.endLineInDiff = i;
+                        DiffNode mlNode = beforeMLMacro.toDiffNode(beforeStack.peek(), afterStack.peek());
+
+                        if (!pushNodeToStack(
+                                mlNode,
+                                beforeStack,
+                                beforeMLMacro.getLineFrom())) {
+                            validDiff = false;
+                            break;
+                        }
+                        if (!pushNodeToStack(
+                                mlNode,
+                                afterStack,
+                                afterMLMacro.getLineFrom())) {
+                            validDiff = false;
+                            break;
+                        }
+
+                        beforeMLMacro = null;
+                        afterMLMacro = null;
+                    } else {
+                        if (inBeforeMLMacro && diffType != DiffNode.DiffType.ADD) {
+                            beforeMLMacro.lines.add(currentLine);
+                            beforeMLMacro.endLineInDiff = i;
+                            DiffNode beforeMLNode = beforeMLMacro.toDiffNode(beforeStack.peek(), afterStack.peek());
+
+                            if (!pushNodeToStack(
+                                    beforeMLNode,
+                                    beforeStack,
+                                    beforeMLMacro.getLineFrom())) {
+                                validDiff = false;
+                                break;
+                            }
+
+                            beforeMLMacro = null;
+                        }
+
+                        if (afterMLMacro != null && diffType != DiffNode.DiffType.REM) {
+                            afterMLMacro.lines.add(currentLine);
+                            afterMLMacro.endLineInDiff = i;
+                            DiffNode afterMLNode = afterMLMacro.toDiffNode(beforeStack.peek(), afterStack.peek());
+
+                            if (!pushNodeToStack(
+                                    afterMLNode,
+                                    afterStack,
+                                    afterMLMacro.getLineFrom())) {
+                                validDiff = false;
+                                break;
+                            }
+
+                            afterMLMacro = null;
+                        }
+                    }
+
+                    continue;
+                }
+            }
+
+
             // This gets the code type and diff type of the current line and creates a node
             // Note that the node is not yet added to the diff tree
-            DiffNode newNode = DiffNode.fromLine(fullDiffLines[i], beforeStack.peek(),
-                    afterStack.peek());
+            DiffNode newNode = DiffNode.fromLine(currentLine, beforeStack.peek(), afterStack.peek());
 
             // collapse multiple code lines
             if (collapseMultipleCodeLines && lastCode != null && newNode.isCode()
