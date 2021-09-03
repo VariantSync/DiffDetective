@@ -1,0 +1,10 @@
++#define multi \
++kulti
+
+ /** hihi **\
+
+ //\
+
++#if A & B
+ foo();
++#endif
