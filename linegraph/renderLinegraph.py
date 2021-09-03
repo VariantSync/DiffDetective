@@ -1,11 +1,42 @@
 import networkx as nx
 import matplotlib.pyplot as plt
 import pydot
-from networkx.drawing.nx_pydot import graphviz_layout
+# + install graphviz on your system: https://www.graphviz.org/download/
 
 import sys
 import re
 import os
+
+# colour of a node shows diff type
+DIFFTYPE_ADD_COLOR = 'green'
+DIFFTYPE_REM_COLOR = 'red'
+DIFFTYPE_NON_COLOR = '#d1d1e0' # light purple gray
+
+# border colour of a node shows code type
+CODE_TYPE_CODE_COLOR = '#3399ff'
+CODE_TYPE_OTHER_COLOR = 'black'
+
+
+def lineNoOfNode(v):
+    # inverse of DiffNode::getID in our Java code
+    # ((1 + fromLine) << ID_LINE_NUMBER_OFFSET) + diffType.ordinal()
+    # where ID_LINE_NUMBER_OFFSET = 16
+    return (v >> 16) - 1
+
+
+# the same as string.find but in case the char c is not found, returns len(s) instead of -1
+def findCharacterInStringGreedy(s, c):
+    index = s.find(c)
+    if index == -1:
+        index = len(s)
+    return index
+
+
+def substringGraceful(s, fromIndex):
+    if fromIndex >= len(s):
+        return ""
+    return s[fromIndex:]
+
 
 def load_as_line_graph(input_file):
     regex_header = r"t # (.*)"
@@ -63,26 +94,88 @@ def plot_graphs(S, file_path, labels=True):
         plt.margins(0.05, 0.05)
         # pos = nx.spring_layout(S[i], scale=3)
         # pos = nx.planar_layout(S[i], scale=3)
-        pos = graphviz_layout(S[i])
+        # pos = nx.nx_agraph.pygraphviz_layout(S[i], prog='dot')
+        # pos = graphviz_layout(S[i], prog='dot')
 
-        color_map = []
+        # We have to do this to circumvent a bug:
+        # https://networkx.org/documentation/stable/reference/generated/networkx.drawing.nx_pydot.pydot_layout.html
+        H = nx.convert_node_labels_to_integers(S[i], label_attribute='label')
+        H_layout = nx.drawing.nx_pydot.pydot_layout(H, prog="sfdp") #sfdp
+        pos = {H.nodes[n]['label']: p for n, p in H_layout.items()}
+
+        node_colors = []
+        node_type_colors = []
         for v, d in S[i].nodes(data=True):
             name = d['label']
             # print(v, name)
             if name.startswith("NON"):
-                color_map.append('gray')
+                node_colors.append(DIFFTYPE_NON_COLOR)
             elif name.startswith("ADD"):
-                color_map.append('green')
+                node_colors.append(DIFFTYPE_ADD_COLOR)
             elif name.startswith("REM"):
-                color_map.append('red')
+                node_colors.append(DIFFTYPE_REM_COLOR)
+
+            # remove metadata and " " from node labels
+            nameWithoutDiffType = name[4:]
+
+            if nameWithoutDiffType.startswith("CODE"):
+                node_type_colors.append(CODE_TYPE_CODE_COLOR)
+            else: # is if/else/elif
+                node_type_colors.append(CODE_TYPE_OTHER_COLOR)
+
+            isroot = nameWithoutDiffType.startswith("ROOT")
+            ismacro = not isroot and not nameWithoutDiffType.startswith("CODE")
+            # print("nameWithoutDiffType:", nameWithoutDiffType)
+            # print("findCharacterInStringGreedy(", nameWithoutDiffType, ", '_'):", findCharacterInStringGreedy(nameWithoutDiffType, '_'))
+            code = substringGraceful(nameWithoutDiffType, findCharacterInStringGreedy(nameWithoutDiffType, '_')+1) # +1 tp remove _ too
+            # print(code)
+            if len(code) > 0:
+                # remove parenthesis
+                code = code[1:len(code)-1]
+                # print(code)
+                if ismacro:
+                    code = '#' + code
+                # print(code)
+            # prepend line number
+            code = str(lineNoOfNode(v)) + ("\n" + code if len(code) > 0 else "")
+            # print(code)
+            # print("")
+            d['label'] = "ROOT" if isroot else code
+
+        edge_colors = []
+        for _, _, d in S[i].edges.data():
+            typeName = str(d['label'])
+            if typeName == "a":
+                edge_colors.append('#bbeb37')
+            if typeName == "b":
+                edge_colors.append('#ff9129')
+            if typeName == "ba":
+                edge_colors.append('black')
+
+        # new_pos = {}
+        # for k, v in pos.items():
+        #     new_pos[k] = (v[0], -v[1])
+        # pos = new_pos
 
         if labels:
-            nx.draw(S[i], pos, node_size=500, node_color=color_map)
             node_labels = dict([(v, d['label']) for v, d in S[i].nodes(data=True)])
-            y_off = 0.02
-            nx.draw_networkx_labels(S[i], pos={k: ([v[0], v[1] + y_off]) for k, v in pos.items()}, font_size=6,
-                                    labels=node_labels)
-            nx.draw_networkx_edge_labels(S[i], pos, font_size=6)
+
+            # draw type borders
+            nx.draw_networkx_nodes(S[i], pos,
+                    node_size=800,
+                    node_color=node_type_colors)
+
+            # draw nodes
+            nx.draw(S[i], pos,
+                    node_size=700,
+                    node_color=node_colors,
+                    edge_color=edge_colors,
+                    font_size=3,
+                    labels=node_labels,
+                    bbox=dict(facecolor="white", edgecolor='black', boxstyle='round,pad=0.1', linestyle=''))
+
+            # edge_labels = dict([((fromnode, tonode), d['label']) for fromnode, tonode, d in S[i].edges.data()])
+            # nx.draw_networkx_edge_labels(S[i], pos, font_size=6, edge_labels=edge_labels)
         else:
             nx.draw(S[i], pos, node_size=20)
 
@@ -92,7 +185,7 @@ def plot_graphs(S, file_path, labels=True):
             save_path = file_path + ".png"
 
         # Save
-        plt.savefig(save_path, format="PNG")
+        plt.savefig(save_path, format="PNG", dpi=400)
 
 
 def render(pathIn, pathOut):
