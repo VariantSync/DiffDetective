@@ -1,8 +1,11 @@
 import networkx as nx
 import matplotlib.pyplot as plt
+import pydot
+from networkx.drawing.nx_pydot import graphviz_layout
+
 import sys
 import re
-
+import os
 
 def load_as_line_graph(input_file):
     regex_header = r"t # (.*)"
@@ -58,7 +61,9 @@ def plot_graphs(S, file_path, labels=True):
         plt.clf()
         plt.figure(i)
         plt.margins(0.05, 0.05)
-        pos = nx.spring_layout(S[i], scale=3)
+        # pos = nx.spring_layout(S[i], scale=3)
+        # pos = nx.planar_layout(S[i], scale=3)
+        pos = graphviz_layout(S[i])
 
         color_map = []
         for v, d in S[i].nodes(data=True):
@@ -90,9 +95,23 @@ def plot_graphs(S, file_path, labels=True):
         plt.savefig(save_path, format="PNG")
 
 
+def render(pathIn, pathOut):
+    graphs = load_as_line_graph(pathIn)
+    plot_graphs(graphs, pathOut)
+
+
 if __name__ == "__main__":
     infile = sys.argv[1]
-    outfile = infile
 
-    graphs = load_as_line_graph(infile)
-    plot_graphs(graphs, outfile)
+    if os.path.isfile(infile):
+        print("Render file", infile)
+        outfile = infile
+        render(infile, outfile)
+    elif os.path.isdir(infile):
+        print("Render files in directory", infile)
+        infiles = [f for f in list(map(lambda x : os.path.join(infile, x), os.listdir(infile))) if os.path.isfile(f) and f.endswith(".lg")]
+        for file in infiles:
+            print("Render file", file)
+            render(file, file)
+    else:
+        print("Given arg " + infile + " is neither a file nor a directory!")
