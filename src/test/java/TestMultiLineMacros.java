@@ -1,6 +1,6 @@
 import de.ovgu.featureide.fm.core.analysis.cnf.generator.configuration.util.Pair;
-import diff.GitDiffer;
 import diff.data.DiffTree;
+import diff.data.difftreeparse.DiffTreeParser;
 import org.junit.Test;
 import org.pmw.tinylog.Logger;
 import util.DebugData;
@@ -38,7 +38,7 @@ public class TestMultiLineMacros {
         final Path p = resDir.resolve("mldiff1.txt");
         final String fullDiff = readAsString(p);
 
-        final DiffTree tree = GitDiffer.createDiffTree(
+        final DiffTree tree = DiffTreeParser.createDiffTree(
                 fullDiff,
                 true,
                 true);

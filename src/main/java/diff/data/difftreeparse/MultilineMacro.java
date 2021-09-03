@@ -1,4 +1,4 @@
-package diff;
+package diff.data.difftreeparse;
 
 import diff.data.DiffNode;
 
@@ -36,19 +36,12 @@ public class MultilineMacro {
         return endLineInDiff;
     }
 
-    public static boolean continuesMultilineDefinition(String line) {
-        return line.trim().endsWith("\\");
-    }
-
     public boolean nextLine(String currentLine, int lineNo) {
         lines.add(currentLine);
 
-        if (MultilineMacro.continuesMultilineDefinition(currentLine)) {
-//            // 1 to remove diff symbol at beginning
-//            asSingleLine += " " + currentLine.substring(1, currentLine.lastIndexOf('\\'));
+        if (MultiLineMacroParser.continuesMultilineDefinition(currentLine)) {
             return false;
         } else {
-//            asSingleLine += " " + currentLine.substring(1);
             endLineInDiff = lineNo;
             return true;
         }

@@ -1,6 +1,8 @@
 package diff;
 
 import diff.data.*;
+import diff.data.difftreeparse.DiffTreeParser;
+import diff.data.difftreeparse.MultilineMacro;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.diff.DiffEntry;
@@ -23,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Stack;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -41,7 +44,6 @@ public class GitDiffer {
     public static final String BOM_REGEX = "\\x{FEFF}";
     public static final String DIFF_HUNK_REGEX = "^@@\\s-(\\d+).*\\+(\\d+).*@@$";
     public static final String DIFF_HEADER_REGEX = "^\\+\\+\\+.*$";
-    public static final String NEW_LINE_REGEX = "(\\r\\n|\\r|\\n)";
     public static final String NO_NEW_LINE = "\\ No newline at end of file";
 
     private final Git git;
@@ -229,7 +231,7 @@ public class GitDiffer {
 //        String diffString = combineMultiLines(fullDiff);
         String diffString = fullDiff;
 
-        DiffTree diffTree = createDiffTree(diffString, true, true);
+        DiffTree diffTree = DiffTreeParser.createDiffTree(diffString, true, true);
 
         if (diffTree == null) {
             Logger.warn("Something went wrong parsing patch for file {} at commit {}!",
@@ -248,283 +250,6 @@ public class GitDiffer {
         String MULTI_LINE_BREAK_REGEX = "\\\\$\\s*^[ +-]\\s*";
         Pattern pattern = Pattern.compile(MULTI_LINE_BREAK_REGEX, Pattern.MULTILINE);
         return pattern.matcher(fullDiff).replaceAll("");
-    }
-
-
-    /**
-     * Implementation of the diff tree algorithm.
-     * This implementation has options to collapse multiple code lines into one node and to
-     * discard empty lines.
-     * The implementation also checks for faulty git diffs.
-     *
-     * @param fullDiff                  The full diff of a patch
-     * @param collapseMultipleCodeLines Whether multiple consecutive code lines should be
-     *                                  collapsed into a single code node
-     * @param ignoreEmptyLines          Whether empty lines (no matter if they are added removed
-     *                                  or remained unchanged) should be ignored
-     * @return The DiffTree created from the given git diff
-     */
-    public static DiffTree createDiffTree(String fullDiff,
-                                    boolean collapseMultipleCodeLines,
-                                    boolean ignoreEmptyLines) {
-        String[] fullDiffLines = fullDiff.split(NEW_LINE_REGEX);
-
-        List<DiffNode> codeNodes = new ArrayList<>();
-        List<DiffNode> annotationNodes = new ArrayList<>();
-
-        Stack<DiffNode> beforeStack = new Stack<>();
-        Stack<DiffNode> afterStack = new Stack<>();
-
-        DiffNode lastCode = null;
-        boolean validDiff = true;
-
-        MultilineMacro beforeMLMacro = null, afterMLMacro = null;
-
-        final DiffNode root = DiffNode.createRoot();
-        beforeStack.push(root);
-        afterStack.push(root);
-
-        for (int i = 0; i < fullDiffLines.length; i++) {
-            String currentLine = fullDiffLines[i];
-            final DiffNode.CodeType codeType = DiffNode.getCodeType(currentLine);
-            final DiffNode.DiffType diffType = DiffNode.getDiffType(currentLine);
-
-            if (ignoreEmptyLines && (currentLine.length() == 0
-                    // TODO: Why substring(1) here? Because of + or - at the beginning of a line (i.e., when an empty
-                    //       line was added or removed)?
-                    || currentLine.substring(1).isEmpty())) {
-                // discard empty lines
-                continue;
-            }
-
-            // check if this is a multiline macro
-            if (MultilineMacro.continuesMultilineDefinition(currentLine)) {
-                lastCode = null;
-
-                // header
-                if (codeType.isConditionalMacro()) {
-                    if (diffType != DiffNode.DiffType.ADD) {
-                        beforeMLMacro = new MultilineMacro(currentLine, i, beforeStack.peek(), afterStack.peek());
-                    }
-                    if (diffType != DiffNode.DiffType.REM) {
-                        afterMLMacro = new MultilineMacro(currentLine, i, beforeStack.peek(), afterStack.peek());
-                    }
-                } else { // body
-                    if (diffType != DiffNode.DiffType.ADD) {
-                        assert beforeMLMacro != null;
-                        beforeMLMacro.lines.add(currentLine);
-                    }
-                    if (diffType != DiffNode.DiffType.REM) {
-                        assert afterMLMacro != null;
-                        afterMLMacro.lines.add(currentLine);
-                    }
-                }
-
-                continue;
-            } else {
-                boolean inBeforeMLMacro = beforeMLMacro != null;
-                boolean inAfterMLMacro = afterMLMacro != null;
-
-                // check if last line of a multi macro
-                if (inBeforeMLMacro || inAfterMLMacro) {
-                    if (inBeforeMLMacro && inAfterMLMacro
-                            && diffType == DiffNode.DiffType.NON
-                            && beforeMLMacro.equals(afterMLMacro)) {
-                        // we have one single end line for both multi line macros
-                        beforeMLMacro.lines.add(currentLine);
-                        beforeMLMacro.endLineInDiff = i;
-                        beforeMLMacro.diffType = DiffNode.DiffType.NON;
-                        DiffNode mlNode = beforeMLMacro.toDiffNode();
-
-                        if (!pushNodeToStack(
-                                mlNode,
-                                beforeStack,
-                                beforeMLMacro.getLineFrom())) {
-                            validDiff = false;
-                            break;
-                        }
-                        if (!pushNodeToStack(
-                                mlNode,
-                                afterStack,
-                                afterMLMacro.getLineFrom())) {
-                            validDiff = false;
-                            break;
-                        }
-
-                        annotationNodes.add(mlNode);
-                        addChildrenToParents(mlNode);
-
-                        beforeMLMacro = null;
-                        afterMLMacro = null;
-                    } else {
-                        if (inBeforeMLMacro && diffType != DiffNode.DiffType.ADD) {
-                            beforeMLMacro.lines.add(currentLine);
-                            beforeMLMacro.endLineInDiff = i;
-                            beforeMLMacro.diffType = DiffNode.DiffType.REM;
-                            DiffNode beforeMLNode = beforeMLMacro.toDiffNode();
-
-                            if (!pushNodeToStack(
-                                    beforeMLNode,
-                                    beforeStack,
-                                    beforeMLMacro.getLineFrom())) {
-                                validDiff = false;
-                                break;
-                            }
-
-                            annotationNodes.add(beforeMLNode);
-                            addChildrenToParents(beforeMLNode);
-                            beforeMLMacro = null;
-                        }
-
-                        if (afterMLMacro != null && diffType != DiffNode.DiffType.REM) {
-                            afterMLMacro.lines.add(currentLine);
-                            afterMLMacro.endLineInDiff = i;
-                            afterMLMacro.diffType = DiffNode.DiffType.ADD;
-                            DiffNode afterMLNode = afterMLMacro.toDiffNode();
-
-                            if (!pushNodeToStack(
-                                    afterMLNode,
-                                    afterStack,
-                                    afterMLMacro.getLineFrom())) {
-                                validDiff = false;
-                                break;
-                            }
-
-                            annotationNodes.add(afterMLNode);
-                            addChildrenToParents(afterMLNode);
-                            afterMLMacro = null;
-                        }
-                    }
-
-                    continue;
-                }
-            }
-
-
-            // This gets the code type and diff type of the current line and creates a node
-            // Note that the node is not yet added to the diff tree
-            DiffNode newNode = DiffNode.fromLine(currentLine, beforeStack.peek(), afterStack.peek());
-
-            // collapse multiple code lines
-            if (collapseMultipleCodeLines && lastCode != null && newNode.isCode()
-                    && lastCode.diffType.equals(newNode.diffType)) {
-                continue;
-            } else if (lastCode != null) {
-                lastCode.setToLine(i);
-            }
-
-            if (newNode.isCode()) {
-                newNode.setFromLine(i);
-                codeNodes.add(newNode);
-                addChildrenToParents(newNode);
-                lastCode = newNode;
-            } else if (newNode.isEndif()) {
-                lastCode = null;
-                if (!newNode.isAdd()) {
-                    // set corresponding line of now closed annotation
-                    beforeStack.peek().setToLine(i);
-
-                    // pop the relevant stacks until an if node is popped
-                    if (!popIf(beforeStack)) {
-                        Logger.warn("(before-) stack is empty!");
-                        validDiff = false;
-                        break;
-                    }
-                }
-                if (!newNode.isRem()) {
-                    // set corresponding line of now closed annotation
-                    afterStack.peek().setToLine(i);
-
-                    // pop the relevant stacks until an if node is popped
-                    if (!popIf(afterStack)) {
-                        Logger.warn("(after-) stack is empty!");
-                        validDiff = false;
-                        break;
-                    }
-                }
-
-            } else {
-                // newNode is if, elif or else
-                lastCode = null;
-
-                // push the node to the relevant stacks
-                if (!newNode.isAdd()) {
-                    if (!pushNodeToStack(newNode, beforeStack, i)) {
-                        validDiff = false;
-                        break;
-                    }
-                }
-                if (!newNode.isRem()) {
-                    if (!pushNodeToStack(newNode, afterStack, i)) {
-                        validDiff = false;
-                        break;
-                    }
-                }
-
-                newNode.setFromLine(i);
-                annotationNodes.add(newNode);
-                addChildrenToParents(newNode);
-            }
-        }
-
-        if (lastCode != null) {
-            lastCode.setToLine(fullDiffLines.length);
-        }
-
-        if (beforeStack.size() > 1 || afterStack.size() > 1) {
-            Logger.warn("Not all annotations closed!");
-            validDiff = false;
-        }
-
-        if (validDiff) {
-            return new DiffTree(root, codeNodes, annotationNodes);
-        } else {
-            return null;
-        }
-    }
-
-    /**
-     * Pops elements from the given stack until an if node is popped or the stack is empty.
-     * @param stack The stack to pop the first if node from.
-     * @return false if the stack is empty afterwards. Returns true otherwise (i.e., if an if code be popped).
-     */
-    private static boolean popIf(final Stack<DiffNode> stack) {
-        // pop the relevant stacks until an if node is popped
-        DiffNode popped;
-        do {
-            popped = stack.pop();
-        } while (!popped.isIf() && !popped.isRoot());
-
-        return !stack.isEmpty();
-    }
-
-    private static boolean pushNodeToStack(final DiffNode newNode, final Stack<DiffNode> stack, int currentLine) {
-        if (newNode.isElif() || newNode.isElse()) {
-            if (stack.size() == 1) {
-                Logger.warn("#else or #elif without if!");
-                return false;
-            }
-
-            // set corresponding line of now closed annotation
-            stack.peek().setToLine(currentLine - 1);
-        }
-
-        stack.push(newNode);
-        return true;
-    }
-
-    /**
-     * Adds a DiffNode as a child to its parents
-     *
-     * @param diffNode The DiffNode to be added as a child to its parents
-     */
-    private static void addChildrenToParents(DiffNode diffNode) {
-        if (diffNode.getAfterParent() != null) {
-            diffNode.getAfterParent().addChild(diffNode);
-        }
-        if (diffNode.getBeforeParent() != null) {
-            diffNode.getBeforeParent().addChild(diffNode);
-        }
     }
 
     /**
