@@ -66,7 +66,9 @@ public class ExportUtils {
      *                     Also throws if the given file already exists.
      */
     public static void write(final Path p, final String text) throws IOException {
-        p.getParent().toFile().mkdirs();
+        if (p.getParent() != null) {
+            p.getParent().toFile().mkdirs();
+        }
         Files.writeString(p, text, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
     }
 }
