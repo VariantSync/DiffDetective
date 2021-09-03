@@ -29,13 +29,7 @@ public class TestMultiLineMacros {
         }
     }
 
-    @Test
-    public void test() throws IOException {
-        final LineGraphExport.Options exportOptions = new LineGraphExport.Options(
-                LineGraphExport.NodePrintStyle.Verbose,
-                false
-        );
-        final Path p = resDir.resolve("mldiff1.txt");
+    public void diffToDiffTree(LineGraphExport.Options exportOptions, Path p) throws IOException {
         final String fullDiff = readAsString(p);
 
         final DiffTree tree = DiffTreeParser.createDiffTree(
@@ -53,6 +47,17 @@ public class TestMultiLineMacros {
                 StringUtils.LINEBREAK +
                 result.getValue();
 
-        ExportUtils.write(resDir.resolve("gen").resolve("mldiff1tree.lg"), lg);
+        ExportUtils.write(resDir.resolve("gen").resolve(p.getFileName() + ".lg"), lg);
+    }
+
+    @Test
+    public void test() throws IOException {
+        final LineGraphExport.Options exportOptions = new LineGraphExport.Options(
+                LineGraphExport.NodePrintStyle.Verbose,
+                false
+        );
+
+        diffToDiffTree(exportOptions, resDir.resolve("mldiff1.txt"));
+        diffToDiffTree(exportOptions, resDir.resolve("diffWithComments.txt"));
     }
 }
