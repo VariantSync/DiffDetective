@@ -114,3 +114,4 @@ buildNumber.properties
 *.csv
 *.ser
 patches/*
+/.venv/
