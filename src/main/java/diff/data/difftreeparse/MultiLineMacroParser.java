@@ -66,13 +66,23 @@ public class MultiLineMacroParser {
                 // ... otherwise, it is a line within a body of a multiline macro. Thus append it.
                 if (!isAdd) {
                     if (beforeMLMacro == null) {
-                        return ParseResult.ERROR("Found line of a multiline macro without header at line " + line + "!");
+                        /* If this happens (at least) one of this happened
+                         * 1. Found line of a multiline macro without header at line " + line + "!
+                         * 2. Backslash in a comment.
+                         * 3. It is the head of a multiline #define macro that we classify as code.
+                         *
+                         * As 2 and 3 are most likely we just assume those.
+                         */
+//                        return ParseResult.ERROR("Found line of a multiline macro without header at line " + line + "!");
+                        return ParseResult.NOT_MY_DUTY;
                     }
                     beforeMLMacro.lines.add(line);
                 }
                 if (!isRem) {
                     if (afterMLMacro == null) {
-                        return ParseResult.ERROR("Found line of a multiline macro without header at line " + line + "!");
+                        // see above
+//                        return ParseResult.ERROR("Found line of a multiline macro without header at line " + line + "!");
+                        return ParseResult.NOT_MY_DUTY;
                     }
                     afterMLMacro.lines.add(line);
                 }
