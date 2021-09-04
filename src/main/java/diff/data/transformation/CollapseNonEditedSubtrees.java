@@ -4,7 +4,9 @@ import diff.data.DiffNode;
 import diff.data.DiffTree;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class CollapseNonEditedSubtrees implements DiffTreeTransformer {
     private List<DiffNode> removedNodes;
@@ -18,26 +20,43 @@ public class CollapseNonEditedSubtrees implements DiffTreeTransformer {
         removedNodes = null;
     }
 
-    private boolean collapse(DiffNode subtree) {
-        if (subtree.isNon()) {
-            // If all children are collapsable / can be collapsed and are only children of this node ...
-            for (final DiffNode child : subtree.getChildren()) {
-                if (!(
-                        collapse(child)
-                        && child.getAfterParent() == subtree
-                        && child.getBeforeParent() == subtree))
-                {
-                    // then this is not a collapsable child.
-                    return false;
-                }
-            }
+    private void collapse(final DiffNode subtree) {
+        final Set<DiffNode> collapsableChildren = new HashSet<>();
+        for (final DiffNode child : subtree.getChildren()) {
+            collapse(child);
 
-            // ... remove all children.
-            removedNodes.addAll(subtree.getChildren());
-            subtree.dropChildren();
-            return true;
+            /*
+             * Collapse all children c for which
+             *   1. all children of c could be collapsed or c never had children
+             *   2. that was not relocated due to an edit.
+             *
+             * Note: c satisfies 2 => c.isNon() and subtree.isNon()
+             *       We thus only cut subtrees that (a) were not edited themselves and (b) were not relocated.
+             * Proof: c satisfies 2
+             *        => c has an after parent and a before parent
+             *        => c exists before and after the edit
+             *        => !c.isAdd() && !c.isRem()
+             *        => c.isNon()
+             *
+             *        c satisfies 2
+             *        => c has s as after parent and before parent
+             *        => s has a before child and an after child
+             *        => s exists before and after the edit
+             *        => !s.isAdd() && !s.isRem()
+             *        => s.isNon()
+             */
+            if (
+                    child.getChildren().isEmpty()
+                    && child.getAfterParent() == subtree
+                    && child.getBeforeParent() == subtree) {
+                collapsableChildren.add(child);
+            }
         }
 
-        return false;
+        // ... remove all children.
+        if (!collapsableChildren.isEmpty()) {
+            removedNodes.addAll(collapsableChildren);
+            subtree.removeChildren(collapsableChildren);
+        }
     }
 }

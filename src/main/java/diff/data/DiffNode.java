@@ -1,10 +1,12 @@
 package diff.data;
 
+import org.apache.commons.lang3.builder.Diff;
 import org.pmw.tinylog.Logger;
 import org.prop4j.*;
 import util.LineGraphExport;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -362,17 +364,18 @@ public class DiffNode {
         return children;
     }
 
-    public void dropChildren() {
-        for (final DiffNode child : children) {
+    public void removeChildren(final Collection<DiffNode> childrenToRemove) {
+        for (final DiffNode child : childrenToRemove) {
             if (child.beforeParent == this) {
                 child.beforeParent = null;
             }
             if (child.afterParent == this) {
                 child.afterParent = null;
             }
-        }
 
-        children.clear();
+            // Use removeIf to remove all occurences of child as child can be in this list multiple times.
+            children.removeIf(c -> c == child);
+        }
     }
 
     public void setIsMultilineMacro(boolean isMultilineMacro) {
