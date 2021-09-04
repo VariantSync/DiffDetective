@@ -7,6 +7,15 @@ import sys
 import re
 import os
 
+
+# constants from our Java code
+JAVA_TREE_NAME_SEPARATOR = "$$$"
+JAVA_DIFFNODE_GETID_BIT_OFFSET = 16
+JAVA_DIFFNODE_GETID_LINE_OFFSET = 1
+
+# export names
+DIR_SEPARATOR = "$"
+
 # colour of a node shows diff type
 DIFFTYPE_ADD_COLOR = 'green'
 DIFFTYPE_REM_COLOR = 'red'
@@ -20,8 +29,7 @@ CODE_TYPE_OTHER_COLOR = 'black'
 def lineNoOfNode(v):
     # inverse of DiffNode::getID in our Java code
     # ((1 + fromLine) << ID_LINE_NUMBER_OFFSET) + diffType.ordinal()
-    # where ID_LINE_NUMBER_OFFSET = 16
-    return (v >> 16) - 1
+    return (v >> JAVA_DIFFNODE_GETID_BIT_OFFSET) - JAVA_DIFFNODE_GETID_LINE_OFFSET
 
 
 # the same as string.find but in case the char c is not found, returns len(s) instead of -1
@@ -65,7 +73,13 @@ def load_as_line_graph(input_file):
         if match_header:
             if graph is not None:
                 graphs.append(graph)
-            graph = nx.DiGraph(label=match_header.group(1))
+
+            graphName = str(match_header.group(1))
+            graphNameSplitted = graphName.split(JAVA_TREE_NAME_SEPARATOR, 2)
+            fileName = graphNameSplitted[0]
+            commitId = graphNameSplitted[1]
+            graphTitle = fileName + "\n" + commitId
+            graph = nx.DiGraph(name=graphTitle, filename=fileName, commitid=commitId)
             continue
 
         match_node = re.match(regex_node, next_line)
@@ -87,11 +101,14 @@ def load_as_line_graph(input_file):
 
 
 # Plot graphs
-def plot_graphs(S, file_path, labels=True):
+def plot_graphs(S, exportDir, labels=True):
+    plt.figure(0)
     for i in range(len(S)):
+        difftree = S[i]
+
         plt.clf()
-        plt.figure(i)
         plt.margins(0.05, 0.05)
+        plt.title(S[i].name)
         # pos = nx.spring_layout(S[i], scale=3)
         # pos = nx.planar_layout(S[i], scale=3)
         # pos = nx.nx_agraph.pygraphviz_layout(S[i], prog='dot')
@@ -99,13 +116,13 @@ def plot_graphs(S, file_path, labels=True):
 
         # We have to do this to circumvent a bug:
         # https://networkx.org/documentation/stable/reference/generated/networkx.drawing.nx_pydot.pydot_layout.html
-        H = nx.convert_node_labels_to_integers(S[i], label_attribute='label')
+        H = nx.convert_node_labels_to_integers(difftree, label_attribute='label')
         H_layout = nx.drawing.nx_pydot.pydot_layout(H, prog="sfdp") #sfdp
         pos = {H.nodes[n]['label']: p for n, p in H_layout.items()}
 
         node_colors = []
         node_type_colors = []
-        for v, d in S[i].nodes(data=True):
+        for v, d in difftree.nodes(data=True):
             name = d['label']
             # print(v, name)
             if name.startswith("NON"):
@@ -143,7 +160,7 @@ def plot_graphs(S, file_path, labels=True):
             d['label'] = "ROOT" if isroot else code
 
         edge_colors = []
-        for _, _, d in S[i].edges.data():
+        for _, _, d in difftree.edges.data():
             typeName = str(d['label'])
             if typeName == "a":
                 edge_colors.append('#bbeb37')
@@ -158,15 +175,15 @@ def plot_graphs(S, file_path, labels=True):
         # pos = new_pos
 
         if labels:
-            node_labels = dict([(v, d['label']) for v, d in S[i].nodes(data=True)])
+            node_labels = dict([(v, d['label']) for v, d in difftree.nodes(data=True)])
 
             # draw type borders
-            nx.draw_networkx_nodes(S[i], pos,
+            nx.draw_networkx_nodes(difftree, pos,
                     node_size=800,
                     node_color=node_type_colors)
 
             # draw nodes
-            nx.draw(S[i], pos,
+            nx.draw(difftree, pos,
                     node_size=700,
                     node_color=node_colors,
                     edge_color=edge_colors,
@@ -177,20 +194,23 @@ def plot_graphs(S, file_path, labels=True):
             # edge_labels = dict([((fromnode, tonode), d['label']) for fromnode, tonode, d in S[i].edges.data()])
             # nx.draw_networkx_edge_labels(S[i], pos, font_size=6, edge_labels=edge_labels)
         else:
-            nx.draw(S[i], pos, node_size=20)
+            nx.draw(difftree, pos, node_size=20)
 
-        if len(S) > 1:
-            save_path = file_path + "_" + str(i) + ".png"
-        else:
-            save_path = file_path + ".png"
+        # if len(S) > 1:
+        #     save_path = file_path + "_" + str(i) + ".png"
+        # else:
+        #     save_path = file_path + ".png"
+        outfilename = difftree.graph['filename'].replace("/", DIR_SEPARATOR) + DIR_SEPARATOR + difftree.graph['commitid'] + ".png"
+        save_path = os.path.join(exportDir, outfilename)
 
         # Save
+        print("Exporting", save_path)
         plt.savefig(save_path, format="PNG", dpi=400)
 
 
-def render(pathIn, pathOut):
+def render(pathIn, outDir):
     graphs = load_as_line_graph(pathIn)
-    plot_graphs(graphs, pathOut)
+    plot_graphs(graphs, outDir)
 
 
 if __name__ == "__main__":
@@ -198,13 +218,14 @@ if __name__ == "__main__":
 
     if os.path.isfile(infile):
         print("Render file", infile)
-        outfile = infile
-        render(infile, outfile)
+        outdir = os.path.dirname(infile)
+        render(infile, outdir)
     elif os.path.isdir(infile):
         print("Render files in directory", infile)
         infiles = [f for f in list(map(lambda x : os.path.join(infile, x), os.listdir(infile))) if os.path.isfile(f) and f.endswith(".lg")]
         for file in infiles:
             print("Render file", file)
-            render(file, file)
+            outdir = os.path.dirname(file)
+            render(file, outdir)
     else:
         print("Given arg " + infile + " is neither a file nor a directory!")

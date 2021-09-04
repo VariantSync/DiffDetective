@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class LineGraphExport {
+    public static final String TREE_NAME_SEPARATOR = "$$$";
+
     public enum NodePrintStyle {
         Type, Pretty, Verbose
     }
@@ -48,7 +50,7 @@ public class LineGraphExport {
 
                 lineGraph
 //                        .append("t # ").append(treeCounter)
-                        .append("t # ").append(patchDiff.getFileName()).append("$$$").append(hash)
+                        .append("t # ").append(patchDiff.getFileName()).append(TREE_NAME_SEPARATOR).append(hash)
                         .append(StringUtils.LINEBREAK)
                         .append(patchDiffLg.getValue())
                         .append(StringUtils.LINEBREAK)

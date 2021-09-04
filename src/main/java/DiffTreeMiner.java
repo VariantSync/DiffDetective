@@ -29,7 +29,7 @@ public class DiffTreeMiner {
     public static void main(String[] args) {
         setupLogger(Level.DEBUG);
 
-        final Path outputPath = Paths.get("difftrees.lg");
+        final Path outputPath = Paths.get("linegraph", "data", "difftrees.lg");
 
         final boolean fromZip = true;
         final String repo = "Marlin_old.zip";
