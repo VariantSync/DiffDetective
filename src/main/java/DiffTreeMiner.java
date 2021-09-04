@@ -52,7 +52,7 @@ public class DiffTreeMiner {
 
         final LineGraphExport.Options exportOptions = new LineGraphExport.Options(
                 LineGraphExport.NodePrintStyle.Type,
-                false
+                true
         );
 
         /* ************************ *\
@@ -79,7 +79,7 @@ public class DiffTreeMiner {
 
         final StringBuilder lineGraph = new StringBuilder();
         int treeCounter = 0;
-        int hardCap = 2;
+        int hardCap = 40;
         final DebugData debugData = new DebugData();
 //        int commitDiffCounter = 1;
         for (CommitDiff diff : yieldDiff) {

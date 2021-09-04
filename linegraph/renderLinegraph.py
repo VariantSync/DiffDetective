@@ -205,7 +205,7 @@ def plot_graphs(S, exportDir, labels=True):
 
         # Save
         print("Exporting", save_path)
-        plt.savefig(save_path, format="PNG", dpi=400)
+        plt.savefig(save_path, format="PNG", dpi=300)
 
 
 def render(pathIn, outDir):

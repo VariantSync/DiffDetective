@@ -22,7 +22,7 @@ public class DiffTreeRenderer {
             = f -> PythonCommand.VenvPython3(DiffDetectiveRenderScriptPath, f.toString());
 
     private final Path workDir;
-    private Function<Path, PythonCommand> pythonCommandFactory;
+    private final Function<Path, PythonCommand> pythonCommandFactory;
 
     private DiffTreeRenderer(final Function<Path, PythonCommand> pythonCommandFactory, final Path workDir) {
         this.workDir = workDir;
