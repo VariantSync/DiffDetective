@@ -13,24 +13,40 @@ import util.StringUtils;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.function.Function;
 
 public class DiffTreeRenderer {
     private static final Path DiffDetectiveRenderScriptPath = Path.of("linegraph", "renderLinegraph.py");
     private static final Path DiffDetectiveWorkDir = null;
-    private final Path renderScriptPath;
-    private final Path workDir;
+    private static final Function<Path, PythonCommand> DiffDetectivePythonCommand
+            = f -> PythonCommand.VenvPython3(DiffDetectiveRenderScriptPath, f.toString());
 
-    private DiffTreeRenderer(final Path pythonRenderScriptPath, final Path workDir) {
-        this.renderScriptPath = pythonRenderScriptPath;
+    private final Path workDir;
+    private Function<Path, PythonCommand> pythonCommandFactory;
+
+    private DiffTreeRenderer(final Function<Path, PythonCommand> pythonCommandFactory, final Path workDir) {
         this.workDir = workDir;
+        this.pythonCommandFactory = pythonCommandFactory;
     }
 
     public static DiffTreeRenderer WithinDiffDetective() {
-        return new DiffTreeRenderer(DiffDetectiveRenderScriptPath, DiffDetectiveWorkDir);
+        return new DiffTreeRenderer(DiffDetectivePythonCommand, DiffDetectiveWorkDir);
     }
 
-    public static DiffTreeRenderer FromThirdPartyApplication(final Path pythonRenderScriptPath, final Path workDir) {
-        return new DiffTreeRenderer(pythonRenderScriptPath, workDir);
+    /**
+     * Creates a renderer that operates from a third party application (i.e., a program that uses DiffDetective as a library).
+     * @param pythonCommandFactory A factory to create a python command that renders the given path.
+     *                             The factory thus specifies the python instance to run and the location of the render script.
+     *                             DiffDetective comes with a render script in linegraph/renderLinegraph.py.
+     *                             However, when invoking this method from a third party application, the location of this script is unknown.
+     *                             Thus, pythonCommandFactory has to locate this script and provide a command that runs it for a given input file.
+     *                             Assume r is an absolute path to renderLinegraph.py from your application.
+     *                             Then a possible a value for pythonCommandFactory would be: p -> PythonCommand.Python(r, p.toString());
+     * @param workDir Working directory, to run the rendering in.
+     * @return A renderer that uses the given python instance and render script to render diff trees.
+     */
+    public static DiffTreeRenderer FromThirdPartyApplication(final Function<Path, PythonCommand> pythonCommandFactory, final Path workDir) {
+        return new DiffTreeRenderer(pythonCommandFactory, workDir);
     }
 
     public void render(PatchDiff patchDiff) {
@@ -65,7 +81,7 @@ public class DiffTreeRenderer {
     }
 
     public boolean renderFile(final Path lineGraphFile) {
-        final PythonCommand cmd = PythonCommand.VenvPython3(renderScriptPath, lineGraphFile.toString());
+        final PythonCommand cmd = pythonCommandFactory.apply(lineGraphFile);
         final ShellExecutor runner = new ShellExecutor(Logger::info, Logger::error);
 
         try {
