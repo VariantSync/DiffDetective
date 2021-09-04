@@ -2,6 +2,7 @@ import de.ovgu.featureide.fm.core.analysis.cnf.generator.configuration.util.Pair
 import diff.DiffFilter;
 import diff.GitDiffer;
 import diff.data.CommitDiff;
+import diff.data.difftreerender.DiffTreeRenderer;
 import load.GitLoader;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.diff.DiffEntry;
@@ -37,6 +38,7 @@ public class DiffTreeMiner {
         // use this option with large repositories
         // alternatively, increasing the java heap size also helps :D
         boolean saveMemory = true;
+        boolean renderOutput = true;
 
         // The filter used by the GitDiffer
         final DiffFilter diffFilter = new DiffFilter.Builder()
@@ -50,7 +52,7 @@ public class DiffTreeMiner {
 
         final LineGraphExport.Options exportOptions = new LineGraphExport.Options(
                 LineGraphExport.NodePrintStyle.Type,
-                true
+                false
         );
 
         /* ************************ *\
@@ -77,6 +79,7 @@ public class DiffTreeMiner {
 
         final StringBuilder lineGraph = new StringBuilder();
         int treeCounter = 0;
+        int hardCap = 2;
         final DebugData debugData = new DebugData();
 //        int commitDiffCounter = 1;
         for (CommitDiff diff : yieldDiff) {
@@ -85,6 +88,10 @@ public class DiffTreeMiner {
             final Pair<DebugData, Integer> res = LineGraphExport.toLineGraphFormat(diff, lineGraph, treeCounter, exportOptions);
             debugData.mappend(res.getKey());
             treeCounter = res.getValue();
+
+            if (hardCap > 0 && treeCounter >= hardCap) {
+                break;
+            }
         }
 
         Logger.info("Exported " + treeCounter + " diff trees!");
@@ -97,5 +104,15 @@ public class DiffTreeMiner {
         } catch (IOException exception) {
             Logger.error(exception);
         }
+
+        if (renderOutput) {
+            Logger.info("Rendering " + outputPath);
+            final DiffTreeRenderer renderer = DiffTreeRenderer.WithinDiffDetective();
+            if (!renderer.renderFile(outputPath)) {
+                Logger.error("Rendering " + outputPath + " failed!");
+            }
+        }
+
+        Logger.info("Done");
     }
 }

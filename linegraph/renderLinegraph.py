@@ -229,3 +229,6 @@ if __name__ == "__main__":
             render(file, outdir)
     else:
         print("Given arg " + infile + " is neither a file nor a directory!")
+        sys.exit(1)
+
+    sys.exit(0)
