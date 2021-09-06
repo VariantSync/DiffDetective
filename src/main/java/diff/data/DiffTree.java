@@ -28,4 +28,12 @@ public class DiffTree {
     public List<DiffNode> getAnnotationNodes() {
         return annotationNodes;
     }
+
+    public int size() {
+        return 1 /*Root*/ + codeNodes.size() + annotationNodes.size();
+    }
+
+    public boolean isEmpty() {
+        return size() == 1;
+    }
 }
