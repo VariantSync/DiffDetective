@@ -2,28 +2,32 @@ package diff.data.transformation;
 
 import diff.data.DiffNode;
 import diff.data.DiffTree;
+import diff.data.difftreevisitor.DiffTreeTraversal;
+import diff.data.difftreevisitor.DiffTreeVisitor;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class CollapseNonEditedSubtrees implements DiffTreeTransformer {
+public class CollapseNonEditedSubtrees implements DiffTreeTransformer, DiffTreeVisitor {
     private List<DiffNode> removedNodes;
 
     @Override
     public void transform(DiffTree diffTree) {
         removedNodes = new ArrayList<>();
-        collapse(diffTree.getRoot());
+        final DiffTreeTraversal traversal = new DiffTreeTraversal(this);
+        traversal.visit(diffTree.getRoot());
         diffTree.getAnnotationNodes().removeAll(removedNodes);
         diffTree.getCodeNodes().removeAll(removedNodes);
         removedNodes = null;
     }
 
-    private void collapse(final DiffNode subtree) {
+    @Override
+    public void visit(DiffTreeTraversal traversal, DiffNode subtree) {
         final Set<DiffNode> collapsableChildren = new HashSet<>();
         for (final DiffNode child : subtree.getChildren()) {
-            collapse(child);
+            traversal.visit(child);
 
             /*
              * Collapse all children c for which
@@ -47,8 +51,8 @@ public class CollapseNonEditedSubtrees implements DiffTreeTransformer {
              */
             if (
                     child.getChildren().isEmpty()
-                    && child.getAfterParent() == subtree
-                    && child.getBeforeParent() == subtree) {
+                            && child.getAfterParent() == subtree
+                            && child.getBeforeParent() == subtree) {
                 collapsableChildren.add(child);
             }
         }
