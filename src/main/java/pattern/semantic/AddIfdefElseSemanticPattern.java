@@ -49,7 +49,7 @@ public class AddIfdefElseSemanticPattern extends SemanticPattern{
             }
 
             boolean addedCodeInElse = false;
-            for(DiffNode child : elseNode.getChildren()){
+            for(DiffNode child : elseNode.getChildren()) {
                 if(child.isCode() && child.isAdd()){
                     addedCodeInElse = true;
                 }

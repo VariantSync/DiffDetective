@@ -5,9 +5,7 @@ import org.pmw.tinylog.Logger;
 import org.prop4j.*;
 import util.LineGraphExport;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -44,6 +42,9 @@ public class DiffNode {
     private DiffNode beforeParent;
     private DiffNode afterParent;
 
+    /**
+     * We use a list for children to maintain order.
+     */
     private final List<DiffNode> children;
 
     public DiffNode(DiffType diffType, CodeType codeType, int fromLine, int toLine,
@@ -59,8 +60,10 @@ public class DiffNode {
         this.content = content;
     }
 
-    public void addChild(DiffNode child){
-        this.children.add(child);
+    public void addChild(DiffNode child) {
+        if (!this.children.contains(child)) {
+            this.children.add(child);
+        }
     }
 
     public void setCorrespondingLines(int from, int to) {
@@ -360,7 +363,7 @@ public class DiffNode {
         return featureMapping;
     }
 
-    public List<DiffNode> getChildren() {
+    public Collection<DiffNode> getChildren() {
         return children;
     }
 
@@ -372,10 +375,9 @@ public class DiffNode {
             if (child.afterParent == this) {
                 child.afterParent = null;
             }
-
-            // Use removeIf to remove all occurences of child as child can be in this list multiple times.
-            children.removeIf(c -> c == child);
         }
+
+        children.removeAll(childrenToRemove);
     }
 
     public void setIsMultilineMacro(boolean isMultilineMacro) {

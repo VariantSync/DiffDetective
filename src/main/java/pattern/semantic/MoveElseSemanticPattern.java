@@ -5,6 +5,7 @@ import diff.data.DiffNode;
 import evaluation.FeatureContext;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class MoveElseSemanticPattern extends SemanticPattern{
@@ -39,10 +40,10 @@ public class MoveElseSemanticPattern extends SemanticPattern{
                 return patternMatches;
             }
 
-            List<DiffNode> commonAddElse = annotationNode.getChildren();
+            Collection<DiffNode> commonAddElse = annotationNode.getChildren();
             commonAddElse.retainAll(annotationNode.getAfterParent().getChildren());
 
-            List<DiffNode> commonRemElse = removedElse.getChildren();
+            Collection<DiffNode> commonRemElse = removedElse.getChildren();
             commonRemElse.retainAll(annotationNode.getAfterParent().getChildren());
 
             if(commonAddElse.isEmpty() && commonRemElse.isEmpty()){
