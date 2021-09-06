@@ -53,8 +53,9 @@ public class DiffTreeMiner {
                 .build();
 
         final LineGraphExport.Options exportOptions = new LineGraphExport.Options(
-                LineGraphExport.NodePrintStyle.Type, // For pattern matching, we want to look at node types and not individual code.
-                List.of(new CollapseNonEditedSubtrees())
+                LineGraphExport.NodePrintStyle.Type // For pattern matching, we want to look at node types and not individual code.
+                , false
+                , List.of(new CollapseNonEditedSubtrees())
         );
 
         /* ************************ *\
@@ -81,19 +82,19 @@ public class DiffTreeMiner {
 
         final StringBuilder lineGraph = new StringBuilder();
         int treeCounter = 0;
-        int hardCap = 0;
+        int hardCap = 3;
         final DebugData debugData = new DebugData();
-//        int commitDiffCounter = 1;
+        Logger.info("Mining start");
         for (CommitDiff diff : yieldDiff) {
-//            Logger.info("Exporting CommitDiff #" + commitDiffCounter);
-//            ++commitDiffCounter;
+//            Logger.info("Exporting Commit #" + commitDiffCounter);
             final Pair<DebugData, Integer> res = LineGraphExport.toLineGraphFormat(diff, lineGraph, treeCounter, exportOptions);
             debugData.mappend(res.getKey());
             treeCounter = res.getValue();
+//            ++commitDiffCounter;
 
-            if (hardCap > 0 && treeCounter >= hardCap) {
-                break;
-            }
+//            if (hardCap > 0 && treeCounter >= hardCap) {
+//                break;
+//            }
         }
 
         Logger.info("Exported " + treeCounter + " diff trees!");
@@ -102,6 +103,7 @@ public class DiffTreeMiner {
         Logger.info("Exported " + debugData.numExportedRemNodes + " nodes of diff type REM.");
 
         try {
+            Logger.info("Writing file " + outputPath);
             ExportUtils.write(outputPath, lineGraph.toString());
         } catch (IOException exception) {
             Logger.error(exception);

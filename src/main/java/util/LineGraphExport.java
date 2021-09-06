@@ -17,15 +17,22 @@ public class LineGraphExport {
     public enum NodePrintStyle {
         Type, Pretty, Verbose
     }
-    public static record Options(NodePrintStyle nodePrintStyle, List<DiffTreeTransformer> treePreProcessing) {
+    public static record Options(
+            NodePrintStyle nodePrintStyle,
+            boolean skipEmptyTrees,
+            List<DiffTreeTransformer> treePreProcessing) {
         public Options(NodePrintStyle nodePrintStyle) {
-            this(nodePrintStyle, new ArrayList<>());
+            this(nodePrintStyle, false, new ArrayList<>());
         }
     }
 
     public static Pair<DebugData, String> toLineGraphFormat(final DiffTree diffTree, final Options options) {
         for (final DiffTreeTransformer preprocessing : options.treePreProcessing()) {
             preprocessing.transform(diffTree);
+        }
+
+        if (options.skipEmptyTrees && diffTree.isEmpty()) {
+            return new Pair<>(new DebugData(), "");
         }
 
         final DiffTreeLineGraphExporter exporter = new DiffTreeLineGraphExporter(diffTree);
@@ -50,15 +57,17 @@ public class LineGraphExport {
                 final Pair<DebugData, String> patchDiffLg = toLineGraphFormat(patchDiff.getDiffTree(), options);
                 debugData.mappend(patchDiffLg.getKey());
 
-                lineGraph
+                if (!patchDiffLg.getValue().isEmpty()) {
+                    lineGraph
 //                        .append("t # ").append(treeCounter)
-                        .append("t # ").append(patchDiff.getFileName()).append(TREE_NAME_SEPARATOR).append(hash)
-                        .append(StringUtils.LINEBREAK)
-                        .append(patchDiffLg.getValue())
-                        .append(StringUtils.LINEBREAK)
-                        .append(StringUtils.LINEBREAK);
+                            .append("t # ").append(patchDiff.getFileName()).append(TREE_NAME_SEPARATOR).append(hash)
+                            .append(StringUtils.LINEBREAK)
+                            .append(patchDiffLg.getValue())
+                            .append(StringUtils.LINEBREAK)
+                            .append(StringUtils.LINEBREAK);
 
-                ++treeCounter;
+                    ++treeCounter;
+                }
             } else {
                 Logger.info("  Skipping invalid patch for file " + patchDiff.getFileName() + " at commit " + hash);
             }
