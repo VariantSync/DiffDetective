@@ -17,13 +17,15 @@ public class LineGraphExport {
     public enum NodePrintStyle {
         Type, Pretty, Verbose
     }
-    public static record Options(NodePrintStyle nodePrintStyle, boolean collapseNonEditedSubtrees) {
-
+    public static record Options(NodePrintStyle nodePrintStyle, List<DiffTreeTransformer> treePreProcessing) {
+        public Options(NodePrintStyle nodePrintStyle) {
+            this(nodePrintStyle, new ArrayList<>());
+        }
     }
 
     public static Pair<DebugData, String> toLineGraphFormat(final DiffTree diffTree, final Options options) {
-        if (options.collapseNonEditedSubtrees) {
-            new CollapseNonEditedSubtrees().transform(diffTree);
+        for (final DiffTreeTransformer preprocessing : options.treePreProcessing()) {
+            preprocessing.transform(diffTree);
         }
 
         final DiffTreeLineGraphExporter exporter = new DiffTreeLineGraphExporter(diffTree);

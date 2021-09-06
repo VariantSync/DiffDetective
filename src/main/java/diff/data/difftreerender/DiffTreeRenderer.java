@@ -55,8 +55,7 @@ public class DiffTreeRenderer {
     }
 
     public boolean render(DiffTree tree, String name) {
-        final LineGraphExport.Options options =
-                new LineGraphExport.Options(LineGraphExport.NodePrintStyle.Verbose, false);
+        final LineGraphExport.Options options = new LineGraphExport.Options(LineGraphExport.NodePrintStyle.Verbose);
 
         final Path tempFile = Path.of("temp", name);
 

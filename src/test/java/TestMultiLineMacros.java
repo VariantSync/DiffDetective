@@ -53,8 +53,7 @@ public class TestMultiLineMacros {
     @Test
     public void test() throws IOException {
         final LineGraphExport.Options exportOptions = new LineGraphExport.Options(
-                LineGraphExport.NodePrintStyle.Verbose,
-                false
+                LineGraphExport.NodePrintStyle.Verbose
         );
 
         diffToDiffTree(exportOptions, resDir.resolve("mldiff1.txt"));

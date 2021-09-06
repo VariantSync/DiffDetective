@@ -3,6 +3,7 @@ import diff.DiffFilter;
 import diff.GitDiffer;
 import diff.data.CommitDiff;
 import diff.data.difftreerender.DiffTreeRenderer;
+import diff.data.transformation.CollapseNonEditedSubtrees;
 import load.GitLoader;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.diff.DiffEntry;
@@ -18,6 +19,7 @@ import util.Yield;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 public class DiffTreeMiner {
     private static void setupLogger(final Level loggingLevel) {
@@ -38,7 +40,7 @@ public class DiffTreeMiner {
         // use this option with large repositories
         // alternatively, increasing the java heap size also helps :D
         boolean saveMemory = true;
-        boolean renderOutput = true;
+        boolean renderOutput = false;
 
         // The filter used by the GitDiffer
         final DiffFilter diffFilter = new DiffFilter.Builder()
@@ -51,8 +53,8 @@ public class DiffTreeMiner {
                 .build();
 
         final LineGraphExport.Options exportOptions = new LineGraphExport.Options(
-                LineGraphExport.NodePrintStyle.Type,
-                true
+                LineGraphExport.NodePrintStyle.Type, // For pattern matching, we want to look at node types and not individual code.
+                List.of(new CollapseNonEditedSubtrees())
         );
 
         /* ************************ *\
@@ -79,7 +81,7 @@ public class DiffTreeMiner {
 
         final StringBuilder lineGraph = new StringBuilder();
         int treeCounter = 0;
-        int hardCap = 40;
+        int hardCap = 0;
         final DebugData debugData = new DebugData();
 //        int commitDiffCounter = 1;
         for (CommitDiff diff : yieldDiff) {
