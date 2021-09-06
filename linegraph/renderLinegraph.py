@@ -25,6 +25,13 @@ DIFFTYPE_NON_COLOR = '#d1d1e0' # light purple gray
 CODE_TYPE_CODE_COLOR = '#3399ff'
 CODE_TYPE_OTHER_COLOR = 'black'
 
+# drawing parameters
+NODE_SIZE = 200
+SHOW_LABELS = True
+DPI = 300
+POS_SCALING_X = 1
+POS_SCALING_Y = 1
+
 
 def lineNoOfNode(v):
     # inverse of DiffNode::getID in our Java code
@@ -101,7 +108,7 @@ def load_as_line_graph(input_file):
 
 
 # Plot graphs
-def plot_graphs(S, exportDir, labels=True):
+def plot_graphs(S, exportDir):
     plt.figure(0)
     for i in range(len(S)):
         difftree = S[i]
@@ -169,32 +176,36 @@ def plot_graphs(S, exportDir, labels=True):
             if typeName == "ba":
                 edge_colors.append('black')
 
-        # new_pos = {}
-        # for k, v in pos.items():
-        #     new_pos[k] = (v[0], -v[1])
-        # pos = new_pos
+        new_pos = {}
+        for k, v in pos.items():
+            new_pos[k] = (POS_SCALING_X * v[0], POS_SCALING_Y * v[1])
+        pos = new_pos
 
-        if labels:
+        # draw type borders
+        nx.draw_networkx_nodes(difftree, pos,
+                node_size=int(NODE_SIZE * (8.0 / 7.0)),
+                node_color=node_type_colors)
+
+        # draw nodes
+        if SHOW_LABELS:
             node_labels = dict([(v, d['label']) for v, d in difftree.nodes(data=True)])
-
-            # draw type borders
-            nx.draw_networkx_nodes(difftree, pos,
-                    node_size=800,
-                    node_color=node_type_colors)
-
-            # draw nodes
             nx.draw(difftree, pos,
-                    node_size=700,
+                        node_size=NODE_SIZE,
+                        node_color=node_colors,
+                        edge_color=edge_colors,
+                        font_size=3,
+                        labels=node_labels,
+                        bbox=dict(facecolor="white", edgecolor='black', boxstyle='round,pad=0.1', linestyle=''))
+        else:
+            nx.draw(difftree, pos,
+                    node_size=NODE_SIZE,
                     node_color=node_colors,
                     edge_color=edge_colors,
-                    font_size=3,
-                    labels=node_labels,
-                    bbox=dict(facecolor="white", edgecolor='black', boxstyle='round,pad=0.1', linestyle=''))
+                    font_size=3)
 
-            # edge_labels = dict([((fromnode, tonode), d['label']) for fromnode, tonode, d in S[i].edges.data()])
-            # nx.draw_networkx_edge_labels(S[i], pos, font_size=6, edge_labels=edge_labels)
-        else:
-            nx.draw(difftree, pos, node_size=20)
+        # edge_labels = dict([((fromnode, tonode), d['label']) for fromnode, tonode, d in S[i].edges.data()])
+        # nx.draw_networkx_edge_labels(S[i], pos, font_size=6, edge_labels=edge_labels)
+
 
         # if len(S) > 1:
         #     save_path = file_path + "_" + str(i) + ".png"
@@ -205,7 +216,7 @@ def plot_graphs(S, exportDir, labels=True):
 
         # Save
         print("Exporting", save_path)
-        plt.savefig(save_path, format="PNG", dpi=300)
+        plt.savefig(save_path, format="PNG", dpi=DPI)
 
 
 def render(pathIn, outDir):
