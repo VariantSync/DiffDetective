@@ -2,7 +2,7 @@ package diff.difftree.serialize;
 
 import diff.difftree.DiffNode;
 import diff.difftree.DiffTree;
-import diff.serialize.DebugData;
+import diff.serialize.DiffTreeSerializeDebugData;
 import diff.serialize.LineGraphExport;
 import util.StringUtils;
 
@@ -16,11 +16,11 @@ public class DiffTreeLineGraphExporter {
 
     private final DiffTree diffTree;
 
-    private final DebugData debugData;
+    private final DiffTreeSerializeDebugData debugData;
 
     public DiffTreeLineGraphExporter(DiffTree treeToExport) {
         this.diffTree = treeToExport;
-        this.debugData = new DebugData();
+        this.debugData = new DiffTreeSerializeDebugData();
     }
 
     private void visit(DiffNode node, LineGraphExport.Options options) {
@@ -72,7 +72,7 @@ public class DiffTreeLineGraphExporter {
         return result;
     }
 
-    public DebugData getDebugData() {
+    public DiffTreeSerializeDebugData getDebugData() {
         return debugData;
     }
 

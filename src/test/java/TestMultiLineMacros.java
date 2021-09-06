@@ -3,7 +3,7 @@ import diff.difftree.DiffTree;
 import diff.difftree.parse.DiffTreeParser;
 import org.junit.Test;
 import org.pmw.tinylog.Logger;
-import diff.serialize.DebugData;
+import diff.serialize.DiffTreeSerializeDebugData;
 import util.ExportUtils;
 import diff.serialize.LineGraphExport;
 import util.StringUtils;
@@ -37,8 +37,8 @@ public class TestMultiLineMacros {
                 true,
                 true);
 
-        final Pair<DebugData, String> result = LineGraphExport.toLineGraphFormat(tree, exportOptions);
-        final DebugData debugData = result.getKey();
+        final Pair<DiffTreeSerializeDebugData, String> result = LineGraphExport.toLineGraphFormat(tree, exportOptions);
+        final DiffTreeSerializeDebugData debugData = result.getKey();
         Logger.info("Parsed " + debugData.numExportedNonNodes + " nodes of diff type NON.");
         Logger.info("Parsed " + debugData.numExportedAddNodes + " nodes of diff type ADD.");
         Logger.info("Parsed " + debugData.numExportedRemNodes + " nodes of diff type REM.");

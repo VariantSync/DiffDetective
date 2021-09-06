@@ -27,13 +27,13 @@ public class LineGraphExport {
         }
     }
 
-    public static Pair<DebugData, String> toLineGraphFormat(final DiffTree diffTree, final Options options) {
+    public static Pair<DiffTreeSerializeDebugData, String> toLineGraphFormat(final DiffTree diffTree, final Options options) {
         for (final DiffTreeTransformer preprocessing : options.treePreProcessing()) {
             preprocessing.transform(diffTree);
         }
 
         if (options.skipEmptyTrees && diffTree.isEmpty()) {
-            return new Pair<>(new DebugData(), "");
+            return new Pair<>(new DiffTreeSerializeDebugData(), "");
         }
 
         final DiffTreeLineGraphExporter exporter = new DiffTreeLineGraphExporter(diffTree);
@@ -48,14 +48,14 @@ public class LineGraphExport {
      * @param treeCounter The number of the first diff tree to export.
      * @return The number of the next diff tree to export (updated value of treeCounter).
      */
-    public static Pair<DebugData, Integer> toLineGraphFormat(final CommitDiff commitDiff, final StringBuilder lineGraph, int treeCounter, final Options options) {
-        final DebugData debugData = new DebugData();
+    public static Pair<DiffTreeSerializeDebugData, Integer> toLineGraphFormat(final CommitDiff commitDiff, final StringBuilder lineGraph, int treeCounter, final Options options) {
+        final DiffTreeSerializeDebugData debugData = new DiffTreeSerializeDebugData();
 
         final String hash = commitDiff.getCommitHash();
         for (final PatchDiff patchDiff : commitDiff.getPatchDiffs()) {
             if (patchDiff.isValid()) {
                 //Logger.info("  Exporting DiffTree #" + treeCounter);
-                final Pair<DebugData, String> patchDiffLg = toLineGraphFormat(patchDiff.getDiffTree(), options);
+                final Pair<DiffTreeSerializeDebugData, String> patchDiffLg = toLineGraphFormat(patchDiff.getDiffTree(), options);
                 debugData.mappend(patchDiffLg.getKey());
 
                 if (!patchDiffLg.getValue().isEmpty()) {

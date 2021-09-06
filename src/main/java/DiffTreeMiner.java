@@ -11,7 +11,7 @@ import org.pmw.tinylog.Configurator;
 import org.pmw.tinylog.Level;
 import org.pmw.tinylog.Logger;
 import org.pmw.tinylog.writers.ConsoleWriter;
-import diff.serialize.DebugData;
+import diff.serialize.DiffTreeSerializeDebugData;
 import util.ExportUtils;
 import diff.serialize.LineGraphExport;
 import util.Yield;
@@ -83,11 +83,11 @@ public class DiffTreeMiner {
         final StringBuilder lineGraph = new StringBuilder();
         int treeCounter = 0;
         int hardCap = 3;
-        final DebugData debugData = new DebugData();
+        final DiffTreeSerializeDebugData debugData = new DiffTreeSerializeDebugData();
         Logger.info("Mining start");
         for (CommitDiff diff : yieldDiff) {
 //            Logger.info("Exporting Commit #" + commitDiffCounter);
-            final Pair<DebugData, Integer> res = LineGraphExport.toLineGraphFormat(diff, lineGraph, treeCounter, exportOptions);
+            final Pair<DiffTreeSerializeDebugData, Integer> res = LineGraphExport.toLineGraphFormat(diff, lineGraph, treeCounter, exportOptions);
             debugData.mappend(res.getKey());
             treeCounter = res.getValue();
 //            ++commitDiffCounter;
