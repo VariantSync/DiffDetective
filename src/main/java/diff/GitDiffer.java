@@ -1,8 +1,7 @@
 package diff;
 
-import diff.data.*;
-import diff.data.difftreeparse.DiffTreeParser;
-import diff.data.difftreeparse.MultilineMacro;
+import diff.difftree.DiffTree;
+import diff.difftree.parse.DiffTreeParser;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.diff.DiffEntry;
@@ -24,8 +23,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Stack;
-import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 

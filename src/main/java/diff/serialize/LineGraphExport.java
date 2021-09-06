@@ -1,12 +1,13 @@
-package util;
+package diff.serialize;
 
 import de.ovgu.featureide.fm.core.analysis.cnf.generator.configuration.util.Pair;
-import diff.data.CommitDiff;
-import diff.data.DiffTree;
-import diff.data.PatchDiff;
-import diff.data.transformation.CollapseNonEditedSubtrees;
-import diff.data.transformation.DiffTreeTransformer;
+import diff.CommitDiff;
+import diff.difftree.DiffTree;
+import diff.PatchDiff;
+import diff.difftree.serialize.DiffTreeLineGraphExporter;
+import diff.difftree.transform.DiffTreeTransformer;
 import org.pmw.tinylog.Logger;
+import util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;

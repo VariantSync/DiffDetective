@@ -1,4 +1,4 @@
-package diff.data;
+package diff.difftree;
 
 import java.util.List;
 

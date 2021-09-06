@@ -1,4 +1,4 @@
-package diff.data.difftreeparse;
+package diff.difftree.parse;
 
 import java.util.function.Consumer;
 

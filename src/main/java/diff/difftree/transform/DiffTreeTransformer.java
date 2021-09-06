@@ -1,6 +1,6 @@
-package diff.data.transformation;
+package diff.difftree.transform;
 
-import diff.data.DiffTree;
+import diff.difftree.DiffTree;
 
 @FunctionalInterface
 public interface DiffTreeTransformer {

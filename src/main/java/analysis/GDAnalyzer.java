@@ -3,9 +3,9 @@ package analysis;
 import analysis.data.CommitDiffAnalysisResult;
 import analysis.data.GDAnalysisResult;
 import analysis.data.PatchDiffAnalysisResult;
-import diff.data.CommitDiff;
-import diff.data.GitDiff;
-import diff.data.PatchDiff;
+import diff.CommitDiff;
+import diff.GitDiff;
+import diff.PatchDiff;
 import pattern.EditPattern;
 import pattern.InvalidPatchPattern;
 

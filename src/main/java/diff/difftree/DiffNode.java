@@ -1,9 +1,8 @@
-package diff.data;
+package diff.difftree;
 
-import org.apache.commons.lang3.builder.Diff;
 import org.pmw.tinylog.Logger;
 import org.prop4j.*;
-import util.LineGraphExport;
+import diff.serialize.LineGraphExport;
 
 import java.util.*;
 import java.util.regex.Matcher;

@@ -2,10 +2,10 @@ package analysis;
 
 import analysis.data.PatchDiffAnalysisResult;
 import analysis.data.PatternMatch;
-import diff.data.DiffNode;
-import diff.data.DiffTree;
-import diff.data.GitDiff;
-import diff.data.PatchDiff;
+import diff.difftree.DiffNode;
+import diff.difftree.DiffTree;
+import diff.GitDiff;
+import diff.PatchDiff;
 import pattern.EditPattern;
 import pattern.atomic.*;
 import pattern.semantic.*;

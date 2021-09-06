@@ -1,13 +1,13 @@
-package diff.data.difftreerender;
+package diff.difftree.render;
 
 import de.ovgu.featureide.fm.core.analysis.cnf.generator.configuration.util.Pair;
-import diff.data.DiffTree;
-import diff.data.PatchDiff;
+import diff.difftree.DiffTree;
+import diff.PatchDiff;
 import org.pmw.tinylog.Logger;
 import shell.*;
-import util.DebugData;
+import diff.serialize.DebugData;
 import util.ExportUtils;
-import util.LineGraphExport;
+import diff.serialize.LineGraphExport;
 import util.StringUtils;
 
 import java.io.IOException;

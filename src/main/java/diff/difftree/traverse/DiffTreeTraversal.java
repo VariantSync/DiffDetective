@@ -1,6 +1,6 @@
-package diff.data.difftreevisitor;
+package diff.difftree.traverse;
 
-import diff.data.DiffNode;
+import diff.difftree.DiffNode;
 
 import java.util.HashMap;
 

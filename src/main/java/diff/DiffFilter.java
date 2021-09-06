@@ -1,6 +1,5 @@
 package diff;
 
-import diff.data.PatchDiff;
 import org.apache.commons.io.FilenameUtils;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.revwalk.RevCommit;

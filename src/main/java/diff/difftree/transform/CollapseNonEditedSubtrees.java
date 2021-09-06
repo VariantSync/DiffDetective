@@ -1,9 +1,9 @@
-package diff.data.transformation;
+package diff.difftree.transform;
 
-import diff.data.DiffNode;
-import diff.data.DiffTree;
-import diff.data.difftreevisitor.DiffTreeTraversal;
-import diff.data.difftreevisitor.DiffTreeVisitor;
+import diff.difftree.DiffNode;
+import diff.difftree.DiffTree;
+import diff.difftree.traverse.DiffTreeTraversal;
+import diff.difftree.traverse.DiffTreeVisitor;
 
 import java.util.ArrayList;
 import java.util.HashSet;

@@ -1,6 +1,6 @@
-package diff.data.difftreeparse;
+package diff.difftree.parse;
 
-import diff.data.DiffNode;
+import diff.difftree.DiffNode;
 
 import java.util.List;
 import java.util.Stack;

@@ -1,7 +1,7 @@
-package diff.data.difftreeparse;
+package diff.difftree.parse;
 
-import diff.data.DiffNode;
-import diff.data.DiffTree;
+import diff.difftree.DiffNode;
+import diff.difftree.DiffTree;
 import org.pmw.tinylog.Logger;
 
 import java.util.ArrayList;

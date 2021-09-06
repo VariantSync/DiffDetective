@@ -1,4 +1,4 @@
-package util;
+package diff.serialize;
 
 public class DebugData {
     public int numExportedNonNodes = 0;

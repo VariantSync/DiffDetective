@@ -1,11 +1,11 @@
 import de.ovgu.featureide.fm.core.analysis.cnf.generator.configuration.util.Pair;
-import diff.data.DiffTree;
-import diff.data.difftreeparse.DiffTreeParser;
+import diff.difftree.DiffTree;
+import diff.difftree.parse.DiffTreeParser;
 import org.junit.Test;
 import org.pmw.tinylog.Logger;
-import util.DebugData;
+import diff.serialize.DebugData;
 import util.ExportUtils;
-import util.LineGraphExport;
+import diff.serialize.LineGraphExport;
 import util.StringUtils;
 
 import java.io.BufferedReader;

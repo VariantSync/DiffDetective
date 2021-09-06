@@ -1,5 +1,6 @@
-package diff.data;
+package diff;
 
+import diff.difftree.DiffTree;
 import org.apache.commons.io.FilenameUtils;
 import org.eclipse.jgit.diff.DiffEntry;
 

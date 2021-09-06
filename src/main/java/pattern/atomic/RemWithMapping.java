@@ -1,7 +1,7 @@
 package pattern.atomic;
 
 import analysis.data.PatternMatch;
-import diff.data.DiffNode;
+import diff.difftree.DiffNode;
 import evaluation.FeatureContext;
 import org.prop4j.Node;
 

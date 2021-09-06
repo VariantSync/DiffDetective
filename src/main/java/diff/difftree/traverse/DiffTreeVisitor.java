@@ -1,6 +1,6 @@
-package diff.data.difftreevisitor;
+package diff.difftree.traverse;
 
-import diff.data.DiffNode;
+import diff.difftree.DiffNode;
 
 public interface DiffTreeVisitor {
      void visit(DiffTreeTraversal traversal, DiffNode subtree);

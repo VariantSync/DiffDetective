@@ -1,6 +1,6 @@
 package analysis.data;
 
-import diff.data.PatchDiff;
+import diff.PatchDiff;
 
 import java.util.ArrayList;
 import java.util.List;

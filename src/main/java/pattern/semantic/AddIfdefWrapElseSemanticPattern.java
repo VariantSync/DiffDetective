@@ -1,7 +1,7 @@
 package pattern.semantic;
 
 import analysis.data.PatternMatch;
-import diff.data.DiffNode;
+import diff.difftree.DiffNode;
 import evaluation.FeatureContext;
 
 import java.util.ArrayList;

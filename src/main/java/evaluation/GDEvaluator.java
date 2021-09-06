@@ -5,7 +5,7 @@ import analysis.data.CommitDiffAnalysisResult;
 import analysis.data.GDAnalysisResult;
 import analysis.data.PatchDiffAnalysisResult;
 import analysis.data.PatternMatch;
-import diff.data.PatchDiff;
+import diff.PatchDiff;
 import org.pmw.tinylog.Logger;
 import org.prop4j.Implies;
 import org.prop4j.Node;

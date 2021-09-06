@@ -1,4 +1,4 @@
-package diff.data;
+package diff;
 
 import org.eclipse.jgit.revwalk.RevCommit;
 

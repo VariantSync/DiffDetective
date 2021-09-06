@@ -1,7 +1,10 @@
-package util;
+package diff.difftree.serialize;
 
-import diff.data.DiffNode;
-import diff.data.DiffTree;
+import diff.difftree.DiffNode;
+import diff.difftree.DiffTree;
+import diff.serialize.DebugData;
+import diff.serialize.LineGraphExport;
+import util.StringUtils;
 
 public class DiffTreeLineGraphExporter {
     public final static String BEFORE_PARENT = "b";

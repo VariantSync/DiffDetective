@@ -4,7 +4,7 @@ import analysis.TreeGDAnalyzer;
 import analysis.data.GDAnalysisResult;
 import diff.DiffFilter;
 import diff.GitDiffer;
-import diff.data.GitDiff;
+import diff.GitDiff;
 import evaluation.GDEvaluator;
 import load.GitLoader;
 import org.eclipse.jgit.api.Git;
