@@ -30,7 +30,7 @@ public class DiffNode {
     private final DiffLineNumber to = DiffLineNumber.Invalid();
 
     private Node featureMapping;
-    private String content;
+    private String text;
 
     private DiffNode beforeParent;
     private DiffNode afterParent;
@@ -41,7 +41,7 @@ public class DiffNode {
     private final List<DiffNode> children;
 
     public DiffNode(DiffType diffType, CodeType codeType, DiffLineNumber fromLines, DiffLineNumber toLines,
-                    Node featureMapping, DiffNode beforeParent, DiffNode afterParent, String content) {
+                    Node featureMapping, DiffNode beforeParent, DiffNode afterParent, String text) {
         this.diffType = diffType;
         this.codeType = codeType;
         this.from.set(fromLines);
@@ -50,7 +50,7 @@ public class DiffNode {
         this.beforeParent = beforeParent;
         this.afterParent = afterParent;
         this.children = new ArrayList<>();
-        this.content = content;
+        this.text = text;
     }
 
     public void addChild(DiffNode child) {
@@ -75,7 +75,7 @@ public class DiffNode {
         DiffNode diffNode = new DiffNode();
         diffNode.diffType = DiffType.ofDiffLine(line);
         diffNode.codeType = CodeType.ofDiffLine(line);
-        diffNode.content = line.substring(1);
+        diffNode.text = line.substring(1);
 
         if (diffNode.isCode() || diffNode.isEndif() || diffNode.isElse()) {
             diffNode.featureMapping = null;
@@ -187,6 +187,10 @@ public class DiffNode {
                 null,
                 ""
         );
+    }
+
+    public String getText() {
+        return text;
     }
 
     /**
@@ -428,8 +432,8 @@ public class DiffNode {
     public String toLineGraphFormat(LineGraphExport.Options options) {
         return "v " + getID() + " " + switch (options.nodePrintStyle()) {
             case Type -> diffType + "_" + codeType;
-            case Pretty -> "\"" + (codeType.isMacro() ? (codeType.name + " " + getFeatureMapping()) : content.trim()) + "\"";
-            case Verbose -> diffType + "_" + codeType + "_\"" + (codeType.isMacro() ? (codeType.name + " " + getFeatureMapping()) : content.trim()) + "\"";
+            case Pretty -> "\"" + (codeType.isMacro() ? (codeType.name + " " + getFeatureMapping()) : text.trim()) + "\"";
+            case Verbose -> diffType + "_" + codeType + "_\"" + (codeType.isMacro() ? (codeType.name + " " + getFeatureMapping()) : text.trim()) + "\"";
         };
     }
 
