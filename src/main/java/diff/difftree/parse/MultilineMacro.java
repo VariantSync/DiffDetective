@@ -13,30 +13,35 @@ public class MultilineMacro {
     private final DiffNode afterParent;
 
     DiffType diffType;
-    int startLineInDiff, endLineInDiff;
+    DiffLineNumber startLine;
 
-    public MultilineMacro(String header, int lineFrom, DiffNode beforeParent, DiffNode afterParent) {
+    public MultilineMacro(
+            String header,
+            DiffLineNumber startLine,
+            DiffNode beforeParent,
+            DiffNode afterParent) {
         this(
-                header,
-                DiffType.ofDiffLine(header),
-                lineFrom, beforeParent, afterParent);
+                header, DiffType.ofDiffLine(header),
+                startLine,
+                beforeParent, afterParent);
     }
 
-    private MultilineMacro(String line, DiffType diffType, int lineFrom, DiffNode beforeParent, DiffNode afterParent) {
+    private MultilineMacro(
+            String line,
+            DiffType diffType,
+            DiffLineNumber startLine,
+            DiffNode beforeParent,
+            DiffNode afterParent) {
         this.lines = new ArrayList<>();
         lines.add(line);
         this.diffType = diffType;
-        this.startLineInDiff = lineFrom;
+        this.startLine = startLine;
         this.beforeParent = beforeParent;
         this.afterParent = afterParent;
     }
 
-    public int getLineFrom() {
-        return startLineInDiff;
-    }
-
-    public int getLineTo() {
-        return endLineInDiff;
+    public DiffLineNumber getLineFrom() {
+        return startLine;
     }
 
     public void addLine(final String line) {
@@ -56,8 +61,7 @@ public class MultilineMacro {
         }
 
         final DiffNode result = DiffNode.fromDiffLine(asSingleLine.toString(), beforeParent, afterParent);
-        result.getLinesInDiff().setFromInclusive(startLineInDiff);
-        result.getLinesInDiff().setToExclusive(endLineInDiff);
+        result.getFromLine().set(startLine);
         result.setIsMultilineMacro(true);
         return result;
     }
@@ -67,11 +71,11 @@ public class MultilineMacro {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         MultilineMacro that = (MultilineMacro) o;
-        return startLineInDiff == that.startLineInDiff && lines.equals(that.lines) && diffType == that.diffType;
+        return startLine == that.startLine && lines.equals(that.lines) && diffType == that.diffType;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(lines, diffType, startLineInDiff);
+        return Objects.hash(lines, diffType, startLine);
     }
 }

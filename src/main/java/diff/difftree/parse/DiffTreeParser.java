@@ -2,6 +2,7 @@ package diff.difftree.parse;
 
 import diff.difftree.DiffNode;
 import diff.difftree.DiffTree;
+import diff.difftree.DiffType;
 import org.pmw.tinylog.Logger;
 
 import java.util.ArrayList;
@@ -35,6 +36,7 @@ public class DiffTreeParser {
 
         final Stack<DiffNode> beforeStack = new Stack<>();
         final Stack<DiffNode> afterStack = new Stack<>();
+        final DiffLineNumber lineNo = new DiffLineNumber(0, 0, 0);
 
         DiffNode lastCode = null;
         Consumer<String> errorHandler = Logger::warn;
@@ -47,6 +49,16 @@ public class DiffTreeParser {
 
         for (int i = 0; i < fullDiffLines.length; i++) {
             final String currentLine = fullDiffLines[i];
+            final DiffType currentLinesDiffType = DiffType.ofDiffLine(currentLine);
+
+            // count line numbers
+            lineNo.inDiff = i + 1;
+            if (currentLinesDiffType != DiffType.ADD) {
+                ++lineNo.beforeEdit;
+            }
+            if (currentLinesDiffType != DiffType.REM) {
+                ++lineNo.afterEdit;
+            }
 
             // Ignore line if it is empty.
             if (ignoreEmptyLines && (currentLine.length() == 0
@@ -57,7 +69,10 @@ public class DiffTreeParser {
             }
 
             // check if this is a multiline macro
-            final ParseResult isMLMacro = mlMacroParser.consume(i, currentLine, beforeStack, afterStack, annotationNodes);
+            final ParseResult isMLMacro = mlMacroParser.consume(
+                    lineNo,
+                    currentLine,
+                    beforeStack, afterStack, annotationNodes);
             switch (isMLMacro.type()) {
                 case Success: {
                     // This line belongs to a multiline macro and was handled, so go to the next line.
@@ -74,13 +89,14 @@ public class DiffTreeParser {
             // This gets the code type and diff type of the current line and creates a node
             // Note that the node is not yet added to the diff tree
             final DiffNode newNode = DiffNode.fromDiffLine(currentLine, beforeStack.peek(), afterStack.peek());
+            newNode.getFromLine().set(lineNo);
 
             // collapse multiple code lines
             if (collapseMultipleCodeLines && lastCode != null && newNode.isCode()
                     && lastCode.diffType.equals(newNode.diffType)) {
                 continue;
             } else if (lastCode != null) {
-                lastCode.getLinesInDiff().setToExclusive(i);
+                lastCode.getToLine().set(lineNo);
             }
 
             if (newNode.isCode()) {
@@ -90,7 +106,6 @@ public class DiffTreeParser {
             }
 
             if (newNode.isCode()) {
-                newNode.getLinesInDiff().setFromInclusive(i);
                 codeNodes.add(newNode);
                 addChildrenToParents(newNode);
             } else if (newNode.isEndif()) {
@@ -114,29 +129,28 @@ public class DiffTreeParser {
                         return null;
                     }
                 }
-
             } else {
                 // newNode is if, elif or else
                 // push the node to the relevant stacks
                 if (!newNode.isAdd()) {
-                    if (pushNodeToStack(newNode, beforeStack, i).onError(errorHandler)) {
+                    if (pushNodeToStack(newNode, beforeStack, lineNo).onError(errorHandler)) {
                         return null;
                     }
                 }
                 if (!newNode.isRem()) {
-                    if (pushNodeToStack(newNode, afterStack, i).onError(errorHandler)) {
+                    if (pushNodeToStack(newNode, afterStack, lineNo).onError(errorHandler)) {
                         return null;
                     }
                 }
 
-                newNode.getLinesInDiff().setFromInclusive(i);
                 annotationNodes.add(newNode);
                 addChildrenToParents(newNode);
             }
         }
 
         if (lastCode != null) {
-            lastCode.getLinesInDiff().setToExclusive(fullDiffLines.length);
+            // Add 1 because the end line is exclusive so we have to point one behind the last line we found
+            lastCode.getToLine().set(lineNo).add(1);
         }
 
         if (beforeStack.size() > 1 || afterStack.size() > 1) {
@@ -162,14 +176,18 @@ public class DiffTreeParser {
         return !stack.isEmpty();
     }
 
-    static ParseResult pushNodeToStack(final DiffNode newNode, final Stack<DiffNode> stack, int currentLine) {
+    static ParseResult pushNodeToStack(
+            final DiffNode newNode,
+            final Stack<DiffNode> stack,
+            final DiffLineNumber lineNo) {
         if (newNode.isElif() || newNode.isElse()) {
             if (stack.size() == 1) {
                 return ParseResult.ERROR("#else or #elif without if!");
             }
 
             // set corresponding line of now closed annotation
-            stack.peek().getLinesInDiff().setToExclusive(currentLine - 1);
+            final DiffNode closedBranch = stack.peek();
+            closedBranch.getToLine().set(lineNo).add(-1);
         }
 
         stack.push(newNode);
