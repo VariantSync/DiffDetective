@@ -1,6 +1,7 @@
 package pattern.semantic;
 
 import analysis.data.PatternMatch;
+import diff.Lines;
 import diff.difftree.DiffNode;
 import evaluation.FeatureContext;
 import org.prop4j.Not;
@@ -60,7 +61,7 @@ public class AddIfdefElseSemanticPattern extends SemanticPattern{
             }
 
             PatternMatch patternMatch = new PatternMatch(this,
-                    annotationNode.getFromLine(), elseNode.getToLine(),
+                    annotationNode.getLinesInDiff().getFromInclusive(), elseNode.getLinesInDiff().getToExclusive(),
                     annotationNode.getAfterFeatureMapping()
             );
             patternMatches.add(patternMatch);

@@ -1,6 +1,7 @@
 package pattern.atomic;
 
 import analysis.data.PatternMatch;
+import diff.Lines;
 import diff.difftree.DiffNode;
 import evaluation.FeatureContext;
 
@@ -23,8 +24,9 @@ public class UnwrapCodeAtomicPattern extends AtomicPattern{
             int remAmount = codeNode.getRemAmount();
             if ((remAmount > 0 && addAmount == 0)
                     ||  (remAmount == 0 && addAmount == 0 && codeNode.getBeforeDepth() > codeNode.getAfterDepth())){
+                final Lines diffLines = codeNode.getLinesInDiff();
                 PatternMatch patternMatch = new PatternMatch(this,
-                        codeNode.getFromLine(), codeNode.getToLine()
+                        diffLines.getFromInclusive(), diffLines.getToExclusive()
                 );
                 patternMatches.add(patternMatch);
             }

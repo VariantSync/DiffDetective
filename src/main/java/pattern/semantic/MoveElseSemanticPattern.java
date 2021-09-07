@@ -51,7 +51,7 @@ public class MoveElseSemanticPattern extends SemanticPattern{
             }
 
             PatternMatch patternMatch = new PatternMatch(this,
-                    annotationNode.getFromLine(), removedElse.getToLine()
+                    annotationNode.getLinesInDiff().getFromInclusive(), removedElse.getLinesInDiff().getToExclusive()
             );
             patternMatches.add(patternMatch);
         }

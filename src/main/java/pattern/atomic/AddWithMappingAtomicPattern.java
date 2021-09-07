@@ -1,6 +1,7 @@
 package pattern.atomic;
 
 import analysis.data.PatternMatch;
+import diff.Lines;
 import diff.difftree.DiffNode;
 import evaluation.FeatureContext;
 import org.prop4j.Node;
@@ -20,11 +21,12 @@ public class AddWithMappingAtomicPattern extends AtomicPattern {
         List<PatternMatch> patternMatches = new ArrayList<>();
 
         if (codeNode.isAdd() && codeNode.getAfterParent().isAdd()) {
-            Node fm = codeNode.getAfterParent().getAfterFeatureMapping();
+            final Node fm = codeNode.getAfterParent().getAfterFeatureMapping();
+            final Lines diffLines = codeNode.getLinesInDiff();
 
             PatternMatch patternMatch = new PatternMatch(this,
-                    codeNode.getFromLine(),
-                    codeNode.getToLine(), fm);
+                    diffLines.getFromInclusive(),
+                    diffLines.getToExclusive(), fm);
             patternMatches.add(patternMatch);
         }
         return patternMatches;

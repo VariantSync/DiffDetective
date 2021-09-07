@@ -1,6 +1,7 @@
 package pattern.semantic;
 
 import analysis.data.PatternMatch;
+import diff.Lines;
 import diff.difftree.DiffNode;
 import evaluation.FeatureContext;
 import org.prop4j.Node;
@@ -48,8 +49,9 @@ public class AddIfdefElifSemanticPattern extends SemanticPattern{
                 return patternMatches;
             }
 
+            final Lines diffLines = annotationNode.getLinesInDiff();
             PatternMatch patternMatch = new PatternMatch(this,
-                    annotationNode.getFromLine(), annotationNode.getToLine(),
+                    diffLines.getFromInclusive(), diffLines.getToExclusive(),
                     mappings.toArray(new Node[0])
             );
             patternMatches.add(patternMatch);

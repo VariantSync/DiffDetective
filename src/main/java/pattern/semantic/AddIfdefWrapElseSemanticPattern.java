@@ -59,7 +59,7 @@ public class AddIfdefWrapElseSemanticPattern extends SemanticPattern{
             }
 
             PatternMatch patternMatch = new PatternMatch(this,
-                    annotationNode.getFromLine(), elseNode.getToLine(),
+                    annotationNode.getLinesInDiff().getFromInclusive(), elseNode.getLinesInDiff().getToExclusive(),
                     annotationNode.getAfterFeatureMapping()
             );
             patternMatches.add(patternMatch);

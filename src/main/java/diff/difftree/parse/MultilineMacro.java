@@ -55,8 +55,8 @@ public class MultilineMacro {
         }
 
         final DiffNode result = DiffNode.fromLine(asSingleLine.toString(), beforeParent, afterParent);
-        result.setFromLine(startLineInDiff);
-        result.setToLine(endLineInDiff);
+        result.getLinesInDiff().setFromInclusive(startLineInDiff);
+        result.getLinesInDiff().setToExclusive(endLineInDiff);
         result.setIsMultilineMacro(true);
         return result;
     }

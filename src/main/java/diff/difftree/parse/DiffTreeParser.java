@@ -80,7 +80,7 @@ public class DiffTreeParser {
                     && lastCode.diffType.equals(newNode.diffType)) {
                 continue;
             } else if (lastCode != null) {
-                lastCode.setToLine(i);
+                lastCode.getLinesInDiff().setToExclusive(i);
             }
 
             if (newNode.isCode()) {
@@ -90,13 +90,13 @@ public class DiffTreeParser {
             }
 
             if (newNode.isCode()) {
-                newNode.setFromLine(i);
+                newNode.getLinesInDiff().setFromInclusive(i);
                 codeNodes.add(newNode);
                 addChildrenToParents(newNode);
             } else if (newNode.isEndif()) {
                 if (!newNode.isAdd()) {
                     // set corresponding line of now closed annotation
-                    beforeStack.peek().setToLine(i);
+                    beforeStack.peek().getLinesInDiff().setToExclusive(i);
 
                     // pop the relevant stacks until an if node is popped
                     if (!popIf(beforeStack)) {
@@ -106,7 +106,7 @@ public class DiffTreeParser {
                 }
                 if (!newNode.isRem()) {
                     // set corresponding line of now closed annotation
-                    afterStack.peek().setToLine(i);
+                    afterStack.peek().getLinesInDiff().setToExclusive(i);
 
                     // pop the relevant stacks until an if node is popped
                     if (!popIf(afterStack)) {
@@ -129,14 +129,14 @@ public class DiffTreeParser {
                     }
                 }
 
-                newNode.setFromLine(i);
+                newNode.getLinesInDiff().setFromInclusive(i);
                 annotationNodes.add(newNode);
                 addChildrenToParents(newNode);
             }
         }
 
         if (lastCode != null) {
-            lastCode.setToLine(fullDiffLines.length);
+            lastCode.getLinesInDiff().setToExclusive(fullDiffLines.length);
         }
 
         if (beforeStack.size() > 1 || afterStack.size() > 1) {
@@ -169,7 +169,7 @@ public class DiffTreeParser {
             }
 
             // set corresponding line of now closed annotation
-            stack.peek().setToLine(currentLine - 1);
+            stack.peek().getLinesInDiff().setToExclusive(currentLine - 1);
         }
 
         stack.push(newNode);

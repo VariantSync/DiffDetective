@@ -1,6 +1,7 @@
 package pattern.atomic;
 
 import analysis.data.PatternMatch;
+import diff.Lines;
 import diff.difftree.DiffNode;
 import evaluation.FeatureContext;
 
@@ -21,8 +22,9 @@ public class ChangePCAtomicPattern extends AtomicPattern{
         if (codeNode.isNon()){
             int addAmount = codeNode.getAddAmount();
             int remAmount = codeNode.getRemAmount();
+            final Lines diffLines = codeNode.getLinesInDiff();
             PatternMatch patternMatch = new PatternMatch(this,
-                    codeNode.getFromLine(), codeNode.getToLine()
+                    diffLines.getFromInclusive(), diffLines.getToExclusive()
             );
             if (addAmount > 0 && remAmount > 0){
                 patternMatches.add(patternMatch);

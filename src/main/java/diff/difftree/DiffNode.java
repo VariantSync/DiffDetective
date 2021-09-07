@@ -1,5 +1,6 @@
 package diff.difftree;
 
+import diff.Lines;
 import org.pmw.tinylog.Logger;
 import org.prop4j.*;
 import diff.serialize.LineGraphExport;
@@ -32,8 +33,9 @@ public class DiffNode {
     public CodeType codeType;
     private boolean isMultilineMacro = false;
 
-    private int fromLine = -1; // including
-    private int toLine = -1; // excluding
+    private final Lines diffLines = Lines.Invalid();
+    private final Lines beforeLines = Lines.Invalid();
+    private final Lines afterLines = Lines.Invalid();
 
     private Node featureMapping;
     private String content;
@@ -46,12 +48,11 @@ public class DiffNode {
      */
     private final List<DiffNode> children;
 
-    public DiffNode(DiffType diffType, CodeType codeType, int fromLine, int toLine,
+    public DiffNode(DiffType diffType, CodeType codeType, Lines diffLines,
                     Node featureMapping, DiffNode beforeParent, DiffNode afterParent, String content) {
         this.diffType = diffType;
         this.codeType = codeType;
-        this.fromLine = fromLine;
-        this.toLine = toLine;
+        this.diffLines.set(diffLines);
         this.featureMapping = featureMapping;
         this.beforeParent = beforeParent;
         this.afterParent = afterParent;
@@ -63,11 +64,6 @@ public class DiffNode {
         if (!this.children.contains(child)) {
             this.children.add(child);
         }
-    }
-
-    public void setCorrespondingLines(int from, int to) {
-        this.fromLine = from;
-        this.toLine = to;
     }
 
     private DiffNode() {
@@ -218,7 +214,7 @@ public class DiffNode {
         return new DiffNode(
                 DiffType.NON,
                 CodeType.ROOT,
-                -1, -1,
+                Lines.Invalid(),
                 // new True() sadly does not work
                 new Literal(TRUE_LITERAL_NAME),
                 null,
@@ -342,20 +338,16 @@ public class DiffNode {
         return afterParent;
     }
 
-    public void setToLine(int toLine) {
-        this.toLine = toLine;
+    public Lines getLinesInDiff() {
+        return diffLines;
     }
 
-    public void setFromLine(int fromLine) {
-        this.fromLine = fromLine;
+    public Lines getLinesBeforeEdit() {
+        return beforeLines;
     }
 
-    public int getFromLine() {
-        return fromLine;
-    }
-
-    public int getToLine() {
-        return toLine;
+    public Lines getLinesAfterEdit() {
+        return beforeLines;
     }
 
     public Node getFeatureMapping() {
@@ -490,7 +482,7 @@ public class DiffNode {
      * @return An integer that uniquely identifiers this DiffNode within its patch.
      */
     public int getID() {
-        return ((1 + fromLine) << ID_LINE_NUMBER_OFFSET) + diffType.ordinal();
+        return ((1 + diffLines.getFromInclusive()) << ID_LINE_NUMBER_OFFSET) + diffType.ordinal();
     }
 
     public String toLineGraphFormat(LineGraphExport.Options options) {
@@ -505,12 +497,12 @@ public class DiffNode {
     public String toString() {
         String s;
         if (isCode()) {
-            s = String.format("%s_%s: (%d-%d)", diffType, codeType, fromLine, toLine);
+            s = String.format("%s_%s: (%d-%d)", diffType, codeType, diffLines.getFromInclusive(), diffLines.getToExclusive());
         } else if (isRoot()) {
             s = "ROOT";
         } else {
             s = String.format("%s_%s: (%d-%d), fm: %s", diffType, codeType,
-                    fromLine, toLine, featureMapping);
+                    diffLines.getFromInclusive(), diffLines.getToExclusive(), featureMapping);
         }
         return s;
     }
