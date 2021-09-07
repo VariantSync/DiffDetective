@@ -277,7 +277,6 @@ public class DiffNode {
      * @return the amount of nodes with diff type ADD in the path following the after parent
      */
     public int getAddAmount() {
-
         if (isRoot()) {
             return 0;
         }
