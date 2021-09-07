@@ -20,4 +20,10 @@ public class DiffTreeTraversal {
             visited.put(id, true);
         }
     }
+
+    public void visitChildrenOf(final DiffNode subtree) {
+        for (final DiffNode child : subtree.getChildren()) {
+            visit(child);
+        }
+    }
 }
