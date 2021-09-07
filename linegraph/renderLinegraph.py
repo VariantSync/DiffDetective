@@ -26,7 +26,7 @@ CODE_TYPE_CODE_COLOR = '#3399ff'
 CODE_TYPE_OTHER_COLOR = 'black'
 
 # drawing parameters
-NODE_SIZE = 200
+NODE_SIZE = 700
 SHOW_LABELS = True
 DPI = 300
 POS_SCALING_X = 1

@@ -24,7 +24,7 @@ public class MultiLineMacroParser {
             final int lineNo,
             final DiffNode.DiffType diffType,
             final List<DiffNode> annotationNodes) {
-        macro.lines.add(line);
+        macro.addLine(line);
         macro.endLineInDiff = lineNo;
         macro.diffType = diffType;
 
@@ -76,7 +76,7 @@ public class MultiLineMacroParser {
 //                        return ParseResult.ERROR("Found line of a multiline macro without header at line " + line + "!");
                         return ParseResult.NOT_MY_DUTY;
                     }
-                    beforeMLMacro.lines.add(line);
+                    beforeMLMacro.addLine(line);
                 }
                 if (!isRem) {
                     if (afterMLMacro == null) {
@@ -84,7 +84,7 @@ public class MultiLineMacroParser {
 //                        return ParseResult.ERROR("Found line of a multiline macro without header at line " + line + "!");
                         return ParseResult.NOT_MY_DUTY;
                     }
-                    afterMLMacro.lines.add(line);
+                    afterMLMacro.addLine(line);
                 }
             }
 

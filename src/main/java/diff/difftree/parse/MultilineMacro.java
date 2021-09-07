@@ -7,10 +7,12 @@ import java.util.List;
 import java.util.Objects;
 
 public class MultilineMacro {
-    public List<String> lines;
+    private final List<String> lines;
+    private final DiffNode beforeParent;
+    private final DiffNode afterParent;
+
     DiffNode.DiffType diffType;
     int startLineInDiff, endLineInDiff;
-    DiffNode beforeParent, afterParent;
 
     public MultilineMacro(String header, int lineFrom, DiffNode beforeParent, DiffNode afterParent) {
         this(
@@ -36,15 +38,8 @@ public class MultilineMacro {
         return endLineInDiff;
     }
 
-    public boolean nextLine(String currentLine, int lineNo) {
-        lines.add(currentLine);
-
-        if (MultiLineMacroParser.continuesMultilineDefinition(currentLine)) {
-            return false;
-        } else {
-            endLineInDiff = lineNo;
-            return true;
-        }
+    public void addLine(final String line) {
+        lines.add(line);
     }
 
     public DiffNode toDiffNode() {

@@ -19,6 +19,7 @@ import util.Yield;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 
 public class DiffTreeMiner {
@@ -54,7 +55,7 @@ public class DiffTreeMiner {
 
         final LineGraphExport.Options exportOptions = new LineGraphExport.Options(
                 LineGraphExport.NodePrintStyle.Type // For pattern matching, we want to look at node types and not individual code.
-                , false
+                , true
                 , List.of(new CollapseNonEditedSubtrees())
         );
 
@@ -82,7 +83,7 @@ public class DiffTreeMiner {
 
         final StringBuilder lineGraph = new StringBuilder();
         int treeCounter = 0;
-        int hardCap = 3;
+        int hardCap = 100;
         final DiffTreeSerializeDebugData debugData = new DiffTreeSerializeDebugData();
         Logger.info("Mining start");
         for (CommitDiff diff : yieldDiff) {
