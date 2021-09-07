@@ -1,6 +1,4 @@
-package diff.difftree.parse;
-
-import diff.Lines;
+package diff;
 
 /**
  * Identifies a line number in a textual diff holds its the numbers of the

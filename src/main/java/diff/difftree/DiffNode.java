@@ -1,7 +1,7 @@
 package diff.difftree;
 
 import diff.Lines;
-import diff.difftree.parse.DiffLineNumber;
+import diff.DiffLineNumber;
 import org.pmw.tinylog.Logger;
 import org.prop4j.*;
 import diff.serialize.LineGraphExport;

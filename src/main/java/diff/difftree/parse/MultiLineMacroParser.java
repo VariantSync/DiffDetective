@@ -1,5 +1,6 @@
 package diff.difftree.parse;
 
+import diff.DiffLineNumber;
 import diff.difftree.CodeType;
 import diff.difftree.DiffNode;
 import diff.difftree.DiffType;
