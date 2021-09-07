@@ -1,6 +1,8 @@
 package diff.difftree.parse;
 
+import diff.difftree.CodeType;
 import diff.difftree.DiffNode;
+import diff.difftree.DiffType;
 
 import java.util.List;
 import java.util.Stack;
@@ -22,7 +24,7 @@ public class MultiLineMacroParser {
             final MultilineMacro macro,
             final String line,
             final int lineNo,
-            final DiffNode.DiffType diffType,
+            final DiffType diffType,
             final List<DiffNode> annotationNodes) {
         macro.addLine(line);
         macro.endLineInDiff = lineNo;
@@ -41,10 +43,10 @@ public class MultiLineMacroParser {
             final Stack<DiffNode> afterStack,
             final List<DiffNode> annotationNodes
     ) {
-        final DiffNode.CodeType codeType = DiffNode.getCodeType(line);
-        final DiffNode.DiffType diffType = DiffNode.getDiffType(line);
-        final boolean isAdd = diffType == DiffNode.DiffType.ADD;
-        final boolean isRem = diffType == DiffNode.DiffType.REM;
+        final CodeType codeType = CodeType.ofDiffLine(line);
+        final DiffType diffType = DiffType.ofDiffLine(line);
+        final boolean isAdd = diffType == DiffType.ADD;
+        final boolean isRem = diffType == DiffType.REM;
 
         if (continuesMultilineDefinition(line)) {
             // If this multiline macro line is a header...
@@ -98,10 +100,10 @@ public class MultiLineMacroParser {
                 if (
                         inBeforeMLMacro
                         && inAfterMLMacro
-                        && diffType == DiffNode.DiffType.NON
+                        && diffType == DiffType.NON
                         && beforeMLMacro.equals(afterMLMacro)) {
                     // We have one single end line for to equal multi line macros -> Merge the nodes.
-                    final DiffNode mlNode = finalizeMLMacro(beforeMLMacro /* == afterMLMacro */, line, lineNo, DiffNode.DiffType.NON, annotationNodes);
+                    final DiffNode mlNode = finalizeMLMacro(beforeMLMacro /* == afterMLMacro */, line, lineNo, DiffType.NON, annotationNodes);
 
                     ParseResult pushResult = DiffTreeParser.pushNodeToStack(mlNode, beforeStack, beforeMLMacro.getLineFrom());
                     if (pushResult.isError()) {
@@ -117,7 +119,7 @@ public class MultiLineMacroParser {
                     afterMLMacro = null;
                 } else {
                     if (inBeforeMLMacro && !isAdd) {
-                        final DiffNode beforeMLNode = finalizeMLMacro(beforeMLMacro, line, lineNo, DiffNode.DiffType.REM, annotationNodes);
+                        final DiffNode beforeMLNode = finalizeMLMacro(beforeMLMacro, line, lineNo, DiffType.REM, annotationNodes);
 
                         final ParseResult pushResult = DiffTreeParser.pushNodeToStack(beforeMLNode, beforeStack, beforeMLMacro.getLineFrom());
                         if (pushResult.isError()) {
@@ -128,7 +130,7 @@ public class MultiLineMacroParser {
                     }
 
                     if (inAfterMLMacro && !isRem) {
-                        final DiffNode afterMLNode = finalizeMLMacro(afterMLMacro, line, lineNo, DiffNode.DiffType.ADD, annotationNodes);
+                        final DiffNode afterMLNode = finalizeMLMacro(afterMLMacro, line, lineNo, DiffType.ADD, annotationNodes);
 
                         final ParseResult pushResult = DiffTreeParser.pushNodeToStack(afterMLNode, afterStack, afterMLMacro.getLineFrom());
                         if (pushResult.isError()) {

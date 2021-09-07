@@ -1,6 +1,7 @@
 package diff.difftree.parse;
 
 import diff.difftree.DiffNode;
+import diff.difftree.DiffType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,17 +12,17 @@ public class MultilineMacro {
     private final DiffNode beforeParent;
     private final DiffNode afterParent;
 
-    DiffNode.DiffType diffType;
+    DiffType diffType;
     int startLineInDiff, endLineInDiff;
 
     public MultilineMacro(String header, int lineFrom, DiffNode beforeParent, DiffNode afterParent) {
         this(
                 header,
-                DiffNode.getDiffType(header),
+                DiffType.ofDiffLine(header),
                 lineFrom, beforeParent, afterParent);
     }
 
-    private MultilineMacro(String line, DiffNode.DiffType diffType, int lineFrom, DiffNode beforeParent, DiffNode afterParent) {
+    private MultilineMacro(String line, DiffType diffType, int lineFrom, DiffNode beforeParent, DiffNode afterParent) {
         this.lines = new ArrayList<>();
         lines.add(line);
         this.diffType = diffType;
@@ -54,7 +55,7 @@ public class MultilineMacro {
             }
         }
 
-        final DiffNode result = DiffNode.fromLine(asSingleLine.toString(), beforeParent, afterParent);
+        final DiffNode result = DiffNode.fromDiffLine(asSingleLine.toString(), beforeParent, afterParent);
         result.getLinesInDiff().setFromInclusive(startLineInDiff);
         result.getLinesInDiff().setToExclusive(endLineInDiff);
         result.setIsMultilineMacro(true);

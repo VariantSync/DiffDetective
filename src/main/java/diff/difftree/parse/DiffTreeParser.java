@@ -73,7 +73,7 @@ public class DiffTreeParser {
 
             // This gets the code type and diff type of the current line and creates a node
             // Note that the node is not yet added to the diff tree
-            final DiffNode newNode = DiffNode.fromLine(currentLine, beforeStack.peek(), afterStack.peek());
+            final DiffNode newNode = DiffNode.fromDiffLine(currentLine, beforeStack.peek(), afterStack.peek());
 
             // collapse multiple code lines
             if (collapseMultipleCodeLines && lastCode != null && newNode.isCode()

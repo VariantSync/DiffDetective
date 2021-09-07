@@ -17,14 +17,6 @@ import java.util.regex.Pattern;
 public class DiffNode {
     private static final short ID_LINE_NUMBER_OFFSET = 16;
 
-    final static String ifRegex = "^[+-]?\\s*#\\s*if.*$";
-    final static String endifRegex = "^[+-]?\\s*#\\s*endif.*$";
-    final static String elseRegex = "^[+-]?\\s*#\\s*else.*$";
-    final static String elifRegex = "^[+-]?\\s*#\\s*elif.*$";
-
-    final static String addCharacter = "+";
-    final static String remCharacter = "-";
-
     public static final String EQUAL_PLACEHOLDER = "__eq__";
     public static final String TRUE_LITERAL_NAME = "__true__";
     public static final String INVALID_ANNOTATION = "__INVALID_ANNOTATION__";
@@ -78,10 +70,10 @@ public class DiffNode {
      * @param afterParent The after parent of the new noe
      * @return A DiffNode with a code type, diff type, feature mapping and parents
      */
-    public static DiffNode fromLine(String line, DiffNode beforeParent, DiffNode afterParent) {
+    public static DiffNode fromDiffLine(String line, DiffNode beforeParent, DiffNode afterParent) {
         DiffNode diffNode = new DiffNode();
-        diffNode.diffType = getDiffType(line);
-        diffNode.codeType = getCodeType(line);
+        diffNode.diffType = DiffType.ofDiffLine(line);
+        diffNode.codeType = CodeType.ofDiffLine(line);
         diffNode.content = line.substring(1);
 
         if (diffNode.isCode() || diffNode.isEndif() || diffNode.isElse()) {
@@ -176,34 +168,6 @@ public class DiffNode {
         fm = fm.replaceAll("==", EQUAL_PLACEHOLDER);
 
         return fm;
-    }
-
-    public static CodeType getCodeType(String line) {
-        if (line.matches(ifRegex)) {
-            return CodeType.IF;
-
-        } else if (line.matches(endifRegex)) {
-            return CodeType.ENDIF;
-
-        } else if (line.matches(elseRegex)) {
-            return CodeType.ELSE;
-
-        } else if (line.matches(elifRegex)) {
-            return CodeType.ELIF;
-
-        } else {
-            return CodeType.CODE;
-        }
-    }
-
-    public static DiffType getDiffType(String line) {
-        if (line.startsWith(addCharacter)) {
-            return DiffType.ADD;
-        } else if (line.startsWith(remCharacter)) {
-            return DiffType.REM;
-        } else {
-            return DiffType.NON;
-        }
     }
 
     /**
@@ -407,39 +371,6 @@ public class DiffNode {
             return beforeParent.getBeforeFeatureMapping();
         }
         return featureMapping;
-    }
-
-    public enum DiffType {
-        ADD("+"),
-        REM("-"),
-        NON(" ");
-
-        public final String name;
-
-        DiffType(String name) {
-            this.name = name;
-        }
-    }
-
-    public enum CodeType {
-        IF("if"),
-        ENDIF("endif"),
-        ELSE("else"),
-        ELIF("elif"),
-        CODE("code"),
-        ROOT("ROOT");
-        public final String name;
-
-        CodeType(String name) {
-            this.name = name;
-        }
-
-        public boolean isConditionalMacro() {
-            return this == IF || this == ELIF;
-        }
-        public boolean isMacro() {
-            return this != ROOT && this != CODE;
-        }
     }
 
     public boolean isRem() {
