@@ -57,4 +57,10 @@ public class Lines {
 //    public int getToInclusive() {
 //        return toExclusive;
 //    }
+
+
+    @Override
+    public String toString() {
+        return "[" + fromInclusive + ", " + toExclusive + ")";
+    }
 }

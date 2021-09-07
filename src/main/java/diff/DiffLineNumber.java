@@ -37,6 +37,11 @@ public class DiffLineNumber {
         return this;
     }
 
+    @Override
+    public String toString() {
+        return '{' + beforeEdit + " -> " + inDiff + " -> " + afterEdit + '}';
+    }
+
     public static Lines rangeInDiff(final DiffLineNumber from, final DiffLineNumber to) {
         return Lines.FromInclToExcl(from.inDiff, to.inDiff);
     }
