@@ -4,7 +4,7 @@ import diff.difftree.parse.DiffTreeParser;
 import org.junit.Test;
 import org.pmw.tinylog.Logger;
 import diff.serialize.DiffTreeSerializeDebugData;
-import util.ExportUtils;
+import util.IO;
 import diff.serialize.LineGraphExport;
 import util.StringUtils;
 
@@ -15,22 +15,10 @@ import java.nio.file.Path;
 import java.util.stream.Collectors;
 
 public class TestMultiLineMacros {
-    private static final Path resDir = Path.of("src", "test", "resources", "multilinemacros");
-
-    public static String readAsString(final Path p) throws IOException {
-        try (
-                final FileReader f = new FileReader(p.toFile());
-                final BufferedReader reader = new BufferedReader(f)
-        ) {
-            return reader.lines().collect(Collectors.joining("\r\n"));
-        } catch (final IOException e) {
-            Logger.error("Failed to read lines from file: ", e);
-            throw e;
-        }
-    }
+    private static final Path resDir = Constants.RESOURCE_DIR.resolve("multilinemacros");
 
     public void diffToDiffTree(LineGraphExport.Options exportOptions, Path p) throws IOException {
-        final String fullDiff = readAsString(p);
+        final String fullDiff = IO.readAsString(p);
 
         final DiffTree tree = DiffTreeParser.createDiffTree(
                 fullDiff,
@@ -47,7 +35,7 @@ public class TestMultiLineMacros {
                 StringUtils.LINEBREAK +
                 result.getValue();
 
-        ExportUtils.write(resDir.resolve("gen").resolve(p.getFileName() + ".lg"), lg);
+        IO.write(resDir.resolve("gen").resolve(p.getFileName() + ".lg"), lg);
     }
 
     @Test

@@ -2,22 +2,33 @@ package util;
 
 import org.pmw.tinylog.Logger;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.StringJoiner;
+import java.util.stream.Collectors;
 
 /**
  * Util class for exporting data.
  *
  * @author Sören Viegener
  */
-public class ExportUtils {
+public class IO {
     private static final String CSV_DELIMITER = ",";
+
+    public static String readAsString(final Path p) throws IOException {
+        try (
+                final FileReader f = new FileReader(p.toFile());
+                final BufferedReader reader = new BufferedReader(f)
+        ) {
+            return reader.lines().collect(Collectors.joining("\r\n"));
+        } catch (final IOException e) {
+            Logger.error("Failed to read lines from file: ", e);
+            throw e;
+        }
+    }
 
     /**
      * Exports data to a csv-file

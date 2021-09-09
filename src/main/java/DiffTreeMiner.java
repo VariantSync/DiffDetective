@@ -12,14 +12,13 @@ import org.pmw.tinylog.Level;
 import org.pmw.tinylog.Logger;
 import org.pmw.tinylog.writers.ConsoleWriter;
 import diff.serialize.DiffTreeSerializeDebugData;
-import util.ExportUtils;
+import util.IO;
 import diff.serialize.LineGraphExport;
 import util.Yield;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
 
 public class DiffTreeMiner {
@@ -105,7 +104,7 @@ public class DiffTreeMiner {
 
         try {
             Logger.info("Writing file " + outputPath);
-            ExportUtils.write(outputPath, lineGraph.toString());
+            IO.write(outputPath, lineGraph.toString());
         } catch (IOException exception) {
             Logger.error(exception);
         }

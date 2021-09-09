@@ -6,7 +6,7 @@ import diff.PatchDiff;
 import org.pmw.tinylog.Logger;
 import shell.*;
 import diff.serialize.DiffTreeSerializeDebugData;
-import util.ExportUtils;
+import util.IO;
 import diff.serialize.LineGraphExport;
 import util.StringUtils;
 
@@ -62,7 +62,7 @@ public class DiffTreeRenderer {
         final Pair<DiffTreeSerializeDebugData, String> result = LineGraphExport.toLineGraphFormat(tree, options);
         final String lg = "t # " + name + StringUtils.LINEBREAK;
         try {
-            ExportUtils.write(tempFile, lg);
+            IO.write(tempFile, lg);
         } catch (IOException e) {
             Logger.error("Could not render difftree " + name + " because:", e);
             return false;

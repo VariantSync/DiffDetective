@@ -6,7 +6,7 @@ import analysis.data.PatchDiffAnalysisResult;
 import analysis.data.PatternMatch;
 import org.pmw.tinylog.Logger;
 import org.prop4j.Node;
-import util.ExportUtils;
+import util.IO;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -61,7 +61,7 @@ public class GDAnalysisUtils {
         }
 
         try {
-            ExportUtils.exportCsv(fileName, CSV_COLUMN_NAMES, commits.toArray(), patches.toArray(),
+            IO.exportCsv(fileName, CSV_COLUMN_NAMES, commits.toArray(), patches.toArray(),
                     patterns.toArray(), mappings.toArray(), startLines.toArray(), endLines.toArray());
         } catch (FileNotFoundException e) {
             Logger.warn("Could not save analysis result to {}", fileName);
