@@ -39,7 +39,7 @@ public class DiffLineNumber {
 
     @Override
     public String toString() {
-        return '{' + beforeEdit + " -> " + inDiff + " -> " + afterEdit + '}';
+        return "{" + beforeEdit + " -[" + inDiff + "]-> " + afterEdit + "}";
     }
 
     public static Lines rangeInDiff(final DiffLineNumber from, final DiffLineNumber to) {
