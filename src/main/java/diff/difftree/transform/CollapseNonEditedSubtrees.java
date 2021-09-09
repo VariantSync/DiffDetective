@@ -16,8 +16,7 @@ public class CollapseNonEditedSubtrees implements DiffTreeTransformer, DiffTreeV
     @Override
     public void transform(DiffTree diffTree) {
         removedNodes = new ArrayList<>();
-        final DiffTreeTraversal traversal = new DiffTreeTraversal(this);
-        traversal.visit(diffTree.getRoot());
+        diffTree.traverse(this);
         diffTree.getAnnotationNodes().removeAll(removedNodes);
         diffTree.getCodeNodes().removeAll(removedNodes);
         removedNodes = null;

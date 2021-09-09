@@ -1,6 +1,10 @@
 package diff.difftree;
 
+import diff.difftree.traverse.DiffTreeTraversal;
+import diff.difftree.traverse.DiffTreeVisitor;
+
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * Implementation of the diff tree.
@@ -15,6 +19,14 @@ public class DiffTree {
         this.root = root;
         this.codeNodes = codeNodes;
         this.annotationNodes = annotationNodes;
+    }
+
+    public void forAll(final Consumer<DiffNode> procedure) {
+        DiffTreeTraversal.forAll(procedure).visit(this);
+    }
+
+    public void traverse(final DiffTreeVisitor visitor) {
+        DiffTreeTraversal.with(visitor).visit(this);
     }
 
     public DiffNode getRoot() {
