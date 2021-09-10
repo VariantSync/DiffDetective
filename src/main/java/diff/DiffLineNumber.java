@@ -1,10 +1,13 @@
 package diff;
 
+import diff.difftree.DiffType;
+
 /**
  * Identifies a line number in a textual diff holds its the numbers of the
  * corresponding line before and after the edit.
  */
 public class DiffLineNumber {
+    public static final int InvalidLineNumber = -1;
     public int inDiff, beforeEdit, afterEdit;
 
     /**
@@ -20,7 +23,11 @@ public class DiffLineNumber {
     }
 
     public static DiffLineNumber Invalid() {
-        return new DiffLineNumber(-1, -1, -1);
+        return new DiffLineNumber(InvalidLineNumber, InvalidLineNumber, InvalidLineNumber);
+    }
+
+    public static DiffLineNumber Copy(final DiffLineNumber other) {
+        return new DiffLineNumber(other.inDiff, other.beforeEdit, other.afterEdit);
     }
 
     public DiffLineNumber set(final DiffLineNumber other) {
@@ -37,9 +44,17 @@ public class DiffLineNumber {
         return this;
     }
 
+    public void as(final DiffType diffType) {
+        if (diffType == DiffType.ADD) {
+            beforeEdit = InvalidLineNumber;
+        } else if (diffType == DiffType.REM) {
+            afterEdit = InvalidLineNumber;
+        }
+    }
+
     @Override
     public String toString() {
-        return "{" + beforeEdit + " -[" + inDiff + "]-> " + afterEdit + "}";
+        return "(old: " + beforeEdit + ", diff: " + inDiff + ", new:" + afterEdit + ")";
     }
 
     public static Lines rangeInDiff(final DiffLineNumber from, final DiffLineNumber to) {

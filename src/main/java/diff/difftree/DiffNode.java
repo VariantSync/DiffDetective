@@ -179,7 +179,7 @@ public class DiffNode {
         return new DiffNode(
                 DiffType.NON,
                 CodeType.ROOT,
-                DiffLineNumber.Invalid(),
+                new DiffLineNumber(1, 1, 1),
                 DiffLineNumber.Invalid(),
                 // new True() sadly does not work
                 new Literal(TRUE_LITERAL_NAME),
@@ -187,6 +187,10 @@ public class DiffNode {
                 null,
                 ""
         );
+    }
+
+    public void setText(final String text) {
+        this.text = text;
     }
 
     public String getText() {

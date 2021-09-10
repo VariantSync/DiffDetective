@@ -21,12 +21,14 @@ public class DiffTree {
         this.annotationNodes = annotationNodes;
     }
 
-    public void forAll(final Consumer<DiffNode> procedure) {
+    public DiffTree forAll(final Consumer<DiffNode> procedure) {
         DiffTreeTraversal.forAll(procedure).visit(this);
+        return this;
     }
 
-    public void traverse(final DiffTreeVisitor visitor) {
+    public DiffTree traverse(final DiffTreeVisitor visitor) {
         DiffTreeTraversal.with(visitor).visit(this);
+        return this;
     }
 
     public DiffNode getRoot() {

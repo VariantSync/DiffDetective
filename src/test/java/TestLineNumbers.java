@@ -7,21 +7,34 @@ import util.IO;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Collection;
+import java.util.List;
 
 public class TestLineNumbers {
     private static final Path resDir = Constants.RESOURCE_DIR.resolve("diffs");
 
-    @Test
-    public void printLineNumbers() throws IOException {
-        final String fullDiff = IO.readAsString(resDir.resolve("lineno1.txt"));
+    private static void printLineNumbers(final Path p) throws IOException {
+        final String fullDiff = IO.readAsString(p);
         final DiffTree diffTree = DiffTreeParser.createDiffTree(fullDiff, false, false);
 
         assert diffTree != null;
         diffTree.forAll(node ->
-            System.out.println(node.diffType.name
-                    + " \"" + node.getText().trim()
-                    + "\" from " + node.getFromLine()
-                    + " to " + node.getToLine())
+                System.out.println(node.diffType.name
+                        + " \"" + node.getText().trim()
+                        + "\" from " + node.getFromLine()
+                        + " to " + node.getToLine())
         );
+    }
+
+    @Test
+    public void printLineNumbers() throws IOException {
+        final Collection<String> testCases = List.of(
+//                "lineno1.txt",
+                "lineno2.txt"
+        );
+
+        for (final String s : testCases) {
+            printLineNumbers(resDir.resolve(s));
+        }
     }
 }

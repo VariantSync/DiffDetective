@@ -12,15 +12,14 @@ public class MultilineMacro {
     private final List<String> lines;
     private final DiffNode beforeParent;
     private final DiffNode afterParent;
-
+    private final DiffLineNumber startLine;
     DiffType diffType;
-    DiffLineNumber startLine;
 
     public MultilineMacro(
-            String header,
-            DiffLineNumber startLine,
-            DiffNode beforeParent,
-            DiffNode afterParent) {
+            final String header,
+            final DiffLineNumber startLine,
+            final DiffNode beforeParent,
+            final DiffNode afterParent) {
         this(
                 header, DiffType.ofDiffLine(header),
                 startLine,
@@ -28,13 +27,13 @@ public class MultilineMacro {
     }
 
     private MultilineMacro(
-            String line,
-            DiffType diffType,
-            DiffLineNumber startLine,
-            DiffNode beforeParent,
-            DiffNode afterParent) {
+            final String line,
+            final DiffType diffType,
+            final DiffLineNumber startLine,
+            final DiffNode beforeParent,
+            final DiffNode afterParent) {
         this.lines = new ArrayList<>();
-        lines.add(line);
+        this.lines.add(line);
         this.diffType = diffType;
         this.startLine = startLine;
         this.beforeParent = beforeParent;
@@ -53,11 +52,11 @@ public class MultilineMacro {
         final StringBuilder asSingleLine = new StringBuilder(diffType.name);
 
         for (int l = 0; l < lines.size(); ++l) {
-            String line = lines.get(l);
+            final String line = lines.get(l);
             if (l < lines.size() - 1) {
-                asSingleLine.append(line, 1, line.lastIndexOf('\\'));
+                asSingleLine.append(line.substring(1, line.lastIndexOf('\\')).trim()).append(" ");
             } else {
-                asSingleLine.append(line.substring(1));
+                asSingleLine.append(line.substring(1).trim());
             }
         }
 
