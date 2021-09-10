@@ -12,7 +12,7 @@ public class MultilineMacro {
     private final List<String> lines;
     private final DiffNode beforeParent;
     private final DiffNode afterParent;
-    private final DiffLineNumber startLine;
+    private final DiffLineNumber startLine = DiffLineNumber.Invalid();
     DiffType diffType;
 
     public MultilineMacro(
@@ -35,7 +35,7 @@ public class MultilineMacro {
         this.lines = new ArrayList<>();
         this.lines.add(line);
         this.diffType = diffType;
-        this.startLine = startLine;
+        this.startLine.set(startLine);
         this.beforeParent = beforeParent;
         this.afterParent = afterParent;
     }
