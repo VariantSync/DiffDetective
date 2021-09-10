@@ -114,7 +114,7 @@ public class DiffTreeParser {
             } else if (newNode.isEndif()) {
                 if (!newNode.isAdd()) {
                     // set corresponding line of now closed annotation
-                    beforeStack.peek().getToLine().set(lineNo);
+                    endBlock(beforeStack.peek(), lastLineNo);
 
                     // pop the relevant stacks until an if node is popped
                     if (!popIf(beforeStack, lineNo)) {
@@ -124,7 +124,7 @@ public class DiffTreeParser {
                 }
                 if (!newNode.isRem()) {
                     // set corresponding line of now closed annotation
-                    afterStack.peek().getToLine().set(lineNo);
+                    endBlock(afterStack.peek(), lastLineNo);
 
                     // pop the relevant stacks until an if node is popped
                     if (!popIf(afterStack, lineNo)) {
@@ -136,12 +136,12 @@ public class DiffTreeParser {
                 // newNode is if, elif or else
                 // push the node to the relevant stacks
                 if (!newNode.isAdd()) {
-                    if (pushNodeToStack(newNode, beforeStack, lineNo).onError(errorHandler)) {
+                    if (pushNodeToStack(newNode, beforeStack, lastLineNo).onError(errorHandler)) {
                         return null;
                     }
                 }
                 if (!newNode.isRem()) {
-                    if (pushNodeToStack(newNode, afterStack, lineNo).onError(errorHandler)) {
+                    if (pushNodeToStack(newNode, afterStack, lastLineNo).onError(errorHandler)) {
                         return null;
                     }
                 }
@@ -183,12 +183,20 @@ public class DiffTreeParser {
      */
     private static boolean popIf(final Stack<DiffNode> stack, final DiffLineNumber currentLine) {
         // pop the relevant stacks until an if node is popped
+        // If there were else or elif between an if and an endif, they are placed on the stack and
+        // have to be popped now.
         DiffNode popped;
+        boolean poppedElse = false;
         do {
+            // dont update line numbers of popped nodes here as this already happened.
             popped = stack.pop();
+            poppedElse |= popped.isElse() | popped.isElif();
         } while (!popped.isIf() && !popped.isRoot());
 
-        endBlock(popped, currentLine);
+        // If the if had at least one else branch, its endline is already set.
+        if (!poppedElse) {
+            endBlock(popped, currentLine);
+        }
 
         return !stack.isEmpty();
     }
@@ -196,15 +204,14 @@ public class DiffTreeParser {
     static ParseResult pushNodeToStack(
             final DiffNode newNode,
             final Stack<DiffNode> stack,
-            final DiffLineNumber lineNo) {
+            final DiffLineNumber lastLineNo) {
         if (newNode.isElif() || newNode.isElse()) {
             if (stack.size() == 1) {
                 return ParseResult.ERROR("#else or #elif without if!");
             }
 
             // set corresponding line of now closed annotation
-            final DiffNode closedBranch = stack.peek();
-            closedBranch.getToLine().set(lineNo).add(-1);
+            endBlock(stack.peek(), lastLineNo);
         }
 
         stack.push(newNode);
