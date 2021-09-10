@@ -1,0 +1,10 @@
+ l1
+ #if l2
+   l3
+ #elif l4
+   l5
++#elif l6
++  l7
+-#elif l8
+   l9
+ #endif
