@@ -1,6 +1,7 @@
 package analysis.data;
 
 import diff.PatchDiff;
+import diff.difftree.DiffNode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,18 +13,18 @@ import java.util.List;
  */
 public class PatchDiffAnalysisResult {
     private final PatchDiff patchDiff;
-    private final List<PatternMatch> patternMatches;
+    private final List<PatternMatch<DiffNode>> patternMatches;
 
     public PatchDiffAnalysisResult(PatchDiff patchDiff) {
         this.patchDiff = patchDiff;
         this.patternMatches = new ArrayList<>();
     }
 
-    public void addPatternMatches(List<PatternMatch> patternMatches){
+    public void addPatternMatches(List<PatternMatch<DiffNode>> patternMatches){
         this.patternMatches.addAll(patternMatches);
     }
 
-    public List<PatternMatch> getPatternMatches() {
+    public List<PatternMatch<DiffNode>> getPatternMatches() {
         return patternMatches;
     }
 

@@ -23,8 +23,8 @@ public class MoveElseSemanticPattern extends SemanticPattern{
         the parent has a child that is either also a child of the added or the removed else node
      */
     @Override
-    public List<PatternMatch> getMatches(DiffNode annotationNode) {
-        List<PatternMatch> patternMatches = new ArrayList<>();
+    public List<PatternMatch<DiffNode>> getMatches(DiffNode annotationNode) {
+        List<PatternMatch<DiffNode>> patternMatches = new ArrayList<>();
 
         if(annotationNode.isAdd() && annotationNode.isElse()){
 
@@ -50,7 +50,7 @@ public class MoveElseSemanticPattern extends SemanticPattern{
                 return patternMatches;
             }
 
-            PatternMatch patternMatch = new PatternMatch(this,
+            PatternMatch<DiffNode> patternMatch = new PatternMatch<>(this,
                     annotationNode.getLinesInDiff().getFromInclusive(), removedElse.getLinesInDiff().getToExclusive()
             );
             patternMatches.add(patternMatch);
@@ -59,7 +59,7 @@ public class MoveElseSemanticPattern extends SemanticPattern{
     }
 
     @Override
-    public FeatureContext[] getFeatureContexts(PatternMatch patternMatch) {
+    public FeatureContext[] getFeatureContexts(PatternMatch<DiffNode> patternMatch) {
         return new FeatureContext[0];
     }
 }

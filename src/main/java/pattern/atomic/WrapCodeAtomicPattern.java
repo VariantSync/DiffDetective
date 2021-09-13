@@ -16,8 +16,8 @@ public class WrapCodeAtomicPattern extends AtomicPattern {
     }
 
     @Override
-    public List<PatternMatch> getMatches(DiffNode codeNode) {
-        List<PatternMatch> patternMatches = new ArrayList<>();
+    public List<PatternMatch<DiffNode>> getMatches(DiffNode codeNode) {
+        List<PatternMatch<DiffNode>> patternMatches = new ArrayList<>();
 
         if (codeNode.isNon()){
             int addAmount = codeNode.getAddAmount();
@@ -25,7 +25,7 @@ public class WrapCodeAtomicPattern extends AtomicPattern {
             if ((addAmount > 0 && remAmount == 0)
                     ||  (remAmount == 0 && addAmount == 0 && codeNode.getAfterDepth() > codeNode.getBeforeDepth())){
                 final Lines diffLines = codeNode.getLinesInDiff();
-                PatternMatch patternMatch = new PatternMatch(this,
+                PatternMatch<DiffNode> patternMatch = new PatternMatch<>(this,
                         diffLines.getFromInclusive(), diffLines.getToExclusive()
                 );
                 patternMatches.add(patternMatch);
@@ -35,7 +35,7 @@ public class WrapCodeAtomicPattern extends AtomicPattern {
     }
 
     @Override
-    public FeatureContext[] getFeatureContexts(PatternMatch patternMatch) {
+    public FeatureContext[] getFeatureContexts(PatternMatch<DiffNode> patternMatch) {
         return new FeatureContext[0];
     }
 }

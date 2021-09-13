@@ -4,6 +4,7 @@ import analysis.data.CommitDiffAnalysisResult;
 import analysis.data.GDAnalysisResult;
 import analysis.data.PatchDiffAnalysisResult;
 import analysis.data.PatternMatch;
+import diff.difftree.DiffNode;
 import org.pmw.tinylog.Logger;
 import org.prop4j.Node;
 import util.IO;
@@ -41,7 +42,7 @@ public class GDAnalysisUtils {
                 analysisResult.getCommitDiffAnalysisResults()) {
             for (PatchDiffAnalysisResult patchResult :
                     commitResult.getPatchDiffAnalysisResults()) {
-                for (PatternMatch patternMatch : patchResult.getPatternMatches()) {
+                for (PatternMatch<DiffNode> patternMatch : patchResult.getPatternMatches()) {
                     commits.add(commitResult.getCommitDiff().getCommitHash());
                     patches.add(patchResult.getPatchDiff().getFileName());
                     patterns.add(patternMatch.getPatternName());

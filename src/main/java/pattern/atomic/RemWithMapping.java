@@ -17,14 +17,14 @@ public class RemWithMapping extends AtomicPattern {
     }
 
     @Override
-    public List<PatternMatch> getMatches(DiffNode codeNode) {
-        List<PatternMatch> patternMatches = new ArrayList<>();
+    public List<PatternMatch<DiffNode>> getMatches(DiffNode codeNode) {
+        List<PatternMatch<DiffNode>> patternMatches = new ArrayList<>();
 
         if (codeNode.isRem() && codeNode.getBeforeParent().isRem()) {
             final Node fm = codeNode.getBeforeParent().getBeforeFeatureMapping();
             final Lines diffLines = codeNode.getLinesInDiff();
 
-            PatternMatch patternMatch = new PatternMatch(this,
+            PatternMatch<DiffNode> patternMatch = new PatternMatch<>(this,
                     diffLines.getFromInclusive(), diffLines.getToExclusive(), fm
             );
             patternMatches.add(patternMatch);
@@ -33,7 +33,7 @@ public class RemWithMapping extends AtomicPattern {
     }
 
     @Override
-    public FeatureContext[] getFeatureContexts(PatternMatch patternMatch) {
+    public FeatureContext[] getFeatureContexts(PatternMatch<DiffNode> patternMatch) {
         return new FeatureContext[]{
                 new FeatureContext(null),
                 new FeatureContext(patternMatch.getFeatureMappings()[0], true)

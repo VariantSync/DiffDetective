@@ -26,8 +26,8 @@ public class AddIfdefElseSemanticPattern extends SemanticPattern{
           which has an added code child
      */
     @Override
-    public List<PatternMatch> getMatches(DiffNode annotationNode) {
-        List<PatternMatch> patternMatches = new ArrayList<>();
+    public List<PatternMatch<DiffNode>> getMatches(DiffNode annotationNode) {
+        List<PatternMatch<DiffNode>> patternMatches = new ArrayList<>();
 
         if(annotationNode.isAdd() && annotationNode.isIf()){
 
@@ -60,7 +60,7 @@ public class AddIfdefElseSemanticPattern extends SemanticPattern{
                 return patternMatches;
             }
 
-            PatternMatch patternMatch = new PatternMatch(this,
+            PatternMatch<DiffNode> patternMatch = new PatternMatch<>(this,
                     annotationNode.getLinesInDiff().getFromInclusive(), elseNode.getLinesInDiff().getToExclusive(),
                     annotationNode.getAfterFeatureMapping()
             );
@@ -70,7 +70,7 @@ public class AddIfdefElseSemanticPattern extends SemanticPattern{
     }
 
     @Override
-    public FeatureContext[] getFeatureContexts(PatternMatch patternMatch) {
+    public FeatureContext[] getFeatureContexts(PatternMatch<DiffNode> patternMatch) {
         return new FeatureContext[]{
                 new FeatureContext(patternMatch.getFeatureMappings()[0]),
                 new FeatureContext(new Not(patternMatch.getFeatureMappings()[0]))

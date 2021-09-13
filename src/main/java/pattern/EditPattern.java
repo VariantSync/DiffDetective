@@ -12,9 +12,9 @@ public abstract class EditPattern<E> {
         this.name = this.getClass().getSimpleName();
     }
 
-    public abstract List<PatternMatch> getMatches(E x);
+    public abstract List<PatternMatch<E>> getMatches(E x);
 
-    public abstract FeatureContext[] getFeatureContexts(PatternMatch patternMatch);
+    public abstract FeatureContext[] getFeatureContexts(PatternMatch<E> patternMatch);
 
     public String getName(){
         return this.name;

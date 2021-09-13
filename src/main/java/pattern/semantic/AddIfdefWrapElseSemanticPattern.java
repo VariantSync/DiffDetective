@@ -24,8 +24,8 @@ public class AddIfdefWrapElseSemanticPattern extends SemanticPattern{
             which has an unchanged code child
      */
     @Override
-    public List<PatternMatch> getMatches(DiffNode annotationNode) {
-        List<PatternMatch> patternMatches = new ArrayList<>();
+    public List<PatternMatch<DiffNode>> getMatches(DiffNode annotationNode) {
+        List<PatternMatch<DiffNode>> patternMatches = new ArrayList<>();
 
         if(annotationNode.isAdd() && annotationNode.isIf()){
 
@@ -58,7 +58,7 @@ public class AddIfdefWrapElseSemanticPattern extends SemanticPattern{
                 return patternMatches;
             }
 
-            PatternMatch patternMatch = new PatternMatch(this,
+            PatternMatch<DiffNode> patternMatch = new PatternMatch<>(this,
                     annotationNode.getLinesInDiff().getFromInclusive(), elseNode.getLinesInDiff().getToExclusive(),
                     annotationNode.getAfterFeatureMapping()
             );

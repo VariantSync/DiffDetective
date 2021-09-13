@@ -5,7 +5,7 @@ import evaluation.FeatureContext;
 
 import java.util.List;
 
-public class InvalidPatchPattern extends EditPattern {
+public class InvalidPatchPattern<E> extends EditPattern<E> {
     public static final String PATTERN_NAME = "InvalidPatch";
 
     public InvalidPatchPattern() {
@@ -13,12 +13,12 @@ public class InvalidPatchPattern extends EditPattern {
     }
 
     @Override
-    public List<PatternMatch> getMatches(Object x) {
+    public List<PatternMatch<E>> getMatches(E x) {
         return null;
     }
 
     @Override
-    public FeatureContext[] getFeatureContexts(PatternMatch patternMatch) {
+    public FeatureContext[] getFeatureContexts(PatternMatch<E> patternMatch) {
         return null;
     }
 }

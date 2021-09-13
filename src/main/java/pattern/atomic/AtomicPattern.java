@@ -9,5 +9,5 @@ import java.util.List;
 public abstract class AtomicPattern extends EditPattern<DiffNode> {
 
     @Override
-    public abstract List<PatternMatch> getMatches(DiffNode x);
+    public abstract List<PatternMatch<DiffNode>> getMatches(DiffNode x);
 }
