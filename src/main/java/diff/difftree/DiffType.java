@@ -24,7 +24,7 @@ public enum DiffType {
      * @param ifExistsBefore Procedure to run if the edited artefact existed before the edit (DiffType != ADD).
      * @param ifExistsAfter Procedure to run if the edited artefact exists after the edit (DiffType != REM).
      */
-    public void uponLifetime(final Runnable ifExistsBefore, final Runnable ifExistsAfter) {
+    public void matchBeforeAfter(final Runnable ifExistsBefore, final Runnable ifExistsAfter) {
         if (this != DiffType.ADD) {
             ifExistsBefore.run();
         }
@@ -43,7 +43,7 @@ public enum DiffType {
      * @param ifExistsAfter Argument that is valid if the edit did not remove.
      * @param task Task to run with all given arguments that are valid w.r.t. to this DiffType's lifetime.
      */
-    public <T> void uponLifetime(final T ifExistsBefore, final T ifExistsAfter, final Consumer<T> task) {
+    public <T> void matchBeforeAfter(final T ifExistsBefore, final T ifExistsAfter, final Consumer<T> task) {
         if (this != DiffType.ADD) {
             task.accept(ifExistsBefore);
         }
