@@ -10,8 +10,9 @@ import os
 
 # constants from our Java code
 JAVA_TREE_NAME_SEPARATOR = "$$$"
-JAVA_DIFFNODE_GETID_BIT_OFFSET = 16
-JAVA_DIFFNODE_GETID_LINE_OFFSET = 1
+JAVA_ID_LINE_NUMBER_OFFSET = 16
+JAVA_ID_DIFF_TYPE_OFFSET = 8
+JAVA_ID_DIFFLINE_FROM_OFFSET = 1
 
 # export names
 DIR_SEPARATOR = "$"
@@ -36,8 +37,7 @@ POS_SCALING_Y = 1
 def lineNoOfNode(v):
     # inverse of DiffNode::getID in our Java code
     # ((1 + fromLine) << ID_LINE_NUMBER_OFFSET) + diffType.ordinal()
-    return (v >> JAVA_DIFFNODE_GETID_BIT_OFFSET) - JAVA_DIFFNODE_GETID_LINE_OFFSET
-
+    return (v >> JAVA_ID_LINE_NUMBER_OFFSET) - JAVA_ID_DIFFLINE_FROM_OFFSET
 
 # the same as string.find but in case the char c is not found, returns len(s) instead of -1
 def findCharacterInStringGreedy(s, c):

@@ -17,6 +17,7 @@ import java.util.regex.Pattern;
  */
 public class DiffNode {
     private static final short ID_LINE_NUMBER_OFFSET = 16;
+    private static final short ID_DIFF_TYPE_OFFSET = 8;
 
     public static final String EQUAL_PLACEHOLDER = "__eq__";
     public static final String TRUE_LITERAL_NAME = "__true__";
@@ -430,7 +431,9 @@ public class DiffNode {
      * @return An integer that uniquely identifiers this DiffNode within its patch.
      */
     public int getID() {
-        return ((1 + from.inDiff) << ID_LINE_NUMBER_OFFSET) + diffType.ordinal();
+        return ((1 + from.inDiff) << ID_LINE_NUMBER_OFFSET)
+                + (diffType.ordinal() << ID_DIFF_TYPE_OFFSET)
+                + codeType.ordinal();
     }
 
     public String toLineGraphFormat(LineGraphExport.Options options) {
