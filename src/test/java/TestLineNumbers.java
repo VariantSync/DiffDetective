@@ -11,7 +11,7 @@ import java.util.Collection;
 import java.util.List;
 
 public class TestLineNumbers {
-    private static final Path resDir = Constants.RESOURCE_DIR.resolve("diffs");
+    private static final Path resDir = Constants.RESOURCE_DIR.resolve("diffs/linenumbers");
 
     private static void printLineNumbers(final Path p) throws IOException {
         final String fullDiff = IO.readAsString(p);
@@ -21,7 +21,8 @@ public class TestLineNumbers {
         diffTree.forAll(node ->
                 System.out.println(node.diffType.name
                         + " \"" + node.getText().trim()
-                        + "\" from " + node.getFromLine()
+                        + "\" of type " + node.codeType
+                        + " from " + node.getFromLine()
                         + " to " + node.getToLine())
         );
     }
@@ -30,11 +31,14 @@ public class TestLineNumbers {
     public void printLineNumbers() throws IOException {
         final Collection<String> testCases = List.of(
 //                "lineno1.txt",
-                "lineno2.txt"
+//                "deleteMLM.txt",
+                "elifchain.txt"
         );
 
         for (final String s : testCases) {
+            System.out.println("Diff of " + s);
             printLineNumbers(resDir.resolve(s));
+            System.out.println();
         }
     }
 }

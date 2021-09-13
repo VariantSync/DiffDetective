@@ -10,6 +10,7 @@ import util.StringUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 public class DiffTreeParser {
@@ -42,7 +43,11 @@ public class DiffTreeParser {
         final DiffLineNumber lastLineNo = DiffLineNumber.Copy(lineNo);
 
         DiffNode lastCode = null;
-        final Consumer<String> errorHandler = Logger::warn;
+        final AtomicBoolean error = new AtomicBoolean(false);
+        final Consumer<String> errorHandler = m -> {
+            Logger.warn(m);
+            error.set(true);
+        };
 
         final MultiLineMacroParser mlMacroParser = new MultiLineMacroParser();
 
@@ -52,17 +57,12 @@ public class DiffTreeParser {
 
         for (int i = 0; i < fullDiffLines.length; i++) {
             final String currentLine = fullDiffLines[i];
-            final DiffType currentLinesDiffType = DiffType.ofDiffLine(currentLine);
+            final DiffType diffType = DiffType.ofDiffLine(currentLine);
 
             // count line numbers
             lastLineNo.set(lineNo);
             lineNo.inDiff = i + 1;
-            if (currentLinesDiffType != DiffType.ADD) {
-                ++lineNo.beforeEdit;
-            }
-            if (currentLinesDiffType != DiffType.REM) {
-                ++lineNo.afterEdit;
-            }
+            diffType.uponLifetime(() -> ++lineNo.beforeEdit, () -> ++lineNo.afterEdit);
 
             // Ignore line if it is empty.
             if (ignoreEmptyLines && (currentLine.isEmpty()
@@ -74,9 +74,7 @@ public class DiffTreeParser {
 
             // check if this is a multiline macro
             final ParseResult isMLMacro = mlMacroParser.consume(
-                    lineNo,
-                    currentLine,
-                    beforeStack, afterStack, annotationNodes);
+                    lineNo, currentLine, beforeStack, afterStack, annotationNodes);
             switch (isMLMacro.type()) {
                 case Success: {
                     if (lastCode != null) {
@@ -112,39 +110,24 @@ public class DiffTreeParser {
                 codeNodes.add(newNode);
                 addChildrenToParents(newNode);
             } else if (newNode.isEndif()) {
-                if (!newNode.isAdd()) {
-                    // set corresponding line of now closed annotation
-                    beforeStack.peek().getToLine().set(lineNo);
+                diffType.uponLifetime(beforeStack, afterStack,
+                        stack -> {
+                            // set corresponding line of now closed annotation
+                            endBlock(stack.peek(), lastLineNo);
 
-                    // pop the relevant stacks until an if node is popped
-                    if (!popIf(beforeStack, lineNo)) {
-                        errorHandler.accept("(before-) stack is empty!");
-                        return null;
-                    }
-                }
-                if (!newNode.isRem()) {
-                    // set corresponding line of now closed annotation
-                    afterStack.peek().getToLine().set(lineNo);
-
-                    // pop the relevant stacks until an if node is popped
-                    if (!popIf(afterStack, lineNo)) {
-                        errorHandler.accept("(after-) stack is empty!");
-                        return null;
-                    }
-                }
+                            // pop the relevant stacks until an if node is popped
+                            if (!popIf(stack, lineNo)) {
+                                errorHandler.accept("stack is empty!");
+                            }
+                        });
+                if (error.get()) { return null; }
             } else {
                 // newNode is if, elif or else
                 // push the node to the relevant stacks
-                if (!newNode.isAdd()) {
-                    if (pushNodeToStack(newNode, beforeStack, lineNo).onError(errorHandler)) {
-                        return null;
-                    }
-                }
-                if (!newNode.isRem()) {
-                    if (pushNodeToStack(newNode, afterStack, lineNo).onError(errorHandler)) {
-                        return null;
-                    }
-                }
+                diffType.uponLifetime(beforeStack, afterStack, stack ->
+                    pushNodeToStack(newNode, stack, lastLineNo).onError(errorHandler)
+                );
+                if (error.get()) { return null; }
 
                 annotationNodes.add(newNode);
                 addChildrenToParents(newNode);
@@ -183,12 +166,20 @@ public class DiffTreeParser {
      */
     private static boolean popIf(final Stack<DiffNode> stack, final DiffLineNumber currentLine) {
         // pop the relevant stacks until an if node is popped
+        // If there were else or elif between an if and an endif, they are placed on the stack and
+        // have to be popped now.
         DiffNode popped;
+        boolean poppedElse = false;
         do {
+            // dont update line numbers of popped nodes here as this already happened.
             popped = stack.pop();
+            poppedElse |= popped.isElse() | popped.isElif();
         } while (!popped.isIf() && !popped.isRoot());
 
-        endBlock(popped, currentLine);
+        // If the if had at least one else branch, its endline is already set.
+        if (!poppedElse) {
+            endBlock(popped, currentLine);
+        }
 
         return !stack.isEmpty();
     }
@@ -196,15 +187,14 @@ public class DiffTreeParser {
     static ParseResult pushNodeToStack(
             final DiffNode newNode,
             final Stack<DiffNode> stack,
-            final DiffLineNumber lineNo) {
+            final DiffLineNumber lastLineNo) {
         if (newNode.isElif() || newNode.isElse()) {
             if (stack.size() == 1) {
                 return ParseResult.ERROR("#else or #elif without if!");
             }
 
             // set corresponding line of now closed annotation
-            final DiffNode closedBranch = stack.peek();
-            closedBranch.getToLine().set(lineNo).add(-1);
+            endBlock(stack.peek(), lastLineNo);
         }
 
         stack.push(newNode);
