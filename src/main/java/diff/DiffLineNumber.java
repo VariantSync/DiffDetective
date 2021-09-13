@@ -2,6 +2,8 @@ package diff;
 
 import diff.difftree.DiffType;
 
+import java.util.Objects;
+
 /**
  * Identifies a line number in a textual diff holds its the numbers of the
  * corresponding line before and after the edit.
@@ -55,6 +57,19 @@ public class DiffLineNumber {
     @Override
     public String toString() {
         return "(old: " + beforeEdit + ", diff: " + inDiff + ", new:" + afterEdit + ")";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        DiffLineNumber that = (DiffLineNumber) o;
+        return inDiff == that.inDiff && beforeEdit == that.beforeEdit && afterEdit == that.afterEdit;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(inDiff, beforeEdit, afterEdit);
     }
 
     public static Lines rangeInDiff(final DiffLineNumber from, final DiffLineNumber to) {
