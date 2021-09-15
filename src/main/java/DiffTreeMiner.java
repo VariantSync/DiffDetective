@@ -42,16 +42,6 @@ public class DiffTreeMiner {
         boolean saveMemory = true;
         boolean renderOutput = false;
 
-        // The filter used by the GitDiffer
-        final DiffFilter diffFilter = new DiffFilter.Builder()
-                //.allowBinary(false)
-                .allowMerge(false)
-                .allowedPaths("Marlin.*")
-                .blockedPaths(".*arduino.*")
-                .allowedChangeTypes(DiffEntry.ChangeType.MODIFY)
-                .allowedFileExtensions("c", "cpp", "h", "pde")
-                .build();
-
         final LineGraphExport.Options exportOptions = new LineGraphExport.Options(
                 LineGraphExport.NodePrintStyle.Type // For pattern matching, we want to look at node types and not individual code.
                 , true
@@ -77,7 +67,7 @@ public class DiffTreeMiner {
         }
 
         // create GitDiff
-        final GitDiffer differ = new GitDiffer(git, diffFilter, saveMemory);
+        final GitDiffer differ = new GitDiffer(git, Main.DefaultDiffFilterForMarlin, saveMemory);
         final Yield<CommitDiff> yieldDiff = differ.yieldGitDiff();
 
         final StringBuilder lineGraph = new StringBuilder();

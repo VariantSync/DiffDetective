@@ -20,10 +20,19 @@ import org.pmw.tinylog.writers.ConsoleWriter;
  * @author Sören Viegener
  */
 public class Main {
-
     private static final String TREE_ANALYSIS = "tree";
     private static final String ATOMIC_TREE_ANALYSIS = "tree_atomic";
     private static final String SEMANTIC_TREE_ANALYSIS = "tree_semantic";
+
+    // The filter used by the GitDiffer
+    public static final DiffFilter DefaultDiffFilterForMarlin = new DiffFilter.Builder()
+            //.allowBinary(false)
+            .allowMerge(false)
+            .allowedPaths("Marlin.*")
+            .blockedPaths(".*arduino.*")
+            .allowedChangeTypes(DiffEntry.ChangeType.MODIFY)
+            .allowedFileExtensions("c", "cpp", "h", "pde")
+            .build();
 
     public static void main(String[] args) {
 
@@ -66,16 +75,6 @@ public class Main {
         // whether to print the results of the evaluation
         boolean printEvaluationResults = true;
 
-        // The filter used by the GitDiffer
-        DiffFilter diffFilter = new DiffFilter.Builder()
-                //.allowBinary(false)
-                .allowMerge(false)
-                .allowedPaths("Marlin.*")
-                .blockedPaths(".*arduino.*")
-                .allowedChangeTypes(DiffEntry.ChangeType.MODIFY)
-                .allowedFileExtensions("c", "cpp", "h", "pde")
-                .build();
-
         /* ************************ *\
         |      END OF ARGUMENTS      |
         \* ************************ */
@@ -112,7 +111,7 @@ public class Main {
         }
 
         // create GitDiff
-        GitDiff gitDiff = new GitDiffer(git, diffFilter, saveMemory).createGitDiff();
+        GitDiff gitDiff = new GitDiffer(git, DefaultDiffFilterForMarlin, saveMemory).createGitDiff();
         if (gitDiff == null) {
             Logger.error("Failed to create GitDiff");
             System.exit(1);
