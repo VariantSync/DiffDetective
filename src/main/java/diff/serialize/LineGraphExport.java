@@ -16,7 +16,14 @@ public class LineGraphExport {
     public static final String TREE_NAME_SEPARATOR = "$$$";
 
     public enum NodePrintStyle {
-        Type, Pretty, Verbose
+        /// Print CodeType and DiffType
+        Type,
+        /// Print Node as Code
+        Pretty,
+        /// Print CodeType and DiffType and Mappings of Macros
+        Mappings,
+        /// Print CodeType and DiffType and Mappings if Macro and Text if Code
+        Verbose
     }
     public static record Options(
             NodePrintStyle nodePrintStyle,

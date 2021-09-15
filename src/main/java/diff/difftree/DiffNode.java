@@ -460,8 +460,9 @@ public class DiffNode {
     public String toLineGraphFormat(LineGraphExport.Options options) {
         return "v " + getID() + " " + switch (options.nodePrintStyle()) {
             case Type -> diffType + "_" + codeType;
-            case Pretty -> "\"" + (codeType.isMacro() ? (codeType.name + " " + getFeatureMapping()) : text.trim()) + "\"";
-            case Verbose -> diffType + "_" + codeType + "_\"" + (codeType.isMacro() ? (codeType.name + " " + getFeatureMapping()) : text.trim()) + "\"";
+            case Pretty -> "\"" + (codeType.isMacro() ? (codeType.name + " " + getDirectFeatureMapping()) : text.trim()) + "\"";
+            case Mappings -> diffType + "_" + codeType + "_\"" + (codeType.isMacro() ? (codeType.name + " " + getDirectFeatureMapping()) : "") + "\"";
+            case Verbose -> diffType + "_" + codeType + "_\"" + (codeType.isMacro() ? (codeType.name + " " + getDirectFeatureMapping()) : text.trim()) + "\"";
         };
     }
 
