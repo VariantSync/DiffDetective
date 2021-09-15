@@ -3,7 +3,9 @@ import diff.DiffFilter;
 import diff.GitDiffer;
 import diff.CommitDiff;
 import diff.difftree.render.DiffTreeRenderer;
+import diff.difftree.transform.CollapseNestedNonEditedMacros;
 import diff.difftree.transform.CollapseNonEditedSubtrees;
+import diff.difftree.transform.NaiveMovedCodeDetection;
 import load.GitLoader;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.diff.DiffEntry;
@@ -40,13 +42,21 @@ public class DiffTreeMiner {
         // use this option with large repositories
         // alternatively, increasing the java heap size also helps :D
         boolean saveMemory = true;
-        boolean renderOutput = false;
+        boolean renderOutput = true;
+        int treesToExportAtMost = 100;
+//        int treesToExportAtMost = -1;
 
         final LineGraphExport.Options exportOptions = new LineGraphExport.Options(
                 LineGraphExport.NodePrintStyle.Type // For pattern matching, we want to look at node types and not individual code.
                 , true
-                , List.of(new CollapseNonEditedSubtrees())
+                , List.of(
+                        new CollapseNonEditedSubtrees(),
+                        new CollapseNestedNonEditedMacros(),
+                        new CollapseNonEditedSubtrees(), // duplicate as there can occur new non-edited subtrees
+                        new NaiveMovedCodeDetection()
+                )
         );
+
 
         /* ************************ *\
         |      END OF ARGUMENTS      |
@@ -72,7 +82,6 @@ public class DiffTreeMiner {
 
         final StringBuilder lineGraph = new StringBuilder();
         int treeCounter = 0;
-        int hardCap = 100;
         final DiffTreeSerializeDebugData debugData = new DiffTreeSerializeDebugData();
         Logger.info("Mining start");
         for (CommitDiff diff : yieldDiff) {
@@ -82,9 +91,9 @@ public class DiffTreeMiner {
             treeCounter = res.getValue();
 //            ++commitDiffCounter;
 
-//            if (hardCap > 0 && treeCounter >= hardCap) {
-//                break;
-//            }
+            if (treesToExportAtMost > 0 && treeCounter >= treesToExportAtMost) {
+                break;
+            }
         }
 
         Logger.info("Exported " + treeCounter + " diff trees!");
