@@ -5,6 +5,7 @@ import diff.CommitDiff;
 import diff.difftree.render.DiffTreeRenderer;
 import diff.difftree.transform.CollapseNestedNonEditedMacros;
 import diff.difftree.transform.CollapseNonEditedSubtrees;
+import diff.difftree.transform.DiffTreeTransformer;
 import diff.difftree.transform.NaiveMovedCodeDetection;
 import load.GitLoader;
 import org.eclipse.jgit.api.Git;
@@ -24,6 +25,13 @@ import java.nio.file.Paths;
 import java.util.List;
 
 public class DiffTreeMiner {
+    public static final List<DiffTreeTransformer> PostProcessing = List.of(
+            new CollapseNonEditedSubtrees(),
+            new CollapseNestedNonEditedMacros(),
+            new CollapseNonEditedSubtrees(), // duplicate as there can occur new non-edited subtrees
+            new NaiveMovedCodeDetection()
+    );
+
     private static void setupLogger(final Level loggingLevel) {
         Configurator configurator = Configurator.defaultConfig()
                 .writer(new ConsoleWriter(), loggingLevel)
@@ -49,12 +57,7 @@ public class DiffTreeMiner {
         final LineGraphExport.Options exportOptions = new LineGraphExport.Options(
                 LineGraphExport.NodePrintStyle.Type // For pattern matching, we want to look at node types and not individual code.
                 , true
-                , List.of(
-                        new CollapseNonEditedSubtrees(),
-                        new CollapseNestedNonEditedMacros(),
-                        new CollapseNonEditedSubtrees(), // duplicate as there can occur new non-edited subtrees
-                        new NaiveMovedCodeDetection()
-                )
+                , PostProcessing
         );
 
 

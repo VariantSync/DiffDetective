@@ -77,7 +77,7 @@ public class NaiveMovedCodeDetection implements DiffTreeTransformer {
         // We assert the following as we removed the code node in transform.
         // assert(!codeNodes.contains(code));
         for (final DiffNode other : codeNodes) {
-            if (text.equals(other.getText().trim())) {
+            if (other.diffType == weAreLookingFor && text.equals(other.getText().trim())) {
                 return other;
             }
         }

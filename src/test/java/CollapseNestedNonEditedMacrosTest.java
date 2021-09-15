@@ -25,13 +25,14 @@ import java.util.List;
 public class CollapseNestedNonEditedMacrosTest {
     private static final Path resDir = Constants.RESOURCE_DIR.resolve("diffs/collapse");
     private static final Path genDir = resDir.resolve("gen");
-    private static final List<DiffTreeTransformer> transformers = List.of(
-            new CollapseNonEditedSubtrees(),
-            new CollapseNestedNonEditedMacros(),
-            new CollapseNonEditedSubtrees()
-    );
+    private static final List<DiffTreeTransformer> transformers = DiffTreeMiner.PostProcessing;
+//            List.of(
+//                    new CollapseNonEditedSubtrees(),
+//                    new CollapseNestedNonEditedMacros(),
+//                    new CollapseNonEditedSubtrees()
+//            );
     private static final DiffTreeRenderer.RenderOptions renderOptions = new DiffTreeRenderer.RenderOptions(
-            LineGraphExport.NodePrintStyle.Mappings,
+            LineGraphExport.NodePrintStyle.Verbose,
             false
             );
 
@@ -102,5 +103,10 @@ public class CollapseNestedNonEditedMacrosTest {
     @Test
     public void testConfiguration_adv() throws IOException {
         testCommit("Marlin/example_configurations/RigidBot/Configuration_adv.h", "d3fe3a0962fdbdcd9548abaf765e0cff72d9cf8d");
+    }
+
+    @Test
+    public void testSanguinololu() throws IOException {
+        testCommit("Marlin/pins_SANGUINOLOLU_11.h", "d3fe3a0962fdbdcd9548abaf765e0cff72d9cf8d");
     }
 }
