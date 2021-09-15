@@ -28,9 +28,7 @@ public class LineGraphExport {
     }
 
     public static Pair<DiffTreeSerializeDebugData, String> toLineGraphFormat(final DiffTree diffTree, final Options options) {
-        for (final DiffTreeTransformer preprocessing : options.treePreProcessing()) {
-            preprocessing.transform(diffTree);
-        }
+        DiffTreeTransformer.apply(options.treePreProcessing, diffTree);
 
         if (options.skipEmptyTrees && diffTree.isEmpty()) {
             return new Pair<>(new DiffTreeSerializeDebugData(), "");
