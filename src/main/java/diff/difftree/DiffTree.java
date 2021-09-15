@@ -100,7 +100,7 @@ public class DiffTree {
         return subtreeRoot.removeChildren();
     }
 
-    private void addToNodes(final DiffNode node) {
+    public void addToNodes(final DiffNode node) {
         if (node.isCode()) {
             codeNodes.add(node);
         } else if (node.isMacro()) {
@@ -116,7 +116,7 @@ public class DiffTree {
         node.getChildren().forEach(this::addToNodesRecursively);
     }
 
-    private void removeFromNodes(final DiffNode node) {
+    public void removeFromNodes(final DiffNode node) {
         if (node.isCode()) {
             codeNodes.remove(node);
         } else if (node.isMacro()) {
