@@ -33,7 +33,6 @@ public class MultiLineMacroParser {
         final DiffNode node = macro.toDiffNode();
         node.getToLine().set(lineNo);
         annotationNodes.add(node);
-        DiffTreeParser.addChildrenToParents(node);
         return node;
     }
 

@@ -60,8 +60,9 @@ public class MultilineMacro {
             }
         }
 
-        final DiffNode result = DiffNode.fromDiffLine(asSingleLine.toString(), beforeParent, afterParent);
+        final DiffNode result = DiffNode.fromDiffLine(asSingleLine.toString());
         result.getFromLine().set(startLine);
+        result.addBelow(beforeParent, afterParent);
         result.setIsMultilineMacro(true);
         return result;
     }

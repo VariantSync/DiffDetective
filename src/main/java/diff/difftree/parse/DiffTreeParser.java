@@ -92,11 +92,10 @@ public class DiffTreeParser {
 
             // This gets the code type and diff type of the current line and creates a node
             // Note that the node is not yet added to the diff tree
-            final DiffNode newNode = DiffNode.fromDiffLine(currentLine, beforeStack.peek(), afterStack.peek());
-            newNode.getFromLine().set(lineNo);
+            final DiffNode newNode = DiffNode.fromDiffLine(currentLine);
 
+            // collapse multiple code lines
             if (lastCode != null) {
-                // collapse multiple code lines
                 if (collapseMultipleCodeLines && newNode.isCode() && lastCode.diffType.equals(newNode.diffType)) {
                     lastCode.setText(lastCode.getText() + StringUtils.LINEBREAK + newNode.getText());
                     continue;
@@ -105,10 +104,14 @@ public class DiffTreeParser {
                 }
             }
 
+            newNode.getFromLine().set(lineNo);
+            if (!newNode.isEndif()) {
+                newNode.addBelow(beforeStack.peek(), afterStack.peek());
+            }
+
             if (newNode.isCode()) {
                 lastCode = newNode;
                 codeNodes.add(newNode);
-                addChildrenToParents(newNode);
             } else if (newNode.isEndif()) {
                 diffType.matchBeforeAfter(beforeStack, afterStack,
                         stack -> {
@@ -138,7 +141,6 @@ public class DiffTreeParser {
                 if (error.get()) { return null; }
 
                 annotationNodes.add(newNode);
-                addChildrenToParents(newNode);
             }
         }
 
@@ -182,20 +184,6 @@ public class DiffTreeParser {
 
         stack.push(newNode);
         return ParseResult.SUCCESS;
-    }
-
-    /**
-     * Adds a DiffNode as a child to its parents
-     *
-     * @param diffNode The DiffNode to be added as a child to its parents
-     */
-    static void addChildrenToParents(DiffNode diffNode) {
-        if (diffNode.getAfterParent() != null) {
-            diffNode.getAfterParent().addChild(diffNode);
-        }
-        if (diffNode.getBeforeParent() != null) {
-            diffNode.getBeforeParent().addChild(diffNode);
-        }
     }
 
     private static DiffNode endCodeBlock(final DiffNode block, final DiffLineNumber lastLineNo) {
