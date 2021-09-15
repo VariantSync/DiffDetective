@@ -121,11 +121,7 @@ public class DiffTreeParser {
 
                             // Pop the relevant stacks until an IF node is popped. If there were ELSEs or ELIFs between
                             // an IF and an ENDIF, they were placed on the stack and have to be popped now.
-                            DiffNode popped;
-                            do {
-                                // Don't update line numbers of popped nodes here as this already happened.
-                                popped = stack.pop();
-                            } while (!popped.isIf() && !popped.isRoot());
+                            popIf(stack);
 
                             if (stack.isEmpty()) {
                                 errorHandler.accept("ENDIF without IF at line " + currentLine + "!");
@@ -199,5 +195,14 @@ public class DiffTreeParser {
                 () -> to.afterEdit = lastLineNo.afterEdit + 1);
         // Take the highest value ever set as we want to include all lines that are somehow affected by this block.
         to.inDiff = Math.max(to.inDiff, lastLineNo.inDiff + 1);
+    }
+
+    public static DiffNode popIf(final Stack<DiffNode> stack) {
+        DiffNode popped;
+        do {
+            // Don't update line numbers of popped nodes here as this already happened.
+            popped = stack.pop();
+        } while (!popped.isIf() && !popped.isRoot());
+        return popped;
     }
 }
