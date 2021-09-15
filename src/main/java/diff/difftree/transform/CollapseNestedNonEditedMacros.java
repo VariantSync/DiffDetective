@@ -15,7 +15,8 @@ import java.util.*;
  * https://scryfall.com/card/2xm/308/wurmcoil-engine
  */
 public class CollapseNestedNonEditedMacros implements DiffTreeTransformer, DiffTreeVisitor {
-    private final List<Stack<DiffNode>> chains = new ArrayList<>();
+    private final List<Stack<DiffNode>> chainsInBuild = new ArrayList<>();
+    private final List<Stack<DiffNode>> finalizedChains = new ArrayList<>();
 
     @Override
     public List<Class<? extends DiffTreeTransformer>> getDependencies() {
@@ -24,31 +25,51 @@ public class CollapseNestedNonEditedMacros implements DiffTreeTransformer, DiffT
 
     @Override
     public void transform(final DiffTree diffTree) {
+        // find all chains
         DiffTreeTraversal.with(this).visit(diffTree);
-        System.out.println(chains);
-        for (final Stack<DiffNode> chain : chains) {
+
+        // finalize all remaining in build chains
+        while (!chainsInBuild.isEmpty()) {
+            finalize(chainsInBuild.get(chainsInBuild.size() - 1));
+        }
+
+        // collapse all found chains
+        for (final Stack<DiffNode> chain : finalizedChains) {
             collapseChain(chain, diffTree);
         }
-        chains.clear();
+
+        // cleanup
+        chainsInBuild.clear();
+        finalizedChains.clear();
+    }
+
+    private void finalize(Stack<DiffNode> chain) {
+        chainsInBuild.remove(chain);
+        finalizedChains.add(chain);
     }
 
     @Override
     public void visit(DiffTreeTraversal traversal, DiffNode subtree) {
         if (subtree.isNon() && subtree.isMacro()) {
-            if (subtree.getBeforeParent() == subtree.getAfterParent() && !subtree.getBeforeParent().isRoot()) {
+            if (isHead(subtree)) {
+                final Stack<DiffNode> s = new Stack<>();
+                s.push(subtree);
+                chainsInBuild.add(s);
+            } else if (inChainTail(subtree)) {
                 final DiffNode parent = subtree.getBeforeParent();
 
-                for (final Stack<DiffNode> s : chains) {
+                Stack<DiffNode> pushedTo = null;
+                for (final Stack<DiffNode> s : chainsInBuild) {
                     if (s.peek() == parent) {
                         s.push(subtree);
+                        pushedTo = s;
                         break;
                     }
                 }
-            } else {
-                // We found the head of a chain
-                Stack<DiffNode> s = new Stack<>();
-                s.push(subtree);
-                chains.add(s);
+
+                if (pushedTo != null && isEnd(subtree)) {
+                    finalize(pushedTo);
+                }
             }
         }
 
@@ -95,5 +116,40 @@ public class CollapseNestedNonEditedMacros implements DiffTreeTransformer, DiffT
         lastPopped.drop();
         merged.addChildren(children);
         diffTree.addSubtreeRoot(merged, beforeParent, afterParent);
+    }
+
+    /**
+     * @return True iff at least one child of was edited.
+     */
+    private static boolean anyChildEdited(DiffNode d) {
+        return d.getChildren().stream().anyMatch(c -> !c.isNon());
+    }
+
+    /**
+     * @return True iff no child of was edited.
+     */
+    private static boolean noChildEdited(DiffNode d) {
+        return d.getChildren().stream().allMatch(DiffNode::isNon);
+    }
+
+    /**
+     * @return True iff d is in the tail of a chain.
+     */
+    private static boolean inChainTail(DiffNode d) {
+        return d.getBeforeParent() == d.getAfterParent();
+    }
+
+    /**
+     * @return True iff d is the head of a chain.
+     */
+    private static boolean isHead(DiffNode d) {
+        return (!inChainTail(d) || d.getBeforeParent().isRoot()) && noChildEdited(d);
+    }
+
+    /**
+     * @return True iff d is the end of a chain and any chain ending at d has to end.
+     */
+    private static boolean isEnd(DiffNode d) {
+        return inChainTail(d) && anyChildEdited(d);
     }
 }

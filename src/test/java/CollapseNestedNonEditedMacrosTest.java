@@ -67,10 +67,7 @@ public class CollapseNestedNonEditedMacrosTest {
         transformAndRender("elif.txt");
     }
 
-    @Test
-    public void weirdCommitTest() throws IOException {
-        final String file = "Marlin/pins.h";
-        final String commitHash = "d6d6fb8930be8d0b3bd34592c915732937c6f4d9";
+    private void testCommit(String file, String commitHash) throws IOException {
         final String repo = "Marlin_old.zip";
         final boolean saveMemory = true;
 
@@ -95,5 +92,15 @@ public class CollapseNestedNonEditedMacrosTest {
         }
 
         Assert.fail("Did not find file \"" + file + "\" in commit " + commitHash + "!");
+    }
+
+    @Test
+    public void testWurmcoil() throws IOException {
+        testCommit("Marlin/pins.h", "d6d6fb8930be8d0b3bd34592c915732937c6f4d9");
+    }
+
+    @Test
+    public void testConfiguration_adv() throws IOException {
+        testCommit("Marlin/example_configurations/RigidBot/Configuration_adv.h", "d3fe3a0962fdbdcd9548abaf765e0cff72d9cf8d");
     }
 }
