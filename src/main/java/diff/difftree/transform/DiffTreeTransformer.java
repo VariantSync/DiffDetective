@@ -4,5 +4,5 @@ import diff.difftree.DiffTree;
 
 @FunctionalInterface
 public interface DiffTreeTransformer {
-    void transform(DiffTree diffTree);
+    void transform(final DiffTree diffTree);
 }

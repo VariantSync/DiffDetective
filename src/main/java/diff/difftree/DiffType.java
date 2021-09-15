@@ -52,6 +52,14 @@ public enum DiffType {
         }
     }
 
+    public DiffType inverse() {
+        return switch (this) {
+            case ADD -> REM;
+            case REM -> ADD;
+            case NON -> throw new RuntimeException("DiffType NON does not have an inverse!");
+        };
+    }
+
     public static DiffType ofDiffLine(String line) {
         if (line.startsWith(addCharacter)) {
             return ADD;

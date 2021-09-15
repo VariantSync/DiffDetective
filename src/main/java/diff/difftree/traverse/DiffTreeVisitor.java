@@ -4,5 +4,5 @@ import diff.difftree.DiffNode;
 
 @FunctionalInterface
 public interface DiffTreeVisitor {
-     void visit(DiffTreeTraversal traversal, DiffNode subtree);
+     void visit(final DiffTreeTraversal traversal, final DiffNode subtree);
 }

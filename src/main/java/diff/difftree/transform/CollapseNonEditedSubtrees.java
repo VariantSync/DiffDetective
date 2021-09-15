@@ -14,7 +14,7 @@ public class CollapseNonEditedSubtrees implements DiffTreeTransformer, DiffTreeV
     private List<DiffNode> removedNodes;
 
     @Override
-    public void transform(DiffTree diffTree) {
+    public void transform(final DiffTree diffTree) {
         removedNodes = new ArrayList<>();
         diffTree.traverse(this);
         diffTree.getAnnotationNodes().removeAll(removedNodes);
@@ -23,7 +23,7 @@ public class CollapseNonEditedSubtrees implements DiffTreeTransformer, DiffTreeV
     }
 
     @Override
-    public void visit(DiffTreeTraversal traversal, DiffNode subtree) {
+    public void visit(final DiffTreeTraversal traversal, final DiffNode subtree) {
         final Set<DiffNode> collapsableChildren = new HashSet<>();
         for (final DiffNode child : subtree.getChildren()) {
             traversal.visit(child);

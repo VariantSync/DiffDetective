@@ -1,7 +1,9 @@
 package diff.difftree;
 
+import diff.difftree.parse.DiffTreeParser;
 import diff.difftree.traverse.DiffTreeTraversal;
 import diff.difftree.traverse.DiffTreeVisitor;
+import util.IO;
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -19,6 +21,11 @@ public class DiffTree {
         this.root = root;
         this.codeNodes = codeNodes;
         this.annotationNodes = annotationNodes;
+    }
+
+    public static DiffTree fromFile(final Path p, boolean collapseMultipleCodeLines, boolean ignoreEmptyLines) throws IOException {
+        final String fullDiff = IO.readAsString(p);
+        return DiffTreeParser.createDiffTree(fullDiff, collapseMultipleCodeLines, ignoreEmptyLines);
     }
 
     public DiffTree forAll(final Consumer<DiffNode> procedure) {
