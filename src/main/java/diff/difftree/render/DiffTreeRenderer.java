@@ -24,6 +24,11 @@ public class DiffTreeRenderer {
     private final Path workDir;
     private final Function<Path, PythonCommand> pythonCommandFactory;
 
+    public static record RenderOptions(LineGraphExport.NodePrintStyle nodeStyle, boolean cleanUpTemporaryFiles) {}
+    public static final RenderOptions DefaultRenderOptions = new RenderOptions(
+            LineGraphExport.NodePrintStyle.Verbose,
+            true);
+
     private DiffTreeRenderer(final Function<Path, PythonCommand> pythonCommandFactory, final Path workDir) {
         this.workDir = workDir;
         this.pythonCommandFactory = pythonCommandFactory;
@@ -49,30 +54,37 @@ public class DiffTreeRenderer {
         return new DiffTreeRenderer(pythonCommandFactory, workDir);
     }
 
-    public void render(PatchDiff patchDiff) {
-        final String treename = patchDiff.getFileName() + LineGraphExport.TREE_NAME_SEPARATOR + patchDiff.getCommitDiff().getCommitHash();
-        render(patchDiff.getDiffTree(), treename);
+    public void render(PatchDiff patchDiff, final Path directory) {
+        render(patchDiff, directory, DefaultRenderOptions);
     }
 
-    public boolean render(final DiffTree tree, final String name) {
-        return render(tree, name, Path.of("temp"));
+    public boolean render(PatchDiff patchDiff, final Path directory, RenderOptions options) {
+        final String treeAndFileName =
+                patchDiff.getFileName()
+                        + LineGraphExport.TREE_NAME_SEPARATOR
+                        + patchDiff.getCommitDiff().getCommitHash();
+        return render(patchDiff.getDiffTree(), treeAndFileName, directory, options);
     }
 
-    public boolean render(final DiffTree tree, final String name, final Path directory) {
-        final LineGraphExport.Options options = new LineGraphExport.Options(LineGraphExport.NodePrintStyle.Verbose);
+    public boolean render(final DiffTree tree, final String treeAndFileName, final Path directory) {
+        return render(tree, treeAndFileName, directory, DefaultRenderOptions);
+    }
 
-        final Path tempFile = directory.resolve(name + ".lg");
+    public boolean render(final DiffTree tree, final String treeAndFileName, final Path directory, RenderOptions options) {
+        final LineGraphExport.Options lgoptions = new LineGraphExport.Options(options.nodeStyle);
 
-        final Pair<DiffTreeSerializeDebugData, String> result = LineGraphExport.toLineGraphFormat(tree, options);
-        final String lg = "t # " + name + LineGraphExport.TREE_NAME_SEPARATOR + "0" + StringUtils.LINEBREAK + result.getValue();
+        final Path tempFile = directory.resolve(treeAndFileName + ".lg");
+
+        final Pair<DiffTreeSerializeDebugData, String> result = LineGraphExport.toLineGraphFormat(tree, lgoptions);
+        final String lg = "t # " + treeAndFileName + LineGraphExport.TREE_NAME_SEPARATOR + "0" + StringUtils.LINEBREAK + result.getValue();
         try {
             IO.write(tempFile, lg);
         } catch (IOException e) {
-            Logger.error("Could not render difftree " + name + " because:", e);
+            Logger.error("Could not render difftree " + treeAndFileName + " because:", e);
             return false;
         }
 
-        if (renderFile(tempFile)) {
+        if (renderFile(tempFile) && options.cleanUpTemporaryFiles) {
             try {
                 Files.delete(tempFile);
             } catch (IOException e) {
