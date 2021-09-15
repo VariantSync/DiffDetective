@@ -7,6 +7,7 @@ import org.prop4j.*;
 import diff.serialize.LineGraphExport;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -243,10 +244,10 @@ public class DiffNode {
      * Inverse of addBelow.
      */
     public void drop() {
-        if(beforeParent != null) {
+        if (beforeParent != null) {
             beforeParent.removeChild(this);
         }
-        if(afterParent != null) {
+        if (afterParent != null) {
             afterParent.removeChild(this);
         }
     }
@@ -350,7 +351,7 @@ public class DiffNode {
         return DiffLineNumber.rangeAfterEdit(from, to);
     }
 
-    public Node getFeatureMapping() {
+    private Node getDirectFeatureMapping() {
         return featureMapping;
     }
 
@@ -366,19 +367,37 @@ public class DiffNode {
         return isMultilineMacro;
     }
 
+    private Node getFeatureMapping(Function<DiffNode, DiffNode> parentOf, Function<DiffNode, Node> featureMappingOf) {
+        final DiffNode parent = parentOf.apply(this);
+
+        if (isElse()) {
+            return new Not(featureMappingOf.apply(parent));
+        } else if (isElif()) {
+            List<Node> and = new ArrayList<>();
+            and.add(featureMapping);
+
+            // Negate all previous cases
+            DiffNode ancestor = parent;
+            while (!ancestor.isIf()) {
+                and.add(new Not(ancestor.getDirectFeatureMapping()));
+                ancestor = parentOf.apply(ancestor);
+            }
+            and.add(new Not(ancestor.getDirectFeatureMapping()));
+
+            return new And(and);
+        } else if (isCode()) {
+            return featureMappingOf.apply(parent);
+        }
+
+        return featureMapping;
+    }
+
     /**
      * Gets the feature mapping of the node after the patch
      * @return the feature mapping of the node after the patch
      */
     public Node getAfterFeatureMapping() {
-        if (isElse()) {
-            return new Not(getAfterParent().getAfterFeatureMapping());
-        } else if (isElif()) {
-            return new And(featureMapping, new Not(getAfterParent().getAfterFeatureMapping()));
-        } else if (isCode()) {
-            return afterParent.getAfterFeatureMapping();
-        }
-        return featureMapping;
+        return getFeatureMapping(DiffNode::getAfterParent, DiffNode::getAfterFeatureMapping);
     }
 
     /**
@@ -386,14 +405,7 @@ public class DiffNode {
      * @return the feature mapping of the node before the patch
      */
     public Node getBeforeFeatureMapping() {
-        if (isElse()) {
-            return new Not(getBeforeParent().getBeforeFeatureMapping());
-        } else if (isElif()) {
-            return new And(featureMapping, new Not(getBeforeParent().getBeforeFeatureMapping()));
-        } else if (isCode()) {
-            return beforeParent.getBeforeFeatureMapping();
-        }
-        return featureMapping;
+        return getFeatureMapping(DiffNode::getBeforeParent, DiffNode::getBeforeFeatureMapping);
     }
 
     public boolean isRem() {
