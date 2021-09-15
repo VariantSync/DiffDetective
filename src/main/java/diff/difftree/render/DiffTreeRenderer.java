@@ -54,13 +54,17 @@ public class DiffTreeRenderer {
         render(patchDiff.getDiffTree(), treename);
     }
 
-    public boolean render(DiffTree tree, String name) {
+    public boolean render(final DiffTree tree, final String name) {
+        return render(tree, name, Path.of("temp"));
+    }
+
+    public boolean render(final DiffTree tree, final String name, final Path directory) {
         final LineGraphExport.Options options = new LineGraphExport.Options(LineGraphExport.NodePrintStyle.Verbose);
 
-        final Path tempFile = Path.of("temp", name);
+        final Path tempFile = directory.resolve(name + ".lg");
 
         final Pair<DiffTreeSerializeDebugData, String> result = LineGraphExport.toLineGraphFormat(tree, options);
-        final String lg = "t # " + name + StringUtils.LINEBREAK;
+        final String lg = "t # " + name + LineGraphExport.TREE_NAME_SEPARATOR + "0" + StringUtils.LINEBREAK + result.getValue();
         try {
             IO.write(tempFile, lg);
         } catch (IOException e) {
