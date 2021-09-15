@@ -163,6 +163,12 @@ public class GitDiffer {
         CanonicalTreeParser currentTreeParser = new CanonicalTreeParser();
         CanonicalTreeParser prevTreeParser = new CanonicalTreeParser();
         try (ObjectReader reader = git.getRepository().newObjectReader()) {
+            if (childCommit.getTree() == null) {
+                throw new RuntimeException("Could not obtain RevTree from child commit " + childCommit.getId());
+            }
+            if (parentCommit.getTree() == null) {
+                throw new RuntimeException("Could not obtain RevTree from parent commit " + parentCommit.getId());
+            }
             currentTreeParser.reset(reader, childCommit.getTree());
             prevTreeParser.reset(reader, parentCommit.getTree());
         }
