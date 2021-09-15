@@ -31,10 +31,8 @@ public class DiffTreeTraversal {
     }
 
     public void visit(final DiffNode subtree) {
-        final Integer id = subtree.getID();
-        if (!visited.containsKey(id)) {
+        if (markAsVisited(subtree)) {
             visitor.visit(this, subtree);
-            visited.put(id, true);
         }
     }
 
@@ -42,5 +40,19 @@ public class DiffTreeTraversal {
         for (final DiffNode child : subtree.getChildren()) {
             visit(child);
         }
+    }
+
+    /**
+     * Treat the given node as already visited regardless whether this is actually true or not.
+     * @param node Node that should be treated as already visited.
+     * @return True if the node was marked visited. False if the node was already marked visited.
+     */
+    public boolean markAsVisited(final DiffNode node) {
+        final Integer id = node.getID();
+        if (!visited.containsKey(id)) {
+            visited.put(id, true);
+            return true;
+        }
+        return false;
     }
 }
