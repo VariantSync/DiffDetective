@@ -26,14 +26,12 @@ public class CollapseNestedNonEditedMacrosTest {
     private static final Path resDir = Constants.RESOURCE_DIR.resolve("diffs/collapse");
     private static final Path genDir = resDir.resolve("gen");
     private static final List<DiffTreeTransformer> transformers = DiffTreeMiner.PostProcessing;
-//            List.of(
-//                    new CollapseNonEditedSubtrees(),
-//                    new CollapseNestedNonEditedMacros(),
-//                    new CollapseNonEditedSubtrees()
-//            );
     private static final DiffTreeRenderer.RenderOptions renderOptions = new DiffTreeRenderer.RenderOptions(
-            LineGraphExport.NodePrintStyle.Verbose,
-            false
+            LineGraphExport.NodePrintStyle.Type,
+            false,
+            500,
+            100,
+            true
             );
 
     private void transformAndRender(String diffFileName) throws IOException {

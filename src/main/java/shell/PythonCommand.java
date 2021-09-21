@@ -1,36 +1,52 @@
 package shell;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
 public class PythonCommand extends ShellCommand {
     private final String pythonName;
     private final Path script;
-    private final String[] args;
+    private final List<String> args;
 
-    public PythonCommand(final String commandName, final Path script, final String... args) {
+    public PythonCommand(final String commandName, final Path script) {
         this.pythonName = commandName;
         this.script = script;
-        this.args = args;
+        this.args = new ArrayList<>();
     }
 
-    public static PythonCommand Python3(final Path script, final String... args) {
-        return new PythonCommand("python3", script, args);
+    public PythonCommand addArg(final String arg) {
+        args.add(arg);
+        return this;
     }
 
-    public static PythonCommand Python(final Path script, final String... args) {
-        return new PythonCommand("python", script, args);
+    public PythonCommand addArg(final Object o) {
+        return addArg(o.toString());
     }
 
-    public static PythonCommand VenvPython3(Path script, String... args) {
-        return new PythonCommand(".venv/bin/python3", script, args);
+    public static PythonCommand Python(final Path script) {
+        return new PythonCommand("python", script);
+    }
+
+    public static PythonCommand Python3(final Path script) {
+        return new PythonCommand("python3", script);
+    }
+
+    public static PythonCommand DiffDetectiveVenvPython3(Path script) {
+        return new PythonCommand(".venv/bin/python3", script);
     }
 
     @Override
     public String[] parts() {
-        final String[] cmd = new String[2 + args.length];
+        final String[] cmd = new String[2 + args.size()];
         cmd[0] = pythonName;
         cmd[1] = script.toString();
-        System.arraycopy(args, 0, cmd, 2, args.length);
+
+        int i = 2;
+        for (final String arg : args) {
+            cmd[i] = arg;
+            ++i;
+        }
         return cmd;
     }
 }

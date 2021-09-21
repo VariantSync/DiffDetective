@@ -1,6 +1,7 @@
 import networkx as nx
 import matplotlib.pyplot as plt
 import pydot
+import argparse
 # + install graphviz on your system: https://www.graphviz.org/download/
 
 import sys
@@ -112,6 +113,8 @@ def plot_graphs(S, exportDir):
     plt.figure(0)
     for i in range(len(S)):
         difftree = S[i]
+
+        print("Render tree", difftree.name.replace("\n", JAVA_TREE_NAME_SEPARATOR))
 
         plt.clf()
         plt.margins(0.05, 0.05)
@@ -225,7 +228,23 @@ def render(pathIn, outDir):
 
 
 if __name__ == "__main__":
-    infile = sys.argv[1]
+    # infile = sys.argv[1]
+
+    argparser = argparse.ArgumentParser(description="Render DiffTrees specified in linegraph files (.lg).")
+    argparser.add_argument('infile')
+    argparser.add_argument('--nodesize', nargs='?', default=700, type=int)
+    argparser.add_argument('--dpi', nargs='?', default=300, type=int)
+    argparser.add_argument('--scalex', nargs='?', default=1, type=int)
+    argparser.add_argument('--scaley', nargs='?', default=1, type=int)
+    argparser.add_argument('--nolabels', nargs='?', const=True, default=False)
+    args = argparser.parse_args()
+
+    infile = args.infile
+    NODE_SIZE = args.nodesize
+    SHOW_LABELS = not args.nolabels
+    DPI = args.dpi
+    POS_SCALING_X = args.scalex
+    POS_SCALING_Y = args.scaley
 
     if os.path.isfile(infile):
         print("Render file", infile)
