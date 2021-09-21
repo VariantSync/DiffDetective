@@ -33,6 +33,8 @@ public class CollapseNestedNonEditedMacros implements DiffTreeTransformer, DiffT
             finalize(chainsInBuild.get(chainsInBuild.size() - 1));
         }
 
+//        System.out.println(finalizedChains);
+
         // collapse all found chains
         for (final Stack<DiffNode> chain : finalizedChains) {
             collapseChain(chain, diffTree);
@@ -132,24 +134,28 @@ public class CollapseNestedNonEditedMacros implements DiffTreeTransformer, DiffT
         return d.getChildren().stream().allMatch(DiffNode::isNon);
     }
 
+    private static boolean hasExactlyOneChild(DiffNode d) {
+        return d.getChildren().size() == 1;
+    }
+
     /**
      * @return True iff d is in the tail of a chain.
      */
     private static boolean inChainTail(DiffNode d) {
-        return d.getBeforeParent() == d.getAfterParent();
+        return d.getBeforeParent() == d.getAfterParent() && hasExactlyOneChild(d.getBeforeParent());
     }
 
     /**
      * @return True iff d is the head of a chain.
      */
     private static boolean isHead(DiffNode d) {
-        return (!inChainTail(d) || d.getBeforeParent().isRoot()) && noChildEdited(d);
+        return (!inChainTail(d) || d.getBeforeParent().isRoot()) && !isEnd(d);
     }
 
     /**
      * @return True iff d is the end of a chain and any chain ending at d has to end.
      */
     private static boolean isEnd(DiffNode d) {
-        return inChainTail(d) && anyChildEdited(d);
+        return inChainTail(d) && (anyChildEdited(d) || !hasExactlyOneChild(d));
     }
 }
