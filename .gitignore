@@ -115,3 +115,7 @@ buildNumber.properties
 *.ser
 patches/*
 /.venv/
+
+# generated test files
+test/resources/diffs/collapse/gen
+test/resources/diffs/multilinemacros/gen
