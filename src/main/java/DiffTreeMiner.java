@@ -1,22 +1,18 @@
 import de.ovgu.featureide.fm.core.analysis.cnf.generator.configuration.util.Pair;
-import diff.DiffFilter;
-import diff.GitDiffer;
 import diff.CommitDiff;
+import diff.GitDiffer;
 import diff.difftree.render.DiffTreeRenderer;
 import diff.difftree.transform.CollapseNestedNonEditedMacros;
-import diff.difftree.transform.CollapseNonEditedSubtrees;
+import diff.difftree.transform.CutNonEditedSubtrees;
 import diff.difftree.transform.DiffTreeTransformer;
 import diff.difftree.transform.NaiveMovedCodeDetection;
+import diff.serialize.DiffTreeSerializeDebugData;
+import diff.serialize.LineGraphExport;
 import load.GitLoader;
 import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.diff.DiffEntry;
-import org.pmw.tinylog.Configurator;
 import org.pmw.tinylog.Level;
 import org.pmw.tinylog.Logger;
-import org.pmw.tinylog.writers.ConsoleWriter;
-import diff.serialize.DiffTreeSerializeDebugData;
 import util.IO;
-import diff.serialize.LineGraphExport;
 import util.Yield;
 
 import java.io.IOException;
@@ -26,18 +22,11 @@ import java.util.List;
 
 public class DiffTreeMiner {
     public static final List<DiffTreeTransformer> PostProcessing = List.of(
-            new CollapseNonEditedSubtrees(),
+            new CutNonEditedSubtrees(),
             new CollapseNestedNonEditedMacros(),
-            new CollapseNonEditedSubtrees(), // duplicate as there can occur new non-edited subtrees
+            new CutNonEditedSubtrees(), // duplicate as we found that there can occur new non-edited subtrees
             new NaiveMovedCodeDetection()
     );
-
-    private static void setupLogger(final Level loggingLevel) {
-        Configurator configurator = Configurator.defaultConfig()
-                .writer(new ConsoleWriter(), loggingLevel)
-                .formatPattern("{{level}:|min-size=8} {message}");
-        configurator.activate();
-    }
 
     public static void main(String[] args) {
         Main.setupLogger(Level.DEBUG);
@@ -50,9 +39,9 @@ public class DiffTreeMiner {
         // use this option with large repositories
         // alternatively, increasing the java heap size also helps :D
         boolean saveMemory = true;
-        boolean renderOutput = true;
-        int treesToExportAtMost = 100;
-//        int treesToExportAtMost = -1;
+        boolean renderOutput = false;
+//        int treesToExportAtMost = 100;
+        int treesToExportAtMost = -1;
 
         final LineGraphExport.Options exportOptions = new LineGraphExport.Options(
                 LineGraphExport.NodePrintStyle.Type // For pattern matching, we want to look at node types and not individual code.

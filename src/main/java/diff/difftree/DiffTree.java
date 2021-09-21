@@ -10,6 +10,7 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 
 /**
@@ -171,6 +172,14 @@ public class DiffTree {
         return annotationNodes;
     }
 
+    public Set<DiffNode> getAllNodes() {
+        final HashSet<DiffNode> allnodes = new HashSet<>();
+        allnodes.add(root);
+        allnodes.addAll(annotationNodes);
+        allnodes.addAll(codeNodes);
+        return allnodes;
+    }
+
     public int size() {
         return 1 /*Root*/ + codeNodes.size() + annotationNodes.size();
     }
@@ -179,12 +188,12 @@ public class DiffTree {
         return size() == 1;
     }
 
-    public boolean isConsistent() {
-        final HashSet<DiffNode> cache = new HashSet<>();
-        cache.add(root);
-        cache.addAll(annotationNodes);
-        cache.addAll(codeNodes);
+    public boolean isInconsistent() {
+        return !isConsistent();
+    }
 
+    public boolean isConsistent() {
+        final Set<DiffNode> cache = getAllNodes();
         final HashSet<DiffNode> tree = new HashSet<>();
         forAll(tree::add);
 

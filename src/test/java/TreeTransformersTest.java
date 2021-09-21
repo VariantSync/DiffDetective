@@ -1,12 +1,10 @@
 import diff.CommitDiff;
 import diff.GitDiffer;
 import diff.PatchDiff;
+import diff.difftree.DiffNode;
 import diff.difftree.DiffTree;
 import diff.difftree.render.DiffTreeRenderer;
-import diff.difftree.transform.CollapseNestedNonEditedMacros;
-import diff.difftree.transform.CollapseNonEditedSubtrees;
 import diff.difftree.transform.DiffTreeTransformer;
-import diff.difftree.transform.NaiveMovedCodeDetection;
 import diff.serialize.LineGraphExport;
 import load.GitLoader;
 import org.eclipse.jgit.api.Git;
@@ -18,12 +16,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.pmw.tinylog.Level;
 
-import javax.sound.sampled.Line;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Set;
+import java.util.function.Consumer;
 
-public class CollapseNestedNonEditedMacrosTest {
+public class TreeTransformersTest {
     private static final Path resDir = Constants.RESOURCE_DIR.resolve("diffs/collapse");
     private static final Path genDir = resDir.resolve("gen");
     private static final List<DiffTreeTransformer> transformers = DiffTreeMiner.PostProcessing;
@@ -35,26 +34,43 @@ public class CollapseNestedNonEditedMacrosTest {
             true
             );
 
+    private static final Consumer<String> INFO = System.out::println;
+
     private void transformAndRender(String diffFileName) throws IOException {
         final DiffTree t = DiffTree.fromFile(resDir.resolve(diffFileName), true, true);
-        transformAndRender(t, diffFileName);
+        transformAndRender(t, diffFileName, "0");
     }
 
-    private void transformAndRender(DiffTree diffTree, String name) throws IOException {
+    private void transformAndRender(DiffTree diffTree, String name, String commit) throws IOException {
         final DiffTreeRenderer renderer = DiffTreeRenderer.WithinDiffDetective();
+        final String treeName = name + LineGraphExport.TREE_NAME_SEPARATOR + commit;
 
         INFO.accept("Original State");
         renderer.render(diffTree, treeName + "_0", genDir, renderOptions);
 
         int i = 1;
-        for (DiffTreeTransformer f : transformers) {
-            Logger.info("Applying transformation " + f.getClass());
+        Set<DiffNode> lastNodes = diffTree.getAllNodes();
+        for (final DiffTreeTransformer f : transformers) {
+            INFO.accept("Applying transformation " + f + ".");
             f.transform(diffTree);
-            if (!diffTree.isConsistent()) {
+
+            final Set<DiffNode> currentNodes = diffTree.getAllNodes();
+            if (!lastNodes.equals(currentNodes)) {
+                int numBefore = lastNodes.size();
+                int numAfter = currentNodes.size();
+                if (numBefore == numAfter) {
+                    INFO.accept("Altered the set of nodes of " + diffTree + " but count is constant.");
+                } else {
+                    INFO.accept((numAfter < numBefore ? "Reduced" : "Increased") + " the number of nodes from " + numBefore + " to " + numAfter + ".");
+                }
+            }
+            lastNodes = currentNodes;
+
+            if (diffTree.isInconsistent()) {
                 throw new IllegalStateException(diffTree + " became inconsistent!");
             }
 
-            renderer.render(diffTree, name + "_" + i, genDir, renderOptions);
+            renderer.render(diffTree, treeName + "_" + i, genDir, renderOptions);
             ++i;
         }
     }
@@ -94,7 +110,7 @@ public class CollapseNestedNonEditedMacrosTest {
 
         for (final PatchDiff pd : commitDiff.getPatchDiffs()) {
             if (file.equals(pd.getFileName())) {
-                transformAndRender(pd.getDiffTree(), file);
+                transformAndRender(pd.getDiffTree(), file, commitHash);
                 return;
             }
         }

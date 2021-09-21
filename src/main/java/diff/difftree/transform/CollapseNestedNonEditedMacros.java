@@ -20,7 +20,7 @@ public class CollapseNestedNonEditedMacros implements DiffTreeTransformer, DiffT
 
     @Override
     public List<Class<? extends DiffTreeTransformer>> getDependencies() {
-        return List.of(CollapseNonEditedSubtrees.class);
+        return List.of(CutNonEditedSubtrees.class);
     }
 
     @Override
@@ -157,5 +157,10 @@ public class CollapseNestedNonEditedMacros implements DiffTreeTransformer, DiffT
      */
     private static boolean isEnd(DiffNode d) {
         return inChainTail(d) && (anyChildEdited(d) || !hasExactlyOneChild(d));
+    }
+
+    @Override
+    public String toString() {
+        return "CollapseNestedNonEditedMacros";
     }
 }

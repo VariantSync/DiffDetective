@@ -10,7 +10,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class CollapseNonEditedSubtrees implements DiffTreeTransformer, DiffTreeVisitor {
+public class CutNonEditedSubtrees implements DiffTreeTransformer, DiffTreeVisitor {
     private List<DiffNode> removedNodes;
 
     @Override
@@ -61,5 +61,10 @@ public class CollapseNonEditedSubtrees implements DiffTreeTransformer, DiffTreeV
             removedNodes.addAll(collapsableChildren);
             subtree.removeChildren(collapsableChildren);
         }
+    }
+
+    @Override
+    public String toString() {
+        return "CutNonEditedSubtrees";
     }
 }
