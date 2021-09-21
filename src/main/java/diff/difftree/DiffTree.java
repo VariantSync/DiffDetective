@@ -8,6 +8,7 @@ import util.IO;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -132,6 +133,18 @@ public class DiffTree {
         node.getChildren().forEach(this::removeFromNodesRecursively);
     }
 
+    public boolean contains(final DiffNode node) {
+        if (node.isCode()) {
+            return codeNodes.contains(node);
+        } else if (node.isMacro()) {
+            return annotationNodes.contains(node);
+        } else if (node.isRoot()) {
+            return root == node;
+        }
+
+        return false;
+    }
+
     public List<DiffNode> getCodeNodes() {
         return codeNodes;
     }
@@ -146,5 +159,19 @@ public class DiffTree {
 
     public boolean isEmpty() {
         return size() == 1;
+    }
+
+    public boolean isConsistent() {
+        final HashSet<DiffNode> cache = new HashSet<>();
+        cache.add(root);
+        cache.addAll(annotationNodes);
+        cache.addAll(codeNodes);
+
+        final HashSet<DiffNode> tree = new HashSet<>();
+        forAll(tree::add);
+
+        // all nodes in cache should be in the tree
+        // all nodes in the tree should be in the cache
+        return cache.equals(tree);
     }
 }
