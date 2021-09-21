@@ -117,5 +117,5 @@ patches/*
 /.venv/
 
 # generated test files
-test/resources/diffs/collapse/gen
-test/resources/diffs/multilinemacros/gen
+src/test/resources/*/gen
+src/test/resources/*/*/gen
