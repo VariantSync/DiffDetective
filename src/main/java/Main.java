@@ -225,7 +225,7 @@ public class Main {
 //        evaluator.exportFeatureContextComplexityDistributionCsv("semantic_fc_complexity.csv");
     }
 
-    private static void setupLogger(Level loggingLevel) {
+    public static void setupLogger(Level loggingLevel) {
         Configurator configurator = Configurator.defaultConfig()
                 .writer(new ConsoleWriter(), loggingLevel)
                 .formatPattern("{{level}:|min-size=8} {message}");

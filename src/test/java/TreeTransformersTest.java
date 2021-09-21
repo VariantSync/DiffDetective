@@ -16,7 +16,7 @@ import org.eclipse.jgit.revwalk.RevWalk;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.pmw.tinylog.Logger;
+import org.pmw.tinylog.Level;
 
 import javax.sound.sampled.Line;
 import java.io.IOException;
@@ -43,7 +43,9 @@ public class CollapseNestedNonEditedMacrosTest {
     private void transformAndRender(DiffTree diffTree, String name) throws IOException {
         final DiffTreeRenderer renderer = DiffTreeRenderer.WithinDiffDetective();
 
-        renderer.render(diffTree, name + "_0", genDir, renderOptions);
+        INFO.accept("Original State");
+        renderer.render(diffTree, treeName + "_0", genDir, renderOptions);
+
         int i = 1;
         for (DiffTreeTransformer f : transformers) {
             Logger.info("Applying transformation " + f.getClass());
@@ -59,6 +61,7 @@ public class CollapseNestedNonEditedMacrosTest {
 
     @Before
     public void init() {
+        Main.setupLogger(Level.INFO);
         DiffTreeTransformer.checkDependencies(transformers);
     }
 

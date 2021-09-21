@@ -120,12 +120,12 @@ public class DiffTreeRenderer {
         cmd.addArg(lineGraphFile.toString());
 
         final ShellExecutor runner = new ShellExecutor(
-//                Logger::info, Logger::error
-                System.out::println, System.err::println
+                m -> System.out.println("  [RENDER] " + m),
+                m -> System.err.println("  [RENDER] " + m)
         );
 
         try {
-            Logger.info("Running command " + cmd + (workDir != null ? "in " + workDir : ""));
+            Logger.debug("Running command " + cmd + (workDir != null ? "in " + workDir : ""));
             runner.execute(cmd, workDir);
         } catch (ShellException e) {
             Logger.error("Could not render linegraph file " + lineGraphFile + " because:", e);

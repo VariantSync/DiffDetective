@@ -40,7 +40,7 @@ public class DiffTreeMiner {
     }
 
     public static void main(String[] args) {
-        setupLogger(Level.DEBUG);
+        Main.setupLogger(Level.DEBUG);
 
         final Path outputPath = Paths.get("linegraph", "data", "difftrees.lg");
 
