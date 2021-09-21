@@ -1,6 +1,7 @@
 package diff;
 
 import diff.difftree.DiffTree;
+import diff.difftree.DiffTreeSource;
 import org.apache.commons.io.FilenameUtils;
 import org.eclipse.jgit.diff.DiffEntry;
 
@@ -11,7 +12,7 @@ import org.eclipse.jgit.diff.DiffEntry;
  *
  * @author Sören Viegener
  */
-public class PatchDiff {
+public class PatchDiff implements DiffTreeSource {
     private final String fullDiff;
     private final DiffTree diffTree;
     private final CommitDiff commitDiff;
@@ -25,6 +26,9 @@ public class PatchDiff {
         this.path = diffEntry.getNewPath();
         this.fullDiff = fullDiff;
         this.diffTree = diffTree;
+        if (this.diffTree != null) {
+            this.diffTree.setSource(this);
+        }
     }
 
     public CommitDiff getCommitDiff() {
@@ -57,6 +61,6 @@ public class PatchDiff {
 
     @Override
     public String toString() {
-        return commitDiff.getAbbreviatedCommitHash() + ", " + path;
+        return path + "@" + commitDiff.getCommitHash();
     }
 }

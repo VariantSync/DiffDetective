@@ -20,16 +20,26 @@ public class DiffTree {
     private final DiffNode root;
     private final List<DiffNode> codeNodes;
     private final List<DiffNode> annotationNodes;
+    private DiffTreeSource source;
 
     public DiffTree(DiffNode root, List<DiffNode> codeNodes, List<DiffNode> annotationNodes) {
+        this(root, codeNodes, annotationNodes, DiffTreeSource.Unknown);
+    }
+
+    public DiffTree(DiffNode root, List<DiffNode> codeNodes, List<DiffNode> annotationNodes, DiffTreeSource source) {
         this.root = root;
         this.codeNodes = codeNodes;
         this.annotationNodes = annotationNodes;
+        this.source = source;
     }
 
     public static DiffTree fromFile(final Path p, boolean collapseMultipleCodeLines, boolean ignoreEmptyLines) throws IOException {
         final String fullDiff = IO.readAsString(p);
-        return DiffTreeParser.createDiffTree(fullDiff, collapseMultipleCodeLines, ignoreEmptyLines);
+        final DiffTree t = DiffTreeParser.createDiffTree(fullDiff, collapseMultipleCodeLines, ignoreEmptyLines);
+        if (t != null) {
+            t.setSource(new PatchFile(p));
+        }
+        return t;
     }
 
     public DiffTree forAll(final Consumer<DiffNode> procedure) {
@@ -40,6 +50,14 @@ public class DiffTree {
     public DiffTree traverse(final DiffTreeVisitor visitor) {
         DiffTreeTraversal.with(visitor).visit(this);
         return this;
+    }
+
+    public void setSource(final DiffTreeSource source) {
+        this.source = source;
+    }
+
+    public DiffTreeSource getSource() {
+        return source;
     }
 
     public DiffNode getRoot() {
@@ -173,5 +191,10 @@ public class DiffTree {
         // all nodes in cache should be in the tree
         // all nodes in the tree should be in the cache
         return cache.equals(tree);
+    }
+
+    @Override
+    public String toString() {
+        return "DiffTree of " + source;
     }
 }
