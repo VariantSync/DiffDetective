@@ -16,6 +16,7 @@ import org.eclipse.jgit.revwalk.RevWalk;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.pmw.tinylog.Logger;
 
 import javax.sound.sampled.Line;
 import java.io.IOException;
@@ -45,7 +46,12 @@ public class CollapseNestedNonEditedMacrosTest {
         renderer.render(diffTree, name + "_0", genDir, renderOptions);
         int i = 1;
         for (DiffTreeTransformer f : transformers) {
+            Logger.info("Applying transformation " + f.getClass());
             f.transform(diffTree);
+            if (!diffTree.isConsistent()) {
+                throw new IllegalStateException(diffTree + " became inconsistent!");
+            }
+
             renderer.render(diffTree, name + "_" + i, genDir, renderOptions);
             ++i;
         }
@@ -104,7 +110,17 @@ public class CollapseNestedNonEditedMacrosTest {
     }
 
     @Test
-    public void testSanguinololu() throws IOException {
+    public void test_pins_SANGUINOLOLU_11() throws IOException {
         testCommit("Marlin/pins_SANGUINOLOLU_11.h", "d3fe3a0962fdbdcd9548abaf765e0cff72d9cf8d");
+    }
+
+    @Test
+    public void test_pins_RAMPS_13() throws IOException {
+        testCommit("Marlin/pins_RAMPS_13.h", "d882e1aee7fb4e4afb43445899b477caf1fffce3");
+    }
+
+    @Test
+    public void test_SanityCheck() throws IOException {
+        testCommit("Marlin/SanityCheck.h", "cbd582865e2a76b7be3b03533a0e06e8daf76f15");
     }
 }

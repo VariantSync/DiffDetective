@@ -37,6 +37,10 @@ public class LineGraphExport {
     public static Pair<DiffTreeSerializeDebugData, String> toLineGraphFormat(final DiffTree diffTree, final Options options) {
         DiffTreeTransformer.apply(options.treePreProcessing, diffTree);
 
+        if (!diffTree.isConsistent()) {
+            throw new IllegalStateException(diffTree + " is inconsistent after transformation with " + options.treePreProcessing + "!");
+        }
+
         if (options.skipEmptyTrees && diffTree.isEmpty()) {
             return new Pair<>(new DiffTreeSerializeDebugData(), "");
         }
