@@ -558,4 +558,17 @@ public class DiffNode {
 
         return fm;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        DiffNode diffNode = (DiffNode) o;
+        return isMultilineMacro == diffNode.isMultilineMacro && diffType == diffNode.diffType && codeType == diffNode.codeType && from.equals(diffNode.from) && to.equals(diffNode.to) && Objects.equals(featureMapping, diffNode.featureMapping) && text.equals(diffNode.text);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(diffType, codeType, isMultilineMacro, from, to, featureMapping, text);
+    }
 }
