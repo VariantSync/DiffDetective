@@ -6,9 +6,6 @@ import diff.difftree.traverse.DiffTreeTraversal;
 import diff.difftree.traverse.DiffTreeVisitor;
 
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 public class CutNonEditedSubtrees implements DiffTreeTransformer, DiffTreeVisitor {
     @Override
@@ -18,8 +15,8 @@ public class CutNonEditedSubtrees implements DiffTreeTransformer, DiffTreeVisito
 
     @Override
     public void visit(final DiffTreeTraversal traversal, final DiffNode subtree) {
-        final Set<DiffNode> collapsableChildren = new HashSet<>();
-        for (final DiffNode child : subtree.getChildren()) {
+        final ArrayList<DiffNode> collapsableChildren = new ArrayList<>();
+        for (final DiffNode child : subtree.getAllChildren()) {
             traversal.visit(child);
 
             /*
@@ -43,7 +40,7 @@ public class CutNonEditedSubtrees implements DiffTreeTransformer, DiffTreeVisito
              *        => s.isNon()
              */
             if (
-                    child.getChildren().isEmpty()
+                    child.getAllChildren().isEmpty()
                             && child.getAfterParent() == subtree
                             && child.getBeforeParent() == subtree)
             {

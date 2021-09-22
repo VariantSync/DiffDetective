@@ -1,12 +1,15 @@
 package diff.difftree;
 
-import diff.Lines;
 import diff.DiffLineNumber;
+import diff.Lines;
+import diff.serialize.LineGraphExport;
 import org.pmw.tinylog.Logger;
 import org.prop4j.*;
-import diff.serialize.LineGraphExport;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -40,22 +43,26 @@ public class DiffNode {
     /**
      * We use a list for children to maintain order.
      */
-    private List<DiffNode> children;
+    private final List<DiffNode> allChildren;
+    private List<DiffNode> beforeChildren;
+    private List<DiffNode> afterChildren;
+
+    private DiffNode() {
+        this.allChildren = new ArrayList<>();
+        this.beforeChildren = new ArrayList<>();
+        this.afterChildren = new ArrayList<>();
+    }
 
     public DiffNode(DiffType diffType, CodeType codeType,
                     DiffLineNumber fromLines, DiffLineNumber toLines,
                     Node featureMapping, String text) {
+        this();
         this.diffType = diffType;
         this.codeType = codeType;
         this.from.set(fromLines);
         this.to.set(toLines);
         this.featureMapping = featureMapping;
-        this.children = new ArrayList<>();
         this.text = text;
-    }
-
-    private DiffNode() {
-        this.children = new ArrayList<>();
     }
 
     /**
@@ -168,6 +175,21 @@ public class DiffNode {
     }
 
     /**
+     * @return The number of unique child nodes.
+     */
+    public int getTotalNumberOfChildren() {
+        return allChildren.size();
+    }
+
+    /**
+     * @return The number of edges going to children.
+     *         This is the sum of the number of edges to before children and the number of edges to after children.
+     */
+    public int getCardinality() {
+        return beforeChildren.size() + afterChildren.size();
+    }
+
+    /**
      * Gets the amount of nodes with diff type REM in the path following the before parent
      * @return the amount of nodes with diff type REM in the path following the before parent
      */
@@ -245,27 +267,17 @@ public class DiffNode {
      */
     public void drop() {
         if (beforeParent != null) {
-            beforeParent.removeChild(this);
+            beforeParent.removeBeforeChild(this);
         }
         if (afterParent != null) {
-            afterParent.removeChild(this);
+            afterParent.removeAfterChild(this);
         }
-    }
-
-    public void addChildren(final Collection<DiffNode> children) {
-        for (final DiffNode child : children) {
-            addChild(child);
-        }
-    }
-
-    public boolean addChild(final DiffNode child) {
-        // careful! No || here to perform both actions.
-        return addBeforeChild(child) | addAfterChild(child);
     }
 
     public boolean addBeforeChild(final DiffNode child) {
         if (!child.isAdd()) {
-            addToChildren(child);
+            addToList(beforeChildren, child);
+            addToList(allChildren, child);
             child.setBeforeParent(this);
             return true;
         }
@@ -274,53 +286,102 @@ public class DiffNode {
 
     public boolean addAfterChild(final DiffNode child) {
         if (!child.isRem()) {
-            addToChildren(child);
+            addToList(afterChildren, child);
+            addToList(allChildren, child);
             child.setAfterParent(this);
             return true;
         }
         return false;
     }
 
-    private void addToChildren(final DiffNode child) {
-        if (!this.children.contains(child)) {
-            this.children.add(child);
+    public void addBeforeChildren(final Collection<DiffNode> beforeChildren) {
+        for (final DiffNode beforeChild : beforeChildren) {
+            addBeforeChild(beforeChild);
         }
     }
 
-    public boolean removeChild(final DiffNode child) {
-        if (this.children.remove(child)) {
-            abandonMyChild(this);
+    public void addAfterChildren(final Collection<DiffNode> afterChildren) {
+        for (final DiffNode afterChild : afterChildren) {
+            addAfterChild(afterChild);
+        }
+    }
+
+    private static void addToList(final List<DiffNode> childrenlist, final DiffNode child) {
+        if (!childrenlist.contains(child)) {
+            childrenlist.add(child);
+        }
+    }
+
+    public boolean removeBeforeChild(final DiffNode child) {
+        if (this.beforeChildren.remove(child)) {
+            removeFromCache(this.afterChildren, this.allChildren, child);
+            dropBeforeChild(child);
             return true;
         }
-
         return false;
     }
 
-    public Collection<DiffNode> removeChildren() {
-        for (final DiffNode child : children) {
-            abandonMyChild(child);
+    public boolean removeAfterChild(final DiffNode child) {
+        if (this.afterChildren.remove(child)) {
+            removeFromCache(this.beforeChildren, this.allChildren, child);
+            dropAfterChild(child);
+            return true;
         }
-
-        final List<DiffNode> result = children;
-        children = new ArrayList<>();
-        return result;
+        return false;
     }
 
     public void removeChildren(final Collection<DiffNode> childrenToRemove) {
-        for (final DiffNode child : childrenToRemove) {
-            abandonMyChild(child);
+        for (final DiffNode childToRemove : childrenToRemove) {
+            removeBeforeChild(childToRemove);
+            removeAfterChild(childToRemove);
         }
-
-        children.removeAll(childrenToRemove);
     }
 
-    private void abandonMyChild(final DiffNode child) {
-        if (child.beforeParent == this) {
-            child.beforeParent = null;
+    public List<DiffNode> removeBeforeChildren() {
+        for (final DiffNode child : beforeChildren) {
+            removeFromCache(this.afterChildren, this.allChildren, child);
+            dropBeforeChild(child);
         }
-        if (child.afterParent == this) {
-            child.afterParent = null;
+
+        final List<DiffNode> orphans = beforeChildren;
+        beforeChildren = new ArrayList<>();
+        return orphans;
+    }
+
+    public List<DiffNode> removeAfterChildren() {
+        for (final DiffNode child : afterChildren) {
+            removeFromCache(this.beforeChildren, this.allChildren, child);
+            dropAfterChild(child);
         }
+
+        final List<DiffNode> orphans = afterChildren;
+        afterChildren = new ArrayList<>();
+        return orphans;
+    }
+
+    private void dropBeforeChild(final DiffNode child) {
+        assert child.beforeParent == this;
+        child.beforeParent = null;
+    }
+
+    private void dropAfterChild(final DiffNode child) {
+        assert child.afterParent == this;
+        child.afterParent = null;
+    }
+
+    private static void removeFromCache(
+            final List<DiffNode> childrenTypeB,
+            final List<DiffNode> allChildren,
+            final DiffNode child)
+    {
+        if (!childrenTypeB.contains(child)) {
+            allChildren.remove(child);
+        }
+    }
+
+    public void stealChildrenOf(final DiffNode parent) {
+        addBeforeChildren(parent.removeBeforeChildren());
+        addAfterChildren(parent.removeAfterChildren());
     }
 
     public DiffNode getBeforeParent() {
@@ -355,8 +416,8 @@ public class DiffNode {
         return featureMapping;
     }
 
-    public Collection<DiffNode> getChildren() {
-        return children;
+    public Collection<DiffNode> getAllChildren() {
+        return allChildren;
     }
 
     public void setIsMultilineMacro(boolean isMultilineMacro) {

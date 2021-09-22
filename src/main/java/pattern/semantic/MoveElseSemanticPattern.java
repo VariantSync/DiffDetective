@@ -29,7 +29,7 @@ public class MoveElseSemanticPattern extends SemanticPattern{
         if(annotationNode.isAdd() && annotationNode.isElse()){
 
             DiffNode removedElse = null;
-            for(DiffNode parentsChild : annotationNode.getAfterParent().getChildren()){
+            for(DiffNode parentsChild : annotationNode.getAfterParent().getAllChildren()){
                 if(parentsChild.isElse() && parentsChild.isRem()){
                     removedElse = parentsChild;
                     break;
@@ -40,11 +40,11 @@ public class MoveElseSemanticPattern extends SemanticPattern{
                 return patternMatches;
             }
 
-            Collection<DiffNode> commonAddElse = annotationNode.getChildren();
-            commonAddElse.retainAll(annotationNode.getAfterParent().getChildren());
+            Collection<DiffNode> commonAddElse = annotationNode.getAllChildren();
+            commonAddElse.retainAll(annotationNode.getAfterParent().getAllChildren());
 
-            Collection<DiffNode> commonRemElse = removedElse.getChildren();
-            commonRemElse.retainAll(annotationNode.getAfterParent().getChildren());
+            Collection<DiffNode> commonRemElse = removedElse.getAllChildren();
+            commonRemElse.retainAll(annotationNode.getAfterParent().getAllChildren());
 
             if(commonAddElse.isEmpty() && commonRemElse.isEmpty()){
                 return patternMatches;

@@ -32,7 +32,7 @@ public class AddIfdefWrapThenSemanticPattern extends SemanticPattern{
 
             boolean nonCodeInIf = false;
             DiffNode elseNode = null;
-            for(DiffNode child : annotationNode.getChildren()){
+            for(DiffNode child : annotationNode.getAllChildren()){
                 if(child.isElif()){
                     return patternMatches;
                 }
@@ -49,7 +49,7 @@ public class AddIfdefWrapThenSemanticPattern extends SemanticPattern{
             }
 
             boolean addedCodeInElse = false;
-            for(DiffNode child : elseNode.getChildren()){
+            for(DiffNode child : elseNode.getAllChildren()){
                 if(child.isCode() && child.isAdd()){
                     addedCodeInElse = true;
                 }

@@ -28,10 +28,10 @@ public class TreeTransformersTest {
             LineGraphExport.NodePrintStyle.Type,
             false,
             500,
-            4,
+            50,
             0.3,
             3,
-            false
+            true
             );
 
     private static final Consumer<String> INFO = System.out::println;

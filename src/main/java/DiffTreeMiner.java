@@ -24,7 +24,6 @@ public class DiffTreeMiner {
     public static final List<DiffTreeTransformer> PostProcessing = List.of(
             new CutNonEditedSubtrees(),
             new CollapseNestedNonEditedMacros(),
-            new CutNonEditedSubtrees(), // duplicate as we found that there can occur new non-edited subtrees
             new NaiveMovedCodeDetection()
     );
 

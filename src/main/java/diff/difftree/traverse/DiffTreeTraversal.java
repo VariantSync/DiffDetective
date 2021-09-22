@@ -37,7 +37,7 @@ public class DiffTreeTraversal {
     }
 
     public void visitChildrenOf(final DiffNode subtree) {
-        for (final DiffNode child : subtree.getChildren()) {
+        for (final DiffNode child : subtree.getAllChildren()) {
             visit(child);
         }
     }

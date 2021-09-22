@@ -9,7 +9,6 @@ import org.prop4j.And;
 import org.prop4j.Node;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Stack;
 
@@ -38,6 +37,8 @@ public class CollapseNestedNonEditedMacros implements DiffTreeTransformer {
         for (final Stack<DiffNode> chain : chains) {
             assert chain.size() >= 2;
         }
+
+//        System.out.println(StringUtils.prettyPrintNestedCollections(chains));
 
         // collapse all found chains
         for (final Stack<DiffNode> chain : chains) {
@@ -81,7 +82,8 @@ public class CollapseNestedNonEditedMacros implements DiffTreeTransformer {
     }
 
     private static void collapseChain(Stack<DiffNode> chain) {
-        final Collection<DiffNode> children = chain.peek().removeChildren();
+        final DiffNode end = chain.peek();
+        final DiffNode head = chain.firstElement();
         final ArrayList<Node> featureMappings = new ArrayList<>(chain.size());
 
         DiffNode lastPopped = null;
@@ -106,17 +108,19 @@ public class CollapseNestedNonEditedMacros implements DiffTreeTransformer {
             }
         }
 
-        final DiffNode beforeParent = lastPopped.getBeforeParent();
-        final DiffNode afterParent = lastPopped.getAfterParent();
+        assert head == lastPopped;
+
+        final DiffNode beforeParent = head.getBeforeParent();
+        final DiffNode afterParent = head.getAfterParent();
 
         final DiffNode merged = new DiffNode(
                 DiffType.NON, CodeType.IF,
-                lastPopped.getFromLine(), lastPopped.getToLine(),
+                head.getFromLine(), head.getToLine(),
                 new And(featureMappings.toArray()),
                 "$Collapsed Nested Annotations$");
 
-        lastPopped.drop();
-        merged.addChildren(children);
+        head.drop();
+        merged.stealChildrenOf(end);
         merged.addBelow(beforeParent, afterParent);
     }
 
@@ -124,18 +128,18 @@ public class CollapseNestedNonEditedMacros implements DiffTreeTransformer {
      * @return True iff at least one child of was edited.
      */
     private static boolean anyChildEdited(DiffNode d) {
-        return d.getChildren().stream().anyMatch(c -> !c.isNon());
+        return d.getAllChildren().stream().anyMatch(c -> !c.isNon());
     }
 
     /**
      * @return True iff no child of was edited.
      */
     private static boolean noChildEdited(DiffNode d) {
-        return d.getChildren().stream().allMatch(DiffNode::isNon);
+        return d.getAllChildren().stream().allMatch(DiffNode::isNon);
     }
 
     private static boolean hasExactlyOneChild(DiffNode d) {
-        return d.getChildren().size() == 1;
+        return d.getTotalNumberOfChildren() == 1;
     }
 
     /**

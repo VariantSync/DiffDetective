@@ -39,8 +39,8 @@ public class NaiveMovedCodeDetection implements DiffTreeTransformer {
 
             added.drop();
             removed.drop();
-            mergedNode.addChildren(added.removeChildren());
-            mergedNode.addChildren(removed.removeChildren());
+            mergedNode.stealChildrenOf(added);
+            mergedNode.stealChildrenOf(removed);
             mergedNode.addBelow(beforeParent, afterParent);
         }
     }

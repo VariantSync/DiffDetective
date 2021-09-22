@@ -1,7 +1,6 @@
 package pattern.semantic;
 
 import analysis.data.PatternMatch;
-import diff.Lines;
 import diff.difftree.DiffNode;
 import evaluation.FeatureContext;
 import org.prop4j.Not;
@@ -33,7 +32,7 @@ public class AddIfdefElseSemanticPattern extends SemanticPattern{
 
             boolean addedCodeInIf = false;
             DiffNode elseNode = null;
-            for(DiffNode child : annotationNode.getChildren()){
+            for(DiffNode child : annotationNode.getAllChildren()){
                 if(child.isElif()){
                     return patternMatches;
                 }
@@ -50,7 +49,7 @@ public class AddIfdefElseSemanticPattern extends SemanticPattern{
             }
 
             boolean addedCodeInElse = false;
-            for(DiffNode child : elseNode.getChildren()) {
+            for(DiffNode child : elseNode.getAllChildren()) {
                 if(child.isCode() && child.isAdd()){
                     addedCodeInElse = true;
                 }

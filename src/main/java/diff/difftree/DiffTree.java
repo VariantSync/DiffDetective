@@ -88,7 +88,7 @@ public class DiffTree {
     }
 
     public boolean isEmpty() {
-        return root == null || root.getChildren().isEmpty();
+        return root == null || root.getCardinality() == 0;
     }
 
     @Override
