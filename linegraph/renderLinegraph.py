@@ -1,12 +1,11 @@
-import networkx as nx
-import matplotlib.pyplot as plt
-import pydot
 import argparse
-# + install graphviz on your system: https://www.graphviz.org/download/
-
-import sys
-import re
+import matplotlib.pyplot as plt
+import networkx as nx
 import os
+import re
+import sys
+
+# + install graphviz on your system: https://www.graphviz.org/download/
 
 
 # constants from our Java code
@@ -29,6 +28,8 @@ CODE_TYPE_OTHER_COLOR = 'black'
 
 # drawing parameters
 NODE_SIZE = 700
+EDGE_SIZE = 0.5
+ARROW_SIZE = 5
 SHOW_LABELS = True
 DPI = 300
 POS_SCALING_X = 1
@@ -193,27 +194,23 @@ def plot_graphs(S, exportDir):
         if SHOW_LABELS:
             node_labels = dict([(v, d['label']) for v, d in difftree.nodes(data=True)])
             nx.draw(difftree, pos,
-                        node_size=NODE_SIZE,
-                        node_color=node_colors,
-                        edge_color=edge_colors,
-                        font_size=3,
-                        labels=node_labels,
-                        bbox=dict(facecolor="white", edgecolor='black', boxstyle='round,pad=0.1', linestyle=''))
+                    node_size=NODE_SIZE,
+                    node_color=node_colors,
+                    width=EDGE_SIZE,
+                    arrowsize=ARROW_SIZE,
+                    edge_color=edge_colors,
+                    font_size=3,
+                    labels=node_labels,
+                    bbox=dict(facecolor="white", edgecolor='black', boxstyle='round,pad=0.1', linestyle=''))
         else:
             nx.draw(difftree, pos,
                     node_size=NODE_SIZE,
                     node_color=node_colors,
+                    width=EDGE_SIZE,
+                    arrowsize=ARROW_SIZE,
                     edge_color=edge_colors,
                     font_size=3)
 
-        # edge_labels = dict([((fromnode, tonode), d['label']) for fromnode, tonode, d in S[i].edges.data()])
-        # nx.draw_networkx_edge_labels(S[i], pos, font_size=6, edge_labels=edge_labels)
-
-
-        # if len(S) > 1:
-        #     save_path = file_path + "_" + str(i) + ".png"
-        # else:
-        #     save_path = file_path + ".png"
         outfilename = difftree.graph['filename'].replace("/", DIR_SEPARATOR) + DIR_SEPARATOR + difftree.graph['commitid'] + ".png"
         save_path = os.path.join(exportDir, outfilename)
 
@@ -233,10 +230,12 @@ if __name__ == "__main__":
     argparser = argparse.ArgumentParser(description="Render DiffTrees specified in linegraph files (.lg).")
     argparser.add_argument('infile')
     argparser.add_argument('--nodesize', nargs='?', default=700, type=int)
+    argparser.add_argument('--edgesize', nargs='?', default=1.0, type=float)
+    argparser.add_argument('--arrowsize', nargs='?', default=10, type=int)
     argparser.add_argument('--dpi', nargs='?', default=300, type=int)
     argparser.add_argument('--scalex', nargs='?', default=1, type=int)
     argparser.add_argument('--scaley', nargs='?', default=1, type=int)
-    argparser.add_argument('--nolabels', nargs='?', const=True, default=False)
+    argparser.add_argument('--nolabels', action='store_const', const=True, default=False)
     args = argparser.parse_args()
 
     infile = args.infile
@@ -245,6 +244,8 @@ if __name__ == "__main__":
     DPI = args.dpi
     POS_SCALING_X = args.scalex
     POS_SCALING_Y = args.scaley
+    EDGE_SIZE = args.edgesize
+    ARROW_SIZE = args.arrowsize
 
     if os.path.isfile(infile):
         print("Render file", infile)

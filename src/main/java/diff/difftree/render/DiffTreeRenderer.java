@@ -1,19 +1,20 @@
 package diff.difftree.render;
 
 import de.ovgu.featureide.fm.core.analysis.cnf.generator.configuration.util.Pair;
-import diff.difftree.DiffTree;
 import diff.PatchDiff;
-import org.pmw.tinylog.Logger;
-import shell.*;
+import diff.difftree.DiffTree;
 import diff.serialize.DiffTreeSerializeDebugData;
-import util.IO;
 import diff.serialize.LineGraphExport;
+import org.pmw.tinylog.Logger;
+import shell.PythonCommand;
+import shell.ShellException;
+import shell.ShellExecutor;
+import util.IO;
 import util.StringUtils;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class DiffTreeRenderer {
@@ -30,14 +31,19 @@ public class DiffTreeRenderer {
             boolean cleanUpTemporaryFiles,
             int dpi,
             int nodesize,
-            boolean withlabels)
-    {}
-    public static final RenderOptions DefaultRenderOptions = new RenderOptions(
-            LineGraphExport.NodePrintStyle.Verbose,
-            true,
-            300,
-            700,
-            true);
+            double edgesize,
+            int arrowsize,
+            boolean withlabels) {
+        public static RenderOptions DEFAULT = new RenderOptions(
+                LineGraphExport.NodePrintStyle.Verbose,
+                true,
+                300,
+                700,
+                1.0,
+                10,
+                true
+        );
+    }
 
     private DiffTreeRenderer(final Supplier<PythonCommand> pythonCommandFactory, final Path workDir) {
         this.workDir = workDir;
@@ -65,7 +71,7 @@ public class DiffTreeRenderer {
     }
 
     public void render(PatchDiff patchDiff, final Path directory) {
-        render(patchDiff, directory, DefaultRenderOptions);
+        render(patchDiff, directory, RenderOptions.DEFAULT);
     }
 
     public boolean render(PatchDiff patchDiff, final Path directory, RenderOptions options) {
@@ -77,7 +83,7 @@ public class DiffTreeRenderer {
     }
 
     public boolean render(final DiffTree tree, final String treeAndFileName, final Path directory) {
-        return render(tree, treeAndFileName, directory, DefaultRenderOptions);
+        return render(tree, treeAndFileName, directory, RenderOptions.DEFAULT);
     }
 
     public boolean render(final DiffTree tree, final String treeAndFileName, final Path directory, RenderOptions options) {
@@ -106,7 +112,7 @@ public class DiffTreeRenderer {
     }
 
     public boolean renderFile(final Path lineGraphFile) {
-        return renderFile(lineGraphFile, DefaultRenderOptions);
+        return renderFile(lineGraphFile, RenderOptions.DEFAULT);
     }
 
     public boolean renderFile(final Path lineGraphFile, RenderOptions options) {
@@ -114,6 +120,8 @@ public class DiffTreeRenderer {
 
         cmd.addArg("--nodesize").addArg(options.nodesize);
         cmd.addArg("--dpi").addArg(options.dpi);
+        cmd.addArg("--edgesize").addArg(options.edgesize);
+        cmd.addArg("--arrowsize").addArg(options.arrowsize);
         if (!options.withlabels) {
             cmd.addArg("--nolabels");
         }

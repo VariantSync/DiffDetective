@@ -1,7 +1,6 @@
 import diff.CommitDiff;
 import diff.GitDiffer;
 import diff.PatchDiff;
-import diff.difftree.DiffNode;
 import diff.difftree.DiffTree;
 import diff.difftree.render.DiffTreeRenderer;
 import diff.difftree.transform.DiffTreeTransformer;
@@ -19,7 +18,6 @@ import org.pmw.tinylog.Level;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Consumer;
 
 public class TreeTransformersTest {
@@ -30,8 +28,10 @@ public class TreeTransformersTest {
             LineGraphExport.NodePrintStyle.Type,
             false,
             500,
-            100,
-            true
+            4,
+            0.3,
+            3,
+            false
             );
 
     private static final Consumer<String> INFO = System.out::println;
