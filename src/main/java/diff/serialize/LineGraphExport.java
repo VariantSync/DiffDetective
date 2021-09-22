@@ -2,8 +2,8 @@ package diff.serialize;
 
 import de.ovgu.featureide.fm.core.analysis.cnf.generator.configuration.util.Pair;
 import diff.CommitDiff;
-import diff.difftree.DiffTree;
 import diff.PatchDiff;
+import diff.difftree.DiffTree;
 import diff.difftree.serialize.DiffTreeLineGraphExporter;
 import diff.difftree.transform.DiffTreeTransformer;
 import org.pmw.tinylog.Logger;
@@ -36,6 +36,7 @@ public class LineGraphExport {
 
     public static Pair<DiffTreeSerializeDebugData, String> toLineGraphFormat(final DiffTree diffTree, final Options options) {
         DiffTreeTransformer.apply(options.treePreProcessing, diffTree);
+        diffTree.assertConsistency();
 
         if (options.skipEmptyTrees && diffTree.isEmpty()) {
             return new Pair<>(new DiffTreeSerializeDebugData(), "");

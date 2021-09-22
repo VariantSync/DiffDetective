@@ -60,6 +60,8 @@ public class TreeTransformersTest {
             }
             prevSize = currentSize;
 
+            diffTree.assertConsistency();
+
             renderer.render(diffTree, treeName + "_" + i, genDir, renderOptions);
             ++i;
         }

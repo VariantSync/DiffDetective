@@ -5,6 +5,7 @@ import diff.Lines;
 import diff.serialize.LineGraphExport;
 import org.pmw.tinylog.Logger;
 import org.prop4j.*;
+import util.Assert;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -525,6 +526,21 @@ public class DiffNode {
             case Mappings -> diffType + "_" + codeType + "_\"" + (codeType.isMacro() ? (codeType.name + " " + getDirectFeatureMapping()) : "") + "\"";
             case Verbose -> diffType + "_" + codeType + "_\"" + (codeType.isMacro() ? (codeType.name + " " + getDirectFeatureMapping()) : text.trim()) + "\"";
         };
+    }
+
+    public void assertConsistency() {
+        // check consistency of children
+        for (final DiffNode bc : beforeChildren) {
+            Assert.assertTrue(bc.beforeParent == this, () -> "Before child " + bc + " of " + this + " has another parent " + bc.beforeParent + "!");
+            Assert.assertTrue(allChildren.contains(bc), () -> "Before child " + bc + " of " + this + " is not in the list of all children!");
+        }
+        for (final DiffNode ac : afterChildren) {
+            Assert.assertTrue(ac.afterParent == this, () -> "After child " + ac + " of " + this + " has another parent " + ac.afterParent + "!");
+            Assert.assertTrue(allChildren.contains(ac), () -> "After child " + ac + " of " + this + " is not in the list of all children!");
+        }
+        for (final DiffNode c : allChildren) {
+            Assert.assertTrue(beforeChildren.contains(c) || afterChildren.contains(c), () -> "Child " + c + " of " + this + " is neither a before not an after child!");
+        }
     }
 
     @Override
