@@ -470,11 +470,11 @@ public class DiffNode {
     public String toString() {
         String s;
         if (isCode()) {
-            s = String.format("%s_%s: (%d-%d)", diffType, codeType, from.inDiff, to.inDiff);
+            s = String.format("%s_%s from %d to %d", diffType, codeType, from.inDiff, to.inDiff);
         } else if (isRoot()) {
             s = "ROOT";
         } else {
-            s = String.format("%s_%s: (%d-%d), fm: %s", diffType, codeType,
+            s = String.format("%s_%s from %d to %d with \"%s\"", diffType, codeType,
                     from.inDiff, to.inDiff, featureMapping);
         }
         return s;
