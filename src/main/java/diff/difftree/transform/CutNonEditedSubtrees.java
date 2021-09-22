@@ -11,15 +11,9 @@ import java.util.List;
 import java.util.Set;
 
 public class CutNonEditedSubtrees implements DiffTreeTransformer, DiffTreeVisitor {
-    private List<DiffNode> removedNodes;
-
     @Override
     public void transform(final DiffTree diffTree) {
-        removedNodes = new ArrayList<>();
         diffTree.traverse(this);
-        diffTree.getAnnotationNodes().removeAll(removedNodes);
-        diffTree.getCodeNodes().removeAll(removedNodes);
-        removedNodes = null;
     }
 
     @Override
@@ -51,14 +45,14 @@ public class CutNonEditedSubtrees implements DiffTreeTransformer, DiffTreeVisito
             if (
                     child.getChildren().isEmpty()
                             && child.getAfterParent() == subtree
-                            && child.getBeforeParent() == subtree) {
+                            && child.getBeforeParent() == subtree)
+            {
                 collapsableChildren.add(child);
             }
         }
 
         // ... remove all children.
         if (!collapsableChildren.isEmpty()) {
-            removedNodes.addAll(collapsableChildren);
             subtree.removeChildren(collapsableChildren);
         }
     }

@@ -34,9 +34,7 @@ public class DiffTreeParser {
                                           boolean ignoreEmptyLines) {
         final String[] fullDiffLines = fullDiff.split(NEW_LINE_REGEX);
 
-        final List<DiffNode> codeNodes = new ArrayList<>();
-        final List<DiffNode> annotationNodes = new ArrayList<>();
-
+        final List<DiffNode> nodes = new ArrayList<>();
         final Stack<DiffNode> beforeStack = new Stack<>();
         final Stack<DiffNode> afterStack = new Stack<>();
         final DiffLineNumber lineNo = new DiffLineNumber(0, 0, 0);
@@ -74,7 +72,7 @@ public class DiffTreeParser {
 
             // check if this is a multiline macro
             final ParseResult isMLMacro = mlMacroParser.consume(
-                    lineNo, currentLine, beforeStack, afterStack, annotationNodes);
+                    lineNo, currentLine, beforeStack, afterStack, nodes);
             switch (isMLMacro.type()) {
                 case Success: {
                     if (lastCode != null) {
@@ -107,11 +105,11 @@ public class DiffTreeParser {
             newNode.getFromLine().set(lineNo);
             if (!newNode.isEndif()) {
                 newNode.addBelow(beforeStack.peek(), afterStack.peek());
+                nodes.add(newNode);
             }
 
             if (newNode.isCode()) {
                 lastCode = newNode;
-                codeNodes.add(newNode);
             } else if (newNode.isEndif()) {
                 diffType.matchBeforeAfter(beforeStack, afterStack,
                         stack -> {
@@ -135,8 +133,6 @@ public class DiffTreeParser {
                         pushNodeToStack(newNode, stack, lastLineNo).onError(errorHandler)
                 );
                 if (error.get()) { return null; }
-
-                annotationNodes.add(newNode);
             }
         }
 
@@ -153,16 +149,12 @@ public class DiffTreeParser {
 
         // Invalidate line numbers according to edits.
         // E.g. if a node was added, it had no line number before the edit.
-        for (final DiffNode node : codeNodes) {
-            node.getFromLine().as(node.diffType);
-            node.getToLine().as(node.diffType);
-        }
-        for (final DiffNode node : annotationNodes) {
+        for (final DiffNode node : nodes) {
             node.getFromLine().as(node.diffType);
             node.getToLine().as(node.diffType);
         }
 
-        return new DiffTree(root, codeNodes, annotationNodes);
+        return new DiffTree(root);
     }
 
     static ParseResult pushNodeToStack(

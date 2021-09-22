@@ -58,14 +58,7 @@ public class DiffTreeLineGraphExporter {
     }
 
     public String export(LineGraphExport.Options options) {
-        visit(diffTree.getRoot(), options);
-        for (DiffNode codeNode : diffTree.getCodeNodes()) {
-            visit(codeNode, options);
-        }
-        for (DiffNode annotationNode : diffTree.getAnnotationNodes()) {
-            visit(annotationNode, options);
-        }
-
+        diffTree.forAll(n -> visit(n, options));
         final String result = nodesString.toString() + edgesString;
         StringUtils.clear(nodesString);
         StringUtils.clear(edgesString);

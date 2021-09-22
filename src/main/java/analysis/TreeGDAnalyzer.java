@@ -78,7 +78,7 @@ public class TreeGDAnalyzer extends GDAnalyzer<DiffNode> {
         DiffTree diffTree = patchDiff.getDiffTree();
         if(diffTree != null) {
             // match atomic patterns
-            for (DiffNode diffNode : diffTree.getCodeNodes()) {
+            for (DiffNode diffNode : diffTree.computeCodeNodes()) {
                 for (EditPattern<DiffNode> pattern : patterns) {
                     if(pattern instanceof AtomicPattern) {
                         List<PatternMatch<DiffNode>> patternMatches = pattern.getMatches(diffNode);
@@ -90,7 +90,7 @@ public class TreeGDAnalyzer extends GDAnalyzer<DiffNode> {
             }
 
             // match semantic patterns
-            for (DiffNode diffNode : diffTree.getAnnotationNodes()) {
+            for (DiffNode diffNode : diffTree.computeAnnotationNodes()) {
                 for (EditPattern<DiffNode> pattern : patterns) {
                     if(pattern instanceof SemanticPattern) {
                         List<PatternMatch<DiffNode>> patternMatches = pattern.getMatches(diffNode);

@@ -49,26 +49,16 @@ public class TreeTransformersTest {
         renderer.render(diffTree, treeName + "_0", genDir, renderOptions);
 
         int i = 1;
-        Set<DiffNode> lastNodes = diffTree.getAllNodes();
+        int prevSize = diffTree.computeSize();
         for (final DiffTreeTransformer f : transformers) {
             INFO.accept("Applying transformation " + f + ".");
             f.transform(diffTree);
 
-            final Set<DiffNode> currentNodes = diffTree.getAllNodes();
-            if (!lastNodes.equals(currentNodes)) {
-                int numBefore = lastNodes.size();
-                int numAfter = currentNodes.size();
-                if (numBefore == numAfter) {
-                    INFO.accept("Altered the set of nodes of " + diffTree + " but count is constant.");
-                } else {
-                    INFO.accept((numAfter < numBefore ? "Reduced" : "Increased") + " the number of nodes from " + numBefore + " to " + numAfter + ".");
-                }
+            final int currentSize = diffTree.computeSize();
+            if (prevSize != currentSize) {
+                INFO.accept((currentSize < prevSize ? "Reduced" : "Increased") + " the number of nodes from " + prevSize + " to " + currentSize + ".");
             }
-            lastNodes = currentNodes;
-
-            if (diffTree.isInconsistent()) {
-                throw new IllegalStateException(diffTree + " became inconsistent!");
-            }
+            prevSize = currentSize;
 
             renderer.render(diffTree, treeName + "_" + i, genDir, renderOptions);
             ++i;

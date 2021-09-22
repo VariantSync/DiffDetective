@@ -37,14 +37,16 @@ public class NaiveMovedCodeDetection implements DiffTreeTransformer {
             final DiffNode beforeParent = removed.getBeforeParent();
             final DiffNode mergedNode = merge(added, removed);
 
-            mergedNode.addChildren(diffTree.removeSubtreeRoot(added));
-            mergedNode.addChildren(diffTree.removeSubtreeRoot(removed));
-            diffTree.addSubtreeRoot(mergedNode, beforeParent, afterParent);
+            added.drop();
+            removed.drop();
+            mergedNode.addChildren(added.removeChildren());
+            mergedNode.addChildren(removed.removeChildren());
+            mergedNode.addBelow(beforeParent, afterParent);
         }
     }
 
     private static List<Pair<DiffNode, DiffNode>> findCodeTwins(final DiffTree diffTree) {
-        final List<DiffNode> codeNodes = new ArrayList<>(diffTree.getCodeNodes());
+        final List<DiffNode> codeNodes = diffTree.computeCodeNodes();
         final List<Pair<DiffNode, DiffNode>> twins = new ArrayList<>();
 
         while (!codeNodes.isEmpty()) {

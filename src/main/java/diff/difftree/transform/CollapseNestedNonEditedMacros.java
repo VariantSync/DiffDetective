@@ -86,7 +86,6 @@ public class CollapseNestedNonEditedMacros implements DiffTreeTransformer, DiffT
         assert !chain.isEmpty();
         while (!chain.isEmpty()) {
             lastPopped = chain.pop();
-            diffTree.removeFromNodes(lastPopped);
 
             switch (lastPopped.codeType) {
                 case IF ->
@@ -97,7 +96,6 @@ public class CollapseNestedNonEditedMacros implements DiffTreeTransformer, DiffT
                     // for their features mappings already.
                     while (!lastPopped.isIf() && !chain.isEmpty()) {
                         lastPopped = chain.pop();
-                        diffTree.removeFromNodes(lastPopped);
                     }
                 }
                 case ROOT, CODE ->
@@ -117,7 +115,7 @@ public class CollapseNestedNonEditedMacros implements DiffTreeTransformer, DiffT
 
         lastPopped.drop();
         merged.addChildren(children);
-        diffTree.addSubtreeRoot(merged, beforeParent, afterParent);
+        merged.addBelow(beforeParent, afterParent);
     }
 
     /**
