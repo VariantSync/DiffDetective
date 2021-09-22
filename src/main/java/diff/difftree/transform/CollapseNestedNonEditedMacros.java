@@ -5,18 +5,20 @@ import diff.difftree.DiffNode;
 import diff.difftree.DiffTree;
 import diff.difftree.DiffType;
 import diff.difftree.traverse.DiffTreeTraversal;
-import diff.difftree.traverse.DiffTreeVisitor;
 import org.prop4j.And;
 import org.prop4j.Node;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Stack;
 
 /**
  * https://scryfall.com/card/2xm/308/wurmcoil-engine
  */
-public class CollapseNestedNonEditedMacros implements DiffTreeTransformer, DiffTreeVisitor {
-    private final List<Stack<DiffNode>> chainsInBuild = new ArrayList<>();
-    private final List<Stack<DiffNode>> finalizedChains = new ArrayList<>();
+public class CollapseNestedNonEditedMacros implements DiffTreeTransformer {
+    private final List<Stack<DiffNode>> chainCandidates = new ArrayList<>();
+    private final List<Stack<DiffNode>> chains = new ArrayList<>();
 
     @Override
     public List<Class<? extends DiffTreeTransformer>> getDependencies() {
@@ -26,42 +28,42 @@ public class CollapseNestedNonEditedMacros implements DiffTreeTransformer, DiffT
     @Override
     public void transform(final DiffTree diffTree) {
         // find all chains
-        DiffTreeTraversal.with(this).visit(diffTree);
+        diffTree.traverse(this::findChains);
 
-        // finalize all remaining in build chains
-        while (!chainsInBuild.isEmpty()) {
-            finalize(chainsInBuild.get(chainsInBuild.size() - 1));
+        // Ignore unfinished chainCandidates.
+        // For all these chains, no end was found, so they should not be extracted.
+        chainCandidates.clear();
+
+        // All found chains should at least have size 2.
+        for (final Stack<DiffNode> chain : chains) {
+            assert chain.size() >= 2;
         }
 
-//        System.out.println(finalizedChains);
-
         // collapse all found chains
-        for (final Stack<DiffNode> chain : finalizedChains) {
-            collapseChain(chain, diffTree);
+        for (final Stack<DiffNode> chain : chains) {
+            collapseChain(chain);
         }
 
         // cleanup
-        chainsInBuild.clear();
-        finalizedChains.clear();
+        chains.clear();
     }
 
     private void finalize(Stack<DiffNode> chain) {
-        chainsInBuild.remove(chain);
-        finalizedChains.add(chain);
+        chainCandidates.remove(chain);
+        chains.add(chain);
     }
 
-    @Override
-    public void visit(DiffTreeTraversal traversal, DiffNode subtree) {
+    private void findChains(DiffTreeTraversal traversal, DiffNode subtree) {
         if (subtree.isNon() && subtree.isMacro()) {
             if (isHead(subtree)) {
                 final Stack<DiffNode> s = new Stack<>();
                 s.push(subtree);
-                chainsInBuild.add(s);
+                chainCandidates.add(s);
             } else if (inChainTail(subtree)) {
-                final DiffNode parent = subtree.getBeforeParent();
+                final DiffNode parent = subtree.getBeforeParent(); // == after parent
 
                 Stack<DiffNode> pushedTo = null;
-                for (final Stack<DiffNode> s : chainsInBuild) {
+                for (final Stack<DiffNode> s : chainCandidates) {
                     if (s.peek() == parent) {
                         s.push(subtree);
                         pushedTo = s;
@@ -78,7 +80,7 @@ public class CollapseNestedNonEditedMacros implements DiffTreeTransformer, DiffT
         traversal.visitChildrenOf(subtree);
     }
 
-    private static void collapseChain(Stack<DiffNode> chain, DiffTree diffTree) {
+    private static void collapseChain(Stack<DiffNode> chain) {
         final Collection<DiffNode> children = chain.peek().removeChildren();
         final ArrayList<Node> featureMappings = new ArrayList<>(chain.size());
 
