@@ -35,6 +35,9 @@ DPI = 300
 POS_SCALING_X = 1
 POS_SCALING_Y = 1
 
+# other parameters
+IS_PATTERN = False
+
 
 def lineNoOfNode(v):
     # inverse of DiffNode::getID in our Java code
@@ -85,9 +88,16 @@ def load_as_line_graph(input_file):
 
             graphName = str(match_header.group(1))
             graphNameSplitted = graphName.split(JAVA_TREE_NAME_SEPARATOR, 2)
-            fileName = graphNameSplitted[0]
-            commitId = graphNameSplitted[1]
-            graphTitle = fileName + "\n" + commitId
+            if len(graphNameSplitted) > 1:
+                fileName = graphNameSplitted[0]
+                commitId = graphNameSplitted[1]
+                graphTitle = fileName + "\n" + commitId
+            else:
+                fileName = os.path.basename(input_file)
+                commitId = "unknown"
+                graphTitle = fileName
+                if IS_PATTERN:
+                    graphTitle = "Pattern\n" + graphTitle
             graph = nx.DiGraph(name=graphTitle, filename=fileName, commitid=commitId)
             continue
 
@@ -115,7 +125,7 @@ def plot_graphs(S, exportDir):
     for i in range(len(S)):
         difftree = S[i]
 
-        print("Render tree", difftree.name.replace("\n", JAVA_TREE_NAME_SEPARATOR))
+        # print("Render tree", difftree.name.replace("\n", JAVA_TREE_NAME_SEPARATOR))
 
         plt.clf()
         plt.margins(0.05, 0.05)
@@ -165,7 +175,10 @@ def plot_graphs(S, exportDir):
                     code = '#' + code
                 # print(code)
             # prepend line number
-            code = str(lineNoOfNode(v)) + ("\n" + code if len(code) > 0 else "")
+            if IS_PATTERN:
+                code = ""
+            else:
+                code = str(lineNoOfNode(v)) + ("\n" + code if len(code) > 0 else "")
             # print(code)
             # print("")
             d['label'] = "ROOT" if isroot else code
@@ -211,7 +224,10 @@ def plot_graphs(S, exportDir):
                     edge_color=edge_colors,
                     font_size=3)
 
-        outfilename = difftree.graph['filename'].replace("/", DIR_SEPARATOR) + DIR_SEPARATOR + difftree.graph['commitid'] + ".png"
+        outfilename = difftree.graph['filename'].replace("/", DIR_SEPARATOR)
+        if not IS_PATTERN:
+            outfilename += DIR_SEPARATOR + difftree.graph['commitid']
+        outfilename += ".png"
         save_path = os.path.join(exportDir, outfilename)
 
         # Save
@@ -224,9 +240,14 @@ def render(pathIn, outDir):
     plot_graphs(graphs, outDir)
 
 
-if __name__ == "__main__":
-    # infile = sys.argv[1]
+def getAllFilesInDirectoryRecusivelyThat(dirname, condition):
+    # Get the list of all files in directory tree at given path
+    listOfFiles = list()
+    for (dirpath, dirnames, filenames) in os.walk(dirname):
+        listOfFiles += [os.path.join(dirpath, file) for file in filenames if condition(file)]
+    return listOfFiles
 
+if __name__ == "__main__":
     argparser = argparse.ArgumentParser(description="Render DiffTrees specified in linegraph files (.lg).")
     argparser.add_argument('infile')
     argparser.add_argument('--nodesize', nargs='?', default=700, type=int)
@@ -236,6 +257,8 @@ if __name__ == "__main__":
     argparser.add_argument('--scalex', nargs='?', default=1, type=int)
     argparser.add_argument('--scaley', nargs='?', default=1, type=int)
     argparser.add_argument('--nolabels', action='store_const', const=True, default=False)
+    argparser.add_argument('--recursive', action='store_const', const=True, default=False)
+    argparser.add_argument('--pattern', action='store_const', const=True, default=False)
     args = argparser.parse_args()
 
     infile = args.infile
@@ -246,14 +269,18 @@ if __name__ == "__main__":
     POS_SCALING_Y = args.scaley
     EDGE_SIZE = args.edgesize
     ARROW_SIZE = args.arrowsize
+    IS_PATTERN = args.pattern
 
     if os.path.isfile(infile):
         print("Render file", infile)
         outdir = os.path.dirname(infile)
         render(infile, outdir)
     elif os.path.isdir(infile):
-        print("Render files in directory", infile)
-        infiles = [f for f in list(map(lambda x : os.path.join(infile, x), os.listdir(infile))) if os.path.isfile(f) and f.endswith(".lg")]
+        print("Render files in directory", infile, ("recursively" if args.recursive else "not recursively"))
+        if args.recursive:
+            infiles = getAllFilesInDirectoryRecusivelyThat(infile, lambda f: f.endswith(".lg"))
+        else:
+            infiles = [f for f in list(map(lambda x : os.path.join(infile, x), os.listdir(infile))) if os.path.isfile(f) and f.endswith(".lg")]
         for file in infiles:
             print("Render file", file)
             outdir = os.path.dirname(file)
