@@ -70,6 +70,14 @@ public class DiffTreeRenderer {
         return new DiffTreeRenderer(pythonCommandFactory, workDir);
     }
 
+    public static DiffTreeRenderer FromThirdPartyApplication(final Path relativePathFromWorkDirToDiffDetectiveSources, final Path workDir) {
+        return FromThirdPartyApplication(
+                () -> new PythonCommand(
+                        relativePathFromWorkDirToDiffDetectiveSources.resolve(PythonCommand.DiffDetectiveVenv).toString(),
+                        relativePathFromWorkDirToDiffDetectiveSources.resolve(DiffDetectiveRenderScriptPath)),
+                workDir);
+    }
+
     public void render(PatchDiff patchDiff, final Path directory) {
         render(patchDiff, directory, RenderOptions.DEFAULT);
     }

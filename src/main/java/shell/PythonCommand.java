@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PythonCommand extends ShellCommand {
+    public static String DiffDetectiveVenv = ".venv/bin/python3";
     private final String pythonName;
     private final Path script;
     private final List<String> args;
@@ -33,7 +34,7 @@ public class PythonCommand extends ShellCommand {
     }
 
     public static PythonCommand DiffDetectiveVenvPython3(Path script) {
-        return new PythonCommand(".venv/bin/python3", script);
+        return new PythonCommand(DiffDetectiveVenv, script);
     }
 
     @Override
