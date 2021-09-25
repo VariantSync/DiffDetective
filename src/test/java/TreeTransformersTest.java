@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public class TreeTransformersTest {
+    private static final boolean RENDER = false;
     private static final Path resDir = Constants.RESOURCE_DIR.resolve("diffs/collapse");
     private static final Path genDir = resDir.resolve("gen");
     private static final List<DiffTreeTransformer> transformers = DiffTreeMiner.PostProcessing;
@@ -46,7 +47,9 @@ public class TreeTransformersTest {
         final String treeName = name + LineGraphExport.TREE_NAME_SEPARATOR + commit;
 
         INFO.accept("Original State");
-        renderer.render(diffTree, treeName + "_0", genDir, renderOptions);
+        if (RENDER) {
+            renderer.render(diffTree, treeName + "_0", genDir, renderOptions);
+        }
 
         int i = 1;
         int prevSize = diffTree.computeSize();
@@ -62,7 +65,9 @@ public class TreeTransformersTest {
 
             diffTree.assertConsistency();
 
-            renderer.render(diffTree, treeName + "_" + i, genDir, renderOptions);
+            if (RENDER) {
+                renderer.render(diffTree, treeName + "_" + i, genDir, renderOptions);
+            }
             ++i;
         }
     }
