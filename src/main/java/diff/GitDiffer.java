@@ -322,7 +322,7 @@ public class GitDiffer {
             treeWalk.setRecursive(true);
             treeWalk.setFilter(PathFilter.create(filename));
             if (!treeWalk.next()) {
-                return null;
+                throw new IOException("Could not obtain full diff of file " + filename + " before commit " + commit + "!");
             }
 
             ObjectId objectId = treeWalk.getObjectId(0);
