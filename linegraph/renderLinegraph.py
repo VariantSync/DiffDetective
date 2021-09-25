@@ -34,6 +34,7 @@ SHOW_LABELS = True
 DPI = 300
 POS_SCALING_X = 1
 POS_SCALING_Y = 1
+FONT_SIZE = 3
 
 # other parameters
 IS_PATTERN = False
@@ -161,26 +162,25 @@ def plot_graphs(S, exportDir):
             else: # is if/else/elif
                 node_type_colors.append(CODE_TYPE_OTHER_COLOR)
 
-            isroot = nameWithoutDiffType.startswith("ROOT")
-            ismacro = not isroot and not nameWithoutDiffType.startswith("CODE")
-            # print("nameWithoutDiffType:", nameWithoutDiffType)
-            # print("findCharacterInStringGreedy(", nameWithoutDiffType, ", '_'):", findCharacterInStringGreedy(nameWithoutDiffType, '_'))
-            code = substringGraceful(nameWithoutDiffType, findCharacterInStringGreedy(nameWithoutDiffType, '_')+1) # +1 tp remove _ too
-            # print(code)
-            if len(code) > 0:
-                # remove parenthesis
-                code = code[1:len(code)-1]
-                # print(code)
-                if ismacro:
-                    code = '#' + code
-                # print(code)
-            # prepend line number
+            secondHyphenPos = findCharacterInStringGreedy(nameWithoutDiffType, '_')
+            codetype = nameWithoutDiffType[:secondHyphenPos]
+            isroot = codetype.startswith("ROOT")
+            ismacro = not isroot and not codetype.startswith("CODE")
+
             if IS_PATTERN:
-                code = ""
+                code = codetype if isroot or ismacro else ""
             else:
+                code = substringGraceful(nameWithoutDiffType, secondHyphenPos+1) # +1 to remove _ too
+                # print(code)
+                if len(code) > 0:
+                    # remove parenthesis ""
+                    code = code[1:len(code)-1]
+                    # print(code)
+                    if ismacro:
+                        code = '#' + code
+                # prepend line number
                 code = str(lineNoOfNode(v)) + ("\n" + code if len(code) > 0 else "")
-            # print(code)
-            # print("")
+
             d['label'] = "ROOT" if isroot else code
 
         edge_colors = []
@@ -212,9 +212,9 @@ def plot_graphs(S, exportDir):
                     width=EDGE_SIZE,
                     arrowsize=ARROW_SIZE,
                     edge_color=edge_colors,
-                    font_size=3,
+                    font_size=FONT_SIZE,
                     labels=node_labels,
-                    bbox=dict(facecolor="white", edgecolor='black', boxstyle='round,pad=0.1', linestyle=''))
+                    bbox=dict(facecolor="white", edgecolor='black', boxstyle='round,pad=0.2', linestyle=''))
         else:
             nx.draw(difftree, pos,
                     node_size=NODE_SIZE,
@@ -222,7 +222,7 @@ def plot_graphs(S, exportDir):
                     width=EDGE_SIZE,
                     arrowsize=ARROW_SIZE,
                     edge_color=edge_colors,
-                    font_size=3)
+                    font_size=FONT_SIZE)
 
         outfilename = difftree.graph['filename'].replace("/", DIR_SEPARATOR)
         if not IS_PATTERN:
@@ -253,6 +253,7 @@ if __name__ == "__main__":
     argparser.add_argument('--nodesize', nargs='?', default=700, type=int)
     argparser.add_argument('--edgesize', nargs='?', default=1.0, type=float)
     argparser.add_argument('--arrowsize', nargs='?', default=10, type=int)
+    argparser.add_argument('--fontsize', nargs='?', default=3, type=int)
     argparser.add_argument('--dpi', nargs='?', default=300, type=int)
     argparser.add_argument('--scalex', nargs='?', default=1, type=int)
     argparser.add_argument('--scaley', nargs='?', default=1, type=int)
@@ -270,6 +271,7 @@ if __name__ == "__main__":
     EDGE_SIZE = args.edgesize
     ARROW_SIZE = args.arrowsize
     IS_PATTERN = args.pattern
+    FONT_SIZE = args.fontsize
 
     if os.path.isfile(infile):
         print("Render file", infile)
