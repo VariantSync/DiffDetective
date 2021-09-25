@@ -61,6 +61,6 @@ public class PatchDiff implements DiffTreeSource {
 
     @Override
     public String toString() {
-        return path + "@" + commitDiff.getCommitHash();
+        return path + "@" + commitDiff;
     }
 }

@@ -12,11 +12,13 @@ import java.util.List;
  */
 public class CommitDiff {
     private final List<PatchDiff> patchDiffs;
+    private final String parentCommitHash;
     private final String commitHash;
     final boolean merge;
 
-    public CommitDiff(RevCommit commit) {
+    public CommitDiff(RevCommit commit, RevCommit parent) {
         this.commitHash = commit.getId().getName();
+        this.parentCommitHash = parent.getId().getName();
         this.merge = commit.getParentCount() > 1;
         this.patchDiffs = new ArrayList<>();
     }
@@ -47,5 +49,14 @@ public class CommitDiff {
 
     public String getCommitHash() {
         return commitHash;
+    }
+
+    public String getParentCommitHash() {
+        return parentCommitHash;
+    }
+
+    @Override
+    public String toString() {
+        return "Diff from " + parentCommitHash + " (parent) to " + commitHash + " (child)";
     }
 }

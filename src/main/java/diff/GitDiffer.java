@@ -133,10 +133,9 @@ public class GitDiffer {
             RevCommit currentCommit,
             boolean keepFullDiffs) throws IOException {
         if (currentCommit.getParentCount() == 0) {
-            Logger.warn("Commit {} does not have parents",
-                    currentCommit.getId().abbreviate(7).name());
-            return new CommitDiff(currentCommit);
+            throw new IOException("Commit " + currentCommit.getId().getName() + " does not have parents");
         }
+
         return createCommitDiff(git, diffFilter, currentCommit.getParent(0), currentCommit, keepFullDiffs);
     }
 
@@ -157,7 +156,7 @@ public class GitDiffer {
             RevCommit parentCommit,
             RevCommit childCommit,
             boolean keepFullDiffs) throws IOException {
-        CommitDiff commitDiff = new CommitDiff(childCommit);
+        CommitDiff commitDiff = new CommitDiff(childCommit, parentCommit);
 
         // get TreeParsers
         CanonicalTreeParser currentTreeParser = new CanonicalTreeParser();
