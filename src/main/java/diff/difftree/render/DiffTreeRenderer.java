@@ -33,14 +33,16 @@ public class DiffTreeRenderer {
             int nodesize,
             double edgesize,
             int arrowsize,
+            int fontsize,
             boolean withlabels) {
         public static RenderOptions DEFAULT = new RenderOptions(
                 LineGraphExport.NodePrintStyle.Verbose,
                 true,
                 300,
                 700,
-                1.0,
-                10,
+                1.2,
+                15,
+                5,
                 true
         );
     }
@@ -130,6 +132,7 @@ public class DiffTreeRenderer {
         cmd.addArg("--dpi").addArg(options.dpi);
         cmd.addArg("--edgesize").addArg(options.edgesize);
         cmd.addArg("--arrowsize").addArg(options.arrowsize);
+        cmd.addArg("--fontsize").addArg(options.fontsize);
         if (!options.withlabels) {
             cmd.addArg("--nolabels");
         }

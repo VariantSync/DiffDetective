@@ -32,6 +32,7 @@ public class TreeTransformersTest {
             50,
             0.3,
             3,
+            3,
             true
             );
 
