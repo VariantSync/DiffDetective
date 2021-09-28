@@ -1,14 +1,11 @@
-import analysis.*;
-import analysis.data.CommitDiffAnalysisResult;
+import analysis.GDAnalysisUtils;
+import analysis.GDAnalyzer;
+import analysis.TreeGDAnalyzer;
 import analysis.data.GDAnalysisResult;
-import analysis.data.PatchDiffAnalysisResult;
-import analysis.data.PatternMatch;
-import diff.GDUtils;
-import diff.data.GitDiff;
 import diff.DiffFilter;
-import evaluation.FeatureContext;
-import evaluation.GDEvaluator;
 import diff.GitDiffer;
+import diff.GitDiff;
+import evaluation.GDEvaluator;
 import load.GitLoader;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.diff.DiffEntry;
@@ -16,13 +13,6 @@ import org.pmw.tinylog.Configurator;
 import org.pmw.tinylog.Level;
 import org.pmw.tinylog.Logger;
 import org.pmw.tinylog.writers.ConsoleWriter;
-import pattern.atomic.*;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
 
 /**
  * The main class used to run DiffDetective
@@ -30,10 +20,19 @@ import java.util.Map;
  * @author Sören Viegener
  */
 public class Main {
-
     private static final String TREE_ANALYSIS = "tree";
     private static final String ATOMIC_TREE_ANALYSIS = "tree_atomic";
     private static final String SEMANTIC_TREE_ANALYSIS = "tree_semantic";
+
+    // The filter used by the GitDiffer
+    public static final DiffFilter DefaultDiffFilterForMarlin = new DiffFilter.Builder()
+            //.allowBinary(false)
+            .allowMerge(false)
+            .allowedPaths("Marlin.*")
+            .blockedPaths(".*arduino.*")
+            .allowedChangeTypes(DiffEntry.ChangeType.MODIFY)
+            .allowedFileExtensions("c", "cpp", "h", "pde")
+            .build();
 
     public static void main(String[] args) {
 
@@ -76,16 +75,6 @@ public class Main {
         // whether to print the results of the evaluation
         boolean printEvaluationResults = true;
 
-        // The filter used by the GitDiffer
-        DiffFilter diffFilter = new DiffFilter.Builder()
-                //.allowBinary(false)
-                .allowMerge(false)
-                .allowedPaths("Marlin.*")
-                .blockedPaths(".*arduino.*")
-                .allowedChangeTypes(DiffEntry.ChangeType.MODIFY)
-                .allowedFileExtensions("c", "cpp", "h", "pde")
-                .build();
-
         /* ************************ *\
         |      END OF ARGUMENTS      |
         \* ************************ */
@@ -122,7 +111,7 @@ public class Main {
         }
 
         // create GitDiff
-        GitDiff gitDiff = new GitDiffer(git, diffFilter, saveMemory).createGitDiff();
+        GitDiff gitDiff = new GitDiffer(git, DefaultDiffFilterForMarlin, saveMemory).createGitDiff();
         if (gitDiff == null) {
             Logger.error("Failed to create GitDiff");
             System.exit(1);
@@ -236,7 +225,7 @@ public class Main {
 //        evaluator.exportFeatureContextComplexityDistributionCsv("semantic_fc_complexity.csv");
     }
 
-    private static void setupLogger(Level loggingLevel) {
+    public static void setupLogger(Level loggingLevel) {
         Configurator configurator = Configurator.defaultConfig()
                 .writer(new ConsoleWriter(), loggingLevel)
                 .formatPattern("{{level}:|min-size=8} {message}");

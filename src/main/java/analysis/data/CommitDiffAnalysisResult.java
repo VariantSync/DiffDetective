@@ -1,6 +1,6 @@
 package analysis.data;
 
-import diff.data.CommitDiff;
+import diff.CommitDiff;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -5,15 +5,15 @@ import analysis.data.CommitDiffAnalysisResult;
 import analysis.data.GDAnalysisResult;
 import analysis.data.PatchDiffAnalysisResult;
 import analysis.data.PatternMatch;
-import diff.data.PatchDiff;
+import diff.PatchDiff;
 import org.pmw.tinylog.Logger;
 import org.prop4j.Implies;
 import org.prop4j.Node;
 import org.prop4j.Not;
 import org.prop4j.explain.solvers.SatSolver;
 import org.prop4j.explain.solvers.SatSolverFactory;
-import pattern.*;
-import util.ExportUtils;
+import pattern.EditPattern;
+import util.IO;
 
 import java.io.*;
 import java.util.*;
@@ -440,7 +440,7 @@ public class GDEvaluator {
 
 
         try {
-            ExportUtils.exportCsv(fileName, CSV_COLUMN_NAMES, commits.toArray(), patches.toArray(),
+            IO.exportCsv(fileName, CSV_COLUMN_NAMES, commits.toArray(), patches.toArray(),
                     patterns.toArray(), mappings.toArray(), startLines.toArray(),
                     endLines.toArray(), featureContexts.toArray());
         } catch (FileNotFoundException e) {
@@ -461,7 +461,7 @@ public class GDEvaluator {
             values[i] = i;
         }
         try {
-            ExportUtils.exportCsv(fileName, COLUMN_NAMES, values, distribution);
+            IO.exportCsv(fileName, COLUMN_NAMES, values, distribution);
         } catch (FileNotFoundException e) {
             Logger.warn("Could not save feature context complexity distribution to {}", fileName);
         }
@@ -480,7 +480,7 @@ public class GDEvaluator {
             values[i] = i;
         }
         try {
-            ExportUtils.exportCsv(fileName, COLUMN_NAMES, values, distribution);
+            IO.exportCsv(fileName, COLUMN_NAMES, values, distribution);
         } catch (FileNotFoundException e) {
             Logger.warn("Could not save different feature context distribution to {}", fileName);
         }

@@ -1,7 +1,8 @@
 package pattern.atomic;
 
 import analysis.data.PatternMatch;
-import diff.data.DiffNode;
+import diff.Lines;
+import diff.difftree.DiffNode;
 import evaluation.FeatureContext;
 import org.prop4j.Node;
 
@@ -16,14 +17,15 @@ public class RemFromPCAtomicPattern extends AtomicPattern{
     }
 
     @Override
-    public List<PatternMatch> getMatches(DiffNode codeNode) {
-        List<PatternMatch> patternMatches = new ArrayList<>();
+    public List<PatternMatch<DiffNode>> getMatches(DiffNode codeNode) {
+        List<PatternMatch<DiffNode>> patternMatches = new ArrayList<>();
 
         if(codeNode.isRem() && !codeNode.getBeforeParent().isRem()){
-            Node fm = codeNode.getBeforeParent().getBeforeFeatureMapping();
+            final Node fm = codeNode.getBeforeParent().getBeforeFeatureMapping();
+            final Lines diffLines = codeNode.getLinesInDiff();
 
-            PatternMatch patternMatch = new PatternMatch(this,
-                    codeNode.getFromLine(), codeNode.getToLine(), fm
+            PatternMatch<DiffNode> patternMatch = new PatternMatch<>(this,
+                    diffLines.getFromInclusive(), diffLines.getToExclusive(), fm
             );
             patternMatches.add(patternMatch);
         }
@@ -31,7 +33,7 @@ public class RemFromPCAtomicPattern extends AtomicPattern{
     }
 
     @Override
-    public FeatureContext[] getFeatureContexts(PatternMatch patternMatch) {
+    public FeatureContext[] getFeatureContexts(PatternMatch<DiffNode> patternMatch) {
         return new FeatureContext[]{
                 new FeatureContext(patternMatch.getFeatureMappings()[0], true)
         };

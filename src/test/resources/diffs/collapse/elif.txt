@@ -1,0 +1,11 @@
+ #if A
+   #if B
+     #if C
+       foo();
+     #elif D
+       bar();
+     #elif E
++      baz();
+     #endif
+   #endif
+ #endif

@@ -1,9 +1,12 @@
 package analysis;
 
-import analysis.data.*;
-import diff.data.CommitDiff;
-import diff.data.GitDiff;
-import diff.data.PatchDiff;
+import analysis.data.CommitDiffAnalysisResult;
+import analysis.data.GDAnalysisResult;
+import analysis.data.PatchDiffAnalysisResult;
+import diff.CommitDiff;
+import diff.GitDiff;
+import diff.PatchDiff;
+import diff.difftree.DiffNode;
 import pattern.EditPattern;
 import pattern.InvalidPatchPattern;
 
@@ -16,19 +19,20 @@ import java.util.List;
  *
  * Gets a GitDiff which is analyzed using the given edit patterns.
  */
-public abstract class GDAnalyzer {
+public abstract class GDAnalyzer<E> {
 
     final GitDiff gitDiff;
-    final EditPattern[] patterns;
+    final EditPattern<E>[] patterns;
 
-    public GDAnalyzer(GitDiff gitDiff, EditPattern[] patterns) {
+    @SuppressWarnings("unchecked")
+    public GDAnalyzer(GitDiff gitDiff, EditPattern<DiffNode>[] patterns) {
         this.gitDiff = gitDiff;
-        List<EditPattern> patternList = new ArrayList<>(Arrays.asList(patterns));
-        patternList.add(0, new InvalidPatchPattern());
+        List<EditPattern<DiffNode>> patternList = new ArrayList<>(Arrays.asList(patterns));
+        patternList.add(0, new InvalidPatchPattern<>());
         this.patterns = patternList.toArray(new EditPattern[0]);
     }
 
-    public EditPattern[] getPatterns() {
+    public EditPattern<E>[] getPatterns() {
         return patterns;
     }
 

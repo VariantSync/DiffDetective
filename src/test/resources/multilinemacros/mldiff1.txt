@@ -1,0 +1,31 @@
+ code0
+ #if !(defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__) \
+    || defined(__NEWLINE__))
+   foo();
+ #endif
+ code1
++#if (ENABLE_FEATURE_LESS_DASHCMD && ENABLE_FEATURE_LESS_LINENUMS) \
++    || defined(__NEWLINE__)
+   bar();
++#endif
+ code2
+ # if defined __UCLIBC__ && ( \
++  ADDED_FEATURE \
+-  REMOVED_FEATURE \
+  ) && lol
+   baz();
+ #endif
+ code3
+ # if A && ( \
++  ADDED_FEATURE1 || ADDED_FEATURE2 \
++  ) && lol
+-  REMOVED_FEATURE)
+   cat();
+ #endif
+ code4
+ #if (X && Y) \
++    || defined(Z) \
+     || W
+   dog();
+ #endif
+ code5

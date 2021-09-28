@@ -1,0 +1,6 @@
+ #if X
+-  foo();
+ #endif
+ #if Y
++  foo();
+ #endif

@@ -1,7 +1,7 @@
 package pattern.semantic;
 
 import analysis.data.PatternMatch;
-import diff.data.DiffNode;
+import diff.difftree.DiffNode;
 import pattern.EditPattern;
 
 import java.util.List;
@@ -9,5 +9,5 @@ import java.util.List;
 public abstract class SemanticPattern extends EditPattern<DiffNode> {
 
     @Override
-    public abstract List<PatternMatch> getMatches(DiffNode annotationNode);
+    public abstract List<PatternMatch<DiffNode>> getMatches(DiffNode annotationNode);
 }

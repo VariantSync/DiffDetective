@@ -1,7 +1,8 @@
 package pattern.semantic;
 
 import analysis.data.PatternMatch;
-import diff.data.DiffNode;
+import diff.Lines;
+import diff.difftree.DiffNode;
 import evaluation.FeatureContext;
 import org.prop4j.Node;
 
@@ -26,14 +27,14 @@ public class AddIfdefElifSemanticPattern extends SemanticPattern{
                 they also need to have an added code child
      */
     @Override
-    public List<PatternMatch> getMatches(DiffNode annotationNode) {
-        List<PatternMatch> patternMatches = new ArrayList<>();
+    public List<PatternMatch<DiffNode>> getMatches(DiffNode annotationNode) {
+        List<PatternMatch<DiffNode>> patternMatches = new ArrayList<>();
 
         if(annotationNode.isAdd() && annotationNode.isIf()){
 
             boolean addedCodeInIf = false;
             DiffNode elifNode = null;
-            for(DiffNode child : annotationNode.getChildren()){
+            for(DiffNode child : annotationNode.getAllChildren()){
                 if(child.isCode() && child.isAdd()){
                     addedCodeInIf = true;
                 }
@@ -48,8 +49,9 @@ public class AddIfdefElifSemanticPattern extends SemanticPattern{
                 return patternMatches;
             }
 
-            PatternMatch patternMatch = new PatternMatch(this,
-                    annotationNode.getFromLine(), annotationNode.getToLine(),
+            final Lines diffLines = annotationNode.getLinesInDiff();
+            PatternMatch<DiffNode> patternMatch = new PatternMatch<>(this,
+                    diffLines.getFromInclusive(), diffLines.getToExclusive(),
                     mappings.toArray(new Node[0])
             );
             patternMatches.add(patternMatch);
@@ -61,7 +63,7 @@ public class AddIfdefElifSemanticPattern extends SemanticPattern{
         boolean addedCode = false;
         DiffNode nextNode = null;
 
-        for(DiffNode child : elifNode.getChildren()){
+        for(DiffNode child : elifNode.getAllChildren()){
             if(child.isCode() && child.isAdd()){
                 addedCode = true;
             }
@@ -78,7 +80,7 @@ public class AddIfdefElifSemanticPattern extends SemanticPattern{
     }
 
     @Override
-    public FeatureContext[] getFeatureContexts(PatternMatch patternMatch) {
+    public FeatureContext[] getFeatureContexts(PatternMatch<DiffNode> patternMatch) {
         FeatureContext[] featureContexts = new FeatureContext[patternMatch.getFeatureMappings().length];
         for (int i = 0; i < featureContexts.length; i++) {
             featureContexts[i] = new FeatureContext(patternMatch.getFeatureMappings()[i]);

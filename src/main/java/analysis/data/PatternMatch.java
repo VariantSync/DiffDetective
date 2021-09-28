@@ -13,27 +13,27 @@ import java.util.Arrays;
  *
  * @author Sören Viegener
  */
-public class PatternMatch {
-    private final EditPattern pattern;
+public class PatternMatch<E> {
+    private final EditPattern<E> pattern;
     private final Node[] featureMappings;
     private final int startLineDiff;
     private final int endLineDiff;
 
-    public PatternMatch(EditPattern pattern, int startLineDiff, int endLineDiff, Node... featureMappings) {
+    public PatternMatch(EditPattern<E> pattern, int startLineDiff, int endLineDiff, Node... featureMappings) {
         this.pattern = pattern;
         this.featureMappings = featureMappings;
         this.startLineDiff = startLineDiff;
         this.endLineDiff = endLineDiff;
     }
 
-    public PatternMatch(EditPattern pattern, int startLineDiff, int endLineDiff) {
+    public PatternMatch(EditPattern<E> pattern, int startLineDiff, int endLineDiff) {
         this.pattern = pattern;
         this.featureMappings = null;
         this.startLineDiff = startLineDiff;
         this.endLineDiff = endLineDiff;
     }
 
-    public PatternMatch(EditPattern pattern) {
+    public PatternMatch(EditPattern<E> pattern) {
         this.pattern = pattern;
         this.featureMappings = null;
         this.startLineDiff = -1;
@@ -48,7 +48,7 @@ public class PatternMatch {
         return pattern.getName();
     }
 
-    public EditPattern getPattern() {
+    public EditPattern<E> getPattern() {
         return pattern;
     }
 

@@ -2,10 +2,10 @@ package analysis;
 
 import analysis.data.PatchDiffAnalysisResult;
 import analysis.data.PatternMatch;
-import diff.data.DiffNode;
-import diff.data.DiffTree;
-import diff.data.GitDiff;
-import diff.data.PatchDiff;
+import diff.difftree.DiffNode;
+import diff.difftree.DiffTree;
+import diff.GitDiff;
+import diff.PatchDiff;
 import pattern.EditPattern;
 import pattern.atomic.*;
 import pattern.semantic.*;
@@ -18,8 +18,8 @@ import java.util.List;
  *
  * Matches atomic patterns on the code nodes and semantic patterns on the annotation nodes.
  */
-public class TreeGDAnalyzer extends GDAnalyzer {
-    public static final EditPattern[] ATOMIC_PATTERNS = new AtomicPattern[]{
+public class TreeGDAnalyzer extends GDAnalyzer<DiffNode> {
+    public static final EditPattern<DiffNode>[] ATOMIC_PATTERNS = new AtomicPattern[]{
             new AddWithMappingAtomicPattern(),
             new RemWithMapping(),
             new AddToPCAtomicPattern(),
@@ -29,7 +29,7 @@ public class TreeGDAnalyzer extends GDAnalyzer {
             new ChangePCAtomicPattern(),
     };
 
-    public static final EditPattern[] SEMANTIC_PATTERNS = new SemanticPattern[]{
+    public static final EditPattern<DiffNode>[] SEMANTIC_PATTERNS = new SemanticPattern[]{
             new AddIfdefElseSemanticPattern(),
             new AddIfdefElifSemanticPattern(),
             new AddIfdefWrapElseSemanticPattern(),
@@ -37,9 +37,10 @@ public class TreeGDAnalyzer extends GDAnalyzer {
             new MoveElseSemanticPattern(),
     };
 
-    private static EditPattern[] getPatterns(boolean atomic, boolean semantic){
+    @SuppressWarnings("unchecked")
+    private static EditPattern<DiffNode>[] getPatterns(boolean atomic, boolean semantic){
         if(atomic && semantic){
-            EditPattern[] patterns = new EditPattern[ATOMIC_PATTERNS.length + SEMANTIC_PATTERNS.length];
+            EditPattern<DiffNode>[] patterns = new EditPattern[ATOMIC_PATTERNS.length + SEMANTIC_PATTERNS.length];
             System.arraycopy(ATOMIC_PATTERNS, 0, patterns, 0, ATOMIC_PATTERNS.length);
             System.arraycopy(SEMANTIC_PATTERNS, 0, patterns, ATOMIC_PATTERNS.length,
                     SEMANTIC_PATTERNS.length);
@@ -52,7 +53,7 @@ public class TreeGDAnalyzer extends GDAnalyzer {
         return new EditPattern[0];
     }
 
-    public TreeGDAnalyzer(GitDiff gitDiff, EditPattern[] patterns) {
+    public TreeGDAnalyzer(GitDiff gitDiff, EditPattern<DiffNode>[] patterns) {
         super(gitDiff, patterns);
     }
 
@@ -72,15 +73,15 @@ public class TreeGDAnalyzer extends GDAnalyzer {
      */
     @Override
     protected PatchDiffAnalysisResult analyzePatch(PatchDiff patchDiff) {
-        List<PatternMatch> results = new ArrayList<>();
+        List<PatternMatch<DiffNode>> results = new ArrayList<>();
 
         DiffTree diffTree = patchDiff.getDiffTree();
         if(diffTree != null) {
             // match atomic patterns
-            for (DiffNode diffNode : diffTree.getCodeNodes()) {
-                for (EditPattern pattern : patterns) {
+            for (DiffNode diffNode : diffTree.computeCodeNodes()) {
+                for (EditPattern<DiffNode> pattern : patterns) {
                     if(pattern instanceof AtomicPattern) {
-                        List<PatternMatch> patternMatches = pattern.getMatches(diffNode);
+                        List<PatternMatch<DiffNode>> patternMatches = pattern.getMatches(diffNode);
                         if (!patternMatches.isEmpty()) {
                             results.addAll(patternMatches);
                         }
@@ -89,10 +90,10 @@ public class TreeGDAnalyzer extends GDAnalyzer {
             }
 
             // match semantic patterns
-            for (DiffNode diffNode : diffTree.getAnnotationNodes()) {
-                for (EditPattern pattern : patterns) {
+            for (DiffNode diffNode : diffTree.computeAnnotationNodes()) {
+                for (EditPattern<DiffNode> pattern : patterns) {
                     if(pattern instanceof SemanticPattern) {
-                        List<PatternMatch> patternMatches = pattern.getMatches(diffNode);
+                        List<PatternMatch<DiffNode>> patternMatches = pattern.getMatches(diffNode);
                         if (!patternMatches.isEmpty()) {
                             results.addAll(patternMatches);
                         }
@@ -100,7 +101,7 @@ public class TreeGDAnalyzer extends GDAnalyzer {
                 }
             }
         }else{
-            results.add(new PatternMatch(patterns[0]));
+            results.add(new PatternMatch<>(patterns[0]));
         }
         PatchDiffAnalysisResult patchResult = new PatchDiffAnalysisResult(patchDiff);
         patchResult.addPatternMatches(results);

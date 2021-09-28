@@ -1,7 +1,7 @@
 package pattern.semantic;
 
 import analysis.data.PatternMatch;
-import diff.data.DiffNode;
+import diff.difftree.DiffNode;
 import evaluation.FeatureContext;
 
 import java.util.ArrayList;
@@ -24,14 +24,14 @@ public class AddIfdefWrapElseSemanticPattern extends SemanticPattern{
             which has an unchanged code child
      */
     @Override
-    public List<PatternMatch> getMatches(DiffNode annotationNode) {
-        List<PatternMatch> patternMatches = new ArrayList<>();
+    public List<PatternMatch<DiffNode>> getMatches(DiffNode annotationNode) {
+        List<PatternMatch<DiffNode>> patternMatches = new ArrayList<>();
 
         if(annotationNode.isAdd() && annotationNode.isIf()){
 
             boolean addedCodeInIf = false;
             DiffNode elseNode = null;
-            for(DiffNode child : annotationNode.getChildren()){
+            for(DiffNode child : annotationNode.getAllChildren()){
                 if(child.isElif()){
                     return patternMatches;
                 }
@@ -48,7 +48,7 @@ public class AddIfdefWrapElseSemanticPattern extends SemanticPattern{
             }
 
             boolean noneCodeInElse = false;
-            for(DiffNode child : elseNode.getChildren()){
+            for(DiffNode child : elseNode.getAllChildren()){
                 if(child.isCode() && child.isNon()){
                     noneCodeInElse = true;
                 }
@@ -58,8 +58,8 @@ public class AddIfdefWrapElseSemanticPattern extends SemanticPattern{
                 return patternMatches;
             }
 
-            PatternMatch patternMatch = new PatternMatch(this,
-                    annotationNode.getFromLine(), elseNode.getToLine(),
+            PatternMatch<DiffNode> patternMatch = new PatternMatch<>(this,
+                    annotationNode.getLinesInDiff().getFromInclusive(), elseNode.getLinesInDiff().getToExclusive(),
                     annotationNode.getAfterFeatureMapping()
             );
             patternMatches.add(patternMatch);

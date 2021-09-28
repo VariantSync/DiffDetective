@@ -1,6 +1,6 @@
 package analysis.data;
 
-import diff.data.GitDiff;
+import diff.GitDiff;
 
 import java.util.ArrayList;
 import java.util.List;

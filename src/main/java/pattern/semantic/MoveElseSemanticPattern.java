@@ -1,10 +1,11 @@
 package pattern.semantic;
 
 import analysis.data.PatternMatch;
-import diff.data.DiffNode;
+import diff.difftree.DiffNode;
 import evaluation.FeatureContext;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class MoveElseSemanticPattern extends SemanticPattern{
@@ -22,13 +23,13 @@ public class MoveElseSemanticPattern extends SemanticPattern{
         the parent has a child that is either also a child of the added or the removed else node
      */
     @Override
-    public List<PatternMatch> getMatches(DiffNode annotationNode) {
-        List<PatternMatch> patternMatches = new ArrayList<>();
+    public List<PatternMatch<DiffNode>> getMatches(DiffNode annotationNode) {
+        List<PatternMatch<DiffNode>> patternMatches = new ArrayList<>();
 
         if(annotationNode.isAdd() && annotationNode.isElse()){
 
             DiffNode removedElse = null;
-            for(DiffNode parentsChild : annotationNode.getAfterParent().getChildren()){
+            for(DiffNode parentsChild : annotationNode.getAfterParent().getAllChildren()){
                 if(parentsChild.isElse() && parentsChild.isRem()){
                     removedElse = parentsChild;
                     break;
@@ -39,18 +40,18 @@ public class MoveElseSemanticPattern extends SemanticPattern{
                 return patternMatches;
             }
 
-            List<DiffNode> commonAddElse = annotationNode.getChildren();
-            commonAddElse.retainAll(annotationNode.getAfterParent().getChildren());
+            Collection<DiffNode> commonAddElse = annotationNode.getAllChildren();
+            commonAddElse.retainAll(annotationNode.getAfterParent().getAllChildren());
 
-            List<DiffNode> commonRemElse = removedElse.getChildren();
-            commonRemElse.retainAll(annotationNode.getAfterParent().getChildren());
+            Collection<DiffNode> commonRemElse = removedElse.getAllChildren();
+            commonRemElse.retainAll(annotationNode.getAfterParent().getAllChildren());
 
             if(commonAddElse.isEmpty() && commonRemElse.isEmpty()){
                 return patternMatches;
             }
 
-            PatternMatch patternMatch = new PatternMatch(this,
-                    annotationNode.getFromLine(), removedElse.getToLine()
+            PatternMatch<DiffNode> patternMatch = new PatternMatch<>(this,
+                    annotationNode.getLinesInDiff().getFromInclusive(), removedElse.getLinesInDiff().getToExclusive()
             );
             patternMatches.add(patternMatch);
         }
@@ -58,7 +59,7 @@ public class MoveElseSemanticPattern extends SemanticPattern{
     }
 
     @Override
-    public FeatureContext[] getFeatureContexts(PatternMatch patternMatch) {
+    public FeatureContext[] getFeatureContexts(PatternMatch<DiffNode> patternMatch) {
         return new FeatureContext[0];
     }
 }

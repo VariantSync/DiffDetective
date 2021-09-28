@@ -1,0 +1,16 @@
+ l1
+ #ifdef l2
+   l3
+ #endif
+ l5
++i6
+-d6
+ l7
++#ifdef i8
+  b8a9
++#endif
+ b9a11
+-#ifdef d10 && \
+-  d11
+-  d12
+-#endif
