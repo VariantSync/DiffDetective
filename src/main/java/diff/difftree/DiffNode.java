@@ -96,7 +96,7 @@ public class DiffNode {
         DiffNode diffNode = new DiffNode();
         diffNode.diffType = DiffType.ofDiffLine(line);
         diffNode.codeType = CodeType.ofDiffLine(line);
-        diffNode.text = line.substring(1);
+        diffNode.text = line.isEmpty() ? line : line.substring(1);
 
         if (diffNode.isCode() || diffNode.isEndif() || diffNode.isElse()) {
             diffNode.featureMapping = null;
@@ -519,12 +519,31 @@ public class DiffNode {
                 + codeType.ordinal();
     }
 
+    private String prettyPrintTypeAndMapping() {
+        String result = codeType.name;
+        final Node fm = getDirectFeatureMapping();
+        if (fm != null) {
+            result += " " + fm;
+        }
+        return result;
+    }
+
+    private String prettyPrintIfMacroOr(String elseValue) {
+        String result = "";
+        if (codeType.isMacro()) {
+            result += prettyPrintTypeAndMapping();
+        } else {
+            result += elseValue;
+        }
+        return result;
+    }
+
     public String toLineGraphFormat(LineGraphExport.Options options) {
         return "v " + getID() + " " + switch (options.nodePrintStyle()) {
             case Type -> diffType + "_" + codeType;
-            case Pretty -> "\"" + (codeType.isMacro() ? (codeType.name + " " + getDirectFeatureMapping()) : text.trim()) + "\"";
-            case Mappings -> diffType + "_" + codeType + "_\"" + (codeType.isMacro() ? (codeType.name + " " + getDirectFeatureMapping()) : "") + "\"";
-            case Verbose -> diffType + "_" + codeType + "_\"" + (codeType.isMacro() ? (codeType.name + " " + getDirectFeatureMapping()) : text.trim()) + "\"";
+            case Pretty -> "\"" + prettyPrintIfMacroOr(text.trim()) + "\"";
+            case Mappings -> diffType + "_" + codeType + "_\"" + prettyPrintIfMacroOr("") + "\"";
+            case Verbose -> diffType + "_" + codeType + "_\"" + prettyPrintIfMacroOr(text.trim()) + "\"";
         };
     }
 
