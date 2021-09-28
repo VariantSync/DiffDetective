@@ -3,6 +3,7 @@
 [![Thesis](https://img.shields.io/badge/Thesis-Read-blue)][thesis]
 
 This is the tool accompanying the bachelor's thesis [**Empirical Evaluation of Feature Trace Recording on the Edit History of Marlin**][thesis] by Sören Viegener.
+(The version of DiffDetective described in and submitted with the thesis can be found on branch `thesis-sv`).
 
 DiffDetective is a library to analyse the evolution of variability in source code in preprocessor-based software product lines.
 It serves two main purposes:
