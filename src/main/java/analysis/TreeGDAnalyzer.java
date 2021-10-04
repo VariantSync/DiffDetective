@@ -2,10 +2,10 @@ package analysis;
 
 import analysis.data.PatchDiffAnalysisResult;
 import analysis.data.PatternMatch;
-import diff.difftree.DiffNode;
-import diff.difftree.DiffTree;
 import diff.GitDiff;
 import diff.PatchDiff;
+import diff.difftree.DiffNode;
+import diff.difftree.DiffTree;
 import pattern.EditPattern;
 import pattern.atomic.*;
 import pattern.semantic.*;
@@ -81,10 +81,7 @@ public class TreeGDAnalyzer extends GDAnalyzer<DiffNode> {
             for (DiffNode diffNode : diffTree.computeCodeNodes()) {
                 for (EditPattern<DiffNode> pattern : patterns) {
                     if(pattern instanceof AtomicPattern) {
-                        List<PatternMatch<DiffNode>> patternMatches = pattern.getMatches(diffNode);
-                        if (!patternMatches.isEmpty()) {
-                            results.addAll(patternMatches);
-                        }
+                        pattern.match(diffNode).ifPresent(results::add);
                     }
                 }
             }
@@ -93,10 +90,7 @@ public class TreeGDAnalyzer extends GDAnalyzer<DiffNode> {
             for (DiffNode diffNode : diffTree.computeAnnotationNodes()) {
                 for (EditPattern<DiffNode> pattern : patterns) {
                     if(pattern instanceof SemanticPattern) {
-                        List<PatternMatch<DiffNode>> patternMatches = pattern.getMatches(diffNode);
-                        if (!patternMatches.isEmpty()) {
-                            results.addAll(patternMatches);
-                        }
+                        pattern.match(diffNode).ifPresent(results::add);
                     }
                 }
             }

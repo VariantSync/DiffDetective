@@ -5,8 +5,7 @@ import diff.difftree.DiffNode;
 import evaluation.FeatureContext;
 import org.prop4j.Not;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Optional;
 
 public class AddIfdefElseSemanticPattern extends SemanticPattern{
 
@@ -25,16 +24,13 @@ public class AddIfdefElseSemanticPattern extends SemanticPattern{
           which has an added code child
      */
     @Override
-    public List<PatternMatch<DiffNode>> getMatches(DiffNode annotationNode) {
-        List<PatternMatch<DiffNode>> patternMatches = new ArrayList<>();
-
+    public Optional<PatternMatch<DiffNode>> match(DiffNode annotationNode) {
         if(annotationNode.isAdd() && annotationNode.isIf()){
-
             boolean addedCodeInIf = false;
             DiffNode elseNode = null;
             for(DiffNode child : annotationNode.getAllChildren()){
                 if(child.isElif()){
-                    return patternMatches;
+                    return Optional.empty();
                 }
                 if(child.isCode() && child.isAdd()){
                     addedCodeInIf = true;
@@ -45,7 +41,7 @@ public class AddIfdefElseSemanticPattern extends SemanticPattern{
             }
 
             if(elseNode == null || !addedCodeInIf){
-                return patternMatches;
+                return Optional.empty();
             }
 
             boolean addedCodeInElse = false;
@@ -56,16 +52,16 @@ public class AddIfdefElseSemanticPattern extends SemanticPattern{
             }
 
             if(!addedCodeInElse){
-                return patternMatches;
+                return Optional.empty();
             }
 
-            PatternMatch<DiffNode> patternMatch = new PatternMatch<>(this,
+            return Optional.of(new PatternMatch<>(this,
                     annotationNode.getLinesInDiff().getFromInclusive(), elseNode.getLinesInDiff().getToExclusive(),
                     annotationNode.getAfterFeatureMapping()
-            );
-            patternMatches.add(patternMatch);
+            ));
         }
-        return patternMatches;
+
+        return Optional.empty();
     }
 
     @Override

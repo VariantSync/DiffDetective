@@ -5,10 +5,9 @@ import diff.Lines;
 import diff.difftree.DiffNode;
 import evaluation.FeatureContext;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Optional;
 
-public class ChangePCAtomicPattern extends AtomicPattern{
+public class ChangePCAtomicPattern extends AtomicPattern {
     public static final String PATTERN_NAME = "ChangePC";
 
     public ChangePCAtomicPattern() {
@@ -16,9 +15,7 @@ public class ChangePCAtomicPattern extends AtomicPattern{
     }
 
     @Override
-    public List<PatternMatch<DiffNode>> getMatches(DiffNode codeNode) {
-        List<PatternMatch<DiffNode>> patternMatches = new ArrayList<>();
-
+    public Optional<PatternMatch<DiffNode>> match(DiffNode codeNode) {
         if (codeNode.isNon()){
             int addAmount = codeNode.getAddAmount();
             int remAmount = codeNode.getRemAmount();
@@ -27,8 +24,8 @@ public class ChangePCAtomicPattern extends AtomicPattern{
                     diffLines.getFromInclusive(), diffLines.getToExclusive()
             );
             if (addAmount > 0 && remAmount > 0){
-                patternMatches.add(patternMatch);
-            }else if(addAmount == 0 && remAmount == 0 && codeNode.getAfterDepth() == codeNode.getBeforeDepth()){
+                return Optional.of(patternMatch);
+            } else if(addAmount == 0 && remAmount == 0 && codeNode.getAfterDepth() == codeNode.getBeforeDepth()){
                 DiffNode currentBefore = codeNode.getBeforeParent();
                 DiffNode currentAfter = codeNode.getAfterParent();
                 boolean same = true;
@@ -40,12 +37,13 @@ public class ChangePCAtomicPattern extends AtomicPattern{
                     currentAfter = currentAfter.getAfterParent();
                     currentBefore = currentBefore.getBeforeParent();
                 }
-                if(!same){
-                    patternMatches.add(patternMatch);
+                if(!same) {
+                    return Optional.of(patternMatch);
                 }
             }
         }
-        return patternMatches;
+
+        return Optional.empty();
     }
 
     @Override

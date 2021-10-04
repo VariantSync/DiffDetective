@@ -8,6 +8,7 @@ import org.prop4j.Node;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class AddIfdefElifSemanticPattern extends SemanticPattern{
 
@@ -27,11 +28,8 @@ public class AddIfdefElifSemanticPattern extends SemanticPattern{
                 they also need to have an added code child
      */
     @Override
-    public List<PatternMatch<DiffNode>> getMatches(DiffNode annotationNode) {
-        List<PatternMatch<DiffNode>> patternMatches = new ArrayList<>();
-
+    public Optional<PatternMatch<DiffNode>> match(DiffNode annotationNode) {
         if(annotationNode.isAdd() && annotationNode.isIf()){
-
             boolean addedCodeInIf = false;
             DiffNode elifNode = null;
             for(DiffNode child : annotationNode.getAllChildren()){
@@ -46,17 +44,17 @@ public class AddIfdefElifSemanticPattern extends SemanticPattern{
             List<Node> mappings = new ArrayList<>();
             mappings.add(annotationNode.getAfterFeatureMapping());
             if(elifNode == null || !addedCodeInIf || !isValidElif(elifNode, mappings)){
-                return patternMatches;
+                return Optional.empty();
             }
 
             final Lines diffLines = annotationNode.getLinesInDiff();
-            PatternMatch<DiffNode> patternMatch = new PatternMatch<>(this,
+            return Optional.of(new PatternMatch<>(this,
                     diffLines.getFromInclusive(), diffLines.getToExclusive(),
                     mappings.toArray(new Node[0])
-            );
-            patternMatches.add(patternMatch);
+            ));
         }
-        return patternMatches;
+
+        return Optional.empty();
     }
 
     private boolean isValidElif(DiffNode elifNode, List<Node> mappings) {

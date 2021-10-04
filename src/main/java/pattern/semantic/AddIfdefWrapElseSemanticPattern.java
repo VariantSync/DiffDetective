@@ -4,10 +4,9 @@ import analysis.data.PatternMatch;
 import diff.difftree.DiffNode;
 import evaluation.FeatureContext;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Optional;
 
-public class AddIfdefWrapElseSemanticPattern extends SemanticPattern{
+public class AddIfdefWrapElseSemanticPattern extends SemanticPattern {
 
     public static final String PATTERN_NAME = "AddIfdefWrapElseSEM";
 
@@ -24,16 +23,13 @@ public class AddIfdefWrapElseSemanticPattern extends SemanticPattern{
             which has an unchanged code child
      */
     @Override
-    public List<PatternMatch<DiffNode>> getMatches(DiffNode annotationNode) {
-        List<PatternMatch<DiffNode>> patternMatches = new ArrayList<>();
-
+    public Optional<PatternMatch<DiffNode>> match(DiffNode annotationNode) {
         if(annotationNode.isAdd() && annotationNode.isIf()){
-
             boolean addedCodeInIf = false;
             DiffNode elseNode = null;
             for(DiffNode child : annotationNode.getAllChildren()){
                 if(child.isElif()){
-                    return patternMatches;
+                    return Optional.empty();
                 }
                 if(child.isCode() && child.isAdd()){
                     addedCodeInIf = true;
@@ -44,7 +40,7 @@ public class AddIfdefWrapElseSemanticPattern extends SemanticPattern{
             }
 
             if(elseNode == null || !addedCodeInIf){
-                return patternMatches;
+                return Optional.empty();
             }
 
             boolean noneCodeInElse = false;
@@ -55,16 +51,16 @@ public class AddIfdefWrapElseSemanticPattern extends SemanticPattern{
             }
 
             if(!noneCodeInElse){
-                return patternMatches;
+                return Optional.empty();
             }
 
-            PatternMatch<DiffNode> patternMatch = new PatternMatch<>(this,
+            return Optional.of(new PatternMatch<>(this,
                     annotationNode.getLinesInDiff().getFromInclusive(), elseNode.getLinesInDiff().getToExclusive(),
                     annotationNode.getAfterFeatureMapping()
-            );
-            patternMatches.add(patternMatch);
+            ));
         }
-        return patternMatches;
+
+        return Optional.empty();
     }
 
     @Override

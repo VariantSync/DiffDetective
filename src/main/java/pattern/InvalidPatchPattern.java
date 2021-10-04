@@ -3,7 +3,7 @@ package pattern;
 import analysis.data.PatternMatch;
 import evaluation.FeatureContext;
 
-import java.util.List;
+import java.util.Optional;
 
 public class InvalidPatchPattern<E> extends EditPattern<E> {
     public static final String PATTERN_NAME = "InvalidPatch";
@@ -13,8 +13,8 @@ public class InvalidPatchPattern<E> extends EditPattern<E> {
     }
 
     @Override
-    public List<PatternMatch<E>> getMatches(E x) {
-        return null;
+    public Optional<PatternMatch<E>> match(E x) {
+        return Optional.empty();
     }
 
     @Override

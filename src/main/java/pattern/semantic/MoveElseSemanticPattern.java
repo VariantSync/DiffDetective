@@ -4,9 +4,8 @@ import analysis.data.PatternMatch;
 import diff.difftree.DiffNode;
 import evaluation.FeatureContext;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
+import java.util.Optional;
 
 public class MoveElseSemanticPattern extends SemanticPattern{
 
@@ -23,9 +22,7 @@ public class MoveElseSemanticPattern extends SemanticPattern{
         the parent has a child that is either also a child of the added or the removed else node
      */
     @Override
-    public List<PatternMatch<DiffNode>> getMatches(DiffNode annotationNode) {
-        List<PatternMatch<DiffNode>> patternMatches = new ArrayList<>();
-
+    public Optional<PatternMatch<DiffNode>> match(DiffNode annotationNode) {
         if(annotationNode.isAdd() && annotationNode.isElse()){
 
             DiffNode removedElse = null;
@@ -37,7 +34,7 @@ public class MoveElseSemanticPattern extends SemanticPattern{
             }
 
             if(removedElse == null){
-                return patternMatches;
+                return Optional.empty();
             }
 
             Collection<DiffNode> commonAddElse = annotationNode.getAllChildren();
@@ -47,15 +44,15 @@ public class MoveElseSemanticPattern extends SemanticPattern{
             commonRemElse.retainAll(annotationNode.getAfterParent().getAllChildren());
 
             if(commonAddElse.isEmpty() && commonRemElse.isEmpty()){
-                return patternMatches;
+                return Optional.empty();
             }
 
-            PatternMatch<DiffNode> patternMatch = new PatternMatch<>(this,
+            return Optional.of(new PatternMatch<>(this,
                     annotationNode.getLinesInDiff().getFromInclusive(), removedElse.getLinesInDiff().getToExclusive()
-            );
-            patternMatches.add(patternMatch);
+            ));
         }
-        return patternMatches;
+
+        return Optional.empty();
     }
 
     @Override

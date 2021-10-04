@@ -5,8 +5,7 @@ import diff.Lines;
 import diff.difftree.DiffNode;
 import evaluation.FeatureContext;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Optional;
 
 public class UnwrapCodeAtomicPattern extends AtomicPattern{
     public static final String PATTERN_NAME = "UnwrapCode";
@@ -16,22 +15,20 @@ public class UnwrapCodeAtomicPattern extends AtomicPattern{
     }
 
     @Override
-    public List<PatternMatch<DiffNode>> getMatches(DiffNode codeNode) {
-        List<PatternMatch<DiffNode>> patternMatches = new ArrayList<>();
-
+    public Optional<PatternMatch<DiffNode>> match(DiffNode codeNode) {
         if (codeNode.isNon()){
             int addAmount = codeNode.getAddAmount();
             int remAmount = codeNode.getRemAmount();
             if ((remAmount > 0 && addAmount == 0)
                     ||  (remAmount == 0 && addAmount == 0 && codeNode.getBeforeDepth() > codeNode.getAfterDepth())){
                 final Lines diffLines = codeNode.getLinesInDiff();
-                PatternMatch<DiffNode> patternMatch = new PatternMatch<>(this,
+                return Optional.of(new PatternMatch<>(this,
                         diffLines.getFromInclusive(), diffLines.getToExclusive()
-                );
-                patternMatches.add(patternMatch);
+                ));
             }
         }
-        return patternMatches;
+
+        return Optional.empty();
     }
 
     @Override

@@ -6,30 +6,28 @@ import diff.difftree.DiffNode;
 import evaluation.FeatureContext;
 import org.prop4j.Node;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Optional;
 
 public class AddWithMappingAtomicPattern extends AtomicPattern {
     public static final String PATTERN_NAME = "AddWithMapping";
 
     public AddWithMappingAtomicPattern() {
-        this.name = PATTERN_NAME;
+        super(PATTERN_NAME);
     }
 
     @Override
-    public List<PatternMatch<DiffNode>> getMatches(DiffNode codeNode) {
-        List<PatternMatch<DiffNode>> patternMatches = new ArrayList<>();
-
+    public Optional<PatternMatch<DiffNode>> match(DiffNode codeNode) {
         if (codeNode.isAdd() && codeNode.getAfterParent().isAdd()) {
             final Node fm = codeNode.getAfterParent().getAfterFeatureMapping();
             final Lines diffLines = codeNode.getLinesInDiff();
 
-            PatternMatch<DiffNode> patternMatch = new PatternMatch<>(this,
+            return Optional.of(new PatternMatch<>(this,
                     diffLines.getFromInclusive(),
-                    diffLines.getToExclusive(), fm);
-            patternMatches.add(patternMatch);
+                    diffLines.getToExclusive(), fm
+            ));
         }
-        return patternMatches;
+
+        return Optional.empty();
     }
 
     @Override
