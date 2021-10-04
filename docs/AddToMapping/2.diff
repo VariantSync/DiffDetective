@@ -1,0 +1,5 @@
+ #if m
+   old code
+ #else
++  new code
+ #endif
