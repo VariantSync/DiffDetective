@@ -3,15 +3,15 @@ package pattern.semantic;
 import analysis.data.PatternMatch;
 import diff.difftree.DiffNode;
 import evaluation.FeatureContext;
+import pattern.SemanticPattern;
 
 import java.util.Optional;
 
 public class AddIfdefWrapElseSemanticPattern extends SemanticPattern {
-
     public static final String PATTERN_NAME = "AddIfdefWrapElseSEM";
 
     public AddIfdefWrapElseSemanticPattern() {
-        this.name = PATTERN_NAME;
+        super(PATTERN_NAME);
     }
 
     /*

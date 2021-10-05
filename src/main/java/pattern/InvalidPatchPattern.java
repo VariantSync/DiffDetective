@@ -9,7 +9,7 @@ public class InvalidPatchPattern<E> extends EditPattern<E> {
     public static final String PATTERN_NAME = "InvalidPatch";
 
     public InvalidPatchPattern() {
-        this.name = PATTERN_NAME;
+        super(PATTERN_NAME);
     }
 
     @Override

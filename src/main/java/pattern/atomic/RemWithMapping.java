@@ -5,28 +5,28 @@ import diff.Lines;
 import diff.difftree.DiffNode;
 import evaluation.FeatureContext;
 import org.prop4j.Node;
-
-import java.util.Optional;
+import pattern.AtomicPattern;
 
 public class RemWithMapping extends AtomicPattern {
     public static final String PATTERN_NAME = "RemWithMapping";
 
     public RemWithMapping() {
-        this.name = PATTERN_NAME;
+        super(PATTERN_NAME);
     }
 
     @Override
-    public Optional<PatternMatch<DiffNode>> match(DiffNode codeNode) {
-        if (codeNode.isRem() && codeNode.getBeforeParent().isRem()) {
-            final Node fm = codeNode.getBeforeParent().getBeforeFeatureMapping();
-            final Lines diffLines = codeNode.getLinesInDiff();
+    protected boolean matchesCodeNode(DiffNode codeNode) {
+        return codeNode.isRem() && codeNode.getBeforeParent().isRem();
+    }
 
-            return Optional.of(new PatternMatch<>(this,
-                    diffLines.getFromInclusive(), diffLines.getToExclusive(), fm
-            ));
-        }
+    @Override
+    public PatternMatch<DiffNode> createMatchOnCodeNode(DiffNode codeNode) {
+        final Node fm = codeNode.getBeforeParent().getBeforeFeatureMapping();
+        final Lines diffLines = codeNode.getLinesInDiff();
 
-        return Optional.empty();
+        return new PatternMatch<>(this,
+                diffLines.getFromInclusive(), diffLines.getToExclusive(), fm
+        );
     }
 
     @Override

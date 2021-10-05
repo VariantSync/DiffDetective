@@ -5,8 +5,7 @@ import diff.Lines;
 import diff.difftree.DiffNode;
 import evaluation.FeatureContext;
 import org.prop4j.Node;
-
-import java.util.Optional;
+import pattern.AtomicPattern;
 
 public class AddWithMappingAtomicPattern extends AtomicPattern {
     public static final String PATTERN_NAME = "AddWithMapping";
@@ -16,18 +15,19 @@ public class AddWithMappingAtomicPattern extends AtomicPattern {
     }
 
     @Override
-    public Optional<PatternMatch<DiffNode>> match(DiffNode codeNode) {
-        if (codeNode.isAdd() && codeNode.getAfterParent().isAdd()) {
-            final Node fm = codeNode.getAfterParent().getAfterFeatureMapping();
-            final Lines diffLines = codeNode.getLinesInDiff();
+    protected boolean matchesCodeNode(DiffNode codeNode) {
+        return codeNode.isAdd() && codeNode.getAfterParent().isAdd();
+    }
 
-            return Optional.of(new PatternMatch<>(this,
-                    diffLines.getFromInclusive(),
-                    diffLines.getToExclusive(), fm
-            ));
-        }
+    @Override
+    public PatternMatch<DiffNode> createMatchOnCodeNode(DiffNode codeNode) {
+        final Node fm = codeNode.getAfterParent().getAfterFeatureMapping();
+        final Lines diffLines = codeNode.getLinesInDiff();
 
-        return Optional.empty();
+        return new PatternMatch<>(this,
+                diffLines.getFromInclusive(),
+                diffLines.getToExclusive(), fm
+        );
     }
 
     @Override

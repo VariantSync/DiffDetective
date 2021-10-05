@@ -6,7 +6,9 @@ import diff.GitDiff;
 import diff.PatchDiff;
 import diff.difftree.DiffNode;
 import diff.difftree.DiffTree;
+import pattern.AtomicPattern;
 import pattern.EditPattern;
+import pattern.SemanticPattern;
 import pattern.atomic.*;
 import pattern.semantic.*;
 

@@ -8,10 +8,6 @@ import java.util.Optional;
 public abstract class EditPattern<E> {
     protected String name;
 
-    public EditPattern() {
-        this.name = this.getClass().getSimpleName();
-    }
-
     public EditPattern(final String name) {
         this.name = name;
     }

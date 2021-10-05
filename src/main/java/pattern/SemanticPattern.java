@@ -1,8 +1,9 @@
-package pattern.semantic;
+package pattern;
 
 import diff.difftree.DiffNode;
-import pattern.EditPattern;
 
 public abstract class SemanticPattern extends EditPattern<DiffNode> {
-
+    public SemanticPattern(String name) {
+        super(name);
+    }
 }

@@ -4,15 +4,15 @@ import analysis.data.PatternMatch;
 import diff.difftree.DiffNode;
 import evaluation.FeatureContext;
 import org.prop4j.Not;
+import pattern.SemanticPattern;
 
 import java.util.Optional;
 
-public class AddIfdefElseSemanticPattern extends SemanticPattern{
-
+public class AddIfdefElseSemanticPattern extends SemanticPattern {
     public static final String PATTERN_NAME = "AddIfdefElseSEM";
 
     public AddIfdefElseSemanticPattern() {
-        this.name = PATTERN_NAME;
+        super(PATTERN_NAME);
     }
 
     /*
