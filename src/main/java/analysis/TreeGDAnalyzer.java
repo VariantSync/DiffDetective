@@ -8,9 +8,8 @@ import diff.difftree.DiffNode;
 import diff.difftree.DiffTree;
 import pattern.AtomicPattern;
 import pattern.EditPattern;
+import pattern.Patterns;
 import pattern.SemanticPattern;
-import pattern.atomic.*;
-import pattern.semantic.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,36 +20,19 @@ import java.util.List;
  * Matches atomic patterns on the code nodes and semantic patterns on the annotation nodes.
  */
 public class TreeGDAnalyzer extends GDAnalyzer<DiffNode> {
-    public static final EditPattern<DiffNode>[] ATOMIC_PATTERNS = new AtomicPattern[]{
-            new AddWithMappingAtomicPattern(),
-            new RemWithMapping(),
-            new AddToPCAtomicPattern(),
-            new RemFromPCAtomicPattern(),
-            new WrapCodeAtomicPattern(),
-            new UnwrapCodeAtomicPattern(),
-            new ChangePCAtomicPattern(),
-    };
-
-    public static final EditPattern<DiffNode>[] SEMANTIC_PATTERNS = new SemanticPattern[]{
-            new AddIfdefElseSemanticPattern(),
-            new AddIfdefElifSemanticPattern(),
-            new AddIfdefWrapElseSemanticPattern(),
-            new AddIfdefWrapThenSemanticPattern(),
-            new MoveElseSemanticPattern(),
-    };
 
     @SuppressWarnings("unchecked")
     private static EditPattern<DiffNode>[] getPatterns(boolean atomic, boolean semantic){
         if(atomic && semantic){
-            EditPattern<DiffNode>[] patterns = new EditPattern[ATOMIC_PATTERNS.length + SEMANTIC_PATTERNS.length];
-            System.arraycopy(ATOMIC_PATTERNS, 0, patterns, 0, ATOMIC_PATTERNS.length);
-            System.arraycopy(SEMANTIC_PATTERNS, 0, patterns, ATOMIC_PATTERNS.length,
-                    SEMANTIC_PATTERNS.length);
+            EditPattern<DiffNode>[] patterns = new EditPattern[Patterns.ATOMIC.length + Patterns.SEMANTIC.length];
+            System.arraycopy(Patterns.ATOMIC, 0, patterns, 0, Patterns.ATOMIC.length);
+            System.arraycopy(Patterns.SEMANTIC, 0, patterns, Patterns.ATOMIC.length,
+                    Patterns.SEMANTIC.length);
             return patterns;
         }else if(atomic){
-            return ATOMIC_PATTERNS;
+            return Patterns.ATOMIC;
         }else if(semantic){
-            return SEMANTIC_PATTERNS;
+            return Patterns.SEMANTIC;
         }
         return new EditPattern[0];
     }
