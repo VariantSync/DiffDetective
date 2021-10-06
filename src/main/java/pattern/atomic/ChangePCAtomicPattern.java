@@ -3,6 +3,7 @@ package pattern.atomic;
 import analysis.data.PatternMatch;
 import diff.Lines;
 import diff.difftree.DiffNode;
+import diff.difftree.DiffType;
 import evaluation.FeatureContext;
 import pattern.AtomicPattern;
 
@@ -10,15 +11,11 @@ public class ChangePCAtomicPattern extends AtomicPattern {
     public static final String PATTERN_NAME = "ChangePC";
 
     public ChangePCAtomicPattern() {
-        super(PATTERN_NAME);
+        super(PATTERN_NAME, DiffType.NON);
     }
 
     @Override
     protected boolean matchesCodeNode(DiffNode codeNode) {
-        if (!codeNode.isNon()) {
-            return false;
-        }
-
         int addAmount = codeNode.getAddAmount();
         int remAmount = codeNode.getRemAmount();
         if (addAmount > 0 && remAmount > 0){

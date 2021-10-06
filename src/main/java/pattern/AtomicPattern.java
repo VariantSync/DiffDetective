@@ -2,24 +2,31 @@ package pattern;
 
 import analysis.data.PatternMatch;
 import diff.difftree.DiffNode;
+import diff.difftree.DiffType;
 import org.eclipse.jgit.annotations.NonNull;
 
 import java.util.Optional;
 
 public abstract class AtomicPattern extends EditPattern<DiffNode> {
-    public AtomicPattern(String name) {
+    private final DiffType diffType;
+
+    /**
+     * Each atomic pattern handles exactly one DiffType.
+     */
+    public AtomicPattern(final String name, final DiffType diffType) {
         super(name);
+        this.diffType = diffType;
     }
 
     /**
-     * @param codeNode Node of code type CODE to check for a pattern match.
+     * @param codeNode Node which has code type CODE and whose DiffType is the same as this patterns DiffType.
      * @return True if given node matches this pattern.
      */
     protected abstract boolean matchesCodeNode(DiffNode codeNode);
 
     /**
      * Creates a PatternMatch object for the given codeNode.
-     * Assumes matchesCodeNode(codeNode) == true.
+     * Assumes {@code matches(codeNode) == true}.
      * @param codeNode A node that was matched to this pattern.
      * @return A PatternMatch object containing metadata when matching this pattern to the given node.
      */
@@ -29,7 +36,7 @@ public abstract class AtomicPattern extends EditPattern<DiffNode> {
      * @return True if this pattern matches the given node and node is code.
      */
     public final boolean matches(DiffNode node) {
-        return node.isCode() && matchesCodeNode(node);
+        return node.isCode() && node.diffType == diffType && matchesCodeNode(node);
     }
 
     /**
@@ -59,7 +66,7 @@ public abstract class AtomicPattern extends EditPattern<DiffNode> {
 
         AtomicPattern match = null;
         for (final AtomicPattern p : Patterns.ATOMIC) {
-            if (p.matchesCodeNode(node)) {
+            if (p.matches(node)) {
                 if (match != null) {
                     throw new RuntimeException("BUG: Error in atomic pattern definition!\n"
                                     + "Node " + node + " matched " + match + " and " + p + "!");
