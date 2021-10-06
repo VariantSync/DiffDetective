@@ -11,13 +11,32 @@ public abstract class AtomicPattern extends EditPattern<DiffNode> {
         super(name);
     }
 
+    /**
+     * @param codeNode Node of code type CODE to check for a pattern match.
+     * @return True if given node matches this pattern.
+     */
     protected abstract boolean matchesCodeNode(DiffNode codeNode);
+
+    /**
+     * Creates a PatternMatch object for the given codeNode.
+     * Assumes matchesCodeNode(codeNode) == true.
+     * @param codeNode A node that was matched to this pattern.
+     * @return A PatternMatch object containing metadata when matching this pattern to the given node.
+     */
     protected abstract PatternMatch<DiffNode> createMatchOnCodeNode(DiffNode codeNode);
 
+    /**
+     * @return True if this pattern matches the given node and node is code.
+     */
     public final boolean matches(DiffNode node) {
         return node.isCode() && matchesCodeNode(node);
     }
 
+    /**
+     * Matches this pattern onto the given node.
+     * @param x The node to match this pattern on.
+     * @return A {@link PatternMatch<DiffNode>} if the given node matches this pattern (i.e., {@code matches(x) == true}). Empty otherwise.
+     */
     @Override
     public final Optional<PatternMatch<DiffNode>> match(DiffNode x) {
         if (matches(x)) {
@@ -27,6 +46,12 @@ public abstract class AtomicPattern extends EditPattern<DiffNode> {
         return Optional.empty();
     }
 
+    /**
+     * Returns the atomic pattern that matches the given node.
+     * Each node matches exactly one pattern.
+     * @param node The node of which to find its atomic pattern.
+     * @return Returns the atomic pattern that matches the given node.
+     */
     public static @NonNull AtomicPattern getPattern(DiffNode node) {
         if (!node.isCode()) {
             throw new IllegalArgumentException("Expected a code node but got " + node.codeType + "!");
