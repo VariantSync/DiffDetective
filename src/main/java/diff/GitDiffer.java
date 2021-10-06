@@ -15,6 +15,7 @@ import org.eclipse.jgit.treewalk.CanonicalTreeParser;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.pmw.tinylog.Logger;
+import util.SideEffectIteratorDecorator;
 import util.Yield;
 
 import java.io.ByteArrayOutputStream;
@@ -60,32 +61,27 @@ public class GitDiffer {
      * @return The GitDiff object created from the Git object of this GitDiffer
      */
     public GitDiff createGitDiff() {
-        GitDiff gitDiff = new GitDiff();
+        final GitDiff gitDiff = new GitDiff();
 
-        Iterable<RevCommit> commitsIterable;
+        final Iterable<RevCommit> commitsIterable;
         try {
             commitsIterable = git.log().call();
         } catch (GitAPIException e) {
             Logger.warn("Could not get log for git repository {}", git.toString());
             return null;
         }
-        try {
-            // we specifically count the commits here because the amount of unfiltered commits is
-            // otherwise lost
-            int commitAmount = 0;
-            for (RevCommit c : commitsIterable) {
-                commitAmount++;
-                if (!diffFilter.filter(c)) {
-                    continue;
-                }
-                CommitDiff commitDiff = createCommitDiffFromFirstParent(git, diffFilter, c, !saveMemory);
-                gitDiff.addCommitDiff(commitDiff);
-            }
-            gitDiff.setCommitAmount(commitAmount);
-        } catch (IOException e) {
-            Logger.warn("Could not get diffs for git repository {}", git.toString());
-            return null;
+
+        // we specifically count the commits here because the amount of unfiltered commits is
+        // otherwise lost
+        final int[] commitAmount = {0};
+        final Iterator<RevCommit> commitIterator = new SideEffectIteratorDecorator<>(
+                commitsIterable.iterator(),
+                r -> ++commitAmount[0]);
+        for (CommitDiff commitDiff : yieldAllValidIn(commitIterator)) {
+            gitDiff.addCommitDiff(commitDiff);
         }
+        gitDiff.setCommitAmount(commitAmount[0]);
+
         return gitDiff;
     }
 
@@ -98,19 +94,33 @@ public class GitDiffer {
             return null;
         }
 
-        final Iterator<RevCommit> commitsIterator = commitsIterable.iterator();
+        return yieldAllValidIn(commitsIterable.iterator());
+    }
+
+    private Yield<CommitDiff> yieldAllValidIn(final Iterator<RevCommit> commitsIterator) {
         return new Yield<>(
                 () -> {
-                    RevCommit c = commitsIterator.next();
-                    while (c != null && !diffFilter.filter(c)) {
-                        c = commitsIterator.next();
+                    while (commitsIterator.hasNext()) {
+                        final RevCommit c = commitsIterator.next();
+                        // If this commit is filtered, go to the next one.
+                        if (!diffFilter.filter(c)) {
+                            continue;
+                        }
+
+                        if (c.getParentCount() == 0) {
+                            Logger.warn("Cannot create CommitDiff for commit " + c.getId().getName() + " because it does not have parents!");
+                            continue;
+                        }
+
+                        try {
+                            return createCommitDiffFromFirstParent(git, diffFilter, c, !saveMemory);
+                        } catch (IOException exception) {
+                            Logger.error(exception);
+                            return null;
+                        }
                     }
-                    try {
-                        return c == null ? null : createCommitDiffFromFirstParent(git, diffFilter, c, !saveMemory);
-                    } catch (IOException exception) {
-                        Logger.error(exception);
-                        return null;
-                    }
+
+                    return null;
                 }
         );
     }
