@@ -70,7 +70,7 @@ public class NaiveMovedCodeDetection implements DiffTreeTransformer {
 
     private static DiffNode findTwinOf(final DiffNode code, final List<DiffNode> codeNodes) {
         final DiffType weAreLookingFor = code.diffType.inverse();
-        final String text = code.getText().trim();
+        final String text = code.getLabel().trim();
 
         if (text.isEmpty()) {
             return null;
@@ -79,7 +79,7 @@ public class NaiveMovedCodeDetection implements DiffTreeTransformer {
         // We assert the following as we removed the code node in transform.
         // assert(!codeNodes.contains(code));
         for (final DiffNode other : codeNodes) {
-            if (other.diffType == weAreLookingFor && text.equals(other.getText().trim())) {
+            if (other.diffType == weAreLookingFor && text.equals(other.getLabel().trim())) {
                 return other;
             }
         }
@@ -96,6 +96,6 @@ public class NaiveMovedCodeDetection implements DiffTreeTransformer {
         final DiffLineNumber from = new DiffLineNumber(Math.min(addFrom.inDiff, remFrom.inDiff), remFrom.beforeEdit, addFrom.afterEdit);
         final DiffLineNumber to = new DiffLineNumber(Math.max(addTo.inDiff, remTo.inDiff), remTo.beforeEdit, addTo.afterEdit);
 
-        return DiffNode.createCode(DiffType.NON, from, to, added.getText() /* equals removed.getText() */);
+        return DiffNode.createCode(DiffType.NON, from, to, added.getLabel() /* equals removed.getText() */);
     }
 }

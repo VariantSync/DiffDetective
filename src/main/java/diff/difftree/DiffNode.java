@@ -36,7 +36,7 @@ public class DiffNode {
     private final DiffLineNumber to = DiffLineNumber.Invalid();
 
     private Node featureMapping;
-    private String text;
+    private String label;
 
     private DiffNode beforeParent;
     private DiffNode afterParent;
@@ -56,14 +56,14 @@ public class DiffNode {
 
     public DiffNode(DiffType diffType, CodeType codeType,
                     DiffLineNumber fromLines, DiffLineNumber toLines,
-                    Node featureMapping, String text) {
+                    Node featureMapping, String label) {
         this();
         this.diffType = diffType;
         this.codeType = codeType;
         this.from.set(fromLines);
         this.to.set(toLines);
         this.featureMapping = featureMapping;
-        this.text = text;
+        this.label = label;
     }
 
     /**
@@ -96,7 +96,7 @@ public class DiffNode {
         DiffNode diffNode = new DiffNode();
         diffNode.diffType = DiffType.ofDiffLine(line);
         diffNode.codeType = CodeType.ofDiffLine(line);
-        diffNode.text = line.isEmpty() ? line : line.substring(1);
+        diffNode.label = line.isEmpty() ? line : line.substring(1);
 
         if (diffNode.isCode() || diffNode.isEndif() || diffNode.isElse()) {
             diffNode.featureMapping = null;
@@ -107,12 +107,12 @@ public class DiffNode {
         return diffNode;
     }
 
-    public void setText(final String text) {
-        this.text = text;
+    public void setLabel(final String label) {
+        this.label = label;
     }
 
-    public String getText() {
-        return text;
+    public String getLabel() {
+        return label;
     }
 
     /**
@@ -660,11 +660,11 @@ public class DiffNode {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         DiffNode diffNode = (DiffNode) o;
-        return isMultilineMacro == diffNode.isMultilineMacro && diffType == diffNode.diffType && codeType == diffNode.codeType && from.equals(diffNode.from) && to.equals(diffNode.to) && Objects.equals(featureMapping, diffNode.featureMapping) && text.equals(diffNode.text);
+        return isMultilineMacro == diffNode.isMultilineMacro && diffType == diffNode.diffType && codeType == diffNode.codeType && from.equals(diffNode.from) && to.equals(diffNode.to) && Objects.equals(featureMapping, diffNode.featureMapping) && label.equals(diffNode.label);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(diffType, codeType, isMultilineMacro, from, to, featureMapping, text);
+        return Objects.hash(diffType, codeType, isMultilineMacro, from, to, featureMapping, label);
     }
 }

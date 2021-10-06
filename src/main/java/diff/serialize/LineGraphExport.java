@@ -18,6 +18,8 @@ public class LineGraphExport {
     public enum NodePrintStyle {
         /// Print CodeType and DiffType
         Type,
+        /// Print only the label
+        LabelOnly,
         /// Print Node as Code
         Code,
         /// Print CodeType and DiffType and Mappings of Macros
