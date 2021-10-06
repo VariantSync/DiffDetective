@@ -540,6 +540,7 @@ public class DiffNode {
 
     public String toLineGraphFormat(LineGraphExport.Options options) {
         return "v " + getID() + " " + switch (options.nodePrintStyle()) {
+            case LabelOnly -> label;
             case Type -> diffType + "_" + codeType;
             case Code -> "\"" + prettyPrintIfMacroOr(label.trim()) + "\"";
             case Mappings -> diffType + "_" + codeType + "_\"" + prettyPrintIfMacroOr("") + "\"";
