@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public class TreeTransformersTest {
-    private static final boolean RENDER = false;
+    private static final boolean RENDER = true;
     private static final Path resDir = Constants.RESOURCE_DIR.resolve("diffs/collapse");
     private static final Path genDir = resDir.resolve("gen");
     private static final List<DiffTreeTransformer> transformers = DiffTreeMiner.PostProcessing;
@@ -139,5 +139,10 @@ public class TreeTransformersTest {
     @Test
     public void test_SanityCheck() throws IOException {
         testCommit("Marlin/SanityCheck.h", "cbd582865e2a76b7be3b03533a0e06e8daf76f15");
+    }
+
+    @Test
+    public void test_pins_MINIRAMBO() throws IOException {
+        testCommit("Marlin/pins_MINIRAMBO.h", "50f1a8fd92b351bf1fa29e5cd31f24fc884999c0");
     }
 }
