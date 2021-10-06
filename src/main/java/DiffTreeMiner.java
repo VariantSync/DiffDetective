@@ -46,6 +46,9 @@ public class DiffTreeMiner {
                 LineGraphExport.NodePrintStyle.Type // For pattern matching, we want to look at node types and not individual code.
                 , true
                 , PostProcessing
+                , Options.LogError()
+                .andThen(Options.RenderError())
+                .andThen(LineGraphExport.Options.SysExitError())
         );
 
 

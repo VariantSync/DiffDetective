@@ -4,6 +4,8 @@ import de.ovgu.featureide.fm.core.analysis.cnf.generator.configuration.util.Pair
 import diff.CommitDiff;
 import diff.PatchDiff;
 import diff.difftree.DiffTree;
+import diff.difftree.render.DiffTreeRenderer;
+import diff.difftree.render.ErrorRendering;
 import diff.difftree.serialize.DiffTreeLineGraphExporter;
 import diff.difftree.transform.DiffTreeTransformer;
 import org.pmw.tinylog.Logger;
@@ -11,6 +13,7 @@ import util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiConsumer;
 
 public class LineGraphExport {
     public static final String TREE_NAME_SEPARATOR = "$$$";
@@ -27,12 +30,31 @@ public class LineGraphExport {
         /// Print CodeType and DiffType and Mappings if Macro and Text if Code
         Debug
     }
+
     public static record Options(
             NodePrintStyle nodePrintStyle,
             boolean skipEmptyTrees,
-            List<DiffTreeTransformer> treePreProcessing) {
+            List<DiffTreeTransformer> treePreProcessing,
+            BiConsumer<PatchDiff, Exception> onError) {
         public Options(NodePrintStyle nodePrintStyle) {
-            this(nodePrintStyle, false, new ArrayList<>());
+            this(nodePrintStyle, false, new ArrayList<>(), LogError());
+        }
+
+        public static BiConsumer<PatchDiff, Exception> LogError() {
+            return (p, e) -> Logger.error(e);
+        }
+
+        public static BiConsumer<PatchDiff, Exception> RenderError() {
+            final ErrorRendering errorRenderer = new ErrorRendering(DiffTreeRenderer.WithinDiffDetective());
+            return (p, e) -> {
+                Logger.error(e);
+                Logger.error("Rendering patch");
+                errorRenderer.onError(p);
+            };
+        }
+
+        public static BiConsumer<PatchDiff, Exception> SysExitError() {
+            return (p, e) -> System.exit(0);
         }
     }
 
@@ -63,7 +85,14 @@ public class LineGraphExport {
         for (final PatchDiff patchDiff : commitDiff.getPatchDiffs()) {
             if (patchDiff.isValid()) {
                 //Logger.info("  Exporting DiffTree #" + treeCounter);
-                final Pair<DiffTreeSerializeDebugData, String> patchDiffLg = toLineGraphFormat(patchDiff.getDiffTree(), options);
+                final Pair<DiffTreeSerializeDebugData, String> patchDiffLg;
+                try {
+                    patchDiffLg = toLineGraphFormat(patchDiff.getDiffTree(), options);
+                } catch (Exception e) {
+                    options.onError.accept(patchDiff, e);
+                    break;
+                }
+
                 debugData.mappend(patchDiffLg.getKey());
 
                 if (!patchDiffLg.getValue().isEmpty()) {
