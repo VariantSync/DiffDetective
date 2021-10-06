@@ -595,7 +595,7 @@ public class DiffNode {
         }
 
         if (node == null) {
-            Logger.warn("Could not parse feature mapping of line \"{}\"", line);
+            Logger.warn("Could not parse expression \"{}\" to feature mapping. Using it as literal.", fmString);
             node = new Literal(fmString);
         }
 
