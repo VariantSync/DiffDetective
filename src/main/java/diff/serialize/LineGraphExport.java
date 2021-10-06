@@ -19,11 +19,11 @@ public class LineGraphExport {
         /// Print CodeType and DiffType
         Type,
         /// Print Node as Code
-        Pretty,
+        Code,
         /// Print CodeType and DiffType and Mappings of Macros
         Mappings,
         /// Print CodeType and DiffType and Mappings if Macro and Text if Code
-        Verbose
+        Debug
     }
     public static record Options(
             NodePrintStyle nodePrintStyle,

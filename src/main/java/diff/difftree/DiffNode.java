@@ -541,9 +541,9 @@ public class DiffNode {
     public String toLineGraphFormat(LineGraphExport.Options options) {
         return "v " + getID() + " " + switch (options.nodePrintStyle()) {
             case Type -> diffType + "_" + codeType;
-            case Pretty -> "\"" + prettyPrintIfMacroOr(text.trim()) + "\"";
+            case Code -> "\"" + prettyPrintIfMacroOr(label.trim()) + "\"";
             case Mappings -> diffType + "_" + codeType + "_\"" + prettyPrintIfMacroOr("") + "\"";
-            case Verbose -> diffType + "_" + codeType + "_\"" + prettyPrintIfMacroOr(text.trim()) + "\"";
+            case Debug -> diffType + "_" + codeType + "_\"" + prettyPrintIfMacroOr(label.trim()) + "\"";
         };
     }
 
