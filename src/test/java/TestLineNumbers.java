@@ -1,15 +1,15 @@
 import de.ovgu.featureide.fm.core.analysis.cnf.generator.configuration.util.Pair;
 import diff.DiffLineNumber;
 import diff.difftree.DiffTree;
-import diff.difftree.parse.DiffTreeParser;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import util.IO;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 public class TestLineNumbers {
@@ -72,7 +72,7 @@ public class TestLineNumbers {
         diffTree.forAll(node ->
                 System.out.println(node.diffType.name
                     + " " + node.codeType
-                    + " \"" + node.getText().trim()
+                    + " \"" + node.getLabel().trim()
                     + " with ID " + node.getID()
                     + "\" old: " + node.getLinesBeforeEdit()
                     + ", diff: " + node.getLinesInDiff()

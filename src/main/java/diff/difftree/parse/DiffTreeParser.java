@@ -95,7 +95,7 @@ public class DiffTreeParser {
             // collapse multiple code lines
             if (lastCode != null) {
                 if (collapseMultipleCodeLines && newNode.isCode() && lastCode.diffType.equals(newNode.diffType)) {
-                    lastCode.setText(lastCode.getText() + StringUtils.LINEBREAK + newNode.getText());
+                    lastCode.setLabel(lastCode.getLabel() + StringUtils.LINEBREAK + newNode.getLabel());
                     continue;
                 } else {
                     lastCode = endCodeBlock(lastCode, lastLineNo);

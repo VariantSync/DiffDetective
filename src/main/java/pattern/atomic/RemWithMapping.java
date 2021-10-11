@@ -3,6 +3,7 @@ package pattern.atomic;
 import analysis.data.PatternMatch;
 import diff.Lines;
 import diff.difftree.DiffNode;
+import diff.difftree.DiffType;
 import evaluation.FeatureContext;
 import org.prop4j.Node;
 import pattern.AtomicPattern;
@@ -11,12 +12,12 @@ public class RemWithMapping extends AtomicPattern {
     public static final String PATTERN_NAME = "RemWithMapping";
 
     public RemWithMapping() {
-        super(PATTERN_NAME);
+        super(PATTERN_NAME, DiffType.REM);
     }
 
     @Override
     protected boolean matchesCodeNode(DiffNode codeNode) {
-        return codeNode.isRem() && codeNode.getBeforeParent().isRem();
+        return codeNode.getBeforeParent().isRem();
     }
 
     @Override

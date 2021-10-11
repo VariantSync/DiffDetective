@@ -2,10 +2,7 @@ import de.ovgu.featureide.fm.core.analysis.cnf.generator.configuration.util.Pair
 import diff.CommitDiff;
 import diff.GitDiffer;
 import diff.difftree.render.DiffTreeRenderer;
-import diff.difftree.transform.CollapseNestedNonEditedMacros;
-import diff.difftree.transform.CutNonEditedSubtrees;
-import diff.difftree.transform.DiffTreeTransformer;
-import diff.difftree.transform.NaiveMovedCodeDetection;
+import diff.difftree.transform.*;
 import diff.serialize.DiffTreeSerializeDebugData;
 import diff.serialize.LineGraphExport;
 import load.GitLoader;
@@ -20,11 +17,15 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
+import static diff.serialize.LineGraphExport.NodePrintStyle;
+import static diff.serialize.LineGraphExport.Options;
+
 public class DiffTreeMiner {
     public static final List<DiffTreeTransformer> PostProcessing = List.of(
+            new NaiveMovedCodeDetection(), // do this first as it might introduce non-edited subtrees
             new CutNonEditedSubtrees(),
             new CollapseNestedNonEditedMacros(),
-            new NaiveMovedCodeDetection()
+            new CollapseAtomicPatterns()
     );
 
     public static void main(String[] args) {
@@ -42,10 +43,13 @@ public class DiffTreeMiner {
 //        int treesToExportAtMost = 100;
         int treesToExportAtMost = -1;
 
-        final LineGraphExport.Options exportOptions = new LineGraphExport.Options(
-                LineGraphExport.NodePrintStyle.Type // For pattern matching, we want to look at node types and not individual code.
+        final LineGraphExport.Options exportOptions = new Options(
+                NodePrintStyle.LabelOnly // For pattern matching, we want to look at node types and not individual code.
                 , true
                 , PostProcessing
+                , Options.LogError()
+                .andThen(Options.RenderError())
+                .andThen(LineGraphExport.Options.SysExitError())
         );
 
 

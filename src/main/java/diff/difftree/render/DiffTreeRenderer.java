@@ -36,7 +36,7 @@ public class DiffTreeRenderer {
             int fontsize,
             boolean withlabels) {
         public static RenderOptions DEFAULT = new RenderOptions(
-                LineGraphExport.NodePrintStyle.Verbose,
+                LineGraphExport.NodePrintStyle.Debug,
                 true,
                 300,
                 700,

@@ -1,18 +1,15 @@
 import de.ovgu.featureide.fm.core.analysis.cnf.generator.configuration.util.Pair;
 import diff.difftree.DiffTree;
 import diff.difftree.parse.DiffTreeParser;
+import diff.serialize.DiffTreeSerializeDebugData;
+import diff.serialize.LineGraphExport;
 import org.junit.Test;
 import org.pmw.tinylog.Logger;
-import diff.serialize.DiffTreeSerializeDebugData;
 import util.IO;
-import diff.serialize.LineGraphExport;
 import util.StringUtils;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.stream.Collectors;
 
 public class TestMultiLineMacros {
     private static final Path resDir = Constants.RESOURCE_DIR.resolve("multilinemacros");
@@ -41,7 +38,7 @@ public class TestMultiLineMacros {
     @Test
     public void test() throws IOException {
         final LineGraphExport.Options exportOptions = new LineGraphExport.Options(
-                LineGraphExport.NodePrintStyle.Verbose
+                LineGraphExport.NodePrintStyle.Debug
         );
 
         diffToDiffTree(exportOptions, resDir.resolve("mldiff1.txt"));
