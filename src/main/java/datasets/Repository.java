@@ -9,7 +9,11 @@ import java.nio.file.Paths;
  * @author Kevin Jedelhauser
  */
 public class Repository {
-
+	
+	/**
+	 * From where the input is read from.
+	 */
+	private LoadingParameter load;
 	
 	/**
 	 * The path location for the computation output. 
@@ -17,29 +21,14 @@ public class Repository {
 	private final Path outputPath;
 	
 	/**
-	 * <code>True</code> if the input is read from a directory.
-	 */
-	private final boolean loadFromDir;
-	
-	/**
-	 * <code>True</code> if the input is read from a zip file.
-	 */
-	private final boolean loadFromZip;
-	
-	/**
-	 * <code>True</code> if the input is read from a remote repository.
-	 */
-	private final boolean loadFromRemote;
-	
-	/**
 	 * The local or remote path of a repository.
 	 */
-    private final String repositoryPath;
+	private final String repositoryPath;
 
-    /**
-     * The name of a remote repository. May be <code>null</code> if local. 
-     */
-    private final String repositoryName;
+	/**
+	 * The name of a remote repository. May be <code>null</code> if local. 
+	 */
+	private final String repositoryName;
 	
 	/**
 	 * For large repositories.
@@ -48,108 +37,67 @@ public class Repository {
 	private final boolean saveMemory;
 	
 	/**
-	 * <code>True</code> if the output data is rendered in a graph.
-	 */
-	private final boolean renderOutput;
-	
-	/**
-	 * The level of the tree to expand most at to.
-	 */
-	private final int treesToExportAtMost;
-	
-	/**
 	 * Creates a repository.
 	 * 
 	 * @param outputPath
-	 * @param loadFromDir
-	 * @param loadFromZip
-	 * @param loadFromRemote
+	 * @param load {@link LoadingParameter}
 	 * @param repositoryPath
 	 * @param repositoryName
 	 * @param saveMemory
-	 * @param renderOutput
-	 * @param treesToExportAtMost
 	 */
 	private Repository(final Path outputPath,
-			final boolean loadFromDir,
-			final boolean loadFromZip,
-			final boolean loadFromRemote,
+			final LoadingParameter load,
 			final String repositoryPath,
 			final String repositoryName,
-			final boolean saveMemory,
-			final boolean renderOutput,
-			final int treesToExportAtMost) {
+			final boolean saveMemory) {
 		this.outputPath = outputPath;
-		this.loadFromDir = loadFromDir;
-		this.loadFromZip = loadFromZip;
-		this.loadFromRemote = loadFromRemote;
+		this.load = load;
 		this.repositoryPath = repositoryPath;
 		this.repositoryName = repositoryName;
 		this.saveMemory = saveMemory;
-		this.renderOutput = renderOutput;
-		this.treesToExportAtMost = treesToExportAtMost;
-		
-		if (!(loadFromDir || loadFromZip || loadFromRemote) || 
-				loadFromDir && loadFromZip || 
-				loadFromZip && loadFromRemote || 
-				loadFromRemote && loadFromDir) {
-			throw new IllegalArgumentException("Exactly one load parameter may be true.");
-		}
 	}
 
 	/**
 	 * Creates a repository from an existing directory.
 	 * 
-	 * @param dirPath
+	 * @param dirPath The directory path.
 	 * @return
 	 */
 	public static Repository createLocalDirRepo(String dirPath) {
 		return new Repository(Paths.get("linegraph", "data", "difftrees.lg"),
-				true,
-				false,
-				false,
+				LoadingParameter.FROM_DIR,
 				dirPath,
 				null,
-				true,
-				false,
-				-1);
+				true);
 	}
 	
 	/**
 	 * Creates a repository from a local zip file.
 	 * 
-	 * @param filePath
+	 * @param filePath The file path.
 	 * @return
 	 */
 	public static Repository createLocalZipRepo(String filePath) {
 		return new Repository(Paths.get("linegraph", "data", "difftrees.lg"),
-				false,
-				true,
-				false,
+				LoadingParameter.FROM_ZIP,
 				filePath,
 				null,
-				true,
-				false,
-				-1);
+				true);
 	}
 
 	/**
 	 * Creates a repository from a remote repository.
 	 * 
-	 * @param repoUri
-	 * @param repoName
+	 * @param repoUri The address to the remote repository.
+	 * @param repoName Name of the folder, where the git repository is cloned to.
 	 * @return
 	 */
 	public static Repository createRemoteRepo(String repoUri, String repoName) {
 		return new Repository(Paths.get("linegraph", "data", "difftrees.lg"),
-				false,
-				false,
-				true,
+				LoadingParameter.FROM_REMOTE,
 				repoUri,
 				repoName,
-				true,
-				false,
-				-1);
+				true);
 	}
 	
 	/**
@@ -165,7 +113,7 @@ public class Repository {
 	 * @return
 	 */
 	public static Repository getLinuxRepo() {
-		return createRemoteRepo("https://github.com/torvalds/linux", "");
+		return createRemoteRepo("https://github.com/torvalds/linux", "linux_remote");
 	}
 
 	/**
@@ -173,7 +121,7 @@ public class Repository {
 	 * @return
 	 */
 	public static Repository getBusyboxRepo() {
-		return createRemoteRepo("https://git.busybox.net/busybox", "");
+		return createRemoteRepo("https://git.busybox.net/busybox", "busybox_remote");
 	}
 
 	/**
@@ -181,7 +129,7 @@ public class Repository {
 	 * @return
 	 */
 	public static Repository getVimRepo() {
-		return createRemoteRepo("https://github.com/vim/vim", "");
+		return createRemoteRepo("https://github.com/vim/vim", "vim_remote");
 	}
 
 	/**
@@ -189,25 +137,17 @@ public class Repository {
 	 * @return
 	 */
 	public static Repository getLibsshRepo() {
-		return createRemoteRepo("https://gitlab.com/libssh/libssh-mirror", "");
+		return createRemoteRepo("https://gitlab.com/libssh/libssh-mirror", "libssh_remote");
 	}
 
 	public Path getOutputPath() {
 		return outputPath;
 	}
 
-	public boolean isLoadFromDir() {
-		return loadFromDir;
+	public LoadingParameter getLoad() {
+		return load;
 	}
 	
-	public boolean isLoadFromZip() {
-		return loadFromZip;
-	}
-	
-	public boolean isLoadFromRemote() {
-		return loadFromRemote;
-	}
-
 	public String getRepositoryPath() {
 		return repositoryPath;
 	}
@@ -218,13 +158,5 @@ public class Repository {
 
 	public boolean isSaveMemory() {
 		return saveMemory;
-	}
-
-	public boolean isRenderOutput() {
-		return renderOutput;
-	}
-
-	public int getTreesToExportAtMost() {
-		return treesToExportAtMost;
 	}
 }

@@ -1,3 +1,4 @@
+package main;
 import analysis.GDAnalysisUtils;
 import analysis.GDAnalyzer;
 import analysis.TreeGDAnalyzer;

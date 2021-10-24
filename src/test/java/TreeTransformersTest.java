@@ -6,6 +6,9 @@ import diff.difftree.render.DiffTreeRenderer;
 import diff.difftree.transform.DiffTreeTransformer;
 import diff.serialize.LineGraphExport;
 import load.GitLoader;
+import main.DiffTreeMiner;
+import main.Main;
+
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.revwalk.RevCommit;
