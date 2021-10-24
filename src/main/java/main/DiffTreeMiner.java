@@ -38,8 +38,9 @@ public class DiffTreeMiner {
     public static void main(String[] args) {
         Main.setupLogger(Level.DEBUG);
 
-        Repository repo = Repository.createLocalZipRepo("Marlin_old.zip");
-
+//        Repository repo = Repository.createLocalZipRepo("Marlin_old.zip");
+        Repository repo = Repository.getLinuxRepo();
+        
         final LineGraphExport.Options exportOptions = new Options(
                 NodePrintStyle.LabelOnly // For pattern matching, we want to look at node types and not individual code.
                 , true
@@ -60,10 +61,16 @@ public class DiffTreeMiner {
         Git git;
         if (repo.getLoad() == LoadingParameter.FROM_DIR) {
             Logger.info("Loading git from {} ...", repo.getRepositoryPath());
-            git = GitLoader.fromZip(repo.getRepositoryPath());
-        } else {
-            Logger.info("Loading git from {} ...", repo.getRepositoryPath());
             git = GitLoader.fromDefaultDirectory(repo.getRepositoryPath());
+        } else if (repo.getLoad() == LoadingParameter.FROM_ZIP) {
+            Logger.info("Loading git from {} ...", repo.getRepositoryPath());
+            git = GitLoader.fromZip(repo.getRepositoryPath());
+        } else if (repo.getLoad() == LoadingParameter.FROM_REMOTE) {
+            Logger.info("Loading git from {} ...", repo.getRepositoryPath());
+            git = GitLoader.fromRemote(repo.getRepositoryPath(), repo.getRepositoryName());
+        } else {
+            Logger.error("Failed to load");
+            return;
         }
 
         if (git == null) {
