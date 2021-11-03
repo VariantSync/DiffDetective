@@ -38,6 +38,7 @@ FONT_SIZE = 3
 
 # other parameters
 IS_PATTERN = False
+ATOMICS = False
 
 
 def lineNoOfNode(v):
@@ -147,12 +148,20 @@ def plot_graphs(S, exportDir):
         for v, d in difftree.nodes(data=True):
             name = d['label']
             # print(v, name)
-            if name.startswith("NON"):
-                node_colors.append(DIFFTYPE_NON_COLOR)
-            elif name.startswith("ADD"):
-                node_colors.append(DIFFTYPE_ADD_COLOR)
-            elif name.startswith("REM"):
-                node_colors.append(DIFFTYPE_REM_COLOR)
+            if ATOMICS:
+                if name.startswith("Add"):
+                    node_colors.append(DIFFTYPE_ADD_COLOR)
+                elif name.startswith("Rem"):
+                    node_colors.append(DIFFTYPE_REM_COLOR)
+                else:
+                    node_colors.append(DIFFTYPE_NON_COLOR)
+            else:
+                if name.startswith("NON"):
+                    node_colors.append(DIFFTYPE_NON_COLOR)
+                elif name.startswith("ADD"):
+                    node_colors.append(DIFFTYPE_ADD_COLOR)
+                elif name.startswith("REM"):
+                    node_colors.append(DIFFTYPE_REM_COLOR)
 
             # remove metadata and " " from node labels
             nameWithoutDiffType = name[4:]
@@ -168,7 +177,7 @@ def plot_graphs(S, exportDir):
             ismacro = not isroot and not codetype.startswith("CODE")
 
             if IS_PATTERN:
-                code = codetype if isroot or ismacro else ""
+                code = codetype if isroot or ismacro else (name if ATOMICS else "")
             else:
                 code = substringGraceful(nameWithoutDiffType, secondHyphenPos+1) # +1 to remove _ too
                 # print(code)
@@ -260,6 +269,7 @@ if __name__ == "__main__":
     argparser.add_argument('--nolabels', action='store_const', const=True, default=False)
     argparser.add_argument('--recursive', action='store_const', const=True, default=False)
     argparser.add_argument('--pattern', action='store_const', const=True, default=False)
+    argparser.add_argument('--atomics', action='store_const', const=True, default=False)
     args = argparser.parse_args()
 
     infile = args.infile
@@ -270,8 +280,10 @@ if __name__ == "__main__":
     POS_SCALING_Y = args.scaley
     EDGE_SIZE = args.edgesize
     ARROW_SIZE = args.arrowsize
-    IS_PATTERN = args.pattern
     FONT_SIZE = args.fontsize
+
+    IS_PATTERN = args.pattern
+    ATOMICS = args.atomics
 
     if os.path.isfile(infile):
         print("Render file", infile)
