@@ -1,5 +1,6 @@
 import diff.difftree.DiffTree;
 import diff.difftree.render.DiffTreeRenderer;
+import org.pmw.tinylog.Logger;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -30,6 +31,13 @@ public class SimpleRenderer {
         }
 
         final Path fileToRender = Path.of(args[0]);
+
+        if (!Files.exists(fileToRender)) {
+            Logger.error("Path " + fileToRender + " does not exist!");
+            return;
+        }
+
+        Logger.info("Rendering " + (Files.isDirectory(fileToRender) ? "directory " : "file ") + fileToRender);
 
         if (Files.isDirectory(fileToRender)) {
             Files.list(fileToRender).forEach(SimpleRenderer::render);
