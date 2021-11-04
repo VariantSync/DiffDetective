@@ -116,6 +116,4 @@ buildNumber.properties
 patches/*
 /.venv/
 
-# generated test files
-src/test/resources/*/gen
-src/test/resources/*/*/gen
+error/
