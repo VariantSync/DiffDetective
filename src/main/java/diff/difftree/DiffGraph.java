@@ -26,7 +26,13 @@ public final class DiffGraph {
      */
     public static DiffTree fromNodes(final Collection<DiffNode> nodes, final DiffTreeSource source) {
         final DiffNode newRoot = DiffNode.createRoot();
-        nodes.stream().filter(DiffGraph::hasNoParents).forEach(n -> n.addBelow(newRoot, newRoot));
+        nodes.stream()
+                .filter(DiffGraph::hasNoParents)
+                .forEach(n ->
+                        n.diffType.matchBeforeAfter(
+                                () -> newRoot.addBeforeChild(n),
+                                () -> newRoot.addAfterChild(n)
+                        ));
         return new DiffTree(newRoot, source);
     }
 }
