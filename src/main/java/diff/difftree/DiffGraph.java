@@ -3,6 +3,8 @@ package diff.difftree;
 import java.util.Collection;
 
 public final class DiffGraph {
+    private static final String DIFFGRAPH_LABEL = "DiffGraph";
+
     private DiffGraph() {}
 
     private static boolean hasNoParents(final DiffNode node) {
@@ -26,6 +28,7 @@ public final class DiffGraph {
      */
     public static DiffTree fromNodes(final Collection<DiffNode> nodes, final DiffTreeSource source) {
         final DiffNode newRoot = DiffNode.createRoot();
+        newRoot.setLabel(DIFFGRAPH_LABEL);
         nodes.stream()
                 .filter(DiffGraph::hasNoParents)
                 .forEach(n ->
