@@ -16,11 +16,6 @@ public class Repository {
 	private LoadingParameter load;
 	
 	/**
-	 * The path location for the computation output. 
-	 */
-	private final Path outputPath;
-	
-	/**
 	 * The local or remote path of a repository.
 	 */
 	private final String repositoryPath;
@@ -45,12 +40,10 @@ public class Repository {
 	 * @param repositoryName
 	 * @param saveMemory
 	 */
-	private Repository(final Path outputPath,
-			final LoadingParameter load,
+	private Repository(final LoadingParameter load,
 			final String repositoryPath,
 			final String repositoryName,
 			final boolean saveMemory) {
-		this.outputPath = outputPath;
 		this.load = load;
 		this.repositoryPath = repositoryPath;
 		this.repositoryName = repositoryName;
@@ -64,8 +57,7 @@ public class Repository {
 	 * @return
 	 */
 	public static Repository createLocalDirRepo(String dirPath) {
-		return new Repository(Paths.get("linegraph", "data", "difftrees.lg"),
-				LoadingParameter.FROM_DIR,
+		return new Repository(LoadingParameter.FROM_DIR,
 				dirPath,
 				null,
 				true);
@@ -78,8 +70,7 @@ public class Repository {
 	 * @return
 	 */
 	public static Repository createLocalZipRepo(String filePath) {
-		return new Repository(Paths.get("linegraph", "data", "difftrees.lg"),
-				LoadingParameter.FROM_ZIP,
+		return new Repository(LoadingParameter.FROM_ZIP,
 				filePath,
 				null,
 				true);
@@ -93,8 +84,7 @@ public class Repository {
 	 * @return
 	 */
 	public static Repository createRemoteRepo(String repoUri, String repoName) {
-		return new Repository(Paths.get("linegraph", "data", "difftrees.lg"),
-				LoadingParameter.FROM_REMOTE,
+		return new Repository(LoadingParameter.FROM_REMOTE,
 				repoUri,
 				repoName,
 				true);
@@ -138,10 +128,6 @@ public class Repository {
 	 */
 	public static Repository getLibsshRepo() {
 		return createRemoteRepo("https://gitlab.com/libssh/libssh-mirror", "libssh_remote");
-	}
-
-	public Path getOutputPath() {
-		return outputPath;
 	}
 
 	public LoadingParameter getLoad() {

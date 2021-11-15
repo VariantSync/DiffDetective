@@ -1,6 +1,8 @@
 package main;
 
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 import org.eclipse.jgit.api.Git;
@@ -40,6 +42,8 @@ public class DiffTreeMiner {
 
 //        Repository repo = Repository.createLocalZipRepo("Marlin_old.zip");
         Repository repo = Repository.getLinuxRepo();
+        
+        final Path outputPath = Paths.get("linegraph", "data", "difftrees.lg");
         
         final LineGraphExport.Options exportOptions = new Options(
                 NodePrintStyle.LabelOnly // For pattern matching, we want to look at node types and not individual code.
@@ -104,17 +108,17 @@ public class DiffTreeMiner {
         Logger.info("Exported " + debugData.numExportedRemNodes + " nodes of diff type REM.");
 
         try {
-            Logger.info("Writing file " + repo.getOutputPath());
-            IO.write(repo.getOutputPath(), lineGraph.toString());
+            Logger.info("Writing file " + outputPath);
+            IO.write(outputPath, lineGraph.toString());
         } catch (IOException exception) {
             Logger.error(exception);
         }
 
         if (renderOutput) {
-            Logger.info("Rendering " + repo.getOutputPath());
+            Logger.info("Rendering " + outputPath);
             final DiffTreeRenderer renderer = DiffTreeRenderer.WithinDiffDetective();
-            if (!renderer.renderFile(repo.getOutputPath())) {
-                Logger.error("Rendering " + repo.getOutputPath() + " failed!");
+            if (!renderer.renderFile(outputPath)) {
+                Logger.error("Rendering " + outputPath + " failed!");
             }
         }
 
