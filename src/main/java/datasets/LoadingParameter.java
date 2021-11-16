@@ -8,17 +8,17 @@ package datasets;
 public enum LoadingParameter {
 	
 	/**
-	 * Load from a local directory.
+	 * Load repository from a local directory.
 	 */
 	FROM_DIR,
 	
 	/**
-	 * Load from a local zip file.
+	 * Load repository from a local zip file.
 	 */
 	FROM_ZIP,
 	
 	/**
-	 * Load from a remote repository.
+	 * Load repository from a remote location.
 	 */
 	FROM_REMOTE
 }

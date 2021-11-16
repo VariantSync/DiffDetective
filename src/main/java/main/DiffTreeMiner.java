@@ -1,6 +1,8 @@
 package main;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -10,7 +12,6 @@ import org.pmw.tinylog.Level;
 import org.pmw.tinylog.Logger;
 
 import datasets.Repository;
-import datasets.LoadingParameter;
 import de.ovgu.featureide.fm.core.analysis.cnf.generator.configuration.util.Pair;
 import diff.CommitDiff;
 import diff.GitDiffer;
@@ -40,8 +41,19 @@ public class DiffTreeMiner {
     public static void main(String[] args) {
         Main.setupLogger(Level.DEBUG);
 
-//        Repository repo = Repository.createLocalZipRepo("Marlin_old.zip");
-        Repository repo = Repository.getLinuxRepo();
+        Repository repo = null;
+        
+        // Create Marlin Repo
+		try {
+			URI marlinURI = new URI("Marlin_old.zip");
+			repo = Repository.fromZip(marlinURI, "marlin_old");
+		} catch (URISyntaxException e) {
+			Logger.error(e);
+		}
+         
+//        repo = Repository.createRemoteLinuxRepo();
+        
+//        repo = Repository.createRemoteVimRepo();
         
         final Path outputPath = Paths.get("linegraph", "data", "difftrees.lg");
         
@@ -62,28 +74,14 @@ public class DiffTreeMiner {
         |      END OF ARGUMENTS      |
         \* ************************ */
 
-        Git git;
-        if (repo.getLoad() == LoadingParameter.FROM_DIR) {
-            Logger.info("Loading git from {} ...", repo.getRepositoryPath());
-            git = GitLoader.fromDefaultDirectory(repo.getRepositoryPath());
-        } else if (repo.getLoad() == LoadingParameter.FROM_ZIP) {
-            Logger.info("Loading git from {} ...", repo.getRepositoryPath());
-            git = GitLoader.fromZip(repo.getRepositoryPath());
-        } else if (repo.getLoad() == LoadingParameter.FROM_REMOTE) {
-            Logger.info("Loading git from {} ...", repo.getRepositoryPath());
-            git = GitLoader.fromRemote(repo.getRepositoryPath(), repo.getRepositoryName());
-        } else {
-            Logger.error("Failed to load");
-            return;
-        }
-
+        Git git = GitLoader.loadReposity(repo);
         if (git == null) {
             Logger.error("Failed to load git");
             return;
         }
 
         // create GitDiff
-        final GitDiffer differ = new GitDiffer(git, Main.DefaultDiffFilterForMarlin, repo.isSaveMemory());
+        final GitDiffer differ = new GitDiffer(git, Main.DefaultDiffFilterForMarlin, repo.shouldSaveMemory());
         final Yield<CommitDiff> yieldDiff = differ.yieldGitDiff();
 
         final StringBuilder lineGraph = new StringBuilder();

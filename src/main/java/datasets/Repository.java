@@ -1,7 +1,11 @@
 package datasets;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+
+import org.pmw.tinylog.Logger;
 
 /**
  * Repository containing data.
@@ -11,9 +15,9 @@ import java.nio.file.Paths;
 public class Repository {
 	
 	/**
-	 * From where the input is read from.
+	 * The location from where the input repository is read from.
 	 */
-	private LoadingParameter load;
+	private LoadingParameter repoLocation;
 	
 	/**
 	 * The local or remote path of a repository.
@@ -21,7 +25,7 @@ public class Repository {
 	private final String repositoryPath;
 
 	/**
-	 * The name of a remote repository. May be <code>null</code> if local. 
+	 * The name of the cloned folder for remote repository only. May be <code>null</code> if local. 
 	 */
 	private final String repositoryName;
 	
@@ -34,17 +38,16 @@ public class Repository {
 	/**
 	 * Creates a repository.
 	 * 
-	 * @param outputPath
-	 * @param load {@link LoadingParameter}
-	 * @param repositoryPath
-	 * @param repositoryName
+	 * @param repoLocation {@link LoadingParameter} From which location the repository is read from
+	 * @param repositoryPath The local or remote path of the repository
+	 * @param repositoryName Name of the cloned repository (<code>null</code> if local)
 	 * @param saveMemory
 	 */
-	private Repository(final LoadingParameter load,
+	private Repository(final LoadingParameter repoLocation,
 			final String repositoryPath,
 			final String repositoryName,
 			final boolean saveMemory) {
-		this.load = load;
+		this.repoLocation = repoLocation;
 		this.repositoryPath = repositoryPath;
 		this.repositoryName = repositoryName;
 		this.saveMemory = saveMemory;
@@ -53,85 +56,127 @@ public class Repository {
 	/**
 	 * Creates a repository from an existing directory.
 	 * 
-	 * @param dirPath The directory path.
-	 * @return
+	 * @param dirURI The path URL to the repo directory relative to the project folder
+	 * @param repoName A name for the repository (currently not used)
+	 * @return A repository from an existing directory
 	 */
-	public static Repository createLocalDirRepo(String dirPath) {
+	public static Repository fromDirectory(URI dirURI, String repoName) {
 		return new Repository(LoadingParameter.FROM_DIR,
-				dirPath,
-				null,
+				dirURI.toString(),
+				repoName,
 				true);
 	}
 	
 	/**
 	 * Creates a repository from a local zip file.
 	 * 
-	 * @param filePath The file path.
-	 * @return
+	 * @param fileURI The path URL to the zip file relative to the project folder
+	 * @param repoName A name for the repository (currently not used)
+	 * @return A repository from a local zip file
 	 */
-	public static Repository createLocalZipRepo(String filePath) {
+	public static Repository fromZip(URI fileURI, String repoName) {
 		return new Repository(LoadingParameter.FROM_ZIP,
-				filePath,
-				null,
+				fileURI.toString(),
+				repoName,
 				true);
 	}
 
 	/**
 	 * Creates a repository from a remote repository.
 	 * 
-	 * @param repoUri The address to the remote repository.
-	 * @param repoName Name of the folder, where the git repository is cloned to.
-	 * @return
+	 * @param repoUri The address of the remote repository
+	 * @param repoName Name of the folder, where the git repository is cloned to
+	 * @return A repository from a remote location (e.g. Github repository)
 	 */
-	public static Repository createRemoteRepo(String repoUri, String repoName) {
+	public static Repository fromRemote(URI repoUri, String repoName) {
 		return new Repository(LoadingParameter.FROM_REMOTE,
-				repoUri,
+				repoUri.toString(),
 				repoName,
 				true);
 	}
 	
 	/**
-	 * Create a predefined Marlin repository.
-	 * @return
+	 * Creates a predefined Marlin repository.
+	 * 
+	 * @return Marlin repository
 	 */		
-	public static Repository getMarlinZipRepo() {
-		return createLocalZipRepo("Marlin_old.zip");
+	public static Repository createMarlinZipRepo() {
+		Repository repo = null;
+		try {
+			URI marlinURI = new URI("Marlin_old.zip");
+			repo = fromZip(marlinURI, "marlin_old");
+		} catch (URISyntaxException e) {
+			Logger.error(e);
+		}
+		return repo;
 	}
 
 	/**
-	 * Create a predefined Linux repository.
-	 * @return
+	 * Creates a predefined Linux repository from a remote location.
+	 * 
+	 * @return Linux repository
 	 */
-	public static Repository getLinuxRepo() {
-		return createRemoteRepo("https://github.com/torvalds/linux", "linux_remote");
+	public static Repository createRemoteLinuxRepo() {
+		Repository repo = null;
+		try {
+			URI linuxURI = new URI("https://github.com/torvalds/linux");
+			repo = fromRemote(linuxURI, "linux_remote");
+		} catch (URISyntaxException e) {
+			Logger.error(e);
+		}
+		return repo;
 	}
 
 	/**
-	 * Create a predefined Busybox repository.
-	 * @return
+	 * Creates a predefined Busybox repository from a remote location.
+	 * 
+	 * @return Busybox repository
 	 */
-	public static Repository getBusyboxRepo() {
-		return createRemoteRepo("https://git.busybox.net/busybox", "busybox_remote");
+	public static Repository createRemoteBusyboxRepo() {
+		Repository repo = null;
+		try {
+			URI busyboxURI = new URI("https://git.busybox.net/busybox");
+			repo = fromRemote(busyboxURI, "busybox_remote");
+		} catch (URISyntaxException e) {
+			Logger.error(e);
+		}
+		return repo;
 	}
 
 	/**
-	 * Create a predefined Vim repository.
-	 * @return
+	 * Creates a predefined Vim repository from a remote location.
+	 * 
+	 * @return Vim repository
 	 */
-	public static Repository getVimRepo() {
-		return createRemoteRepo("https://github.com/vim/vim", "vim_remote");
+	public static Repository createRemoteVimRepo() {
+		Repository repo = null;
+		try {
+			URI vimURI = new URI("https://github.com/vim/vim");
+			repo = fromRemote(vimURI, "vim_remote");
+		} catch (URISyntaxException e) {
+			Logger.error(e);
+		}
+		return repo;
 	}
 
 	/**
-	 * Create a predefined libssh repository.
-	 * @return
+	 * Creates a predefined libssh repository from a remote location.
+	 * 
+	 * @return libssh repository
 	 */
-	public static Repository getLibsshRepo() {
-		return createRemoteRepo("https://gitlab.com/libssh/libssh-mirror", "libssh_remote");
+	public static Repository createRemoteLibsshRepo() {
+		Repository repo = null;
+		try {
+			URI libsshURI = new URI("https://gitlab.com/libssh/libssh-mirror");
+			repo = fromRemote(libsshURI, "libssh_remote");
+		} catch (URISyntaxException e) {
+			Logger.error(e);
+		}
+		return repo;
 	}
 
-	public LoadingParameter getLoad() {
-		return load;
+	public LoadingParameter getRepoLocation() {
+		return repoLocation;
 	}
 	
 	public String getRepositoryPath() {
@@ -142,7 +187,7 @@ public class Repository {
 		return repositoryName;
 	}
 
-	public boolean isSaveMemory() {
+	public boolean shouldSaveMemory() {
 		return saveMemory;
 	}
 }
