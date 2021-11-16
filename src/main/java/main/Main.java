@@ -1,12 +1,19 @@
+package main;
 import analysis.GDAnalysisUtils;
 import analysis.GDAnalyzer;
 import analysis.TreeGDAnalyzer;
 import analysis.data.GDAnalysisResult;
+import datasets.LoadingParameter;
+import datasets.Repository;
 import diff.DiffFilter;
 import diff.GitDiffer;
 import diff.GitDiff;
 import evaluation.GDEvaluator;
 import load.GitLoader;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.pmw.tinylog.Configurator;
@@ -39,23 +46,19 @@ public class Main {
         // sets the logging level (TRACE < INFO < DEBUG < WARNING < ERROR)
         Level loggingLevel = Level.DEBUG;
 
-        // use this option with large repositories
-        // alternatively, increasing the java heap size also helps :D
-        boolean saveMemory = false;
-
-        // specifies where to load the git repository from
-        boolean loadFromDir = true;
-        String dirName = "Marlin_old";
-//        String dirName = "Marlin_remote";
-
-        boolean loadFromZip = false;
-        String zipName = "Marlin_old.zip";
-
-        boolean loadFromRemote = false;
-        String remoteUri = "https://github.com/MarlinFirmware/Marlin";
-//        String remoteUri = "https://github.com/torvalds/linux";
-        String remoteRepoName = "marlin_remote"; // name of the folder, where the git repo is cloned to
-//        String remoteRepoName = "linux";
+        Repository repo = null;
+        
+        // Create Marlin Repo
+		try {
+			URI marlinURI = new URI("Marlin_old.zip");
+			repo = new Repository(LoadingParameter.FROM_ZIP, marlinURI, "Marlin_old", false);
+			
+			// alternatively load from a remote location
+			// URI marlinRemoteURI = new URI("https://github.com/MarlinFirmware/Marlin");
+			
+		} catch (URISyntaxException e) {
+			Logger.error(e);
+		}
 
         // which analyzer will be used
         String analysisName = ATOMIC_TREE_ANALYSIS;
@@ -81,37 +84,15 @@ public class Main {
 
         setupLogger(loggingLevel);
 
-        // check arguments
-        if (!(loadFromDir || loadFromZip || loadFromRemote)) {
-            Logger.error("No git or GitDiff specified");
-            System.exit(1);
-        }
-
-        if (!(loadFromDir ^ loadFromZip ^ loadFromRemote)) {
-            Logger.error("Can't load git or GitDiff from multiple sources");
-            System.exit(1);
-        }
-
         // load Git
-        Git git = null;
-        if (loadFromDir) {
-            Logger.info("Loading git from {} ...", dirName);
-            git = GitLoader.fromDefaultDirectory(dirName);
-        } else if (loadFromZip) {
-            Logger.info("Loading git from {} ...", zipName);
-            git = GitLoader.fromZip(zipName);
-        } else if (loadFromRemote) {
-            Logger.info("Loading git from {} ...", remoteUri);
-            git = GitLoader.fromRemote(remoteUri, remoteRepoName);
-        }
-
+        Git git = GitLoader.loadReposity(repo);
         if (git == null) {
-            Logger.error("Failed to load git");
+            Logger.error("Failed to load git.\nExiting program.");
             System.exit(1);
         }
 
         // create GitDiff
-        GitDiff gitDiff = new GitDiffer(git, DefaultDiffFilterForMarlin, saveMemory).createGitDiff();
+        GitDiff gitDiff = new GitDiffer(git, DefaultDiffFilterForMarlin, repo.shouldSaveMemory()).createGitDiff();
         if (gitDiff == null) {
             Logger.error("Failed to create GitDiff");
             System.exit(1);

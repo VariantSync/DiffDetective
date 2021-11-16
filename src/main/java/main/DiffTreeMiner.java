@@ -1,24 +1,34 @@
-import de.ovgu.featureide.fm.core.analysis.cnf.generator.configuration.util.Pair;
-import diff.CommitDiff;
-import diff.GitDiffer;
-import diff.difftree.render.DiffTreeRenderer;
-import diff.difftree.transform.*;
-import diff.serialize.DiffTreeSerializeDebugData;
-import diff.serialize.LineGraphExport;
-import load.GitLoader;
-import org.eclipse.jgit.api.Git;
-import org.pmw.tinylog.Level;
-import org.pmw.tinylog.Logger;
-import util.IO;
-import util.Yield;
+package main;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
+import org.eclipse.jgit.api.Git;
+import org.pmw.tinylog.Level;
+import org.pmw.tinylog.Logger;
+
+import datasets.Repository;
+import de.ovgu.featureide.fm.core.analysis.cnf.generator.configuration.util.Pair;
+import diff.CommitDiff;
+import diff.GitDiffer;
+import diff.difftree.render.DiffTreeRenderer;
+import diff.difftree.transform.CollapseAtomicPatterns;
+import diff.difftree.transform.CollapseNestedNonEditedMacros;
+import diff.difftree.transform.CutNonEditedSubtrees;
+import diff.difftree.transform.DiffTreeTransformer;
+import diff.difftree.transform.NaiveMovedCodeDetection;
+import diff.serialize.DiffTreeSerializeDebugData;
+import diff.serialize.LineGraphExport;
 import static diff.serialize.LineGraphExport.NodePrintStyle;
 import static diff.serialize.LineGraphExport.Options;
+import load.GitLoader;
+import util.IO;
+import util.Yield;
+
 
 public class DiffTreeMiner {
     public static final List<DiffTreeTransformer> PostProcessing = List.of(
@@ -31,18 +41,22 @@ public class DiffTreeMiner {
     public static void main(String[] args) {
         Main.setupLogger(Level.DEBUG);
 
+        Repository repo = null;
+        
+        // Create Marlin Repo
+		try {
+			URI marlinURI = new URI("Marlin_old.zip");
+			repo = Repository.fromZip(marlinURI, "Marlin_old");
+		} catch (URISyntaxException e) {
+			Logger.error(e);
+		}
+         
+//        repo = Repository.createRemoteLinuxRepo();
+        
+//        repo = Repository.createRemoteVimRepo();
+        
         final Path outputPath = Paths.get("linegraph", "data", "difftrees.lg");
-
-        final boolean fromZip = true;
-        final String repo = "Marlin_old.zip";
-
-        // use this option with large repositories
-        // alternatively, increasing the java heap size also helps :D
-        boolean saveMemory = true;
-        boolean renderOutput = false;
-//        int treesToExportAtMost = 100;
-        int treesToExportAtMost = -1;
-
+        
         final LineGraphExport.Options exportOptions = new Options(
                 NodePrintStyle.LabelOnly // For pattern matching, we want to look at node types and not individual code.
                 , true
@@ -52,27 +66,23 @@ public class DiffTreeMiner {
                 .andThen(LineGraphExport.Options.SysExitError())
         );
 
+        boolean renderOutput = true;
+        
+        int treesToExportAtMost = -1;
 
         /* ************************ *\
         |      END OF ARGUMENTS      |
         \* ************************ */
 
-        Git git;
-        if (fromZip) {
-            Logger.info("Loading git from {} ...", repo);
-            git = GitLoader.fromZip(repo);
-        } else {
-            Logger.info("Loading git from {} ...", repo);
-            git = GitLoader.fromDefaultDirectory(repo);
-        }
-
+        // load Git
+        Git git = GitLoader.loadReposity(repo);
         if (git == null) {
-            Logger.error("Failed to load git");
-            return;
+            Logger.error("Failed to load git.\nExiting program.");
+            System.exit(1);
         }
 
         // create GitDiff
-        final GitDiffer differ = new GitDiffer(git, Main.DefaultDiffFilterForMarlin, saveMemory);
+        final GitDiffer differ = new GitDiffer(git, Main.DefaultDiffFilterForMarlin, repo.shouldSaveMemory());
         final Yield<CommitDiff> yieldDiff = differ.yieldGitDiff();
 
         final StringBuilder lineGraph = new StringBuilder();

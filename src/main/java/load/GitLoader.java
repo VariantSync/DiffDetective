@@ -6,6 +6,9 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.pmw.tinylog.Logger;
 
+import datasets.LoadingParameter;
+import datasets.Repository;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -17,8 +20,26 @@ import java.nio.file.Paths;
  */
 public class GitLoader {
 
-    public static final String DEFAULT_REPOSITORIES_DIRECTORY = "repositories";
+    private static final String DEFAULT_REPOSITORIES_DIRECTORY = "repositories";
 
+    public static Git loadReposity(Repository repo) {
+    	Git git;
+        if (repo.getRepoLocation() == LoadingParameter.FROM_DIR) {
+            Logger.info("Loading git from {} ...", repo.getRepositoryURI());
+            git = fromDefaultDirectory(repo.getRepositoryURI());
+        } else if (repo.getRepoLocation() == LoadingParameter.FROM_ZIP) {
+            Logger.info("Loading git from {} ...", repo.getRepositoryURI());
+            git = fromZip(repo.getRepositoryURI());
+        } else if (repo.getRepoLocation() == LoadingParameter.FROM_REMOTE) {
+            Logger.info("Loading git from {} ...", repo.getRepositoryURI());
+            git = fromRemote(repo.getRepositoryURI(), repo.getRepositoryName());
+        } else {
+            Logger.error("Failed to load");
+            git = null;
+        }
+        return git;
+    }
+    
     /**
      * Loads a Git from a directory
      * @param dirname the name of the directory where the git repository is located

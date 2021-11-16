@@ -1,3 +1,4 @@
+package main;
 import diff.difftree.DiffTree;
 import diff.difftree.render.DiffTreeRenderer;
 
