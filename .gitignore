@@ -117,3 +117,8 @@ patches/*
 /.venv/
 
 error/
+
+### Eclipse ###
+.settings/
+.classpath
+.project
