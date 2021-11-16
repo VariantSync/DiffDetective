@@ -46,7 +46,7 @@ public class DiffTreeMiner {
         // Create Marlin Repo
 		try {
 			URI marlinURI = new URI("Marlin_old.zip");
-			repo = Repository.fromZip(marlinURI, "marlin_old");
+			repo = Repository.fromZip(marlinURI, "Marlin_old");
 		} catch (URISyntaxException e) {
 			Logger.error(e);
 		}
@@ -74,10 +74,11 @@ public class DiffTreeMiner {
         |      END OF ARGUMENTS      |
         \* ************************ */
 
+        // load Git
         Git git = GitLoader.loadReposity(repo);
         if (git == null) {
-            Logger.error("Failed to load git");
-            return;
+            Logger.error("Failed to load git.\nExiting program.");
+            System.exit(1);
         }
 
         // create GitDiff

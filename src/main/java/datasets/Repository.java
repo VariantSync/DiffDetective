@@ -2,8 +2,6 @@ package datasets;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import org.pmw.tinylog.Logger;
 
@@ -20,9 +18,9 @@ public class Repository {
 	private LoadingParameter repoLocation;
 	
 	/**
-	 * The local or remote path of a repository.
+	 * The local or remote URI of a repository.
 	 */
-	private final String repositoryPath;
+	private final String repositoryURI;
 
 	/**
 	 * The name of the cloned folder for remote repository only. May be <code>null</code> if local. 
@@ -43,12 +41,12 @@ public class Repository {
 	 * @param repositoryName Name of the cloned repository (<code>null</code> if local)
 	 * @param saveMemory
 	 */
-	private Repository(final LoadingParameter repoLocation,
-			final String repositoryPath,
+	public Repository(final LoadingParameter repoLocation,
+			final URI repositoryURI,
 			final String repositoryName,
 			final boolean saveMemory) {
 		this.repoLocation = repoLocation;
-		this.repositoryPath = repositoryPath;
+		this.repositoryURI = repositoryURI.toString();
 		this.repositoryName = repositoryName;
 		this.saveMemory = saveMemory;
 	}
@@ -56,13 +54,13 @@ public class Repository {
 	/**
 	 * Creates a repository from an existing directory.
 	 * 
-	 * @param dirURI The path URL to the repo directory relative to the project folder
+	 * @param dirURI The path URL to the repo directory relative to <PROJECT_FOLDER>/repositories
 	 * @param repoName A name for the repository (currently not used)
 	 * @return A repository from an existing directory
 	 */
 	public static Repository fromDirectory(URI dirURI, String repoName) {
 		return new Repository(LoadingParameter.FROM_DIR,
-				dirURI.toString(),
+				dirURI,
 				repoName,
 				true);
 	}
@@ -70,13 +68,13 @@ public class Repository {
 	/**
 	 * Creates a repository from a local zip file.
 	 * 
-	 * @param fileURI The path URL to the zip file relative to the project folder
+	 * @param fileURI The path URL to the zip file relative to <PROJECT_FOLDER>/repositories
 	 * @param repoName A name for the repository (currently not used)
 	 * @return A repository from a local zip file
 	 */
 	public static Repository fromZip(URI fileURI, String repoName) {
 		return new Repository(LoadingParameter.FROM_ZIP,
-				fileURI.toString(),
+				fileURI,
 				repoName,
 				true);
 	}
@@ -90,7 +88,7 @@ public class Repository {
 	 */
 	public static Repository fromRemote(URI repoUri, String repoName) {
 		return new Repository(LoadingParameter.FROM_REMOTE,
-				repoUri.toString(),
+				repoUri,
 				repoName,
 				true);
 	}
@@ -104,7 +102,7 @@ public class Repository {
 		Repository repo = null;
 		try {
 			URI marlinURI = new URI("Marlin_old.zip");
-			repo = fromZip(marlinURI, "marlin_old");
+			repo = fromZip(marlinURI, "Marlin_old");
 		} catch (URISyntaxException e) {
 			Logger.error(e);
 		}
@@ -179,8 +177,8 @@ public class Repository {
 		return repoLocation;
 	}
 	
-	public String getRepositoryPath() {
-		return repositoryPath;
+	public String getRepositoryURI() {
+		return repositoryURI;
 	}
 	
 	public String getRepositoryName() {
