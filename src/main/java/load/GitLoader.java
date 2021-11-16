@@ -5,10 +5,13 @@ import net.lingala.zip4j.exception.ZipException;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.pmw.tinylog.Logger;
+import util.Assert;
+import util.FileUtils;
 import util.IO;
 
 import java.io.IOException;
 import java.net.URI;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
@@ -19,14 +22,16 @@ import java.nio.file.Path;
 public class GitLoader {
     /**
      * Loads a Git from a directory
-     * @param dirname the name of the directory where the git repository is located
+     * @param pathToRepo the name of the directory where the git repository is located
      * @return A Git object of the repository
      */
-    public static Git fromDirectory(Path dirname){
+    public static Git fromDirectory(Path pathToRepo){
+        Assert.assertTrue(Files.isDirectory(pathToRepo), "Given path " + pathToRepo + " is not a directory!");
+
         try {
-            return Git.open(dirname.toFile());
+            return Git.open(pathToRepo.toFile());
         } catch (IOException e) {
-            Logger.warn("Failed to load git repo from {}", dirname);
+            Logger.warn("Failed to load git repo from {}", pathToRepo);
             return null;
         }
     }
@@ -37,7 +42,14 @@ public class GitLoader {
      * @param remoteURI URI of the remote git repository
      * @return A Git object of the repository
      */
-    public static Git fromRemote(Path localPath, URI remoteURI){
+    public static Git fromRemote(Path localPath, URI remoteURI) {
+        Assert.assertTrue(Files.isDirectory(localPath), "Given path " + localPath + " is not a directory!");
+
+        // If the repository is already cloned, use the clone.
+        if (!FileUtils.tryIsEmptyDirectory(localPath)) {
+            return fromDirectory(localPath);
+        }
+
         try {
             return Git.cloneRepository()
                     .setURI(remoteURI.toString())
@@ -55,7 +67,14 @@ public class GitLoader {
      * @return A Git object of the repository
      */
     public static Git fromZip(Path pathToZip) {
+        Assert.assertTrue(Files.isRegularFile(pathToZip), "Given path " + pathToZip + " is not a file!");
+
         final Path targetDir = pathToZip.getParent();
+        // If the repository is already unzipped, use the unzipped files.
+        if (!FileUtils.tryIsEmptyDirectory(targetDir)) {
+            return fromDirectory(targetDir);
+        }
+
         try {
             ZipFile zipFile = new ZipFile(pathToZip.toFile());
             zipFile.extractAll(targetDir.toString());
