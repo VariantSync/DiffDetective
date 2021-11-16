@@ -49,16 +49,7 @@ public class Main {
         Repository repo = null;
         
         // Create Marlin Repo
-		try {
-			URI marlinURI = new URI("Marlin_old.zip");
-			repo = new Repository(LoadingParameter.FROM_ZIP, marlinURI, "Marlin_old", false);
-			
-			// alternatively load from a remote location
-			// URI marlinRemoteURI = new URI("https://github.com/MarlinFirmware/Marlin");
-			
-		} catch (URISyntaxException e) {
-			Logger.error(e);
-		}
+		repo = Repository.createMarlinZipRepo();
 
         // which analyzer will be used
         String analysisName = ATOMIC_TREE_ANALYSIS;
@@ -85,7 +76,7 @@ public class Main {
         setupLogger(loggingLevel);
 
         // load Git
-        Git git = GitLoader.loadReposity(repo);
+        Git git = GitLoader.loadRepository(repo);
         if (git == null) {
             Logger.error("Failed to load git.\nExiting program.");
             System.exit(1);

@@ -22,17 +22,17 @@ public class GitLoader {
 
     private static final String DEFAULT_REPOSITORIES_DIRECTORY = "repositories";
 
-    public static Git loadReposity(Repository repo) {
+    public static Git loadRepository(Repository repo) {
     	Git git;
         if (repo.getRepoLocation() == LoadingParameter.FROM_DIR) {
-            Logger.info("Loading git from {} ...", repo.getRepositoryURI());
-            git = fromDefaultDirectory(repo.getRepositoryURI());
+            Logger.info("Loading git from {} ...", repo.getRepositoryPath());
+            git = fromDefaultDirectory(repo.getRepositoryPath());
         } else if (repo.getRepoLocation() == LoadingParameter.FROM_ZIP) {
-            Logger.info("Loading git from {} ...", repo.getRepositoryURI());
-            git = fromZip(repo.getRepositoryURI());
+            Logger.info("Loading git from {} ...", repo.getRepositoryPath());
+            git = fromZip(repo.getRepositoryPath());
         } else if (repo.getRepoLocation() == LoadingParameter.FROM_REMOTE) {
-            Logger.info("Loading git from {} ...", repo.getRepositoryURI());
-            git = fromRemote(repo.getRepositoryURI(), repo.getRepositoryName());
+            Logger.info("Loading git from {} ...", repo.getRepositoryPath());
+            git = fromRemote(repo.getRepositoryPath(), repo.getRepositoryName());
         } else {
             Logger.error("Failed to load");
             git = null;
