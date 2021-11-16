@@ -203,7 +203,7 @@ public class DiffNode {
             return beforeParent.getRemAmount() + 1;
         }
 
-        if (isElif() || isElse() && diffType.equals(DiffType.REM)) {
+        if ((isElif() || isElse()) && diffType.equals(DiffType.REM)) {
             // if this is a removed elif or else we do not want to count the other branches of
             // this annotation
             // we thus go up the tree until we get the next if and continue with the parent of it
@@ -226,7 +226,7 @@ public class DiffNode {
             return afterParent.getAddAmount() + 1;
         }
 
-        if (isElif() || isElse() && diffType.equals(DiffType.ADD)) {
+        if ((isElif() || isElse()) && diffType.equals(DiffType.ADD)) {
             // if this is an added elif or else we do not want to count the other branches of
             // this annotation
             // we thus go up the tree until we get the next if and continue with the parent of it
