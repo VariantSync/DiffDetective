@@ -1,33 +1,26 @@
 package main;
 
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.List;
-
-import org.eclipse.jgit.api.Git;
-import org.pmw.tinylog.Level;
-import org.pmw.tinylog.Logger;
-
+import datasets.DefaultRepositories;
 import datasets.Repository;
 import de.ovgu.featureide.fm.core.analysis.cnf.generator.configuration.util.Pair;
 import diff.CommitDiff;
 import diff.GitDiffer;
 import diff.difftree.render.DiffTreeRenderer;
-import diff.difftree.transform.CollapseAtomicPatterns;
-import diff.difftree.transform.CollapseNestedNonEditedMacros;
-import diff.difftree.transform.CutNonEditedSubtrees;
-import diff.difftree.transform.DiffTreeTransformer;
-import diff.difftree.transform.NaiveMovedCodeDetection;
+import diff.difftree.transform.*;
 import diff.serialize.DiffTreeSerializeDebugData;
 import diff.serialize.LineGraphExport;
-import static diff.serialize.LineGraphExport.NodePrintStyle;
-import static diff.serialize.LineGraphExport.Options;
-import load.GitLoader;
+import org.pmw.tinylog.Level;
+import org.pmw.tinylog.Logger;
 import util.IO;
 import util.Yield;
+
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
+
+import static diff.serialize.LineGraphExport.NodePrintStyle;
+import static diff.serialize.LineGraphExport.Options;
 
 
 public class DiffTreeMiner {
@@ -41,13 +34,9 @@ public class DiffTreeMiner {
     public static void main(String[] args) {
         Main.setupLogger(Level.DEBUG);
 
-        Repository repo = null;
-        
-        // Create Marlin Repo
-		repo = Repository.createMarlinZipRepo();
-         
+        final Repository repo;
+		repo = DefaultRepositories.stanciulescuMarlinZip(Path.of("."));
 //        repo = Repository.createRemoteLinuxRepo();
-        
 //        repo = Repository.createRemoteVimRepo();
         
         final Path outputPath = Paths.get("linegraph", "data", "difftrees.lg");
@@ -58,26 +47,17 @@ public class DiffTreeMiner {
                 , PostProcessing
                 , Options.LogError()
                 .andThen(Options.RenderError())
-                .andThen(LineGraphExport.Options.SysExitError())
+                .andThen(LineGraphExport.Options.SysExitOnError())
         );
 
-        boolean renderOutput = true;
-        
+        boolean renderOutput = false;
         int treesToExportAtMost = -1;
 
         /* ************************ *\
         |      END OF ARGUMENTS      |
         \* ************************ */
 
-        // load Git
-        Git git = GitLoader.loadRepository(repo);
-        if (git == null) {
-            Logger.error("Failed to load git.\nExiting program.");
-            System.exit(1);
-        }
-
-        // create GitDiff
-        final GitDiffer differ = new GitDiffer(git, Main.DefaultDiffFilterForMarlin, repo.shouldSaveMemory());
+        final GitDiffer differ = new GitDiffer(repo);
         final Yield<CommitDiff> yieldDiff = differ.yieldGitDiff();
 
         final StringBuilder lineGraph = new StringBuilder();

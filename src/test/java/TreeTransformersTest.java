@@ -1,3 +1,5 @@
+import datasets.DefaultRepositories;
+import datasets.Repository;
 import diff.CommitDiff;
 import diff.GitDiffer;
 import diff.PatchDiff;
@@ -5,10 +7,8 @@ import diff.difftree.DiffTree;
 import diff.difftree.render.DiffTreeRenderer;
 import diff.difftree.transform.DiffTreeTransformer;
 import diff.serialize.LineGraphExport;
-import load.GitLoader;
 import main.DiffTreeMiner;
 import main.Main;
-
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.revwalk.RevCommit;
@@ -46,7 +46,7 @@ public class TreeTransformersTest {
         transformAndRender(t, diffFileName, "0");
     }
 
-    private void transformAndRender(DiffTree diffTree, String name, String commit) throws IOException {
+    private void transformAndRender(DiffTree diffTree, String name, String commit) {
         final DiffTreeRenderer renderer = DiffTreeRenderer.WithinDiffDetective();
         final String treeName = name + LineGraphExport.TREE_NAME_SEPARATOR + commit;
 
@@ -93,10 +93,10 @@ public class TreeTransformersTest {
     }
 
     private void testCommit(String file, String commitHash) throws IOException {
-        final String repo = "Marlin_old.zip";
-        final boolean saveMemory = true;
+        final Repository marlin = DefaultRepositories.stanciulescuMarlinZip(Path.of("."));
+        marlin.setSaveMemory(true);
 
-        final Git git = GitLoader.fromZip(repo);
+        final Git git = marlin.load();
         assert git != null;
         final RevWalk revWalk = new RevWalk(git.getRepository());
         final RevCommit childCommit = revWalk.parseCommit(ObjectId.fromString(commitHash));
@@ -104,10 +104,10 @@ public class TreeTransformersTest {
 
         final CommitDiff commitDiff = GitDiffer.createCommitDiff(
                 git,
-                Main.DefaultDiffFilterForMarlin,
+                marlin.getDiffFilter(),
                 parentCommit,
                 childCommit,
-                !saveMemory);
+                !marlin.shouldSaveMemory());
 
         for (final PatchDiff pd : commitDiff.getPatchDiffs()) {
             if (file.equals(pd.getFileName())) {

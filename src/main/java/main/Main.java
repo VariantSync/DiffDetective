@@ -1,25 +1,20 @@
 package main;
+
 import analysis.GDAnalysisUtils;
 import analysis.GDAnalyzer;
 import analysis.TreeGDAnalyzer;
 import analysis.data.GDAnalysisResult;
-import datasets.LoadingParameter;
+import datasets.DefaultRepositories;
 import datasets.Repository;
-import diff.DiffFilter;
-import diff.GitDiffer;
 import diff.GitDiff;
+import diff.GitDiffer;
 import evaluation.GDEvaluator;
-import load.GitLoader;
-
-import java.net.URI;
-import java.net.URISyntaxException;
-
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.diff.DiffEntry;
 import org.pmw.tinylog.Configurator;
 import org.pmw.tinylog.Level;
 import org.pmw.tinylog.Logger;
 import org.pmw.tinylog.writers.ConsoleWriter;
+
+import java.nio.file.Path;
 
 /**
  * The main class used to run DiffDetective
@@ -31,16 +26,6 @@ public class Main {
     private static final String ATOMIC_TREE_ANALYSIS = "tree_atomic";
     private static final String SEMANTIC_TREE_ANALYSIS = "tree_semantic";
 
-    // The filter used by the GitDiffer
-    public static final DiffFilter DefaultDiffFilterForMarlin = new DiffFilter.Builder()
-            //.allowBinary(false)
-            .allowMerge(false)
-            .allowedPaths("Marlin.*")
-            .blockedPaths(".*arduino.*")
-            .allowedChangeTypes(DiffEntry.ChangeType.MODIFY)
-            .allowedFileExtensions("c", "cpp", "h", "pde")
-            .build();
-
     public static void main(String[] args) {
 
         // sets the logging level (TRACE < INFO < DEBUG < WARNING < ERROR)
@@ -49,7 +34,7 @@ public class Main {
         Repository repo = null;
         
         // Create Marlin Repo
-		repo = Repository.createMarlinZipRepo();
+		repo = DefaultRepositories.stanciulescuMarlinZip(Path.of("."));
 
         // which analyzer will be used
         String analysisName = ATOMIC_TREE_ANALYSIS;
@@ -75,15 +60,8 @@ public class Main {
 
         setupLogger(loggingLevel);
 
-        // load Git
-        Git git = GitLoader.loadRepository(repo);
-        if (git == null) {
-            Logger.error("Failed to load git.\nExiting program.");
-            System.exit(1);
-        }
-
         // create GitDiff
-        GitDiff gitDiff = new GitDiffer(git, DefaultDiffFilterForMarlin, repo.shouldSaveMemory()).createGitDiff();
+        GitDiff gitDiff = new GitDiffer(repo).createGitDiff();
         if (gitDiff == null) {
             Logger.error("Failed to create GitDiff");
             System.exit(1);

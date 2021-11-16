@@ -1,5 +1,6 @@
 package diff;
 
+import datasets.Repository;
 import diff.difftree.DiffTree;
 import diff.difftree.parse.DiffTreeParser;
 import org.eclipse.jgit.api.Git;
@@ -36,7 +37,7 @@ import java.util.regex.Pattern;
  * Then a PatchDiff is created from each file change.
  * Each PatchDiff contains the DiffTree of its patch.
  *
- * @author Soeren Viegener
+ * @author Soeren Viegener, Paul Maximilian Bittner
  */
 public class GitDiffer {
     public static final String BOM_REGEX = "\\x{FEFF}";
@@ -48,10 +49,10 @@ public class GitDiffer {
     private final DiffFilter diffFilter;
     private final boolean saveMemory;
 
-    public GitDiffer(Git git, DiffFilter diffFilter, boolean saveMemory) {
-        this.git = git;
-        this.diffFilter = diffFilter;
-        this.saveMemory = saveMemory;
+    public GitDiffer(final Repository repository) {
+        this.git = repository.load();
+        this.diffFilter = repository.getDiffFilter();
+        this.saveMemory = repository.shouldSaveMemory();
     }
 
     /**

@@ -3,10 +3,13 @@ package util;
 import org.pmw.tinylog.Logger;
 
 import java.io.*;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.Optional;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
@@ -81,5 +84,20 @@ public class IO {
             p.getParent().toFile().mkdirs();
         }
         Files.writeString(p, text, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+    }
+
+    public static Optional<URI> tryParseURI(final String uri) {
+        URI remote;
+        try {
+            remote = new URI(uri);
+        } catch (URISyntaxException e) {
+            Logger.error(e);
+            return Optional.empty();
+        }
+        return Optional.of(remote);
+    }
+
+    public static String withoutFileExtension(final String filename) {
+        return filename.substring(0, filename.lastIndexOf("."));
     }
 }

@@ -53,7 +53,7 @@ public class LineGraphExport {
             };
         }
 
-        public static BiConsumer<PatchDiff, Exception> SysExitError() {
+        public static BiConsumer<PatchDiff, Exception> SysExitOnError() {
             return (p, e) -> System.exit(0);
         }
     }

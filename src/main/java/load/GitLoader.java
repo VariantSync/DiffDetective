@@ -5,49 +5,26 @@ import net.lingala.zip4j.exception.ZipException;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.pmw.tinylog.Logger;
+import util.IO;
 
-import datasets.LoadingParameter;
-import datasets.Repository;
-
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Paths;
+import java.net.URI;
+import java.nio.file.Path;
 
 /**
  * Class for loading Gits from several sources.
  *
- * @author Soeren Viegener
+ * @author Soeren Viegener, Paul Maximilian Bittner
  */
 public class GitLoader {
-
-    private static final String DEFAULT_REPOSITORIES_DIRECTORY = "repositories";
-
-    public static Git loadRepository(Repository repo) {
-    	Git git;
-        if (repo.getRepoLocation() == LoadingParameter.FROM_DIR) {
-            Logger.info("Loading git from {} ...", repo.getRepositoryPath());
-            git = fromDefaultDirectory(repo.getRepositoryPath());
-        } else if (repo.getRepoLocation() == LoadingParameter.FROM_ZIP) {
-            Logger.info("Loading git from {} ...", repo.getRepositoryPath());
-            git = fromZip(repo.getRepositoryPath());
-        } else if (repo.getRepoLocation() == LoadingParameter.FROM_REMOTE) {
-            Logger.info("Loading git from {} ...", repo.getRepositoryPath());
-            git = fromRemote(repo.getRepositoryPath(), repo.getRepositoryName());
-        } else {
-            Logger.error("Failed to load");
-            git = null;
-        }
-        return git;
-    }
-    
     /**
      * Loads a Git from a directory
      * @param dirname the name of the directory where the git repository is located
      * @return A Git object of the repository
      */
-    public static Git fromDirectory(String dirname){
+    public static Git fromDirectory(Path dirname){
         try {
-            return Git.open(new File(dirname));
+            return Git.open(dirname.toFile());
         } catch (IOException e) {
             Logger.warn("Failed to load git repo from {}", dirname);
             return null;
@@ -55,47 +32,38 @@ public class GitLoader {
     }
 
     /**
-     * Loads a Git from a directory located in the default repositories directory
-     * @param dirname The name of the directory in the default repositories directory
-     * @return A Git object of the repository
-     */
-    public static Git fromDefaultDirectory(String dirname){
-        return fromDirectory(DEFAULT_REPOSITORIES_DIRECTORY + "/" + dirname);
-    }
-
-    /**
      * Loads a Git from a remote repository
-     * @param remoteUri URI of the remote git repository
-     * @param repositoryName Name of the repository. Sets the directory name in the default repositories directory where this repository is cloned to
+     * @param localPath Directory where the remote repository is cloned to.
+     * @param remoteURI URI of the remote git repository
      * @return A Git object of the repository
      */
-    public static Git fromRemote(String remoteUri, String repositoryName){
+    public static Git fromRemote(Path localPath, URI remoteURI){
         try {
-            Git git = Git.cloneRepository()
-                    .setURI( remoteUri )
-                    .setDirectory(Paths.get(DEFAULT_REPOSITORIES_DIRECTORY, repositoryName).toFile())
+            return Git.cloneRepository()
+                    .setURI(remoteURI.toString())
+                    .setDirectory(localPath.toFile())
                     .call();
-            return git;
         } catch (GitAPIException e) {
-            Logger.warn("Failed to load git repo from {}", remoteUri);
+            Logger.warn("Failed to load git repo from {}", remoteURI);
             return null;
         }
     }
 
     /**
      * Loads a Git from a zipped repository
-     * @param zipFileName Name of the zip file located in the default repositories directory
+     * @param pathToZip Name of the zip file located in the default repositories directory
      * @return A Git object of the repository
      */
-    public static Git fromZip(String zipFileName){
-        String pathname = DEFAULT_REPOSITORIES_DIRECTORY + "/" + zipFileName;
+    public static Git fromZip(Path pathToZip) {
+        final Path targetDir = pathToZip.getParent();
         try {
-            ZipFile zipFile = new ZipFile(pathname);
-            zipFile.extractAll(DEFAULT_REPOSITORIES_DIRECTORY);
+            ZipFile zipFile = new ZipFile(pathToZip.toFile());
+            zipFile.extractAll(targetDir.toString());
         } catch (ZipException e) {
-            Logger.warn("Failed to extract git repo from {}", pathname);
+            Logger.warn("Failed to extract git repo from {} to {}", pathToZip, targetDir);
             return null;
         }
-        return fromDefaultDirectory(zipFileName.substring(0, zipFileName.length()-4));
+
+        return fromDirectory(targetDir.resolve(IO.withoutFileExtension(pathToZip.getFileName().toString())));
     }
 }

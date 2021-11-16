@@ -17,6 +17,7 @@ import java.util.List;
  * @author Sören Viegener
  */
 public class DiffFilter {
+    public static final DiffFilter ALLOW_ALL = new Builder().build();
 
     /**
      * A list of allowed file extensions for patches.
@@ -60,7 +61,6 @@ public class DiffFilter {
      * @author Sören Viegener
      */
     public static class Builder {
-
         private final List<String> allowedFileExtensions;
         private final List<String> blockedFileExtensions;
         private final List<DiffEntry.ChangeType> allowedChangeTypes;
