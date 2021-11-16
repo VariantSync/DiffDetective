@@ -45,7 +45,7 @@ public class GitLoader {
      * @param dirname the name of the directory where the git repository is located
      * @return A Git object of the repository
      */
-    public static Git fromDirectory(String dirname){
+    private static Git fromDirectory(String dirname){
         try {
             return Git.open(new File(dirname));
         } catch (IOException e) {
@@ -59,7 +59,7 @@ public class GitLoader {
      * @param dirname The name of the directory in the default repositories directory
      * @return A Git object of the repository
      */
-    public static Git fromDefaultDirectory(String dirname){
+    private static Git fromDefaultDirectory(String dirname){
         return fromDirectory(DEFAULT_REPOSITORIES_DIRECTORY + "/" + dirname);
     }
 
@@ -69,7 +69,7 @@ public class GitLoader {
      * @param repositoryName Name of the repository. Sets the directory name in the default repositories directory where this repository is cloned to
      * @return A Git object of the repository
      */
-    public static Git fromRemote(String remoteUri, String repositoryName){
+    private static Git fromRemote(String remoteUri, String repositoryName){
         try {
             Git git = Git.cloneRepository()
                     .setURI( remoteUri )
@@ -87,7 +87,7 @@ public class GitLoader {
      * @param zipFileName Name of the zip file located in the default repositories directory
      * @return A Git object of the repository
      */
-    public static Git fromZip(String zipFileName){
+    private static Git fromZip(String zipFileName){
         String pathname = DEFAULT_REPOSITORIES_DIRECTORY + "/" + zipFileName;
         try {
             ZipFile zipFile = new ZipFile(pathname);
