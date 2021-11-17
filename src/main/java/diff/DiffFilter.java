@@ -17,7 +17,11 @@ import java.util.List;
  * @author Sören Viegener
  */
 public class DiffFilter {
-    public static final DiffFilter ALLOW_ALL = new Builder().build();
+    public static final DiffFilter ALLOW_ALL = new Builder()
+            .allowMerge(true)
+            .allowAllChangeTypes()
+            .allowAllFileExtensions()
+            .build();
 
     /**
      * A list of allowed file extensions for patches.
