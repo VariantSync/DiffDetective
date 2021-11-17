@@ -125,6 +125,16 @@ public class DiffTree {
         });
     }
 
+    public ConsistencyResult isConsistent() {
+        try {
+            assertConsistency();
+        } catch (AssertionError e) {
+            return ConsistencyResult.Failure(e);
+        }
+
+        return ConsistencyResult.Success();
+    }
+
     @Override
     public String toString() {
         return "DiffTree of " + source;

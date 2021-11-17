@@ -19,4 +19,20 @@ public class FileUtils {
             return false;
         }
     }
+
+    public static boolean hasExtension(final Path p, final String extension) {
+        final boolean withDot = extension.startsWith(".");
+
+        final String filename = p.getFileName().toString();
+        final String fileextension = filename.substring(
+                filename.lastIndexOf(".")
+                        + (withDot ? 0 : 1)
+        );
+
+        return extension.equalsIgnoreCase(fileextension);
+    }
+
+    public static boolean isLineGraph(final Path p) {
+        return hasExtension(p, ".lg");
+    }
 }
