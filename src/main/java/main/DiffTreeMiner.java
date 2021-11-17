@@ -5,6 +5,7 @@ import datasets.Repository;
 import de.ovgu.featureide.fm.core.analysis.cnf.generator.configuration.util.Pair;
 import diff.CommitDiff;
 import diff.GitDiffer;
+import diff.difftree.CodeType;
 import diff.difftree.render.DiffTreeRenderer;
 import diff.difftree.transform.*;
 import diff.serialize.DiffTreeSerializeDebugData;
@@ -25,10 +26,11 @@ import static diff.serialize.LineGraphExport.Options;
 
 public class DiffTreeMiner {
     public static final List<DiffTreeTransformer> PostProcessing = List.of(
-            new NaiveMovedCodeDetection(), // do this first as it might introduce non-edited subtrees
+//            new NaiveMovedCodeDetection(), // do this first as it might introduce non-edited subtrees
             new CutNonEditedSubtrees(),
             new CollapseNestedNonEditedMacros(),
-            new CollapseAtomicPatterns()
+            new CollapseAtomicPatterns(),
+            new RelabelRoot(CodeType.IF.name)
     );
 
     public static void main(String[] args) {
