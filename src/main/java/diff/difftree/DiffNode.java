@@ -2,7 +2,6 @@ package diff.difftree;
 
 import diff.DiffLineNumber;
 import diff.Lines;
-import diff.serialize.LineGraphExport;
 import org.pmw.tinylog.Logger;
 import org.prop4j.*;
 import util.Assert;
@@ -413,7 +412,7 @@ public class DiffNode {
         return DiffLineNumber.rangeAfterEdit(from, to);
     }
 
-    private Node getDirectFeatureMapping() {
+    public Node getDirectFeatureMapping() {
         return featureMapping;
     }
 
@@ -517,35 +516,6 @@ public class DiffNode {
         return ((1 + from.inDiff) << ID_LINE_NUMBER_OFFSET)
                 + (diffType.ordinal() << ID_DIFF_TYPE_OFFSET)
                 + codeType.ordinal();
-    }
-
-    private String prettyPrintTypeAndMapping() {
-        String result = codeType.name;
-        final Node fm = getDirectFeatureMapping();
-        if (fm != null) {
-            result += " " + fm;
-        }
-        return result;
-    }
-
-    private String prettyPrintIfMacroOr(String elseValue) {
-        String result = "";
-        if (codeType.isMacro()) {
-            result += prettyPrintTypeAndMapping();
-        } else {
-            result += elseValue;
-        }
-        return result;
-    }
-
-    public String toLineGraphFormat(LineGraphExport.Options options) {
-        return "v " + getID() + " " + switch (options.nodePrintStyle()) {
-            case LabelOnly -> label;
-            case Type -> diffType + "_" + codeType;
-            case Code -> "\"" + prettyPrintIfMacroOr(label.trim()) + "\"";
-            case Mappings -> diffType + "_" + codeType + "_\"" + prettyPrintIfMacroOr("") + "\"";
-            case Debug -> diffType + "_" + codeType + "_\"" + prettyPrintIfMacroOr(label.trim()) + "\"";
-        };
     }
 
     public void assertConsistency() {

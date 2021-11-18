@@ -31,7 +31,9 @@ public class DiffTreeLineGraphExporter {
         }
 
         final int nodeId = node.getID();
-        nodesString.append(node.toLineGraphFormat(options)).append(StringUtils.LINEBREAK);
+        nodesString
+                .append(DiffNodeLineGraphExporter.toLineGraphFormat(node, options))
+                .append(StringUtils.LINEBREAK);
 
         final DiffNode beforeParent = node.getBeforeParent();
         final DiffNode afterParent = node.getAfterParent();

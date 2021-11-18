@@ -19,16 +19,18 @@ public class LineGraphExport {
     public static final String TREE_NAME_SEPARATOR = "$$$";
 
     public enum NodePrintStyle {
-        /// Print CodeType and DiffType
-        Type,
         /// Print only the label
         LabelOnly,
+        /// Print CodeType and DiffType
+        Type,
         /// Print Node as Code
         Code,
         /// Print CodeType and DiffType and Mappings of Macros
         Mappings,
         /// Print CodeType and DiffType and Mappings if Macro and Text if Code
-        Debug
+        Debug,
+        /// Print metadata requried for semantic pattern mining
+        Mining
     }
 
     public static record Options(

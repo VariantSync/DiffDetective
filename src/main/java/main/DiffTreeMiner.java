@@ -44,7 +44,7 @@ public class DiffTreeMiner {
         final Path outputPath = Paths.get("linegraph", "data", "difftrees.lg");
         
         final LineGraphExport.Options exportOptions = new Options(
-                NodePrintStyle.LabelOnly // For pattern matching, we want to look at node types and not individual code.
+                NodePrintStyle.Mining
                 , true
                 , PostProcessing
                 , Options.LogError()
