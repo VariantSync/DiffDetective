@@ -37,7 +37,14 @@ public class DiffNode {
     private Node featureMapping;
     private String label;
 
+    /**
+     * The parent DiffNode of the currently focused one prior the edit.
+     */
     private DiffNode beforeParent;
+    
+    /**
+     * The parent DiffNode of the currently focused one after the edit.
+     */
     private DiffNode afterParent;
 
     /**
@@ -384,10 +391,16 @@ public class DiffNode {
         addAfterChildren(parent.removeAfterChildren());
     }
 
+    /**
+     * @return {@link #beforeParent}
+     */
     public DiffNode getBeforeParent() {
         return beforeParent;
     }
 
+    /**
+     * @return {@link #afterParent}
+     */
     public DiffNode getAfterParent() {
         return afterParent;
     }
