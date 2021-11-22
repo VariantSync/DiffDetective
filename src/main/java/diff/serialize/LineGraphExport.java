@@ -29,7 +29,7 @@ public class LineGraphExport {
         Mappings,
         /// Print CodeType and DiffType and Mappings if Macro and Text if Code
         Debug,
-        /// Print metadata requried for semantic pattern mining
+        /// Print metadata required for semantic pattern mining
         Mining
     }
 

@@ -23,13 +23,13 @@ import static util.Functional.when;
  */
 public class DiffTree {
     private final DiffNode root;
-    private DiffTreeSource source;
+    private IDiffTreeSource source;
 
     public DiffTree(DiffNode root) {
-        this(root, DiffTreeSource.Unknown);
+        this(root, IDiffTreeSource.Unknown);
     }
 
-    public DiffTree(DiffNode root, DiffTreeSource source) {
+    public DiffTree(DiffNode root, IDiffTreeSource source) {
         this.root = root;
         this.source = source;
     }
@@ -77,11 +77,11 @@ public class DiffTree {
         return allnodes;
     }
 
-    public void setSource(final DiffTreeSource source) {
+    public void setSource(final IDiffTreeSource source) {
         this.source = source;
     }
 
-    public DiffTreeSource getSource() {
+    public IDiffTreeSource getSource() {
         return source;
     }
 

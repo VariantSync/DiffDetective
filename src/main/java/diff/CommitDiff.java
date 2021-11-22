@@ -23,7 +23,7 @@ public class CommitDiff {
         this.patchDiffs = new ArrayList<>();
     }
 
-    public void addPatchDiff (PatchDiff patchDiff){
+    public void addPatchDiff(PatchDiff patchDiff){
         patchDiffs.add(patchDiff);
     }
 

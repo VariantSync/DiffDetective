@@ -52,6 +52,9 @@ public enum DiffType {
         }
     }
 
+    /**
+     * @return The inverse edit
+     */
     public DiffType inverse() {
         return switch (this) {
             case ADD -> REM;
@@ -60,6 +63,10 @@ public enum DiffType {
         };
     }
 
+    /**
+     * @param line A line in a patch
+     * @return The type of edit of <code>line</code>
+     */
     public static DiffType ofDiffLine(String line) {
         if (line.startsWith(addCharacter)) {
             return ADD;

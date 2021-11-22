@@ -1,7 +1,7 @@
 package diff.difftree;
 
-public interface DiffTreeSource {
-    DiffTreeSource Unknown = new DiffTreeSource() {
+public interface IDiffTreeSource {
+    IDiffTreeSource Unknown = new IDiffTreeSource() {
         @Override
         public int hashCode() {
             return 0;
