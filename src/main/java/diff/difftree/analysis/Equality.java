@@ -4,6 +4,7 @@ import diff.difftree.DiffTree;
 
 public class Equality {
     public static boolean isomorph(DiffTree a, DiffTree b) {
-        return false;
+        throw new IllegalStateException("Not implemented");
+//        return false;
     }
 }

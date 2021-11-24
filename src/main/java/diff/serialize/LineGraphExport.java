@@ -62,6 +62,7 @@ public class LineGraphExport {
         DiffTreeTransformer.apply(options.treePreProcessing, diffTree);
         diffTree.assertConsistency();
 
+        // TODO: Apply filtering here?
         if (options.skipEmptyTrees && diffTree.isEmpty()) {
             return new Pair<>(new DiffTreeSerializeDebugData(), "");
         }

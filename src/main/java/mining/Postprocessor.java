@@ -2,20 +2,40 @@ package mining;
 
 import diff.difftree.DiffTree;
 import diff.difftree.analysis.DiffTreeStatistics;
+import diff.difftree.filter.DiffTreeFilter;
+import diff.difftree.filter.DuplicateDiffTreeFilter;
 import diff.difftree.transform.CutNonEditedSubtrees;
 import diff.difftree.transform.DiffTreeTransformer;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Generic Postprocessor for mined patterns.
  * Patterns are represented as DiffTrees and might be filtered or transformed.
  */
 public class Postprocessor {
+    private static class FilterMetadata {
+        int filterCount;
+        String name;
+
+        public FilterMetadata(int filterCount, String name) {
+            this.filterCount = filterCount;
+            this.name = name;
+        }
+
+        public void hit() {
+            ++filterCount;
+        }
+
+        static FilterMetadata fromName(String name) {
+            return new FilterMetadata(0, name);
+        }
+    }
+
     private final List<DiffTreeTransformer> transformers;
-    private final List<PatternFilter> filters;
+    private final List<DiffTreeFilter<FilterMetadata>> filters;
     private final boolean removeDuplicates;
 
     /**
@@ -27,9 +47,11 @@ public class Postprocessor {
      */
     public static record Result(List<DiffTree> processedTrees, Map<String, Integer> filterCounts) {}
 
-    private Postprocessor(List<DiffTreeTransformer> transformers, List<PatternFilter> filters, boolean removeDuplicates) {
+    private Postprocessor(List<DiffTreeTransformer> transformers, List<DiffTreeFilter<String>> namedFilters, boolean removeDuplicates) {
         this.transformers = transformers;
-        this.filters = filters;
+        this.filters = namedFilters.stream().map(
+                filter -> filter.map(FilterMetadata::fromName)
+        ).collect(Collectors.toList());
         this.removeDuplicates = removeDuplicates;
     }
 
@@ -47,11 +69,11 @@ public class Postprocessor {
                 List.of(new CutNonEditedSubtrees()),
                 List.of(
                         // Filter ill-formed patterns
-                        new PatternFilter("Ill-Formed", tree -> tree.isConsistent().isSuccess()),
+                        new DiffTreeFilter<>("Ill-Formed", tree -> tree.isConsistent().isSuccess()),
                         // condition patterns containing less than two atomic patterns
-                        new PatternFilter("Less than two atomics", tree -> DiffTreeStatistics.getNumberOfUniqueLabelsIn(tree) > 1)
+                        new DiffTreeFilter<>("Less than two atomics", tree -> DiffTreeStatistics.getNumberOfUniqueLabelsIn(tree) > 1)
                 ),
-                true
+                false
         );
     }
 
@@ -62,16 +84,11 @@ public class Postprocessor {
      * @return The processed difftrees as well as some metadata.
      */
     public Result postprocess(final List<DiffTree> frequentSubgraphs) {
-        final Map<String, Integer> filterCounts = new HashMap<>();
-        for (final PatternFilter filter : filters) {
-            filterCounts.put(filter.name(), 0);
-        }
-
         List<DiffTree> processedTrees = frequentSubgraphs.stream()
                 .filter(tree -> {
-                    for (final PatternFilter filter : filters) {
+                    for (final DiffTreeFilter<FilterMetadata> filter : filters) {
                         if (!filter.condition().test(tree)) {
-                            filterCounts.computeIfPresent(filter.name(), (name, i) -> i + 1);
+                            filter.metadata().hit();
                             return false;
                         }
                     }
@@ -81,9 +98,14 @@ public class Postprocessor {
                 .peek(tree -> DiffTreeTransformer.apply(transformers, tree))
                 .toList();
 
+        final Map<String, Integer> filterCounts = filters.stream().collect(Collectors.toMap(
+                f -> f.metadata().name,
+                f -> f.metadata().filterCount
+        ));
+
         if (removeDuplicates) {
             final int patternsBefore = processedTrees.size();
-            processedTrees = DuplicatePatternFilter.filterDuplicates(processedTrees);
+            processedTrees = DuplicateDiffTreeFilter.wrtIsomorphism().filterDuplicates(processedTrees);
             final int numDuplicates = patternsBefore - processedTrees.size();
             filterCounts.put("Duplicate", numDuplicates);
         }
