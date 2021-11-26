@@ -43,6 +43,10 @@ public class GitLoader {
      * @return A Git object of the repository
      */
     public static Git fromRemote(Path localPath, URI remoteURI) {
+        if (!Files.exists(localPath)) {
+            localPath.toFile().mkdirs();
+        }
+
         Assert.assertTrue(Files.isDirectory(localPath), "Given path " + localPath + " is not a directory!");
 
         // If the repository is already cloned, use the clone.
@@ -51,13 +55,14 @@ public class GitLoader {
         }
 
         try {
+            Logger.info("Cloning " + remoteURI + " to " + localPath + ".");
             return Git.cloneRepository()
                     .setURI(remoteURI.toString())
                     .setDirectory(localPath.toFile())
+//                    .setProgressMonitor()
                     .call();
         } catch (GitAPIException e) {
-            Logger.warn("Failed to load git repo from {}", remoteURI);
-            return null;
+            throw new RuntimeException("Failed to load git repo from " + remoteURI + " because:\n" + e);
         }
     }
 

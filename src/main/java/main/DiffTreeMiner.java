@@ -33,32 +33,9 @@ public class DiffTreeMiner {
             new RelabelRoot(CodeType.IF.name)
     );
 
-    public static void main(String[] args) {
-        Main.setupLogger(Level.DEBUG);
+    private final static int DEBUG_treesToExportAtMost = -1;
 
-        final Repository repo;
-		repo = DefaultRepositories.stanciulescuMarlinZip(Path.of("."));
-//        repo = Repository.createRemoteLinuxRepo();
-//        repo = Repository.createRemoteVimRepo();
-        
-        final Path outputPath = Paths.get("linegraph", "data", "difftrees.lg");
-        
-        final LineGraphExport.Options exportOptions = new Options(
-                NodePrintStyle.Mining
-                , true
-                , PostProcessing
-                , Options.LogError()
-                .andThen(Options.RenderError())
-                .andThen(LineGraphExport.Options.SysExitOnError())
-        );
-
-        boolean renderOutput = false;
-        int treesToExportAtMost = -1;
-
-        /* ************************ *\
-        |      END OF ARGUMENTS      |
-        \* ************************ */
-
+    public static DiffTreeMiningResult mine(final Repository repo, final LineGraphExport.Options exportOptions) {
         final GitDiffer differ = new GitDiffer(repo);
         final Yield<CommitDiff> yieldDiff = differ.yieldGitDiff();
 
@@ -73,29 +50,73 @@ public class DiffTreeMiner {
             treeCounter = res.getValue();
 //            ++commitDiffCounter;
 
-            if (treesToExportAtMost > 0 && treeCounter >= treesToExportAtMost) {
+            if (DEBUG_treesToExportAtMost > 0 && treeCounter >= DEBUG_treesToExportAtMost) {
                 break;
             }
         }
 
-        Logger.info("Exported " + treeCounter + " diff trees!");
-        Logger.info("Exported " + debugData.numExportedNonNodes + " nodes of diff type NON.");
-        Logger.info("Exported " + debugData.numExportedAddNodes + " nodes of diff type ADD.");
-        Logger.info("Exported " + debugData.numExportedRemNodes + " nodes of diff type REM.");
+        return new DiffTreeMiningResult(lineGraph.toString(), treeCounter, debugData);
+    }
 
+    public static void export(final Path outputPath, final String linegraph) {
         try {
             Logger.info("Writing file " + outputPath);
-            IO.write(outputPath, lineGraph.toString());
+            IO.write(outputPath, linegraph);
         } catch (IOException exception) {
             Logger.error(exception);
         }
+    }
 
-        if (renderOutput) {
-            Logger.info("Rendering " + outputPath);
-            final DiffTreeRenderer renderer = DiffTreeRenderer.WithinDiffDetective();
-            if (!renderer.renderFile(outputPath)) {
-                Logger.error("Rendering " + outputPath + " failed!");
+    public static void main(String[] args) {
+        Main.setupLogger(Level.DEBUG);
+
+        boolean renderOutput = false;
+        final Path inputDir = Paths.get("..", "DiffDetectiveMining");
+        final Path outputDir = Paths.get("linegraph", "data");
+        final LineGraphExport.Options exportOptions = new Options(
+                NodePrintStyle.Mining
+                , true
+                , PostProcessing
+                , Options.LogError()
+                .andThen(Options.RenderError())
+                .andThen(LineGraphExport.Options.SysExitOnError())
+        );
+
+        final List<Repository> repos = List.of(
+//                DefaultRepositories.stanciulescuMarlinZip(Path.of(".")),
+                DefaultRepositories.createRemoteLinuxRepo(inputDir.resolve("linux")),
+                DefaultRepositories.createRemoteVimRepo(inputDir.resolve("vim"))
+        );
+
+//        repo = Repository.createRemoteLinuxRepo();
+//        repo = Repository.createRemoteVimRepo();
+
+        /* ************************ *\
+        |      END OF ARGUMENTS      |
+        \* ************************ */
+
+        for (final Repository repo : repos) {
+            Logger.info(" === Begin Processing " + repo.getRepositoryName() + " ===");
+
+            final Path outputPath = outputDir.resolve(repo.getRepositoryName() + ".lg");
+            final DiffTreeMiningResult result = mine(repo, exportOptions);
+
+            Logger.info("Exported " + result.numTrees() + " diff trees!");
+            Logger.info("Exported " + result.debugData().numExportedNonNodes + " nodes of diff type NON.");
+            Logger.info("Exported " + result.debugData().numExportedAddNodes + " nodes of diff type ADD.");
+            Logger.info("Exported " + result.debugData().numExportedRemNodes + " nodes of diff type REM.");
+
+            export(outputPath, result.lineGraph());
+
+            if (renderOutput) {
+                Logger.info("Rendering " + outputPath);
+                final DiffTreeRenderer renderer = DiffTreeRenderer.WithinDiffDetective();
+                if (!renderer.renderFile(outputPath)) {
+                    Logger.error("Rendering " + outputPath + " failed!");
+                }
             }
+
+            Logger.info(" === End Processing " + repo.getRepositoryName() + " ===");
         }
 
         Logger.info("Done");
