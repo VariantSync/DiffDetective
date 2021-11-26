@@ -3,7 +3,7 @@
 import Data.List ( find )
 
 import Names
-import Feature ( Feature )
+import Feature ( Feature, FeatureAnnotation )
 
 data CodeType = CODE | MAPPING
 data Label f = Leaf CodeFragment | Inner f
@@ -21,13 +21,13 @@ data DiffTree f = DiffTree {
 }
 
 {- called F in the paper -}
-featureOf :: (Feature f) => DiffTreeNode f -> f
+featureOf :: (FeatureAnnotation f) => DiffTreeNode f -> f
 featureOf v = case label v of
     Leaf code -> mempty
     Inner fm  -> fm
 
 {- called pc in the paper -}
-pcInDiffTree :: (Feature f) => DiffTreePC f
+pcInDiffTree :: (FeatureAnnotation f) => DiffTreePC f
 pcInDiffTree t v = case parent v t of
     Nothing -> featureOf v
     Just p -> mappend (featureOf v) (pcInDiffTree t p)
