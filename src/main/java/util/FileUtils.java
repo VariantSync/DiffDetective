@@ -8,7 +8,7 @@ import java.nio.file.Path;
 
 public class FileUtils {
     public static boolean isEmptyDirectory(final Path p) throws IOException {
-        return !Files.exists(p) || (Files.isDirectory(p) && Files.list(p).findAny().isPresent());
+        return !Files.exists(p) || (Files.isDirectory(p) && Files.list(p).findAny().isEmpty());
     }
 
     public static boolean tryIsEmptyDirectory(final Path p) {
