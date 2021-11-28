@@ -38,12 +38,12 @@ public class DiffNode {
     private String label;
 
     /**
-     * The parent DiffNode of the currently focused one prior the edit.
+     * The parent {@link DiffNode} before the edit.
      */
     private DiffNode beforeParent;
     
     /**
-     * The parent DiffNode of the currently focused one after the edit.
+     * The parent {@link DiffNode} after the edit.
      */
     private DiffNode afterParent;
 

@@ -1,13 +1,15 @@
 package diff.difftree;
 
-public class DiffTreeSource implements IDiffTreeSource {
+public interface DiffTreeSource {
+    DiffTreeSource Unknown = new DiffTreeSource() {
+        @Override
+        public int hashCode() {
+            return 0;
+        }
 
-	private final String fileName;
-	private final String commitHash;
-	
-	public DiffTreeSource(String fileName, String commitHash) {
-		this.fileName = fileName;
-		this.commitHash = commitHash;
-	}
-	
+        @Override
+        public String toString() {
+            return "Unknown DiffTreeSource";
+        }
+    };
 }

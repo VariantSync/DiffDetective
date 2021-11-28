@@ -1,7 +1,7 @@
 package diff;
 
 import diff.difftree.DiffTree;
-import diff.difftree.IDiffTreeSource;
+import diff.difftree.DiffTreeSource;
 import org.apache.commons.io.FilenameUtils;
 import org.eclipse.jgit.diff.DiffEntry;
 
@@ -12,7 +12,7 @@ import org.eclipse.jgit.diff.DiffEntry;
  *
  * @author Sören Viegener
  */
-public class PatchDiff implements IDiffTreeSource {
+public class PatchDiff implements DiffTreeSource {
     private final String fullDiff;
     private final DiffTree diffTree;
     private final CommitDiff commitDiff;

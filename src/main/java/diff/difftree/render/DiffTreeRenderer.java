@@ -3,6 +3,7 @@ package diff.difftree.render;
 import de.ovgu.featureide.fm.core.analysis.cnf.generator.configuration.util.Pair;
 import diff.PatchDiff;
 import diff.difftree.DiffTree;
+import diff.difftree.serialize.DiffTreeNodeLabelFormat;
 import diff.serialize.DiffTreeSerializeDebugData;
 import diff.serialize.LineGraphExport;
 import org.pmw.tinylog.Logger;
@@ -27,7 +28,7 @@ public class DiffTreeRenderer {
     private final Supplier<PythonCommand> pythonCommandFactory;
 
     public static record RenderOptions(
-            LineGraphExport.NodePrintStyle nodeStyle,
+            DiffTreeNodeLabelFormat.NodePrintStyle nodeStyle,
             boolean cleanUpTemporaryFiles,
             int dpi,
             int nodesize,
@@ -36,7 +37,7 @@ public class DiffTreeRenderer {
             int fontsize,
             boolean withlabels) {
         public static RenderOptions DEFAULT = new RenderOptions(
-                LineGraphExport.NodePrintStyle.Debug,
+                DiffTreeNodeLabelFormat.NodePrintStyle.Debug,
                 true,
                 300,
                 700,

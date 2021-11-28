@@ -1,12 +1,25 @@
 package diff.difftree.serialize;
 
-public class DiffTreeLineGraphImportOptions {
-    public enum GraphFormat {
-    	// TODO wo kann man das abgleichen?
-        DIFFTREE, // erstmal ignorieren
-        DIFFGRAPH 
-    }
+import diff.difftree.parse.DiffTreeParser;
 
-    IDiffNodeLineGraphImporter nodeParser;
+public class DiffTreeLineGraphImportOptions {
+	// TODO where to differentiate between graphs and trees?
+    public enum GraphFormat {
+        DIFFTREE, // erstmal ignorieren
+        DIFFGRAPH // nur für graphen implementieren, fromNodes verwenden
+    }
+    
     GraphFormat format;
+
+    /**
+     * For parsing a tree from a line graph.
+     */
+    public DiffTreeNodeLabelFormat treeParser = new DiffTreeParser();
+
+    /**
+     * For parsing a DiffNode from a line graph.
+     */
+    public DiffNodeLineGraphImporter nodeParser = new MiningDiffNodeLineGraphImporter();
+    
+    
 }

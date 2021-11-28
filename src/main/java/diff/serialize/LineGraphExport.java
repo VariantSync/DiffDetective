@@ -7,6 +7,7 @@ import diff.difftree.DiffTree;
 import diff.difftree.render.DiffTreeRenderer;
 import diff.difftree.render.ErrorRendering;
 import diff.difftree.serialize.DiffTreeLineGraphExporter;
+import diff.difftree.serialize.DiffTreeNodeLabelFormat;
 import diff.difftree.transform.DiffTreeTransformer;
 import org.pmw.tinylog.Logger;
 import util.StringUtils;
@@ -18,27 +19,12 @@ import java.util.function.BiConsumer;
 public class LineGraphExport {
     public static final String TREE_NAME_SEPARATOR = "$$$";
 
-    public enum NodePrintStyle {
-        /// Print only the label
-        LabelOnly,
-        /// Print CodeType and DiffType
-        Type,
-        /// Print Node as Code
-        Code,
-        /// Print CodeType and DiffType and Mappings of Macros
-        Mappings,
-        /// Print CodeType and DiffType and Mappings if Macro and Text if Code
-        Debug,
-        /// Print metadata required for semantic pattern mining
-        Mining
-    }
-
     public static record Options(
-            NodePrintStyle nodePrintStyle,
+            DiffTreeNodeLabelFormat.NodePrintStyle nodePrintStyle,
             boolean skipEmptyTrees,
             List<DiffTreeTransformer> treePreProcessing,
             BiConsumer<PatchDiff, Exception> onError) {
-        public Options(NodePrintStyle nodePrintStyle) {
+        public Options(DiffTreeNodeLabelFormat.NodePrintStyle nodePrintStyle) {
             this(nodePrintStyle, false, new ArrayList<>(), LogError());
         }
 

@@ -1,6 +1,7 @@
 import de.ovgu.featureide.fm.core.analysis.cnf.generator.configuration.util.Pair;
 import diff.difftree.DiffTree;
 import diff.difftree.parse.DiffTreeParser;
+import diff.difftree.serialize.DiffTreeNodeLabelFormat;
 import diff.serialize.DiffTreeSerializeDebugData;
 import diff.serialize.LineGraphExport;
 import org.junit.Test;
@@ -38,7 +39,7 @@ public class TestMultiLineMacros {
     @Test
     public void test() throws IOException {
         final LineGraphExport.Options exportOptions = new LineGraphExport.Options(
-                LineGraphExport.NodePrintStyle.Debug
+                DiffTreeNodeLabelFormat.NodePrintStyle.Debug
         );
 
         diffToDiffTree(exportOptions, resDir.resolve("mldiff1.txt"));

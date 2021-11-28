@@ -5,6 +5,7 @@ import diff.GitDiffer;
 import diff.PatchDiff;
 import diff.difftree.DiffTree;
 import diff.difftree.render.DiffTreeRenderer;
+import diff.difftree.serialize.DiffTreeNodeLabelFormat;
 import diff.difftree.transform.DiffTreeTransformer;
 import diff.serialize.LineGraphExport;
 import main.DiffTreeMiner;
@@ -29,7 +30,7 @@ public class TreeTransformersTest {
     private static final Path genDir = resDir.resolve("gen");
     private static final List<DiffTreeTransformer> transformers = DiffTreeMiner.PostProcessing;
     private static final DiffTreeRenderer.RenderOptions renderOptions = new DiffTreeRenderer.RenderOptions(
-            LineGraphExport.NodePrintStyle.Type,
+            DiffTreeNodeLabelFormat.NodePrintStyle.Type,
             false,
             500,
             50,
