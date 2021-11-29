@@ -77,7 +77,9 @@ public class GitLoader {
         final Path targetDir = pathToZip.getParent();
         // If the repository is already unzipped, use the unzipped files.
         if (!FileUtils.tryIsEmptyDirectory(targetDir)) {
-            return fromDirectory(targetDir);
+            final Path unzippedRepoName = Path.of(FilenameUtils.removeExtension(pathToZip.toString()));
+            return fromDirectory(unzippedRepoName);
+
         }
 
         try {
