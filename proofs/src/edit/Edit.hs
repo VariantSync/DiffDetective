@@ -11,6 +11,8 @@ data Edit f = Edit {
     pcInEdit :: EditPC f   -- p_b and p_a in the paper
 }
 
+-- IMPORTANT: We dont need eval on feature annotations anymore because we have editTypes! So we dont need a "false" value anymore.
+
 instance (FeatureAnnotation f) => Eq (Edit f) where
     a == b =
         let
