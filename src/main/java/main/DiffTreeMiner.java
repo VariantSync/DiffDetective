@@ -10,12 +10,12 @@ import diff.difftree.render.DiffTreeRenderer;
 import diff.difftree.transform.*;
 import diff.serialize.DiffTreeSerializeDebugData;
 import diff.serialize.LineGraphExport;
+import main.mining.*;
 import org.pmw.tinylog.Level;
 import org.pmw.tinylog.Logger;
 import util.IO;
 import util.Yield;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -35,44 +35,54 @@ public class DiffTreeMiner {
 
     private final static int DEBUG_treesToExportAtMost = -1;
 
-    public static DiffTreeMiningResult mine(final Repository repo, final LineGraphExport.Options exportOptions) {
+    public static DiffTreeMiningResult mine(
+            final Repository repo,
+            final Path outputPath,
+            final LineGraphExport.Options exportOptions,
+            final DiffTreeMiningStrategy strategy)
+    {
         final GitDiffer differ = new GitDiffer(repo);
         final Yield<CommitDiff> yieldDiff = differ.yieldGitDiff();
-
-        final StringBuilder lineGraph = new StringBuilder();
-        int treeCounter = 0;
         final DiffTreeSerializeDebugData debugData = new DiffTreeSerializeDebugData();
+
+        int treeCounter = 0;
+        int commitCounter = 0;
+
         Logger.info("Mining start");
+        strategy.start(repo, outputPath, exportOptions);
         for (CommitDiff diff : yieldDiff) {
-//            Logger.info("Exporting Commit #" + commitDiffCounter);
+            final StringBuilder lineGraph = new StringBuilder();
             final Pair<DiffTreeSerializeDebugData, Integer> res = LineGraphExport.toLineGraphFormat(diff, lineGraph, treeCounter, exportOptions);
             debugData.mappend(res.getKey());
+
             treeCounter = res.getValue();
-//            ++commitDiffCounter;
+            ++commitCounter;
+
+            strategy.onCommit(diff, lineGraph.toString());
 
             if (DEBUG_treesToExportAtMost > 0 && treeCounter >= DEBUG_treesToExportAtMost) {
                 break;
             }
         }
 
-        return new DiffTreeMiningResult(lineGraph.toString(), treeCounter, debugData);
-    }
-
-    public static void export(final Path outputPath, final String linegraph) {
-        try {
-            Logger.info("Writing file " + outputPath);
-            IO.write(outputPath, linegraph);
-        } catch (IOException exception) {
-            Logger.error(exception);
-        }
+        return new DiffTreeMiningResult(strategy.end(), commitCounter, treeCounter, debugData);
     }
 
     public static void main(String[] args) {
         Main.setupLogger(Level.DEBUG);
 
         boolean renderOutput = false;
+
         final Path inputDir = Paths.get("..", "DiffDetectiveMining");
+        final Path linuxDir = Paths.get("..", "variantevolution_datasets");
         final Path outputDir = Paths.get("linegraph", "data");
+
+        final List<Repository> repos = List.of(
+//                DefaultRepositories.stanciulescuMarlinZip(Path.of(".")),
+                DefaultRepositories.createRemoteLinuxRepo(linuxDir.resolve("linux"))
+//                DefaultRepositories.createRemoteVimRepo(inputDir.resolve("vim"))
+        );
+
         final LineGraphExport.Options exportOptions = new Options(
                 NodePrintStyle.Mining
                 , true
@@ -82,14 +92,12 @@ public class DiffTreeMiner {
                 .andThen(LineGraphExport.Options.SysExitOnError())
         );
 
-        final List<Repository> repos = List.of(
-//                DefaultRepositories.stanciulescuMarlinZip(Path.of(".")),
-                DefaultRepositories.createRemoteLinuxRepo(inputDir.resolve("linux")),
-                DefaultRepositories.createRemoteVimRepo(inputDir.resolve("vim"))
-        );
-
-//        repo = Repository.createRemoteLinuxRepo();
-//        repo = Repository.createRemoteVimRepo();
+        final DiffTreeMiningStrategy miningStrategy =
+//                new MineAndExportIncrementally();
+                new CompositeDiffTreeMiningStrategy(
+                        new MineAndExportIncrementally(),
+                        new MiningMonitor(5)
+                );
 
         /* ************************ *\
         |      END OF ARGUMENTS      |
@@ -98,21 +106,19 @@ public class DiffTreeMiner {
         for (final Repository repo : repos) {
             Logger.info(" === Begin Processing " + repo.getRepositoryName() + " ===");
 
-            final Path outputPath = outputDir.resolve(repo.getRepositoryName() + ".lg");
-            final DiffTreeMiningResult result = mine(repo, exportOptions);
+            final Path lineGraphOutputPath = outputDir.resolve(repo.getRepositoryName() + ".lg");
+            final Path metadataOutputPath = outputDir.resolve(repo.getRepositoryName() + ".metadata.txt");
+            final DiffTreeMiningResult result = mine(repo, lineGraphOutputPath, exportOptions, miningStrategy);
+            final String printedResult = result.toString();
 
-            Logger.info("Exported " + result.numTrees() + " diff trees!");
-            Logger.info("Exported " + result.debugData().numExportedNonNodes + " nodes of diff type NON.");
-            Logger.info("Exported " + result.debugData().numExportedAddNodes + " nodes of diff type ADD.");
-            Logger.info("Exported " + result.debugData().numExportedRemNodes + " nodes of diff type REM.");
-
-            export(outputPath, result.lineGraph());
+            Logger.info("Writing the following metadata to " + metadataOutputPath + "\n" + printedResult);
+            IO.tryWrite(metadataOutputPath, printedResult);
 
             if (renderOutput) {
-                Logger.info("Rendering " + outputPath);
+                Logger.info("Rendering " + lineGraphOutputPath);
                 final DiffTreeRenderer renderer = DiffTreeRenderer.WithinDiffDetective();
-                if (!renderer.renderFile(outputPath)) {
-                    Logger.error("Rendering " + outputPath + " failed!");
+                if (!renderer.renderFile(lineGraphOutputPath)) {
+                    Logger.error("Rendering " + lineGraphOutputPath + " failed!");
                 }
             }
 
