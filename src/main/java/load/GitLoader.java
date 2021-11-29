@@ -2,6 +2,7 @@ package load;
 
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
+import org.apache.commons.io.FilenameUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.pmw.tinylog.Logger;
@@ -59,7 +60,7 @@ public class GitLoader {
             return Git.cloneRepository()
                     .setURI(remoteURI.toString())
                     .setDirectory(localPath.toFile())
-//                    .setProgressMonitor()
+                    .setProgressMonitor(new LoggingProgressMonitor())
                     .call();
         } catch (GitAPIException e) {
             throw new RuntimeException("Failed to load git repo from " + remoteURI + " because:\n" + e);
