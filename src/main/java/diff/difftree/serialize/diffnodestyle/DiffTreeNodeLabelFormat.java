@@ -1,39 +1,26 @@
-package diff.difftree.serialize;
+package diff.difftree.serialize.diffnodestyle;
 
-import diff.difftree.DiffTreeSource;
+import diff.difftree.DiffNode;
 
-/*
- * TODO Does it make sense to put both import and export methods in here? Then the importer and exporter classes have to implement both methods?
- * 
+/**
+ * Read and write {@link DiffNode DiffNodes} from and to line graph.
  */
 public interface DiffTreeNodeLabelFormat {
-	
-	/**
-	 * The print style of the {@link diff.difftree.DiffNode DiffNodes} in the line graph.
-	 */
-	public enum NodePrintStyle {
-	    /// Print only the label
-	    LabelOnly,
-	    /// Print CodeType and DiffType
-	    Type,
-	    /// Print Node as Code
-	    Code,
-	    /// Print CodeType and DiffType and Mappings of Macros
-	    Mappings,
-	    /// Print CodeType and DiffType and Mappings if Macro and Text if Code
-	    Debug,
-	    /// Print metadata required for semantic pattern mining
-	    Mining
-	}
 
 	/**
-	 * Creates a {@link DiffTreeSource} from a lineGraphLine.
+	 * Converts an entire line of a line graph into a {@link DiffNode}.
 	 * 
-	 * @param lineGraphLine A line read from a line graph
-	 * @return A parsed {@link DiffTreeSource}
+	 * @param lineGraphNodeLine A string that should represents a {@link DiffNode}.
+	 * @return The corresponding {@link DiffNode}.
 	 */
-	DiffTreeSource importTree(String lineGraphLine);
+	public DiffNode readNodeFromLineGraph(final String lineGraphNodeLine);
 	
-	// TODO see above todo
-//	void exportTree;
+	/**
+	 * Converts a {@link DiffNode} into an entire line of a line graph.
+	 * 
+	 * @param node The {@link DiffNode} to be converted
+	 * @return The corresponding line graph line.
+	 */
+	public String writeNodetoLineGraph(final DiffNode node);
+	
 }

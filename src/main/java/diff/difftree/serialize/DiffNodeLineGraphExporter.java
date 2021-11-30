@@ -4,6 +4,7 @@ import diff.difftree.DiffNode;
 import diff.serialize.LineGraphExport;
 import org.prop4j.Node;
 
+@Deprecated
 public class DiffNodeLineGraphExporter {
     private static String prettyPrintTypeAndMapping(DiffNode n) {
         String result = n.codeType.name;

@@ -1,40 +1,47 @@
-package diff.difftree.serialize;
+package diff.difftree.serialize.diffnodestyle;
 
 import diff.difftree.CodeType;
 import diff.difftree.DiffNode;
-import diff.difftree.DiffType;
+import diff.difftree.serialize.DiffTreeLineGraphImportOptions;
 
 /**
- * For mining pattern of {@link diff.difftree.serialize.DiffTreeNodeLabelFormat.NodePrintStyle NodePrintStyle} only.
+ * A concrete implementation for Mining of a {@link DiffTreeLineGraphImportOptions.NodeStyle}.
+ * Print metadata required for semantic pattern mining.
  */
-public class MiningDiffNodeLineGraphImporter implements DiffNodeLineGraphImporter {
+public class MiningDiffNodeLineGraphImporter implements DiffTreeNodeLabelFormat {
 
-	// TODO Paul implementiert Methode richtig
+	/**
+	 *  TODO Paul implementiert Methode richtig
+	 */
 	@Override
-	public DiffNode parse(String lineGraphLine) {
+	public DiffNode readNodeFromLineGraph(final String lineGraphNodeLine) {
+//		String[] vertex = lineGraphNodeLine.split(" ");
+//		String nodeId = vertex[1];
+//		String editPattern = vertex[2];
+//
+//		String nodeLabel; 
+//		DiffType diffType = DiffType.ofDiffLine(editPattern);
+//		if (editPattern.matches(DiffType.ADD + "_*")) {
+//			nodeLabel = editPattern.substring(DiffType.ADD.toString().length() + 1, editPattern.length() - 1);
+//		}
+//		else if (editPattern.matches(DiffType.REM + "_*")) {
+//			nodeLabel = editPattern.substring(DiffType.ADD.toString().length() + 1, editPattern.length() - 1);
+//		}
+//		else if (editPattern.matches(DiffType.NON + "_*")) {
+//			nodeLabel = editPattern.substring(DiffType.ADD.toString().length() + 1, editPattern.length() - 1);
+//		}
+//		else nodeLabel = editPattern;
+//		
+//		CodeType codeType = CodeType.ofDiffLine(lineGraphNodeLine);
+//
+//		// missing: fromLines, toLines, featureMapping
+//		return new DiffNode(diffType, codeType, null, null, null, nodeLabel);
+		throw new UnsupportedOperationException("Not implemented yet.");
+	}
 
-		String[] vertex = lineGraphLine.split(" ");
-		String nodeId = vertex[1];
-		String editPattern = vertex[2];
-
-		// for Mining pattern only
-		String nodeLabel; 
-		DiffType diffType = DiffType.ofDiffLine(editPattern);
-		if (editPattern.matches(DiffType.ADD + "_*")) {
-			nodeLabel = editPattern.substring(DiffType.ADD.toString().length() + 1, editPattern.length() - 1);
-		}
-		else if (editPattern.matches(DiffType.REM + "_*")) {
-			nodeLabel = editPattern.substring(DiffType.ADD.toString().length() + 1, editPattern.length() - 1);
-		}
-		else if (editPattern.matches(DiffType.NON + "_*")) {
-			nodeLabel = editPattern.substring(DiffType.ADD.toString().length() + 1, editPattern.length() - 1);
-		}
-		else nodeLabel = editPattern;
-		
-		CodeType codeType = CodeType.ofDiffLine(lineGraphLine);
-
-		// missing: fromLines, toLines, featureMapping
-		return new DiffNode(diffType, codeType, null, null, null, nodeLabel);
+	@Override
+	public String writeNodetoLineGraph(final DiffNode node) {
+		return "v " + node.getID() + " " + ((node.codeType == CodeType.CODE) ? node.getLabel() : node.diffType + "_" + node.getLabel());
 	}
 
 }
