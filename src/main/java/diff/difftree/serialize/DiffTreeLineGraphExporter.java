@@ -2,6 +2,8 @@ package diff.difftree.serialize;
 
 import diff.difftree.DiffNode;
 import diff.difftree.DiffTree;
+import diff.difftree.serialize.nodelabel.DiffTreeNodeLabelFormat;
+import diff.difftree.serialize.nodelabel.MiningDiffNodeLineGraphImporter;
 import diff.serialize.DiffTreeSerializeDebugData;
 import diff.serialize.LineGraphExport;
 import util.StringUtils;
@@ -15,12 +17,18 @@ public class DiffTreeLineGraphExporter {
     private final StringBuilder edgesString = new StringBuilder();
 
     private final DiffTree diffTree;
+    
+    /**
+     * The format in which the nodes are printed to the line graph.
+     */
+    private final DiffTreeNodeLabelFormat nodeLabelFormatter;
 
     private final DiffTreeSerializeDebugData debugData;
 
     public DiffTreeLineGraphExporter(DiffTree treeToExport) {
         this.diffTree = treeToExport;
         this.debugData = new DiffTreeSerializeDebugData();
+        nodeLabelFormatter = new MiningDiffNodeLineGraphImporter(); // TODO correct assignment
     }
 
     private void visit(DiffNode node, LineGraphExport.Options options) {
@@ -32,7 +40,7 @@ public class DiffTreeLineGraphExporter {
 
         final int nodeId = node.getID();
         nodesString
-                .append(DiffNodeLineGraphExporter.toLineGraphFormat(node, options))
+                .append(nodeLabelFormatter.writeNodeToLineGraph(node))
                 .append(StringUtils.LINEBREAK);
 
         final DiffNode beforeParent = node.getBeforeParent();

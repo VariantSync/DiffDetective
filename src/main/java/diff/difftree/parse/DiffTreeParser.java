@@ -1,14 +1,9 @@
 package diff.difftree.parse;
 
 import diff.DiffLineNumber;
-import diff.difftree.CommitDiffTreeSource;
 import diff.difftree.DiffNode;
 import diff.difftree.DiffTree;
-import diff.difftree.DiffTreeSource;
 import diff.difftree.DiffType;
-import diff.difftree.LineGraphImport;
-import diff.difftree.serialize.DiffTreeNodeLabelFormat;
-import diff.serialize.LineGraphExport;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
@@ -17,7 +12,7 @@ import java.util.function.Consumer;
 import org.pmw.tinylog.Logger;
 import util.StringUtils;
 
-public class DiffTreeParser implements DiffTreeNodeLabelFormat {
+public class DiffTreeParser {
     public static final String NEW_LINE_REGEX = "(\\r\\n|\\r|\\n)";
 
     /**
@@ -201,14 +196,5 @@ public class DiffTreeParser implements DiffTreeNodeLabelFormat {
         } while (!popped.isIf() && !popped.isRoot());
         return popped;
     }
-
-    // TODO Place method here?
-	@Override
-	public DiffTreeSource importTree(String lineGraphLine) {
-		lineGraphLine = lineGraphLine.substring(LineGraphImport.LG_TREE_HEADER.length(), lineGraphLine.length() - 1);
-		String[] commit = lineGraphLine.split(LineGraphExport.TREE_NAME_SEPARATOR);
-		String filePath = commit[0];
-		String commitHash = commit[1];
-		return new CommitDiffTreeSource(filePath, commitHash);
-	}
+    
 }

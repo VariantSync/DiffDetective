@@ -1,25 +1,39 @@
 package diff.difftree.serialize;
 
-import diff.difftree.parse.DiffTreeParser;
-
 public class DiffTreeLineGraphImportOptions {
-	// TODO where to differentiate between graphs and trees?
+	
+	/**
+	 * Format of the graph.
+	 */
     public enum GraphFormat {
-        DIFFTREE, // erstmal ignorieren
-        DIFFGRAPH // nur für graphen implementieren, fromNodes verwenden
+        DIFFTREE,
+        DIFFGRAPH
+    }
+
+    /**
+     * Style of the node in the line graph.
+     */
+    public enum NodeStyle {
+	    /// Print only the label
+	    LabelOnly,
+	    /// Print CodeType and DiffType
+	    Type,
+	    /// Print Node as Code
+	    Code,
+	    /// Print CodeType and DiffType and Mappings of Macros
+	    Mappings,
+	    /// Print CodeType and DiffType and Mappings if Macro and Text if Code
+	    Debug,
+	    /// Print metadata required for semantic pattern mining
+	    Mining
     }
     
-    GraphFormat format;
+    public GraphFormat format;
 
-    /**
-     * For parsing a tree from a line graph.
-     */
-    public DiffTreeNodeLabelFormat treeParser = new DiffTreeParser();
-
-    /**
-     * For parsing a DiffNode from a line graph.
-     */
-    public DiffNodeLineGraphImporter nodeParser = new MiningDiffNodeLineGraphImporter();
+    public NodeStyle style; 
+ 
     
-    
+    // TODO ?
+    // ‘Add parser for tree labels to DiffTreeSource as mentioned above.’
+	
 }
