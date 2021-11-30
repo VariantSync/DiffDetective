@@ -1,4 +1,4 @@
-package diff.difftree.serialize.diffnodestyle;
+package diff.difftree.serialize.nodelabel;
 
 import diff.difftree.DiffNode;
 
@@ -21,6 +21,6 @@ public interface DiffTreeNodeLabelFormat {
 	 * @param node The {@link DiffNode} to be converted
 	 * @return The corresponding line graph line.
 	 */
-	public String writeNodetoLineGraph(final DiffNode node);
+	public String writeNodeToLineGraph(final DiffNode node);
 	
 }

@@ -1,4 +1,4 @@
-package diff.difftree.serialize.diffnodestyle;
+package diff.difftree.serialize.nodelabel;
 
 import diff.difftree.CodeType;
 import diff.difftree.DiffNode;
@@ -40,7 +40,7 @@ public class MiningDiffNodeLineGraphImporter implements DiffTreeNodeLabelFormat 
 	}
 
 	@Override
-	public String writeNodetoLineGraph(final DiffNode node) {
+	public String writeNodeToLineGraph(final DiffNode node) {
 		return "v " + node.getID() + " " + ((node.codeType == CodeType.CODE) ? node.getLabel() : node.diffType + "_" + node.getLabel());
 	}
 

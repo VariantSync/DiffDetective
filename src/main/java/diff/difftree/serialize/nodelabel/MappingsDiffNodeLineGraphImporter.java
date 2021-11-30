@@ -1,4 +1,4 @@
-package diff.difftree.serialize.diffnodestyle;
+package diff.difftree.serialize.nodelabel;
 
 import diff.difftree.DiffNode;
 import diff.difftree.serialize.DiffTreeLineGraphImportOptions;
@@ -15,7 +15,7 @@ public class MappingsDiffNodeLineGraphImporter extends DiffNodeLabelPrettyfier i
 	}
 
 	@Override
-	public String writeNodetoLineGraph(final DiffNode node) {
+	public String writeNodeToLineGraph(final DiffNode node) {
 		return "v " + node.getID() + " " + node.diffType + "_" + node.codeType + "_\"" + prettyPrintIfMacroOr(node, "") + "\"";
 	}
 

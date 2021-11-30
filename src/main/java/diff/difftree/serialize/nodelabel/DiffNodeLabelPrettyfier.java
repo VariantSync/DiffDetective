@@ -1,4 +1,4 @@
-package diff.difftree.serialize.diffnodestyle;
+package diff.difftree.serialize.nodelabel;
 
 import diff.difftree.DiffNode;
 import org.prop4j.Node;
