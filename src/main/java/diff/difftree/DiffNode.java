@@ -20,8 +20,7 @@ import java.util.regex.Pattern;
  * Includes methods for creating a node by getting its code type and diff type and for getting the feature mapping of the node.
  */
 public class DiffNode {
-    private static final short ID_LINE_NUMBER_OFFSET = 16;
-    private static final short ID_DIFF_TYPE_OFFSET = 8;
+	private static final short ID_OFFSET = 8;
 
     public static final String EQUAL_PLACEHOLDER = "__eq__";
     public static final String TRUE_LITERAL_NAME = "__true__";
@@ -526,9 +525,33 @@ public class DiffNode {
      * @return An integer that uniquely identifiers this DiffNode within its patch.
      */
     public int getID() {
-        return ((1 + from.inDiff) << ID_LINE_NUMBER_OFFSET)
-                + (diffType.ordinal() << ID_DIFF_TYPE_OFFSET)
-                + codeType.ordinal();
+        int id;
+        id = 1 + from.inDiff;
+        id <<= ID_OFFSET;
+        id += diffType.ordinal();
+        id <<= ID_OFFSET;
+        id += codeType.ordinal();
+        return id;
+    }
+    
+    public static DiffNode fromID(final int id) {
+        // lowest 8 bits
+        final int codeTypeMask = (1 << ID_OFFSET) - 1;
+        // 8 bits next to codeTypeMask
+        final int diffTypeMask = codeTypeMask << ID_OFFSET;
+
+        final int codeTypeOrdinal = id & codeTypeMask;
+        final int diffTypeOrdinal = id & diffTypeMask;
+        final int fromInDiff = (id >> (2*ID_OFFSET)) - 1;
+
+        return new DiffNode(
+                DiffType.values()[diffTypeOrdinal],
+                CodeType.values()[codeTypeOrdinal],
+                new DiffLineNumber(fromInDiff, DiffLineNumber.InvalidLineNumber, DiffLineNumber.InvalidLineNumber),
+                DiffLineNumber.Invalid(),
+                null,
+                ""
+        );
     }
 
     public void assertConsistency() {
