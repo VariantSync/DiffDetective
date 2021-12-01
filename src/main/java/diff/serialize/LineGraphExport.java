@@ -4,6 +4,7 @@ import de.ovgu.featureide.fm.core.analysis.cnf.generator.configuration.util.Pair
 import diff.CommitDiff;
 import diff.PatchDiff;
 import diff.difftree.DiffTree;
+import diff.difftree.LineGraphConstants;
 import diff.difftree.render.DiffTreeRenderer;
 import diff.difftree.render.ErrorRendering;
 import diff.difftree.serialize.DiffTreeLineGraphExporter;
@@ -17,8 +18,6 @@ import java.util.List;
 import java.util.function.BiConsumer;
 
 public class LineGraphExport {
-    public static final String TREE_NAME_SEPARATOR = "$$$";
-
     public static record Options(
             DiffTreeNodeLabelFormat.NodePrintStyle nodePrintStyle,
             boolean skipEmptyTrees,
@@ -86,7 +85,7 @@ public class LineGraphExport {
                 if (!patchDiffLg.getValue().isEmpty()) {
                     lineGraph
 //                        .append("t # ").append(treeCounter)
-                            .append("t # ").append(patchDiff.getFileName()).append(TREE_NAME_SEPARATOR).append(hash)
+                            .append("t # ").append(patchDiff.getFileName()).append(LineGraphConstants.TREE_NAME_SEPARATOR).append(hash)
                             .append(StringUtils.LINEBREAK)
                             .append(patchDiffLg.getValue())
                             .append(StringUtils.LINEBREAK)

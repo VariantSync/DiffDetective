@@ -1,6 +1,43 @@
 package diff.difftree;
 
-// TODO Should a class be created where all constants related to DiffTrees are put in?
-public class Constants {
+/**
+ * Constants that are related to line graph.
+ */
+public class LineGraphConstants {
+	
+	/**
+	 * Declaration of a {@link DiffTree} in a line graph.
+	 */
+	public static final String LG_TREE_HEADER = "t #";
+	
+	/**
+	 * Delimiter used in {@link DiffTree DiffTrees}.
+	 */
+	public static final String TREE_NAME_SEPARATOR = "$$$";
+	
+	/**
+	 * Declaration of a {@link DiffNode} in a line graph.
+	 */
+	public static final String LG_NODE = "v";
+	
+	/**
+	 * Declaration of a connection between two {@link DiffNode DiffNodes} in a line graph.
+	 */
+	public static final String LG_EDGE = "e";
+	
+	/**
+	 * An edge between two {@link DiffNode DiffNodes} that has not been altered.
+	 */
+	public final static String BEFORE_AND_AFTER_PARENT = "ba";
+
+	/**
+	 * An edge between two {@link DiffNode DiffNodes} that exists after the edit only.
+	 */
+	public final static String AFTER_PARENT = "a";
+
+	/**
+	 * An edge between two {@link DiffNode DiffNodes} that existed before the edit before.
+	 */
+	public final static String BEFORE_PARENT = "b";
 
 }

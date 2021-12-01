@@ -4,10 +4,10 @@ import diff.CommitDiff;
 import diff.GitDiffer;
 import diff.PatchDiff;
 import diff.difftree.DiffTree;
+import diff.difftree.LineGraphConstants;
 import diff.difftree.render.DiffTreeRenderer;
 import diff.difftree.serialize.DiffTreeNodeLabelFormat;
 import diff.difftree.transform.DiffTreeTransformer;
-import diff.serialize.LineGraphExport;
 import main.DiffTreeMiner;
 import main.Main;
 import org.eclipse.jgit.api.Git;
@@ -49,7 +49,7 @@ public class TreeTransformersTest {
 
     private void transformAndRender(DiffTree diffTree, String name, String commit) {
         final DiffTreeRenderer renderer = DiffTreeRenderer.WithinDiffDetective();
-        final String treeName = name + LineGraphExport.TREE_NAME_SEPARATOR + commit;
+        final String treeName = name + LineGraphConstants.TREE_NAME_SEPARATOR + commit;
 
         INFO.accept("Original State");
         if (RENDER) {

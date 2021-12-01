@@ -3,6 +3,7 @@ package diff.difftree.render;
 import de.ovgu.featureide.fm.core.analysis.cnf.generator.configuration.util.Pair;
 import diff.PatchDiff;
 import diff.difftree.DiffTree;
+import diff.difftree.LineGraphConstants;
 import diff.difftree.serialize.DiffTreeNodeLabelFormat;
 import diff.serialize.DiffTreeSerializeDebugData;
 import diff.serialize.LineGraphExport;
@@ -88,7 +89,7 @@ public class DiffTreeRenderer {
     public boolean render(PatchDiff patchDiff, final Path directory, RenderOptions options) {
         final String treeAndFileName =
                 patchDiff.getFileName()
-                        + LineGraphExport.TREE_NAME_SEPARATOR
+                        + LineGraphConstants.TREE_NAME_SEPARATOR
                         + patchDiff.getCommitDiff().getCommitHash();
         return render(patchDiff.getDiffTree(), treeAndFileName, directory, options);
     }
@@ -103,7 +104,7 @@ public class DiffTreeRenderer {
         final Path tempFile = directory.resolve(treeAndFileName + ".lg");
 
         final Pair<DiffTreeSerializeDebugData, String> result = LineGraphExport.toLineGraphFormat(tree, lgoptions);
-        final String lg = "t # " + treeAndFileName + LineGraphExport.TREE_NAME_SEPARATOR + "0" + StringUtils.LINEBREAK + result.getValue();
+        final String lg = "t # " + treeAndFileName + LineGraphConstants.TREE_NAME_SEPARATOR + "0" + StringUtils.LINEBREAK + result.getValue();
         try {
             IO.write(tempFile, lg);
         } catch (IOException e) {
