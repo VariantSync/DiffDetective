@@ -536,13 +536,11 @@ public class DiffNode {
     
     public static DiffNode fromID(final int id) {
         // lowest 8 bits
-        final int codeTypeMask = (1 << ID_OFFSET) - 1;
-        // 8 bits next to codeTypeMask
-        final int diffTypeMask = codeTypeMask << ID_OFFSET;
+        final int lowestBitsMask = (1 << ID_OFFSET) - 1;
 
-        final int codeTypeOrdinal = id & codeTypeMask;
-        final int diffTypeOrdinal = id & diffTypeMask;
-        final int fromInDiff = (id >> (2*ID_OFFSET)) - 1;
+        final int codeTypeOrdinal = id & lowestBitsMask;
+        final int diffTypeOrdinal = (id >> ID_OFFSET) & lowestBitsMask;
+        final int fromInDiff      = (id >> (2*ID_OFFSET)) - 1;
 
         return new DiffNode(
                 DiffType.values()[diffTypeOrdinal],
