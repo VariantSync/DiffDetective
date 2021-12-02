@@ -7,6 +7,7 @@ import diff.difftree.render.PatchDiffRenderer;
 import diff.serialize.LineGraphExport;
 import org.pmw.tinylog.Logger;
 import util.Assert;
+import util.IO;
 
 import java.nio.file.Path;
 import java.util.function.Predicate;
@@ -25,18 +26,27 @@ public class ExampleFinder implements DiffTreeTransformer {
 
     private final Predicate<DiffTree> isGoodExample;
     private final PatchDiffRenderer exampleExport;
+    private final Path outputDir;
 
     public ExampleFinder(final Predicate<DiffTree> isGoodExample, final Path outDir, DiffTreeRenderer renderer) {
         this.isGoodExample = isGoodExample;
         this.exampleExport = new PatchDiffRenderer(outDir, renderer, ExportOptions);
+        this.outputDir = outDir;
     }
 
     @Override
     public void transform(DiffTree diffTree) {
         if (isGoodExample.test(diffTree)) {
             Assert.assertTrue(diffTree.getSource() instanceof PatchDiff);
-            Logger.info("Exporting example candidate: " + diffTree.getSource());
-            exampleExport.render((PatchDiff) diffTree.getSource());
+            final PatchDiff patch = (PatchDiff) diffTree.getSource();
+            Logger.info("Exporting example candidate: " + patch);
+            exampleExport.render(patch);
+
+            String metadata = "";
+            metadata += "Child commit: " + patch.getCommitDiff().getCommitHash() + "\n";
+            metadata += "Parent commit: " + patch.getCommitDiff().getParentCommitHash() + "\n";
+            metadata += "File: " + patch.getFileName() + "\n";
+            IO.tryWrite(outputDir.resolve(patch.getFileName() + ".metadata.txt"), metadata);
         }
     }
 }
