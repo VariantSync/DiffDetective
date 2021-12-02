@@ -5,6 +5,7 @@ import org.pmw.tinylog.Logger;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
 public class FileUtils {
     public static boolean isEmptyDirectory(final Path p) throws IOException {
@@ -18,5 +19,11 @@ public class FileUtils {
             Logger.error(e);
             return false;
         }
+    }
+
+    public static List<Path> listAllFilesRecursively(final Path directory) throws IOException {
+        return Files.find(directory,
+                        Integer.MAX_VALUE,
+                        (filePath, fileAttr) -> fileAttr.isRegularFile()).toList();
     }
 }

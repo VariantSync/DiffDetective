@@ -1,5 +1,6 @@
 package main;
 
+import datasets.DebugOptions;
 import datasets.DefaultRepositories;
 import datasets.Repository;
 import de.ovgu.featureide.fm.core.analysis.cnf.generator.configuration.util.Pair;
@@ -28,6 +29,7 @@ public class DiffTreeMiner {
     public static final List<DiffTreeTransformer> PostProcessing = List.of(
 //            new NaiveMovedCodeDetection(), // do this first as it might introduce non-edited subtrees
             new CutNonEditedSubtrees(),
+            RunningExampleFinder.Default,
             new CollapseNestedNonEditedMacros(),
             new CollapseAtomicPatterns(),
             new RelabelRoot(CodeType.IF.name)
@@ -71,14 +73,15 @@ public class DiffTreeMiner {
     public static void main(String[] args) {
         Main.setupLogger(Level.DEBUG);
 
-        boolean renderOutput = false;
+        final boolean renderOutput = false;
+        final DebugOptions debugOptions = new DebugOptions(DebugOptions.DiffStoragePolicy.REMEMBER_STRIPPED_DIFF);
 
         final Path inputDir = Paths.get("..", "DiffDetectiveMining");
         final Path linuxDir = Paths.get("..", "variantevolution_datasets");
         final Path outputDir = Paths.get("linegraph", "data");
 
         final List<Repository> repos = List.of(
-//                DefaultRepositories.stanciulescuMarlinZip(Path.of(".")),
+//                DefaultRepositories.stanciulescuMarlinZip(Path.of("."))
                 DefaultRepositories.createRemoteLinuxRepo(linuxDir.resolve("linux"))
 //                DefaultRepositories.createRemoteVimRepo(inputDir.resolve("vim"))
         );
@@ -95,7 +98,7 @@ public class DiffTreeMiner {
         final DiffTreeMiningStrategy miningStrategy =
 //                new MineAndExportIncrementally();
                 new CompositeDiffTreeMiningStrategy(
-                        new MineAndExportIncrementally(),
+                        new MineAndExportIncrementally(10000),
                         new MiningMonitor(5)
                 );
 
@@ -105,7 +108,7 @@ public class DiffTreeMiner {
 
         for (final Repository repo : repos) {
             Logger.info(" === Begin Processing " + repo.getRepositoryName() + " ===");
-
+            repo.setDebugOptions(debugOptions);
             final Path lineGraphOutputPath = outputDir.resolve(repo.getRepositoryName() + ".lg");
             final Path metadataOutputPath = outputDir.resolve(repo.getRepositoryName() + ".metadata.txt");
             final DiffTreeMiningResult result = mine(repo, lineGraphOutputPath, exportOptions, miningStrategy);

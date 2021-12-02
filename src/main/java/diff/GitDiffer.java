@@ -1,5 +1,6 @@
 package diff;
 
+import datasets.DebugOptions;
 import datasets.Repository;
 import diff.difftree.DiffTree;
 import diff.difftree.parse.DiffTreeParser;
@@ -47,12 +48,12 @@ public class GitDiffer {
 
     private final Git git;
     private final DiffFilter diffFilter;
-    private final boolean saveMemory;
+    private final DebugOptions debugOptions;
 
     public GitDiffer(final Repository repository) {
         this.git = repository.load();
         this.diffFilter = repository.getDiffFilter();
-        this.saveMemory = repository.shouldSaveMemory();
+        this.debugOptions = repository.getDebugOptions();
     }
 
     /**
@@ -114,7 +115,7 @@ public class GitDiffer {
                         }
 
                         try {
-                            return createCommitDiffFromFirstParent(git, diffFilter, c, !saveMemory);
+                            return createCommitDiffFromFirstParent(git, diffFilter, c, debugOptions);
                         } catch (IOException exception) {
                             Logger.error(exception);
                             return null;
@@ -133,8 +134,7 @@ public class GitDiffer {
      *
      * @param git The git repo which the commit stems from.
      * @param currentCommit The commit from which to create a CommitDiff
-     * @param keepFullDiffs  If true, the PatchDiff will contain the full diff as a string. Set to false if you want to
-     *                       reduce memory consumption.
+     * @param debugOptions
      * @return The CommitDiff of the given commit
      * @throws IOException When problems with the git repository occur
      */
@@ -142,12 +142,12 @@ public class GitDiffer {
             Git git,
             DiffFilter diffFilter,
             RevCommit currentCommit,
-            boolean keepFullDiffs) throws IOException {
+            final DebugOptions debugOptions) throws IOException {
         if (currentCommit.getParentCount() == 0) {
             throw new IOException("Commit " + currentCommit.getId().getName() + " does not have parents");
         }
 
-        return createCommitDiff(git, diffFilter, currentCommit.getParent(0), currentCommit, keepFullDiffs);
+        return createCommitDiff(git, diffFilter, currentCommit.getParent(0), currentCommit, debugOptions);
     }
 
     /**
@@ -156,8 +156,6 @@ public class GitDiffer {
      * For each file in the diff, a PatchDiff is created.
      *
      * @param git The git repo which the commit stems from.
-     * @param keepFullDiffs  If true, the PatchDiff will contain the full diff as a string. Set to false if you want to
-     *                       reduce memory consumption.
      * @return The CommitDiff of the given commit
      * @throws IOException When problems with the git repository occur
      */
@@ -166,7 +164,7 @@ public class GitDiffer {
             DiffFilter diffFilter,
             RevCommit parentCommit,
             RevCommit childCommit,
-            boolean keepFullDiffs) throws IOException {
+            final DebugOptions debugOptions) throws IOException {
         CommitDiff commitDiff = new CommitDiff(childCommit, parentCommit);
 
         // get TreeParsers
@@ -186,7 +184,8 @@ public class GitDiffer {
 
         // get PatchDiffs
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-             DiffFormatter diffFormatter = new DiffFormatter(outputStream)) {
+             DiffFormatter diffFormatter = new DiffFormatter(outputStream))
+        {
             diffFormatter.setRepository(git.getRepository());
             diffFormatter.setDetectRenames(true);
             diffFormatter.getRenameDetector().setRenameScore(50);
@@ -198,22 +197,15 @@ public class GitDiffer {
                 }
 
                 diffFormatter.format(diffEntry);
-                String gitDiff = outputStream.toString(StandardCharsets.UTF_8);
-
-                Pattern headerPattern = Pattern.compile(DIFF_HEADER_REGEX, Pattern.MULTILINE);
-                Matcher matcher = headerPattern.matcher(gitDiff);
-                if (matcher.find()) {
-                    gitDiff = gitDiff.substring(matcher.end() + 1);
-                }
-
-                String beforeFullFile = getBeforeFullFile(git, parentCommit, diffEntry.getOldPath());
+                final String gitDiff = outputStream.toString(StandardCharsets.UTF_8);
+                final String beforeFullFile = getBeforeFullFile(git, parentCommit, diffEntry.getOldPath());
 
                 commitDiff.addPatchDiff(createPatchDiff(
                         commitDiff,
                         diffEntry,
                         gitDiff,
                         beforeFullFile,
-                        keepFullDiffs));
+                        debugOptions));
                 outputStream.reset();
             }
         }
@@ -227,42 +219,38 @@ public class GitDiffer {
      * @param diffEntry      The DiffEntry of the file that was changed in the commit
      * @param gitDiff        The git diff of the file that was changed
      * @param beforeFullFile The full file before the change
-     * @param keepFullDiffs  If true, the PatchDiff will contain the full diff as a string. Set to false if you want to
-     *                       reduce memory consumption.
      * @return The PatchDiff of the given DiffEntry
      */
     private static PatchDiff createPatchDiff(
             CommitDiff commitDiff,
             DiffEntry diffEntry,
-            String gitDiff,
+            final String gitDiff,
             String beforeFullFile,
-            boolean keepFullDiffs) {
-        String fullDiff = getFullDiff(beforeFullFile, gitDiff);
+            final DebugOptions debugOptions) {
+        final Pattern headerPattern = Pattern.compile(DIFF_HEADER_REGEX, Pattern.MULTILINE);
+        final Matcher matcher = headerPattern.matcher(gitDiff);
+        String strippedDiff = gitDiff;
+        if (matcher.find()) {
+            strippedDiff = gitDiff.substring(matcher.end() + 1);
+        }
 
-        // this could be used to combine multiple lines that end with "\" but it does not work
-        // reliably as it does not detect when only one of the lines was changed
-//        String diffString = combineMultiLines(fullDiff);
-        String diffString = fullDiff;
-
-        DiffTree diffTree = DiffTreeParser.createDiffTree(diffString, true, true);
+        final String fullDiff = getFullDiff(beforeFullFile, strippedDiff);
+        final DiffTree diffTree = DiffTreeParser.createDiffTree(fullDiff, true, true);
 
         if (diffTree == null) {
             Logger.warn("Something went wrong parsing patch for file {} at commit {}!",
                     diffEntry.getOldPath(), commitDiff.getAbbreviatedCommitHash());
         }
 
-        if (keepFullDiffs) {
-            return new PatchDiff(commitDiff, diffEntry, fullDiff, diffTree);
-        } else {
-            // not storing the full diff reduces memory usage by around 40-50%
-            return new PatchDiff(commitDiff, diffEntry, "", diffTree);
-        }
-    }
+        // not storing the full diff reduces memory usage by around 40-50%
+        final String diffToRemember = switch (debugOptions.diffStoragePolicy()) {
+            case DO_NOT_REMEMBER -> "";
+            case REMEMBER_DIFF -> gitDiff;
+            case REMEMBER_FULL_DIFF -> fullDiff;
+            case REMEMBER_STRIPPED_DIFF -> strippedDiff;
+        };
 
-    private static String combineMultiLines(String fullDiff) {
-        String MULTI_LINE_BREAK_REGEX = "\\\\$\\s*^[ +-]\\s*";
-        Pattern pattern = Pattern.compile(MULTI_LINE_BREAK_REGEX, Pattern.MULTILINE);
-        return pattern.matcher(fullDiff).replaceAll("");
+        return new PatchDiff(commitDiff, diffEntry, diffToRemember, diffTree);
     }
 
     /**
@@ -332,6 +320,8 @@ public class GitDiffer {
             treeWalk.addTree(tree);
             treeWalk.setRecursive(true);
             treeWalk.setFilter(PathFilter.create(filename));
+
+            // Look for the first file that matches filename.
             if (!treeWalk.next()) {
                 throw new IOException("Could not obtain full diff of file " + filename + " before commit " + commit + "!");
             }

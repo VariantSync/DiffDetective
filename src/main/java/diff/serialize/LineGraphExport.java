@@ -5,7 +5,7 @@ import diff.CommitDiff;
 import diff.PatchDiff;
 import diff.difftree.DiffTree;
 import diff.difftree.render.DiffTreeRenderer;
-import diff.difftree.render.ErrorRendering;
+import diff.difftree.render.PatchDiffRenderer;
 import diff.difftree.serialize.DiffTreeLineGraphExporter;
 import diff.difftree.transform.DiffTreeTransformer;
 import org.pmw.tinylog.Logger;
@@ -47,11 +47,11 @@ public class LineGraphExport {
         }
 
         public static BiConsumer<PatchDiff, Exception> RenderError() {
-            final ErrorRendering errorRenderer = new ErrorRendering(DiffTreeRenderer.WithinDiffDetective());
+            final PatchDiffRenderer errorRenderer = PatchDiffRenderer.ErrorRendering(DiffTreeRenderer.WithinDiffDetective());
             return (p, e) -> {
                 Logger.error(e);
                 Logger.error("Rendering patch");
-                errorRenderer.onError(p);
+                errorRenderer.render(p);
             };
         }
 

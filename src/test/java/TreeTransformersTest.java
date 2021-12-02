@@ -94,7 +94,6 @@ public class TreeTransformersTest {
 
     private void testCommit(String file, String commitHash) throws IOException {
         final Repository marlin = DefaultRepositories.stanciulescuMarlinZip(Path.of("."));
-        marlin.setSaveMemory(true);
 
         final Git git = marlin.load();
         assert git != null;
@@ -107,7 +106,7 @@ public class TreeTransformersTest {
                 marlin.getDiffFilter(),
                 parentCommit,
                 childCommit,
-                !marlin.shouldSaveMemory());
+                marlin.getDebugOptions());
 
         for (final PatchDiff pd : commitDiff.getPatchDiffs()) {
             if (file.equals(pd.getFileName())) {

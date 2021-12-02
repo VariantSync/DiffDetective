@@ -20,7 +20,7 @@ public class ChangePCAtomicPattern extends AtomicPattern {
         int remAmount = codeNode.getRemAmount();
         if (addAmount > 0 && remAmount > 0){
             return true;
-        } else if (addAmount == 0 && remAmount == 0 && codeNode.getAfterDepth() == codeNode.getBeforeDepth()) {
+        } else if (addAmount == 0 && remAmount == 0 && codeNode.getAfterAnnotationDepth() == codeNode.getBeforeAnnotationDepth()) {
             DiffNode currentBefore = codeNode.getBeforeParent();
             DiffNode currentAfter = codeNode.getAfterParent();
             while(!currentBefore.isRoot() || !currentAfter.isRoot()) {

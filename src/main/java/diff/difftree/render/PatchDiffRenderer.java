@@ -8,7 +8,7 @@ import util.IO;
 import java.io.IOException;
 import java.nio.file.Path;
 
-public class ErrorRendering {
+public class PatchDiffRenderer {
     public static final DiffTreeRenderer.RenderOptions ErrorDiffTreeRenderOptions = new DiffTreeRenderer.RenderOptions(
             LineGraphExport.NodePrintStyle.Debug,
             true,
@@ -20,24 +20,24 @@ public class ErrorRendering {
             true
     );
 
-    private final Path errorDirectory;
+    private final Path outDirectory;
     private final DiffTreeRenderer renderer;
     private final DiffTreeRenderer.RenderOptions options;
 
-    public ErrorRendering(final Path errorDirectory, final DiffTreeRenderer renderer, DiffTreeRenderer.RenderOptions options) {
-        this.errorDirectory = errorDirectory;
+    public PatchDiffRenderer(final Path outDirectory, final DiffTreeRenderer renderer, DiffTreeRenderer.RenderOptions options) {
+        this.outDirectory = outDirectory;
         this.renderer = renderer;
         this.options = options;
     }
 
-    public ErrorRendering(final DiffTreeRenderer renderer) {
-        this(Path.of("error"), renderer, ErrorDiffTreeRenderOptions);
+    public static PatchDiffRenderer ErrorRendering(final DiffTreeRenderer renderer) {
+        return new PatchDiffRenderer(Path.of("error"), renderer, ErrorDiffTreeRenderOptions);
     }
 
-    public void onError(final PatchDiff patch) {
-        renderer.render(patch, errorDirectory, options);
+    public void render(final PatchDiff patch) {
+        renderer.render(patch, outDirectory, options);
         try {
-            IO.write(errorDirectory.resolve(patch.getFileName() + ".diff"), patch.getFullDiff());
+            IO.write(outDirectory.resolve(patch.getFileName() + ".diff"), patch.getFullDiff());
         } catch (IOException e) {
             Logger.error(e);
         }
