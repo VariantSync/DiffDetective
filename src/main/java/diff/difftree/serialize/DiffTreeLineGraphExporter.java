@@ -29,6 +29,8 @@ public class DiffTreeLineGraphExporter {
 
         final int nodeId = node.getID();
         nodesString
+				.append(LineGraphConstants.LG_NODE + " ")
+				.append(node.getID())
                 .append(options.nodeParser().writeNodeToLineGraph(node))
                 .append(StringUtils.LINEBREAK);
 

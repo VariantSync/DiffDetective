@@ -1,12 +1,10 @@
-import diff.CommitDiff;
-import diff.PatchDiff;
 import diff.difftree.CommitDiffDiffTreeSource;
 import diff.difftree.DiffTree;
 import diff.difftree.LineGraphImport;
 import diff.difftree.serialize.DiffTreeLineGraphExportOptions;
 import diff.difftree.serialize.DiffTreeLineGraphImportOptions;
 import diff.difftree.serialize.GraphFormat;
-import diff.difftree.serialize.nodeformat.CodeDiffNodeLineGraphImporter;
+import diff.difftree.serialize.nodeformat.LabelOnlyDiffNodeLineGraphImporter;
 import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
 import diff.difftree.serialize.treeformat.DiffTreeLabelFormat;
 import diff.serialize.LineGraphExport;
@@ -14,7 +12,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
 import org.junit.Test;
 import org.pmw.tinylog.Logger;
@@ -22,7 +19,7 @@ import util.IO;
 import util.StringUtils;
 
 /**
- * For testing the import of a lin graph.
+ * For testing the import of a line graph.
  */
 public class LineGraphTest {
 	
@@ -43,7 +40,7 @@ public class LineGraphTest {
 	private static void importLineGraph(final GraphFormat format, String filePath) {
 		String lineGraph = readLineGraphFile(filePath);
 		CommitDiffDiffTreeLabelFormat treeLabel = new CommitDiffDiffTreeLabelFormat();
-		CodeDiffNodeLineGraphImporter nodeLabel = new CodeDiffNodeLineGraphImporter();
+		LabelOnlyDiffNodeLineGraphImporter nodeLabel = new LabelOnlyDiffNodeLineGraphImporter();
 		DiffTreeLineGraphImportOptions options = new DiffTreeLineGraphImportOptions(format,
 				treeLabel,
 				nodeLabel
@@ -78,19 +75,17 @@ public class LineGraphTest {
 		treeList.stream().forEachOrdered(t -> t.assertConsistency());
 	}
 	
-	private static void compareDiffTrees(List<DiffTree> treeList, String inputFile, GraphFormat format, CommitDiffDiffTreeLabelFormat treeLabel, CodeDiffNodeLineGraphImporter nodeLabel) {
+	private static void compareDiffTrees(List<DiffTree> treeList, String inputFile, GraphFormat format, CommitDiffDiffTreeLabelFormat treeLabel, LabelOnlyDiffNodeLineGraphImporter nodeLabel) {
 		DiffTreeLineGraphExportOptions options = new DiffTreeLineGraphExportOptions(format, 
 				new CommitDiffDiffTreeLabelFormat(), 
-				new CodeDiffNodeLineGraphImporter()
+				new LabelOnlyDiffNodeLineGraphImporter()
 				);
         final StringBuilder lineGraphOutput = new StringBuilder();
 
         for (var tree : treeList) {
         	CommitDiffDiffTreeSource source = (CommitDiffDiffTreeSource) tree.getSource();
-//        	CommitDiffDiffTreeSource source = (CommitDiffDiffTreeSource) treeLabel.readTreeHeaderFromLineGraph(line);
         	
         	lineGraphOutput
-        		// TODO trying to restore the tree header
 				.append(DiffTreeLabelFormat.setRawTreeLabel(options.treeParser().writeTreeHeaderToLineGraph(source))) // print "t # $LABEL"
 				.append(StringUtils.LINEBREAK)
 				.append(LineGraphExport.toLineGraphFormat(tree, options).getValue())

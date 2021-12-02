@@ -16,7 +16,7 @@ public class CommitDiffDiffTreeLabelFormat implements DiffTreeLabelFormat {
 
 	@Override
 	public DiffTreeSource readTreeHeaderFromLineGraph(final String lineGraphLine) {
-		String[] commit = lineGraphLine.split(LineGraphConstants.TREE_NAME_SEPARATOR);
+		String[] commit = lineGraphLine.split("\\$\\$\\$");
 		try {
 			Path filePath = Paths.get(commit[0]);
 			String commitHash = commit[1];

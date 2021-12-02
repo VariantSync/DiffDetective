@@ -132,12 +132,12 @@ public class LineGraphImport {
 	}
 	
 	private static DiffTree parseDiffTree(final String lineGraph, final List<DiffNode> diffNodeList, final DiffTreeLineGraphImportOptions options) {
+		String treeLabel = DiffTreeLabelFormat.extractRawTreeLabel(lineGraph);
+		DiffTreeSource diffTreeSource = options.treeParser().readTreeHeaderFromLineGraph(treeLabel);
 		// Handle trees and graphs differently
 		if (options.format() == GraphFormat.DIFFGRAPH) {
 			// If you should interpret the input data as DiffTrees, always expect a root to be present. Parse all nodes (v) to a list of nodes. Search for the root. Assert that there is exactly one root.
 			Assert.assertTrue(diffNodeList.stream().noneMatch(DiffNode::isRoot)); // test if it’s not a tree
-			String treeLabel = DiffTreeLabelFormat.extractRawTreeLabel(lineGraph);
-			DiffTreeSource diffTreeSource = options.treeParser().readTreeHeaderFromLineGraph(treeLabel);
 			return DiffGraph.fromNodes(diffNodeList, diffTreeSource); 
 		} else if (options.format() == GraphFormat.DIFFTREE) {
 			// If you should interpret the input data as DiffTrees, always expect a root to be present. Parse all nodes (v) to a list of nodes. Search for the root. Assert that there is exactly one root.
@@ -150,7 +150,7 @@ public class LineGraphImport {
 				}
 			}
 			Assert.assertTrue(rootCount == 1);// test if it’s a tree
-			return new DiffTree(root);
+			return new DiffTree(root, diffTreeSource);
 		} else {
 			throw new RuntimeException("Unsupported GraphFormat");
 		}
