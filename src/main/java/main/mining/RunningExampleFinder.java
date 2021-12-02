@@ -36,7 +36,7 @@ public class RunningExampleFinder {
 
                 // We want to have annotated code and not annotated macros.
                 // This could maybe be addressed by our new issue.
-                if (!hasAnnotatedMacros(diffTree)) {
+                if (hasAnnotatedMacros(diffTree)) {
                     return false;
                 }
 
