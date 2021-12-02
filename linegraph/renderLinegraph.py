@@ -21,6 +21,10 @@ NODE_POSITION_LAYOUT = "dot"
 # NODE_POSITION_LAYOUT = "patchwork"
 POS_SCALING_X = 1
 POS_SCALING_Y = -1
+FIG_WIDTH = 4
+FIG_HEIGHT = 2.5
+# FIG_WIDTH = 10
+# FIG_HEIGHT = 10
 
 # constants from our Java code
 JAVA_TREE_NAME_SEPARATOR = "$$$"
@@ -53,7 +57,7 @@ FONT_SIZE = 3
 # other parameters
 IS_PATTERN = False
 ATOMICS = False
-
+WITH_TITLE = False
 
 def lineNoOfNode(v):
     # inverse of DiffNode::getID in our Java code
@@ -137,15 +141,17 @@ def load_as_line_graph(input_file):
 
 # Plot graphs
 def plot_graphs(S, exportDir):
-    plt.figure(0, figsize=(6,3))
+    # plt.figure(0, figsize=(FIG_WIDTH,2.5))
+    plt.figure(0, figsize=(FIG_WIDTH, FIG_HEIGHT))
+    # plt.figure(0)
     for i in range(len(S)):
         difftree = S[i]
 
         # print("Render tree", difftree.name.replace("\n", JAVA_TREE_NAME_SEPARATOR))
 
         plt.clf()
-        # plt.margins(0.05, 0.05)
-        plt.title(S[i].name)
+        if WITH_TITLE:
+            plt.title(S[i].name)
 
         node_colors = []
         node_type_colors = []
