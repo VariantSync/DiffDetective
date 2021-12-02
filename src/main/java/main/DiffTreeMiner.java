@@ -46,7 +46,7 @@ public class DiffTreeMiner {
         final Path outputPath = Paths.get("linegraph", "data", "difftrees.lg");
         
         final DiffTreeLineGraphExportOptions exportOptions = new DiffTreeLineGraphExportOptions(
-                  GraphFormat.DIFFGRAPH
+                  GraphFormat.DIFFTREE
                 , new CommitDiffDiffTreeLabelFormat()
                 , new MiningDiffNodeLineGraphImporter()
                 , true

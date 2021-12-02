@@ -109,7 +109,13 @@ public class LineGraphImport {
 				// ignore blank spaces
 				if (!ln.trim().equals("")) {
 					input.close();
-					throw new IllegalArgumentException("Line graph contains an syntax error: " + ln);
+					String errorMessage = String.format(
+							"Line graph syntax error. Expects: \"%s\" (DiffTree), \"%s\" (DiffNode), \"%s\" (edge) or a blank space (delimiter). Faulty input: \"%s\".", 
+							LineGraphConstants.LG_TREE_HEADER, 
+							LineGraphConstants.LG_NODE, 
+							LineGraphConstants.LG_EDGE, 
+							ln);
+					throw new IllegalArgumentException(errorMessage);
 				}
 			}
 		}
@@ -129,7 +135,8 @@ public class LineGraphImport {
 		if (options.format() == GraphFormat.DIFFGRAPH) {
 			// If you should interpret the input data as DiffTrees, always expect a root to be present. Parse all nodes (v) to a list of nodes. Search for the root. Assert that there is exactly one root.
 			Assert.assertTrue(diffNodeList.stream().noneMatch(DiffNode::isRoot)); // test if it’s not a tree
-			DiffTreeSource diffTreeSource = options.treeParser().readTreeHeaderFromLineGraph(lineGraph);
+			String treeLabel = options.treeParser().extractRawTreeLabel(lineGraph);
+			DiffTreeSource diffTreeSource = options.treeParser().readTreeHeaderFromLineGraph(treeLabel);
 			return DiffGraph.fromNodes(diffNodeList, diffTreeSource); 
 		} else if (options.format() == GraphFormat.DIFFTREE) {
 			// If you should interpret the input data as DiffTrees, always expect a root to be present. Parse all nodes (v) to a list of nodes. Search for the root. Assert that there is exactly one root.
@@ -144,7 +151,7 @@ public class LineGraphImport {
 			Assert.assertTrue(rootCount == 1);// test if it’s a tree
 			return new DiffTree(root);
 		} else {
-			throw new RuntimeException("Faulty GraphFormat");
+			throw new RuntimeException("Unsupported GraphFormat");
 		}
 	}
 	

@@ -52,7 +52,7 @@ public class LineGraphExport {
                 if (!patchDiffLg.getValue().isEmpty()) {
                     lineGraph
 //                        .append("t # ").append(treeCounter)
-                    		.append(options.treeParser().writeTreeHeaderToLineGraph(patchDiff))
+            				.append(options.treeParser().setRawTreeLabel(options.treeParser().writeTreeHeaderToLineGraph(patchDiff))) // print "t # $LABEL"
                             .append(StringUtils.LINEBREAK)
                             .append(patchDiffLg.getValue())
                             .append(StringUtils.LINEBREAK)

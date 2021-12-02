@@ -6,8 +6,8 @@ import diff.difftree.DiffTree;
 import diff.difftree.LineGraphConstants;
 import diff.difftree.serialize.DiffTreeLineGraphExportOptions;
 import diff.difftree.serialize.GraphFormat;
+import diff.difftree.serialize.nodeformat.DebugDiffNodeLineGraphImporter;
 import diff.difftree.serialize.nodeformat.DiffTreeNodeLabelFormat;
-import diff.difftree.serialize.nodeformat.MiningDiffNodeLineGraphImporter;
 import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
 import diff.difftree.serialize.treeformat.DiffTreeLabelFormat;
 import diff.serialize.DiffTreeSerializeDebugData;
@@ -45,9 +45,9 @@ public class DiffTreeRenderer {
             int fontsize,
             boolean withlabels) {
         public static RenderOptions DEFAULT = new RenderOptions(
-        		GraphFormat.DIFFGRAPH,
+        		GraphFormat.DIFFTREE,
         		new CommitDiffDiffTreeLabelFormat(),
-                new MiningDiffNodeLineGraphImporter(),
+                new DebugDiffNodeLineGraphImporter(),
                 true,
                 300,
                 700,

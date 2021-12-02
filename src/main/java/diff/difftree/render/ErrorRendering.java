@@ -2,19 +2,18 @@ package diff.difftree.render;
 
 import diff.PatchDiff;
 import diff.difftree.serialize.GraphFormat;
-import diff.difftree.serialize.nodeformat.MiningDiffNodeLineGraphImporter;
+import diff.difftree.serialize.nodeformat.DebugDiffNodeLineGraphImporter;
 import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
+import java.io.IOException;
+import java.nio.file.Path;
 import org.pmw.tinylog.Logger;
 import util.IO;
 
-import java.io.IOException;
-import java.nio.file.Path;
-
 public class ErrorRendering {
     public static final DiffTreeRenderer.RenderOptions ErrorDiffTreeRenderOptions = new DiffTreeRenderer.RenderOptions(
-            GraphFormat.DIFFGRAPH,
+            GraphFormat.DIFFTREE,
             new CommitDiffDiffTreeLabelFormat(),
-            new MiningDiffNodeLineGraphImporter(),
+            new DebugDiffNodeLineGraphImporter(),
             true,
             1000,
             DiffTreeRenderer.RenderOptions.DEFAULT.nodesize()/3,

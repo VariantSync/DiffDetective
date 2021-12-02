@@ -8,11 +8,6 @@ import diff.difftree.DiffNode;
  */
 public class TypeDiffNodeLineGraphImporter implements DiffTreeNodeLabelFormat {
 
-	@Override
-	public DiffNode readNodeFromLineGraph(final String lineGraphNodeLabel, final int nodeId) {
-		throw new RuntimeException("Node style ‘TYPE’ is not supported to be read from. Too less information given to restore DiffNode.");
-	}
-
 	// TODO write tests for this node label
 	@Override
 	public String writeNodeToLineGraph(final DiffNode node) {
