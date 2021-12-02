@@ -6,6 +6,7 @@ import diff.PatchDiff;
 import diff.difftree.DiffTree;
 import diff.difftree.serialize.DiffTreeLineGraphExportOptions;
 import diff.difftree.serialize.DiffTreeLineGraphExporter;
+import diff.difftree.serialize.treeformat.DiffTreeLabelFormat;
 import diff.difftree.transform.DiffTreeTransformer;
 import org.pmw.tinylog.Logger;
 import util.StringUtils;
@@ -52,7 +53,7 @@ public class LineGraphExport {
                 if (!patchDiffLg.getValue().isEmpty()) {
                     lineGraph
 //                        .append("t # ").append(treeCounter)
-            				.append(options.treeParser().setRawTreeLabel(options.treeParser().writeTreeHeaderToLineGraph(patchDiff))) // print "t # $LABEL"
+            				.append(DiffTreeLabelFormat.setRawTreeLabel(options.treeParser().writeTreeHeaderToLineGraph(patchDiff))) // print "t # $LABEL"
                             .append(StringUtils.LINEBREAK)
                             .append(patchDiffLg.getValue())
                             .append(StringUtils.LINEBREAK)

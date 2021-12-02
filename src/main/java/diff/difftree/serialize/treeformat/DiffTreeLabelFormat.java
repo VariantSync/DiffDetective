@@ -30,7 +30,7 @@ public interface DiffTreeLabelFormat {
 	 * @param lineGraphNodeLine The tree label to be extracted
 	 * @return The tree label
 	 */
-	public default String extractRawTreeLabel(String lineGraphNodeLine) {
+	public static String extractRawTreeLabel(String lineGraphNodeLine) {
 		return lineGraphNodeLine.substring((LineGraphConstants.LG_TREE_HEADER + " ").length());
 	}
 	
@@ -40,7 +40,7 @@ public interface DiffTreeLabelFormat {
 	 * @param lineGraphNodeLine The tree label
 	 * @return The entire line graph line of a {@link DiffTreeSource}.
 	 */
-	public default String setRawTreeLabel(String lineGraphNodeLine) {
+	public static String setRawTreeLabel(String lineGraphNodeLine) {
 		return LineGraphConstants.LG_TREE_HEADER + " " + lineGraphNodeLine;
 	}
 	
