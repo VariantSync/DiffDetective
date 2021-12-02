@@ -1,3 +1,4 @@
+import diff.difftree.DiffNode;
 import diff.difftree.DiffTree;
 import diff.difftree.LineGraphImport;
 import diff.difftree.serialize.DiffTreeLineGraphImportOptions;
@@ -10,6 +11,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 import org.junit.Test;
 
 public class LineGraphTest {
@@ -22,6 +24,14 @@ public class LineGraphTest {
 	@Test
 	public void importLineGraphDiffTree() {
 		importLineGraph(GraphFormat.DIFFTREE);
+	}
+	
+	@Test
+	public void nodeIdTest() {
+		for (int i = 0; i < 100; ++i) {
+			int failId = ThreadLocalRandom.current().nextInt(0, 1000 + 1);
+			DiffNode.fromID(failId); // crash
+		}
 	}
 	
 	private static void importLineGraph(GraphFormat format) {
