@@ -1,0 +1,3 @@
+Child commit: a899418167264c7bac574b1a0f1b2c26c5b0995a
+Parent commit: d770e558e21961ad6cfdf0ff7df0eb5d7d4f0754
+File: include/linux/irqdesc.h

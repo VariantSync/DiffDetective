@@ -8,9 +8,9 @@ import sys
 # + install graphviz on your system: https://www.graphviz.org/download/
 
 # format
-OUTPUT_FORMAT = ".png"
+# OUTPUT_FORMAT = ".png"
 # OUTPUT_FORMAT = ".svg"
-# OUTPUT_FORMAT = ".pdf"
+OUTPUT_FORMAT = ".pdf"
 NODE_POSITION_LAYOUT = "dot"
 # NODE_POSITION_LAYOUT = "circo"
 # NODE_POSITION_LAYOUT = "sfdp"
@@ -21,7 +21,7 @@ NODE_POSITION_LAYOUT = "dot"
 # NODE_POSITION_LAYOUT = "patchwork"
 POS_SCALING_X = 1
 POS_SCALING_Y = -1
-FIG_WIDTH = 4
+FIG_WIDTH = 3.5
 FIG_HEIGHT = 2.5
 # FIG_WIDTH = 10
 # FIG_HEIGHT = 10
