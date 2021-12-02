@@ -1,7 +1,9 @@
 package diff.difftree.render;
 
 import diff.PatchDiff;
-import diff.difftree.serialize.DiffTreeNodeLabelFormat;
+import diff.difftree.serialize.GraphFormat;
+import diff.difftree.serialize.nodeformat.MiningDiffNodeLineGraphImporter;
+import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
 import org.pmw.tinylog.Logger;
 import util.IO;
 
@@ -10,7 +12,9 @@ import java.nio.file.Path;
 
 public class ErrorRendering {
     public static final DiffTreeRenderer.RenderOptions ErrorDiffTreeRenderOptions = new DiffTreeRenderer.RenderOptions(
-            DiffTreeNodeLabelFormat.NodePrintStyle.Debug,
+            GraphFormat.DIFFGRAPH,
+            new CommitDiffDiffTreeLabelFormat(),
+            new MiningDiffNodeLineGraphImporter(),
             true,
             1000,
             DiffTreeRenderer.RenderOptions.DEFAULT.nodesize()/3,

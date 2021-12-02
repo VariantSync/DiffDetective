@@ -3,10 +3,7 @@ package diff.difftree.serialize;
 import diff.difftree.DiffNode;
 import diff.difftree.DiffTree;
 import diff.difftree.LineGraphConstants;
-import diff.difftree.serialize.nodeformat.DiffTreeNodeLabelFormat;
-import diff.difftree.serialize.nodeformat.MiningDiffNodeLineGraphImporter;
 import diff.serialize.DiffTreeSerializeDebugData;
-import diff.serialize.LineGraphExport;
 import util.StringUtils;
 
 public class DiffTreeLineGraphExporter {
@@ -14,21 +11,16 @@ public class DiffTreeLineGraphExporter {
     private final StringBuilder edgesString = new StringBuilder();
 
     private final DiffTree diffTree;
-    
-    /**
-     * The format in which the nodes are printed to the line graph.
-     */
-    private final DiffTreeNodeLabelFormat nodeLabelFormatter;
 
     private final DiffTreeSerializeDebugData debugData;
 
     public DiffTreeLineGraphExporter(DiffTree treeToExport) {
         this.diffTree = treeToExport;
         this.debugData = new DiffTreeSerializeDebugData();
-        nodeLabelFormatter =  // TODO format kommt in die Options
     }
 
-    private void visit(DiffNode node, LineGraphExport.Options options) {
+    private void visit(DiffNode node, DiffTreeLineGraphExportOptions options) {
+    	
         switch (node.diffType) {
             case ADD -> ++debugData.numExportedAddNodes;
             case REM -> ++debugData.numExportedRemNodes;
@@ -37,7 +29,7 @@ public class DiffTreeLineGraphExporter {
 
         final int nodeId = node.getID();
         nodesString
-                .append(nodeLabelFormatter.writeNodeToLineGraph(node))
+                .append(options.nodeParser().writeNodeToLineGraph(node))
                 .append(StringUtils.LINEBREAK);
 
         final DiffNode beforeParent = node.getBeforeParent();
@@ -64,7 +56,7 @@ public class DiffTreeLineGraphExporter {
         }
     }
 
-    public String export(LineGraphExport.Options options) {
+    public String export(DiffTreeLineGraphExportOptions options) {
         diffTree.forAll(n -> visit(n, options));
         final String result = nodesString.toString() + edgesString;
         StringUtils.clear(nodesString);

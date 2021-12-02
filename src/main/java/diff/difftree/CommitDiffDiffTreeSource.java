@@ -1,16 +1,18 @@
 package diff.difftree;
 
+import java.nio.file.Path;
+
 public class CommitDiffDiffTreeSource implements DiffTreeSource {
 
-	private final String fileName;
+	private final Path fileName;
 	private final String commitHash;
 	
-	public CommitDiffDiffTreeSource(String fileName, String commitHash) {
+	public CommitDiffDiffTreeSource(final Path fileName, final String commitHash) {
 		this.fileName = fileName;
 		this.commitHash = commitHash;
 	}
 	
-	public String getFileName() {
+	public Path getFileName() {
 		return fileName;
 	}
 	

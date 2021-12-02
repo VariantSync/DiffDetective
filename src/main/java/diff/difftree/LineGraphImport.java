@@ -3,7 +3,6 @@ package diff.difftree;
 import diff.difftree.serialize.DiffTreeLineGraphImportOptions;
 import diff.difftree.serialize.GraphFormat;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import util.Assert;
@@ -26,18 +25,18 @@ public class LineGraphImport {
 		// All DiffTrees read from the line graph
 		List<DiffTree> diffTreeList = new ArrayList<>();
 		
-		String previousDiffTreeLine = "";
-		
 		// All DiffNodes of one DiffTree for determining the root node
 		List<DiffNode> diffNodeList = new ArrayList<>();
 		
 		// A hash map of DiffNodes
 		// <id of DiffNode, DiffNode>
 		HashMap<Integer,DiffNode> diffNodes = new HashMap<>();
-		
+
 		// The currently read DiffTree with all its DiffNodes and edges
 		DiffTree curDiffTree = null;
 		
+		// The previously read DiffTree
+		String previousDiffTreeLine = "";
 		
 		// Read the entire line graph 
 		while (input.hasNext()) {
@@ -45,18 +44,15 @@ public class LineGraphImport {
 			if (ln.startsWith(LineGraphConstants.LG_TREE_HEADER)) {
 				// the line represents a DiffTree
 				
-				if (!previousDiffTreeLine.equals("")) {
+				if (!diffNodeList.isEmpty()) {
 					curDiffTree = parseDiffTree(previousDiffTreeLine, diffNodeList, options); // parse to DiffTree
 					diffTreeList.add(curDiffTree); // add newly computed DiffTree to the list of all DiffTrees
-				}
 					
-				// set new DiffTree
+					// Remove all DiffNodes from list
+					diffNodeList.clear();
+					diffNodes.clear();	
+				} 
 				previousDiffTreeLine = ln;
-				
-				// Remove all DiffNodes from list
-				diffNodeList.clear();
-				diffNodes.clear();	
-				
 			} else if (ln.startsWith(LineGraphConstants.LG_NODE)) {
 				// the line represents a DiffNode
 				
@@ -81,8 +77,14 @@ public class LineGraphImport {
 				DiffNode childNode = diffNodes.get(Integer.parseInt(fromNodeId));
 				DiffNode parentNode = diffNodes.get(Integer.parseInt(toNodeId));
 
-				if (childNode == null) throw new IllegalArgumentException(fromNodeId + " does not exits. Faulty line graph.");
-				if (parentNode == null) throw new IllegalArgumentException(toNodeId + " does not exits. Faulty line graph.");
+				if (childNode == null) {
+					input.close();
+					throw new IllegalArgumentException(fromNodeId + " does not exits. Faulty line graph.");
+				}
+				if (parentNode == null) {
+					input.close();
+					throw new IllegalArgumentException(toNodeId + " does not exits. Faulty line graph.");
+				}
 				
 				switch (name) {
 				// Nothing has been changed. The child-parent relationship remains the same
@@ -105,13 +107,15 @@ public class LineGraphImport {
 				}
 			} else {
 				// ignore blank spaces
-				if (!ln.trim().equals("")) throw new IllegalArgumentException("Line graph contains an syntax error: " + ln);
+				if (!ln.trim().equals("")) {
+					input.close();
+					throw new IllegalArgumentException("Line graph contains an syntax error: " + ln);
+				}
 			}
 		}
-		
 		input.close();
-		
-		if (!previousDiffTreeLine.equals("")) {
+
+		if (!diffNodeList.isEmpty()) {
 			curDiffTree = parseDiffTree(previousDiffTreeLine, diffNodeList, options); // parse to DiffTree
 			diffTreeList.add(curDiffTree); // add newly computed DiffTree to the list of all DiffTrees
 		}
@@ -126,18 +130,18 @@ public class LineGraphImport {
 			// If you should interpret the input data as DiffTrees, always expect a root to be present. Parse all nodes (v) to a list of nodes. Search for the root. Assert that there is exactly one root.
 			Assert.assertTrue(diffNodeList.stream().noneMatch(DiffNode::isRoot)); // test if it’s not a tree
 			DiffTreeSource diffTreeSource = options.treeParser().readTreeHeaderFromLineGraph(lineGraph);
-			return DiffGraph.fromNodes((Collection<DiffNode>) diffNodeList, diffTreeSource); 
+			return DiffGraph.fromNodes(diffNodeList, diffTreeSource); 
 		} else if (options.format() == GraphFormat.DIFFTREE) {
 			// If you should interpret the input data as DiffTrees, always expect a root to be present. Parse all nodes (v) to a list of nodes. Search for the root. Assert that there is exactly one root.
-			int rootCounnt = 0;
+			int rootCount = 0;
 			DiffNode root = null;
 			for (DiffNode v : diffNodeList) { 
 				if (v.isRoot()) {
-					rootCounnt++; 
+					rootCount++; 
 					root = v;
 				}
 			}
-			Assert.assertTrue(rootCounnt == 1);// test if it’s a tree
+			Assert.assertTrue(rootCount == 1);// test if it’s a tree
 			return new DiffTree(root);
 		} else {
 			throw new RuntimeException("Faulty GraphFormat");

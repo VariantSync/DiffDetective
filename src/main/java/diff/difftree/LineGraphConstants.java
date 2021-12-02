@@ -36,7 +36,7 @@ public class LineGraphConstants {
 	public final static String AFTER_PARENT = "a";
 
 	/**
-	 * An edge between two {@link DiffNode DiffNodes} that existed before the edit before.
+	 * An edge between two {@link DiffNode DiffNodes} that existed before the edit only.
 	 */
 	public final static String BEFORE_PARENT = "b";
 

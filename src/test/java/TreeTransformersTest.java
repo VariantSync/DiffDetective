@@ -6,7 +6,9 @@ import diff.PatchDiff;
 import diff.difftree.DiffTree;
 import diff.difftree.LineGraphConstants;
 import diff.difftree.render.DiffTreeRenderer;
-import diff.difftree.serialize.DiffTreeNodeLabelFormat;
+import diff.difftree.serialize.GraphFormat;
+import diff.difftree.serialize.nodeformat.MiningDiffNodeLineGraphImporter;
+import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
 import diff.difftree.transform.DiffTreeTransformer;
 import main.DiffTreeMiner;
 import main.Main;
@@ -30,7 +32,9 @@ public class TreeTransformersTest {
     private static final Path genDir = resDir.resolve("gen");
     private static final List<DiffTreeTransformer> transformers = DiffTreeMiner.PostProcessing;
     private static final DiffTreeRenderer.RenderOptions renderOptions = new DiffTreeRenderer.RenderOptions(
-            DiffTreeNodeLabelFormat.NodePrintStyle.Type,
+            GraphFormat.DIFFGRAPH,
+            new CommitDiffDiffTreeLabelFormat(),
+            new MiningDiffNodeLineGraphImporter(),
             false,
             500,
             50,
@@ -113,6 +117,7 @@ public class TreeTransformersTest {
         for (final PatchDiff pd : commitDiff.getPatchDiffs()) {
             if (file.equals(pd.getFileName())) {
                 transformAndRender(pd.getDiffTree(), file, commitHash);
+                revWalk.close();
                 return;
             }
         }

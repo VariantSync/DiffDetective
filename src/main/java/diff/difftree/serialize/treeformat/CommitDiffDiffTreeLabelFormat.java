@@ -5,6 +5,9 @@ import diff.PatchDiff;
 import diff.difftree.CommitDiffDiffTreeSource;
 import diff.difftree.DiffTreeSource;
 import diff.difftree.LineGraphConstants;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * A {@link DiffTreeLabelFormat} for {@link CommitDiff}.
@@ -15,9 +18,13 @@ public class CommitDiffDiffTreeLabelFormat implements DiffTreeLabelFormat {
 	public DiffTreeSource readTreeHeaderFromLineGraph(String lineGraphLine) {
 		lineGraphLine = lineGraphLine.substring(LineGraphConstants.LG_TREE_HEADER.length(), lineGraphLine.length() - 1);
 		String[] commit = lineGraphLine.split(LineGraphConstants.TREE_NAME_SEPARATOR);
-		String filePath = commit[0];
-		String commitHash = commit[1];
-		return new CommitDiffDiffTreeSource(filePath, commitHash);
+		try {
+			Path filePath = Paths.get(commit[0]);
+			String commitHash = commit[1];
+			return new CommitDiffDiffTreeSource(filePath, commitHash);
+		} catch (InvalidPathException e) { 
+			throw new RuntimeException("Syntax error. The path cannot be read: " + commit[0]);
+		}
 	}
 
 	@Override

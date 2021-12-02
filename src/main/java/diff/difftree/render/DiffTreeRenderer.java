@@ -4,7 +4,12 @@ import de.ovgu.featureide.fm.core.analysis.cnf.generator.configuration.util.Pair
 import diff.PatchDiff;
 import diff.difftree.DiffTree;
 import diff.difftree.LineGraphConstants;
-import diff.difftree.serialize.DiffTreeNodeLabelFormat;
+import diff.difftree.serialize.DiffTreeLineGraphExportOptions;
+import diff.difftree.serialize.GraphFormat;
+import diff.difftree.serialize.nodeformat.DiffTreeNodeLabelFormat;
+import diff.difftree.serialize.nodeformat.MiningDiffNodeLineGraphImporter;
+import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
+import diff.difftree.serialize.treeformat.DiffTreeLabelFormat;
 import diff.serialize.DiffTreeSerializeDebugData;
 import diff.serialize.LineGraphExport;
 import org.pmw.tinylog.Logger;
@@ -29,7 +34,9 @@ public class DiffTreeRenderer {
     private final Supplier<PythonCommand> pythonCommandFactory;
 
     public static record RenderOptions(
-            DiffTreeNodeLabelFormat.NodePrintStyle nodeStyle,
+    		GraphFormat format, 
+    		DiffTreeLabelFormat treeParser, 
+    		DiffTreeNodeLabelFormat nodeParser,
             boolean cleanUpTemporaryFiles,
             int dpi,
             int nodesize,
@@ -38,7 +45,9 @@ public class DiffTreeRenderer {
             int fontsize,
             boolean withlabels) {
         public static RenderOptions DEFAULT = new RenderOptions(
-                DiffTreeNodeLabelFormat.NodePrintStyle.Debug,
+        		GraphFormat.DIFFGRAPH,
+        		new CommitDiffDiffTreeLabelFormat(),
+                new MiningDiffNodeLineGraphImporter(),
                 true,
                 300,
                 700,
@@ -99,7 +108,7 @@ public class DiffTreeRenderer {
     }
 
     public boolean render(final DiffTree tree, final String treeAndFileName, final Path directory, RenderOptions options) {
-        final LineGraphExport.Options lgoptions = new LineGraphExport.Options(options.nodeStyle);
+        final DiffTreeLineGraphExportOptions lgoptions = new DiffTreeLineGraphExportOptions(options.format(), options.treeParser(), options.nodeParser());
 
         final Path tempFile = directory.resolve(treeAndFileName + ".lg");
 

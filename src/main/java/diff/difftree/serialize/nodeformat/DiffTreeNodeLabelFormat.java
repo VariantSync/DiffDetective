@@ -14,7 +14,11 @@ public interface DiffTreeNodeLabelFormat {
 	 * @param nodeId The id of the {@link DiffNode}
 	 * @return The corresponding {@link DiffNode}
 	 */
-	public DiffNode readNodeFromLineGraph(final String lineGraphNodeLabel, final int nodeId);
+	public default DiffNode readNodeFromLineGraph(final String lineGraphNodeLabel, final int nodeId) {
+	    final DiffNode diffNode = DiffNode.fromID(nodeId);
+	    diffNode.setLabel(lineGraphNodeLabel);
+	    return diffNode;
+	}
 	
 	/**
 	 * Converts a {@link DiffNode} into a {@link DiffNode} label of line graph.
