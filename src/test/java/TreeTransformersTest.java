@@ -4,9 +4,16 @@ import diff.CommitDiff;
 import diff.GitDiffer;
 import diff.PatchDiff;
 import diff.difftree.DiffTree;
+import diff.difftree.LineGraphConstants;
 import diff.difftree.render.DiffTreeRenderer;
+import diff.difftree.serialize.GraphFormat;
+import diff.difftree.serialize.nodeformat.TypeDiffNodeLineGraphImporter;
+import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
 import diff.difftree.transform.DiffTreeTransformer;
-import diff.serialize.LineGraphExport;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.function.Consumer;
 import main.DiffTreeMiner;
 import main.Main;
 import org.eclipse.jgit.api.Git;
@@ -18,18 +25,15 @@ import org.junit.Before;
 import org.junit.Test;
 import org.pmw.tinylog.Level;
 
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.List;
-import java.util.function.Consumer;
-
 public class TreeTransformersTest {
     private static final boolean RENDER = true;
     private static final Path resDir = Constants.RESOURCE_DIR.resolve("diffs/collapse");
     private static final Path genDir = resDir.resolve("gen");
     private static final List<DiffTreeTransformer> transformers = DiffTreeMiner.PostProcessing;
     private static final DiffTreeRenderer.RenderOptions renderOptions = new DiffTreeRenderer.RenderOptions(
-            LineGraphExport.NodePrintStyle.Type,
+            GraphFormat.DIFFTREE,
+            new CommitDiffDiffTreeLabelFormat(),
+            new TypeDiffNodeLineGraphImporter(),
             false,
             500,
             50,
@@ -48,7 +52,7 @@ public class TreeTransformersTest {
 
     private void transformAndRender(DiffTree diffTree, String name, String commit) {
         final DiffTreeRenderer renderer = DiffTreeRenderer.WithinDiffDetective();
-        final String treeName = name + LineGraphExport.TREE_NAME_SEPARATOR + commit;
+        final String treeName = name + LineGraphConstants.TREE_NAME_SEPARATOR + commit;
 
         INFO.accept("Original State");
         if (RENDER) {
@@ -112,6 +116,7 @@ public class TreeTransformersTest {
         for (final PatchDiff pd : commitDiff.getPatchDiffs()) {
             if (file.equals(pd.getFileName())) {
                 transformAndRender(pd.getDiffTree(), file, commitHash);
+                revWalk.close();
                 return;
             }
         }
