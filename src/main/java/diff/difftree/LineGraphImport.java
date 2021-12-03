@@ -12,7 +12,6 @@ import util.Assert;
 /**
  * Import patches from line graphs.
  */
-// TODO write tests
 public class LineGraphImport {
 	
 	/**
@@ -103,7 +102,6 @@ public class LineGraphImport {
 					break;
 				// A syntax error has occurred.
 				default:
-					// TODO custom exception
 					throw new RuntimeException("Syntax error. Invalid name in edge: " + ln);
 				}
 			} else {
@@ -131,6 +129,14 @@ public class LineGraphImport {
 		return diffTreeList;
 	}
 	
+	/**
+	 * Generates a {@link DiffTree} from given parameters.
+	 * 
+	 * @param lineGraph The line graph line to be parsed
+	 * @param diffNodeList The list of {@link DiffNode DiffNodes}
+	 * @param options {@link DiffTreeLineGraphImportOptions}
+	 * @return {@link DiffTree}
+	 */
 	private static DiffTree parseDiffTree(final String lineGraph, final List<DiffNode> diffNodeList, final DiffTreeLineGraphImportOptions options) {
 		String treeLabel = DiffTreeLabelFormat.extractRawTreeLabel(lineGraph);
 		DiffTreeSource diffTreeSource = options.treeParser().readTreeHeaderFromLineGraph(treeLabel);

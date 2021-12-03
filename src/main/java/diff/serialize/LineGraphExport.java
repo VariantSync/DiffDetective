@@ -4,6 +4,7 @@ import de.ovgu.featureide.fm.core.analysis.cnf.generator.configuration.util.Pair
 import diff.CommitDiff;
 import diff.PatchDiff;
 import diff.difftree.DiffTree;
+import diff.difftree.DiffTreeSource;
 import diff.difftree.serialize.DiffTreeLineGraphExportOptions;
 import diff.difftree.serialize.DiffTreeLineGraphExporter;
 import diff.difftree.serialize.treeformat.DiffTreeLabelFormat;
@@ -51,14 +52,7 @@ public class LineGraphExport {
                 debugData.mappend(patchDiffLg.getKey());
 
                 if (!patchDiffLg.getValue().isEmpty()) {
-                    lineGraph
-//                        .append("t # ").append(treeCounter)
-            				.append(DiffTreeLabelFormat.setRawTreeLabel(options.treeParser().writeTreeHeaderToLineGraph(patchDiff))) // print "t # $LABEL"
-                            .append(StringUtils.LINEBREAK)
-                            .append(patchDiffLg.getValue())
-                            .append(StringUtils.LINEBREAK)
-                            .append(StringUtils.LINEBREAK);
-
+                    composeTreeInLineGraph(lineGraph, patchDiff, patchDiffLg.getValue(), options);
                     ++treeCounter;
                 }
             } else {
@@ -68,4 +62,22 @@ public class LineGraphExport {
 
         return new Pair<>(debugData, treeCounter);
     }
+    
+    /**
+     * Compose a tree from a {@link DiffTree} with its {@link DiffNode DiffNodes} and edges.
+     * 
+     * @param lineGraph The string builder to write the result to
+     * @param source {@link DiffTreeSource}
+     * @param nodesAndEdges Result from {@link #toLineGraphFormat(DiffTree, DiffTreeLineGraphExportOptions)}
+     * @param options {@link DiffTreeLineGraphExportOptions}
+     */
+    public static void composeTreeInLineGraph(final StringBuilder lineGraph, final DiffTreeSource source, final String nodesAndEdges, final DiffTreeLineGraphExportOptions options) {
+    	lineGraph
+    		.append(DiffTreeLabelFormat.setRawTreeLabel(options.treeParser().writeTreeHeaderToLineGraph(source))) // print "t # $LABEL"
+    		.append(StringUtils.LINEBREAK)
+    		.append(nodesAndEdges)
+    		.append(StringUtils.LINEBREAK)
+    		.append(StringUtils.LINEBREAK);
+    }
+    
 }

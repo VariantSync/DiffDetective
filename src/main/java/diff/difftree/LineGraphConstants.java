@@ -16,6 +16,12 @@ public class LineGraphConstants {
 	public static final String TREE_NAME_SEPARATOR = "$$$";
 	
 	/**
+	 * Delimiter used in {@link DiffTree DiffTrees} for regular expressions.
+	 * @see {@link #TREE_NAME_SEPARATOR}
+	 */
+	public static final String TREE_NAME_SEPARATOR_REGEX = "\\$\\$\\$";
+	
+	/**
 	 * Declaration of a {@link DiffNode} in a line graph.
 	 */
 	public static final String LG_NODE = "v";

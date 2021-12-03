@@ -8,7 +8,6 @@ import diff.difftree.DiffNode;
  */
 public class TypeDiffNodeLineGraphImporter implements DiffTreeNodeLabelFormat {
 
-	// TODO write tests for this node label
 	@Override
 	public String writeNodeToLineGraph(final DiffNode node) {
 		return node.diffType + "_" + node.codeType;
