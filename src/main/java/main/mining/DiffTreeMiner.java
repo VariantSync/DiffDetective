@@ -32,7 +32,7 @@ public class DiffTreeMiner {
     public static final List<DiffTreeTransformer> PostProcessing = List.of(
 //            new NaiveMovedCodeDetection(), // do this first as it might introduce non-edited subtrees
             new CutNonEditedSubtrees(),
-            RunningExampleFinder.Default,
+//            RunningExampleFinder.Default,
             new CollapseNestedNonEditedMacros(),
             new CollapseAtomicPatterns(),
             new RelabelRoot(CodeType.IF.name)
@@ -82,7 +82,7 @@ public class DiffTreeMiner {
 
         final Path inputDir = Paths.get("..", "DiffDetectiveMining");
         final Path linuxDir = Paths.get("..", "variantevolution_datasets");
-        final Path outputDir = Paths.get("linegraph", "data");
+        final Path outputDir = Paths.get("results", "mining");
 
         final List<Repository> repos = List.of(
 //                DefaultRepositories.stanciulescuMarlinZip(Path.of("."))
@@ -104,8 +104,8 @@ public class DiffTreeMiner {
         final DiffTreeMiningStrategy miningStrategy =
 //                new MineAndExportIncrementally();
                 new CompositeDiffTreeMiningStrategy(
-                        new MineAndExportIncrementally(10000),
-                        new MiningMonitor(5)
+                        new MineAndExportIncrementally(1000),
+                        new MiningMonitor(10)
                 );
 
         /* ************************ *\

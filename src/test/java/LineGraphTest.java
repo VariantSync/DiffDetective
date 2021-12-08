@@ -3,7 +3,9 @@ import diff.difftree.DiffTree;
 import diff.difftree.serialize.*;
 import diff.difftree.serialize.nodeformat.LabelOnlyDiffNodeFormat;
 import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
+import org.junit.BeforeClass;
 import org.junit.Test;
+import org.pmw.tinylog.Logger;
 import util.FileUtils;
 
 import java.io.IOException;
@@ -29,19 +31,27 @@ public class LineGraphTest {
             IMPORT_OPTIONS.nodeFormat()
     );
 
-    private final static Path TEST_FILE = Paths.get("src/test/resources/line_graph/DiffTreeTestFile.lg");
+    private static List<Path> TEST_FILES;
+
+    @BeforeClass
+    public static void init() throws IOException {
+        TEST_FILES = Files.list(Paths.get("src/test/resources/line_graph")).toList();
+    }
 
 	/**
 	 * Test the import of a line graph.
 	 */
 	@Test
 	public void idempotentReadWrite() {
-        final String lineGraph = readLineGraphFile(TEST_FILE.toString());
-        final List<DiffTree> diffTrees = LineGraphImport.fromLineGraphFormat(lineGraph, IMPORT_OPTIONS);
-        assertConsistencyForAll(diffTrees);
-        diffTrees.forEach(d -> d.forAll(n -> System.out.println(n.getLabel())));
-        final String lineGraphResult = exportDiffTreeToLineGraph(diffTrees);
-        assertEqualFileContent(lineGraph, lineGraphResult);
+        for (final Path testFile : TEST_FILES) {
+            Logger.info("Testing " + testFile);
+            final String lineGraph = readLineGraphFile(testFile);
+            final List<DiffTree> diffTrees = LineGraphImport.fromLineGraphFormat(lineGraph, IMPORT_OPTIONS);
+            assertConsistencyForAll(diffTrees);
+//            diffTrees.forEach(d -> d.forAll(n -> System.out.println(n.getLabel())));
+            final String lineGraphResult = exportDiffTreeToLineGraph(diffTrees);
+            assertEqualFileContent(lineGraph, lineGraphResult);
+        }
 	}
 	
 	/**
@@ -50,9 +60,9 @@ public class LineGraphTest {
 	 * @param path Relative path to the line graph
 	 * @return The line graph as a string
 	 */
-	private static String readLineGraphFile(final String path) {
+	private static String readLineGraphFile(final Path path) {
 		try {
-			byte[] encoded = Files.readAllBytes(Paths.get(path));
+			byte[] encoded = Files.readAllBytes(path);
 			return new String(encoded, StandardCharsets.UTF_8);
 		} catch (IOException e) {
 			e.printStackTrace();
