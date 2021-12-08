@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -51,6 +52,34 @@ public class DiffTree {
     public DiffTree traverse(final DiffTreeVisitor visitor) {
         DiffTreeTraversal.with(visitor).visit(this);
         return this;
+    }
+
+    public boolean allMatch(final Predicate<DiffNode> condition) {
+        final AtomicBoolean all = new AtomicBoolean(true);
+        DiffTreeTraversal.with((traversal, subtree) -> {
+            if (condition.test(subtree)) {
+                traversal.visitChildrenOf(subtree);
+            } else {
+                all.set(false);
+            }
+        }).visit(this);
+        return all.get();
+    }
+
+    public boolean anyMatch(final Predicate<DiffNode> condition) {
+        final AtomicBoolean matchFound = new AtomicBoolean(false);
+        DiffTreeTraversal.with((traversal, subtree) -> {
+            if (condition.test(subtree)) {
+                matchFound.set(true);
+            } else {
+                traversal.visitChildrenOf(subtree);
+            }
+        }).visit(this);
+        return matchFound.get();
+    }
+
+    public boolean noneMatch(final Predicate<DiffNode> condition) {
+        return !anyMatch(condition);
     }
 
     public DiffNode getRoot() {

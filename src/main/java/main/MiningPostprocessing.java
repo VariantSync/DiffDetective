@@ -2,7 +2,9 @@ package main;
 
 import diff.difftree.DiffTree;
 import diff.difftree.render.DiffTreeRenderer;
-import diff.serialize.LineGraphExport;
+import diff.difftree.serialize.GraphFormat;
+import diff.difftree.serialize.nodeformat.LabelOnlyDiffNodeFormat;
+import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
 import mining.Postprocessor;
 import org.pmw.tinylog.Logger;
 import util.FileUtils;
@@ -21,7 +23,9 @@ import java.util.stream.Collectors;
 public class MiningPostprocessing {
     private static final DiffTreeRenderer DefaultRenderer = DiffTreeRenderer.WithinDiffDetective();
     private static final DiffTreeRenderer.RenderOptions DefaultRenderOptions = new DiffTreeRenderer.RenderOptions(
-            LineGraphExport.NodePrintStyle.LabelOnly,
+            GraphFormat.DIFFTREE,
+            new CommitDiffDiffTreeLabelFormat(),
+            new LabelOnlyDiffNodeFormat(),
             false,
             DiffTreeRenderer.RenderOptions.DEFAULT.dpi(),
             DiffTreeRenderer.RenderOptions.DEFAULT.nodesize(),
@@ -59,7 +63,7 @@ public class MiningPostprocessing {
      * Parses all linegraph files in the given directory as patterns (i.e., as DiffGraphs).
      * @param directory A directory containing linegraph files.
      * @return The list of all diffgraphs parsed from linegraph files in the given directory.
-     * @throws IOException If the directory could not be accessed ({@link Files.list}).
+     * @throws IOException If the directory could not be accessed ({@link Files::list}).
      */
     public static List<DiffTree> parseFrequentSubgraphsIn(final Path directory) throws IOException {
         return Files.list(directory)
