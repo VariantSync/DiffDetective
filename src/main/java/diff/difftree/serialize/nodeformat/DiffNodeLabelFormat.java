@@ -5,7 +5,7 @@ import diff.difftree.DiffNode;
 /**
  * Reads and writes {@link DiffNode DiffNodes} from and to line graph.
  */
-public interface DiffTreeNodeLabelFormat {
+public interface DiffNodeLabelFormat {
 
 	/**
 	 * Converts a label of line graph into a {@link DiffNode}.

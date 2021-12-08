@@ -1,7 +1,7 @@
 import diff.difftree.CommitDiffDiffTreeSource;
 import diff.difftree.DiffTree;
 import diff.difftree.serialize.*;
-import diff.difftree.serialize.nodeformat.DiffTreeNodeLabelFormat;
+import diff.difftree.serialize.nodeformat.DiffNodeLabelFormat;
 import diff.difftree.serialize.nodeformat.LabelOnlyDiffNodeFormat;
 import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
 import org.junit.Test;
@@ -36,7 +36,7 @@ public class LineGraphTest {
 	private static void importLineGraph(final GraphFormat format, Path filePath) {
 		String lineGraph = readLineGraphFile(filePath.toString());
 		CommitDiffDiffTreeLabelFormat treeLabel = new CommitDiffDiffTreeLabelFormat();
-		DiffTreeNodeLabelFormat nodeLabel = new LabelOnlyDiffNodeFormat();
+		DiffNodeLabelFormat nodeLabel = new LabelOnlyDiffNodeFormat();
 		DiffTreeLineGraphImportOptions options = new DiffTreeLineGraphImportOptions(format,
 				treeLabel,
 				nodeLabel
@@ -80,10 +80,10 @@ public class LineGraphTest {
 	 * @param treeList A list of {@link DiffTree DiffTrees}
 	 * @param format {@link GraphFormat}
 	 * @param treeLabel {@link CommitDiffDiffTreeLabelFormat}
-	 * @param nodeLabel {@link DiffTreeNodeLabelFormat}
+	 * @param nodeLabel {@link DiffNodeLabelFormat}
 	 * @return The computed line graph
 	 */
-	private static String exportDiffTreeToLineGraph(final List<DiffTree> treeList, final GraphFormat format, final CommitDiffDiffTreeLabelFormat treeLabel, final DiffTreeNodeLabelFormat nodeLabel) {
+	private static String exportDiffTreeToLineGraph(final List<DiffTree> treeList, final GraphFormat format, final CommitDiffDiffTreeLabelFormat treeLabel, final DiffNodeLabelFormat nodeLabel) {
 		DiffTreeLineGraphExportOptions options = new DiffTreeLineGraphExportOptions(format, 
 				treeLabel, 
 				nodeLabel

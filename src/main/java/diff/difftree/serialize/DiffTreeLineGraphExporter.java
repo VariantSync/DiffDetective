@@ -30,7 +30,8 @@ public class DiffTreeLineGraphExporter {
         nodesString
 				.append(LineGraphConstants.LG_NODE + " ")
 				.append(node.getID())
-                .append(options.nodeParser().writeNodeToLineGraph(node))
+                .append(" ")
+                .append(options.nodeFormat().writeNodeToLineGraph(node))
                 .append(StringUtils.LINEBREAK);
 
         final DiffNode beforeParent = node.getBeforeParent();

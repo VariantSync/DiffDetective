@@ -1,7 +1,6 @@
 package diff.difftree.serialize;
 
 import diff.difftree.*;
-import diff.difftree.serialize.treeformat.DiffTreeLabelFormat;
 import util.Assert;
 
 import java.util.ArrayList;
@@ -59,7 +58,7 @@ public class LineGraphImport {
 				// parse node from input line
 				int nodeId = parseDiffNodeHeaderId(ln);
 				String nodeLabel = parseDiffNodeHeaderLabel(ln);
-				DiffNode node = options.nodeParser().readNodeFromLineGraph(nodeLabel, nodeId);
+				DiffNode node = options.nodeFormat().readNodeFromLineGraph(nodeLabel, nodeId);
 			
 				// add DiffNode to lists of current DiffTree
 				diffNodeList.add(node);
@@ -135,8 +134,7 @@ public class LineGraphImport {
 	 * @return {@link DiffTree}
 	 */
 	private static DiffTree parseDiffTree(final String lineGraph, final List<DiffNode> diffNodeList, final DiffTreeLineGraphImportOptions options) {
-		String treeLabel = DiffTreeLabelFormat.extractRawTreeLabel(lineGraph);
-		DiffTreeSource diffTreeSource = options.treeParser().readTreeHeaderFromLineGraph(treeLabel);
+		final DiffTreeSource diffTreeSource = options.treeFormat().fromLineGraphLine(lineGraph);
 		// Handle trees and graphs differently
 		if (options.format() == GraphFormat.DIFFGRAPH) {
 			// If you should interpret the input data as DiffTrees, always expect a root to be present. Parse all nodes (v) to a list of nodes. Search for the root. Assert that there is exactly one root.
@@ -202,7 +200,7 @@ public class LineGraphImport {
 	/**
 	 * Returns the label of a {@link DiffNode} in line graph.
 	 * 
-	 * @param lineGraphLine
+	 * @param lineGraphLine A line in linegraph format to cut.
 	 * @param overheadOffset The length of the overhead in front of the node label. In other words, the number of characters that need to be removed ahead
 	 * @return The node label
 	 */

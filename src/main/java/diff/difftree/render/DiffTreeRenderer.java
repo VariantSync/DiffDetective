@@ -9,7 +9,7 @@ import diff.difftree.serialize.DiffTreeSerializeDebugData;
 import diff.difftree.serialize.GraphFormat;
 import diff.difftree.serialize.LineGraphExport;
 import diff.difftree.serialize.nodeformat.DebugDiffNodeFormat;
-import diff.difftree.serialize.nodeformat.DiffTreeNodeLabelFormat;
+import diff.difftree.serialize.nodeformat.DiffNodeLabelFormat;
 import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
 import diff.difftree.serialize.treeformat.DiffTreeLabelFormat;
 import org.pmw.tinylog.Logger;
@@ -36,7 +36,7 @@ public class DiffTreeRenderer {
     public record RenderOptions(
     		GraphFormat format, 
     		DiffTreeLabelFormat treeParser, 
-    		DiffTreeNodeLabelFormat nodeParser,
+    		DiffNodeLabelFormat nodeParser,
             boolean cleanUpTemporaryFiles,
             int dpi,
             int nodesize,

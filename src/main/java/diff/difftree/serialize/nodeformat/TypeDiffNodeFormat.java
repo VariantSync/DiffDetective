@@ -6,7 +6,7 @@ import diff.difftree.DiffNode;
  * A concrete implementation for Type of a node label.
  * Print CodeType and DiffType.
  */
-public class TypeDiffNodeFormat implements DiffTreeNodeLabelFormat {
+public class TypeDiffNodeFormat implements DiffNodeLabelFormat {
 
 	@Override
 	public String writeNodeToLineGraph(final DiffNode node) {
