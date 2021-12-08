@@ -2,7 +2,6 @@ package diff.difftree;
 
 import diff.DiffLineNumber;
 import diff.Lines;
-import org.pmw.tinylog.Logger;
 import org.prop4j.*;
 import util.Assert;
 
@@ -152,16 +151,44 @@ public class DiffNode {
      * Gets the depth of the diff tree following the before parent
      * @return the depth of the diff tree following the before parent
      */
-    public int getBeforeDepth(){
+    public int getBeforeAnnotationDepth(){
         if (isRoot()) {
             return 0;
         }
 
         if (isIf()) {
-            return beforeParent.getBeforeDepth() + 1;
+            return beforeParent.getBeforeAnnotationDepth() + 1;
         }
 
-        return beforeParent.getBeforeDepth();
+        return beforeParent.getBeforeAnnotationDepth();
+    }
+
+    /**
+     * Gets the depth of the diff tree following the after parent
+     * @return the depth of the diff tree following the after parent
+     */
+    public int getAfterAnnotationDepth(){
+        if (isRoot()) {
+            return 0;
+        }
+
+        if (isIf()) {
+            return afterParent.getAfterAnnotationDepth() + 1;
+        }
+
+        return afterParent.getAfterAnnotationDepth();
+    }
+
+    /**
+     * Gets the depth of the diff tree following the before parent
+     * @return the depth of the diff tree following the before parent
+     */
+    public int getBeforeDepth(){
+        if (isRoot()) {
+            return 0;
+        }
+
+        return beforeParent.getBeforeDepth() + 1;
     }
 
     /**
@@ -173,11 +200,7 @@ public class DiffNode {
             return 0;
         }
 
-        if (isIf()) {
-            return afterParent.getAfterDepth() + 1;
-        }
-
-        return afterParent.getAfterDepth();
+        return afterParent.getAfterDepth() + 1;
     }
 
     /**
@@ -599,7 +622,7 @@ public class DiffNode {
         }
 
         if (node == null) {
-            Logger.warn("Could not parse expression \"{}\" to feature mapping. Using it as literal.", fmString);
+//            Logger.warn("Could not parse expression \"{}\" to feature mapping. Using it as literal.", fmString);
             node = new Literal(fmString);
         }
 

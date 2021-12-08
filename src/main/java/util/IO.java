@@ -86,6 +86,21 @@ public class IO {
         Files.writeString(p, text, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
     }
 
+    public static void append(final Path p, final String text) throws IOException {
+        if (p.getParent() != null) {
+            p.getParent().toFile().mkdirs();
+        }
+        Files.writeString(p, text, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+    }
+
+    public static void tryWrite(final Path outputPath, final String data) {
+        try {
+            IO.write(outputPath, data);
+        } catch (IOException exception) {
+            Logger.error(exception);
+        }
+    }
+
     public static Optional<URI> tryParseURI(final String uri) {
         URI remote;
         try {
@@ -99,5 +114,19 @@ public class IO {
 
     public static String withoutFileExtension(final String filename) {
         return filename.substring(0, filename.lastIndexOf("."));
+    }
+
+    public static boolean tryDeleteFile(Path file) {
+        if (Files.exists(file)) {
+            try {
+                Files.delete(file);
+                return true;
+            } catch (IOException e) {
+                Logger.error(e);
+                return false;
+            }
+        } else {
+            return true;
+        }
     }
 }

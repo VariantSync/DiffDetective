@@ -22,6 +22,12 @@ public final class DefaultRepositories {
             .allowedChangeTypes(DiffEntry.ChangeType.MODIFY)
             .allowedFileExtensions("c", "cpp", "h", "pde")
             .build();
+    public static final DiffFilter LINUX_FILTER = new DiffFilter.Builder()
+            .allowMerge(false)
+//            .blockedPaths(DiffEntry.DEV_NULL) // <- I'm with stupid.
+            .allowedChangeTypes(DiffEntry.ChangeType.MODIFY)
+            .allowedFileExtensions("c", "h")
+            .build();
 
     /**
      * Instance for the default predefined Marlin repository.
@@ -42,9 +48,11 @@ public final class DefaultRepositories {
      * @return Linux repository
      */
     public static Repository createRemoteLinuxRepo(Path localPath) {
-        return Repository
+        final Repository linux = Repository
                 .tryFromRemote(localPath, "https://github.com/torvalds/linux", "Linux")
                 .orElseThrow();
+        linux.setDiffFilter(LINUX_FILTER);
+        return linux;
     }
 
     /**

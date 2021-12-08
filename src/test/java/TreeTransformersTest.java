@@ -7,15 +7,11 @@ import diff.difftree.DiffTree;
 import diff.difftree.LineGraphConstants;
 import diff.difftree.render.DiffTreeRenderer;
 import diff.difftree.serialize.GraphFormat;
-import diff.difftree.serialize.nodeformat.TypeDiffNodeLineGraphImporter;
+import diff.difftree.serialize.nodeformat.TypeDiffNodeFormat;
 import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
 import diff.difftree.transform.DiffTreeTransformer;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.List;
-import java.util.function.Consumer;
-import main.DiffTreeMiner;
 import main.Main;
+import main.mining.DiffTreeMiner;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.revwalk.RevCommit;
@@ -25,6 +21,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.pmw.tinylog.Level;
 
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.function.Consumer;
+
 public class TreeTransformersTest {
     private static final boolean RENDER = true;
     private static final Path resDir = Constants.RESOURCE_DIR.resolve("diffs/collapse");
@@ -33,7 +34,7 @@ public class TreeTransformersTest {
     private static final DiffTreeRenderer.RenderOptions renderOptions = new DiffTreeRenderer.RenderOptions(
             GraphFormat.DIFFTREE,
             new CommitDiffDiffTreeLabelFormat(),
-            new TypeDiffNodeLineGraphImporter(),
+            new TypeDiffNodeFormat(),
             false,
             500,
             50,
@@ -98,7 +99,6 @@ public class TreeTransformersTest {
 
     private void testCommit(String file, String commitHash) throws IOException {
         final Repository marlin = DefaultRepositories.stanciulescuMarlinZip(Path.of("."));
-        marlin.setSaveMemory(true);
 
         final Git git = marlin.load();
         assert git != null;
@@ -111,7 +111,7 @@ public class TreeTransformersTest {
                 marlin.getDiffFilter(),
                 parentCommit,
                 childCommit,
-                !marlin.shouldSaveMemory());
+                marlin.getDebugOptions());
 
         for (final PatchDiff pd : commitDiff.getPatchDiffs()) {
             if (file.equals(pd.getFileName())) {

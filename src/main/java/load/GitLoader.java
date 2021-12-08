@@ -2,6 +2,7 @@ package load;
 
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
+import org.apache.commons.io.FilenameUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.pmw.tinylog.Logger;
@@ -43,6 +44,10 @@ public class GitLoader {
      * @return A Git object of the repository
      */
     public static Git fromRemote(Path localPath, URI remoteURI) {
+        if (!Files.exists(localPath)) {
+            localPath.toFile().mkdirs();
+        }
+
         Assert.assertTrue(Files.isDirectory(localPath), "Given path " + localPath + " is not a directory!");
 
         // If the repository is already cloned, use the clone.
@@ -51,13 +56,14 @@ public class GitLoader {
         }
 
         try {
+            Logger.info("Cloning " + remoteURI + " to " + localPath + ".");
             return Git.cloneRepository()
                     .setURI(remoteURI.toString())
                     .setDirectory(localPath.toFile())
+                    .setProgressMonitor(new LoggingProgressMonitor())
                     .call();
         } catch (GitAPIException e) {
-            Logger.warn("Failed to load git repo from {}", remoteURI);
-            return null;
+            throw new RuntimeException("Failed to load git repo from " + remoteURI + " because:\n" + e);
         }
     }
 
@@ -72,7 +78,9 @@ public class GitLoader {
         final Path targetDir = pathToZip.getParent();
         // If the repository is already unzipped, use the unzipped files.
         if (!FileUtils.tryIsEmptyDirectory(targetDir)) {
-            return fromDirectory(targetDir);
+            final Path unzippedRepoName = Path.of(FilenameUtils.removeExtension(pathToZip.toString()));
+            return fromDirectory(unzippedRepoName);
+
         }
 
         try {

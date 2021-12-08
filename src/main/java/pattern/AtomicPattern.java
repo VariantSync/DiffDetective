@@ -2,6 +2,7 @@ package pattern;
 
 import analysis.data.PatternMatch;
 import diff.difftree.DiffNode;
+import diff.difftree.DiffTree;
 import diff.difftree.DiffType;
 import org.eclipse.jgit.annotations.NonNull;
 
@@ -51,6 +52,10 @@ public abstract class AtomicPattern extends EditPattern<DiffNode> {
         }
 
         return Optional.empty();
+    }
+
+    public boolean anyMatch(final DiffTree t) {
+        return t.anyMatch(this::matches);
     }
 
     /**

@@ -19,7 +19,7 @@ public class WrapCodeAtomicPattern extends AtomicPattern {
         int addAmount = codeNode.getAddAmount();
         int remAmount = codeNode.getRemAmount();
         return (addAmount > 0 && remAmount == 0)
-                ||  (remAmount == 0 && addAmount == 0 && codeNode.getAfterDepth() > codeNode.getBeforeDepth());
+                ||  (remAmount == 0 && addAmount == 0 && codeNode.getAfterAnnotationDepth() > codeNode.getBeforeAnnotationDepth());
     }
 
     @Override

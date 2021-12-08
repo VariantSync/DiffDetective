@@ -3,7 +3,6 @@ package diff.difftree.serialize;
 import diff.difftree.DiffNode;
 import diff.difftree.DiffTree;
 import diff.difftree.LineGraphConstants;
-import diff.serialize.DiffTreeSerializeDebugData;
 import util.StringUtils;
 
 public class DiffTreeLineGraphExporter {
@@ -29,9 +28,7 @@ public class DiffTreeLineGraphExporter {
 
         final int nodeId = node.getID();
         nodesString
-				.append(LineGraphConstants.LG_NODE + " ")
-				.append(node.getID())
-                .append(options.nodeParser().writeNodeToLineGraph(node))
+                .append(options.nodeFormat().toLineGraphLine(node))
                 .append(StringUtils.LINEBREAK);
 
         final DiffNode beforeParent = node.getBeforeParent();

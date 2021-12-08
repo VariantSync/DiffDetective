@@ -4,13 +4,14 @@ import diff.DiffLineNumber;
 import diff.difftree.DiffNode;
 import diff.difftree.DiffTree;
 import diff.difftree.DiffType;
+import org.pmw.tinylog.Logger;
+import util.StringUtils;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
-import org.pmw.tinylog.Logger;
-import util.StringUtils;
 
 public class DiffTreeParser {
     public static final String NEW_LINE_REGEX = "(\\r\\n|\\r|\\n)";

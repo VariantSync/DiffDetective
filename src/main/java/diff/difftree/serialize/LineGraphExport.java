@@ -1,13 +1,11 @@
-package diff.serialize;
+package diff.difftree.serialize;
 
 import de.ovgu.featureide.fm.core.analysis.cnf.generator.configuration.util.Pair;
 import diff.CommitDiff;
 import diff.PatchDiff;
+import diff.difftree.DiffNode;
 import diff.difftree.DiffTree;
 import diff.difftree.DiffTreeSource;
-import diff.difftree.serialize.DiffTreeLineGraphExportOptions;
-import diff.difftree.serialize.DiffTreeLineGraphExporter;
-import diff.difftree.serialize.treeformat.DiffTreeLabelFormat;
 import diff.difftree.transform.DiffTreeTransformer;
 import org.pmw.tinylog.Logger;
 import util.StringUtils;
@@ -73,7 +71,7 @@ public class LineGraphExport {
      */
     public static void composeTreeInLineGraph(final StringBuilder lineGraph, final DiffTreeSource source, final String nodesAndEdges, final DiffTreeLineGraphExportOptions options) {
     	lineGraph
-    		.append(DiffTreeLabelFormat.setRawTreeLabel(options.treeParser().writeTreeHeaderToLineGraph(source))) // print "t # $LABEL"
+    		.append(options.treeFormat().toLineGraphLine(source)) // print "t # $LABEL"
     		.append(StringUtils.LINEBREAK)
     		.append(nodesAndEdges)
     		.append(StringUtils.LINEBREAK)

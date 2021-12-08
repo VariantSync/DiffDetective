@@ -5,13 +5,13 @@ import diff.PatchDiff;
 import diff.difftree.DiffTree;
 import diff.difftree.LineGraphConstants;
 import diff.difftree.serialize.DiffTreeLineGraphExportOptions;
+import diff.difftree.serialize.DiffTreeSerializeDebugData;
 import diff.difftree.serialize.GraphFormat;
-import diff.difftree.serialize.nodeformat.DebugDiffNodeLineGraphImporter;
-import diff.difftree.serialize.nodeformat.DiffTreeNodeLabelFormat;
+import diff.difftree.serialize.LineGraphExport;
+import diff.difftree.serialize.nodeformat.DebugDiffNodeFormat;
+import diff.difftree.serialize.nodeformat.DiffNodeLabelFormat;
 import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
 import diff.difftree.serialize.treeformat.DiffTreeLabelFormat;
-import diff.serialize.DiffTreeSerializeDebugData;
-import diff.serialize.LineGraphExport;
 import org.pmw.tinylog.Logger;
 import shell.PythonCommand;
 import shell.ShellException;
@@ -33,10 +33,10 @@ public class DiffTreeRenderer {
     private final Path workDir;
     private final Supplier<PythonCommand> pythonCommandFactory;
 
-    public static record RenderOptions(
+    public record RenderOptions(
     		GraphFormat format, 
     		DiffTreeLabelFormat treeParser, 
-    		DiffTreeNodeLabelFormat nodeParser,
+    		DiffNodeLabelFormat nodeParser,
             boolean cleanUpTemporaryFiles,
             int dpi,
             int nodesize,
@@ -47,7 +47,7 @@ public class DiffTreeRenderer {
         public static RenderOptions DEFAULT = new RenderOptions(
         		GraphFormat.DIFFTREE,
         		new CommitDiffDiffTreeLabelFormat(),
-                new DebugDiffNodeLineGraphImporter(),
+                new DebugDiffNodeFormat(),
                 true,
                 300,
                 700,

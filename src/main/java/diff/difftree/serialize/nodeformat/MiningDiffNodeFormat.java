@@ -7,11 +7,11 @@ import diff.difftree.DiffNode;
  * A concrete implementation for Mining of a node label.
  * Print metadata required for semantic pattern mining.
  */
-public class MiningDiffNodeLineGraphImporter implements DiffTreeNodeLabelFormat {
+public class MiningDiffNodeFormat implements DiffNodeLabelFormat {
 
 	//TODO Paul implementiert Methode richtig
 	@Override
-	public DiffNode readNodeFromLineGraph(final String lineGraphNodeLabel, final int nodeId) {
+	public DiffNode fromLabelAndId(final String lineGraphNodeLabel, final int nodeId) {
 //		String[] vertex = lineGraphNodeLine.split(" ");
 //		String nodeId = vertex[1];
 //		String editPattern = vertex[2];
@@ -37,7 +37,7 @@ public class MiningDiffNodeLineGraphImporter implements DiffTreeNodeLabelFormat 
 	}
 
 	@Override
-	public String writeNodeToLineGraph(final DiffNode node) {
+	public String toLabel(final DiffNode node) {
 		return (node.codeType == CodeType.CODE) ? node.getLabel() : node.diffType + "_" + node.getLabel();
 	}
 

@@ -11,37 +11,37 @@ public interface DiffTreeLabelFormat {
 	/**
 	 * Converts a label of line graph into a {@link DiffTreeSource}.
 	 * 
-	 * @param lineGraphNodeLine A string containing the label of the {@link DiffTreeSource}
-	 * @return The corresponding {@link DiffTreeSource}
+	 * @param label A string containing the label of the {@link DiffTreeSource}
+	 * @return The {@link DiffTreeSource} descibed by this label.
 	 */
-	public DiffTreeSource readTreeHeaderFromLineGraph(final String lineGraphNodeLine);
+	DiffTreeSource fromLabel(final String label);
 	
 	/**
 	 * Converts a {@link DiffTreeSource} label of line graph.
 	 * 
-	 * @param node The {@link DiffTreeSource} to be converted
+	 * @param diffTreeSource The {@link DiffTreeSource} to be converted
 	 * @return The corresponding line graph line
 	 */
-	public String writeTreeHeaderToLineGraph(final DiffTreeSource diffTreeSource);
+	String toLabel(final DiffTreeSource diffTreeSource);
 	
 	/**
-	 * Removes the overhead and returns the label of a {@link DiffTreeSoruce} in the line graph format.
-	 * 
-	 * @param lineGraphNodeLine The tree label to be extracted
-	 * @return The tree label
+     * Converts a line describing a graph (starting with "t # ") in line graph format into a {@link DiffTreeSource}.
+	 *
+     * @param lineGraphLine A line from a line graph file starting with "t #"
+	 * @return The {@link DiffTreeSource} descibed by the label of this line.
 	 */
-	public static String extractRawTreeLabel(String lineGraphNodeLine) {
-		return lineGraphNodeLine.substring((LineGraphConstants.LG_TREE_HEADER + " ").length());
+	default DiffTreeSource fromLineGraphLine(final String lineGraphLine) {
+		return fromLabel(lineGraphLine.substring((LineGraphConstants.LG_TREE_HEADER + " ").length()));
 	}
 	
 	/**
 	 * Prepends the {@link LineGraphConstants#LG_TREE_HEADER tree declaration} to a label and return an entire line graph line.
 	 * 
-	 * @param lineGraphNodeLine The tree label
+	 * @param diffTreeSource The {@link DiffTreeSource} to be converted
 	 * @return The entire line graph line of a {@link DiffTreeSource}.
 	 */
-	public static String setRawTreeLabel(String lineGraphNodeLine) {
-		return LineGraphConstants.LG_TREE_HEADER + " " + lineGraphNodeLine;
+    default String toLineGraphLine(final DiffTreeSource diffTreeSource) {
+		return LineGraphConstants.LG_TREE_HEADER + " " + toLabel(diffTreeSource);
 	}
 	
 }
