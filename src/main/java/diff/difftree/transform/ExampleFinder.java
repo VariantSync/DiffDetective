@@ -5,7 +5,7 @@ import diff.difftree.DiffTree;
 import diff.difftree.render.DiffTreeRenderer;
 import diff.difftree.render.PatchDiffRenderer;
 import diff.difftree.serialize.GraphFormat;
-import diff.difftree.serialize.nodeformat.MappingsDiffNodeLineGraphImporter;
+import diff.difftree.serialize.nodeformat.MappingsDiffNodeFormat;
 import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
 import org.pmw.tinylog.Logger;
 import util.Assert;
@@ -18,7 +18,7 @@ public class ExampleFinder implements DiffTreeTransformer {
     public static final DiffTreeRenderer.RenderOptions ExportOptions = new DiffTreeRenderer.RenderOptions(
             GraphFormat.DIFFTREE,
             new CommitDiffDiffTreeLabelFormat(),
-            new MappingsDiffNodeLineGraphImporter(),
+            new MappingsDiffNodeFormat(),
             false,
             1000,
             DiffTreeRenderer.RenderOptions.DEFAULT.nodesize()/3,

@@ -1,4 +1,4 @@
-package main;
+package main.mining;
 
 import datasets.DebugOptions;
 import datasets.DefaultRepositories;
@@ -9,13 +9,16 @@ import diff.GitDiffer;
 import diff.difftree.CodeType;
 import diff.difftree.render.DiffTreeRenderer;
 import diff.difftree.serialize.DiffTreeLineGraphExportOptions;
+import diff.difftree.serialize.DiffTreeSerializeDebugData;
 import diff.difftree.serialize.GraphFormat;
-import diff.difftree.serialize.nodeformat.MiningDiffNodeLineGraphImporter;
+import diff.difftree.serialize.LineGraphExport;
+import diff.difftree.serialize.nodeformat.MiningDiffNodeFormat;
 import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
 import diff.difftree.transform.*;
-import diff.serialize.DiffTreeSerializeDebugData;
-import diff.serialize.LineGraphExport;
-import main.mining.*;
+import main.Main;
+import main.mining.strategies.CompositeDiffTreeMiningStrategy;
+import main.mining.strategies.MineAndExportIncrementally;
+import main.mining.strategies.MiningMonitor;
 import org.pmw.tinylog.Level;
 import org.pmw.tinylog.Logger;
 import util.IO;
@@ -89,7 +92,7 @@ public class DiffTreeMiner {
         final DiffTreeLineGraphExportOptions exportOptions = new DiffTreeLineGraphExportOptions(
                 GraphFormat.DIFFTREE
                 , new CommitDiffDiffTreeLabelFormat()
-                , new MiningDiffNodeLineGraphImporter()
+                , new MiningDiffNodeFormat()
                 , true
                 , PostProcessing
                 , DiffTreeLineGraphExportOptions.LogError()

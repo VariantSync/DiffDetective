@@ -1,6 +1,6 @@
 package main.mining;
 
-import diff.serialize.DiffTreeSerializeDebugData;
+import diff.difftree.serialize.DiffTreeSerializeDebugData;
 
 public record DiffTreeMiningResult(String lineGraph, int numCommits, int numTrees, DiffTreeSerializeDebugData debugData) {
     @Override

@@ -1,13 +1,9 @@
 import diff.difftree.CommitDiffDiffTreeSource;
 import diff.difftree.DiffTree;
-import diff.difftree.LineGraphImport;
-import diff.difftree.serialize.DiffTreeLineGraphExportOptions;
-import diff.difftree.serialize.DiffTreeLineGraphImportOptions;
-import diff.difftree.serialize.GraphFormat;
+import diff.difftree.serialize.*;
 import diff.difftree.serialize.nodeformat.DiffTreeNodeLabelFormat;
-import diff.difftree.serialize.nodeformat.LabelOnlyDiffNodeLineGraphImporter;
+import diff.difftree.serialize.nodeformat.LabelOnlyDiffNodeFormat;
 import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
-import diff.serialize.LineGraphExport;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -40,7 +36,7 @@ public class LineGraphTest {
 	private static void importLineGraph(final GraphFormat format, Path filePath) {
 		String lineGraph = readLineGraphFile(filePath.toString());
 		CommitDiffDiffTreeLabelFormat treeLabel = new CommitDiffDiffTreeLabelFormat();
-		DiffTreeNodeLabelFormat nodeLabel = new LabelOnlyDiffNodeLineGraphImporter();
+		DiffTreeNodeLabelFormat nodeLabel = new LabelOnlyDiffNodeFormat();
 		DiffTreeLineGraphImportOptions options = new DiffTreeLineGraphImportOptions(format,
 				treeLabel,
 				nodeLabel

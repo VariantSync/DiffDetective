@@ -7,11 +7,11 @@ import diff.difftree.DiffTree;
 import diff.difftree.LineGraphConstants;
 import diff.difftree.render.DiffTreeRenderer;
 import diff.difftree.serialize.GraphFormat;
-import diff.difftree.serialize.nodeformat.TypeDiffNodeLineGraphImporter;
+import diff.difftree.serialize.nodeformat.TypeDiffNodeFormat;
 import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
 import diff.difftree.transform.DiffTreeTransformer;
-import main.DiffTreeMiner;
 import main.Main;
+import main.mining.DiffTreeMiner;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.revwalk.RevCommit;
@@ -34,7 +34,7 @@ public class TreeTransformersTest {
     private static final DiffTreeRenderer.RenderOptions renderOptions = new DiffTreeRenderer.RenderOptions(
             GraphFormat.DIFFTREE,
             new CommitDiffDiffTreeLabelFormat(),
-            new TypeDiffNodeLineGraphImporter(),
+            new TypeDiffNodeFormat(),
             false,
             500,
             50,

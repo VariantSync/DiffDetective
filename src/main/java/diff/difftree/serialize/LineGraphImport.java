@@ -1,7 +1,6 @@
-package diff.difftree;
+package diff.difftree.serialize;
 
-import diff.difftree.serialize.DiffTreeLineGraphImportOptions;
-import diff.difftree.serialize.GraphFormat;
+import diff.difftree.*;
 import diff.difftree.serialize.treeformat.DiffTreeLabelFormat;
 import util.Assert;
 
@@ -142,7 +141,7 @@ public class LineGraphImport {
 		if (options.format() == GraphFormat.DIFFGRAPH) {
 			// If you should interpret the input data as DiffTrees, always expect a root to be present. Parse all nodes (v) to a list of nodes. Search for the root. Assert that there is exactly one root.
 			Assert.assertTrue(diffNodeList.stream().noneMatch(DiffNode::isRoot)); // test if it’s not a tree
-			return DiffGraph.fromNodes(diffNodeList, diffTreeSource); 
+			return DiffGraph.fromNodes(diffNodeList, diffTreeSource);
 		} else if (options.format() == GraphFormat.DIFFTREE) {
 			// If you should interpret the input data as DiffTrees, always expect a root to be present. Parse all nodes (v) to a list of nodes. Search for the root. Assert that there is exactly one root.
 			int rootCount = 0;

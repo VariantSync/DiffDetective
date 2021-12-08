@@ -7,7 +7,7 @@ import diff.difftree.DiffNode;
  * A concrete implementation for Mining of a node label.
  * Print metadata required for semantic pattern mining.
  */
-public class MiningDiffNodeLineGraphImporter implements DiffTreeNodeLabelFormat {
+public class MiningDiffNodeFormat implements DiffTreeNodeLabelFormat {
 
 	//TODO Paul implementiert Methode richtig
 	@Override

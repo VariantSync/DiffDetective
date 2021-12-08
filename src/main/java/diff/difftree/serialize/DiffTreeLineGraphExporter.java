@@ -3,7 +3,6 @@ package diff.difftree.serialize;
 import diff.difftree.DiffNode;
 import diff.difftree.DiffTree;
 import diff.difftree.LineGraphConstants;
-import diff.serialize.DiffTreeSerializeDebugData;
 import util.StringUtils;
 
 public class DiffTreeLineGraphExporter {

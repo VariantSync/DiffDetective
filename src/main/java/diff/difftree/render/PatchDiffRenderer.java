@@ -2,7 +2,7 @@ package diff.difftree.render;
 
 import diff.PatchDiff;
 import diff.difftree.serialize.GraphFormat;
-import diff.difftree.serialize.nodeformat.DebugDiffNodeLineGraphImporter;
+import diff.difftree.serialize.nodeformat.DebugDiffNodeFormat;
 import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
 import org.pmw.tinylog.Logger;
 import util.IO;
@@ -14,7 +14,7 @@ public class PatchDiffRenderer {
     public static final DiffTreeRenderer.RenderOptions ErrorDiffTreeRenderOptions = new DiffTreeRenderer.RenderOptions(
             GraphFormat.DIFFTREE,
             new CommitDiffDiffTreeLabelFormat(),
-            new DebugDiffNodeLineGraphImporter(),
+            new DebugDiffNodeFormat(),
             true,
             1000,
             DiffTreeRenderer.RenderOptions.DEFAULT.nodesize()/3,
