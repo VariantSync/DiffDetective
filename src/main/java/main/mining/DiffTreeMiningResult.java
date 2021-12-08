@@ -2,7 +2,7 @@ package main.mining;
 
 import diff.difftree.serialize.DiffTreeSerializeDebugData;
 
-public record DiffTreeMiningResult(String lineGraph, int numCommits, int numTrees, DiffTreeSerializeDebugData debugData) {
+public record DiffTreeMiningResult(int numCommits, int numTrees, DiffTreeSerializeDebugData debugData) {
     @Override
     public String toString() {
         return "Exported " + numTrees() + " diff trees!\n"

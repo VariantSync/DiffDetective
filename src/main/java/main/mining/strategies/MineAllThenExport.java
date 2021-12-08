@@ -24,10 +24,9 @@ public class MineAllThenExport extends DiffTreeMiningStrategy {
     }
 
     @Override
-    public String end() {
+    public void end() {
         final String lineGraph = waitForAll.toString();
         Logger.info("Writing file " + outputPath);
         IO.tryWrite(outputPath, lineGraph);
-        return lineGraph;
     }
 }

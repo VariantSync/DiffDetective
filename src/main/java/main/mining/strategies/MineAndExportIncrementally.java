@@ -47,12 +47,10 @@ public class MineAndExportIncrementally extends DiffTreeMiningStrategy {
     }
 
     @Override
-    public String end() {
+    public void end() {
         if (!nextChunkToExport.isEmpty()) {
             exportAppend(outputPath, nextChunkToExport.toString());
         }
-
-        return "";
     }
 
     public static void exportAppend(final Path outputPath, final String linegraph) {

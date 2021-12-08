@@ -39,9 +39,8 @@ public class MiningMonitor extends DiffTreeMiningStrategy {
     }
 
     @Override
-    public String end() {
+    public void end() {
         reportProgress(System.currentTimeMillis() - startTime);
-        return "";
     }
 
     private void reportProgress(long msPassed) {

@@ -70,7 +70,8 @@ public class DiffTreeMiner {
             }
         }
 
-        return new DiffTreeMiningResult(strategy.end(), commitCounter, treeCounter, debugData);
+        strategy.end();
+        return new DiffTreeMiningResult(commitCounter, treeCounter, debugData);
     }
 
     public static void main(String[] args) {

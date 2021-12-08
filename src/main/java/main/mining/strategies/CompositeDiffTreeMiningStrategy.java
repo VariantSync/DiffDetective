@@ -32,10 +32,9 @@ public class CompositeDiffTreeMiningStrategy extends DiffTreeMiningStrategy {
     }
 
     @Override
-    public String end() {
+    public void end() {
         for (final DiffTreeMiningStrategy s : strategies) {
             s.end();
         }
-        return "";
     }
 }
