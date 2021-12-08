@@ -20,14 +20,14 @@ public final class DiffTreeFilter {
 
     public static TaggedPredicate<String, DiffTree> moreThanTwoAtomicPatterns() {
         return new TaggedPredicate<>(
-                "more than two atomic patterns",
+                "has more than two atomic patterns",
                 tree -> DiffTreeStatistics.getNumberOfUniqueAtomicPatternsIn(tree) > 1
         );
     }
 
     public static TaggedPredicate<String, DiffTree> notEmpty() {
         return new TaggedPredicate<>(
-            "no empty",
+            "is not empty",
                 tree -> !tree.isEmpty()
         );
     }
