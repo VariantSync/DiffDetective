@@ -8,6 +8,10 @@ import diff.CommitDiff;
 import diff.GitDiffer;
 import diff.difftree.CodeType;
 import diff.difftree.render.DiffTreeRenderer;
+import diff.difftree.serialize.DiffTreeLineGraphExportOptions;
+import diff.difftree.serialize.GraphFormat;
+import diff.difftree.serialize.nodeformat.MiningDiffNodeLineGraphImporter;
+import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
 import diff.difftree.transform.*;
 import diff.serialize.DiffTreeSerializeDebugData;
 import diff.serialize.LineGraphExport;
@@ -20,10 +24,6 @@ import util.Yield;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-
-import static diff.serialize.LineGraphExport.NodePrintStyle;
-import static diff.serialize.LineGraphExport.Options;
-
 
 public class DiffTreeMiner {
     public static final List<DiffTreeTransformer> PostProcessing = List.of(
@@ -40,7 +40,7 @@ public class DiffTreeMiner {
     public static DiffTreeMiningResult mine(
             final Repository repo,
             final Path outputPath,
-            final LineGraphExport.Options exportOptions,
+            final DiffTreeLineGraphExportOptions exportOptions,
             final DiffTreeMiningStrategy strategy)
     {
         final GitDiffer differ = new GitDiffer(repo);
@@ -86,13 +86,15 @@ public class DiffTreeMiner {
 //                DefaultRepositories.createRemoteVimRepo(inputDir.resolve("vim"))
         );
 
-        final LineGraphExport.Options exportOptions = new Options(
-                NodePrintStyle.Mining
+        final DiffTreeLineGraphExportOptions exportOptions = new DiffTreeLineGraphExportOptions(
+                GraphFormat.DIFFTREE
+                , new CommitDiffDiffTreeLabelFormat()
+                , new MiningDiffNodeLineGraphImporter()
                 , true
                 , PostProcessing
-                , Options.LogError()
-                .andThen(Options.RenderError())
-                .andThen(LineGraphExport.Options.SysExitOnError())
+                , DiffTreeLineGraphExportOptions.LogError()
+                .andThen(DiffTreeLineGraphExportOptions.RenderError())
+                .andThen(DiffTreeLineGraphExportOptions.SysExitOnError())
         );
 
         final DiffTreeMiningStrategy miningStrategy =

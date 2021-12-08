@@ -2,15 +2,11 @@ package diff.difftree.serialize;
 
 import diff.difftree.DiffNode;
 import diff.difftree.DiffTree;
+import diff.difftree.LineGraphConstants;
 import diff.serialize.DiffTreeSerializeDebugData;
-import diff.serialize.LineGraphExport;
 import util.StringUtils;
 
 public class DiffTreeLineGraphExporter {
-    public final static String BEFORE_PARENT = "b";
-    public final static String AFTER_PARENT = "a";
-    public final static String BEFORE_AND_AFTER_PARENT = "ba";
-
     private final StringBuilder nodesString = new StringBuilder();
     private final StringBuilder edgesString = new StringBuilder();
 
@@ -23,7 +19,8 @@ public class DiffTreeLineGraphExporter {
         this.debugData = new DiffTreeSerializeDebugData();
     }
 
-    private void visit(DiffNode node, LineGraphExport.Options options) {
+    private void visit(DiffNode node, DiffTreeLineGraphExportOptions options) {
+    	
         switch (node.diffType) {
             case ADD -> ++debugData.numExportedAddNodes;
             case REM -> ++debugData.numExportedRemNodes;
@@ -32,7 +29,9 @@ public class DiffTreeLineGraphExporter {
 
         final int nodeId = node.getID();
         nodesString
-                .append(DiffNodeLineGraphExporter.toLineGraphFormat(node, options))
+				.append(LineGraphConstants.LG_NODE + " ")
+				.append(node.getID())
+                .append(options.nodeParser().writeNodeToLineGraph(node))
                 .append(StringUtils.LINEBREAK);
 
         final DiffNode beforeParent = node.getBeforeParent();
@@ -43,23 +42,23 @@ public class DiffTreeLineGraphExporter {
         // If the node has exactly one parent
         if (hasBeforeParent && hasAfterParent && beforeParent == afterParent) {
             edgesString
-                    .append(edgeToLineGraph(nodeId, beforeParent.getID(), BEFORE_AND_AFTER_PARENT))
+                    .append(edgeToLineGraph(nodeId, beforeParent.getID(), LineGraphConstants.BEFORE_AND_AFTER_PARENT))
                     .append(StringUtils.LINEBREAK);
         } else {
             if (hasBeforeParent) {
                 edgesString
-                        .append(edgeToLineGraph(nodeId, beforeParent.getID(), BEFORE_PARENT))
+                        .append(edgeToLineGraph(nodeId, beforeParent.getID(), LineGraphConstants.BEFORE_PARENT))
                         .append(StringUtils.LINEBREAK);
             }
             if (hasAfterParent) {
                 edgesString
-                        .append(edgeToLineGraph(nodeId, afterParent.getID(), AFTER_PARENT))
+                        .append(edgeToLineGraph(nodeId, afterParent.getID(), LineGraphConstants.AFTER_PARENT))
                         .append(StringUtils.LINEBREAK);
             }
         }
     }
 
-    public String export(LineGraphExport.Options options) {
+    public String export(DiffTreeLineGraphExportOptions options) {
         diffTree.forAll(n -> visit(n, options));
         final String result = nodesString.toString() + edgesString;
         StringUtils.clear(nodesString);

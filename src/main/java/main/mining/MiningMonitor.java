@@ -2,13 +2,13 @@ package main.mining;
 
 import datasets.Repository;
 import diff.CommitDiff;
-import diff.serialize.LineGraphExport;
+import diff.difftree.serialize.DiffTreeLineGraphExportOptions;
 import org.pmw.tinylog.Logger;
 
 import java.nio.file.Path;
 
 public class MiningMonitor extends DiffTreeMiningStrategy {
-    private int msToWait;
+    private final int msToWait;
     private long lastMeasurement;
     private long startTime;
     private int commitsProcessedTotal;
@@ -18,7 +18,7 @@ public class MiningMonitor extends DiffTreeMiningStrategy {
     }
 
     @Override
-    public void start(Repository repo, Path outputPath, LineGraphExport.Options options) {
+    public void start(Repository repo, Path outputPath, DiffTreeLineGraphExportOptions options) {
         super.start(repo, outputPath, options);
         startTime = System.currentTimeMillis();
         lastMeasurement = startTime;

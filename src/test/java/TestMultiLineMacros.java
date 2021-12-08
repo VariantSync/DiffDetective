@@ -1,8 +1,11 @@
 import de.ovgu.featureide.fm.core.analysis.cnf.generator.configuration.util.Pair;
 import diff.difftree.DiffTree;
 import diff.difftree.parse.DiffTreeParser;
+import diff.difftree.serialize.DiffTreeLineGraphExportOptions;
+import diff.difftree.serialize.GraphFormat;
+import diff.difftree.serialize.nodeformat.DebugDiffNodeLineGraphImporter;
+import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
 import diff.serialize.DiffTreeSerializeDebugData;
-import diff.serialize.LineGraphExport;
 import org.junit.Test;
 import org.pmw.tinylog.Logger;
 import util.IO;
@@ -14,7 +17,7 @@ import java.nio.file.Path;
 public class TestMultiLineMacros {
     private static final Path resDir = Constants.RESOURCE_DIR.resolve("multilinemacros");
 
-    public void diffToDiffTree(LineGraphExport.Options exportOptions, Path p) throws IOException {
+    public void diffToDiffTree(DiffTreeLineGraphExportOptions exportOptions, Path p) throws IOException {
         final String fullDiff = IO.readAsString(p);
 
         final DiffTree tree = DiffTreeParser.createDiffTree(
@@ -37,8 +40,10 @@ public class TestMultiLineMacros {
 
     @Test
     public void test() throws IOException {
-        final LineGraphExport.Options exportOptions = new LineGraphExport.Options(
-                LineGraphExport.NodePrintStyle.Debug
+        final DiffTreeLineGraphExportOptions exportOptions = new DiffTreeLineGraphExportOptions(
+                GraphFormat.DIFFTREE,
+                new CommitDiffDiffTreeLabelFormat(),
+                new DebugDiffNodeLineGraphImporter()
         );
 
         diffToDiffTree(exportOptions, resDir.resolve("mldiff1.txt"));

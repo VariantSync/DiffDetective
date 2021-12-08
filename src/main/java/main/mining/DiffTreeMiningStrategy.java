@@ -2,16 +2,16 @@ package main.mining;
 
 import datasets.Repository;
 import diff.CommitDiff;
-import diff.serialize.LineGraphExport;
+import diff.difftree.serialize.DiffTreeLineGraphExportOptions;
 
 import java.nio.file.Path;
 
 public abstract class DiffTreeMiningStrategy {
     protected Repository repo;
     protected Path outputPath;
-    protected LineGraphExport.Options exportOptions;
+    protected DiffTreeLineGraphExportOptions exportOptions;
 
-    public void start(Repository repo, Path outputPath, LineGraphExport.Options options) {
+    public void start(Repository repo, Path outputPath, DiffTreeLineGraphExportOptions options) {
         this.repo = repo;
         this.outputPath = outputPath;
         this.exportOptions = options;

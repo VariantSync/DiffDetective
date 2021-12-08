@@ -2,7 +2,7 @@ package main.mining;
 
 import datasets.Repository;
 import diff.CommitDiff;
-import diff.serialize.LineGraphExport;
+import diff.difftree.serialize.DiffTreeLineGraphExportOptions;
 import org.pmw.tinylog.Logger;
 import util.IO;
 
@@ -12,7 +12,7 @@ public class MineAllThenExport extends DiffTreeMiningStrategy {
     private StringBuilder waitForAll;
 
     @Override
-    public void start(Repository repo, Path outputPath, LineGraphExport.Options options) {
+    public void start(Repository repo, Path outputPath, DiffTreeLineGraphExportOptions options) {
         super.start(repo, outputPath, options);
         waitForAll = new StringBuilder();
     }

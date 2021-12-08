@@ -3,68 +3,23 @@ package diff.serialize;
 import de.ovgu.featureide.fm.core.analysis.cnf.generator.configuration.util.Pair;
 import diff.CommitDiff;
 import diff.PatchDiff;
+import diff.difftree.DiffNode;
 import diff.difftree.DiffTree;
-import diff.difftree.render.DiffTreeRenderer;
-import diff.difftree.render.PatchDiffRenderer;
+import diff.difftree.DiffTreeSource;
+import diff.difftree.serialize.DiffTreeLineGraphExportOptions;
 import diff.difftree.serialize.DiffTreeLineGraphExporter;
+import diff.difftree.serialize.treeformat.DiffTreeLabelFormat;
 import diff.difftree.transform.DiffTreeTransformer;
 import org.pmw.tinylog.Logger;
 import util.StringUtils;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.BiConsumer;
-
 public class LineGraphExport {
-    public static final String TREE_NAME_SEPARATOR = "$$$";
 
-    public enum NodePrintStyle {
-        /// Print only the label
-        LabelOnly,
-        /// Print CodeType and DiffType
-        Type,
-        /// Print Node as Code
-        Code,
-        /// Print CodeType and DiffType and Mappings of Macros
-        Mappings,
-        /// Print CodeType and DiffType and Mappings if Macro and Text if Code
-        Debug,
-        /// Print metadata requried for semantic pattern mining
-        Mining
-    }
-
-    public static record Options(
-            NodePrintStyle nodePrintStyle,
-            boolean skipEmptyTrees,
-            List<DiffTreeTransformer> treePreProcessing,
-            BiConsumer<PatchDiff, Exception> onError) {
-        public Options(NodePrintStyle nodePrintStyle) {
-            this(nodePrintStyle, false, new ArrayList<>(), LogError());
-        }
-
-        public static BiConsumer<PatchDiff, Exception> LogError() {
-            return (p, e) -> Logger.error(e);
-        }
-
-        public static BiConsumer<PatchDiff, Exception> RenderError() {
-            final PatchDiffRenderer errorRenderer = PatchDiffRenderer.ErrorRendering(DiffTreeRenderer.WithinDiffDetective());
-            return (p, e) -> {
-                Logger.error(e);
-                Logger.error("Rendering patch");
-                errorRenderer.render(p);
-            };
-        }
-
-        public static BiConsumer<PatchDiff, Exception> SysExitOnError() {
-            return (p, e) -> System.exit(0);
-        }
-    }
-
-    public static Pair<DiffTreeSerializeDebugData, String> toLineGraphFormat(final DiffTree diffTree, final Options options) {
-        DiffTreeTransformer.apply(options.treePreProcessing, diffTree);
+    public static Pair<DiffTreeSerializeDebugData, String> toLineGraphFormat(final DiffTree diffTree, final DiffTreeLineGraphExportOptions options) {
+        DiffTreeTransformer.apply(options.treePreProcessing(), diffTree);
         diffTree.assertConsistency();
 
-        if (options.skipEmptyTrees && diffTree.isEmpty()) {
+        if (options.skipEmptyTrees() && diffTree.isEmpty()) {
             return new Pair<>(new DiffTreeSerializeDebugData(), "");
         }
 
@@ -80,7 +35,7 @@ public class LineGraphExport {
      * @param treeCounter The number of the first diff tree to export.
      * @return The number of the next diff tree to export (updated value of treeCounter).
      */
-    public static Pair<DiffTreeSerializeDebugData, Integer> toLineGraphFormat(final CommitDiff commitDiff, final StringBuilder lineGraph, int treeCounter, final Options options) {
+    public static Pair<DiffTreeSerializeDebugData, Integer> toLineGraphFormat(final CommitDiff commitDiff, final StringBuilder lineGraph, int treeCounter, final DiffTreeLineGraphExportOptions options) {
         final DiffTreeSerializeDebugData debugData = new DiffTreeSerializeDebugData();
 
         final String hash = commitDiff.getCommitHash();
@@ -91,21 +46,14 @@ public class LineGraphExport {
                 try {
                     patchDiffLg = toLineGraphFormat(patchDiff.getDiffTree(), options);
                 } catch (Exception e) {
-                    options.onError.accept(patchDiff, e);
+                    options.onError().accept(patchDiff, e);
                     break;
                 }
 
                 debugData.mappend(patchDiffLg.getKey());
 
                 if (!patchDiffLg.getValue().isEmpty()) {
-                    lineGraph
-//                        .append("t # ").append(treeCounter)
-                            .append("t # ").append(patchDiff.getFileName()).append(TREE_NAME_SEPARATOR).append(hash)
-                            .append(StringUtils.LINEBREAK)
-                            .append(patchDiffLg.getValue())
-                            .append(StringUtils.LINEBREAK)
-                            .append(StringUtils.LINEBREAK);
-
+                    composeTreeInLineGraph(lineGraph, patchDiff, patchDiffLg.getValue(), options);
                     ++treeCounter;
                 }
             } else {
@@ -115,4 +63,22 @@ public class LineGraphExport {
 
         return new Pair<>(debugData, treeCounter);
     }
+    
+    /**
+     * Compose a tree from a {@link DiffTree} with its {@link DiffNode DiffNodes} and edges.
+     * 
+     * @param lineGraph The string builder to write the result to
+     * @param source {@link DiffTreeSource}
+     * @param nodesAndEdges Result from {@link #toLineGraphFormat(DiffTree, DiffTreeLineGraphExportOptions)}
+     * @param options {@link DiffTreeLineGraphExportOptions}
+     */
+    public static void composeTreeInLineGraph(final StringBuilder lineGraph, final DiffTreeSource source, final String nodesAndEdges, final DiffTreeLineGraphExportOptions options) {
+    	lineGraph
+    		.append(DiffTreeLabelFormat.setRawTreeLabel(options.treeParser().writeTreeHeaderToLineGraph(source))) // print "t # $LABEL"
+    		.append(StringUtils.LINEBREAK)
+    		.append(nodesAndEdges)
+    		.append(StringUtils.LINEBREAK)
+    		.append(StringUtils.LINEBREAK);
+    }
+    
 }
