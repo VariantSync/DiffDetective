@@ -1,11 +1,13 @@
-package main;
+package main.mining;
 
 import diff.difftree.DiffTree;
 import diff.difftree.render.DiffTreeRenderer;
+import diff.difftree.serialize.DiffTreeLineGraphImportOptions;
 import diff.difftree.serialize.GraphFormat;
+import diff.difftree.serialize.LineGraphImport;
 import diff.difftree.serialize.nodeformat.LabelOnlyDiffNodeFormat;
 import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
-import mining.Postprocessor;
+import diff.difftree.serialize.treeformat.IndexedTreeFormat;
 import org.pmw.tinylog.Logger;
 import util.FileUtils;
 
@@ -34,6 +36,11 @@ public class MiningPostprocessing {
             DiffTreeRenderer.RenderOptions.DEFAULT.fontsize(),
             true
     );
+    private static final DiffTreeLineGraphImportOptions IMPORT_OPTIONS = new DiffTreeLineGraphImportOptions(
+            GraphFormat.DIFFGRAPH,
+            new IndexedTreeFormat(),
+            new MiningDiffNodeFormat()
+    );
 
     public static void main(String[] args) throws IOException {
         if (args.length < 2) {
@@ -45,8 +52,8 @@ public class MiningPostprocessing {
         if (!Files.isDirectory(inputPath)) {
             throw new IllegalArgumentException("Expected path to directory of mined patterns as first argument but got a path that is not a directory, namely \"" + inputPath + "\"!");
         }
-        if (!Files.isDirectory(outputPath)) {
-            throw new IllegalArgumentException("Expected path to output directory as second argument but got a path that is not a directory, namely \"" + outputPath + "\"!");
+        if (!FileUtils.tryIsEmptyDirectory(outputPath)) {
+            throw new IllegalArgumentException("Expected path to an empty output directory as second argument but got a path that is not a directory or not empty, namely \"" + outputPath + "\"!");
         }
 
         postprocessAndInterpretResults(
@@ -68,12 +75,8 @@ public class MiningPostprocessing {
     public static List<DiffTree> parseFrequentSubgraphsIn(final Path directory) throws IOException {
         return Files.list(directory)
                 .filter(FileUtils::isLineGraph)
-                .map(MiningPostprocessing::parseDiffTreeFromLineGraph)
+                .flatMap(path -> LineGraphImport.fromFile(path, IMPORT_OPTIONS).stream())
                 .collect(Collectors.toList());
-    }
-
-    private static DiffTree parseDiffTreeFromLineGraph(final Path p) {
-        throw new UnsupportedOperationException("Not implemented! Waiting for issue#3!");
     }
 
     public static void postprocessAndInterpretResults(

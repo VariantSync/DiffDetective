@@ -1,17 +1,41 @@
 package diff.difftree.filter;
 
 import diff.difftree.DiffTree;
-
-import java.util.function.Function;
-import java.util.function.Predicate;
+import diff.difftree.analysis.DiffTreeStatistics;
+import util.TaggedPredicate;
 
 /**
  * A filter on difftrees that is equipped with some metadata T (e.g., for debugging or logging).
  * The condition determines whether a DiffTree should be considered for computation or not.
  * Iff the condition returns true, the DiffTree should be considered.
  */
-public record DiffTreeFilter<T>(T metadata, Predicate<DiffTree> condition) {
-    public <U> DiffTreeFilter<U> map(final Function<T, U> f) {
-        return new DiffTreeFilter<>(f.apply(metadata), condition);
+public final class DiffTreeFilter {
+    public static <T> TaggedPredicate<T, DiffTree> Any(final T metadata) {
+        return TaggedPredicate.Any(metadata);
+    }
+
+    public static TaggedPredicate<String, DiffTree> Any() {
+        return Any("any");
+    }
+
+    public static TaggedPredicate<String, DiffTree> moreThanTwoAtomicPatterns() {
+        return new TaggedPredicate<>(
+                "more than two atomic patterns",
+                tree -> DiffTreeStatistics.getNumberOfUniqueAtomicPatternsIn(tree) > 1
+        );
+    }
+
+    public static TaggedPredicate<String, DiffTree> notEmpty() {
+        return new TaggedPredicate<>(
+            "no empty",
+                tree -> !tree.isEmpty()
+        );
+    }
+
+    public static TaggedPredicate<String, DiffTree> consistent() {
+        return new TaggedPredicate<>(
+                "is consistent",
+                tree -> tree.isConsistent().isSuccess()
+        );
     }
 }

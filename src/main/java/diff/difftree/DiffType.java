@@ -7,10 +7,10 @@ public enum DiffType {
     REM("-"),
     NON(" ");
 
-    public final String name;
+    public final String symbol;
 
-    DiffType(String name) {
-        this.name = name;
+    DiffType(String symbol) {
+        this.symbol = symbol;
     }
 
     final static String addCharacter = "+";
@@ -71,6 +71,20 @@ public enum DiffType {
         if (line.startsWith(addCharacter)) {
             return ADD;
         } else if (line.startsWith(remCharacter)) {
+            return REM;
+        } else {
+            return NON;
+        }
+    }
+
+    /**
+     * @param line a string starting with one of ADD, REM, or NON
+     * @return The DiffType that has the given name
+     */
+    public static DiffType fromName(final String line) {
+        if (line.startsWith(ADD.name())) {
+            return ADD;
+        } else if (line.startsWith(REM.name())) {
             return REM;
         } else {
             return NON;

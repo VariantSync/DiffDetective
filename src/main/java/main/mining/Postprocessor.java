@@ -1,11 +1,11 @@
-package mining;
+package main.mining;
 
 import diff.difftree.DiffTree;
-import diff.difftree.analysis.DiffTreeStatistics;
 import diff.difftree.filter.DiffTreeFilter;
 import diff.difftree.filter.DuplicateDiffTreeFilter;
 import diff.difftree.transform.CutNonEditedSubtrees;
 import diff.difftree.transform.DiffTreeTransformer;
+import util.TaggedPredicate;
 
 import java.util.List;
 import java.util.Map;
@@ -35,7 +35,7 @@ public class Postprocessor {
     }
 
     private final List<DiffTreeTransformer> transformers;
-    private final List<DiffTreeFilter<FilterMetadata>> filters;
+    private final List<TaggedPredicate<FilterMetadata, DiffTree>> filters;
     private final boolean removeDuplicates;
 
     /**
@@ -45,9 +45,9 @@ public class Postprocessor {
      * Notice, that filters were ordered and when a filter was applied, subsequent filters were not tested.
      * Thus, each filter operated on the unfiltered trees of the previous filter.
      */
-    public static record Result(List<DiffTree> processedTrees, Map<String, Integer> filterCounts) {}
+    public record Result(List<DiffTree> processedTrees, Map<String, Integer> filterCounts) {}
 
-    private Postprocessor(List<DiffTreeTransformer> transformers, List<DiffTreeFilter<String>> namedFilters, boolean removeDuplicates) {
+    private Postprocessor(List<DiffTreeTransformer> transformers, List<TaggedPredicate<String, DiffTree>> namedFilters, boolean removeDuplicates) {
         this.transformers = transformers;
         this.filters = namedFilters.stream().map(
                 filter -> filter.map(FilterMetadata::fromName)
@@ -69,9 +69,9 @@ public class Postprocessor {
                 List.of(new CutNonEditedSubtrees()),
                 List.of(
                         // Filter ill-formed patterns
-                        new DiffTreeFilter<>("Ill-Formed", tree -> tree.isConsistent().isSuccess()),
+                        DiffTreeFilter.consistent(),
                         // condition patterns containing less than two atomic patterns
-                        new DiffTreeFilter<>("Less than two atomics", tree -> DiffTreeStatistics.getNumberOfUniqueLabelsIn(tree) > 1)
+                        DiffTreeFilter.moreThanTwoAtomicPatterns()
                 ),
                 false
         );
@@ -86,9 +86,9 @@ public class Postprocessor {
     public Result postprocess(final List<DiffTree> frequentSubgraphs) {
         List<DiffTree> processedTrees = frequentSubgraphs.stream()
                 .filter(tree -> {
-                    for (final DiffTreeFilter<FilterMetadata> filter : filters) {
+                    for (final TaggedPredicate<FilterMetadata, DiffTree> filter : filters) {
                         if (!filter.condition().test(tree)) {
-                            filter.metadata().hit();
+                            filter.tag().hit();
                             return false;
                         }
                     }
@@ -99,8 +99,8 @@ public class Postprocessor {
                 .toList();
 
         final Map<String, Integer> filterCounts = filters.stream().collect(Collectors.toMap(
-                f -> f.metadata().name,
-                f -> f.metadata().filterCount
+                f -> f.tag().name,
+                f -> f.tag().filterCount
         ));
 
         if (removeDuplicates) {

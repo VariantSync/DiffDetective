@@ -49,7 +49,7 @@ public class MultilineMacro {
     }
 
     public DiffNode toDiffNode() {
-        final StringBuilder asSingleLine = new StringBuilder(diffType.name);
+        final StringBuilder asSingleLine = new StringBuilder(diffType.symbol);
 
         for (int l = 0; l < lines.size(); ++l) {
             final String line = lines.get(l);

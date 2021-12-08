@@ -6,17 +6,18 @@ import datasets.Repository;
 import de.ovgu.featureide.fm.core.analysis.cnf.generator.configuration.util.Pair;
 import diff.CommitDiff;
 import diff.GitDiffer;
-import diff.difftree.CodeType;
+import diff.difftree.filter.DiffTreeFilter;
 import diff.difftree.render.DiffTreeRenderer;
 import diff.difftree.serialize.DiffTreeLineGraphExportOptions;
 import diff.difftree.serialize.DiffTreeSerializeDebugData;
 import diff.difftree.serialize.GraphFormat;
 import diff.difftree.serialize.LineGraphExport;
-import diff.difftree.serialize.nodeformat.MiningDiffNodeFormat;
 import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
-import diff.difftree.transform.*;
+import diff.difftree.transform.CollapseNestedNonEditedMacros;
+import diff.difftree.transform.CutNonEditedSubtrees;
 import main.Main;
 import main.mining.strategies.CompositeDiffTreeMiningStrategy;
+import main.mining.strategies.DiffTreeMiningStrategy;
 import main.mining.strategies.MineAndExportIncrementally;
 import main.mining.strategies.MiningMonitor;
 import org.pmw.tinylog.Level;
@@ -29,14 +30,28 @@ import java.nio.file.Paths;
 import java.util.List;
 
 public class DiffTreeMiner {
-    public static final List<DiffTreeTransformer> PostProcessing = List.of(
-//            new NaiveMovedCodeDetection(), // do this first as it might introduce non-edited subtrees
-            new CutNonEditedSubtrees(),
-//            RunningExampleFinder.Default,
-            new CollapseNestedNonEditedMacros(),
-            new CollapseAtomicPatterns(),
-            new RelabelRoot(CodeType.IF.name)
+    public final static DiffTreeLineGraphExportOptions exportOptions = new DiffTreeLineGraphExportOptions(
+            GraphFormat.DIFFTREE
+            , new CommitDiffDiffTreeLabelFormat()
+            , new MiningDiffNodeFormat()
+            , DiffTreeFilter.notEmpty().and(DiffTreeFilter.moreThanTwoAtomicPatterns())
+            , List.of(
+//                    new NaiveMovedCodeDetection(), // do this first as it might introduce non-edited subtrees
+                    new CutNonEditedSubtrees(),
+//                    RunningExampleFinder.Default,
+                    new CollapseNestedNonEditedMacros()
+            )
+            , DiffTreeLineGraphExportOptions.LogError()
+            .andThen(DiffTreeLineGraphExportOptions.RenderError())
+            .andThen(DiffTreeLineGraphExportOptions.SysExitOnError())
     );
+
+    public final static DiffTreeMiningStrategy miningStrategy =
+//                new MineAndExportIncrementally();
+            new CompositeDiffTreeMiningStrategy(
+                    new MineAndExportIncrementally(1000),
+                    new MiningMonitor(10)
+            );
 
     private final static int DEBUG_treesToExportAtMost = -1;
 
@@ -85,28 +100,10 @@ public class DiffTreeMiner {
         final Path outputDir = Paths.get("results", "mining");
 
         final List<Repository> repos = List.of(
-//                DefaultRepositories.stanciulescuMarlinZip(Path.of("."))
-                DefaultRepositories.createRemoteLinuxRepo(linuxDir.resolve("linux"))
+                DefaultRepositories.stanciulescuMarlinZip(Path.of("."))
+//                DefaultRepositories.createRemoteLinuxRepo(linuxDir.resolve("linux"))
 //                DefaultRepositories.createRemoteVimRepo(inputDir.resolve("vim"))
         );
-
-        final DiffTreeLineGraphExportOptions exportOptions = new DiffTreeLineGraphExportOptions(
-                GraphFormat.DIFFTREE
-                , new CommitDiffDiffTreeLabelFormat()
-                , new MiningDiffNodeFormat()
-                , true
-                , PostProcessing
-                , DiffTreeLineGraphExportOptions.LogError()
-                .andThen(DiffTreeLineGraphExportOptions.RenderError())
-                .andThen(DiffTreeLineGraphExportOptions.SysExitOnError())
-        );
-
-        final DiffTreeMiningStrategy miningStrategy =
-//                new MineAndExportIncrementally();
-                new CompositeDiffTreeMiningStrategy(
-                        new MineAndExportIncrementally(1000),
-                        new MiningMonitor(10)
-                );
 
         /* ************************ *\
         |      END OF ARGUMENTS      |

@@ -2,12 +2,14 @@ package diff.difftree.serialize;
 
 import diff.PatchDiff;
 import diff.difftree.DiffTree;
+import diff.difftree.filter.DiffTreeFilter;
 import diff.difftree.render.DiffTreeRenderer;
 import diff.difftree.render.PatchDiffRenderer;
 import diff.difftree.serialize.nodeformat.DiffNodeLabelFormat;
 import diff.difftree.serialize.treeformat.DiffTreeLabelFormat;
 import diff.difftree.transform.DiffTreeTransformer;
 import org.pmw.tinylog.Logger;
+import util.TaggedPredicate;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,12 +23,12 @@ public record DiffTreeLineGraphExportOptions(
         GraphFormat graphFormat,
 		DiffTreeLabelFormat treeFormat,
 		DiffNodeLabelFormat nodeFormat,
-		boolean skipEmptyTrees,
+		TaggedPredicate<String, DiffTree> treeFilter,
         List<DiffTreeTransformer> treePreProcessing,
         BiConsumer<PatchDiff, Exception> onError) {
 	
     public DiffTreeLineGraphExportOptions(GraphFormat graphFormat, DiffTreeLabelFormat treeFormat, DiffNodeLabelFormat nodeFormat) {
-        this(graphFormat, treeFormat, nodeFormat, false, new ArrayList<>(), LogError());
+        this(graphFormat, treeFormat, nodeFormat, DiffTreeFilter.Any(), new ArrayList<>(), LogError());
     }
 
     public static BiConsumer<PatchDiff, Exception> LogError() {
