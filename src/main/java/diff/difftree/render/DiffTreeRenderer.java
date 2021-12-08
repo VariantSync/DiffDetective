@@ -3,8 +3,15 @@ package diff.difftree.render;
 import de.ovgu.featureide.fm.core.analysis.cnf.generator.configuration.util.Pair;
 import diff.PatchDiff;
 import diff.difftree.DiffTree;
-import diff.serialize.DiffTreeSerializeDebugData;
-import diff.serialize.LineGraphExport;
+import diff.difftree.LineGraphConstants;
+import diff.difftree.serialize.DiffTreeLineGraphExportOptions;
+import diff.difftree.serialize.DiffTreeSerializeDebugData;
+import diff.difftree.serialize.GraphFormat;
+import diff.difftree.serialize.LineGraphExport;
+import diff.difftree.serialize.nodeformat.DebugDiffNodeFormat;
+import diff.difftree.serialize.nodeformat.DiffNodeLabelFormat;
+import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
+import diff.difftree.serialize.treeformat.DiffTreeLabelFormat;
 import org.pmw.tinylog.Logger;
 import shell.PythonCommand;
 import shell.ShellException;
@@ -26,8 +33,10 @@ public class DiffTreeRenderer {
     private final Path workDir;
     private final Supplier<PythonCommand> pythonCommandFactory;
 
-    public static record RenderOptions(
-            LineGraphExport.NodePrintStyle nodeStyle,
+    public record RenderOptions(
+    		GraphFormat format, 
+    		DiffTreeLabelFormat treeParser, 
+    		DiffNodeLabelFormat nodeParser,
             boolean cleanUpTemporaryFiles,
             int dpi,
             int nodesize,
@@ -36,7 +45,9 @@ public class DiffTreeRenderer {
             int fontsize,
             boolean withlabels) {
         public static RenderOptions DEFAULT = new RenderOptions(
-                LineGraphExport.NodePrintStyle.Debug,
+        		GraphFormat.DIFFTREE,
+        		new CommitDiffDiffTreeLabelFormat(),
+                new DebugDiffNodeFormat(),
                 true,
                 300,
                 700,
@@ -87,7 +98,7 @@ public class DiffTreeRenderer {
     public boolean render(PatchDiff patchDiff, final Path directory, RenderOptions options) {
         final String treeAndFileName =
                 patchDiff.getFileName()
-                        + LineGraphExport.TREE_NAME_SEPARATOR
+                        + LineGraphConstants.TREE_NAME_SEPARATOR
                         + patchDiff.getCommitDiff().getCommitHash();
         return render(patchDiff.getDiffTree(), treeAndFileName, directory, options);
     }
@@ -97,12 +108,12 @@ public class DiffTreeRenderer {
     }
 
     public boolean render(final DiffTree tree, final String treeAndFileName, final Path directory, RenderOptions options) {
-        final LineGraphExport.Options lgoptions = new LineGraphExport.Options(options.nodeStyle);
+        final DiffTreeLineGraphExportOptions lgoptions = new DiffTreeLineGraphExportOptions(options.format(), options.treeParser(), options.nodeParser());
 
         final Path tempFile = directory.resolve(treeAndFileName + ".lg");
 
         final Pair<DiffTreeSerializeDebugData, String> result = LineGraphExport.toLineGraphFormat(tree, lgoptions);
-        final String lg = "t # " + treeAndFileName + LineGraphExport.TREE_NAME_SEPARATOR + "0" + StringUtils.LINEBREAK + result.getValue();
+        final String lg = "t # " + treeAndFileName + LineGraphConstants.TREE_NAME_SEPARATOR + "0" + StringUtils.LINEBREAK + result.getValue();
         try {
             IO.write(tempFile, lg);
         } catch (IOException e) {

@@ -40,12 +40,8 @@ public class Repository {
 	 * Filter determining which files and commits to consider for diffs.
 	 */
 	private DiffFilter diffFilter;
-	
-	/**
-	 * For large repositories.
-	 * Alternatively, increasing the java heap size also helps.
-	 */
-	private boolean saveMemory;
+
+	private DebugOptions debugOptions;
 	
 	/**
 	 * Creates a repository.
@@ -54,7 +50,7 @@ public class Repository {
 	 * @param localPath The local path where the repository can be found or should be cloned to.
 	 * @param remote The remote url of the repository. May be <code>null</code> if local.
 	 * @param repositoryName Name of the cloned repository (<code>null</code> if local)
-	 * @param saveMemory Omit some debug data to save RAM.
+	 * @param debugOptions Omit some debug data to save RAM.
 	 * @param diffFilter Filter determining which files and commits to consider for diffs.
 	 */
 	public Repository(
@@ -62,13 +58,13 @@ public class Repository {
 			final Path localPath,
 			final URI remote,
 			final String repositoryName,
-			final boolean saveMemory,
+			final DebugOptions debugOptions,
 			final DiffFilter diffFilter) {
 		this.repoLocation = repoLocation;
 		this.localPath = localPath;
 		this.remote = remote;
 		this.repositoryName = repositoryName;
-		this.saveMemory = saveMemory;
+		this.debugOptions = debugOptions;
 		this.diffFilter = diffFilter;
 	}
 
@@ -82,7 +78,7 @@ public class Repository {
 			final URI remote,
 			final String repositoryName) {
 		this(repoLocation, localPath, remote, repositoryName,
-				false, DiffFilter.ALLOW_ALL);
+                DebugOptions.DEFAULT, DiffFilter.ALLOW_ALL);
 	}
 
 	/**
@@ -161,8 +157,8 @@ public class Repository {
 		return repositoryName;
 	}
 
-	public void setSaveMemory(boolean saveMemory) {
-		this.saveMemory = saveMemory;
+	public void setDebugOptions(DebugOptions debugOptions) {
+		this.debugOptions = debugOptions;
 	}
 
 	public void setDiffFilter(final DiffFilter filter) {
@@ -173,8 +169,8 @@ public class Repository {
 		return diffFilter;
 	}
 
-	public boolean shouldSaveMemory() {
-		return saveMemory;
+	public DebugOptions getDebugOptions() {
+		return debugOptions;
 	}
 
 	public Git load() {

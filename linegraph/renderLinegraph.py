@@ -7,6 +7,24 @@ import sys
 
 # + install graphviz on your system: https://www.graphviz.org/download/
 
+# format
+OUTPUT_FORMAT = ".png"
+# OUTPUT_FORMAT = ".svg"
+# OUTPUT_FORMAT = ".pdf"
+NODE_POSITION_LAYOUT = "dot"
+# NODE_POSITION_LAYOUT = "circo"
+# NODE_POSITION_LAYOUT = "sfdp"
+# NODE_POSITION_LAYOUT = "neato"
+# NODE_POSITION_LAYOUT = "fdp"
+# NODE_POSITION_LAYOUT = "twopi"
+# NODE_POSITION_LAYOUT = "osage"
+# NODE_POSITION_LAYOUT = "patchwork"
+POS_SCALING_X = 1
+POS_SCALING_Y = -1
+FIG_WIDTH = 3.5
+FIG_HEIGHT = 2.5
+# FIG_WIDTH = 10
+# FIG_HEIGHT = 10
 
 # constants from our Java code
 JAVA_TREE_NAME_SEPARATOR = "$$$"
@@ -15,7 +33,8 @@ JAVA_ID_DIFF_TYPE_OFFSET = 8
 JAVA_ID_DIFFLINE_FROM_OFFSET = 1
 
 # export names
-DIR_SEPARATOR = "$"
+# DIR_SEPARATOR = "$"
+DIR_SEPARATOR = "___"
 
 # colour of a node shows diff type
 DIFFTYPE_ADD_COLOR = 'green'
@@ -25,6 +44,7 @@ DIFFTYPE_NON_COLOR = '#d1d1e0' # light purple gray
 # border colour of a node shows code type
 CODE_TYPE_CODE_COLOR = '#3399ff'
 CODE_TYPE_OTHER_COLOR = 'black'
+TYPE_BORDER_SIZE = (8.0 / 7.0)
 
 # drawing parameters
 NODE_SIZE = 700
@@ -32,14 +52,12 @@ EDGE_SIZE = 0.5
 ARROW_SIZE = 5
 SHOW_LABELS = True
 DPI = 300
-POS_SCALING_X = 1
-POS_SCALING_Y = 1
 FONT_SIZE = 3
 
 # other parameters
 IS_PATTERN = False
 ATOMICS = False
-
+WITH_TITLE = False
 
 def lineNoOfNode(v):
     # inverse of DiffNode::getID in our Java code
@@ -123,28 +141,21 @@ def load_as_line_graph(input_file):
 
 # Plot graphs
 def plot_graphs(S, exportDir):
-    plt.figure(0)
+    # plt.figure(0, figsize=(FIG_WIDTH,2.5))
+    plt.figure(0, figsize=(FIG_WIDTH, FIG_HEIGHT))
+    # plt.figure(0)
     for i in range(len(S)):
         difftree = S[i]
 
         # print("Render tree", difftree.name.replace("\n", JAVA_TREE_NAME_SEPARATOR))
 
         plt.clf()
-        plt.margins(0.05, 0.05)
-        plt.title(S[i].name)
-        # pos = nx.spring_layout(S[i], scale=3)
-        # pos = nx.planar_layout(S[i], scale=3)
-        # pos = nx.nx_agraph.pygraphviz_layout(S[i], prog='dot')
-        # pos = graphviz_layout(S[i], prog='dot')
-
-        # We have to do this to circumvent a bug:
-        # https://networkx.org/documentation/stable/reference/generated/networkx.drawing.nx_pydot.pydot_layout.html
-        H = nx.convert_node_labels_to_integers(difftree, label_attribute='label')
-        H_layout = nx.drawing.nx_pydot.pydot_layout(H, prog="sfdp") #sfdp
-        pos = {H.nodes[n]['label']: p for n, p in H_layout.items()}
+        if WITH_TITLE:
+            plt.title(S[i].name)
 
         node_colors = []
         node_type_colors = []
+        rootNode = None
         for v, d in difftree.nodes(data=True):
             name = d['label']
             # print(v, name)
@@ -176,6 +187,9 @@ def plot_graphs(S, exportDir):
             isroot = codetype.startswith("ROOT")
             ismacro = not isroot and not codetype.startswith("CODE")
 
+            if isroot:
+                rootNode = v
+
             if IS_PATTERN:
                 code = codetype if isroot or ismacro else (name if ATOMICS else "")
             else:
@@ -202,6 +216,15 @@ def plot_graphs(S, exportDir):
             if typeName == "ba":
                 edge_colors.append('black')
 
+        # pos = nx.spring_layout(S[i], scale=3)
+        # pos = nx.planar_layout(S[i], scale=3)
+
+        # We have to do this to circumvent a bug:
+        # https://networkx.org/documentation/stable/reference/generated/networkx.drawing.nx_pydot.pydot_layout.html
+        H = nx.convert_node_labels_to_integers(difftree, label_attribute='label')
+        H_layout = nx.drawing.nx_pydot.pydot_layout(H, prog=NODE_POSITION_LAYOUT, root=rootNode)
+        pos = {H.nodes[n]['label']: p for n, p in H_layout.items()}
+
         new_pos = {}
         for k, v in pos.items():
             new_pos[k] = (POS_SCALING_X * v[0], POS_SCALING_Y * v[1])
@@ -209,7 +232,7 @@ def plot_graphs(S, exportDir):
 
         # draw type borders
         nx.draw_networkx_nodes(difftree, pos,
-                node_size=int(NODE_SIZE * (8.0 / 7.0)),
+                node_size=int(NODE_SIZE * TYPE_BORDER_SIZE),
                 node_color=node_type_colors)
 
         # draw nodes
@@ -223,7 +246,7 @@ def plot_graphs(S, exportDir):
                     edge_color=edge_colors,
                     font_size=FONT_SIZE,
                     labels=node_labels,
-                    bbox=dict(facecolor="white", edgecolor='black', boxstyle='round,pad=0.2', linestyle=''))
+                    bbox=dict(facecolor="white", edgecolor='black', linewidth=0.3, boxstyle='round,pad=0.2', linestyle='solid'))
         else:
             nx.draw(difftree, pos,
                     node_size=NODE_SIZE,
@@ -236,11 +259,12 @@ def plot_graphs(S, exportDir):
         outfilename = difftree.graph['filename'].replace("/", DIR_SEPARATOR)
         if not IS_PATTERN:
             outfilename += DIR_SEPARATOR + difftree.graph['commitid']
-        outfilename += ".png"
+        outfilename += OUTPUT_FORMAT
         save_path = os.path.join(exportDir, outfilename)
 
         # Save
         print("Exporting", save_path)
+        plt.tight_layout()
         plt.savefig(save_path, format="PNG", dpi=DPI)
 
 
@@ -264,8 +288,8 @@ if __name__ == "__main__":
     argparser.add_argument('--arrowsize', nargs='?', default=10, type=int)
     argparser.add_argument('--fontsize', nargs='?', default=3, type=int)
     argparser.add_argument('--dpi', nargs='?', default=300, type=int)
-    argparser.add_argument('--scalex', nargs='?', default=1, type=int)
-    argparser.add_argument('--scaley', nargs='?', default=1, type=int)
+    argparser.add_argument('--scalex', nargs='?', default=POS_SCALING_X, type=int)
+    argparser.add_argument('--scaley', nargs='?', default=POS_SCALING_Y, type=int)
     argparser.add_argument('--nolabels', action='store_const', const=True, default=False)
     argparser.add_argument('--recursive', action='store_const', const=True, default=False)
     argparser.add_argument('--pattern', action='store_const', const=True, default=False)

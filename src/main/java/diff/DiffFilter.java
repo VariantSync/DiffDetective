@@ -164,33 +164,56 @@ public class DiffFilter {
         return true;
     }
 
-    public boolean filter(DiffEntry diffEntry){
-        if (!allowedPaths.isEmpty() && !diffEntry.getNewPath().matches(allowedPaths)) {
+    public boolean filter(DiffEntry diffEntry) {
+        if (!allowedPaths.isEmpty() &&
+                !(isAllowedPath(diffEntry.getOldPath()) && isAllowedPath(diffEntry.getNewPath())))
+        {
             return false;
         }
-        if (!blockedPaths.isEmpty() && diffEntry.getNewPath().matches(blockedPaths)) {
+        if (!blockedPaths.isEmpty() &&
+                (isBlockedPath(diffEntry.getOldPath()) || isBlockedPath(diffEntry.getNewPath())))
+        {
             return false;
         }
-        if (!allowedChangeTypes.isEmpty() && !allowedChangeTypes.contains(diffEntry.getChangeType())) {
+        if (!allowedChangeTypes.isEmpty() &&
+                !allowedChangeTypes.contains(diffEntry.getChangeType()))
+        {
             return false;
         }
-        if (!allowedFileExtensions.isEmpty() && !allowedFileExtensions.contains(getFileExtension(diffEntry))) {
+        if (!allowedFileExtensions.isEmpty() &&
+                !(hasAllowedExtension(diffEntry.getOldPath()) && hasAllowedExtension(diffEntry.getNewPath())))
+        {
             return false;
         }
-        if (!blockedFileExtensions.isEmpty() && blockedFileExtensions.contains(getFileExtension(diffEntry))) {
+        if (!blockedFileExtensions.isEmpty() &&
+                (hasBlockedExtension(diffEntry.getOldPath()) || hasBlockedExtension(diffEntry.getNewPath())))
+        {
             return false;
         }
         return true;
     }
 
-    private String getFileExtension(DiffEntry diffEntry){
-        return FilenameUtils.getExtension(diffEntry.getNewPath()).toLowerCase();
+    private boolean isAllowedPath(String filename) {
+        return filename.matches(allowedPaths);
+    }
+
+    private boolean isBlockedPath(String filename) {
+        return filename.matches(blockedPaths);
+    }
+
+    private boolean hasAllowedExtension(String filename) {
+        return allowedFileExtensions.contains(getFileExtension(filename));
+    }
+
+    private boolean hasBlockedExtension(String filename) {
+        return blockedFileExtensions.contains(getFileExtension(filename));
+    }
+
+    private String getFileExtension(String path){
+        return FilenameUtils.getExtension(path).toLowerCase();
     }
 
     public boolean filter(RevCommit commit) {
-        if (!this.allowMerge && commit.getParentCount() > 1) {
-            return false;
-        }
-        return true;
+        return this.allowMerge || commit.getParentCount() <= 1;
     }
 }

@@ -2,7 +2,6 @@ package diff.difftree;
 
 import diff.DiffLineNumber;
 import diff.Lines;
-import org.pmw.tinylog.Logger;
 import org.prop4j.*;
 import util.Assert;
 
@@ -20,8 +19,7 @@ import java.util.regex.Pattern;
  * Includes methods for creating a node by getting its code type and diff type and for getting the feature mapping of the node.
  */
 public class DiffNode {
-    private static final short ID_LINE_NUMBER_OFFSET = 16;
-    private static final short ID_DIFF_TYPE_OFFSET = 8;
+	private static final short ID_OFFSET = 8;
 
     public static final String EQUAL_PLACEHOLDER = "__eq__";
     public static final String TRUE_LITERAL_NAME = "__true__";
@@ -37,7 +35,14 @@ public class DiffNode {
     private Node featureMapping;
     private String label;
 
+    /**
+     * The parent {@link DiffNode} before the edit.
+     */
     private DiffNode beforeParent;
+    
+    /**
+     * The parent {@link DiffNode} after the edit.
+     */
     private DiffNode afterParent;
 
     /**
@@ -146,16 +151,44 @@ public class DiffNode {
      * Gets the depth of the diff tree following the before parent
      * @return the depth of the diff tree following the before parent
      */
-    public int getBeforeDepth(){
+    public int getBeforeAnnotationDepth(){
         if (isRoot()) {
             return 0;
         }
 
         if (isIf()) {
-            return beforeParent.getBeforeDepth() + 1;
+            return beforeParent.getBeforeAnnotationDepth() + 1;
         }
 
-        return beforeParent.getBeforeDepth();
+        return beforeParent.getBeforeAnnotationDepth();
+    }
+
+    /**
+     * Gets the depth of the diff tree following the after parent
+     * @return the depth of the diff tree following the after parent
+     */
+    public int getAfterAnnotationDepth(){
+        if (isRoot()) {
+            return 0;
+        }
+
+        if (isIf()) {
+            return afterParent.getAfterAnnotationDepth() + 1;
+        }
+
+        return afterParent.getAfterAnnotationDepth();
+    }
+
+    /**
+     * Gets the depth of the diff tree following the before parent
+     * @return the depth of the diff tree following the before parent
+     */
+    public int getBeforeDepth(){
+        if (isRoot()) {
+            return 0;
+        }
+
+        return beforeParent.getBeforeDepth() + 1;
     }
 
     /**
@@ -167,11 +200,7 @@ public class DiffNode {
             return 0;
         }
 
-        if (isIf()) {
-            return afterParent.getAfterDepth() + 1;
-        }
-
-        return afterParent.getAfterDepth();
+        return afterParent.getAfterDepth() + 1;
     }
 
     /**
@@ -384,10 +413,16 @@ public class DiffNode {
         addAfterChildren(parent.removeAfterChildren());
     }
 
+    /**
+     * @return {@link #beforeParent}
+     */
     public DiffNode getBeforeParent() {
         return beforeParent;
     }
 
+    /**
+     * @return {@link #afterParent}
+     */
     public DiffNode getAfterParent() {
         return afterParent;
     }
@@ -513,9 +548,31 @@ public class DiffNode {
      * @return An integer that uniquely identifiers this DiffNode within its patch.
      */
     public int getID() {
-        return ((1 + from.inDiff) << ID_LINE_NUMBER_OFFSET)
-                + (diffType.ordinal() << ID_DIFF_TYPE_OFFSET)
-                + codeType.ordinal();
+        int id;
+        id = 1 + from.inDiff;
+        id <<= ID_OFFSET;
+        id += diffType.ordinal();
+        id <<= ID_OFFSET;
+        id += codeType.ordinal();
+        return id;
+    }
+    
+    public static DiffNode fromID(final int id) {
+        // lowest 8 bits
+        final int lowestBitsMask = (1 << ID_OFFSET) - 1;
+
+        final int codeTypeOrdinal = id & lowestBitsMask;
+        final int diffTypeOrdinal = (id >> ID_OFFSET) & lowestBitsMask;
+        final int fromInDiff      = (id >> (2*ID_OFFSET)) - 1;
+
+        return new DiffNode(
+                DiffType.values()[diffTypeOrdinal],
+                CodeType.values()[codeTypeOrdinal],
+                new DiffLineNumber(fromInDiff, DiffLineNumber.InvalidLineNumber, DiffLineNumber.InvalidLineNumber),
+                DiffLineNumber.Invalid(),
+                null,
+                ""
+        );
     }
 
     public void assertConsistency() {
@@ -565,7 +622,7 @@ public class DiffNode {
         }
 
         if (node == null) {
-            Logger.warn("Could not parse expression \"{}\" to feature mapping. Using it as literal.", fmString);
+//            Logger.warn("Could not parse expression \"{}\" to feature mapping. Using it as literal.", fmString);
             node = new Literal(fmString);
         }
 

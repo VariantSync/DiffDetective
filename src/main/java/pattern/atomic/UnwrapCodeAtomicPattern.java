@@ -19,7 +19,7 @@ public class UnwrapCodeAtomicPattern extends AtomicPattern {
         int addAmount = codeNode.getAddAmount();
         int remAmount = codeNode.getRemAmount();
         return (remAmount > 0 && addAmount == 0)
-                ||  (remAmount == 0 && addAmount == 0 && codeNode.getBeforeDepth() > codeNode.getAfterDepth());
+                ||  (remAmount == 0 && addAmount == 0 && codeNode.getBeforeAnnotationDepth() > codeNode.getAfterAnnotationDepth());
     }
 
     @Override

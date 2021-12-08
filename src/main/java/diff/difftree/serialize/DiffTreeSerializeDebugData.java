@@ -1,4 +1,4 @@
-package diff.serialize;
+package diff.difftree.serialize;
 
 public class DiffTreeSerializeDebugData {
     public int numExportedNonNodes = 0;
