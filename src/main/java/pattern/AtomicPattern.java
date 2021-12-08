@@ -58,6 +58,10 @@ public abstract class AtomicPattern extends EditPattern<DiffNode> {
         return t.anyMatch(this::matches);
     }
 
+    public DiffType getDiffType() {
+        return diffType;
+    }
+
     /**
      * Returns the atomic pattern that matches the given node.
      * Each node matches exactly one pattern.
@@ -86,5 +90,15 @@ public abstract class AtomicPattern extends EditPattern<DiffNode> {
         }
 
         return match;
+    }
+
+    public static AtomicPattern fromName(final String name) {
+        for (final AtomicPattern p : Patterns.ATOMIC) {
+            if (p.getName().equals(name)) {
+                return p;
+            }
+        }
+
+        return null;
     }
 }
