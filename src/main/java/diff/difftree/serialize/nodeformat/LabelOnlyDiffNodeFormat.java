@@ -9,7 +9,7 @@ import diff.difftree.DiffNode;
 public class LabelOnlyDiffNodeFormat implements DiffNodeLabelFormat {
 	
 	@Override
-	public String writeNodeToLineGraph(final DiffNode node) {
+	public String toLabel(final DiffNode node) {
 		return node.getLabel();
 	}
 

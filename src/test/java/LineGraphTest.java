@@ -1,10 +1,10 @@
 import diff.difftree.CommitDiffDiffTreeSource;
 import diff.difftree.DiffTree;
 import diff.difftree.serialize.*;
-import diff.difftree.serialize.nodeformat.DiffNodeLabelFormat;
 import diff.difftree.serialize.nodeformat.LabelOnlyDiffNodeFormat;
 import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
 import org.junit.Test;
+import util.FileUtils;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -18,35 +18,30 @@ import static org.junit.Assert.assertEquals;
  * For testing the import of a line graph.
  */
 public class LineGraphTest {
-	
+	private final static DiffTreeLineGraphImportOptions IMPORT_OPTIONS = new DiffTreeLineGraphImportOptions(
+            GraphFormat.DIFFTREE,
+            new CommitDiffDiffTreeLabelFormat(),
+            new LabelOnlyDiffNodeFormat()
+    );
+    private final static DiffTreeLineGraphExportOptions EXPORT_OPTIONS = new DiffTreeLineGraphExportOptions(
+            IMPORT_OPTIONS.graphFormat(),
+            IMPORT_OPTIONS.treeFormat(),
+            IMPORT_OPTIONS.nodeFormat()
+    );
+
+    private final static Path TEST_FILE = Paths.get("src/test/resources/line_graph/DiffTreeTestFile.lg");
+
 	/**
 	 * Test the import of a line graph.
 	 */
 	@Test
-	public void importLineGraphDiffTree() {
-		Path filePath = Paths.get("src/test/resources/line_graph/DiffTreeTestFile.lg");
-		importLineGraph(GraphFormat.DIFFTREE, filePath);
-	}
-	
-	/**
-	 * Import a line graph.
-	 * 
-	 * @param format {@link GraphFormat}
-	 */
-	private static void importLineGraph(final GraphFormat format, Path filePath) {
-		String lineGraph = readLineGraphFile(filePath.toString());
-		CommitDiffDiffTreeLabelFormat treeLabel = new CommitDiffDiffTreeLabelFormat();
-		DiffNodeLabelFormat nodeLabel = new LabelOnlyDiffNodeFormat();
-		DiffTreeLineGraphImportOptions options = new DiffTreeLineGraphImportOptions(format,
-				treeLabel,
-				nodeLabel
-				);
-		List<DiffTree> diffTrees = LineGraphImport.fromLineGraphFormat(lineGraph, options);
-		
-		checkConsistency(diffTrees);
-		
-		String lineGraphResult = exportDiffTreeToLineGraph(diffTrees, format, treeLabel, nodeLabel);
-		compareLineGraphs(lineGraph, lineGraphResult);
+	public void idempotentReadWrite() {
+        final String lineGraph = readLineGraphFile(TEST_FILE.toString());
+        final List<DiffTree> diffTrees = LineGraphImport.fromLineGraphFormat(lineGraph, IMPORT_OPTIONS);
+        assertConsistencyForAll(diffTrees);
+        diffTrees.forEach(d -> d.forAll(n -> System.out.println(n.getLabel())));
+        final String lineGraphResult = exportDiffTreeToLineGraph(diffTrees);
+        assertEqualFileContent(lineGraph, lineGraphResult);
 	}
 	
 	/**
@@ -70,7 +65,7 @@ public class LineGraphTest {
 	 * 
 	 * @param treeList {@link DiffTree} list
 	 */
-	private static void checkConsistency(final List<DiffTree> treeList) {
+	private static void assertConsistencyForAll(final List<DiffTree> treeList) {
 		treeList.forEach(DiffTree::assertConsistency);
 	}
 	
@@ -78,20 +73,13 @@ public class LineGraphTest {
 	 * Exports computed trees to line graph.
 	 * 
 	 * @param treeList A list of {@link DiffTree DiffTrees}
-	 * @param format {@link GraphFormat}
-	 * @param treeLabel {@link CommitDiffDiffTreeLabelFormat}
-	 * @param nodeLabel {@link DiffNodeLabelFormat}
 	 * @return The computed line graph
 	 */
-	private static String exportDiffTreeToLineGraph(final List<DiffTree> treeList, final GraphFormat format, final CommitDiffDiffTreeLabelFormat treeLabel, final DiffNodeLabelFormat nodeLabel) {
-		DiffTreeLineGraphExportOptions options = new DiffTreeLineGraphExportOptions(format, 
-				treeLabel, 
-				nodeLabel
-				);
+	private static String exportDiffTreeToLineGraph(final List<DiffTree> treeList) {
         final StringBuilder lineGraphOutput = new StringBuilder();
         for (var tree : treeList) {
         	if (tree.getSource() instanceof CommitDiffDiffTreeSource source) {
-                LineGraphExport.composeTreeInLineGraph(lineGraphOutput, source, LineGraphExport.toLineGraphFormat(tree, options).getValue(), options);
+                LineGraphExport.composeTreeInLineGraph(lineGraphOutput, source, LineGraphExport.toLineGraphFormat(tree, EXPORT_OPTIONS).getValue(), EXPORT_OPTIONS);
         	} else throw new RuntimeException("The DiffTreeSoruce of DiffTree " + tree + " is not a CommitDiffDiffTreeSource: " + tree.getSource());
         }
         return lineGraphOutput.toString();
@@ -103,8 +91,8 @@ public class LineGraphTest {
 	 * @param originalLineGraph The original line graph
 	 * @param generatedLineGraph The generated line graph
 	 */
-	private static void compareLineGraphs(final String originalLineGraph, final String generatedLineGraph) {
-		assertEquals(originalLineGraph.replace("\\r?\\n", "\\n"), generatedLineGraph.replace("\\r?\\n", "\\n"));
+	private static void assertEqualFileContent(final String originalLineGraph, final String generatedLineGraph) {
+		assertEquals(FileUtils.normalizedLineEndings(originalLineGraph), FileUtils.normalizedLineEndings(generatedLineGraph));
 	}
 	
 }

@@ -17,7 +17,8 @@ import java.util.function.BiConsumer;
  * Options necessary for exporting a line graph.
  * This records contains information for exporting a {@link DiffTree} into a line graph, such as the graph format and tree and node layouts.
  */
-public record DiffTreeLineGraphExportOptions(GraphFormat format, 
+public record DiffTreeLineGraphExportOptions(
+        GraphFormat graphFormat,
 		DiffTreeLabelFormat treeFormat,
 		DiffNodeLabelFormat nodeFormat,
 		boolean skipEmptyTrees,

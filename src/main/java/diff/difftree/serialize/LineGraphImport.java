@@ -56,9 +56,7 @@ public class LineGraphImport {
 				// the line represents a DiffNode
 				
 				// parse node from input line
-				int nodeId = parseDiffNodeHeaderId(ln);
-				String nodeLabel = parseDiffNodeHeaderLabel(ln);
-				DiffNode node = options.nodeFormat().readNodeFromLineGraph(nodeLabel, nodeId);
+				DiffNode node = options.nodeFormat().fromLineGraphLine(ln);
 			
 				// add DiffNode to lists of current DiffTree
 				diffNodeList.add(node);
@@ -136,11 +134,11 @@ public class LineGraphImport {
 	private static DiffTree parseDiffTree(final String lineGraph, final List<DiffNode> diffNodeList, final DiffTreeLineGraphImportOptions options) {
 		final DiffTreeSource diffTreeSource = options.treeFormat().fromLineGraphLine(lineGraph);
 		// Handle trees and graphs differently
-		if (options.format() == GraphFormat.DIFFGRAPH) {
+		if (options.graphFormat() == GraphFormat.DIFFGRAPH) {
 			// If you should interpret the input data as DiffTrees, always expect a root to be present. Parse all nodes (v) to a list of nodes. Search for the root. Assert that there is exactly one root.
 			Assert.assertTrue(diffNodeList.stream().noneMatch(DiffNode::isRoot)); // test if it’s not a tree
 			return DiffGraph.fromNodes(diffNodeList, diffTreeSource);
-		} else if (options.format() == GraphFormat.DIFFTREE) {
+		} else if (options.graphFormat() == GraphFormat.DIFFTREE) {
 			// If you should interpret the input data as DiffTrees, always expect a root to be present. Parse all nodes (v) to a list of nodes. Search for the root. Assert that there is exactly one root.
 			int rootCount = 0;
 			DiffNode root = null;
@@ -156,56 +154,4 @@ public class LineGraphImport {
 			throw new RuntimeException("Unsupported GraphFormat");
 		}
 	}
-	
-	/**
-	 * Returns the node id of a {@link DiffNode} in line graph.
-	 * The format has to be "v $NODE_ID $LABEL".
-	 * 
-	 * @param lineGraphLine An entire line graph line
-	 * @return The node id
-	 */
-	private static int parseDiffNodeHeaderId(final String lineGraphLine) {
-		if (!lineGraphLine.startsWith(LineGraphConstants.LG_NODE)) throw new RuntimeException("Failed trying to parse the node id of a DiffNode: Not a DiffNode."); // check if encoded DiffNode
-		return parseDiffNodeHeaderId(lineGraphLine, LineGraphConstants.LG_NODE.length() + 1);
-	}
-	
-	/**
-	 * Returns the node id of a {@link DiffNode} in line graph.
-	 * The format has to be "$OVERHEAD $NODE_ID $LABEL".
-	 * 
-	 * @param lineGraphLine An entire line graph line
-	 * @param overheadOffset The length of the overhead in front of the node id. In other words, the number of characters that need to be removed ahead
-	 * @return The node id
-	 */
-	private static int parseDiffNodeHeaderId(final String lineGraphLine, final int overheadOffset) {
-		String nodeId = lineGraphLine.substring(overheadOffset, lineGraphLine.indexOf(' ', overheadOffset)); // extract the string between the overhead in front of the node id and the delimiter right after the node id
-		try {
-			return Integer.parseInt(nodeId);
-		} catch (NumberFormatException e) {
-			throw new RuntimeException("Input cannot be parsed since the node id is not an integer: ‘" + nodeId + "’");
-		}
-	}
-	
-	/**
-	 * Returns the label of a {@link DiffNode} in line graph.
-	 * 
-	 * @param lineGraphLine An entire line graph line
-	 * @return The node label
-	 */
-	private static String parseDiffNodeHeaderLabel(final String lineGraphLine) {
-		if (!lineGraphLine.startsWith(LineGraphConstants.LG_NODE)) throw new RuntimeException("Failed trying to parse the node id of a DiffNode: Not a DiffNode."); // check if encoded DiffNode
-		return parseDiffNodeHeaderLabel(lineGraphLine, lineGraphLine.indexOf(' ', LineGraphConstants.LG_NODE.length() + 1));
-	}
-	
-	/**
-	 * Returns the label of a {@link DiffNode} in line graph.
-	 * 
-	 * @param lineGraphLine A line in linegraph format to cut.
-	 * @param overheadOffset The length of the overhead in front of the node label. In other words, the number of characters that need to be removed ahead
-	 * @return The node label
-	 */
-	private static String parseDiffNodeHeaderLabel(final String lineGraphLine, final int overheadOffset) {
-		return lineGraphLine.substring(overheadOffset); // remove overhead
-	}
-	
 }
