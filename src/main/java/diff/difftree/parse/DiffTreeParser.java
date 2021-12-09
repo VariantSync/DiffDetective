@@ -43,7 +43,7 @@ public class DiffTreeParser {
         DiffNode lastCode = null;
         final AtomicBoolean error = new AtomicBoolean(false);
         final Consumer<String> errorHandler = m -> {
-            Logger.warn(m);
+            Logger.debug("Warning: " + m);
             error.set(true);
         };
 

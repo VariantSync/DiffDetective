@@ -79,7 +79,7 @@ public class GitDiffer {
         final Iterator<RevCommit> commitIterator = new SideEffectIteratorDecorator<>(
                 commitsIterable.iterator(),
                 r -> ++commitAmount[0]);
-        for (CommitDiff commitDiff : yieldAllValidIn(commitIterator)) {
+        for (CommitDiff commitDiff : loadAllValidIn(commitIterator)) {
             gitDiff.addCommitDiff(commitDiff);
         }
         gitDiff.setCommitAmount(commitAmount[0]);
@@ -87,7 +87,7 @@ public class GitDiffer {
         return gitDiff;
     }
 
-    public Yield<CommitDiff> yieldGitDiff() {
+    public Yield<RevCommit> yieldRevCommits() {
         final Iterable<RevCommit> commitsIterable;
         try {
             commitsIterable = git.log().call();
@@ -99,7 +99,19 @@ public class GitDiffer {
         return yieldAllValidIn(commitsIterable.iterator());
     }
 
-    private Yield<CommitDiff> yieldAllValidIn(final Iterator<RevCommit> commitsIterator) {
+    public Yield<CommitDiff> yieldCommitDiffs() {
+        final Iterable<RevCommit> commitsIterable;
+        try {
+            commitsIterable = git.log().call();
+        } catch (GitAPIException e) {
+            Logger.warn("Could not get log for git repository {}", git.toString());
+            return null;
+        }
+
+        return loadAllValidIn(commitsIterable.iterator());
+    }
+
+    private Yield<RevCommit> yieldAllValidIn(final Iterator<RevCommit> commitsIterator) {
         return new Yield<>(
                 () -> {
                     while (commitsIterator.hasNext()) {
@@ -110,21 +122,29 @@ public class GitDiffer {
                         }
 
                         if (c.getParentCount() == 0) {
-                            Logger.warn("Cannot create CommitDiff for commit " + c.getId().getName() + " because it does not have parents!");
+                            Logger.debug("Warning: Cannot create CommitDiff for commit " + c.getId().getName() + " because it does not have parents!");
                             continue;
                         }
 
-                        try {
-                            return createCommitDiffFromFirstParent(git, diffFilter, c, debugOptions);
-                        } catch (IOException exception) {
-                            Logger.error(exception);
-                            return null;
-                        }
+                        return c;
                     }
 
                     return null;
                 }
         );
+    }
+
+    private Yield<CommitDiff> loadAllValidIn(final Iterator<RevCommit> commitsIterator) {
+        return yieldAllValidIn(commitsIterator).map(this::createCommitDiff);
+    }
+
+    public CommitDiff createCommitDiff(final RevCommit revCommit) {
+        try {
+            return createCommitDiffFromFirstParent(git, diffFilter, revCommit, debugOptions);
+        } catch (IOException exception) {
+            Logger.error(exception);
+            return null;
+        }
     }
 
     /**
@@ -238,7 +258,7 @@ public class GitDiffer {
         final DiffTree diffTree = DiffTreeParser.createDiffTree(fullDiff, true, true);
 
         if (diffTree == null) {
-            Logger.warn("Something went wrong parsing patch for file {} at commit {}!",
+            Logger.debug("Something went wrong parsing patch for file {} at commit {}!",
                     diffEntry.getOldPath(), commitDiff.getAbbreviatedCommitHash());
         }
 

@@ -29,11 +29,12 @@ public class LineGraphExport {
      * Writes the given commitDiff in line graph format to the given StringBuilder.
      * @param commitDiff The diff to convert to line graph format.
      * @param lineGraph The string builder to write the result to.
-     * @param treeCounter The number of the first diff tree to export.
      * @return The number of the next diff tree to export (updated value of treeCounter).
      */
-    public static Pair<DiffTreeSerializeDebugData, Integer> toLineGraphFormat(final CommitDiff commitDiff, final StringBuilder lineGraph, int treeCounter, final DiffTreeLineGraphExportOptions options) {
+    public static Pair<DiffTreeSerializeDebugData, Integer> toLineGraphFormat(final CommitDiff commitDiff, final StringBuilder lineGraph, final DiffTreeLineGraphExportOptions options) {
         final DiffTreeSerializeDebugData debugData = new DiffTreeSerializeDebugData();
+
+        int exportedTrees = 0;
 
         final String hash = commitDiff.getCommitHash();
         for (final PatchDiff patchDiff : commitDiff.getPatchDiffs()) {
@@ -51,14 +52,14 @@ public class LineGraphExport {
 
                 if (!patchDiffLg.getValue().isEmpty()) {
                     composeTreeInLineGraph(lineGraph, patchDiff, patchDiffLg.getValue(), options);
-                    ++treeCounter;
+                    ++exportedTrees;
                 }
             } else {
-                Logger.info("  Skipping invalid patch for file " + patchDiff.getFileName() + " at commit " + hash);
+                Logger.debug("  Skipping invalid patch for file " + patchDiff.getFileName() + " at commit " + hash);
             }
         }
 
-        return new Pair<>(debugData, treeCounter);
+        return new Pair<>(debugData, exportedTrees);
     }
     
     /**

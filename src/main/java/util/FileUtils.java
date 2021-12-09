@@ -32,4 +32,8 @@ public class FileUtils {
                         Integer.MAX_VALUE,
                         (filePath, fileAttr) -> fileAttr.isRegularFile()).toList();
     }
+
+    public static Path addExtension(final Path p, final String extension) {
+        return p.resolveSibling(p.getFileName() + extension);
+    }
 }

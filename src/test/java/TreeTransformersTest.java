@@ -30,7 +30,7 @@ public class TreeTransformersTest {
     private static final boolean RENDER = true;
     private static final Path resDir = Constants.RESOURCE_DIR.resolve("diffs/collapse");
     private static final Path genDir = resDir.resolve("gen");
-    private static final List<DiffTreeTransformer> transformers = DiffTreeMiner.PostProcessing;
+    private static final List<DiffTreeTransformer> transformers = DiffTreeMiner.Postprocessing();
     private static final DiffTreeRenderer.RenderOptions renderOptions = new DiffTreeRenderer.RenderOptions(
             GraphFormat.DIFFTREE,
             new CommitDiffDiffTreeLabelFormat(),

@@ -3,81 +3,127 @@ package main.mining;
 import datasets.DebugOptions;
 import datasets.DefaultRepositories;
 import datasets.Repository;
-import de.ovgu.featureide.fm.core.analysis.cnf.generator.configuration.util.Pair;
-import diff.CommitDiff;
 import diff.GitDiffer;
 import diff.difftree.CodeType;
-import diff.difftree.render.DiffTreeRenderer;
 import diff.difftree.serialize.DiffTreeLineGraphExportOptions;
-import diff.difftree.serialize.DiffTreeSerializeDebugData;
 import diff.difftree.serialize.GraphFormat;
-import diff.difftree.serialize.LineGraphExport;
 import diff.difftree.serialize.nodeformat.MiningDiffNodeFormat;
 import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
 import diff.difftree.transform.*;
 import main.Main;
-import main.mining.strategies.CompositeDiffTreeMiningStrategy;
-import main.mining.strategies.MineAndExportIncrementally;
-import main.mining.strategies.MiningMonitor;
+import main.mining.strategies.MineAllThenExport;
 import org.pmw.tinylog.Level;
 import org.pmw.tinylog.Logger;
-import util.IO;
-import util.Yield;
+import parallel.ScheduledTasksIterator;
+import util.Clock;
+import util.ClusteredIterator;
+import util.Diagnostics;
+import util.MappedIterator;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Iterator;
 import java.util.List;
+import java.util.function.Supplier;
 
 public class DiffTreeMiner {
-    public static final List<DiffTreeTransformer> PostProcessing = List.of(
-//            new NaiveMovedCodeDetection(), // do this first as it might introduce non-edited subtrees
-            new CutNonEditedSubtrees(),
-//            RunningExampleFinder.Default,
-            new CollapseNestedNonEditedMacros(),
-            new CollapseAtomicPatterns(),
-            new RelabelRoot(CodeType.IF.name)
-    );
+    private final static Diagnostics DIAGNOSTICS = new Diagnostics();
 
-    private final static int DEBUG_treesToExportAtMost = -1;
+    public static final int COMMITS_TO_PROCESS_PER_THREAD = 500;
 
-    public static DiffTreeMiningResult mine(
+    public static List<DiffTreeTransformer> Postprocessing() {
+        return List.of(
+//                new NaiveMovedCodeDetection(), // do this first as it might introduce non-edited subtrees
+                new CutNonEditedSubtrees(),
+//                RunningExampleFinder.Default,
+                new CollapseNestedNonEditedMacros(),
+                new CollapseAtomicPatterns(),
+                new RelabelRoot(CodeType.IF.name)
+        );
+    }
+
+    public static void mine(
             final Repository repo,
-            final Path outputPath,
+            final Path outputDir,
             final DiffTreeLineGraphExportOptions exportOptions,
             final DiffTreeMiningStrategy strategy)
     {
+        DiffTreeMiningResult totalResult;
         final GitDiffer differ = new GitDiffer(repo);
-        final Yield<CommitDiff> yieldDiff = differ.yieldGitDiff();
-        final DiffTreeSerializeDebugData debugData = new DiffTreeSerializeDebugData();
+        final Clock clock = new Clock();
 
-        int treeCounter = 0;
-        int commitCounter = 0;
+        // prepare tasks
+        Logger.info(">>> Scheduling synchronous mining");
+        clock.start();
+        final MiningTask task = new MiningTask(
+                repo,
+                differ,
+                outputDir.resolve(repo.getRepositoryName() + ".lg"),
+                exportOptions,
+                strategy,
+                differ.yieldRevCommits().toList()
+                );
+        Logger.info("<<< done after " + clock.printPassedSeconds());
 
-        Logger.info("Mining start");
-        strategy.start(repo, outputPath, exportOptions);
-        for (CommitDiff diff : yieldDiff) {
-            final StringBuilder lineGraph = new StringBuilder();
-            final Pair<DiffTreeSerializeDebugData, Integer> res = LineGraphExport.toLineGraphFormat(diff, lineGraph, treeCounter, exportOptions);
-            debugData.mappend(res.getKey());
-
-            treeCounter = res.getValue();
-            ++commitCounter;
-
-            strategy.onCommit(diff, lineGraph.toString());
-
-            if (DEBUG_treesToExportAtMost > 0 && treeCounter >= DEBUG_treesToExportAtMost) {
-                break;
-            }
+        Logger.info(">>> Run mining");
+        clock.start();
+        try {
+            totalResult = task.call();
+        } catch (Exception e) {
+            Logger.error(e);
+            return;
         }
+        Logger.info("<<< done after " + clock.printPassedSeconds());
 
-        strategy.end();
-        return new DiffTreeMiningResult(commitCounter, treeCounter, debugData);
+        totalResult.exportTo(outputDir.resolve("totalresult" + DiffTreeMiningResult.EXTENSION));
+    }
+
+    public static void mineAsync(
+            final Repository repo,
+            final Path outputDir,
+            final Supplier<DiffTreeLineGraphExportOptions> exportOptions,
+            final Supplier<DiffTreeMiningStrategy> strategyFactory)
+    {
+        final DiffTreeMiningResult totalResult = new DiffTreeMiningResult();
+        final GitDiffer differ = new GitDiffer(repo);
+        final Clock clock = new Clock();
+
+        // prepare tasks
+        final int nThreads = DIAGNOSTICS.getNumberOfAvailableProcessors();
+        Logger.info(">>> Scheduling asynchronous mining on " + nThreads + " threads.");
+        clock.start();
+        final Iterator<MiningTask> tasks =
+                new MappedIterator<>(
+                        new ClusteredIterator<>(differ.yieldRevCommits(), COMMITS_TO_PROCESS_PER_THREAD),
+                        commitList -> new MiningTask(
+                            repo,
+                            differ,
+                            outputDir.resolve(commitList.get(0).getId().getName() + ".lg"),
+                            exportOptions.get(),
+                            strategyFactory.get(),
+                            commitList)
+                );
+
+        Logger.info("<<< done in " + clock.printPassedSeconds());
+
+        Logger.info(">>> Run mining");
+        clock.start();
+        try (final ScheduledTasksIterator<DiffTreeMiningResult> threads = new ScheduledTasksIterator<>(tasks, nThreads)) {
+            while (threads.hasNext()) {
+                totalResult.mappend(threads.next());
+            }
+        } catch (Exception e) {
+            Logger.error("Failed to run all mining task!");
+            Logger.error(e);
+        }
+        Logger.info("<<< done in " + clock.printPassedSeconds());
+
+        totalResult.exportTo(outputDir.resolve("totalresult" + DiffTreeMiningResult.EXTENSION));
     }
 
     public static void main(String[] args) {
-        Main.setupLogger(Level.DEBUG);
+        Main.setupLogger(Level.INFO);
 
-        final boolean renderOutput = false;
         final DebugOptions debugOptions = new DebugOptions(DebugOptions.DiffStoragePolicy.REMEMBER_STRIPPED_DIFF);
 
         final Path inputDir = Paths.get("..", "DiffDetectiveMining");
@@ -85,28 +131,27 @@ public class DiffTreeMiner {
         final Path outputDir = Paths.get("results", "mining");
 
         final List<Repository> repos = List.of(
-//                DefaultRepositories.stanciulescuMarlinZip(Path.of("."))
-                DefaultRepositories.createRemoteLinuxRepo(linuxDir.resolve("linux"))
+                DefaultRepositories.stanciulescuMarlinZip(Path.of("."))
+//                DefaultRepositories.createRemoteLinuxRepo(linuxDir.resolve("linux"))
 //                DefaultRepositories.createRemoteVimRepo(inputDir.resolve("vim"))
         );
 
-        final DiffTreeLineGraphExportOptions exportOptions = new DiffTreeLineGraphExportOptions(
+        final Supplier<DiffTreeLineGraphExportOptions> exportOptions = () -> new DiffTreeLineGraphExportOptions(
                 GraphFormat.DIFFTREE
                 , new CommitDiffDiffTreeLabelFormat()
                 , new MiningDiffNodeFormat()
                 , true
-                , PostProcessing
+                , Postprocessing()
                 , DiffTreeLineGraphExportOptions.LogError()
                 .andThen(DiffTreeLineGraphExportOptions.RenderError())
                 .andThen(DiffTreeLineGraphExportOptions.SysExitOnError())
         );
 
-        final DiffTreeMiningStrategy miningStrategy =
-//                new MineAndExportIncrementally();
-                new CompositeDiffTreeMiningStrategy(
-                        new MineAndExportIncrementally(1000),
-                        new MiningMonitor(10)
-                );
+        final Supplier<DiffTreeMiningStrategy> miningStrategy = MineAllThenExport::new;
+//                new CompositeDiffTreeMiningStrategy(
+//                        new MineAndExportIncrementally(1000),
+//                        new MiningMonitor(10)
+//                );
 
         /* ************************ *\
         |      END OF ARGUMENTS      |
@@ -114,24 +159,15 @@ public class DiffTreeMiner {
 
         for (final Repository repo : repos) {
             Logger.info(" === Begin Processing " + repo.getRepositoryName() + " ===");
+            final Clock clock = new Clock();
+            clock.start();
+
             repo.setDebugOptions(debugOptions);
-            final Path lineGraphOutputPath = outputDir.resolve(repo.getRepositoryName() + ".lg");
-            final Path metadataOutputPath = outputDir.resolve(repo.getRepositoryName() + ".metadata.txt");
-            final DiffTreeMiningResult result = mine(repo, lineGraphOutputPath, exportOptions, miningStrategy);
-            final String printedResult = result.toString();
+            final Path repoOutputDir = outputDir.resolve(repo.getRepositoryName());
+            mineAsync(repo, repoOutputDir, exportOptions, miningStrategy);
+//            mine(repo, repoOutputDir, exportOptions.get(), miningStrategy.get());
 
-            Logger.info("Writing the following metadata to " + metadataOutputPath + "\n" + printedResult);
-            IO.tryWrite(metadataOutputPath, printedResult);
-
-            if (renderOutput) {
-                Logger.info("Rendering " + lineGraphOutputPath);
-                final DiffTreeRenderer renderer = DiffTreeRenderer.WithinDiffDetective();
-                if (!renderer.renderFile(lineGraphOutputPath)) {
-                    Logger.error("Rendering " + lineGraphOutputPath + " failed!");
-                }
-            }
-
-            Logger.info(" === End Processing " + repo.getRepositoryName() + " ===");
+            Logger.info(" === End Processing " + repo.getRepositoryName() + " after " + clock.printPassedSeconds() + " ===");
         }
 
         Logger.info("Done");
