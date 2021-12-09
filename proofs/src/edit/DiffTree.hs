@@ -11,8 +11,8 @@ type DiffTreePC f = Time -> DiffTreeNode f -> f
 
 data DiffTreeNode f = DiffTreeNode {
     label :: Label f,
-    c :: CodeType,
-    d :: DiffType,
+    codeType :: CodeType,
+    diffType :: DiffType,
     parent :: Time -> Maybe (DiffTreeNode f)
 }
 
@@ -50,7 +50,7 @@ findNodeWithCode code tree = case find (equalsCodeFragment code) (v tree) of
 createLeaf :: CodeFragment -> DiffType -> (Time -> Maybe (DiffTreeNode f)) -> DiffTreeNode f
 createLeaf code diffType parents = DiffTreeNode {
     label = Leaf code,
-    c = CODE,
-    d = diffType,
+    codeType = CODE,
+    diffType = diffType,
     parent = parents
 }
