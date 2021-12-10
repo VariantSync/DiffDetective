@@ -67,6 +67,7 @@ public class MiningPostprocessing {
 
     /**
      * Parses all linegraph files in the given directory as patterns (i.e., as DiffGraphs).
+     * non-recursive
      * @param directory A directory containing linegraph files.
      * @return The list of all diffgraphs parsed from linegraph files in the given directory.
      * @throws IOException If the directory could not be accessed ({@link Files::list}).

@@ -4,6 +4,11 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+/**
+ * An identifiable {@link Predicate} where a predicate is identified with a generic tag.
+ * @param <Tag> A tag to identify the predicate.
+ * @param <Domain> The type of elements the predicate is defined on.
+ */
 public record TaggedPredicate<Tag, Domain>(Tag tag, Predicate<Domain> condition) {
     public boolean test(final Domain element) {
         return condition.test(element);

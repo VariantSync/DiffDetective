@@ -11,8 +11,9 @@ import pattern.AtomicPattern;
 import java.util.Arrays;
 
 /**
- * A concrete implementation for Mining of a node label.
- * Print metadata required for semantic pattern mining.
+ * Analogous to {@link ReleaseMiningDiffNodeFormat} but produces human readable labels instead of using integers.
+ * Code nodes are labeled with the name of their matched atomic pattern.
+ * Macro nodes are labeled with DIFFTYPE_CODETYPE (e.g., an added IF node gets the label ADD_IF).
  */
 public class DebugMiningDiffNodeFormat implements DiffNodeLabelFormat {
 	@Override

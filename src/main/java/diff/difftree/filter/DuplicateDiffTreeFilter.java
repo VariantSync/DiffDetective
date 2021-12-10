@@ -1,7 +1,6 @@
 package diff.difftree.filter;
 
 import diff.difftree.DiffTree;
-import diff.difftree.analysis.Equality;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,10 +14,6 @@ public class DuplicateDiffTreeFilter {
 
     public DuplicateDiffTreeFilter(final BiFunction<DiffTree, DiffTree, Boolean> equalityCondiiton) {
         this.equality = equalityCondiiton;
-    }
-
-    public static DuplicateDiffTreeFilter wrtIsomorphism() {
-        return new DuplicateDiffTreeFilter(Equality::isomorph);
     }
 
     public List<DiffTree> filterDuplicates(final List<DiffTree> treesWithDuplicates) {

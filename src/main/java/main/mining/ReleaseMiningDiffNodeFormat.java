@@ -10,6 +10,16 @@ import pattern.AtomicPattern;
 import pattern.Patterns;
 import util.Assert;
 
+/**
+ * Formats for DiffNodes for mining.
+ * The label of a node starts with c if it is a code node and with m (for macro) otherwise.
+ * The label of code nodes is followed by the index of its matched atomic pattern.
+ * The label of diff nodes is followed by the ordinal of its diff type and the ordinal of its code type.
+ *
+ * Examples:
+ * DiffNode with codeType=CODE and atomic pattern AddWithMapping gets the label "c1" because AddWithMapping has index 1.
+ * DiffNode with codeType=ELSE and difftype=REM gets the label "m23" because the ordinal or REM is 2 and the ordinal of ELSE is 3.
+ */
 public class ReleaseMiningDiffNodeFormat implements DiffNodeLabelFormat {
     public final static String CODE_PREFIX = "c";
     public final static String MACRO_PREFIX = "m";
