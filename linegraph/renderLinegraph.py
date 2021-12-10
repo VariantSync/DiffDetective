@@ -59,6 +59,12 @@ IS_PATTERN = False
 ATOMICS = False
 WITH_TITLE = False
 
+
+ADD_PATTERNS = ["AddWithMapping", "AddToPC"]
+REM_PATTERNS = ["RemWithMapping", "RemFromPC"]
+NON_PATTERNS = ["ChangePC", "WrapCode", "UnwrapCode", "Unchanged"]
+
+
 def lineNoOfNode(v):
     # inverse of DiffNode::getID in our Java code
     # ((1 + fromLine) << ID_LINE_NUMBER_OFFSET) + diffType.ordinal()
@@ -158,26 +164,32 @@ def plot_graphs(S, exportDir):
         rootNode = None
         for v, d in difftree.nodes(data=True):
             name = d['label']
-            # print(v, name)
-            if ATOMICS:
-                if name.startswith("Add"):
-                    node_colors.append(DIFFTYPE_ADD_COLOR)
-                elif name.startswith("Rem"):
-                    node_colors.append(DIFFTYPE_REM_COLOR)
-                else:
-                    node_colors.append(DIFFTYPE_NON_COLOR)
-            else:
-                if name.startswith("NON"):
-                    node_colors.append(DIFFTYPE_NON_COLOR)
-                elif name.startswith("ADD"):
-                    node_colors.append(DIFFTYPE_ADD_COLOR)
-                elif name.startswith("REM"):
-                    node_colors.append(DIFFTYPE_REM_COLOR)
-
             # remove metadata and " " from node labels
             nameWithoutDiffType = name[4:]
 
-            if nameWithoutDiffType.startswith("CODE"):
+            # print(v, name)
+            iscode = False
+            if ATOMICS:
+                iscode = True
+                if name in ADD_PATTERNS:
+                    node_colors.append(DIFFTYPE_ADD_COLOR)
+                elif name in REM_PATTERNS:
+                    node_colors.append(DIFFTYPE_REM_COLOR)
+                elif name in NON_PATTERNS:
+                    node_colors.append(DIFFTYPE_NON_COLOR)
+                else:
+                    iscode = False
+            else:
+                iscode = nameWithoutDiffType.startswith("CODE")
+
+            if name.startswith("NON"):
+                node_colors.append(DIFFTYPE_NON_COLOR)
+            elif name.startswith("ADD"):
+                node_colors.append(DIFFTYPE_ADD_COLOR)
+            elif name.startswith("REM"):
+                node_colors.append(DIFFTYPE_REM_COLOR)
+
+            if iscode:
                 node_type_colors.append(CODE_TYPE_CODE_COLOR)
             else: # is if/else/elif
                 node_type_colors.append(CODE_TYPE_OTHER_COLOR)
@@ -185,7 +197,7 @@ def plot_graphs(S, exportDir):
             secondHyphenPos = findCharacterInStringGreedy(nameWithoutDiffType, '_')
             codetype = nameWithoutDiffType[:secondHyphenPos]
             isroot = codetype.startswith("ROOT")
-            ismacro = not isroot and not codetype.startswith("CODE")
+            ismacro = not isroot and not iscode
 
             if isroot:
                 rootNode = v
