@@ -1,20 +1,45 @@
-package pattern;
+package pattern.atomic;
 
 import analysis.data.PatternMatch;
 import diff.difftree.DiffNode;
 import diff.difftree.DiffTree;
 import diff.difftree.DiffType;
 import org.eclipse.jgit.annotations.NonNull;
+import pattern.EditPattern;
 
-import java.util.Optional;
+import java.util.*;
 
 public abstract class AtomicPattern extends EditPattern<DiffNode> {
     private final DiffType diffType;
 
+    public static final AtomicPattern AddToPC = new AddToPC();
+    public static final AtomicPattern AddWithMapping = new AddWithMapping();
+    public static final AtomicPattern RemFromPC = new RemFromPC();
+    public static final AtomicPattern RemWithMapping = new RemWithMapping();
+    public static final AtomicPattern Specialization = new Specialization();
+    public static final AtomicPattern Generalization = new Generalization();
+    public static final AtomicPattern Reconfiguration = new Reconfiguration();
+    public static final AtomicPattern Refactoring = new Refactoring();
+
+    public static final List<AtomicPattern> All = List.of(
+            AddToPC, AddWithMapping,
+            RemFromPC, RemWithMapping,
+            Specialization, Generalization, Reconfiguration, Refactoring
+    );
+
+    public static final Map<DiffType, List<AtomicPattern>> PatternsByType;
+
+    static {
+        PatternsByType = new HashMap<>();
+        for (final AtomicPattern ap : All) {
+            PatternsByType.computeIfAbsent(ap.diffType, d -> new ArrayList<>()).add(ap);
+        }
+    }
+
     /**
      * Each atomic pattern handles exactly one DiffType.
      */
-    public AtomicPattern(final String name, final DiffType diffType) {
+    AtomicPattern(final String name, final DiffType diffType) {
         super(name);
         this.diffType = diffType;
     }
@@ -70,7 +95,7 @@ public abstract class AtomicPattern extends EditPattern<DiffNode> {
         }
 
         AtomicPattern match = null;
-        for (final AtomicPattern p : Patterns.ATOMIC) {
+        for (final AtomicPattern p : All) {
             if (p.matches(node)) {
                 if (match != null) {
                     throw new RuntimeException("BUG: Error in atomic pattern definition!\n"

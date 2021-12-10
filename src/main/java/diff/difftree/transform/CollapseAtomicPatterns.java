@@ -1,7 +1,7 @@
 package diff.difftree.transform;
 
 import diff.difftree.DiffTree;
-import pattern.AtomicPattern;
+import pattern.atomic.AtomicPattern;
 
 import java.util.List;
 

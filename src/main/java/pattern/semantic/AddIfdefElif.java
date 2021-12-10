@@ -5,17 +5,14 @@ import diff.Lines;
 import diff.difftree.DiffNode;
 import evaluation.FeatureContext;
 import org.prop4j.Node;
-import pattern.SemanticPattern;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class AddIfdefElifSemanticPattern extends SemanticPattern {
-    public static final String PATTERN_NAME = "AddIfdefElifSEM";
-
-    public AddIfdefElifSemanticPattern() {
-        super(PATTERN_NAME);
+class AddIfdefElif extends SemanticPattern {
+    AddIfdefElif() {
+        super("AddIfdefElif");
     }
 
     /*

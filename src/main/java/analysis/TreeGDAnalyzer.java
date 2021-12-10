@@ -6,10 +6,9 @@ import diff.GitDiff;
 import diff.PatchDiff;
 import diff.difftree.DiffNode;
 import diff.difftree.DiffTree;
-import pattern.AtomicPattern;
 import pattern.EditPattern;
-import pattern.Patterns;
-import pattern.SemanticPattern;
+import pattern.atomic.AtomicPattern;
+import pattern.semantic.SemanticPattern;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,24 +19,18 @@ import java.util.List;
  * Matches atomic patterns on the code nodes and semantic patterns on the annotation nodes.
  */
 public class TreeGDAnalyzer extends GDAnalyzer<DiffNode> {
-
-    @SuppressWarnings("unchecked")
-    private static EditPattern<DiffNode>[] getPatterns(boolean atomic, boolean semantic){
-        if(atomic && semantic){
-            EditPattern<DiffNode>[] patterns = new EditPattern[Patterns.ATOMIC.length + Patterns.SEMANTIC.length];
-            System.arraycopy(Patterns.ATOMIC, 0, patterns, 0, Patterns.ATOMIC.length);
-            System.arraycopy(Patterns.SEMANTIC, 0, patterns, Patterns.ATOMIC.length,
-                    Patterns.SEMANTIC.length);
-            return patterns;
-        }else if(atomic){
-            return Patterns.ATOMIC;
-        }else if(semantic){
-            return Patterns.SEMANTIC;
+    private static List<EditPattern<DiffNode>> getPatterns(boolean atomic, boolean semantic) {
+        final List<EditPattern<DiffNode>> patterns = new ArrayList<>();
+        if (atomic) {
+            patterns.addAll(AtomicPattern.All);
         }
-        return new EditPattern[0];
+        if (semantic) {
+            patterns.addAll(SemanticPattern.All);
+        }
+        return patterns;
     }
 
-    public TreeGDAnalyzer(GitDiff gitDiff, EditPattern<DiffNode>[] patterns) {
+    public TreeGDAnalyzer(GitDiff gitDiff, List<EditPattern<DiffNode>> patterns) {
         super(gitDiff, patterns);
     }
 
@@ -79,7 +72,7 @@ public class TreeGDAnalyzer extends GDAnalyzer<DiffNode> {
                 }
             }
         }else{
-            results.add(new PatternMatch<>(patterns[0]));
+            results.add(new PatternMatch<>(patterns.get(0)));
         }
         PatchDiffAnalysisResult patchResult = new PatchDiffAnalysisResult(patchDiff);
         patchResult.addPatternMatches(results);

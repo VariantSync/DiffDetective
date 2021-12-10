@@ -7,14 +7,14 @@ import diff.difftree.render.DiffTreeRenderer;
 import diff.difftree.transform.ExampleFinder;
 import org.prop4j.Literal;
 import org.prop4j.Node;
-import pattern.atomic.AddWithMappingAtomicPattern;
+import pattern.atomic.AtomicPattern;
 import util.Assert;
 
 import java.nio.file.Path;
 
 public class RunningExampleFinder {
     private static final Path DefaultExamplesDirectory = Path.of("examples");
-    private static final AddWithMappingAtomicPattern AddWithMapping = new AddWithMappingAtomicPattern();
+    private static final AtomicPattern AddWithMapping = AtomicPattern.AddWithMapping;
 
     public static final ExampleFinder Default = new ExampleFinder(
             diffTree -> {

@@ -6,23 +6,20 @@ import diff.difftree.DiffNode;
 import diff.difftree.DiffType;
 import evaluation.FeatureContext;
 import org.prop4j.Node;
-import pattern.AtomicPattern;
 
-public class RemFromPCAtomicPattern extends AtomicPattern {
-    public static final String PATTERN_NAME = "RemFromPC";
-
-    public RemFromPCAtomicPattern() {
-        super(PATTERN_NAME, DiffType.REM);
+final class AddToPC extends AtomicPattern {
+    AddToPC() {
+        super("AddToPC", DiffType.ADD);
     }
 
     @Override
-    protected boolean matchesCodeNode(DiffNode codeNode) {
-        return !codeNode.getBeforeParent().isRem();
+    protected boolean matchesCodeNode(DiffNode node) {
+        return !node.getAfterParent().isAdd();
     }
 
     @Override
     public PatternMatch<DiffNode> createMatchOnCodeNode(DiffNode codeNode) {
-        final Node fm = codeNode.getBeforeParent().getBeforeFeatureMapping();
+        final Node fm = codeNode.getAfterParent().getAfterFeatureMapping();
         final Lines diffLines = codeNode.getLinesInDiff();
 
         return new PatternMatch<>(this,
@@ -33,7 +30,7 @@ public class RemFromPCAtomicPattern extends AtomicPattern {
     @Override
     public FeatureContext[] getFeatureContexts(PatternMatch<DiffNode> patternMatch) {
         return new FeatureContext[]{
-                new FeatureContext(patternMatch.getFeatureMappings()[0], true)
+                new FeatureContext(patternMatch.getFeatureMappings()[0])
         };
     }
 }

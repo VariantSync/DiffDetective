@@ -6,38 +6,31 @@ import diff.difftree.DiffNode;
 import diff.difftree.DiffType;
 import evaluation.FeatureContext;
 import org.prop4j.Node;
-import pattern.AtomicPattern;
 
-public class AddWithMappingAtomicPattern extends AtomicPattern {
-    public static final String PATTERN_NAME = "AddWithMapping";
-
-    public AddWithMappingAtomicPattern() {
-        super(PATTERN_NAME, DiffType.ADD);
+final class RemFromPC extends AtomicPattern {
+    RemFromPC() {
+        super("RemFromPC", DiffType.REM);
     }
 
     @Override
     protected boolean matchesCodeNode(DiffNode codeNode) {
-        return codeNode.getAfterParent().isAdd();
+        return !codeNode.getBeforeParent().isRem();
     }
 
     @Override
     public PatternMatch<DiffNode> createMatchOnCodeNode(DiffNode codeNode) {
-        final Node fm = codeNode.getAfterParent().getAfterFeatureMapping();
+        final Node fm = codeNode.getBeforeParent().getBeforeFeatureMapping();
         final Lines diffLines = codeNode.getLinesInDiff();
 
         return new PatternMatch<>(this,
-                diffLines.getFromInclusive(),
-                diffLines.getToExclusive(), fm
+                diffLines.getFromInclusive(), diffLines.getToExclusive(), fm
         );
     }
 
     @Override
     public FeatureContext[] getFeatureContexts(PatternMatch<DiffNode> patternMatch) {
-        if(patternMatch.getFeatureMappings() == null){
-            System.out.println();
-        }
         return new FeatureContext[]{
-                new FeatureContext(patternMatch.getFeatureMappings()[0])
+                new FeatureContext(patternMatch.getFeatureMappings()[0], true)
         };
     }
 }

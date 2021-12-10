@@ -5,21 +5,15 @@ import diff.Lines;
 import diff.difftree.DiffNode;
 import diff.difftree.DiffType;
 import evaluation.FeatureContext;
-import pattern.AtomicPattern;
 
-public class WrapCodeAtomicPattern extends AtomicPattern {
-    public static final String PATTERN_NAME = "WrapCode";
-
-    public WrapCodeAtomicPattern() {
-        super(PATTERN_NAME, DiffType.NON);
+final class Reconfiguration extends AtomicPattern {
+    Reconfiguration() {
+        super("Reconfiguration", DiffType.NON);
     }
 
     @Override
     protected boolean matchesCodeNode(DiffNode codeNode) {
-        int addAmount = codeNode.getAddAmount();
-        int remAmount = codeNode.getRemAmount();
-        return (addAmount > 0 && remAmount == 0)
-                ||  (remAmount == 0 && addAmount == 0 && codeNode.getAfterAnnotationDepth() > codeNode.getBeforeAnnotationDepth());
+        return false;
     }
 
     @Override
