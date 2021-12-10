@@ -15,6 +15,7 @@ import diff.difftree.serialize.LineGraphExport;
 import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
 import diff.difftree.transform.CollapseNestedNonEditedMacros;
 import diff.difftree.transform.CutNonEditedSubtrees;
+import diff.difftree.transform.DiffTreeTransformer;
 import main.Main;
 import main.mining.strategies.CompositeDiffTreeMiningStrategy;
 import main.mining.strategies.DiffTreeMiningStrategy;
@@ -30,17 +31,19 @@ import java.nio.file.Paths;
 import java.util.List;
 
 public class DiffTreeMiner {
+    public final static List<DiffTreeTransformer> PostProcessing = List.of(
+//                    new NaiveMovedCodeDetection(), // do this first as it might introduce non-edited subtrees
+            new CutNonEditedSubtrees(),
+//                    RunningExampleFinder.Default,
+            new CollapseNestedNonEditedMacros()
+    );
+
     public final static DiffTreeLineGraphExportOptions exportOptions = new DiffTreeLineGraphExportOptions(
             GraphFormat.DIFFTREE
             , new CommitDiffDiffTreeLabelFormat()
             , new MiningDiffNodeFormat()
             , DiffTreeFilter.notEmpty().and(DiffTreeFilter.moreThanTwoAtomicPatterns())
-            , List.of(
-//                    new NaiveMovedCodeDetection(), // do this first as it might introduce non-edited subtrees
-                    new CutNonEditedSubtrees(),
-//                    RunningExampleFinder.Default,
-                    new CollapseNestedNonEditedMacros()
-            )
+            , PostProcessing
             , DiffTreeLineGraphExportOptions.LogError()
             .andThen(DiffTreeLineGraphExportOptions.RenderError())
             .andThen(DiffTreeLineGraphExportOptions.SysExitOnError())

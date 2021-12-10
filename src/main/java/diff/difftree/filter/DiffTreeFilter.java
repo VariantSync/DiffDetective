@@ -1,5 +1,6 @@
 package diff.difftree.filter;
 
+import diff.difftree.DiffNode;
 import diff.difftree.DiffTree;
 import diff.difftree.analysis.DiffTreeStatistics;
 import util.TaggedPredicate;
@@ -22,6 +23,13 @@ public final class DiffTreeFilter {
         return new TaggedPredicate<>(
                 "has more than two atomic patterns",
                 tree -> DiffTreeStatistics.getNumberOfUniqueAtomicPatternsIn(tree) > 1
+        );
+    }
+
+    public static TaggedPredicate<String, DiffTree> moreThanTwoAtomicPatternsAfterMining() {
+        return new TaggedPredicate<>(
+                "has more than two atomic patterns",
+                tree -> DiffTreeStatistics.getNumberOfUniqueLabelsOfNodes(tree, DiffNode::isCode) > 1
         );
     }
 

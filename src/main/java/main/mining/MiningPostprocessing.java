@@ -8,7 +8,6 @@ import diff.difftree.serialize.LineGraphImport;
 import diff.difftree.serialize.nodeformat.LabelOnlyDiffNodeFormat;
 import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
 import diff.difftree.serialize.treeformat.IndexedTreeFormat;
-import org.pmw.tinylog.Logger;
 import util.FileUtils;
 
 import java.io.IOException;
@@ -59,7 +58,7 @@ public class MiningPostprocessing {
         postprocessAndInterpretResults(
                 parseFrequentSubgraphsIn(inputPath),
                 Postprocessor.Default(),
-                Logger::info,
+                System.out::println,
                 DefaultRenderer,
                 DefaultRenderOptions,
                 outputPath
@@ -94,7 +93,7 @@ public class MiningPostprocessing {
                 + semanticPatterns.size() + " are candidates for semantic patterns.");
         printer.accept("Subgraphs were discarded for the following reasons:");
         for (Map.Entry<String, Integer> nameAndCount : result.filterCounts().entrySet()) {
-            printer.accept("    " + nameAndCount.getKey() + ": " + nameAndCount.getValue());
+            printer.accept("    not (" + nameAndCount.getKey() + "): " + nameAndCount.getValue());
         }
         printer.accept("");
 

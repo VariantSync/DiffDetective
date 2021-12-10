@@ -35,6 +35,10 @@ public class FileUtils {
     }
 
     public static boolean hasExtension(final Path p, final String extension) {
+        if (Files.isDirectory(p)) {
+            return false;
+        }
+
         final boolean withDot = extension.startsWith(".");
 
         final String filename = p.getFileName().toString();
