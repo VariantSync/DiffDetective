@@ -9,12 +9,12 @@ public record TaggedPredicate<Tag, Domain>(Tag tag, Predicate<Domain> condition)
         return condition.test(element);
     }
 
-    public TaggedPredicate<Tag, Domain> and(TaggedPredicate<Tag, Domain> other, BiFunction<Tag, Tag, Tag> tagAnd) {
+    public <OtherTag, ResultTag> TaggedPredicate<ResultTag, Domain> and(TaggedPredicate<OtherTag, Domain> other, BiFunction<Tag, OtherTag, ResultTag> tagAnd) {
         return new TaggedPredicate<>(tagAnd.apply(this.tag, other.tag), this.condition.and(other.condition));
     }
 
-    public TaggedPredicate<String, Domain> and(TaggedPredicate<String, Domain> other) {
-        return new TaggedPredicate<>("(" + this.tag + ") and (" + other.tag + ")", this.condition.and(other.condition));
+    public static <Domain> TaggedPredicate<String, Domain> and(TaggedPredicate<String, Domain> a, TaggedPredicate<String, Domain> b) {
+        return a.and(b, (x, y) -> ("(" + x + ") and (" + y + ")"));
     }
 
     public <U> TaggedPredicate<U, Domain> map(final Function<Tag, U> f) {

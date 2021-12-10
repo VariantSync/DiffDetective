@@ -38,7 +38,7 @@ public class MiningPostprocessing {
     private static final DiffTreeLineGraphImportOptions IMPORT_OPTIONS = new DiffTreeLineGraphImportOptions(
             GraphFormat.DIFFGRAPH,
             new IndexedTreeFormat(),
-            new MiningDiffNodeFormat()
+            new DebugMiningDiffNodeFormat()
     );
 
     public static void main(String[] args) throws IOException {

@@ -24,6 +24,7 @@ import main.mining.strategies.MiningMonitor;
 import org.pmw.tinylog.Level;
 import org.pmw.tinylog.Logger;
 import util.IO;
+import util.TaggedPredicate;
 import util.Yield;
 
 import java.nio.file.Path;
@@ -41,8 +42,9 @@ public class DiffTreeMiner {
     public final static DiffTreeLineGraphExportOptions exportOptions = new DiffTreeLineGraphExportOptions(
             GraphFormat.DIFFTREE
             , new CommitDiffDiffTreeLabelFormat()
-            , new MiningDiffNodeFormat()
-            , DiffTreeFilter.notEmpty().and(DiffTreeFilter.moreThanTwoAtomicPatterns())
+//            , new DebugMiningDiffNodeFormat()
+            , new ReleaseMiningDiffNodeFormat()
+            , TaggedPredicate.and(DiffTreeFilter.notEmpty(), DiffTreeFilter.moreThanTwoAtomicPatterns())
             , PostProcessing
             , DiffTreeLineGraphExportOptions.LogError()
             .andThen(DiffTreeLineGraphExportOptions.RenderError())

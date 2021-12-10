@@ -14,7 +14,7 @@ import java.util.Arrays;
  * A concrete implementation for Mining of a node label.
  * Print metadata required for semantic pattern mining.
  */
-public class MiningDiffNodeFormat implements DiffNodeLabelFormat {
+public class DebugMiningDiffNodeFormat implements DiffNodeLabelFormat {
 	@Override
 	public DiffNode fromLabelAndId(final String label, final int nodeId) {
         /// We cannot reuse the id as it is just a sequential integer. It thus, does not contain any information.
@@ -46,7 +46,6 @@ public class MiningDiffNodeFormat implements DiffNodeLabelFormat {
 
 	@Override
 	public String toLabel(final DiffNode node) {
-        // Todo: Optimize by using numbers and shorter identifiers.
         if (node.isCode()) {
             return AtomicPattern.getPattern(node).getName();
         } else if (node.isRoot()) {
