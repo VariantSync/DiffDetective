@@ -3,6 +3,7 @@
 type Feature = String
 class (Monoid f) => FeatureAnnotation f where
     implies :: f -> f -> Bool
+
     equivalent :: f -> f -> Bool
     equivalent a b = (a `implies` b) && (b `implies` a)
 

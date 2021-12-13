@@ -24,6 +24,11 @@ complete = error "not implemented"
 --}
 
 {-
+sound (complete e) == e
+(==) (sound (complete e)) e
+-}
+
+{-
 I have to prove that sound . complete = id and complete . sound = id w.r.t. to isomorphism (implemented as Eq currently).
 
 To prove completeness of DiffTrees we have to show that every edit can be expressed as a DiffTree.

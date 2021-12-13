@@ -20,9 +20,9 @@ instance (FeatureAnnotation f) => Eq (Edit f) where
             editedCodeB = editedCodeFragments b
             in
         -- edited code fragments have to be equal
-        (editedCodeA == editedCodeB)
+        (editedCodeA == editedCodeB) -- set equals
         -- the type of edit to each code fragment should be equal
-        && (fmap (editTypes a) editedCodeA == fmap (editTypes b) editedCodeB)
+        && (fmap (editTypes a) editedCodeA == fmap (editTypes b) editedCodeB) -- zu naiv: Weil set equals: Über eine Liste itereiren und bei beiden Funktionen muss das Gleiche rauskommen
         -- all presence condition should be equivalent
         -- TODO: Beautify the following
         && and (fmap (\code -> equivalent (pcInEdit a BEFORE code) (pcInEdit b BEFORE code)) editedCodeA)
