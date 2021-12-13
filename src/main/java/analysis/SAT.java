@@ -19,8 +19,8 @@ public class SAT {
         return isTautology(new Implies(left, right));
     }
 
-    public static boolean equivalent(final Node pc, final And and) {
-        return isTautology(new Equals(pc, and));
+    public static boolean equivalent(final Node left, final Node right) {
+        return isTautology(new Equals(left, right));
     }
 
     public static Node negate(final Node node) {
