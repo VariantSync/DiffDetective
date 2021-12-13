@@ -1,10 +1,13 @@
-package pattern.atomic;
+package pattern.atomic.proposed;
 
+import analysis.SAT;
 import analysis.data.PatternMatch;
 import diff.Lines;
 import diff.difftree.DiffNode;
 import diff.difftree.DiffType;
 import evaluation.FeatureContext;
+import org.prop4j.Node;
+import pattern.atomic.AtomicPattern;
 
 final class Refactoring extends AtomicPattern {
     Refactoring() {
@@ -13,10 +16,9 @@ final class Refactoring extends AtomicPattern {
 
     @Override
     protected boolean matchesCodeNode(DiffNode codeNode) {
-        // TODO: Use presence conditions
-        //       Therefore, we should fix issue 18 first.
-        //       Let's just do it on the same branch.
-        return false;
+        final Node pcb = codeNode.getBeforeFeatureMapping();
+        final Node pca = codeNode.getAfterFeatureMapping();
+        return SAT.equivalent(pcb, pca);
     }
 
     @Override

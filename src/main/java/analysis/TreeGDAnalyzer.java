@@ -8,6 +8,7 @@ import diff.difftree.DiffNode;
 import diff.difftree.DiffTree;
 import pattern.EditPattern;
 import pattern.atomic.AtomicPattern;
+import pattern.atomic.proposed.ProposedAtomicPatterns;
 import pattern.semantic.SemanticPattern;
 
 import java.util.ArrayList;
@@ -22,7 +23,7 @@ public class TreeGDAnalyzer extends GDAnalyzer<DiffNode> {
     private static List<EditPattern<DiffNode>> getPatterns(boolean atomic, boolean semantic) {
         final List<EditPattern<DiffNode>> patterns = new ArrayList<>();
         if (atomic) {
-            patterns.addAll(AtomicPattern.All);
+            patterns.addAll(ProposedAtomicPatterns.Instance.all());
         }
         if (semantic) {
             patterns.addAll(SemanticPattern.All);

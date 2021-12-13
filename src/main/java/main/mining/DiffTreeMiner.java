@@ -21,6 +21,7 @@ import main.mining.strategies.MineAndExportIncrementally;
 import main.mining.strategies.MiningMonitor;
 import org.pmw.tinylog.Level;
 import org.pmw.tinylog.Logger;
+import pattern.atomic.proposed.ProposedAtomicPatterns;
 import util.IO;
 import util.Yield;
 
@@ -34,7 +35,7 @@ public class DiffTreeMiner {
             new CutNonEditedSubtrees(),
 //            RunningExampleFinder.Default,
             new CollapseNestedNonEditedMacros(),
-            new CollapseAtomicPatterns(),
+            new CollapseAtomicPatterns(ProposedAtomicPatterns.Instance),
             new RelabelRoot(CodeType.IF.name)
     );
 

@@ -1,31 +1,37 @@
-package pattern.atomic;
+package pattern.atomic.proposed;
 
 import analysis.data.PatternMatch;
 import diff.Lines;
 import diff.difftree.DiffNode;
 import diff.difftree.DiffType;
 import evaluation.FeatureContext;
+import org.prop4j.Node;
+import pattern.atomic.AtomicPattern;
 
-final class Reconfiguration extends AtomicPattern {
-    Reconfiguration() {
-        super("Reconfiguration", DiffType.NON);
+final class RemFromPC extends AtomicPattern {
+    RemFromPC() {
+        super("RemFromPC", DiffType.REM);
     }
 
     @Override
     protected boolean matchesCodeNode(DiffNode codeNode) {
-        return false;
+        return !codeNode.getBeforeParent().isRem();
     }
 
     @Override
     public PatternMatch<DiffNode> createMatchOnCodeNode(DiffNode codeNode) {
+        final Node fm = codeNode.getBeforeParent().getBeforeFeatureMapping();
         final Lines diffLines = codeNode.getLinesInDiff();
+
         return new PatternMatch<>(this,
-                diffLines.getFromInclusive(), diffLines.getToExclusive()
+                diffLines.getFromInclusive(), diffLines.getToExclusive(), fm
         );
     }
 
     @Override
     public FeatureContext[] getFeatureContexts(PatternMatch<DiffNode> patternMatch) {
-        return new FeatureContext[0];
+        return new FeatureContext[]{
+                new FeatureContext(patternMatch.getFeatureMappings()[0], true)
+        };
     }
 }

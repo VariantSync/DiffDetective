@@ -81,6 +81,7 @@ public class DiffNode {
                 new DiffLineNumber(1, 1, 1),
                 DiffLineNumber.Invalid(),
                 // new True() sadly does not work
+                // TODO: Add the true false fix from VEVOS
                 new Literal(TRUE_LITERAL_NAME),
                 ""
         );
@@ -463,14 +464,15 @@ public class DiffNode {
         return isMultilineMacro;
     }
 
-    private Node getFeatureMapping(Function<DiffNode, DiffNode> parentOf, Function<DiffNode, Node> featureMappingOf) {
+    private Node getFeatureMapping(Function<DiffNode, DiffNode> parentOf) {
         final DiffNode parent = parentOf.apply(this);
 
-        if (isElse()) {
-            return new Not(featureMappingOf.apply(parent));
-        } else if (isElif()) {
+        if (isElse() || isElif()) {
             List<Node> and = new ArrayList<>();
-            and.add(featureMapping);
+
+            if (isElif()) {
+                and.add(featureMapping);
+            }
 
             // Negate all previous cases
             DiffNode ancestor = parent;
@@ -482,18 +484,10 @@ public class DiffNode {
 
             return new And(and);
         } else if (isCode()) {
-            return featureMappingOf.apply(parent);
+            return parent.getFeatureMapping(parentOf);
         }
 
         return featureMapping;
-    }
-
-    /**
-     * Gets the feature mapping of the node after the patch
-     * @return the feature mapping of the node after the patch
-     */
-    public Node getAfterFeatureMapping() {
-        return getFeatureMapping(DiffNode::getAfterParent, DiffNode::getAfterFeatureMapping);
     }
 
     /**
@@ -501,7 +495,62 @@ public class DiffNode {
      * @return the feature mapping of the node before the patch
      */
     public Node getBeforeFeatureMapping() {
-        return getFeatureMapping(DiffNode::getBeforeParent, DiffNode::getBeforeFeatureMapping);
+        return getFeatureMapping(DiffNode::getBeforeParent);
+    }
+
+    /**
+     * Gets the feature mapping of the node after the patch
+     * @return the feature mapping of the node after the patch
+     */
+    public Node getAfterFeatureMapping() {
+        return getFeatureMapping(DiffNode::getAfterParent);
+    }
+
+    private List<Node> getPresenceCondition(Function<DiffNode, DiffNode> parentOf) {
+        final DiffNode parent = parentOf.apply(this);
+
+        if (isElse() || isElif()) {
+            final List<Node> clauses = new ArrayList<>();
+
+            if (isElif()) {
+                clauses.add(featureMapping);
+            }
+
+            // Negate all previous cases
+            DiffNode ancestor = parent;
+            while (!ancestor.isIf()) {
+                clauses.add(new Not(ancestor.getDirectFeatureMapping()));
+                ancestor = parentOf.apply(ancestor);
+            }
+            // negate the if that started this elif-else-chain
+            clauses.add(new Not(ancestor.getDirectFeatureMapping()));
+
+            // If this elif-else-chain was again nested in another annotation, add its pc.
+            final DiffNode outerNesting = parentOf.apply(ancestor);
+            if (outerNesting != null) {
+                clauses.addAll(outerNesting.getPresenceCondition(parentOf));
+            }
+
+            return clauses;
+        } else if (isCode()) {
+            return parent.getPresenceCondition(parentOf);
+        }
+
+        if (parent == null) {
+            return List.of(featureMapping);
+        } else {
+            final List<Node> clauses = parent.getPresenceCondition(parentOf);
+            clauses.add(featureMapping);
+            return clauses;
+        }
+    }
+
+    public Node getBeforePresenceCondition() {
+        return new And(getPresenceCondition(DiffNode::getBeforeParent));
+    }
+
+    public Node getAfterPresenceCondition() {
+        return new And(getPresenceCondition(DiffNode::getAfterParent));
     }
 
     public boolean isRem() {

@@ -1,4 +1,4 @@
-package pattern.atomic;
+package pattern.atomic.proposed;
 
 import analysis.data.PatternMatch;
 import diff.Lines;
@@ -6,24 +6,26 @@ import diff.difftree.DiffNode;
 import diff.difftree.DiffType;
 import evaluation.FeatureContext;
 import org.prop4j.Node;
+import pattern.atomic.AtomicPattern;
 
-final class AddToPC extends AtomicPattern {
-    AddToPC() {
-        super("AddToPC", DiffType.ADD);
+final class AddWithMapping extends AtomicPattern {
+    AddWithMapping() {
+        super("AddWithMapping", DiffType.ADD);
     }
 
     @Override
-    protected boolean matchesCodeNode(DiffNode node) {
-        return !node.getAfterParent().isAdd();
+    protected boolean matchesCodeNode(DiffNode codeNode) {
+        return codeNode.getAfterParent().isAdd();
     }
 
     @Override
-    public PatternMatch<DiffNode> createMatchOnCodeNode(DiffNode codeNode) {
+    protected PatternMatch<DiffNode> createMatchOnCodeNode(DiffNode codeNode) {
         final Node fm = codeNode.getAfterParent().getAfterFeatureMapping();
         final Lines diffLines = codeNode.getLinesInDiff();
 
         return new PatternMatch<>(this,
-                diffLines.getFromInclusive(), diffLines.getToExclusive(), fm
+                diffLines.getFromInclusive(),
+                diffLines.getToExclusive(), fm
         );
     }
 
