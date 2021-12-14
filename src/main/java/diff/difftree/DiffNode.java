@@ -4,6 +4,7 @@ import diff.DiffLineNumber;
 import diff.Lines;
 import org.prop4j.*;
 import util.Assert;
+import util.FixTrueFalse;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -22,7 +23,6 @@ public class DiffNode {
 	private static final short ID_OFFSET = 8;
 
     public static final String EQUAL_PLACEHOLDER = "__eq__";
-    public static final String TRUE_LITERAL_NAME = "__true__";
     public static final String INVALID_ANNOTATION = "__INVALID_ANNOTATION__";
 
     public DiffType diffType;
@@ -80,9 +80,7 @@ public class DiffNode {
                 CodeType.ROOT,
                 new DiffLineNumber(1, 1, 1),
                 DiffLineNumber.Invalid(),
-                // new True() sadly does not work
-                // TODO: Add the true false fix from VEVOS
-                new Literal(TRUE_LITERAL_NAME),
+                FixTrueFalse.True,
                 ""
         );
     }
@@ -536,13 +534,14 @@ public class DiffNode {
             return parent.getPresenceCondition(parentOf);
         }
 
+        final List<Node> clauses;
         if (parent == null) {
-            return List.of(featureMapping);
+            clauses = new ArrayList<>();
         } else {
-            final List<Node> clauses = parent.getPresenceCondition(parentOf);
-            clauses.add(featureMapping);
-            return clauses;
+            clauses = parent.getPresenceCondition(parentOf);
         }
+        clauses.add(featureMapping);
+        return clauses;
     }
 
     public Node getBeforePresenceCondition() {
@@ -659,20 +658,16 @@ public class DiffNode {
      * @return The feature mapping of the given line
      */
     private static Node parseFeatureMapping(String line) {
-        String fmString = getFMString(line);
+        String formula = extractFormula(line);
 
         Node node = null;
-        if (fmString != null) {
-            NodeReader nodeReader = new NodeReader();
+        if (formula != null) {
+            final NodeReader nodeReader = new NodeReader();
             nodeReader.activateJavaSymbols();
-            node = nodeReader.stringToNode(fmString);
+            node = FixTrueFalse.On(nodeReader.stringToNode(formula));
         } else {
-            fmString = INVALID_ANNOTATION;
-        }
-
-        if (node == null) {
 //            Logger.warn("Could not parse expression \"{}\" to feature mapping. Using it as literal.", fmString);
-            node = new Literal(fmString);
+            node = new Literal(line);
         }
 
         // negate for ifndef
@@ -689,7 +684,7 @@ public class DiffNode {
      * @param line The line of which to get the feature mapping
      * @return The feature mapping as a String of the given line
      */
-    private static String getFMString(String line) {
+    private static String extractFormula(String line) {
         // ^[+-]?\s*#\s*(if|ifdef|ifndef|elif)(\s+(.*)|\((.*)\))$
         String regex = "^[+-]?\\s*#\\s*(if|ifdef|ifndef|elif)(\\s+(.*)|\\((.*)\\))$";
         Pattern regexPattern = Pattern.compile(regex);
@@ -726,7 +721,8 @@ public class DiffNode {
         // remove parentheses from custom cpp functions such as MB() or PIN_EXISTS()
         fm = fm.replaceAll("(\\w+)\\((\\w*)\\)", "$1__$2");
 
-        // replace all "=="'s with a placeholder because NodeReader parses these
+        // replace all "=="'s with a placeholder because NodeReader interprets these as propositional equality
+        // but == does not denote propositional equality in macros
         fm = fm.replaceAll("==", EQUAL_PLACEHOLDER);
 
         return fm;
