@@ -20,7 +20,6 @@ public interface AtomicPatternCatalogue {
      * The returned map as well as all its values should be immutable and constant.     *
      * @return A classification of atomic patterns by their diff types.
      */
-    // TODO: This map can always be computed from all().
     Map<DiffType, List<AtomicPattern>> byType();
 
     /**
@@ -31,10 +30,6 @@ public interface AtomicPatternCatalogue {
      */
     default AtomicPattern match(DiffNode node)
     {
-        // TODO: We can speed this up.
-        //       1.) We can filter patterns based on diffType and we dont have to evaluate diffType after that anymore.
-        //       2.) We can avoid a lot of SAT checks in NON patterns if we evaluate each clause and then look up the pattern
-        //           based on the results.
         if (!node.isCode()) {
             throw new IllegalArgumentException("Expected a code node but got " + node.codeType + "!");
         }

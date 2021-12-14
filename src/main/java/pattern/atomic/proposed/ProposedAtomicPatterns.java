@@ -1,8 +1,12 @@
 package pattern.atomic.proposed;
 
+import analysis.SAT;
+import diff.difftree.DiffNode;
 import diff.difftree.DiffType;
+import org.prop4j.Node;
 import pattern.atomic.AtomicPattern;
 import pattern.atomic.AtomicPatternCatalogue;
+import util.Assert;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -46,5 +50,52 @@ public class ProposedAtomicPatterns implements AtomicPatternCatalogue {
     @Override
     public Map<DiffType, List<AtomicPattern>> byType() {
         return PatternsByType;
+    }
+
+    @Override
+    public AtomicPattern match(DiffNode node)
+    {
+        // This is an inlined version of all patterns to optimize runtime when detecting the pattern of a certain node.
+
+        // Because this compiles, we know that each branch terminates and returns a value.
+        // Each returned value is not null but an actual pattern object.
+        // Since the given node may be any node, we have proven that every node is classified by at least one pattern.
+        if (!node.isCode()) {
+            throw new IllegalArgumentException("Expected a code node but got " + node.codeType + "!");
+        }
+
+        if (node.isAdd()) {
+            if (node.getAfterParent().isAdd()) {
+                return AddWithMapping;
+            } else {
+                return AddToPC;
+            }
+        } else if (node.isRem()) {
+            if (node.getBeforeParent().isRem()) {
+                return RemWithMapping;
+            } else {
+                return RemFromPC;
+            }
+        } else {
+            Assert.assertTrue(node.isNon());
+
+            final Node pcb = node.getBeforeFeatureMapping();
+            final Node pca = node.getAfterFeatureMapping();
+            final boolean beforeVariantsSubsetOfAfterVariants = SAT.implies(pcb, pca);
+            final boolean afterVariantsSubsetOfBeforeVariants = SAT.implies(pca, pcb);
+
+            if (beforeVariantsSubsetOfAfterVariants && afterVariantsSubsetOfBeforeVariants) {
+                return Refactoring;
+            }
+            if (beforeVariantsSubsetOfAfterVariants) { // && !afterVariantsSubsetOfBeforeVariants
+                return Generalization;
+            }
+            if (afterVariantsSubsetOfBeforeVariants) { // && !beforeVariantsSubsetOfAfterVariants
+                return Specialization;
+            }
+
+            // !beforeVariantsSubsetOfAfterVariants && !afterVariantsSubsetOfBeforeVariants
+            return Reconfiguration;
+        }
     }
 }
