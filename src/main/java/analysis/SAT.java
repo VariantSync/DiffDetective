@@ -1,12 +1,20 @@
 package analysis;
 
-import org.prop4j.*;
+import org.prop4j.Equals;
+import org.prop4j.Implies;
+import org.prop4j.Node;
 import org.prop4j.explain.solvers.SatSolver;
 import org.prop4j.explain.solvers.SatSolverFactory;
+import util.fide.FixTrueFalse;
+
+import static util.fide.FormulaUtils.negate;
 
 public class SAT {
-    public static boolean isSatisfiable(final Node formula) {
+    public static boolean isSatisfiable(Node formula) {
         final SatSolver solver = SatSolverFactory.getDefault().getSatSolver();
+        // TODO: Remove this line once issue #1333 of FeatureIDE is resolved because FixTrueFalse::On is expensive.
+        //       https://github.com/FeatureIDE/FeatureIDE/issues/1333
+        formula = FixTrueFalse.On(formula);
         solver.addFormulas(formula);
         return solver.isSatisfiable();
     }
@@ -21,17 +29,5 @@ public class SAT {
 
     public static boolean equivalent(final Node left, final Node right) {
         return isTautology(new Equals(left, right));
-    }
-
-    public static Node negate(final Node node) {
-        if (node instanceof Literal l) {
-            return negate(l);
-        }
-
-        return new Not(node);
-    }
-
-    public static Literal negate(final Literal lit) {
-        return new Literal(lit.var, !lit.positive);
     }
 }

@@ -4,7 +4,7 @@ import diff.DiffLineNumber;
 import diff.Lines;
 import org.prop4j.*;
 import util.Assert;
-import util.FixTrueFalse;
+import util.fide.FixTrueFalse;
 
 import java.util.ArrayList;
 import java.util.Collection;
