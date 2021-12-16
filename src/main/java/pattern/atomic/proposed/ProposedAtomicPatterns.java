@@ -79,10 +79,14 @@ public class ProposedAtomicPatterns implements AtomicPatternCatalogue {
         } else {
             Assert.assertTrue(node.isNon());
 
-            final Node pcb = node.getBeforeFeatureMapping();
-            final Node pca = node.getAfterFeatureMapping();
+            final Node pcb = node.getBeforePresenceCondition();
+            final Node pca = node.getAfterPresenceCondition();
             final boolean beforeVariantsSubsetOfAfterVariants = SAT.implies(pcb, pca);
             final boolean afterVariantsSubsetOfBeforeVariants = SAT.implies(pca, pcb);
+
+//            System.out.println("Found NON node " + node.getLabel());
+//            System.out.println("TAUT(" + pcb + " => " + pca + ") = " + beforeVariantsSubsetOfAfterVariants);
+//            System.out.println("TAUT(" + pca + " => " + pcb + ") = " + afterVariantsSubsetOfBeforeVariants);
 
             if (beforeVariantsSubsetOfAfterVariants && afterVariantsSubsetOfBeforeVariants) {
                 return Refactoring;
