@@ -6,47 +6,39 @@ import org.pmw.tinylog.Logger;
 import org.prop4j.And;
 import org.prop4j.Literal;
 import org.prop4j.Node;
-import org.prop4j.Not;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Map;
 
+import static util.fide.FormulaUtils.negate;
+
 public class PCTest {
-    enum Feature {
-        A, B, C, D, E;
-
-        Node and(Feature other) {
-            return and(other.toFormula());
-        }
-
-        Node and(Node other) {
-            return new And(toFormula(), other);
-        }
-
-        Node negate() {
-            return new Not(toFormula());
-        }
-
-        Node toFormula() {
-            return new Literal(name());
-        }
-    }
-    record ExpectedPC(Node before, Node after) {
-        ExpectedPC(Feature before, Node after) {
-            this(before.toFormula(), after);
-        }
-        ExpectedPC(Feature before, Feature after) {
-            this(before.toFormula(), after.toFormula());
-        }
-    }
+    private static final Literal A = new Literal("A");
+    private static final Literal B = new Literal("B");
+    private static final Literal C = new Literal("C");
+    private static final Literal D = new Literal("D");
+    private static final Literal E = new Literal("E");
+    record ExpectedPC(Node before, Node after) {}
     record TestCase(Path file, Map<String, ExpectedPC> expectedResult) {}
 
     private final static Path testDir = Constants.RESOURCE_DIR.resolve("pctest");
-    private final static TestCase a = new TestCase(Path.of("a.diff"),
+    private final static TestCase a = new TestCase(
+            Path.of("a.diff"),
             Map.of(
-                    "1", new ExpectedPC(Feature.A, Feature.A.and(Feature.B)),
-                    "2", new ExpectedPC(Feature.A, Feature.A.and(Feature.C.and(Feature.B.negate())))
+                    "1", new ExpectedPC(A, new And(A, B)),
+                    "2", new ExpectedPC(A, new And(A, C, negate(B))),
+                    "3", new ExpectedPC(new And(A, D, E), new And(A, D)),
+                    "4", new ExpectedPC(A, A)
+            ));
+    private final static TestCase elif = new TestCase(
+            Path.of("elif.diff"),
+            Map.of(
+                    "1", new ExpectedPC(A, A),
+                    "2", new ExpectedPC(new And(negate(A), B), new And(negate(A), B)),
+                    "3", new ExpectedPC(new And(negate(A), negate(B), C), new And(negate(A), B)),
+                    "4", new ExpectedPC(new And(negate(A), negate(B), C), new And(negate(A), negate(B), D)),
+                    "5", new ExpectedPC(new And(negate(A), negate(B), negate(C)), new And(negate(A), negate(B), negate(D)))
             ));
 
     private static String errorAt(final String node, String time, Node is, Node should) {
@@ -77,7 +69,12 @@ public class PCTest {
     }
 
     @Test
-    public void testAll() throws IOException {
+    public void testA() throws IOException {
         test(a);
+    }
+
+    @Test
+    public void testElif() throws IOException {
+        test(elif);
     }
 }
