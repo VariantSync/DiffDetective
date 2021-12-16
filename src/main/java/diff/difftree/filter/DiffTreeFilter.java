@@ -3,6 +3,7 @@ package diff.difftree.filter;
 import diff.difftree.DiffNode;
 import diff.difftree.DiffTree;
 import diff.difftree.analysis.DiffTreeStatistics;
+import pattern.atomic.AtomicPatternCatalogue;
 import util.TaggedPredicate;
 
 /**
@@ -19,10 +20,10 @@ public final class DiffTreeFilter {
         return Any("any");
     }
 
-    public static TaggedPredicate<String, DiffTree> moreThanTwoAtomicPatterns() {
+    public static TaggedPredicate<String, DiffTree> moreThanTwoAtomicPatternsOf(final AtomicPatternCatalogue patterns) {
         return new TaggedPredicate<>(
                 "has more than two atomic patterns",
-                tree -> DiffTreeStatistics.getNumberOfUniqueAtomicPatternsIn(tree) > 1
+                tree -> DiffTreeStatistics.getNumberOfUniqueAtomicPatternsIn(tree, patterns) > 1
         );
     }
 

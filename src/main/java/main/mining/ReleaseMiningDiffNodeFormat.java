@@ -6,8 +6,8 @@ import diff.difftree.DiffNode;
 import diff.difftree.DiffType;
 import diff.difftree.serialize.nodeformat.DiffNodeLabelFormat;
 import org.prop4j.True;
-import pattern.AtomicPattern;
-import pattern.Patterns;
+import pattern.atomic.AtomicPattern;
+import pattern.atomic.proposed.ProposedAtomicPatterns;
 import util.Assert;
 
 /**
@@ -25,8 +25,8 @@ public class ReleaseMiningDiffNodeFormat implements DiffNodeLabelFormat {
     public final static String MACRO_PREFIX = "m";
 
     private static int toId(final AtomicPattern p) {
-        for (int i = 0; i < Patterns.ATOMIC.length; ++i) {
-            if (p.equals(Patterns.ATOMIC[i])) {
+        for (int i = 0; i < ProposedAtomicPatterns.All.size(); ++i) {
+            if (p.equals(ProposedAtomicPatterns.All.get(i))) {
                 return i;
             }
         }
@@ -35,7 +35,7 @@ public class ReleaseMiningDiffNodeFormat implements DiffNodeLabelFormat {
     }
 
     private static AtomicPattern fromId(int id) {
-        return Patterns.ATOMIC[id];
+        return ProposedAtomicPatterns.All.get(id);
     }
 
     @Override
@@ -69,7 +69,7 @@ public class ReleaseMiningDiffNodeFormat implements DiffNodeLabelFormat {
     @Override
     public String toLabel(DiffNode node) {
         if (node.isCode()) {
-            return CODE_PREFIX + toId(AtomicPattern.getPattern(node));
+            return CODE_PREFIX + toId(ProposedAtomicPatterns.Instance.match(node));
         } else {
             final CodeType codeType = node.isRoot() ? CodeType.IF : node.codeType;
             return MACRO_PREFIX + node.diffType.ordinal() + codeType.ordinal();

@@ -2,7 +2,7 @@ package diff.difftree.analysis;
 
 import diff.difftree.DiffNode;
 import diff.difftree.DiffTree;
-import pattern.AtomicPattern;
+import pattern.atomic.AtomicPatternCatalogue;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -24,11 +24,11 @@ public class DiffTreeStatistics {
                 .count();
     }
 
-    public static long getNumberOfUniqueAtomicPatternsIn(final DiffTree t) {
+    public static long getNumberOfUniqueAtomicPatternsIn(final DiffTree t, final AtomicPatternCatalogue patterns) {
         final Map<String, Boolean> atomicPatternNames = new HashMap<>();
         t.forAll(n -> {
             if (n.isCode()) {
-                atomicPatternNames.putIfAbsent(AtomicPattern.getPattern(n).getName(), Boolean.TRUE);
+                atomicPatternNames.putIfAbsent(patterns.match(n).getName(), Boolean.TRUE);
             }
         });
         return atomicPatternNames.size();

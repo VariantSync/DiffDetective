@@ -6,7 +6,8 @@ import diff.difftree.DiffNode;
 import diff.difftree.DiffType;
 import diff.difftree.serialize.nodeformat.DiffNodeLabelFormat;
 import org.prop4j.True;
-import pattern.AtomicPattern;
+import pattern.atomic.AtomicPattern;
+import pattern.atomic.proposed.ProposedAtomicPatterns;
 
 import java.util.Arrays;
 
@@ -35,10 +36,9 @@ public class DebugMiningDiffNodeFormat implements DiffNodeLabelFormat {
             return new DiffNode(dt, ct, lineFrom, lineTo, new True(), resultLabel);
         } else {
             // the label should describe a pattern
-            final AtomicPattern pattern = AtomicPattern.fromName(label);
-            if (pattern == null) {
-                throw new IllegalStateException("Label \"" + label + "\" is neither a macro label, nor an atomic pattern!");
-            }
+            final AtomicPattern pattern = ProposedAtomicPatterns.Instance.fromName(label).orElseThrow(
+                    () -> new IllegalStateException("Label \"" + label + "\" is neither a macro label, nor an atomic pattern!")
+            );
 
             return DiffNode.createCode(pattern.getDiffType(),
                     lineFrom, lineTo, resultLabel);
@@ -48,7 +48,7 @@ public class DebugMiningDiffNodeFormat implements DiffNodeLabelFormat {
 	@Override
 	public String toLabel(final DiffNode node) {
         if (node.isCode()) {
-            return AtomicPattern.getPattern(node).getName();
+            return ProposedAtomicPatterns.Instance.match(node).getName();
         } else if (node.isRoot()) {
             return node.diffType + "_" + CodeType.IF;
         } else {
