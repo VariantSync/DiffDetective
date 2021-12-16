@@ -3,16 +3,13 @@ package pattern.semantic;
 import analysis.data.PatternMatch;
 import diff.difftree.DiffNode;
 import evaluation.FeatureContext;
-import pattern.SemanticPattern;
 
 import java.util.Collection;
 import java.util.Optional;
 
-public class MoveElseSemanticPattern extends SemanticPattern {
-    public static final String PATTERN_NAME = "MoveElseSEM";
-
-    public MoveElseSemanticPattern() {
-        super(PATTERN_NAME);
+class MoveElse extends SemanticPattern {
+    MoveElse() {
+        super("MoveElse");
     }
 
     /*

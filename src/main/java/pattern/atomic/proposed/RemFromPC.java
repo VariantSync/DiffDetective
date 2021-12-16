@@ -1,4 +1,4 @@
-package pattern.atomic;
+package pattern.atomic.proposed;
 
 import analysis.data.PatternMatch;
 import diff.Lines;
@@ -6,13 +6,11 @@ import diff.difftree.DiffNode;
 import diff.difftree.DiffType;
 import evaluation.FeatureContext;
 import org.prop4j.Node;
-import pattern.AtomicPattern;
+import pattern.atomic.AtomicPattern;
 
-public class RemFromPCAtomicPattern extends AtomicPattern {
-    public static final String PATTERN_NAME = "RemFromPC";
-
-    public RemFromPCAtomicPattern() {
-        super(PATTERN_NAME, DiffType.REM);
+final class RemFromPC extends AtomicPattern {
+    RemFromPC() {
+        super("RemFromPC", DiffType.REM);
     }
 
     @Override

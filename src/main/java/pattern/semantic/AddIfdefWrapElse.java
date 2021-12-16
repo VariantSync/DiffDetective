@@ -3,55 +3,51 @@ package pattern.semantic;
 import analysis.data.PatternMatch;
 import diff.difftree.DiffNode;
 import evaluation.FeatureContext;
-import org.prop4j.Not;
-import pattern.SemanticPattern;
 
 import java.util.Optional;
 
-public class AddIfdefWrapThenSemanticPattern extends SemanticPattern {
-    public static final String PATTERN_NAME = "AddIfdefWrapThenSEM";
-
-    public AddIfdefWrapThenSemanticPattern() {
-        super(PATTERN_NAME);
+class AddIfdefWrapElse extends SemanticPattern {
+    public AddIfdefWrapElse() {
+        super("AddIfdefWrapElse");
     }
 
     /*
     DETECTION:
         added if node
-        has an unchanged code child
+        has an added code child
         has no elif children
         has an added else child
-            which has an added code child
+            which has an unchanged code child
      */
     @Override
     public Optional<PatternMatch<DiffNode>> match(DiffNode annotationNode) {
         if(annotationNode.isAdd() && annotationNode.isIf()){
-            boolean nonCodeInIf = false;
+            boolean addedCodeInIf = false;
             DiffNode elseNode = null;
             for(DiffNode child : annotationNode.getAllChildren()){
                 if(child.isElif()){
                     return Optional.empty();
                 }
-                if(child.isCode() && child.isNon()){
-                    nonCodeInIf = true;
+                if(child.isCode() && child.isAdd()){
+                    addedCodeInIf = true;
                 }
                 if(child.isElse() && child.isAdd()){
                     elseNode = child;
                 }
             }
 
-            if(elseNode == null || !nonCodeInIf){
+            if(elseNode == null || !addedCodeInIf){
                 return Optional.empty();
             }
 
-            boolean addedCodeInElse = false;
+            boolean noneCodeInElse = false;
             for(DiffNode child : elseNode.getAllChildren()){
-                if(child.isCode() && child.isAdd()){
-                    addedCodeInElse = true;
+                if(child.isCode() && child.isNon()){
+                    noneCodeInElse = true;
                 }
             }
 
-            if(!addedCodeInElse){
+            if(!noneCodeInElse){
                 return Optional.empty();
             }
 
@@ -67,7 +63,7 @@ public class AddIfdefWrapThenSemanticPattern extends SemanticPattern {
     @Override
     public FeatureContext[] getFeatureContexts(PatternMatch patternMatch) {
         return new FeatureContext[]{
-                new FeatureContext(new Not(patternMatch.getFeatureMappings()[0]))
+                new FeatureContext(patternMatch.getFeatureMappings()[0])
         };
     }
 }

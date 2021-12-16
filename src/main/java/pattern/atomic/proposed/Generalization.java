@@ -1,25 +1,24 @@
-package pattern.atomic;
+package pattern.atomic.proposed;
 
+import analysis.SAT;
 import analysis.data.PatternMatch;
 import diff.Lines;
 import diff.difftree.DiffNode;
 import diff.difftree.DiffType;
 import evaluation.FeatureContext;
-import pattern.AtomicPattern;
+import org.prop4j.Node;
+import pattern.atomic.AtomicPattern;
 
-public class WrapCodeAtomicPattern extends AtomicPattern {
-    public static final String PATTERN_NAME = "WrapCode";
-
-    public WrapCodeAtomicPattern() {
-        super(PATTERN_NAME, DiffType.NON);
+final class Generalization extends AtomicPattern {
+    Generalization() {
+        super("Generalization", DiffType.NON);
     }
 
     @Override
     protected boolean matchesCodeNode(DiffNode codeNode) {
-        int addAmount = codeNode.getAddAmount();
-        int remAmount = codeNode.getRemAmount();
-        return (addAmount > 0 && remAmount == 0)
-                ||  (remAmount == 0 && addAmount == 0 && codeNode.getAfterAnnotationDepth() > codeNode.getBeforeAnnotationDepth());
+        final Node pcb = codeNode.getBeforeFeatureMapping();
+        final Node pca = codeNode.getAfterFeatureMapping();
+        return SAT.implies(pcb, pca) && !SAT.implies(pca, pcb);
     }
 
     @Override

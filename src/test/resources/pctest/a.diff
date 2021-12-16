@@ -1,0 +1,13 @@
+ #if A
++#if B
+   1
++#elif C
+   2
++#endif
+ #if D
+-#if E
+   3
+-#endif
+ #endif
+   4
+ #endif
