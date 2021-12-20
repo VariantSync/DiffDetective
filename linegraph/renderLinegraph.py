@@ -11,9 +11,11 @@ import sys
 OUTPUT_FORMAT = ".png"
 # OUTPUT_FORMAT = ".svg"
 # OUTPUT_FORMAT = ".pdf"
-NODE_POSITION_LAYOUT = "dot"
+
+# NODE_POSITION_LAYOUT = "dot"
+
 # NODE_POSITION_LAYOUT = "circo"
-# NODE_POSITION_LAYOUT = "sfdp"
+NODE_POSITION_LAYOUT = "sfdp"
 # NODE_POSITION_LAYOUT = "neato"
 # NODE_POSITION_LAYOUT = "fdp"
 # NODE_POSITION_LAYOUT = "twopi"
@@ -55,7 +57,6 @@ DPI = 300
 FONT_SIZE = 3
 
 # other parameters
-IS_PATTERN = False
 WITH_TITLE = False
 INDEX_OUTPUT_FILENAME = False
 
@@ -295,13 +296,16 @@ def load_as_line_graph(input_file):
                 fileName = graphNameSplitted[0]
                 commitId = graphNameSplitted[1]
                 graphTitle = fileName + "\n" + commitId
+                outfilename = fileName.replace("/", DIR_SEPARATOR) + DIR_SEPARATOR + commitId
+
+                if INDEX_OUTPUT_FILENAME:
+                    outfilename = str(i) + DIR_SEPARATOR + outfilename
             else:
                 fileName = os.path.basename(input_file)
-                commitId = "unknown"
-                graphTitle = fileName
-                if IS_PATTERN:
-                    graphTitle = "Pattern\n" + graphTitle
-            graph = nx.DiGraph(name=graphTitle, filename=fileName, commitid=commitId)
+                commitId = None
+                graphTitle = graphName
+                outfilename = graphName
+            graph = nx.DiGraph(name=graphTitle, filename=fileName, commitid=commitId, outfilename=outfilename)
             continue
 
         match_node = re.match(regex_node, next_line)
@@ -325,8 +329,8 @@ def load_as_line_graph(input_file):
 # Plot graphs
 def plot_graphs(S, exportDir):
     # plt.figure(0, figsize=(FIG_WIDTH,2.5))
-    plt.figure(0, figsize=(FIG_WIDTH, FIG_HEIGHT))
-    # plt.figure(0)
+#     plt.figure(0, figsize=(FIG_WIDTH, FIG_HEIGHT))
+    plt.figure(0)
     for i in range(len(S)):
         difftree = S[i]
 
@@ -410,13 +414,7 @@ def plot_graphs(S, exportDir):
                     edge_color=edge_colors,
                     font_size=FONT_SIZE)
 
-        outfilename = difftree.graph['filename'].replace("/", DIR_SEPARATOR)
-        if INDEX_OUTPUT_FILENAME:
-            outfilename = str(i) + DIR_SEPARATOR + outfilename
-        if 'commitid' in difftree.graph:
-            outfilename += DIR_SEPARATOR + difftree.graph['commitid']
-        outfilename += OUTPUT_FORMAT
-        save_path = os.path.join(exportDir, outfilename)
+        save_path = os.path.join(exportDir, difftree.graph['outfilename'] + OUTPUT_FORMAT)
 
         # Save
         print("Exporting", save_path)
@@ -462,10 +460,8 @@ if __name__ == "__main__":
     ARROW_SIZE = args.arrowsize
     FONT_SIZE = args.fontsize
 
-    IS_PATTERN = True
     if args.format == "default":
         NODE_PARSER = parseNodeDefault
-        IS_PATTERN = False
     elif args.format == "patternsdebug":
         NODE_PARSER = parseNodeDebugAtomics
     elif args.format == "patternsrelease":
