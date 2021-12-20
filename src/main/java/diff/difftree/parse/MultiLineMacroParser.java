@@ -4,6 +4,7 @@ import diff.DiffLineNumber;
 import diff.difftree.CodeType;
 import diff.difftree.DiffNode;
 import diff.difftree.DiffType;
+import diff.difftree.error.IllFormedAnnotationException;
 
 import java.util.List;
 import java.util.Stack;
@@ -26,7 +27,7 @@ public class MultiLineMacroParser {
             final String line,
             final MultilineMacro macro,
             final DiffType diffType,
-            final List<DiffNode> nodes) {
+            final List<DiffNode> nodes) throws IllFormedAnnotationException {
         macro.addLine(line);
         macro.diffType = diffType;
 
@@ -42,7 +43,7 @@ public class MultiLineMacroParser {
             final Stack<DiffNode> beforeStack,
             final Stack<DiffNode> afterStack,
             final List<DiffNode> nodes
-    ) {
+    ) throws IllFormedAnnotationException {
         final CodeType codeType = CodeType.ofDiffLine(line);
         final DiffType diffType = DiffType.ofDiffLine(line);
         final boolean isAdd = diffType == DiffType.ADD;

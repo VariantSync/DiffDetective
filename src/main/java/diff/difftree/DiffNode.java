@@ -2,9 +2,11 @@ package diff.difftree;
 
 import diff.DiffLineNumber;
 import diff.Lines;
+import diff.difftree.error.IllFormedAnnotationException;
 import org.prop4j.*;
 import util.Assert;
 import util.fide.FixTrueFalse;
+import util.fide.FormulaUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -95,7 +97,7 @@ public class DiffNode {
      * @param line The line which the new node node corresponds to
      * @return A DiffNode with a code type, diff type, feature mapping and parents
      */
-    public static DiffNode fromDiffLine(String line) {
+    public static DiffNode fromDiffLine(String line) throws IllFormedAnnotationException {
         DiffNode diffNode = new DiffNode();
         diffNode.diffType = DiffType.ofDiffLine(line);
         diffNode.codeType = CodeType.ofDiffLine(line);
@@ -657,14 +659,16 @@ public class DiffNode {
      * @param line The line of which to get the feature mapping
      * @return The feature mapping of the given line
      */
-    private static Node parseFeatureMapping(String line) {
-        String formula = extractFormula(line);
+    private static Node parseFeatureMapping(String line) throws IllFormedAnnotationException {
+        final String formulaStr = extractFormula(line);
 
-        Node node = null;
-        if (formula != null) {
-            final NodeReader nodeReader = new NodeReader();
-            nodeReader.activateJavaSymbols();
-            node = FixTrueFalse.On(nodeReader.stringToNode(formula));
+        final NodeReader nodeReader = new NodeReader();
+        nodeReader.activateJavaSymbols();
+
+        Node node = nodeReader.stringToNode(formulaStr);
+        // if parsing succeeded
+        if (node != null) {
+            node = FixTrueFalse.On(node);
         } else {
 //            Logger.warn("Could not parse expression \"{}\" to feature mapping. Using it as literal.", fmString);
             node = new Literal(line);
@@ -672,11 +676,10 @@ public class DiffNode {
 
         // negate for ifndef
         if (line.contains("ifndef")) {
-            node = new Not(node);
+            node = FormulaUtils.negate(node);
         }
 
         return node;
-
     }
 
     /**
@@ -684,7 +687,7 @@ public class DiffNode {
      * @param line The line of which to get the feature mapping
      * @return The feature mapping as a String of the given line
      */
-    private static String extractFormula(String line) {
+    private static String extractFormula(String line) throws IllFormedAnnotationException {
         // ^[+-]?\s*#\s*(if|ifdef|ifndef|elif)(\s+(.*)|\((.*)\))$
         String regex = "^[+-]?\\s*#\\s*(if|ifdef|ifndef|elif)(\\s+(.*)|\\((.*)\\))$";
         Pattern regexPattern = Pattern.compile(regex);
@@ -698,7 +701,7 @@ public class DiffNode {
                 fm = matcher.group(4);
             }
         } else {
-            return null;
+            throw new IllFormedAnnotationException("Could not extract formula from line \""+ line + "\".");
         }
 
         // remove comments

@@ -3,6 +3,7 @@ package diff.difftree.parse;
 import diff.DiffLineNumber;
 import diff.difftree.DiffNode;
 import diff.difftree.DiffType;
+import diff.difftree.error.IllFormedAnnotationException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,7 +49,7 @@ public class MultilineMacro {
         lines.add(line);
     }
 
-    public DiffNode toDiffNode() {
+    public DiffNode toDiffNode() throws IllFormedAnnotationException {
         final StringBuilder asSingleLine = new StringBuilder(diffType.symbol);
 
         for (int l = 0; l < lines.size(); ++l) {
