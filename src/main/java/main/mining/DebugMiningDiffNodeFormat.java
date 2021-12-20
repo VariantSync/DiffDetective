@@ -36,7 +36,13 @@ public class DebugMiningDiffNodeFormat implements DiffNodeLabelFormat {
             return new DiffNode(dt, ct, lineFrom, lineTo, new True(), resultLabel);
         } else {
             // the label should describe a pattern
-            final AtomicPattern pattern = ProposedAtomicPatterns.Instance.fromName(label).orElseThrow(
+            // TODO: remove this.
+            String patternName = label;
+            if ("ChangePC".equals(label)) {
+                patternName = "Reconfiguration";
+            }
+
+            final AtomicPattern pattern = ProposedAtomicPatterns.Instance.fromName(patternName).orElseThrow(
                     () -> new IllegalStateException("Label \"" + label + "\" is neither a macro label, nor an atomic pattern!")
             );
 
