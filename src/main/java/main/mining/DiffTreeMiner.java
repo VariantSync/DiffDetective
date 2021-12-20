@@ -23,7 +23,6 @@ import main.mining.strategies.MineAndExportIncrementally;
 import main.mining.strategies.MiningMonitor;
 import org.pmw.tinylog.Level;
 import org.pmw.tinylog.Logger;
-import pattern.atomic.proposed.ProposedAtomicPatterns;
 import util.IO;
 import util.TaggedPredicate;
 import util.Yield;
@@ -47,7 +46,7 @@ public class DiffTreeMiner {
             , new ReleaseMiningDiffNodeFormat()
             , TaggedPredicate.and(
                     DiffTreeFilter.notEmpty(),
-                    DiffTreeFilter.moreThanTwoAtomicPatternsOf(ProposedAtomicPatterns.Instance)
+                    DiffTreeFilter.moreThanTwoCodeNodes()
             )
             , PostProcessing
             , DiffTreeLineGraphExportOptions.LogError()
