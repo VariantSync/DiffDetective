@@ -12,7 +12,7 @@ import diff.difftree.serialize.DiffTreeLineGraphExportOptions;
 import diff.difftree.serialize.DiffTreeSerializeDebugData;
 import diff.difftree.serialize.GraphFormat;
 import diff.difftree.serialize.LineGraphExport;
-import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
+import diff.difftree.serialize.treeformat.IndexedTreeFormat;
 import diff.difftree.transform.CollapseNestedNonEditedMacros;
 import diff.difftree.transform.CutNonEditedSubtrees;
 import diff.difftree.transform.DiffTreeTransformer;
@@ -41,7 +41,8 @@ public class DiffTreeMiner {
 
     public final static DiffTreeLineGraphExportOptions exportOptions = new DiffTreeLineGraphExportOptions(
               GraphFormat.DIFFTREE
-            , new CommitDiffDiffTreeLabelFormat()
+//            , new CommitDiffDiffTreeLabelFormat()
+            , new IndexedTreeFormat()
 //            , new DebugMiningDiffNodeFormat()
             , new ReleaseMiningDiffNodeFormat()
             , TaggedPredicate.and(
