@@ -54,7 +54,9 @@ public class DiffTreeMiner {
             .andThen(DiffTreeLineGraphExportOptions.SysExitOnError())
     );
 
-    public final static DiffTreeMiningStrategy miningStrategy =
+    public final static DiffTreeRenderer.RenderOptions RenderOptions = DiffTreeRenderer.RenderOptions.DEFAULT;
+
+    public final static DiffTreeMiningStrategy MiningStrategy =
 //                new MineAndExportIncrementally();
             new CompositeDiffTreeMiningStrategy(
                     new MineAndExportIncrementally(1000),
@@ -100,7 +102,7 @@ public class DiffTreeMiner {
     public static void main(String[] args) {
         Main.setupLogger(Level.DEBUG);
 
-        final boolean renderOutput = false;
+        final boolean renderOutput = true;
         final DebugOptions debugOptions = new DebugOptions(DebugOptions.DiffStoragePolicy.REMEMBER_STRIPPED_DIFF);
 
         final Path inputDir = Paths.get("..", "DiffDetectiveMining");
@@ -122,7 +124,7 @@ public class DiffTreeMiner {
             repo.setDebugOptions(debugOptions);
             final Path lineGraphOutputPath = outputDir.resolve(repo.getRepositoryName() + ".lg");
             final Path metadataOutputPath = outputDir.resolve(repo.getRepositoryName() + ".metadata.txt");
-            final DiffTreeMiningResult result = mine(repo, lineGraphOutputPath, exportOptions, miningStrategy);
+            final DiffTreeMiningResult result = mine(repo, lineGraphOutputPath, exportOptions, MiningStrategy);
             final String printedResult = result.toString();
 
             Logger.info("Writing the following metadata to " + metadataOutputPath + "\n" + printedResult);
@@ -131,7 +133,7 @@ public class DiffTreeMiner {
             if (renderOutput) {
                 Logger.info("Rendering " + lineGraphOutputPath);
                 final DiffTreeRenderer renderer = DiffTreeRenderer.WithinDiffDetective();
-                if (!renderer.renderFile(lineGraphOutputPath)) {
+                if (!renderer.renderFile(lineGraphOutputPath, RenderOptions)) {
                     Logger.error("Rendering " + lineGraphOutputPath + " failed!");
                 }
             }
