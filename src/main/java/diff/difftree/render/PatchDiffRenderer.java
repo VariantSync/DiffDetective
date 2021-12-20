@@ -9,6 +9,7 @@ import util.IO;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.List;
 
 public class PatchDiffRenderer {
     public static final DiffTreeRenderer.RenderOptions ErrorDiffTreeRenderOptions = new DiffTreeRenderer.RenderOptions(
@@ -21,7 +22,8 @@ public class PatchDiffRenderer {
             0.5*DiffTreeRenderer.RenderOptions.DEFAULT.edgesize(),
             DiffTreeRenderer.RenderOptions.DEFAULT.arrowsize()/2,
             2,
-            true
+            true,
+            List.of()
     );
 
     private final Path outDirectory;

@@ -56,19 +56,11 @@ FONT_SIZE = 3
 
 # other parameters
 IS_PATTERN = False
-ATOMICS = False
 WITH_TITLE = False
+INDEX_OUTPUT_FILENAME = False
 
-
-ADD_PATTERNS = ["AddWithMapping", "AddToPC"]
-REM_PATTERNS = ["RemWithMapping", "RemFromPC"]
-NON_PATTERNS = ["ChangePC", "WrapCode", "UnwrapCode", "Unchanged"]
-
-
-def lineNoOfNode(v):
-    # inverse of DiffNode::getID in our Java code
-    # ((1 + fromLine) << ID_LINE_NUMBER_OFFSET) + diffType.ordinal()
-    return (v >> JAVA_ID_LINE_NUMBER_OFFSET) - JAVA_ID_DIFFLINE_FROM_OFFSET
+RELEASE_PATTERNS_CODE_PREFIX = "c"
+RELEASE_PATTERNS_MACRO_PREFIX = "m"
 
 # the same as string.find but in case the char c is not found, returns len(s) instead of -1
 def findCharacterInStringGreedy(s, c):
@@ -82,6 +74,191 @@ def substringGraceful(s, fromIndex):
     if fromIndex >= len(s):
         return ""
     return s[fromIndex:]
+
+
+def lineNoOfNode(v):
+    # inverse of DiffNode::getID in our Java code
+    # ((1 + fromLine) << ID_LINE_NUMBER_OFFSET) + diffType.ordinal()
+    return (v >> JAVA_ID_LINE_NUMBER_OFFSET) - JAVA_ID_DIFFLINE_FROM_OFFSET
+
+DIFFTYPE_ADD = "add"
+DIFFTYPE_REM = "rem"
+DIFFTYPE_NON = "non"
+CODETYPE_CODE = "code"
+CODETYPE_MACRO = "macro"
+
+class Pattern:
+    def __init__(self, name, id, difftype):
+        self.name = name
+        self.id = id
+        self.difftype = difftype
+
+class NodeData:
+    def __init__(self):
+        self.difftype = None
+        self.codetype = None
+        self.isroot = False
+        self.label = "undefined label"
+
+_ALL_PATTERN_NAMES = [
+    "AddToPC", "AddWithMapping",
+    "RemFromPC", "RemWithMapping",
+    "Specialization", "Generalization", "Reconfiguration", "Refactoring"
+]
+_ALL_PATTERN_DIFFTYPES = [
+     DIFFTYPE_ADD, DIFFTYPE_ADD,
+     DIFFTYPE_REM, DIFFTYPE_REM,
+     DIFFTYPE_NON, DIFFTYPE_NON, DIFFTYPE_NON, DIFFTYPE_NON
+]
+ALL_PATTERNS = [Pattern(name, i, _ALL_PATTERN_DIFFTYPES[i]) for i,name in enumerate(_ALL_PATTERN_NAMES)]
+ADD_PATTERNS = list(filter(lambda pattern: pattern.difftype == DIFFTYPE_ADD, ALL_PATTERNS))
+REM_PATTERNS = list(filter(lambda pattern: pattern.difftype == DIFFTYPE_REM, ALL_PATTERNS))
+NON_PATTERNS = list(filter(lambda pattern: pattern.difftype == DIFFTYPE_NON, ALL_PATTERNS))
+
+def getPatternThat(predicate):
+    matches = list(filter(predicate, ALL_PATTERNS))
+    if len(matches) < 1:
+#        raise Exception("There is no pattern with the name \"" + name + "\"!")
+        return None
+    if len(matches) > 1:
+#        raise Exception("There is more than one pattern with the name \"" + name + "\"!")
+        return None
+    return matches[0]
+
+
+def getPatternFromName(name):
+    return getPatternThat(lambda pattern: pattern.name == name)
+
+
+def getPatternFromId(id):
+    intId = int(id)
+    return getPatternThat(lambda pattern: pattern.id == intId)
+
+
+def difftypeFromId(id):
+    if id == 0:
+        return DIFFTYPE_ADD
+    elif id == 1:
+        return DIFFTYPE_REM
+    elif id == 2:
+        return DIFFTYPE_NON
+    raise Exception("Cannot compute difftype from id " + id + "!")
+
+
+def codetypeFromId(id):
+    if id == 0:
+        return "if"
+    elif id == 1:
+        return "endif"
+    elif id == 2:
+        return "else"
+    elif id == 3:
+        return "elif"
+    elif id == 4:
+        return "code"
+    elif id == 5:
+        return "ROOT"
+    raise Exception("Cannot compute difftype from id " + id + "!")
+
+
+def parseNodeDefault(id, name):
+    nameWithoutDiffType = name[4:]
+
+    result = NodeData()
+    isCode = nameWithoutDiffType.startswith("CODE")
+
+    if name.startswith("NON"):
+        result.difftype = DIFFTYPE_NON
+    elif name.startswith("ADD"):
+        result.difftype = DIFFTYPE_ADD
+    elif name.startswith("REM"):
+        result.difftype = DIFFTYPE_REM
+
+    if isCode:
+        result.codetype = CODETYPE_CODE
+    else: # is if/else/elif
+        result.codetype = CODETYPE_MACRO
+
+    secondHyphenPos = findCharacterInStringGreedy(nameWithoutDiffType, '_')
+    codetype = nameWithoutDiffType[:secondHyphenPos]
+    isRoot = codetype.startswith("ROOT")
+    isMacro = not isRoot and not isCode
+
+    code = substringGraceful(nameWithoutDiffType, secondHyphenPos+1) # +1 to remove _ too
+    # print(code)
+    if len(code) > 0:
+        # remove parenthesis ""
+        code = code[1:len(code)-1]
+        # print(code)
+        if ismacro:
+            code = '#' + code
+    # prepend line number
+    code = str(lineNoOfNode(id)) + ("\n" + code if len(code) > 0 else "")
+
+    result.isroot = isRoot
+    result.label = "ROOT" if isRoot else code
+    return result
+
+
+def parseNodeDebugAtomics(id, name):
+    nameWithoutDiffType = name[4:]
+
+    result = NodeData()
+    isCode = True
+    pattern = getPatternFromName(name)
+    if pattern is not None:
+        result.difftype = pattern.difftype
+    else:
+        isCode = False
+
+    if result.difftype is None:
+        if name.startswith("NON"):
+            result.difftype = DIFFTYPE_NON
+        elif name.startswith("ADD"):
+            result.difftype = DIFFTYPE_ADD
+        elif name.startswith("REM"):
+            result.difftype = DIFFTYPE_REM
+
+    if isCode:
+        result.codetype = CODETYPE_CODE
+    else: # is if/else/elif
+        result.codetype = CODETYPE_MACRO
+
+    secondHyphenPos = findCharacterInStringGreedy(nameWithoutDiffType, '_')
+    codetype = nameWithoutDiffType[:secondHyphenPos]
+    result.isroot = codetype.startswith("ROOT")
+    isMacro = not result.isroot and not isCode
+    result.label = "ROOT" if result.isroot else (codetype if isMacro else name)
+    return result
+
+
+def parseNodeReleaseAtomics(id, name):
+    result = NodeData()
+
+    if name.startswith(RELEASE_PATTERNS_CODE_PREFIX):
+        pattern = getPatternFromId(name[len(RELEASE_PATTERNS_CODE_PREFIX):])
+#         print(name)
+#         print(name[len(RELEASE_PATTERNS_CODE_PREFIX):])
+#         print(pattern)
+#         print()
+        result.codetype = CODETYPE_CODE
+        result.difftype = pattern.difftype
+        result.label = pattern.name
+    elif name.startswith(RELEASE_PATTERNS_MACRO_PREFIX):
+        difftypeBegin = len(RELEASE_PATTERNS_MACRO_PREFIX)
+        codetypeBegin = difftypeBegin + 1
+        difftypeId = int(name[difftypeBegin:codetypeBegin])
+        codetypeId = int(name[codetypeBegin:codetypeBegin+1])
+
+        result.codetype = CODETYPE_MACRO
+        result.difftype = difftypeFromId(difftypeId)
+        result.label = codetypeFromId(codetypeId)
+    else:
+        raise Exception("Node " + name + " has unknown type. Expected prefix " + RELEASE_PATTERNS_CODE_PREFIX + " or " + RELEASE_PATTERNS_MACRO_PREFIX + " but was none.")
+
+    return result
+
+NODE_PARSER = parseNodeDefault
 
 
 def load_as_line_graph(input_file):
@@ -164,59 +341,24 @@ def plot_graphs(S, exportDir):
         rootNode = None
         for v, d in difftree.nodes(data=True):
             name = d['label']
-            # remove metadata and " " from node labels
-            nameWithoutDiffType = name[4:]
+            nodedata = NODE_PARSER(v, name)
 
-            # print(v, name)
-            iscode = False
-            if ATOMICS:
-                iscode = True
-                if name in ADD_PATTERNS:
-                    node_colors.append(DIFFTYPE_ADD_COLOR)
-                elif name in REM_PATTERNS:
-                    node_colors.append(DIFFTYPE_REM_COLOR)
-                elif name in NON_PATTERNS:
-                    node_colors.append(DIFFTYPE_NON_COLOR)
-                else:
-                    iscode = False
-            else:
-                iscode = nameWithoutDiffType.startswith("CODE")
+            if nodedata.isroot:
+                rootNode = v
 
-            if name.startswith("NON"):
+            if nodedata.difftype == DIFFTYPE_NON:
                 node_colors.append(DIFFTYPE_NON_COLOR)
-            elif name.startswith("ADD"):
+            elif nodedata.difftype == DIFFTYPE_ADD:
                 node_colors.append(DIFFTYPE_ADD_COLOR)
-            elif name.startswith("REM"):
+            elif nodedata.difftype == DIFFTYPE_REM:
                 node_colors.append(DIFFTYPE_REM_COLOR)
 
-            if iscode:
+            if nodedata.codetype == CODETYPE_CODE:
                 node_type_colors.append(CODE_TYPE_CODE_COLOR)
             else: # is if/else/elif
                 node_type_colors.append(CODE_TYPE_OTHER_COLOR)
 
-            secondHyphenPos = findCharacterInStringGreedy(nameWithoutDiffType, '_')
-            codetype = nameWithoutDiffType[:secondHyphenPos]
-            isroot = codetype.startswith("ROOT")
-            ismacro = not isroot and not iscode
-
-            if isroot:
-                rootNode = v
-
-            if IS_PATTERN:
-                code = codetype if isroot or ismacro else (name if ATOMICS else "")
-            else:
-                code = substringGraceful(nameWithoutDiffType, secondHyphenPos+1) # +1 to remove _ too
-                # print(code)
-                if len(code) > 0:
-                    # remove parenthesis ""
-                    code = code[1:len(code)-1]
-                    # print(code)
-                    if ismacro:
-                        code = '#' + code
-                # prepend line number
-                code = str(lineNoOfNode(v)) + ("\n" + code if len(code) > 0 else "")
-
-            d['label'] = "ROOT" if isroot else code
+            d['label'] = nodedata.label
 
         edge_colors = []
         for _, _, d in difftree.edges.data():
@@ -269,7 +411,9 @@ def plot_graphs(S, exportDir):
                     font_size=FONT_SIZE)
 
         outfilename = difftree.graph['filename'].replace("/", DIR_SEPARATOR)
-        if not IS_PATTERN:
+        if INDEX_OUTPUT_FILENAME:
+            outfilename = str(i) + DIR_SEPARATOR + outfilename
+        if 'commitid' in difftree.graph:
             outfilename += DIR_SEPARATOR + difftree.graph['commitid']
         outfilename += OUTPUT_FORMAT
         save_path = os.path.join(exportDir, outfilename)
@@ -304,8 +448,8 @@ if __name__ == "__main__":
     argparser.add_argument('--scaley', nargs='?', default=POS_SCALING_Y, type=int)
     argparser.add_argument('--nolabels', action='store_const', const=True, default=False)
     argparser.add_argument('--recursive', action='store_const', const=True, default=False)
-    argparser.add_argument('--pattern', action='store_const', const=True, default=False)
-    argparser.add_argument('--atomics', action='store_const', const=True, default=False)
+#     argparser.add_argument('--pattern', action='store_const', const=True, default=False)
+    argparser.add_argument('--format', nargs='?', default="default", type=str)
     args = argparser.parse_args()
 
     infile = args.infile
@@ -318,8 +462,14 @@ if __name__ == "__main__":
     ARROW_SIZE = args.arrowsize
     FONT_SIZE = args.fontsize
 
-    IS_PATTERN = args.pattern
-    ATOMICS = args.atomics
+    IS_PATTERN = True
+    if args.format == "default":
+        NODE_PARSER = parseNodeDefault
+        IS_PATTERN = False
+    elif args.format == "patternsdebug":
+        NODE_PARSER = parseNodeDebugAtomics
+    elif args.format == "patternsrelease":
+        NODE_PARSER = parseNodeReleaseAtomics
 
     if os.path.isfile(infile):
         print("Render file", infile)
