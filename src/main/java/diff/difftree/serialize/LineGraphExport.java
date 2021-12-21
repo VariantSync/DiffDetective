@@ -7,6 +7,7 @@ import diff.difftree.DiffNode;
 import diff.difftree.DiffTree;
 import diff.difftree.DiffTreeSource;
 import diff.difftree.transform.DiffTreeTransformer;
+import main.mining.DiffTreeMiningResult;
 import org.pmw.tinylog.Logger;
 import util.StringUtils;
 
@@ -20,9 +21,9 @@ public class LineGraphExport {
             final DiffTreeLineGraphExporter exporter = new DiffTreeLineGraphExporter(diffTree);
             final String result = exporter.export(options);
             return new Pair<>(exporter.getDebugData(), result);
-        } else {
-            return new Pair<>(new DiffTreeSerializeDebugData(), "");
         }
+
+        return null;
     }
 
     /**
@@ -31,10 +32,8 @@ public class LineGraphExport {
      * @param lineGraph The string builder to write the result to.
      * @return The number of the next diff tree to export (updated value of treeCounter).
      */
-    public static Pair<DiffTreeSerializeDebugData, Integer> toLineGraphFormat(final CommitDiff commitDiff, final StringBuilder lineGraph, final DiffTreeLineGraphExportOptions options) {
-        final DiffTreeSerializeDebugData debugData = new DiffTreeSerializeDebugData();
-
-        int exportedTrees = 0;
+    public static DiffTreeMiningResult toLineGraphFormat(final CommitDiff commitDiff, final StringBuilder lineGraph, final DiffTreeLineGraphExportOptions options) {
+        final DiffTreeMiningResult result = new DiffTreeMiningResult();
 
         final String hash = commitDiff.getCommitHash();
         for (final PatchDiff patchDiff : commitDiff.getPatchDiffs()) {
@@ -48,18 +47,19 @@ public class LineGraphExport {
                     break;
                 }
 
-                debugData.mappend(patchDiffLg.getKey());
-
-                if (!patchDiffLg.getValue().isEmpty()) {
+                if (patchDiffLg != null) {
+                    result.debugData.mappend(patchDiffLg.getKey());
                     composeTreeInLineGraph(lineGraph, patchDiff, patchDiffLg.getValue(), options);
-                    ++exportedTrees;
+                    ++result.exportedTrees;
                 }
             } else {
                 Logger.debug("  Skipping invalid patch for file " + patchDiff.getFileName() + " at commit " + hash);
             }
         }
 
-        return new Pair<>(debugData, exportedTrees);
+        result.exportedCommits = 1;
+
+        return result;
     }
     
     /**
