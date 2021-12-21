@@ -20,7 +20,7 @@ public class DiffTreeMiningResult implements Semigroup<DiffTreeMiningResult>, Me
     public final DiffTreeSerializeDebugData debugData;
     public ExplainedFilterSummary filterHits;
 
-    public DiffTreeMiningResult() {
+    public <T> DiffTreeMiningResult() {
         this(0, 0, new DiffTreeSerializeDebugData(), new ExplainedFilterSummary());
     }
 
@@ -44,12 +44,15 @@ public class DiffTreeMiningResult implements Semigroup<DiffTreeMiningResult>, Me
         filterHits.append(other.filterHits);
     }
 
-    public void exportTo(final Path file) {
+    public String exportTo(final Path file) {
         try {
-            IO.write(file, Metadata.show(snapshot()));
+            final String result = Metadata.show(snapshot());
+            IO.write(file, result);
+            return result;
         } catch (IOException e) {
             Logger.error(e);
             System.exit(0);
+            return "";
         }
     }
 
