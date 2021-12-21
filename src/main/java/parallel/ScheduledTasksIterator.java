@@ -18,6 +18,10 @@ public class ScheduledTasksIterator<T> implements Iterator<T>, AutoCloseable {
         }
     }
 
+    public ScheduledTasksIterator(final Iterable<? extends Callable<T>> tasks, final int nThreads) {
+        this(tasks.iterator(), nThreads);
+    }
+
     private synchronized void scheduleNext() {
         if (this.remainingTasks.hasNext()) {
             futures.add(threadPool.submit(remainingTasks.next()));
