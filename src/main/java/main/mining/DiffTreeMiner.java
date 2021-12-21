@@ -7,7 +7,7 @@ import diff.GitDiffer;
 import diff.difftree.filter.DiffTreeFilter;
 import diff.difftree.serialize.DiffTreeLineGraphExportOptions;
 import diff.difftree.serialize.GraphFormat;
-import diff.difftree.serialize.treeformat.IndexedTreeFormat;
+import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
 import diff.difftree.transform.CollapseNestedNonEditedMacros;
 import diff.difftree.transform.CutNonEditedSubtrees;
 import diff.difftree.transform.DiffTreeTransformer;
@@ -29,7 +29,7 @@ import java.util.function.Supplier;
 
 public class DiffTreeMiner {
     private final static Diagnostics DIAGNOSTICS = new Diagnostics();
-    public static final int COMMITS_TO_PROCESS_PER_THREAD = 500;
+    public static final int COMMITS_TO_PROCESS_PER_THREAD = 10000;
 
     public static List<DiffTreeTransformer> Postprocessing() {
         return List.of(
@@ -43,14 +43,14 @@ public class DiffTreeMiner {
     public static DiffTreeLineGraphExportOptions ExportOptions() {
         return new DiffTreeLineGraphExportOptions(
                 GraphFormat.DIFFTREE
-//            , new CommitDiffDiffTreeLabelFormat()
-                , new IndexedTreeFormat()
+                // We have to ensure that all DiffTrees have unique IDs, so use name of changed file and commit hash.
+                , new CommitDiffDiffTreeLabelFormat()
 //            , new DebugMiningDiffNodeFormat()
                 , new ReleaseMiningDiffNodeFormat()
                 , TaggedPredicate.and(
-                DiffTreeFilter.notEmpty(),
-                DiffTreeFilter.moreThanTwoCodeNodes()
-        )
+                        DiffTreeFilter.notEmpty(),
+                        DiffTreeFilter.moreThanTwoCodeNodes()
+                )
                 , Postprocessing()
                 , DiffTreeLineGraphExportOptions.LogError()
                 .andThen(DiffTreeLineGraphExportOptions.RenderError())
@@ -132,7 +132,7 @@ public class DiffTreeMiner {
         );
         Logger.info("<<< done in " + clock.printPassedSeconds());
 
-        final TaskCompletionMonitor commitSpeedMonitor = new TaskCompletionMonitor(1000, TaskCompletionMonitor.LogProgress("commits"));
+        final TaskCompletionMonitor commitSpeedMonitor = new TaskCompletionMonitor(0, TaskCompletionMonitor.LogProgress("commits"));
         Logger.info(">>> Run mining");
         clock.start();
         commitSpeedMonitor.start();
@@ -146,7 +146,6 @@ public class DiffTreeMiner {
             Logger.error("Failed to run all mining task!");
             Logger.error(e);
         }
-        commitSpeedMonitor.reportProgress();
         Logger.info("<<< done in " + clock.printPassedSeconds());
 
         totalResult.exportTo(outputDir.resolve("totalresult" + DiffTreeMiningResult.EXTENSION));
@@ -162,8 +161,8 @@ public class DiffTreeMiner {
         final Path outputDir = Paths.get("results", "mining");
 
         final List<Repository> repos = List.of(
-                DefaultRepositories.stanciulescuMarlinZip(Path.of("."))
-//                DefaultRepositories.createRemoteLinuxRepo(linuxDir.resolve("linux"))
+//                DefaultRepositories.stanciulescuMarlinZip(Path.of("."))
+                DefaultRepositories.createRemoteLinuxRepo(linuxDir.resolve("linux"))
 //                DefaultRepositories.createRemoteVimRepo(inputDir.resolve("vim"))
         );
 
