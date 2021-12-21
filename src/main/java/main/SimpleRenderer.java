@@ -3,8 +3,8 @@ package main;
 import diff.difftree.DiffTree;
 import diff.difftree.render.DiffTreeRenderer;
 import diff.difftree.serialize.GraphFormat;
-import diff.difftree.serialize.nodeformat.DebugDiffNodeFormat;
 import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
+import main.mining.formats.DebugMiningDiffNodeFormat;
 import org.pmw.tinylog.Logger;
 import util.FileUtils;
 
@@ -18,7 +18,7 @@ public class SimpleRenderer {
     private static final DiffTreeRenderer.RenderOptions renderOptions = new DiffTreeRenderer.RenderOptions(
             GraphFormat.DIFFTREE,
             new CommitDiffDiffTreeLabelFormat(),
-            new DebugDiffNodeFormat(),
+            new DebugMiningDiffNodeFormat(),
             false,
             DiffTreeRenderer.RenderOptions.DEFAULT.dpi(),
             DiffTreeRenderer.RenderOptions.DEFAULT.nodesize(),
@@ -26,7 +26,7 @@ public class SimpleRenderer {
             DiffTreeRenderer.RenderOptions.DEFAULT.arrowsize(),
             DiffTreeRenderer.RenderOptions.DEFAULT.fontsize(),
             true,
-            List.of("--format", "patternsrelease")
+            List.of("--format", "patternsdebug")
     );
     private final static boolean collapseMultipleCodeLines = true;
     private final static boolean ignoreEmptyLines = true;
