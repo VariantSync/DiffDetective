@@ -3,13 +3,13 @@ package diff.difftree.serialize;
 import diff.PatchDiff;
 import diff.difftree.DiffTree;
 import diff.difftree.filter.DiffTreeFilter;
+import diff.difftree.filter.TaggedPredicate;
 import diff.difftree.render.DiffTreeRenderer;
 import diff.difftree.render.PatchDiffRenderer;
 import diff.difftree.serialize.nodeformat.DiffNodeLabelFormat;
 import diff.difftree.serialize.treeformat.DiffTreeLabelFormat;
 import diff.difftree.transform.DiffTreeTransformer;
 import org.pmw.tinylog.Logger;
-import util.TaggedPredicate;
 
 import java.util.ArrayList;
 import java.util.List;

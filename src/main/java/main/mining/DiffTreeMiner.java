@@ -5,6 +5,7 @@ import datasets.DefaultRepositories;
 import datasets.Repository;
 import diff.GitDiffer;
 import diff.difftree.filter.DiffTreeFilter;
+import diff.difftree.filter.TaggedPredicate;
 import diff.difftree.serialize.DiffTreeLineGraphExportOptions;
 import diff.difftree.serialize.GraphFormat;
 import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
@@ -20,7 +21,10 @@ import org.eclipse.jgit.revwalk.RevCommit;
 import org.pmw.tinylog.Level;
 import org.pmw.tinylog.Logger;
 import parallel.ScheduledTasksIterator;
-import util.*;
+import util.Clock;
+import util.ClusteredIterator;
+import util.Diagnostics;
+import util.MappedIterator;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -30,7 +34,8 @@ import java.util.function.Supplier;
 
 public class DiffTreeMiner {
     private final static Diagnostics DIAGNOSTICS = new Diagnostics();
-    public static final int COMMITS_TO_PROCESS_PER_THREAD = 10000;
+//    public static final int COMMITS_TO_PROCESS_PER_THREAD = 10000;
+    public static final int COMMITS_TO_PROCESS_PER_THREAD = 1000;
     public static final int EXPECTED_NUMBER_OF_COMMITS_IN_LINUX = 495284;
 
     public static List<DiffTreeTransformer> Postprocessing() {
@@ -50,8 +55,16 @@ public class DiffTreeMiner {
 //            , new DebugMiningDiffNodeFormat()
                 , new ReleaseMiningDiffNodeFormat()
                 , TaggedPredicate.and(
-                        DiffTreeFilter.notEmpty(),
-                        DiffTreeFilter.moreThanTwoCodeNodes()
+//                        TaggedPredicate.and(
+                            DiffTreeFilter.notEmpty(),
+                            DiffTreeFilter.moreThanTwoCodeNodes()
+//                        ),
+                        /// We want to exclude patches that do not edit variability.
+                        /// In particular we noticed that most edits just insert or delete code (or replace it).
+                        /// This is reasonable and was also observed in previous studies: Edits to code are more frequent than edits to variability.
+                        /// Yet, such edits cannot reveal compositions of more complex edits to variability.
+                        /// We thus filter them.
+//                        DiffTreeFilter.hasEditsToVariability()
                 )
                 , Postprocessing()
                 , DiffTreeLineGraphExportOptions.LogError()
@@ -166,8 +179,8 @@ public class DiffTreeMiner {
         final Path outputDir = Paths.get("results", "mining");
 
         final List<Repository> repos = List.of(
-//                DefaultRepositories.stanciulescuMarlinZip(Path.of("."))
-                DefaultRepositories.createRemoteLinuxRepo(linuxDir.resolve("linux"))
+                DefaultRepositories.stanciulescuMarlinZip(Path.of("."))
+//                DefaultRepositories.createRemoteLinuxRepo(linuxDir.resolve("linux"))
 //                DefaultRepositories.createRemoteVimRepo(inputDir.resolve("vim"))
         );
 
