@@ -12,6 +12,8 @@ import diff.difftree.transform.CollapseNestedNonEditedMacros;
 import diff.difftree.transform.CutNonEditedSubtrees;
 import diff.difftree.transform.DiffTreeTransformer;
 import main.Main;
+import main.mining.formats.ReleaseMiningDiffNodeFormat;
+import main.mining.monitoring.TaskCompletionMonitor;
 import main.mining.strategies.DiffTreeMiningStrategy;
 import main.mining.strategies.MineAllThenExport;
 import org.pmw.tinylog.Level;
@@ -130,16 +132,21 @@ public class DiffTreeMiner {
         );
         Logger.info("<<< done in " + clock.printPassedSeconds());
 
+        final TaskCompletionMonitor commitSpeedMonitor = new TaskCompletionMonitor(1000, TaskCompletionMonitor.LogProgress("commits"));
         Logger.info(">>> Run mining");
         clock.start();
+        commitSpeedMonitor.start();
         try (final ScheduledTasksIterator<DiffTreeMiningResult> threads = new ScheduledTasksIterator<>(tasks, nThreads)) {
             while (threads.hasNext()) {
-                totalResult.mappend(threads.next());
+                final DiffTreeMiningResult threadsResult = threads.next();
+                totalResult.mappend(threadsResult);
+                commitSpeedMonitor.addFinishedTasks(threadsResult.exportedCommits);
             }
         } catch (Exception e) {
             Logger.error("Failed to run all mining task!");
             Logger.error(e);
         }
+        commitSpeedMonitor.reportProgress();
         Logger.info("<<< done in " + clock.printPassedSeconds());
 
         totalResult.exportTo(outputDir.resolve("totalresult" + DiffTreeMiningResult.EXTENSION));
