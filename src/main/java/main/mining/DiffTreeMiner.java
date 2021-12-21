@@ -16,6 +16,7 @@ import main.mining.formats.ReleaseMiningDiffNodeFormat;
 import main.mining.monitoring.TaskCompletionMonitor;
 import main.mining.strategies.DiffTreeMiningStrategy;
 import main.mining.strategies.MineAllThenExport;
+import org.eclipse.jgit.revwalk.RevCommit;
 import org.pmw.tinylog.Level;
 import org.pmw.tinylog.Logger;
 import parallel.ScheduledTasksIterator;
@@ -30,6 +31,7 @@ import java.util.function.Supplier;
 public class DiffTreeMiner {
     private final static Diagnostics DIAGNOSTICS = new Diagnostics();
     public static final int COMMITS_TO_PROCESS_PER_THREAD = 10000;
+    public static final int EXPECTED_NUMBER_OF_COMMITS_IN_LINUX = 495284;
 
     public static List<DiffTreeTransformer> Postprocessing() {
         return List.of(
@@ -79,14 +81,17 @@ public class DiffTreeMiner {
         // prepare tasks
         Logger.info(">>> Scheduling synchronous mining");
         clock.start();
+        List<RevCommit> commitsToProcess = differ.yieldRevCommits().toList();
         final MiningTask task = new MiningTask(
                 repo,
                 differ,
                 outputDir.resolve(repo.getRepositoryName() + ".lg"),
                 exportOptions,
                 strategy,
-                differ.yieldRevCommits().toList()
+                commitsToProcess
                 );
+        Logger.info("Scheduled " + commitsToProcess.size() + " commits.");
+        commitsToProcess = null; // free reference to enable garbage collection
         Logger.info("<<< done after " + clock.printPassedSeconds());
 
         Logger.info(">>> Run mining");
@@ -178,7 +183,7 @@ public class DiffTreeMiner {
             repo.setDebugOptions(debugOptions);
             final Path repoOutputDir = outputDir.resolve(repo.getRepositoryName());
             mineAsync(repo, repoOutputDir, DiffTreeMiner::ExportOptions, DiffTreeMiner::MiningStrategy);
-//            mine(repo, repoOutputDir, exportOptions.get(), miningStrategy.get());
+//            mine(repo, repoOutputDir, ExportOptions(), MiningStrategy());
 
             Logger.info(" === End Processing " + repo.getRepositoryName() + " after " + clock.printPassedSeconds() + " ===");
         }
