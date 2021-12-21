@@ -1,4 +1,4 @@
-package util;
+package util.iterator;
 
 import java.util.Iterator;
 import java.util.function.Consumer;

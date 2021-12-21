@@ -22,9 +22,9 @@ import org.pmw.tinylog.Level;
 import org.pmw.tinylog.Logger;
 import parallel.ScheduledTasksIterator;
 import util.Clock;
-import util.ClusteredIterator;
 import util.Diagnostics;
-import util.MappedIterator;
+import util.iterator.ClusteredIterator;
+import util.iterator.MappedIterator;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;

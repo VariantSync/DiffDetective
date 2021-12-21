@@ -1,4 +1,4 @@
-package util;
+package util.fide;
 
 import de.ovgu.featureide.fm.core.analysis.cnf.generator.configuration.util.Pair;
 

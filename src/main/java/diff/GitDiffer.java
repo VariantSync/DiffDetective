@@ -17,8 +17,8 @@ import org.eclipse.jgit.treewalk.CanonicalTreeParser;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.pmw.tinylog.Logger;
-import util.SideEffectIteratorDecorator;
-import util.Yield;
+import util.iterator.SideEffectIteratorDecorator;
+import util.iterator.Yield;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
