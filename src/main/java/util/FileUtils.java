@@ -69,4 +69,8 @@ public class FileUtils {
             return "";
         }
     }
+
+    public static Path addExtension(final Path p, final String extension) {
+        return p.resolveSibling(p.getFileName() + extension);
+    }
 }

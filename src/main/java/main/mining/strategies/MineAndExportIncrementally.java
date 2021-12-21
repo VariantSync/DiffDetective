@@ -54,7 +54,7 @@ public class MineAndExportIncrementally extends DiffTreeMiningStrategy {
 
     public static void exportAppend(final Path outputPath, final String linegraph) {
         try {
-            Logger.info("Writing file " + outputPath);
+//            Logger.info("Writing file " + outputPath);
             IO.append(outputPath, linegraph);
         } catch (IOException exception) {
             Logger.error(exception);

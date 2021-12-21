@@ -61,7 +61,7 @@ class AddIfdefWrapElse extends SemanticPattern {
     }
 
     @Override
-    public FeatureContext[] getFeatureContexts(PatternMatch patternMatch) {
+    public FeatureContext[] getFeatureContexts(PatternMatch<DiffNode> patternMatch) {
         return new FeatureContext[]{
                 new FeatureContext(patternMatch.getFeatureMappings()[0])
         };

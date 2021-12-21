@@ -3,7 +3,6 @@ package main.mining.strategies;
 import datasets.Repository;
 import diff.CommitDiff;
 import diff.difftree.serialize.DiffTreeLineGraphExportOptions;
-import org.pmw.tinylog.Logger;
 import util.IO;
 
 import java.nio.file.Path;
@@ -25,7 +24,7 @@ public class MineAllThenExport extends DiffTreeMiningStrategy {
     @Override
     public void end() {
         final String lineGraph = waitForAll.toString();
-        Logger.info("Writing file " + outputPath);
+//        Logger.info("Writing file " + outputPath);
         IO.tryWrite(outputPath, lineGraph);
     }
 }

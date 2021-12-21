@@ -12,6 +12,7 @@ import util.Assert;
 import util.IO;
 
 import java.nio.file.Path;
+import java.util.List;
 import java.util.function.Predicate;
 
 public class ExampleFinder implements DiffTreeTransformer {
@@ -25,7 +26,8 @@ public class ExampleFinder implements DiffTreeTransformer {
             0.5*DiffTreeRenderer.RenderOptions.DEFAULT.edgesize(),
             DiffTreeRenderer.RenderOptions.DEFAULT.arrowsize()/2,
             2,
-            true
+            true,
+            List.of()
     );
 
     private final Predicate<DiffTree> isGoodExample;

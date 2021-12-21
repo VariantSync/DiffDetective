@@ -22,6 +22,7 @@ import util.StringUtils;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.function.Supplier;
 
 public class DiffTreeRenderer {
@@ -43,7 +44,8 @@ public class DiffTreeRenderer {
             double edgesize,
             int arrowsize,
             int fontsize,
-            boolean withlabels) {
+            boolean withlabels,
+            List<String> extraArguments) {
         public static RenderOptions DEFAULT = new RenderOptions(
         		GraphFormat.DIFFTREE,
         		new CommitDiffDiffTreeLabelFormat(),
@@ -54,7 +56,8 @@ public class DiffTreeRenderer {
                 1.2,
                 15,
                 5,
-                true
+                true,
+                List.of()
         );
     }
 
@@ -146,6 +149,9 @@ public class DiffTreeRenderer {
         cmd.addArg("--fontsize").addArg(options.fontsize);
         if (!options.withlabels) {
             cmd.addArg("--nolabels");
+        }
+        for (final String arg : options.extraArguments) {
+            cmd.addArg(arg);
         }
         cmd.addArg(lineGraphFile.toString());
 
