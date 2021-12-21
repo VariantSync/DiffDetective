@@ -3,15 +3,13 @@ package pattern.semantic;
 import analysis.data.PatternMatch;
 import diff.difftree.DiffNode;
 import evaluation.FeatureContext;
-import pattern.SemanticPattern;
+import org.prop4j.Not;
 
 import java.util.Optional;
 
-public class AddIfdefWrapElseSemanticPattern extends SemanticPattern {
-    public static final String PATTERN_NAME = "AddIfdefWrapElseSEM";
-
-    public AddIfdefWrapElseSemanticPattern() {
-        super(PATTERN_NAME);
+class AddIfdefElse extends SemanticPattern {
+    AddIfdefElse() {
+        super("AddIfdefElse");
     }
 
     /*
@@ -20,7 +18,7 @@ public class AddIfdefWrapElseSemanticPattern extends SemanticPattern {
         has an added code child
         has no elif children
         has an added else child
-            which has an unchanged code child
+          which has an added code child
      */
     @Override
     public Optional<PatternMatch<DiffNode>> match(DiffNode annotationNode) {
@@ -43,14 +41,14 @@ public class AddIfdefWrapElseSemanticPattern extends SemanticPattern {
                 return Optional.empty();
             }
 
-            boolean noneCodeInElse = false;
-            for(DiffNode child : elseNode.getAllChildren()){
-                if(child.isCode() && child.isNon()){
-                    noneCodeInElse = true;
+            boolean addedCodeInElse = false;
+            for(DiffNode child : elseNode.getAllChildren()) {
+                if(child.isCode() && child.isAdd()){
+                    addedCodeInElse = true;
                 }
             }
 
-            if(!noneCodeInElse){
+            if(!addedCodeInElse){
                 return Optional.empty();
             }
 
@@ -64,9 +62,10 @@ public class AddIfdefWrapElseSemanticPattern extends SemanticPattern {
     }
 
     @Override
-    public FeatureContext[] getFeatureContexts(PatternMatch patternMatch) {
+    public FeatureContext[] getFeatureContexts(PatternMatch<DiffNode> patternMatch) {
         return new FeatureContext[]{
-                new FeatureContext(patternMatch.getFeatureMappings()[0])
+                new FeatureContext(patternMatch.getFeatureMappings()[0]),
+                new FeatureContext(new Not(patternMatch.getFeatureMappings()[0]))
         };
     }
 }

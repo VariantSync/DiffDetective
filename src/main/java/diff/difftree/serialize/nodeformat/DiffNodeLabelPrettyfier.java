@@ -12,7 +12,7 @@ public abstract class DiffNodeLabelPrettyfier {
 	 * Auxiliary method for {@link DiffNodeLabelPrettyfier#prettyPrintIfMacroOr(DiffNode, String)}.
 	 * 
 	 * @param node The {@link DiffNode}
-	 * @return
+	 * @return Name and {@link DiffNode::getDirectFeatureMapping} of the node.
 	 */
     private static String prettyPrintTypeAndMapping(final DiffNode node) {
         String result = node.codeType.name;
@@ -27,7 +27,7 @@ public abstract class DiffNodeLabelPrettyfier {
      * Generates a specific label for {@link DiffNode DiffNodes} in line graph.
      * 
      * @param node The {@link DiffNode}
-     * @param elseValue
+     * @param elseValue The value tu return in case the given node is not a macro.
      * @return The generated label
      */
     public static String prettyPrintIfMacroOr(final DiffNode node, final String elseValue) {

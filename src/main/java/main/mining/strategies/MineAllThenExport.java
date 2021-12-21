@@ -3,7 +3,6 @@ package main.mining.strategies;
 import datasets.Repository;
 import diff.CommitDiff;
 import diff.difftree.serialize.DiffTreeLineGraphExportOptions;
-import main.mining.DiffTreeMiningStrategy;
 import util.IO;
 
 import java.nio.file.Path;

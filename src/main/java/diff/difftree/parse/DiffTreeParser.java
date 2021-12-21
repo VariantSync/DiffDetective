@@ -4,6 +4,7 @@ import diff.DiffLineNumber;
 import diff.difftree.DiffNode;
 import diff.difftree.DiffTree;
 import diff.difftree.DiffType;
+import diff.difftree.error.IllFormedAnnotationException;
 import org.pmw.tinylog.Logger;
 import util.StringUtils;
 
@@ -71,8 +72,15 @@ public class DiffTreeParser {
             }
 
             // check if this is a multiline macro
-            final ParseResult isMLMacro = mlMacroParser.consume(
-                    lineNo, currentLine, beforeStack, afterStack, nodes);
+            final ParseResult isMLMacro;
+            try {
+                isMLMacro = mlMacroParser.consume(
+                        lineNo, currentLine, beforeStack, afterStack, nodes);
+            } catch (IllFormedAnnotationException e) {
+                errorHandler.accept(e.toString());
+                return null;
+            }
+
             switch (isMLMacro.type()) {
                 case Success: {
                     if (lastCode != null) {
@@ -85,12 +93,19 @@ public class DiffTreeParser {
                     errorHandler.accept(isMLMacro.message());
                     return null;
                 }
+                // line is not a mult-line macro so keep going (break the switch statement).
                 case NotMyDuty: break;
             }
 
             // This gets the code type and diff type of the current line and creates a node
-            // Note that the node is not yet added to the diff tree
-            final DiffNode newNode = DiffNode.fromDiffLine(currentLine);
+            // Note that the node is not yet added to the diff tree.
+            final DiffNode newNode;
+            try {
+                newNode = DiffNode.fromDiffLine(currentLine);
+            } catch (IllFormedAnnotationException e) {
+                errorHandler.accept(e.toString());
+                return null;
+            }
 
             // collapse multiple code lines
             if (lastCode != null) {

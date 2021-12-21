@@ -1,8 +1,12 @@
 package diff.difftree.serialize;
 
+import de.ovgu.featureide.fm.core.analysis.cnf.generator.configuration.util.Pair;
 import diff.difftree.*;
 import util.Assert;
+import util.FileUtils;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -12,13 +16,18 @@ import java.util.List;
  * Import patches from line graphs.
  */
 public class LineGraphImport {
+    public static List<DiffTree> fromFile(final Path path, final DiffTreeLineGraphImportOptions options) {
+        Assert.assertTrue(Files.isRegularFile(path));
+        Assert.assertTrue(FileUtils.isLineGraph(path));
+        return fromLineGraph(FileUtils.readUTF8(path), options);
+    }
 	
 	/**
 	 * Transforms a line graph into a list of {@link DiffTree DiffTrees}.
 	 * 
 	 * @return All {@link DiffTree DiffTrees} contained in the line graph
 	 */
-	public static List<DiffTree> fromLineGraphFormat(final String lineGraph, final DiffTreeLineGraphImportOptions options) {
+	public static List<DiffTree> fromLineGraph(final String lineGraph, final DiffTreeLineGraphImportOptions options) {
 		java.util.Scanner input = new java.util.Scanner(lineGraph);
 		
 		// All DiffTrees read from the line graph
@@ -29,7 +38,7 @@ public class LineGraphImport {
 		
 		// A hash map of DiffNodes
 		// <id of DiffNode, DiffNode>
-		HashMap<Integer,DiffNode> diffNodes = new HashMap<>();
+		HashMap<Integer, DiffNode> diffNodes = new HashMap<>();
 
 		// The currently read DiffTree with all its DiffNodes and edges
 		DiffTree curDiffTree = null;
@@ -56,11 +65,11 @@ public class LineGraphImport {
 				// the line represents a DiffNode
 				
 				// parse node from input line
-				DiffNode node = options.nodeFormat().fromLineGraphLine(ln);
+				final Pair<Integer, DiffNode> idAndNode = options.nodeFormat().fromLineGraphLine(ln);
 			
 				// add DiffNode to lists of current DiffTree
-				diffNodeList.add(node);
-				diffNodes.put(node.getID(), node);
+				diffNodeList.add(idAndNode.getValue());
+				diffNodes.put(idAndNode.getKey(), idAndNode.getValue());
 				
 			} else if (ln.startsWith(LineGraphConstants.LG_EDGE)) {
 				// the line represent a connection with two DiffNodes

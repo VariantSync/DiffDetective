@@ -106,6 +106,20 @@ public class DiffTree {
         return allnodes;
     }
 
+    /**
+     * @param nodesToCount A condition that returns true for each node that should be counted.
+     * @return The number of nodes in this tree that satisfy the given condition.
+     */
+    public int count(final Predicate<DiffNode> nodesToCount) {
+        final AtomicInteger count = new AtomicInteger();
+        forAll(d -> {
+            if (nodesToCount.test(d)) {
+                count.incrementAndGet();
+            }
+        });
+        return count.get();
+    }
+
     public void setSource(final DiffTreeSource source) {
         this.source = source;
     }
@@ -152,6 +166,16 @@ public class DiffTree {
             n.assertConsistency();
             Assert.assertTrue(c.hasPathToRoot(n), () -> "Not all ancestors of " + n + " are descendants of the root!");
         });
+    }
+
+    public ConsistencyResult isConsistent() {
+        try {
+            assertConsistency();
+        } catch (AssertionError e) {
+            return ConsistencyResult.Failure(e);
+        }
+
+        return ConsistencyResult.Success();
     }
 
     @Override

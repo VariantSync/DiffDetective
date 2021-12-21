@@ -4,21 +4,20 @@ import datasets.DebugOptions;
 import datasets.DefaultRepositories;
 import datasets.Repository;
 import diff.GitDiffer;
-import diff.difftree.CodeType;
+import diff.difftree.filter.DiffTreeFilter;
 import diff.difftree.serialize.DiffTreeLineGraphExportOptions;
 import diff.difftree.serialize.GraphFormat;
-import diff.difftree.serialize.nodeformat.MiningDiffNodeFormat;
-import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
-import diff.difftree.transform.*;
+import diff.difftree.serialize.treeformat.IndexedTreeFormat;
+import diff.difftree.transform.CollapseNestedNonEditedMacros;
+import diff.difftree.transform.CutNonEditedSubtrees;
+import diff.difftree.transform.DiffTreeTransformer;
 import main.Main;
+import main.mining.strategies.DiffTreeMiningStrategy;
 import main.mining.strategies.MineAllThenExport;
 import org.pmw.tinylog.Level;
 import org.pmw.tinylog.Logger;
 import parallel.ScheduledTasksIterator;
-import util.Clock;
-import util.ClusteredIterator;
-import util.Diagnostics;
-import util.MappedIterator;
+import util.*;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -28,7 +27,6 @@ import java.util.function.Supplier;
 
 public class DiffTreeMiner {
     private final static Diagnostics DIAGNOSTICS = new Diagnostics();
-
     public static final int COMMITS_TO_PROCESS_PER_THREAD = 500;
 
     public static List<DiffTreeTransformer> Postprocessing() {
@@ -36,10 +34,34 @@ public class DiffTreeMiner {
 //                new NaiveMovedCodeDetection(), // do this first as it might introduce non-edited subtrees
                 new CutNonEditedSubtrees(),
 //                RunningExampleFinder.Default,
-                new CollapseNestedNonEditedMacros(),
-                new CollapseAtomicPatterns(),
-                new RelabelRoot(CodeType.IF.name)
+                new CollapseNestedNonEditedMacros()
         );
+    }
+
+    public static DiffTreeLineGraphExportOptions ExportOptions() {
+        return new DiffTreeLineGraphExportOptions(
+                GraphFormat.DIFFTREE
+//            , new CommitDiffDiffTreeLabelFormat()
+                , new IndexedTreeFormat()
+//            , new DebugMiningDiffNodeFormat()
+                , new ReleaseMiningDiffNodeFormat()
+                , TaggedPredicate.and(
+                DiffTreeFilter.notEmpty(),
+                DiffTreeFilter.moreThanTwoCodeNodes()
+        )
+                , Postprocessing()
+                , DiffTreeLineGraphExportOptions.LogError()
+                .andThen(DiffTreeLineGraphExportOptions.RenderError())
+                .andThen(DiffTreeLineGraphExportOptions.SysExitOnError())
+        );
+    }
+
+    public static DiffTreeMiningStrategy MiningStrategy() {
+        return new MineAllThenExport();
+//                new CompositeDiffTreeMiningStrategy(
+//                        new MineAndExportIncrementally(1000),
+//                        new MiningMonitor(10)
+//                );
     }
 
     public static void mine(
@@ -136,23 +158,6 @@ public class DiffTreeMiner {
 //                DefaultRepositories.createRemoteVimRepo(inputDir.resolve("vim"))
         );
 
-        final Supplier<DiffTreeLineGraphExportOptions> exportOptions = () -> new DiffTreeLineGraphExportOptions(
-                GraphFormat.DIFFTREE
-                , new CommitDiffDiffTreeLabelFormat()
-                , new MiningDiffNodeFormat()
-                , true
-                , Postprocessing()
-                , DiffTreeLineGraphExportOptions.LogError()
-                .andThen(DiffTreeLineGraphExportOptions.RenderError())
-                .andThen(DiffTreeLineGraphExportOptions.SysExitOnError())
-        );
-
-        final Supplier<DiffTreeMiningStrategy> miningStrategy = MineAllThenExport::new;
-//                new CompositeDiffTreeMiningStrategy(
-//                        new MineAndExportIncrementally(1000),
-//                        new MiningMonitor(10)
-//                );
-
         /* ************************ *\
         |      END OF ARGUMENTS      |
         \* ************************ */
@@ -164,7 +169,7 @@ public class DiffTreeMiner {
 
             repo.setDebugOptions(debugOptions);
             final Path repoOutputDir = outputDir.resolve(repo.getRepositoryName());
-            mineAsync(repo, repoOutputDir, exportOptions, miningStrategy);
+            mineAsync(repo, repoOutputDir, DiffTreeMiner::ExportOptions, DiffTreeMiner::MiningStrategy);
 //            mine(repo, repoOutputDir, exportOptions.get(), miningStrategy.get());
 
             Logger.info(" === End Processing " + repo.getRepositoryName() + " after " + clock.printPassedSeconds() + " ===");

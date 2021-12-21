@@ -7,6 +7,7 @@ import diff.GitDiffer;
 import diff.difftree.serialize.DiffTreeLineGraphExportOptions;
 import diff.difftree.serialize.DiffTreeSerializeDebugData;
 import diff.difftree.serialize.LineGraphExport;
+import main.mining.strategies.DiffTreeMiningStrategy;
 import org.eclipse.jgit.revwalk.RevCommit;
 import util.FileUtils;
 

@@ -14,7 +14,7 @@ import java.util.function.Function;
 
 public class TestLineNumbers {
     private static final Path resDir = Constants.RESOURCE_DIR.resolve("diffs/linenumbers");
-    private static record TestCase(String filename, Map<Integer, Pair<DiffLineNumber, DiffLineNumber>> expectedLineNumbers) { }
+    private record TestCase(String filename, Map<Integer, Pair<DiffLineNumber, DiffLineNumber>> expectedLineNumbers) { }
     private List<TestCase> testCases;
 
     @Before
@@ -70,7 +70,7 @@ public class TestLineNumbers {
 
     private static void printLineNumbers(final DiffTree diffTree) {
         diffTree.forAll(node ->
-                System.out.println(node.diffType.name
+                System.out.println(node.diffType.symbol
                     + " " + node.codeType
                     + " \"" + node.getLabel().trim()
                     + " with ID " + node.getID()

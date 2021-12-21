@@ -4,15 +4,12 @@ import analysis.data.PatternMatch;
 import diff.difftree.DiffNode;
 import evaluation.FeatureContext;
 import org.prop4j.Not;
-import pattern.SemanticPattern;
 
 import java.util.Optional;
 
-public class AddIfdefWrapThenSemanticPattern extends SemanticPattern {
-    public static final String PATTERN_NAME = "AddIfdefWrapThenSEM";
-
-    public AddIfdefWrapThenSemanticPattern() {
-        super(PATTERN_NAME);
+class AddIfdefWrapThen extends SemanticPattern {
+    AddIfdefWrapThen() {
+        super("AddIfdefWrapThen");
     }
 
     /*
@@ -65,7 +62,7 @@ public class AddIfdefWrapThenSemanticPattern extends SemanticPattern {
     }
 
     @Override
-    public FeatureContext[] getFeatureContexts(PatternMatch patternMatch) {
+    public FeatureContext[] getFeatureContexts(PatternMatch<DiffNode> patternMatch) {
         return new FeatureContext[]{
                 new FeatureContext(new Not(patternMatch.getFeatureMappings()[0]))
         };

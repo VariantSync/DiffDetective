@@ -1,0 +1,37 @@
+ #if root
+
++#if a
++AddWithMapping
++#endif
+
+ #if a
++AddToPC
+ #endif
+
+-#if a
+-RemWithMapping
+-#endif
+
+ #if a
+-RemFromPC
+ #endif
+
++#if a
+ Specialization
++#endif
+
+-#if a
+ Generalization
+-#endif
+
++#if a
+-#if b
+ Reconfiguration
+ #endif
+
++#if a
+-#if (a && 1) || false
+ Refactoring
+ #endif
+
+ #endif

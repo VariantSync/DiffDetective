@@ -16,13 +16,13 @@ public class LineGraphExport {
         DiffTreeTransformer.apply(options.treePreProcessing(), diffTree);
         diffTree.assertConsistency();
 
-        if (options.skipEmptyTrees() && diffTree.isEmpty()) {
+        if (options.treeFilter().test(diffTree)) {
+            final DiffTreeLineGraphExporter exporter = new DiffTreeLineGraphExporter(diffTree);
+            final String result = exporter.export(options);
+            return new Pair<>(exporter.getDebugData(), result);
+        } else {
             return new Pair<>(new DiffTreeSerializeDebugData(), "");
         }
-
-        final DiffTreeLineGraphExporter exporter = new DiffTreeLineGraphExporter(diffTree);
-        final String result = exporter.export(options);
-        return new Pair<>(exporter.getDebugData(), result);
     }
 
     /**

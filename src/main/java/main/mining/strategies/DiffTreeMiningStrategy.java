@@ -1,4 +1,4 @@
-package main.mining;
+package main.mining.strategies;
 
 import datasets.Repository;
 import diff.CommitDiff;
