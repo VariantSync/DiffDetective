@@ -41,10 +41,10 @@ public final class DiffTreeFilter {
         );
     }
 
-    public static TaggedPredicate<String, DiffTree> hasEditsToVariability() {
+    public static TaggedPredicate<String, DiffTree> hasAtLeastOneEditToVariability() {
         return new TaggedPredicate<>(
                 "has edits to variability",
-                tree -> tree.anyMatch(node -> node.isCode() && (!AddToPC.matches(node) && !RemFromPC.matches(node)))
+                tree -> tree.anyMatch(node -> node.isCode() && !AddToPC.matches(node) && !RemFromPC.matches(node))
         );
     }
 }
