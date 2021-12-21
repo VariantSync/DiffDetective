@@ -117,6 +117,7 @@ patches/*
 /.venv/
 
 error/
+examples/
 
 ### Eclipse ###
 .settings/
