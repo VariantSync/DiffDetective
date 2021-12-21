@@ -6,23 +6,25 @@ import datasets.Repository;
 import de.ovgu.featureide.fm.core.analysis.cnf.generator.configuration.util.Pair;
 import diff.CommitDiff;
 import diff.GitDiffer;
-import diff.difftree.CodeType;
+import diff.difftree.filter.DiffTreeFilter;
 import diff.difftree.render.DiffTreeRenderer;
 import diff.difftree.serialize.DiffTreeLineGraphExportOptions;
 import diff.difftree.serialize.DiffTreeSerializeDebugData;
 import diff.difftree.serialize.GraphFormat;
 import diff.difftree.serialize.LineGraphExport;
-import diff.difftree.serialize.nodeformat.MiningDiffNodeFormat;
-import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
-import diff.difftree.transform.*;
+import diff.difftree.serialize.treeformat.IndexedTreeFormat;
+import diff.difftree.transform.CollapseNestedNonEditedMacros;
+import diff.difftree.transform.CutNonEditedSubtrees;
+import diff.difftree.transform.DiffTreeTransformer;
 import main.Main;
 import main.mining.strategies.CompositeDiffTreeMiningStrategy;
+import main.mining.strategies.DiffTreeMiningStrategy;
 import main.mining.strategies.MineAndExportIncrementally;
 import main.mining.strategies.MiningMonitor;
 import org.pmw.tinylog.Level;
 import org.pmw.tinylog.Logger;
-import pattern.atomic.proposed.ProposedAtomicPatterns;
 import util.IO;
+import util.TaggedPredicate;
 import util.Yield;
 
 import java.nio.file.Path;
@@ -30,14 +32,37 @@ import java.nio.file.Paths;
 import java.util.List;
 
 public class DiffTreeMiner {
-    public static final List<DiffTreeTransformer> PostProcessing = List.of(
-//            new NaiveMovedCodeDetection(), // do this first as it might introduce non-edited subtrees
+    public final static List<DiffTreeTransformer> PostProcessing = List.of(
+//                    new NaiveMovedCodeDetection(), // do this first as it might introduce non-edited subtrees
             new CutNonEditedSubtrees(),
-//            RunningExampleFinder.Default,
-            new CollapseNestedNonEditedMacros(),
-            new CollapseAtomicPatterns(ProposedAtomicPatterns.Instance),
-            new RelabelRoot(CodeType.IF.name)
+//                    RunningExampleFinder.Default,
+            new CollapseNestedNonEditedMacros()
     );
+
+    public final static DiffTreeLineGraphExportOptions exportOptions = new DiffTreeLineGraphExportOptions(
+              GraphFormat.DIFFTREE
+//            , new CommitDiffDiffTreeLabelFormat()
+            , new IndexedTreeFormat()
+//            , new DebugMiningDiffNodeFormat()
+            , new ReleaseMiningDiffNodeFormat()
+            , TaggedPredicate.and(
+                    DiffTreeFilter.notEmpty(),
+                    DiffTreeFilter.moreThanTwoCodeNodes()
+            )
+            , PostProcessing
+            , DiffTreeLineGraphExportOptions.LogError()
+            .andThen(DiffTreeLineGraphExportOptions.RenderError())
+            .andThen(DiffTreeLineGraphExportOptions.SysExitOnError())
+    );
+
+    public final static DiffTreeRenderer.RenderOptions RenderOptions = DiffTreeRenderer.RenderOptions.DEFAULT;
+
+    public final static DiffTreeMiningStrategy MiningStrategy =
+//                new MineAndExportIncrementally();
+            new CompositeDiffTreeMiningStrategy(
+                    new MineAndExportIncrementally(1000),
+                    new MiningMonitor(10)
+            );
 
     private final static int DEBUG_treesToExportAtMost = -1;
 
@@ -78,7 +103,7 @@ public class DiffTreeMiner {
     public static void main(String[] args) {
         Main.setupLogger(Level.DEBUG);
 
-        final boolean renderOutput = false;
+        final boolean renderOutput = true;
         final DebugOptions debugOptions = new DebugOptions(DebugOptions.DiffStoragePolicy.REMEMBER_STRIPPED_DIFF);
 
         final Path inputDir = Paths.get("..", "DiffDetectiveMining");
@@ -86,28 +111,10 @@ public class DiffTreeMiner {
         final Path outputDir = Paths.get("results", "mining");
 
         final List<Repository> repos = List.of(
-//                DefaultRepositories.stanciulescuMarlinZip(Path.of("."))
-                DefaultRepositories.createRemoteLinuxRepo(linuxDir.resolve("linux"))
+                DefaultRepositories.stanciulescuMarlinZip(Path.of("."))
+//                DefaultRepositories.createRemoteLinuxRepo(linuxDir.resolve("linux"))
 //                DefaultRepositories.createRemoteVimRepo(inputDir.resolve("vim"))
         );
-
-        final DiffTreeLineGraphExportOptions exportOptions = new DiffTreeLineGraphExportOptions(
-                GraphFormat.DIFFTREE
-                , new CommitDiffDiffTreeLabelFormat()
-                , new MiningDiffNodeFormat()
-                , true
-                , PostProcessing
-                , DiffTreeLineGraphExportOptions.LogError()
-                .andThen(DiffTreeLineGraphExportOptions.RenderError())
-                .andThen(DiffTreeLineGraphExportOptions.SysExitOnError())
-        );
-
-        final DiffTreeMiningStrategy miningStrategy =
-//                new MineAndExportIncrementally();
-                new CompositeDiffTreeMiningStrategy(
-                        new MineAndExportIncrementally(1000),
-                        new MiningMonitor(10)
-                );
 
         /* ************************ *\
         |      END OF ARGUMENTS      |
@@ -118,7 +125,7 @@ public class DiffTreeMiner {
             repo.setDebugOptions(debugOptions);
             final Path lineGraphOutputPath = outputDir.resolve(repo.getRepositoryName() + ".lg");
             final Path metadataOutputPath = outputDir.resolve(repo.getRepositoryName() + ".metadata.txt");
-            final DiffTreeMiningResult result = mine(repo, lineGraphOutputPath, exportOptions, miningStrategy);
+            final DiffTreeMiningResult result = mine(repo, lineGraphOutputPath, exportOptions, MiningStrategy);
             final String printedResult = result.toString();
 
             Logger.info("Writing the following metadata to " + metadataOutputPath + "\n" + printedResult);
@@ -127,7 +134,7 @@ public class DiffTreeMiner {
             if (renderOutput) {
                 Logger.info("Rendering " + lineGraphOutputPath);
                 final DiffTreeRenderer renderer = DiffTreeRenderer.WithinDiffDetective();
-                if (!renderer.renderFile(lineGraphOutputPath)) {
+                if (!renderer.renderFile(lineGraphOutputPath, RenderOptions)) {
                     Logger.error("Rendering " + lineGraphOutputPath + " failed!");
                 }
             }

@@ -8,10 +8,7 @@ import pattern.atomic.AtomicPattern;
 import pattern.atomic.AtomicPatternCatalogue;
 import util.Assert;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ProposedAtomicPatterns implements AtomicPatternCatalogue {
     public static final AtomicPattern AddToPC = new AddToPC();
@@ -101,5 +98,14 @@ public class ProposedAtomicPatterns implements AtomicPatternCatalogue {
             // !beforeVariantsSubsetOfAfterVariants && !afterVariantsSubsetOfBeforeVariants
             return Reconfiguration;
         }
+    }
+
+    public Optional<AtomicPattern> fromName(String label) {
+        for (final AtomicPattern p : All) {
+            if (p.getName().equals(label)) {
+                return Optional.of(p);
+            }
+        }
+        return Optional.empty();
     }
 }
