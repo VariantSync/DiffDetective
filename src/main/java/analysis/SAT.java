@@ -12,9 +12,17 @@ import static util.fide.FormulaUtils.negate;
 public class SAT {
     public static boolean isSatisfiable(Node formula) {
         final SatSolver solver = SatSolverFactory.getDefault().getSatSolver();
-        // TODO: Remove this line once issue #1333 of FeatureIDE is resolved because FixTrueFalse::On is expensive.
+        // TODO: Remove this block once issue #1333 of FeatureIDE is resolved because FixTrueFalse::On is expensive.
         //       https://github.com/FeatureIDE/FeatureIDE/issues/1333
-        formula = FixTrueFalse.On(formula);
+        {
+            formula = FixTrueFalse.On(formula);
+            if (FixTrueFalse.isTrue(formula)) {
+                return true;
+            } else if (FixTrueFalse.isFalse(formula)) {
+                return false;
+            }
+        }
+
         solver.addFormulas(formula);
         return solver.isSatisfiable();
     }
