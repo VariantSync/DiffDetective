@@ -1,11 +1,9 @@
 package main.mining;
 
 import datasets.Repository;
-import de.ovgu.featureide.fm.core.analysis.cnf.generator.configuration.util.Pair;
 import diff.CommitDiff;
 import diff.GitDiffer;
 import diff.difftree.serialize.DiffTreeLineGraphExportOptions;
-import diff.difftree.serialize.DiffTreeSerializeDebugData;
 import diff.difftree.serialize.LineGraphExport;
 import main.mining.strategies.DiffTreeMiningStrategy;
 import org.eclipse.jgit.revwalk.RevCommit;
@@ -28,14 +26,9 @@ public record MiningTask(
         final DiffTreeMiningResult miningResult = new DiffTreeMiningResult();
         for (final RevCommit commit : commits) {
             final CommitDiff commitDiff = differ.createCommitDiff(commit);
-
             final StringBuilder lineGraph = new StringBuilder();
-            final Pair<DiffTreeSerializeDebugData, Integer> res = LineGraphExport.toLineGraphFormat(commitDiff, lineGraph, exportOptions);
+            miningResult.mappend(LineGraphExport.toLineGraphFormat(commitDiff, lineGraph, exportOptions));
             miningStrategy.onCommit(commitDiff, lineGraph.toString());
-
-            ++miningResult.exportedCommits;
-            miningResult.exportedTrees += res.getValue();
-            miningResult.debugData.mappend(res.getKey());
         }
 
         miningStrategy.end();

@@ -2,7 +2,9 @@ package diff.difftree.filter;
 
 import diff.difftree.DiffNode;
 import diff.difftree.DiffTree;
-import util.TaggedPredicate;
+
+import static pattern.atomic.proposed.ProposedAtomicPatterns.AddToPC;
+import static pattern.atomic.proposed.ProposedAtomicPatterns.RemFromPC;
 
 /**
  * A filter on difftrees that is equipped with some metadata T (e.g., for debugging or logging).
@@ -36,6 +38,13 @@ public final class DiffTreeFilter {
         return new TaggedPredicate<>(
                 "is consistent",
                 tree -> tree.isConsistent().isSuccess()
+        );
+    }
+
+    public static TaggedPredicate<String, DiffTree> hasEditsToVariability() {
+        return new TaggedPredicate<>(
+                "has edits to variability",
+                tree -> tree.anyMatch(node -> node.isCode() && (!AddToPC.matches(node) && !RemFromPC.matches(node)))
         );
     }
 }

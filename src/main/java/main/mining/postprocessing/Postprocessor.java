@@ -2,9 +2,9 @@ package main.mining.postprocessing;
 
 import diff.difftree.DiffTree;
 import diff.difftree.filter.DiffTreeFilter;
+import diff.difftree.filter.TaggedPredicate;
 import diff.difftree.transform.CutNonEditedSubtrees;
 import diff.difftree.transform.DiffTreeTransformer;
-import util.TaggedPredicate;
 
 import java.util.List;
 import java.util.Map;
