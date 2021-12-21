@@ -118,6 +118,7 @@ patches/*
 
 error/
 examples/
+results/
 
 ### Eclipse ###
 .settings/
