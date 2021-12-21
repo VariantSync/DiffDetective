@@ -6,10 +6,10 @@ import diff.difftree.filter.ExplainedFilter;
 import diff.difftree.filter.TaggedPredicate;
 import diff.difftree.transform.CutNonEditedSubtrees;
 import diff.difftree.transform.DiffTreeTransformer;
+import metadata.ExplainedFilterSummary;
 
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Generic Postprocessor for mined patterns.
@@ -68,13 +68,7 @@ public class Postprocessor {
                 .peek(tree -> DiffTreeTransformer.apply(transformers, tree))
                 .toList();
 
-        final Map<String, Integer> filterCounts = filters.getExplanations().collect(
-                Collectors.toMap(
-                        ExplainedFilter.Explanation::getName,
-                        ExplainedFilter.Explanation::getFilterCount
-                )
-        );
-
+        final Map<String, Integer> filterCounts = new ExplainedFilterSummary(filters).snapshot();
         return new Result(processedTrees, filterCounts);
     }
 }

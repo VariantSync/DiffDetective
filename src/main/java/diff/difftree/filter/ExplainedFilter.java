@@ -31,6 +31,10 @@ public class ExplainedFilter<T> implements Predicate<T> {
             this(0, name);
         }
 
+        public Explanation(final Explanation other) {
+            this(other.filterCount, other.name);
+        }
+
         private void reset() {
             this.filterCount = 0;
         }

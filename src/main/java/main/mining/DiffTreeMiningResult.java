@@ -1,38 +1,52 @@
 package main.mining;
 
 import diff.difftree.serialize.DiffTreeSerializeDebugData;
+import metadata.ExplainedFilterSummary;
+import metadata.Metadata;
 import org.pmw.tinylog.Logger;
 import util.IO;
+import util.Semigroup;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
-public class DiffTreeMiningResult {
+public class DiffTreeMiningResult implements Semigroup<DiffTreeMiningResult>, Metadata {
     public final static String EXTENSION = ".metadata.txt";
 
     public int exportedCommits;
     public int exportedTrees;
     public final DiffTreeSerializeDebugData debugData;
+    public ExplainedFilterSummary filterHits;
 
     public DiffTreeMiningResult() {
-        this(0, 0, new DiffTreeSerializeDebugData());
+        this(0, 0, new DiffTreeSerializeDebugData(), new ExplainedFilterSummary());
     }
 
-    public DiffTreeMiningResult(int exportedCommits, int exportedTrees, final DiffTreeSerializeDebugData debugData) {
+    public DiffTreeMiningResult(
+            int exportedCommits,
+            int exportedTrees,
+            final DiffTreeSerializeDebugData debugData,
+            final ExplainedFilterSummary filterHits)
+    {
         this.exportedCommits = exportedCommits;
         this.exportedTrees = exportedTrees;
         this.debugData = debugData;
+        this.filterHits = filterHits;
     }
 
-    void mappend(final DiffTreeMiningResult other) {
+    @Override
+    public void append(final DiffTreeMiningResult other) {
         exportedCommits += other.exportedCommits;
         exportedTrees += other.exportedTrees;
-        debugData.mappend(other.debugData);
+        debugData.append(other.debugData);
+        filterHits.append(other.filterHits);
     }
 
-    void exportTo(final Path file) {
+    public void exportTo(final Path file) {
         try {
-            IO.write(file, this.toString());
+            IO.write(file, Metadata.show(snapshot()));
         } catch (IOException e) {
             Logger.error(e);
             System.exit(0);
@@ -40,11 +54,13 @@ public class DiffTreeMiningResult {
     }
 
     @Override
-    public String toString() {
-        return    "exported trees: " + exportedTrees + "\n"
-                + "exported commits: " + exportedCommits + "\n"
-                + "Exported " + debugData.numExportedNonNodes + " nodes of diff type NON.\n"
-                + "Exported " + debugData.numExportedAddNodes + " nodes of diff type ADD.\n"
-                + "Exported " + debugData.numExportedRemNodes + " nodes of diff type REM.";
+    public Map<String, Object> snapshot() {
+        // use LinkedHashMap to have insertion-order iteration
+        Map<String, Object> snap = new LinkedHashMap<>();
+        snap.put("trees", exportedTrees);
+        snap.put("commits", exportedCommits);
+        snap.putAll(debugData.snapshot());
+        snap.putAll(filterHits.snapshot());
+        return snap;
     }
 }

@@ -27,7 +27,7 @@ public record MiningTask(
         for (final RevCommit commit : commits) {
             final CommitDiff commitDiff = differ.createCommitDiff(commit);
             final StringBuilder lineGraph = new StringBuilder();
-            miningResult.mappend(LineGraphExport.toLineGraphFormat(commitDiff, lineGraph, exportOptions));
+            miningResult.append(LineGraphExport.toLineGraphFormat(commitDiff, lineGraph, exportOptions));
             miningStrategy.onCommit(commitDiff, lineGraph.toString());
         }
 

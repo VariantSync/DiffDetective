@@ -116,7 +116,7 @@ public class DiffTreeMiner {
         }
         Logger.info("<<< done after " + clock.printPassedSeconds());
 
-        totalResult.exportTo(outputDir.resolve("totalresult" + DiffTreeMiningResult.EXTENSION));
+        exportMetadata(outputDir, totalResult);
     }
 
     public static void mineAsync(
@@ -155,7 +155,7 @@ public class DiffTreeMiner {
         try (final ScheduledTasksIterator<DiffTreeMiningResult> threads = new ScheduledTasksIterator<>(tasks, nThreads)) {
             while (threads.hasNext()) {
                 final DiffTreeMiningResult threadsResult = threads.next();
-                totalResult.mappend(threadsResult);
+                totalResult.append(threadsResult);
                 commitSpeedMonitor.addFinishedTasks(threadsResult.exportedCommits);
             }
         } catch (Exception e) {
@@ -164,6 +164,10 @@ public class DiffTreeMiner {
         }
         Logger.info("<<< done in " + clock.printPassedSeconds());
 
+        exportMetadata(outputDir, totalResult);
+    }
+
+    public static void exportMetadata(final Path outputDir, final DiffTreeMiningResult totalResult) {
         totalResult.exportTo(outputDir.resolve("totalresult" + DiffTreeMiningResult.EXTENSION));
     }
 

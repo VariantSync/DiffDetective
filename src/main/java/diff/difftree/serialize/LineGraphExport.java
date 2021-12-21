@@ -8,6 +8,7 @@ import diff.difftree.DiffTree;
 import diff.difftree.DiffTreeSource;
 import diff.difftree.transform.DiffTreeTransformer;
 import main.mining.DiffTreeMiningResult;
+import metadata.ExplainedFilterSummary;
 import org.pmw.tinylog.Logger;
 import util.StringUtils;
 
@@ -48,7 +49,7 @@ public class LineGraphExport {
                 }
 
                 if (patchDiffLg != null) {
-                    result.debugData.mappend(patchDiffLg.getKey());
+                    result.debugData.append(patchDiffLg.getKey());
                     composeTreeInLineGraph(lineGraph, patchDiff, patchDiffLg.getValue(), options);
                     ++result.exportedTrees;
                 }
@@ -58,6 +59,7 @@ public class LineGraphExport {
         }
 
         result.exportedCommits = 1;
+        result.filterHits = new ExplainedFilterSummary(options.treeFilter());
 
         return result;
     }
