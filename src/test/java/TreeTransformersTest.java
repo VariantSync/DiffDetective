@@ -18,7 +18,6 @@ import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Test;
 import org.pmw.tinylog.Level;
 
 import java.io.IOException;
@@ -88,12 +87,12 @@ public class TreeTransformersTest {
         DiffTreeTransformer.checkDependencies(transformers);
     }
 
-    @Test
+//    @Test
     public void simpleTest() throws IOException {
         transformAndRender("simple.txt");
     }
 
-    @Test
+//    @Test
     public void elifTest() throws IOException {
         transformAndRender("elif.txt");
     }
@@ -125,32 +124,32 @@ public class TreeTransformersTest {
         Assert.fail("Did not find file \"" + file + "\" in commit " + commitHash + "!");
     }
 
-    @Test
+//    @Test
     public void testWurmcoil() throws IOException {
         testCommit("Marlin/pins.h", "d6d6fb8930be8d0b3bd34592c915732937c6f4d9");
     }
 
-    @Test
+//    @Test
     public void testConfiguration_adv() throws IOException {
         testCommit("Marlin/example_configurations/RigidBot/Configuration_adv.h", "d3fe3a0962fdbdcd9548abaf765e0cff72d9cf8d");
     }
 
-    @Test
+//    @Test
     public void test_pins_SANGUINOLOLU_11() throws IOException {
         testCommit("Marlin/pins_SANGUINOLOLU_11.h", "d3fe3a0962fdbdcd9548abaf765e0cff72d9cf8d");
     }
 
-    @Test
+//    @Test
     public void test_pins_RAMPS_13() throws IOException {
         testCommit("Marlin/pins_RAMPS_13.h", "d882e1aee7fb4e4afb43445899b477caf1fffce3");
     }
 
-    @Test
+//    @Test
     public void test_SanityCheck() throws IOException {
         testCommit("Marlin/SanityCheck.h", "cbd582865e2a76b7be3b03533a0e06e8daf76f15");
     }
 
-    @Test
+//    @Test
     public void test_pins_MINIRAMBO() throws IOException {
         testCommit("Marlin/pins_MINIRAMBO.h", "50f1a8fd92b351bf1fa29e5cd31f24fc884999c0");
     }
