@@ -5,7 +5,7 @@ import datasets.DefaultRepositories;
 import datasets.Repository;
 import diff.GitDiffer;
 import diff.difftree.filter.DiffTreeFilter;
-import diff.difftree.filter.TaggedPredicate;
+import diff.difftree.filter.ExplainedFilter;
 import diff.difftree.serialize.DiffTreeLineGraphExportOptions;
 import diff.difftree.serialize.GraphFormat;
 import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
@@ -54,11 +54,9 @@ public class DiffTreeMiner {
                 , new CommitDiffDiffTreeLabelFormat()
 //            , new DebugMiningDiffNodeFormat()
                 , new ReleaseMiningDiffNodeFormat()
-                , TaggedPredicate.and(
-                        TaggedPredicate.and(
-                            DiffTreeFilter.notEmpty(),
-                            DiffTreeFilter.moreThanTwoCodeNodes()
-                        ),
+                , new ExplainedFilter<>(
+                        DiffTreeFilter.notEmpty(),
+                        DiffTreeFilter.moreThanTwoCodeNodes(),
                         /// We want to exclude patches that do not edit variability.
                         /// In particular we noticed that most edits just insert or delete code (or replace it).
                         /// This is reasonable and was also observed in previous studies: Edits to code are more frequent than edits to variability.
