@@ -1,24 +1,25 @@
 package main.mining;
 
 import diff.difftree.serialize.DiffTreeSerializeDebugData;
+import metadata.AtomicPatternCount;
 import metadata.ExplainedFilterSummary;
 import metadata.Metadata;
 import org.pmw.tinylog.Logger;
 import util.IO;
-import util.Semigroup;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class DiffTreeMiningResult implements Semigroup<DiffTreeMiningResult>, Metadata {
+public class DiffTreeMiningResult implements Metadata<DiffTreeMiningResult> {
     public final static String EXTENSION = ".metadata.txt";
 
     public int exportedCommits;
     public int exportedTrees;
     public final DiffTreeSerializeDebugData debugData;
     public ExplainedFilterSummary filterHits;
+    public AtomicPatternCount atomicPatternCounts;
 
     public <T> DiffTreeMiningResult() {
         this(0, 0, new DiffTreeSerializeDebugData(), new ExplainedFilterSummary());
@@ -34,6 +35,7 @@ public class DiffTreeMiningResult implements Semigroup<DiffTreeMiningResult>, Me
         this.exportedTrees = exportedTrees;
         this.debugData = debugData;
         this.filterHits = filterHits;
+        this.atomicPatternCounts = new AtomicPatternCount();
     }
 
     @Override
@@ -42,6 +44,7 @@ public class DiffTreeMiningResult implements Semigroup<DiffTreeMiningResult>, Me
         exportedTrees += other.exportedTrees;
         debugData.append(other.debugData);
         filterHits.append(other.filterHits);
+        atomicPatternCounts.append(other.atomicPatternCounts);
     }
 
     public String exportTo(final Path file) {
@@ -64,6 +67,7 @@ public class DiffTreeMiningResult implements Semigroup<DiffTreeMiningResult>, Me
         snap.put("commits", exportedCommits);
         snap.putAll(debugData.snapshot());
         snap.putAll(filterHits.snapshot());
+        snap.putAll(atomicPatternCounts.snapshot());
         return snap;
     }
 }

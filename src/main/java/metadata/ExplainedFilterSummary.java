@@ -9,7 +9,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class ExplainedFilterSummary implements Semigroup<ExplainedFilterSummary>, Metadata {
+public class ExplainedFilterSummary implements Metadata<ExplainedFilterSummary> {
     private final Map<String, ExplainedFilter.Explanation> explanations;
 
     public ExplainedFilterSummary() {
@@ -28,13 +28,8 @@ public class ExplainedFilterSummary implements Semigroup<ExplainedFilterSummary>
     @Override
     public void append(final ExplainedFilterSummary other) {
         for (final ExplainedFilter.Explanation e : other.explanations.values()) {
-            final String key = e.getName();
-            if (this.explanations.containsKey(key)) {
-                this.explanations.get(key).append(e);
-            } else {
-                this.explanations.put(key, e);
-            }
-        };
+            Semigroup.appendValue(this.explanations, e.getName(), e);
+        }
     }
 
     @Override

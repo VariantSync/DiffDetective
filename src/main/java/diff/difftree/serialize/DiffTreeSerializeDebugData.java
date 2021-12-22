@@ -1,11 +1,10 @@
 package diff.difftree.serialize;
 
 import metadata.Metadata;
-import util.Semigroup;
 
 import java.util.Map;
 
-public class DiffTreeSerializeDebugData implements Semigroup<DiffTreeSerializeDebugData>, Metadata {
+public class DiffTreeSerializeDebugData implements Metadata<DiffTreeSerializeDebugData> {
     public int numExportedNonNodes = 0;
     public int numExportedAddNodes = 0;
     public int numExportedRemNodes = 0;

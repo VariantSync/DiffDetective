@@ -1,8 +1,10 @@
 package metadata;
 
+import util.Semigroup;
+
 import java.util.Map;
 
-public interface Metadata {
+public interface Metadata<T> extends Semigroup<T> {
     Map<String, ?> snapshot();
 
     static String show(final Map<String, Object> properties) {
