@@ -1,8 +1,8 @@
 package metadata;
 
 import diff.difftree.filter.ExplainedFilter;
+import util.functional.CollisionMap;
 import util.functional.Functional;
-import util.functional.Semigroup;
 
 import java.util.LinkedHashMap;
 import java.util.stream.Collectors;
@@ -28,7 +28,7 @@ public class ExplainedFilterSummary implements Metadata<ExplainedFilterSummary> 
     @Override
     public void append(final ExplainedFilterSummary other) {
         for (final ExplainedFilter.Explanation e : other.explanations.values()) {
-            Semigroup.appendValue(this.explanations, e.getName(), e);
+            CollisionMap.putValue(this.explanations, e.getName(), e);
         }
     }
 

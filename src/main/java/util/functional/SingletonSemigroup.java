@@ -4,7 +4,7 @@ record SingletonSemigroup<T>(T element) implements Semigroup<T> {
     @Override
     public void append(T other) {
         if (!equals(other)) {
-            throw new SingletonSemigroupAppendException(this, other);
+            throw new SemigroupAppendException("Value \"" + other + "\" to append does not equal singleton \"" + this + "\"!");
         }
     }
 

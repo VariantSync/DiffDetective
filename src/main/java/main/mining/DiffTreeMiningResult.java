@@ -6,8 +6,8 @@ import metadata.ExplainedFilterSummary;
 import metadata.Metadata;
 import org.pmw.tinylog.Logger;
 import util.IO;
+import util.functional.CollisionMap;
 import util.functional.Semigroup;
-import util.functional.SingletonSemigroupAppendException;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -22,7 +22,7 @@ public class DiffTreeMiningResult implements Metadata<DiffTreeMiningResult> {
     public ExplainedFilterSummary filterHits;
     public AtomicPatternCount atomicPatternCounts;
 
-    private final LinkedHashMap<String, Semigroup<?>> customInfo = new LinkedHashMap<>();
+    private final CollisionMap<String, Semigroup<?>> customInfo = new CollisionMap<>(new LinkedHashMap<>());
 
     public DiffTreeMiningResult() {
         this(0, 0, new DiffTreeSerializeDebugData(), new ExplainedFilterSummary());
@@ -42,11 +42,7 @@ public class DiffTreeMiningResult implements Metadata<DiffTreeMiningResult> {
     }
 
     public void putCustomInfo(final String key, final Semigroup<?> value) {
-        try {
-            Semigroup.tryAppendValue(customInfo, key, value);
-        } catch (SingletonSemigroupAppendException e) {
-            Logger.error("Tried to overwrite value \"" + customInfo.get(key) + "\" of key \"" + key + "\" with different value \"" + value + "\"!");
-        }
+        customInfo.put(key, value);
     }
 
     public void putCustomInfo(final String key, final String value) {
@@ -60,10 +56,7 @@ public class DiffTreeMiningResult implements Metadata<DiffTreeMiningResult> {
         debugData.append(other.debugData);
         filterHits.append(other.filterHits);
         atomicPatternCounts.append(other.atomicPatternCounts);
-
-        for (var entry : other.customInfo.entrySet()) {
-            putCustomInfo(entry.getKey(), entry.getValue());
-        }
+        customInfo.append(other.customInfo);
     }
 
     public String exportTo(final Path file) {

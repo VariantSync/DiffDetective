@@ -5,6 +5,7 @@ import pattern.atomic.AtomicPattern;
 import pattern.atomic.AtomicPatternCatalogue;
 import pattern.atomic.proposed.ProposedAtomicPatterns;
 import util.Assert;
+import util.functional.CollisionMap;
 import util.functional.Functional;
 import util.functional.Semigroup;
 
@@ -69,7 +70,7 @@ public class AtomicPatternCount implements Metadata<AtomicPatternCount> {
     @Override
     public void append(AtomicPatternCount other) {
         for (final Map.Entry<AtomicPattern, Occurrences> otherEntry : other.occurences.entrySet()) {
-            Semigroup.appendValue(this.occurences, otherEntry.getKey(), otherEntry.getValue());
+            CollisionMap.putValue(this.occurences, otherEntry.getKey(), otherEntry.getValue());
         }
     }
 
