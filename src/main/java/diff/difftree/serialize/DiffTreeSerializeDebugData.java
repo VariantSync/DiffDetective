@@ -2,7 +2,7 @@ package diff.difftree.serialize;
 
 import metadata.Metadata;
 
-import java.util.Map;
+import java.util.LinkedHashMap;
 
 public class DiffTreeSerializeDebugData implements Metadata<DiffTreeSerializeDebugData> {
     public int numExportedNonNodes = 0;
@@ -17,11 +17,11 @@ public class DiffTreeSerializeDebugData implements Metadata<DiffTreeSerializeDeb
     }
 
     @Override
-    public Map<String, Integer> snapshot() {
-        return Map.of(
-                "#NON nodes", numExportedNonNodes,
-                "#ADD nodes", numExportedAddNodes,
-                "#REM nodes", numExportedRemNodes
-        );
+    public LinkedHashMap<String, Integer> snapshot() {
+        final LinkedHashMap<String, Integer> map = new LinkedHashMap<>();
+        map.put("#NON nodes", numExportedNonNodes);
+        map.put("#ADD nodes", numExportedAddNodes);
+        map.put("#REM nodes", numExportedRemNodes);
+        return map;
     }
 }

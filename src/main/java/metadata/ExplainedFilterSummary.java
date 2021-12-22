@@ -1,26 +1,26 @@
 package metadata;
 
 import diff.difftree.filter.ExplainedFilter;
-import util.Assert;
+import util.Functional;
 import util.Semigroup;
 
-import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 public class ExplainedFilterSummary implements Metadata<ExplainedFilterSummary> {
-    private final Map<String, ExplainedFilter.Explanation> explanations;
+    private final LinkedHashMap<String, ExplainedFilter.Explanation> explanations;
 
     public ExplainedFilterSummary() {
-        this.explanations = new HashMap<>();
+        this.explanations = new LinkedHashMap<>();
     }
 
     public <T> ExplainedFilterSummary(final ExplainedFilter<T> filter) {
         this.explanations = filter.getExplanations().collect(
                 Collectors.toMap(
                         ExplainedFilter.Explanation::getName,
-                        ExplainedFilter.Explanation::new
+                        ExplainedFilter.Explanation::new,
+                        (e1, e2) -> {throw new UnsupportedOperationException("Unexpected merging of two explanations \"" + e1 + "\" and \"" + e2 + "\".");},
+                        LinkedHashMap::new
                 )
         );
     }
@@ -33,14 +33,12 @@ public class ExplainedFilterSummary implements Metadata<ExplainedFilterSummary> 
     }
 
     @Override
-    public Map<String, Integer> snapshot() {
-        // LinkedHashMap for insertion-order iteration
-        final Map<String, Integer> snap = new LinkedHashMap<>();
-        for (final ExplainedFilter.Explanation e : explanations.values()) {
-            final String explName = "filtered because not (" + e.getName() + ")";
-            Assert.assertTrue(!snap.containsKey(explName));
-            snap.put(explName, e.getFilterCount());
-        }
-        return snap;
+    public LinkedHashMap<String, Integer> snapshot() {
+        return Functional.bimap(
+                explanations,
+                name -> "filtered because not (" + name + ")",
+                ExplainedFilter.Explanation::getFilterCount,
+                LinkedHashMap::new
+        );
     }
 }

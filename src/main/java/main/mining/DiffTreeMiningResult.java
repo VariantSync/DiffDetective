@@ -10,7 +10,6 @@ import util.IO;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
-import java.util.Map;
 
 public class DiffTreeMiningResult implements Metadata<DiffTreeMiningResult> {
     public final static String EXTENSION = ".metadata.txt";
@@ -60,9 +59,9 @@ public class DiffTreeMiningResult implements Metadata<DiffTreeMiningResult> {
     }
 
     @Override
-    public Map<String, Object> snapshot() {
+    public LinkedHashMap<String, Object> snapshot() {
         // use LinkedHashMap to have insertion-order iteration
-        Map<String, Object> snap = new LinkedHashMap<>();
+        LinkedHashMap<String, Object> snap = new LinkedHashMap<>();
         snap.put("trees", exportedTrees);
         snap.put("commits", exportedCommits);
         snap.putAll(debugData.snapshot());

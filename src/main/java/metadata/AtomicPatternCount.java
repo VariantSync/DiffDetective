@@ -2,14 +2,18 @@ package metadata;
 
 import diff.CommitDiff;
 import pattern.atomic.AtomicPattern;
+import pattern.atomic.AtomicPatternCatalogue;
+import pattern.atomic.proposed.ProposedAtomicPatterns;
+import util.Assert;
 import util.Functional;
 import util.Semigroup;
 
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
-public record AtomicPatternCount(Map<AtomicPattern, Occurrences> occurences) implements Metadata<AtomicPatternCount> {
+public class AtomicPatternCount implements Metadata<AtomicPatternCount> {
     public static class Occurrences implements Semigroup<Occurrences> {
         private int totalAmount = 0;
         private final HashSet<String> uniqueCommits = new HashSet<>();
@@ -35,12 +39,31 @@ public record AtomicPatternCount(Map<AtomicPattern, Occurrences> occurences) imp
         }
     }
 
+    private final LinkedHashMap<AtomicPattern, Occurrences> occurences;
+
     public AtomicPatternCount() {
-        this(new HashMap<>());
+        this(ProposedAtomicPatterns.Instance);
+    }
+
+    public AtomicPatternCount(final AtomicPatternCatalogue patterns) {
+        occurences = new LinkedHashMap<>();
+        for (final AtomicPattern p : patterns.all()) {
+            occurences.put(p, new Occurrences());
+        }
     }
 
     public void reportOccurrenceFor(final AtomicPattern pattern, CommitDiff commit) {
-        occurences.computeIfAbsent(pattern, p -> new Occurrences()).increment(commit);
+        Assert.assertTrue(
+                occurences.containsKey(pattern),
+                () ->     "Reported unkown pattern \""
+                        + pattern.getName()
+                        + "\" but expected one of "
+                        + occurences.keySet().stream()
+                          .map(AtomicPattern::getName)
+                          .collect(Collectors.joining())
+                        + "!"
+        );
+        occurences.get(pattern).increment(commit);
     }
 
     @Override
@@ -51,7 +74,12 @@ public record AtomicPatternCount(Map<AtomicPattern, Occurrences> occurences) imp
     }
 
     @Override
-    public Map<String, String> snapshot() {
-        return Functional.bimap(occurences, AtomicPattern::getName, Occurrences::toString);
+    public LinkedHashMap<String, String> snapshot() {
+        return Functional.bimap(
+                occurences,
+                AtomicPattern::getName,
+                Occurrences::toString,
+                LinkedHashMap::new
+        );
     }
 }
