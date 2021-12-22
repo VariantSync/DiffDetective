@@ -3,7 +3,6 @@ package diff.difftree.parse;
 import diff.DiffLineNumber;
 import diff.difftree.DiffNode;
 import diff.difftree.DiffType;
-import diff.difftree.error.IllFormedAnnotationException;
 
 import java.util.ArrayList;
 import java.util.List;

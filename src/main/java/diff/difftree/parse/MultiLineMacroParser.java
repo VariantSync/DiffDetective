@@ -4,7 +4,6 @@ import diff.DiffLineNumber;
 import diff.difftree.CodeType;
 import diff.difftree.DiffNode;
 import diff.difftree.DiffType;
-import diff.difftree.error.IllFormedAnnotationException;
 
 import java.util.List;
 import java.util.Stack;

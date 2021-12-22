@@ -2,7 +2,7 @@ package diff.difftree;
 
 import diff.DiffLineNumber;
 import diff.Lines;
-import diff.difftree.error.IllFormedAnnotationException;
+import diff.difftree.parse.IllFormedAnnotationException;
 import org.prop4j.*;
 import util.Assert;
 import util.fide.FixTrueFalse;
