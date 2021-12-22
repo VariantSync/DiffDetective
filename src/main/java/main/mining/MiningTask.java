@@ -2,6 +2,7 @@ package main.mining;
 
 import datasets.Repository;
 import diff.CommitDiff;
+import diff.DiffResultWithErrors;
 import diff.GitDiffer;
 import diff.PatchDiff;
 import diff.difftree.DiffTree;
@@ -32,7 +33,13 @@ public record MiningTask(
         miningResult.putCustomInfo("nodeformat", exportOptions.nodeFormat().getName());
 
         for (final RevCommit commit : commits) {
-            final CommitDiff commitDiff = differ.createCommitDiff(commit);
+            final DiffResultWithErrors<CommitDiff> commitDiff = differ.createCommitDiff(commit);
+
+            // TODO: Recording errors has a drawback for multithreading.
+            //       We do not filter errors before passing them to worker threads.
+            //       Instead, worker threads may get "empty work" when a commit failed.
+            //       Guess that is just the price we have to pay. :shrug:
+
             final StringBuilder lineGraph = new StringBuilder();
             miningResult.append(LineGraphExport.toLineGraphFormat(commitDiff, lineGraph, exportOptions));
             miningStrategy.onCommit(commitDiff, lineGraph.toString());

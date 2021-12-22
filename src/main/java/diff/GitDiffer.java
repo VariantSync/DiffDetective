@@ -26,8 +26,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static diff.DiffError.*;
 
 /**
  * This class creates a GitDiff-object from a git repository (Git-object).
@@ -79,8 +82,8 @@ public class GitDiffer {
         final Iterator<RevCommit> commitIterator = new SideEffectIteratorDecorator<>(
                 commitsIterable.iterator(),
                 r -> ++commitAmount[0]);
-        for (CommitDiff commitDiff : loadAllValidIn(commitIterator)) {
-            gitDiff.addCommitDiff(commitDiff);
+        for (DiffResultWithErrors<CommitDiff> commitDiff : loadAllValidIn(commitIterator)) {
+            commitDiff.result().ifPresent(gitDiff::addCommitDiff);
         }
         gitDiff.setCommitAmount(commitAmount[0]);
 
@@ -99,7 +102,7 @@ public class GitDiffer {
         return yieldAllValidIn(commitsIterable.iterator());
     }
 
-    public Yield<CommitDiff> yieldCommitDiffs() {
+    public Yield<DiffResultWithErrors<CommitDiff>> yieldCommitDiffs() {
         final Iterable<RevCommit> commitsIterable;
         try {
             commitsIterable = git.log().call();
@@ -115,6 +118,7 @@ public class GitDiffer {
         return new Yield<>(
                 () -> {
                     while (commitsIterator.hasNext()) {
+                        // TODO: Log filter hits
                         final RevCommit c = commitsIterator.next();
                         // If this commit is filtered, go to the next one.
                         if (!diffFilter.filter(c)) {
@@ -134,17 +138,12 @@ public class GitDiffer {
         );
     }
 
-    private Yield<CommitDiff> loadAllValidIn(final Iterator<RevCommit> commitsIterator) {
+    private Yield<DiffResultWithErrors<CommitDiff>> loadAllValidIn(final Iterator<RevCommit> commitsIterator) {
         return yieldAllValidIn(commitsIterator).map(this::createCommitDiff);
     }
 
-    public CommitDiff createCommitDiff(final RevCommit revCommit) {
-        try {
-            return createCommitDiffFromFirstParent(git, diffFilter, revCommit, debugOptions);
-        } catch (IOException exception) {
-            Logger.error(exception);
-            return null;
-        }
+    public DiffResultWithErrors<CommitDiff> createCommitDiff(final RevCommit revCommit) {
+        return createCommitDiffFromFirstParent(git, diffFilter, revCommit, debugOptions);
     }
 
     /**
@@ -156,15 +155,15 @@ public class GitDiffer {
      * @param currentCommit The commit from which to create a CommitDiff
      * @param debugOptions
      * @return The CommitDiff of the given commit
-     * @throws IOException When problems with the git repository occur
      */
-    public static CommitDiff createCommitDiffFromFirstParent(
+    public static DiffResultWithErrors<CommitDiff> createCommitDiffFromFirstParent(
             Git git,
             DiffFilter diffFilter,
             RevCommit currentCommit,
-            final DebugOptions debugOptions) throws IOException {
+            final DebugOptions debugOptions) {
         if (currentCommit.getParentCount() == 0) {
-            throw new IOException("Commit " + currentCommit.getId().getName() + " does not have parents");
+            return DiffResultWithErrors.of(DiffResult.Failure(
+                    COMMIT_HAS_NO_PARENTS, "Commit " + currentCommit.getId().getName() + " does not have parents"));
         }
 
         return createCommitDiff(git, diffFilter, currentCommit.getParent(0), currentCommit, debugOptions);
@@ -177,30 +176,35 @@ public class GitDiffer {
      *
      * @param git The git repo which the commit stems from.
      * @return The CommitDiff of the given commit
-     * @throws IOException When problems with the git repository occur
      */
-    public static CommitDiff createCommitDiff(
+    public static DiffResultWithErrors<CommitDiff> createCommitDiff(
             Git git,
             DiffFilter diffFilter,
             RevCommit parentCommit,
             RevCommit childCommit,
-            final DebugOptions debugOptions) throws IOException {
-        CommitDiff commitDiff = new CommitDiff(childCommit, parentCommit);
+            final DebugOptions debugOptions) {
+        final CommitDiff commitDiff = new CommitDiff(childCommit, parentCommit);
+
+        final DiffResultWithErrors<CommitDiff> result = new DiffResultWithErrors<>(Optional.of(commitDiff), new ArrayList<>());
 
         // get TreeParsers
         CanonicalTreeParser currentTreeParser = new CanonicalTreeParser();
         CanonicalTreeParser prevTreeParser = new CanonicalTreeParser();
         try (ObjectReader reader = git.getRepository().newObjectReader()) {
             if (childCommit.getTree() == null) {
-                throw new RuntimeException("Could not obtain RevTree from child commit " + childCommit.getId());
+                return DiffResultWithErrors.of(DiffResult.Failure(JGIT_ERROR, "Could not obtain RevTree from child commit " + childCommit.getId()));
             }
             if (parentCommit.getTree() == null) {
-                throw new RuntimeException("Could not obtain RevTree from parent commit " + parentCommit.getId());
+                return DiffResultWithErrors.of(DiffResult.Failure(JGIT_ERROR, "Could not obtain RevTree from parent commit " + parentCommit.getId()));
             }
-            currentTreeParser.reset(reader, childCommit.getTree());
-            prevTreeParser.reset(reader, parentCommit.getTree());
-        }
 
+            try {
+                currentTreeParser.reset(reader, childCommit.getTree());
+                prevTreeParser.reset(reader, parentCommit.getTree());
+            } catch (IOException e) {
+                return DiffResultWithErrors.of(DiffResult.Failure(JGIT_ERROR, e.toString()));
+            }
+        }
 
         // get PatchDiffs
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -218,18 +222,24 @@ public class GitDiffer {
 
                 diffFormatter.format(diffEntry);
                 final String gitDiff = outputStream.toString(StandardCharsets.UTF_8);
-                final String beforeFullFile = getBeforeFullFile(git, parentCommit, diffEntry.getOldPath());
+                final DiffResult<PatchDiff> patchDiff = getBeforeFullFile(git, parentCommit, diffEntry.getOldPath())
+                        .flatMap(file -> createPatchDiff(
+                                commitDiff,
+                                diffEntry,
+                                gitDiff,
+                                file,
+                                debugOptions)
+                        );
 
-                commitDiff.addPatchDiff(createPatchDiff(
-                        commitDiff,
-                        diffEntry,
-                        gitDiff,
-                        beforeFullFile,
-                        debugOptions));
+                patchDiff.ifSuccess(commitDiff::addPatchDiff);
+                patchDiff.ifFailure(error -> result.errors().add(error));
                 outputStream.reset();
             }
+        } catch (IOException e) {
+            return DiffResultWithErrors.of(DiffResult.Failure(JGIT_ERROR, e.toString()));
         }
-        return commitDiff;
+
+        return result;
     }
 
     /**
@@ -241,7 +251,7 @@ public class GitDiffer {
      * @param beforeFullFile The full file before the change
      * @return The PatchDiff of the given DiffEntry
      */
-    private static PatchDiff createPatchDiff(
+    private static DiffResult<PatchDiff> createPatchDiff(
             CommitDiff commitDiff,
             DiffEntry diffEntry,
             final String gitDiff,
@@ -249,28 +259,32 @@ public class GitDiffer {
             final DebugOptions debugOptions) {
         final Pattern headerPattern = Pattern.compile(DIFF_HEADER_REGEX, Pattern.MULTILINE);
         final Matcher matcher = headerPattern.matcher(gitDiff);
-        String strippedDiff = gitDiff;
+        final String strippedDiff;
         if (matcher.find()) {
             strippedDiff = gitDiff.substring(matcher.end() + 1);
+        } else {
+            strippedDiff = gitDiff;
         }
 
         final String fullDiff = getFullDiff(beforeFullFile, strippedDiff);
-        final DiffTree diffTree = DiffTreeParser.createDiffTree(fullDiff, true, true);
+        final DiffResult<DiffTree> diffTree = DiffTreeParser.createDiffTree(fullDiff, true, true);
 
-        if (diffTree == null) {
-            Logger.debug("Something went wrong parsing patch for file {} at commit {}!",
-                    diffEntry.getOldPath(), commitDiff.getAbbreviatedCommitHash());
-        }
+//        if (diffTree.isFailure()) {
+//            Logger.debug("Something went wrong parsing patch for file {} at commit {}!",
+//                    diffEntry.getOldPath(), commitDiff.getAbbreviatedCommitHash());
+//        }
 
-        // not storing the full diff reduces memory usage by around 40-50%
-        final String diffToRemember = switch (debugOptions.diffStoragePolicy()) {
-            case DO_NOT_REMEMBER -> "";
-            case REMEMBER_DIFF -> gitDiff;
-            case REMEMBER_FULL_DIFF -> fullDiff;
-            case REMEMBER_STRIPPED_DIFF -> strippedDiff;
-        };
+        return diffTree.map(t -> {
+            // not storing the full diff reduces memory usage by around 40-50%
+            final String diffToRemember = switch (debugOptions.diffStoragePolicy()) {
+                case DO_NOT_REMEMBER -> "";
+                case REMEMBER_DIFF -> gitDiff;
+                case REMEMBER_FULL_DIFF -> fullDiff;
+                case REMEMBER_STRIPPED_DIFF -> strippedDiff;
+            };
 
-        return new PatchDiff(commitDiff, diffEntry, diffToRemember, diffTree);
+            return new PatchDiff(commitDiff, diffEntry, diffToRemember, t);
+        });
     }
 
     /**
@@ -331,9 +345,8 @@ public class GitDiffer {
      * @param commit   The commit in which the file was changed
      * @param filename The name of the file
      * @return The full content of the file before the commit
-     * @throws IOException When accessing the file failed
      */
-    public static String getBeforeFullFile(Git git, RevCommit commit, String filename) throws IOException {
+    public static DiffResult<String> getBeforeFullFile(Git git, RevCommit commit, String filename) {
         RevTree tree = commit.getTree();
 
         try (TreeWalk treeWalk = new TreeWalk(git.getRepository())) {
@@ -343,14 +356,16 @@ public class GitDiffer {
 
             // Look for the first file that matches filename.
             if (!treeWalk.next()) {
-                throw new IOException("Could not obtain full diff of file " + filename + " before commit " + commit + "!");
+                return DiffResult.Failure(COULD_NOT_OBTAIN_FULLDIFF, "Could not obtain full diff of file " + filename + " before commit " + commit + "!");
             }
 
             ObjectId objectId = treeWalk.getObjectId(0);
             ObjectLoader loader = git.getRepository().open(objectId);
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
             loader.copyTo(stream);
-            return stream.toString(StandardCharsets.UTF_8);
+            return DiffResult.Success(stream.toString(StandardCharsets.UTF_8));
+        } catch (IOException e) {
+            return DiffResult.Failure(COULD_NOT_OBTAIN_FULLDIFF, "Could not obtain full diff of file " + filename + " before commit " + commit + "!");
         }
     }
 }
