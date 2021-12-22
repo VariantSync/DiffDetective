@@ -5,8 +5,8 @@ import pattern.atomic.AtomicPattern;
 import pattern.atomic.AtomicPatternCatalogue;
 import pattern.atomic.proposed.ProposedAtomicPatterns;
 import util.Assert;
-import util.Functional;
-import util.Semigroup;
+import util.functional.Functional;
+import util.functional.Semigroup;
 
 import java.util.HashSet;
 import java.util.LinkedHashMap;

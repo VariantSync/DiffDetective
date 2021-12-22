@@ -1,6 +1,6 @@
 package metadata;
 
-import util.Semigroup;
+import util.functional.Semigroup;
 
 import java.util.LinkedHashMap;
 import java.util.Map;

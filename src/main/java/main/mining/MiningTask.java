@@ -26,7 +26,11 @@ public record MiningTask(
     @Override
     public DiffTreeMiningResult call() throws Exception {
         miningStrategy.start(repository, outputPath, exportOptions);
+
         final DiffTreeMiningResult miningResult = new DiffTreeMiningResult();
+        miningResult.putCustomInfo("treeformat", exportOptions.treeFormat().getName());
+        miningResult.putCustomInfo("nodeformat", exportOptions.nodeFormat().getName());
+
         for (final RevCommit commit : commits) {
             final CommitDiff commitDiff = differ.createCommitDiff(commit);
             final StringBuilder lineGraph = new StringBuilder();

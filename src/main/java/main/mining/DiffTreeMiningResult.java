@@ -6,6 +6,8 @@ import metadata.ExplainedFilterSummary;
 import metadata.Metadata;
 import org.pmw.tinylog.Logger;
 import util.IO;
+import util.functional.Semigroup;
+import util.functional.SingletonSemigroupAppendException;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -20,7 +22,9 @@ public class DiffTreeMiningResult implements Metadata<DiffTreeMiningResult> {
     public ExplainedFilterSummary filterHits;
     public AtomicPatternCount atomicPatternCounts;
 
-    public <T> DiffTreeMiningResult() {
+    private final LinkedHashMap<String, Semigroup<?>> customInfo = new LinkedHashMap<>();
+
+    public DiffTreeMiningResult() {
         this(0, 0, new DiffTreeSerializeDebugData(), new ExplainedFilterSummary());
     }
 
@@ -37,6 +41,18 @@ public class DiffTreeMiningResult implements Metadata<DiffTreeMiningResult> {
         this.atomicPatternCounts = new AtomicPatternCount();
     }
 
+    public void putCustomInfo(final String key, final Semigroup<?> value) {
+        try {
+            Semigroup.tryAppendValue(customInfo, key, value);
+        } catch (SingletonSemigroupAppendException e) {
+            Logger.error("Tried to overwrite value \"" + customInfo.get(key) + "\" of key \"" + key + "\" with different value \"" + value + "\"!");
+        }
+    }
+
+    public void putCustomInfo(final String key, final String value) {
+        putCustomInfo(key, Semigroup.singleton(value));
+    }
+
     @Override
     public void append(final DiffTreeMiningResult other) {
         exportedCommits += other.exportedCommits;
@@ -44,6 +60,10 @@ public class DiffTreeMiningResult implements Metadata<DiffTreeMiningResult> {
         debugData.append(other.debugData);
         filterHits.append(other.filterHits);
         atomicPatternCounts.append(other.atomicPatternCounts);
+
+        for (var entry : other.customInfo.entrySet()) {
+            putCustomInfo(entry.getKey(), entry.getValue());
+        }
     }
 
     public String exportTo(final Path file) {
@@ -67,6 +87,7 @@ public class DiffTreeMiningResult implements Metadata<DiffTreeMiningResult> {
         snap.putAll(debugData.snapshot());
         snap.putAll(filterHits.snapshot());
         snap.putAll(atomicPatternCounts.snapshot());
+        snap.putAll(customInfo);
         return snap;
     }
 }

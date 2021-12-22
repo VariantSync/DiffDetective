@@ -49,16 +49,16 @@ public class DiffTreeMiner {
 
     public static DiffTreeLineGraphExportOptions ExportOptions() {
         return new DiffTreeLineGraphExportOptions(
-                GraphFormat.DIFFTREE
+                  GraphFormat.DIFFTREE
                 // We have to ensure that all DiffTrees have unique IDs, so use name of changed file and commit hash.
                 , new CommitDiffDiffTreeLabelFormat()
-//            , new DebugMiningDiffNodeFormat()
+//                , new DebugMiningDiffNodeFormat()
                 , new ReleaseMiningDiffNodeFormat()
                 , new ExplainedFilter<>(
                         DiffTreeFilter.notEmpty(),
                         DiffTreeFilter.moreThanTwoCodeNodes(),
                         /// We want to exclude patches that do not edit variability.
-                        /// In particular we noticed that most edits just insert or delete code (or replace it).
+                        /// In particular, we noticed that most edits just insert or delete code (or replace it).
                         /// This is reasonable and was also observed in previous studies: Edits to code are more frequent than edits to variability.
                         /// Yet, such edits cannot reveal compositions of more complex edits to variability.
                         /// We thus filter them.

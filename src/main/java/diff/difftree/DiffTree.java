@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-import static util.Functional.when;
+import static util.functional.Functional.when;
 
 /**
  * Implementation of the diff tree.

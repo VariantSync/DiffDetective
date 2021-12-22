@@ -1,8 +1,8 @@
 package metadata;
 
 import diff.difftree.filter.ExplainedFilter;
-import util.Functional;
-import util.Semigroup;
+import util.functional.Functional;
+import util.functional.Semigroup;
 
 import java.util.LinkedHashMap;
 import java.util.stream.Collectors;
