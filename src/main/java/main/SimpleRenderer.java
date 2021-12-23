@@ -39,7 +39,7 @@ public class SimpleRenderer {
             Logger.info("Rendering " + fileToRender);
             final DiffTree t;
             try {
-                t = DiffTree.fromFile(fileToRender, collapseMultipleCodeLines, ignoreEmptyLines);
+                t = DiffTree.fromFile(fileToRender, collapseMultipleCodeLines, ignoreEmptyLines).unwrap().getSuccess();
             } catch (IOException e) {
                 System.err.println("Could not read given file \"" + fileToRender + "\" because:\n" + e.getMessage());
                 return;

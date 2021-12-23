@@ -1,13 +1,13 @@
 package metadata;
 
+import de.variantsync.functjonal.Functjonal;
 import diff.CommitDiff;
 import pattern.atomic.AtomicPattern;
 import pattern.atomic.AtomicPatternCatalogue;
 import pattern.atomic.proposed.ProposedAtomicPatterns;
 import util.Assert;
-import util.functional.CollisionMap;
-import util.functional.Functional;
-import util.functional.Semigroup;
+import util.semigroup.MergeMap;
+import util.semigroup.Semigroup;
 
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -70,13 +70,13 @@ public class AtomicPatternCount implements Metadata<AtomicPatternCount> {
     @Override
     public void append(AtomicPatternCount other) {
         for (final Map.Entry<AtomicPattern, Occurrences> otherEntry : other.occurences.entrySet()) {
-            CollisionMap.putValue(this.occurences, otherEntry.getKey(), otherEntry.getValue());
+            MergeMap.putValue(this.occurences, otherEntry.getKey(), otherEntry.getValue());
         }
     }
 
     @Override
     public LinkedHashMap<String, String> snapshot() {
-        return Functional.bimap(
+        return Functjonal.bimap(
                 occurences,
                 AtomicPattern::getName,
                 Occurrences::toString,

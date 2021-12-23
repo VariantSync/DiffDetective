@@ -1,11 +1,11 @@
 package diff.difftree.parse;
 
-import diff.DiffError;
 import diff.DiffLineNumber;
-import diff.DiffResult;
 import diff.difftree.DiffNode;
 import diff.difftree.DiffTree;
 import diff.difftree.DiffType;
+import diff.result.DiffError;
+import diff.result.DiffResult;
 import util.StringUtils;
 
 import java.util.ArrayList;
@@ -14,8 +14,8 @@ import java.util.Stack;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 
-import static diff.DiffError.ELSE_OR_ELIF_WITHOUT_IF;
-import static diff.DiffError.ENDIF_WITHOUT_IF;
+import static diff.result.DiffError.ELSE_OR_ELIF_WITHOUT_IF;
+import static diff.result.DiffError.ENDIF_WITHOUT_IF;
 
 public class DiffTreeParser {
     public static final String NEW_LINE_REGEX = "(\\r\\n|\\r|\\n)";
@@ -34,8 +34,8 @@ public class DiffTreeParser {
      * @return The DiffTree created from the given git diff
      */
     public static DiffResult<DiffTree> createDiffTree(String fullDiff,
-                                                      boolean collapseMultipleCodeLines,
-                                                      boolean ignoreEmptyLines) {
+                                                             boolean collapseMultipleCodeLines,
+                                                             boolean ignoreEmptyLines) {
         final String[] fullDiffLines = fullDiff.split(NEW_LINE_REGEX);
 
         final List<DiffNode> nodes = new ArrayList<>();
@@ -46,7 +46,11 @@ public class DiffTreeParser {
 
         DiffNode lastCode = null;
         final AtomicReference<DiffResult<DiffTree>> error = new AtomicReference<>();
-        final BiConsumer<DiffError, String> errorPropagation = (errType, message) -> error.set(DiffResult.Failure(errType, message));
+        final BiConsumer<DiffError, String> errorPropagation = (errType, message) -> {
+            if (error.get() == null) {
+                error.set(DiffResult.Failure(errType, message));
+            }
+        };
 
         final MultiLineMacroParser mlMacroParser = new MultiLineMacroParser();
 
@@ -74,8 +78,7 @@ public class DiffTreeParser {
             // check if this is a multiline macro
             final ParseResult isMLMacro;
             try {
-                isMLMacro = mlMacroParser.consume(
-                        lineNo, currentLine, beforeStack, afterStack, nodes);
+                isMLMacro = mlMacroParser.consume(lineNo, currentLine, beforeStack, afterStack, nodes);
             } catch (IllFormedAnnotationException e) {
                 return DiffResult.Failure(e);
             }
@@ -135,7 +138,7 @@ public class DiffTreeParser {
                             popIf(stack);
 
                             if (stack.isEmpty()) {
-                                errorPropagation.accept(ENDIF_WITHOUT_IF, "ENDIF without IF at line " + currentLine + "!");
+                                errorPropagation.accept(ENDIF_WITHOUT_IF, "ENDIF without IF at line \"" + currentLine + "\"!");
                             }
                         });
                 if (error.get() != null) { return error.get(); }

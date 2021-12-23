@@ -65,7 +65,7 @@ public class TestLineNumbers {
     }
 
     private static DiffTree loadFullDiff(final Path p) throws IOException {
-        return DiffTree.fromFile(p, false, false);
+        return DiffTree.fromFile(p, false, false).unwrap().getSuccess();
     }
 
     private static void printLineNumbers(final DiffTree diffTree) {

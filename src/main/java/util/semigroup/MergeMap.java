@@ -1,35 +1,42 @@
-package util.functional;
+package util.semigroup;
 
 import org.pmw.tinylog.Logger;
 import util.MapDecorator;
-import util.Util;
 
 import java.util.Map;
 
 /**
- * A map whose values decide how to handle collisions.
+ * A map whose values are merged instead of overwritten upon put with a duplicate key.
  * In particular, when invoking put(k, v) and k is already associated to a value w, then
  * v will be appended to w via w.append(v).
  * @param <K> key type
  * @param <V> value type
  */
-public class CollisionMap<K, V extends Semigroup<?>> extends MapDecorator<K, V> implements Semigroup<Map<K, V>> {
-    private static class Collision extends RuntimeException {
-        Collision(String reason) { super(reason); }
+public class MergeMap<K, V extends Semigroup<V>> extends MapDecorator<K, V> implements Semigroup<Map<K, V>> {
+    public static class CannotAppend extends RuntimeException {
+        CannotAppend(String reason) { super(reason); }
     }
 
-    public CollisionMap(final Map<K, V> inner) {
+    public MergeMap(final Map<K, V> inner) {
         super(inner);
     }
 
     @Override
     public V put(final K key, final V value) {
         try {
-            return tryPutValue(inner, key, value);
+            return putValue(inner, key, value);
         } catch (SemigroupAppendException e) {
-            final String message = "Tried to overwrite value \"" + inner.get(key) + "\" of key \"" + key + "\" with different value \"" + value + "\"!";
+            final String message = "Appending value \"" + value + "\" of key \"" + key + "\" to value \"" + inner.get(key) + "\" failed!";
             Logger.error(message);
-            throw new Collision(message + "; Reason: " + e);
+            throw new CannotAppend(message + "; Reason: " + e);
+        }
+    }
+
+    @Override
+    public void putAll(Map<? extends K, ? extends V> m) {
+        if (m.isEmpty()) return;
+        for (var entry : m.entrySet()) {
+            put(entry.getKey(), entry.getValue());
         }
     }
 
@@ -59,21 +66,6 @@ public class CollisionMap<K, V extends Semigroup<?>> extends MapDecorator<K, V> 
             final V val = map.get(key);
             val.append(valueToAppend);
             return val;
-        } else {
-            map.put(key, valueToAppend);
-            return valueToAppend;
-        }
-    }
-
-    static <K, V extends Semigroup<?>> V tryPutValue(
-            final Map<K, V> map,
-            final K key,
-            final V valueToAppend) throws ClassCastException
-    {
-        if (map.containsKey(key)) {
-            final V me = map.get(key);
-            Util.<V, Semigroup<V>>cast(me).append(valueToAppend);
-            return me;
         } else {
             map.put(key, valueToAppend);
             return valueToAppend;

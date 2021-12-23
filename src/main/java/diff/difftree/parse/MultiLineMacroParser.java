@@ -8,7 +8,7 @@ import diff.difftree.DiffType;
 import java.util.List;
 import java.util.Stack;
 
-import static diff.DiffError.MLMACRO_WITHIN_MLMACRO;
+import static diff.result.DiffError.MLMACRO_WITHIN_MLMACRO;
 
 public class MultiLineMacroParser {
     private MultilineMacro beforeMLMacro = null;

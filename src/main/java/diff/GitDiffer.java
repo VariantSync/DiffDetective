@@ -2,8 +2,14 @@ package diff;
 
 import datasets.DebugOptions;
 import datasets.Repository;
+import de.variantsync.functjonal.Result;
+import de.variantsync.functjonal.category.Product;
+import de.variantsync.functjonal.iteration.Yield;
 import diff.difftree.DiffTree;
 import diff.difftree.parse.DiffTreeParser;
+import diff.result.CommitDiffResult;
+import diff.result.DiffError;
+import diff.result.DiffResult;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.diff.DiffEntry;
@@ -18,7 +24,6 @@ import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.pmw.tinylog.Logger;
 import util.iterator.SideEffectIteratorDecorator;
-import util.iterator.Yield;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -30,7 +35,7 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static diff.DiffError.*;
+import static diff.result.DiffError.*;
 
 /**
  * This class creates a GitDiff-object from a git repository (Git-object).
@@ -82,8 +87,8 @@ public class GitDiffer {
         final Iterator<RevCommit> commitIterator = new SideEffectIteratorDecorator<>(
                 commitsIterable.iterator(),
                 r -> ++commitAmount[0]);
-        for (DiffResultWithErrors<CommitDiff> commitDiff : loadAllValidIn(commitIterator)) {
-            commitDiff.result().ifPresent(gitDiff::addCommitDiff);
+        for (CommitDiffResult commitDiff : loadAllValidIn(commitIterator)) {
+            commitDiff.unwrap().first().ifPresent(gitDiff::addCommitDiff);
         }
         gitDiff.setCommitAmount(commitAmount[0]);
 
@@ -102,7 +107,7 @@ public class GitDiffer {
         return yieldAllValidIn(commitsIterable.iterator());
     }
 
-    public Yield<DiffResultWithErrors<CommitDiff>> yieldCommitDiffs() {
+    public Yield<CommitDiffResult> yieldCommitDiffs() {
         final Iterable<RevCommit> commitsIterable;
         try {
             commitsIterable = git.log().call();
@@ -126,7 +131,7 @@ public class GitDiffer {
                         }
 
                         if (c.getParentCount() == 0) {
-                            Logger.debug("Warning: Cannot create CommitDiff for commit " + c.getId().getName() + " because it does not have parents!");
+//                            Logger.debug("Warning: Cannot create CommitDiff for commit " + c.getId().getName() + " because it does not have parents!");
                             continue;
                         }
 
@@ -138,11 +143,11 @@ public class GitDiffer {
         );
     }
 
-    private Yield<DiffResultWithErrors<CommitDiff>> loadAllValidIn(final Iterator<RevCommit> commitsIterator) {
+    private Yield<CommitDiffResult> loadAllValidIn(final Iterator<RevCommit> commitsIterator) {
         return yieldAllValidIn(commitsIterator).map(this::createCommitDiff);
     }
 
-    public DiffResultWithErrors<CommitDiff> createCommitDiff(final RevCommit revCommit) {
+    public CommitDiffResult createCommitDiff(final RevCommit revCommit) {
         return createCommitDiffFromFirstParent(git, diffFilter, revCommit, debugOptions);
     }
 
@@ -156,14 +161,14 @@ public class GitDiffer {
      * @param debugOptions
      * @return The CommitDiff of the given commit
      */
-    public static DiffResultWithErrors<CommitDiff> createCommitDiffFromFirstParent(
+    public static CommitDiffResult createCommitDiffFromFirstParent(
             Git git,
             DiffFilter diffFilter,
             RevCommit currentCommit,
             final DebugOptions debugOptions) {
         if (currentCommit.getParentCount() == 0) {
-            return DiffResultWithErrors.of(DiffResult.Failure(
-                    COMMIT_HAS_NO_PARENTS, "Commit " + currentCommit.getId().getName() + " does not have parents"));
+            return CommitDiffResult.Failure(
+                    COMMIT_HAS_NO_PARENTS, "Commit " + currentCommit.getId().getName() + " does not have parents");
         }
 
         return createCommitDiff(git, diffFilter, currentCommit.getParent(0), currentCommit, debugOptions);
@@ -177,34 +182,36 @@ public class GitDiffer {
      * @param git The git repo which the commit stems from.
      * @return The CommitDiff of the given commit
      */
-    public static DiffResultWithErrors<CommitDiff> createCommitDiff(
+    public static CommitDiffResult createCommitDiff(
             Git git,
             DiffFilter diffFilter,
             RevCommit parentCommit,
             RevCommit childCommit,
             final DebugOptions debugOptions) {
-        final CommitDiff commitDiff = new CommitDiff(childCommit, parentCommit);
-
-        final DiffResultWithErrors<CommitDiff> result = new DiffResultWithErrors<>(Optional.of(commitDiff), new ArrayList<>());
-
         // get TreeParsers
-        CanonicalTreeParser currentTreeParser = new CanonicalTreeParser();
-        CanonicalTreeParser prevTreeParser = new CanonicalTreeParser();
+        final CanonicalTreeParser currentTreeParser = new CanonicalTreeParser();
+        final CanonicalTreeParser prevTreeParser = new CanonicalTreeParser();
         try (ObjectReader reader = git.getRepository().newObjectReader()) {
             if (childCommit.getTree() == null) {
-                return DiffResultWithErrors.of(DiffResult.Failure(JGIT_ERROR, "Could not obtain RevTree from child commit " + childCommit.getId()));
+                return CommitDiffResult.Failure(JGIT_ERROR, "Could not obtain RevTree from child commit " + childCommit.getId());
             }
             if (parentCommit.getTree() == null) {
-                return DiffResultWithErrors.of(DiffResult.Failure(JGIT_ERROR, "Could not obtain RevTree from parent commit " + parentCommit.getId()));
+                return CommitDiffResult.Failure(JGIT_ERROR, "Could not obtain RevTree from parent commit " + parentCommit.getId());
             }
 
             try {
                 currentTreeParser.reset(reader, childCommit.getTree());
                 prevTreeParser.reset(reader, parentCommit.getTree());
             } catch (IOException e) {
-                return DiffResultWithErrors.of(DiffResult.Failure(JGIT_ERROR, e.toString()));
+                return CommitDiffResult.Failure(JGIT_ERROR, e.toString());
             }
         }
+
+        final CommitDiff commitDiff = new CommitDiff(childCommit, parentCommit);
+        final Product<Optional<CommitDiff>, List<DiffError>> result = new Product<>(
+                Optional.of(commitDiff),
+                new ArrayList<>()
+        );
 
         // get PatchDiffs
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -222,24 +229,25 @@ public class GitDiffer {
 
                 diffFormatter.format(diffEntry);
                 final String gitDiff = outputStream.toString(StandardCharsets.UTF_8);
-                final DiffResult<PatchDiff> patchDiff = getBeforeFullFile(git, parentCommit, diffEntry.getOldPath())
-                        .flatMap(file -> createPatchDiff(
+                final Result<PatchDiff, DiffError> patchDiff =
+                        getBeforeFullFile(git, parentCommit, diffEntry.getOldPath()).unwrap()
+                        .bind(file -> createPatchDiff(
                                 commitDiff,
                                 diffEntry,
                                 gitDiff,
                                 file,
-                                debugOptions)
+                                debugOptions).unwrap()
                         );
 
                 patchDiff.ifSuccess(commitDiff::addPatchDiff);
-                patchDiff.ifFailure(error -> result.errors().add(error));
+                patchDiff.ifFailure(error -> result.second().add(error));
                 outputStream.reset();
             }
         } catch (IOException e) {
-            return DiffResultWithErrors.of(DiffResult.Failure(JGIT_ERROR, e.toString()));
+            return CommitDiffResult.Failure(JGIT_ERROR, e.toString());
         }
 
-        return result;
+        return new CommitDiffResult(result);
     }
 
     /**

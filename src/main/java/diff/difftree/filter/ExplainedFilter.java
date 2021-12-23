@@ -1,6 +1,6 @@
 package diff.difftree.filter;
 
-import util.functional.Semigroup;
+import util.semigroup.Semigroup;
 
 import java.util.Arrays;
 import java.util.List;

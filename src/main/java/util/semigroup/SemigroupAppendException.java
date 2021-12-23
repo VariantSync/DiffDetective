@@ -1,4 +1,4 @@
-package util.functional;
+package util.semigroup;
 
 public class SemigroupAppendException extends RuntimeException {
     public SemigroupAppendException(String message) {

@@ -1,17 +1,23 @@
 package main.mining;
 
+import de.variantsync.functjonal.Functjonal;
 import diff.difftree.serialize.DiffTreeSerializeDebugData;
+import diff.result.DiffError;
 import metadata.AtomicPatternCount;
 import metadata.ExplainedFilterSummary;
 import metadata.Metadata;
 import org.pmw.tinylog.Logger;
 import util.IO;
-import util.functional.CollisionMap;
-import util.functional.Semigroup;
+import util.semigroup.IntSum;
+import util.semigroup.MergeMap;
+import util.semigroup.Semigroup;
+import util.semigroup.Unknown;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 
 public class DiffTreeMiningResult implements Metadata<DiffTreeMiningResult> {
     public final static String EXTENSION = ".metadata.txt";
@@ -21,8 +27,8 @@ public class DiffTreeMiningResult implements Metadata<DiffTreeMiningResult> {
     public final DiffTreeSerializeDebugData debugData;
     public ExplainedFilterSummary filterHits;
     public AtomicPatternCount atomicPatternCounts;
-
-    private final CollisionMap<String, Semigroup<?>> customInfo = new CollisionMap<>(new LinkedHashMap<>());
+    private final MergeMap<String, Unknown> customInfo = new MergeMap<String, Unknown>(new LinkedHashMap<>());
+    private final MergeMap<DiffError, IntSum> diffErrors = new MergeMap<DiffError, IntSum>(new HashMap<>());
 
     public DiffTreeMiningResult() {
         this(0, 0, new DiffTreeSerializeDebugData(), new ExplainedFilterSummary());
@@ -42,11 +48,17 @@ public class DiffTreeMiningResult implements Metadata<DiffTreeMiningResult> {
     }
 
     public void putCustomInfo(final String key, final Semigroup<?> value) {
-        customInfo.put(key, value);
+        customInfo.put(key, new Unknown(value));
     }
 
     public void putCustomInfo(final String key, final String value) {
         putCustomInfo(key, Semigroup.singleton(value));
+    }
+
+    public void reportDiffErrors(final List<DiffError> errors) {
+        for (final DiffError e : errors) {
+            diffErrors.put(e, new IntSum(1));
+        }
     }
 
     @Override
@@ -57,6 +69,7 @@ public class DiffTreeMiningResult implements Metadata<DiffTreeMiningResult> {
         filterHits.append(other.filterHits);
         atomicPatternCounts.append(other.atomicPatternCounts);
         customInfo.append(other.customInfo);
+        diffErrors.append(other.diffErrors);
     }
 
     public String exportTo(final Path file) {
@@ -81,6 +94,7 @@ public class DiffTreeMiningResult implements Metadata<DiffTreeMiningResult> {
         snap.putAll(filterHits.snapshot());
         snap.putAll(atomicPatternCounts.snapshot());
         snap.putAll(customInfo);
+        snap.putAll(Functjonal.bimap(diffErrors, error -> "#Error[" + error + "]", IntSum::toString));
         return snap;
     }
 }

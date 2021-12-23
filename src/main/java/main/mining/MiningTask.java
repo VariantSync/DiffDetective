@@ -2,14 +2,15 @@ package main.mining;
 
 import datasets.Repository;
 import diff.CommitDiff;
-import diff.DiffResultWithErrors;
 import diff.GitDiffer;
 import diff.PatchDiff;
 import diff.difftree.DiffTree;
 import diff.difftree.serialize.DiffTreeLineGraphExportOptions;
 import diff.difftree.serialize.LineGraphExport;
+import diff.result.CommitDiffResult;
 import main.mining.strategies.DiffTreeMiningStrategy;
 import org.eclipse.jgit.revwalk.RevCommit;
+import org.pmw.tinylog.Logger;
 import pattern.atomic.proposed.ProposedAtomicPatterns;
 import util.FileUtils;
 
@@ -33,13 +34,15 @@ public record MiningTask(
         miningResult.putCustomInfo("nodeformat", exportOptions.nodeFormat().getName());
 
         for (final RevCommit commit : commits) {
-            final DiffResultWithErrors<CommitDiff> commitDiff = differ.createCommitDiff(commit);
+            final CommitDiffResult commitDiffResult = differ.createCommitDiff(commit);
 
-            // TODO: Recording errors has a drawback for multithreading.
-            //       We do not filter errors before passing them to worker threads.
-            //       Instead, worker threads may get "empty work" when a commit failed.
-            //       Guess that is just the price we have to pay. :shrug:
+            miningResult.reportDiffErrors(commitDiffResult.unwrap().second());
+            if (commitDiffResult.unwrap().first().isEmpty()) {
+                Logger.debug("[MiningTask::call] found commit that failed entirely and was not filtered because:\n" + commitDiffResult.unwrap().second());
+                continue;
+            }
 
+            final CommitDiff commitDiff = commitDiffResult.unwrap().first().get();
             final StringBuilder lineGraph = new StringBuilder();
             miningResult.append(LineGraphExport.toLineGraphFormat(commitDiff, lineGraph, exportOptions));
             miningStrategy.onCommit(commitDiff, lineGraph.toString());

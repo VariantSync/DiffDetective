@@ -1,6 +1,6 @@
 package diff.difftree.parse;
 
-import diff.DiffError;
+import diff.result.DiffError;
 
 import java.util.function.BiConsumer;
 

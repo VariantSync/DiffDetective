@@ -47,7 +47,7 @@ public class TreeTransformersTest {
     private static final Consumer<String> INFO = System.out::println;
 
     private void transformAndRender(String diffFileName) throws IOException {
-        final DiffTree t = DiffTree.fromFile(resDir.resolve(diffFileName), true, true);
+        final DiffTree t = DiffTree.fromFile(resDir.resolve(diffFileName), true, true).unwrap().getSuccess();
         transformAndRender(t, diffFileName, "0");
     }
 
@@ -111,7 +111,7 @@ public class TreeTransformersTest {
                 marlin.getDiffFilter(),
                 parentCommit,
                 childCommit,
-                marlin.getDebugOptions());
+                marlin.getDebugOptions()).unwrap().first().orElseThrow();
 
         for (final PatchDiff pd : commitDiff.getPatchDiffs()) {
             if (file.equals(pd.getFileName())) {

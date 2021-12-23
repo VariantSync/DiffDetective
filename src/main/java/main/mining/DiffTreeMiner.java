@@ -173,7 +173,8 @@ public class DiffTreeMiner {
     }
 
     public static void main(String[] args) {
-        Main.setupLogger(Level.INFO);
+//        Main.setupLogger(Level.INFO);
+        Main.setupLogger(Level.DEBUG);
 
         final DebugOptions debugOptions = new DebugOptions(DebugOptions.DiffStoragePolicy.REMEMBER_STRIPPED_DIFF);
 

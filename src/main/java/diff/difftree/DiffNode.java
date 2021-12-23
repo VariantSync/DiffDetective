@@ -701,7 +701,7 @@ public class DiffNode {
                 fm = matcher.group(4);
             }
         } else {
-            throw new IllFormedAnnotationException("Could not extract formula from line \""+ line + "\".");
+            throw IllFormedAnnotationException.IfWithoutCondition("Could not extract formula from line \""+ line + "\".");
         }
 
         // remove comments

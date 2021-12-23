@@ -1,4 +1,4 @@
-package util.functional;
+package util.semigroup;
 
 record SingletonSemigroup<T>(T element) implements Semigroup<T> {
     @Override
