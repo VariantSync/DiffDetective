@@ -1,4 +1,4 @@
-package main.mining.postprocessing;
+package mining.postprocessing;
 
 import diff.difftree.DiffTree;
 import diff.difftree.filter.DiffTreeFilter;

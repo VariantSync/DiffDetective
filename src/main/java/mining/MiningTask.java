@@ -1,4 +1,4 @@
-package main.mining;
+package mining;
 
 import datasets.Repository;
 import diff.CommitDiff;
@@ -8,7 +8,7 @@ import diff.difftree.DiffTree;
 import diff.difftree.serialize.DiffTreeLineGraphExportOptions;
 import diff.difftree.serialize.LineGraphExport;
 import diff.result.CommitDiffResult;
-import main.mining.strategies.DiffTreeMiningStrategy;
+import mining.strategies.DiffTreeMiningStrategy;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.pmw.tinylog.Logger;
 import pattern.atomic.proposed.ProposedAtomicPatterns;

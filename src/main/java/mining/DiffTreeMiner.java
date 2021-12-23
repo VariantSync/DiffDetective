@@ -1,4 +1,4 @@
-package main.mining;
+package mining;
 
 import datasets.DebugOptions;
 import datasets.DefaultRepositories;
@@ -13,10 +13,10 @@ import diff.difftree.transform.CollapseNestedNonEditedMacros;
 import diff.difftree.transform.CutNonEditedSubtrees;
 import diff.difftree.transform.DiffTreeTransformer;
 import main.Main;
-import main.mining.formats.ReleaseMiningDiffNodeFormat;
-import main.mining.monitoring.TaskCompletionMonitor;
-import main.mining.strategies.DiffTreeMiningStrategy;
-import main.mining.strategies.MineAllThenExport;
+import mining.formats.ReleaseMiningDiffNodeFormat;
+import mining.monitoring.TaskCompletionMonitor;
+import mining.strategies.DiffTreeMiningStrategy;
+import mining.strategies.MineAllThenExport;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.pmw.tinylog.Level;
 import org.pmw.tinylog.Logger;

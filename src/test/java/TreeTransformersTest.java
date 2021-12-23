@@ -11,7 +11,7 @@ import diff.difftree.serialize.nodeformat.TypeDiffNodeFormat;
 import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
 import diff.difftree.transform.DiffTreeTransformer;
 import main.Main;
-import main.mining.DiffTreeMiner;
+import mining.DiffTreeMiner;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.revwalk.RevCommit;

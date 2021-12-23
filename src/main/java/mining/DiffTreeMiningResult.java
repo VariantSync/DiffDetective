@@ -1,4 +1,4 @@
-package main.mining;
+package mining;
 
 import de.variantsync.functjonal.Functjonal;
 import diff.difftree.serialize.DiffTreeSerializeDebugData;

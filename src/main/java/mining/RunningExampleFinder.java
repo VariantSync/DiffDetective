@@ -1,4 +1,4 @@
-package main.mining;
+package mining;
 
 import diff.PatchDiff;
 import diff.difftree.DiffTree;

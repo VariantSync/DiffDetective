@@ -4,7 +4,7 @@ import diff.difftree.DiffTree;
 import diff.difftree.render.DiffTreeRenderer;
 import diff.difftree.serialize.GraphFormat;
 import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
-import main.mining.formats.ReleaseMiningDiffNodeFormat;
+import mining.formats.ReleaseMiningDiffNodeFormat;
 import org.pmw.tinylog.Logger;
 import util.FileUtils;
 

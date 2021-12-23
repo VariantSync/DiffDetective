@@ -7,8 +7,8 @@ import diff.difftree.DiffNode;
 import diff.difftree.DiffTree;
 import diff.difftree.DiffTreeSource;
 import diff.difftree.transform.DiffTreeTransformer;
-import main.mining.DiffTreeMiningResult;
 import metadata.ExplainedFilterSummary;
+import mining.DiffTreeMiningResult;
 import org.pmw.tinylog.Logger;
 import util.StringUtils;
 

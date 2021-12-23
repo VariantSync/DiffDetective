@@ -1,4 +1,4 @@
-package main.mining.postprocessing;
+package mining.postprocessing;
 
 import diff.difftree.DiffTree;
 import diff.difftree.render.DiffTreeRenderer;
@@ -7,7 +7,7 @@ import diff.difftree.serialize.GraphFormat;
 import diff.difftree.serialize.LineGraphImport;
 import diff.difftree.serialize.nodeformat.LabelOnlyDiffNodeFormat;
 import diff.difftree.serialize.treeformat.IndexedTreeFormat;
-import main.mining.formats.ReleaseMiningDiffNodeFormat;
+import mining.formats.ReleaseMiningDiffNodeFormat;
 import util.FileUtils;
 
 import java.io.IOException;
