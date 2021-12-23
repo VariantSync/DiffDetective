@@ -1,4 +1,4 @@
-package main.mining.monitoring;
+package mining.monitoring;
 
 import org.pmw.tinylog.Logger;
 

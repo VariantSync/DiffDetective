@@ -2,12 +2,12 @@ package diff.difftree.serialize.treeformat;
 
 import diff.difftree.DiffTreeSource;
 import diff.difftree.LineGraphConstants;
+import diff.difftree.serialize.LinegraphFormat;
 
 /**
  * Reads and writes {@link DiffTreeSource} from and to line graph.
  */
-public interface DiffTreeLabelFormat {
-
+public interface DiffTreeLabelFormat extends LinegraphFormat {
 	/**
 	 * Converts a label of line graph into a {@link DiffTreeSource}.
 	 * 

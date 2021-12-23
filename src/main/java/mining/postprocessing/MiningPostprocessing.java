@@ -1,4 +1,4 @@
-package main.mining.postprocessing;
+package mining.postprocessing;
 
 import diff.difftree.DiffTree;
 import diff.difftree.render.DiffTreeRenderer;
@@ -6,9 +6,8 @@ import diff.difftree.serialize.DiffTreeLineGraphImportOptions;
 import diff.difftree.serialize.GraphFormat;
 import diff.difftree.serialize.LineGraphImport;
 import diff.difftree.serialize.nodeformat.LabelOnlyDiffNodeFormat;
-import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
 import diff.difftree.serialize.treeformat.IndexedTreeFormat;
-import main.mining.formats.DebugMiningDiffNodeFormat;
+import mining.formats.ReleaseMiningDiffNodeFormat;
 import util.FileUtils;
 
 import java.io.IOException;
@@ -26,7 +25,7 @@ public class MiningPostprocessing {
     private static final DiffTreeRenderer DefaultRenderer = DiffTreeRenderer.WithinDiffDetective();
     private static final DiffTreeRenderer.RenderOptions DefaultRenderOptions = new DiffTreeRenderer.RenderOptions(
             GraphFormat.DIFFTREE,
-            new CommitDiffDiffTreeLabelFormat(),
+            new IndexedTreeFormat(),
             new LabelOnlyDiffNodeFormat(),
             false,
             DiffTreeRenderer.RenderOptions.DEFAULT.dpi(),
@@ -40,7 +39,7 @@ public class MiningPostprocessing {
     private static final DiffTreeLineGraphImportOptions IMPORT_OPTIONS = new DiffTreeLineGraphImportOptions(
             GraphFormat.DIFFGRAPH,
             new IndexedTreeFormat(),
-            new DebugMiningDiffNodeFormat()
+            new ReleaseMiningDiffNodeFormat()
     );
 
     public static void main(String[] args) throws IOException {
@@ -96,7 +95,7 @@ public class MiningPostprocessing {
                 + semanticPatterns.size() + " are candidates for semantic patterns.");
         printer.accept("Subgraphs were discarded for the following reasons:");
         for (Map.Entry<String, Integer> nameAndCount : result.filterCounts().entrySet()) {
-            printer.accept("    not (" + nameAndCount.getKey() + "): " + nameAndCount.getValue());
+            printer.accept("    " + nameAndCount.getKey() + ": " + nameAndCount.getValue());
         }
         printer.accept("");
 

@@ -4,11 +4,12 @@ import de.ovgu.featureide.fm.core.analysis.cnf.generator.configuration.util.Pair
 import diff.difftree.DiffNode;
 import diff.difftree.DiffTreeSource;
 import diff.difftree.LineGraphConstants;
+import diff.difftree.serialize.LinegraphFormat;
 
 /**
  * Reads and writes {@link DiffNode DiffNodes} from and to line graph.
  */
-public interface DiffNodeLabelFormat {
+public interface DiffNodeLabelFormat extends LinegraphFormat {
 
 	/**
 	 * Converts a label of line graph into a {@link DiffNode}.

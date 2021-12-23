@@ -2,8 +2,7 @@ package diff.difftree.serialize;
 
 import diff.PatchDiff;
 import diff.difftree.DiffTree;
-import diff.difftree.filter.DiffTreeFilter;
-import diff.difftree.filter.TaggedPredicate;
+import diff.difftree.filter.ExplainedFilter;
 import diff.difftree.render.DiffTreeRenderer;
 import diff.difftree.render.PatchDiffRenderer;
 import diff.difftree.serialize.nodeformat.DiffNodeLabelFormat;
@@ -23,12 +22,12 @@ public record DiffTreeLineGraphExportOptions(
         GraphFormat graphFormat,
 		DiffTreeLabelFormat treeFormat,
 		DiffNodeLabelFormat nodeFormat,
-		TaggedPredicate<String, DiffTree> treeFilter,
+		ExplainedFilter<DiffTree> treeFilter,
         List<DiffTreeTransformer> treePreProcessing,
         BiConsumer<PatchDiff, Exception> onError) {
 	
     public DiffTreeLineGraphExportOptions(GraphFormat graphFormat, DiffTreeLabelFormat treeFormat, DiffNodeLabelFormat nodeFormat) {
-        this(graphFormat, treeFormat, nodeFormat, DiffTreeFilter.Any(), new ArrayList<>(), LogError());
+        this(graphFormat, treeFormat, nodeFormat, ExplainedFilter.Any(), new ArrayList<>(), LogError());
     }
 
     public static BiConsumer<PatchDiff, Exception> LogError() {

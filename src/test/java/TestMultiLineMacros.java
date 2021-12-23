@@ -24,7 +24,7 @@ public class TestMultiLineMacros {
         final DiffTree tree = DiffTreeParser.createDiffTree(
                 fullDiff,
                 true,
-                true);
+                true).unwrap().getSuccess();
 
         final Pair<DiffTreeSerializeDebugData, String> result = LineGraphExport.toLineGraphFormat(tree, exportOptions);
         final DiffTreeSerializeDebugData debugData = result.getKey();

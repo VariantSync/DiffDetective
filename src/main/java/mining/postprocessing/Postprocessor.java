@@ -1,43 +1,23 @@
-package main.mining.postprocessing;
+package mining.postprocessing;
 
 import diff.difftree.DiffTree;
 import diff.difftree.filter.DiffTreeFilter;
+import diff.difftree.filter.ExplainedFilter;
 import diff.difftree.filter.TaggedPredicate;
 import diff.difftree.transform.CutNonEditedSubtrees;
 import diff.difftree.transform.DiffTreeTransformer;
+import metadata.ExplainedFilterSummary;
 
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Generic Postprocessor for mined patterns.
  * Patterns are represented as DiffTrees and might be filtered or transformed.
  */
 public class Postprocessor {
-    /**
-     * Metadata to log how often each filter was applied.
-     */
-    private static class FilterMetadata {
-        int filterCount;
-        String name;
-
-        public FilterMetadata(int filterCount, String name) {
-            this.filterCount = filterCount;
-            this.name = name;
-        }
-
-        public void hit() {
-            ++filterCount;
-        }
-
-        static FilterMetadata fromName(String name) {
-            return new FilterMetadata(0, name);
-        }
-    }
-
     private final List<DiffTreeTransformer> transformers;
-    private final List<TaggedPredicate<FilterMetadata, DiffTree>> filters;
+    private final ExplainedFilter<DiffTree> filters;
 
     /**
      * Result type for prostprocessing.
@@ -52,9 +32,7 @@ public class Postprocessor {
             final List<DiffTreeTransformer> transformers,
             final List<TaggedPredicate<String, DiffTree>> namedFilters) {
         this.transformers = transformers;
-        this.filters = namedFilters.stream().map(
-                filter -> filter.map(FilterMetadata::fromName)
-        ).collect(Collectors.toList());
+        this.filters = new ExplainedFilter<>(namedFilters.stream());
     }
 
     /**
@@ -85,25 +63,12 @@ public class Postprocessor {
      * @return The processed difftrees as well as some metadata.
      */
     public Result postprocess(final List<DiffTree> frequentSubgraphs) {
-        List<DiffTree> processedTrees = frequentSubgraphs.stream()
-                .filter(tree -> {
-                    for (final TaggedPredicate<FilterMetadata, DiffTree> filter : filters) {
-                        if (!filter.condition().test(tree)) {
-                            filter.tag().hit();
-                            return false;
-                        }
-                    }
-
-                    return true;
-                })
+        final List<DiffTree> processedTrees = frequentSubgraphs.stream()
+                .filter(filters)
                 .peek(tree -> DiffTreeTransformer.apply(transformers, tree))
                 .toList();
 
-        final Map<String, Integer> filterCounts = filters.stream().collect(Collectors.toMap(
-                f -> f.tag().name,
-                f -> f.tag().filterCount
-        ));
-
+        final Map<String, Integer> filterCounts = new ExplainedFilterSummary(filters).snapshot();
         return new Result(processedTrees, filterCounts);
     }
 }

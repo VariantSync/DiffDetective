@@ -1,4 +1,4 @@
-package main.mining.formats;
+package mining.formats;
 
 import diff.DiffLineNumber;
 import diff.difftree.CodeType;

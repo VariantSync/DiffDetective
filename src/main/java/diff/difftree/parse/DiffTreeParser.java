@@ -4,15 +4,18 @@ import diff.DiffLineNumber;
 import diff.difftree.DiffNode;
 import diff.difftree.DiffTree;
 import diff.difftree.DiffType;
-import diff.difftree.error.IllFormedAnnotationException;
-import org.pmw.tinylog.Logger;
+import diff.result.DiffError;
+import diff.result.DiffResult;
 import util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiConsumer;
+
+import static diff.result.DiffError.ELSE_OR_ELIF_WITHOUT_IF;
+import static diff.result.DiffError.ENDIF_WITHOUT_IF;
 
 public class DiffTreeParser {
     public static final String NEW_LINE_REGEX = "(\\r\\n|\\r|\\n)";
@@ -30,9 +33,9 @@ public class DiffTreeParser {
      *                                  or remained unchanged) should be ignored
      * @return The DiffTree created from the given git diff
      */
-    public static DiffTree createDiffTree(String fullDiff,
-                                          boolean collapseMultipleCodeLines,
-                                          boolean ignoreEmptyLines) {
+    public static DiffResult<DiffTree> createDiffTree(String fullDiff,
+                                                             boolean collapseMultipleCodeLines,
+                                                             boolean ignoreEmptyLines) {
         final String[] fullDiffLines = fullDiff.split(NEW_LINE_REGEX);
 
         final List<DiffNode> nodes = new ArrayList<>();
@@ -42,10 +45,11 @@ public class DiffTreeParser {
         final DiffLineNumber lastLineNo = DiffLineNumber.Copy(lineNo);
 
         DiffNode lastCode = null;
-        final AtomicBoolean error = new AtomicBoolean(false);
-        final Consumer<String> errorHandler = m -> {
-            Logger.debug("Warning: " + m);
-            error.set(true);
+        final AtomicReference<DiffResult<DiffTree>> error = new AtomicReference<>();
+        final BiConsumer<DiffError, String> errorPropagation = (errType, message) -> {
+            if (error.get() == null) {
+                error.set(DiffResult.Failure(errType, message));
+            }
         };
 
         final MultiLineMacroParser mlMacroParser = new MultiLineMacroParser();
@@ -74,11 +78,9 @@ public class DiffTreeParser {
             // check if this is a multiline macro
             final ParseResult isMLMacro;
             try {
-                isMLMacro = mlMacroParser.consume(
-                        lineNo, currentLine, beforeStack, afterStack, nodes);
+                isMLMacro = mlMacroParser.consume(lineNo, currentLine, beforeStack, afterStack, nodes);
             } catch (IllFormedAnnotationException e) {
-                errorHandler.accept(e.toString());
-                return null;
+                return DiffResult.Failure(e);
             }
 
             switch (isMLMacro.type()) {
@@ -90,8 +92,8 @@ public class DiffTreeParser {
                     continue;
                 }
                 case Error: {
-                    errorHandler.accept(isMLMacro.message());
-                    return null;
+                    isMLMacro.onError(errorPropagation);
+                    return error.get();
                 }
                 // line is not a mult-line macro so keep going (break the switch statement).
                 case NotMyDuty: break;
@@ -103,8 +105,7 @@ public class DiffTreeParser {
             try {
                 newNode = DiffNode.fromDiffLine(currentLine);
             } catch (IllFormedAnnotationException e) {
-                errorHandler.accept(e.toString());
-                return null;
+                return DiffResult.Failure(e);
             }
 
             // collapse multiple code lines
@@ -137,23 +138,22 @@ public class DiffTreeParser {
                             popIf(stack);
 
                             if (stack.isEmpty()) {
-                                errorHandler.accept("ENDIF without IF at line " + currentLine + "!");
+                                errorPropagation.accept(ENDIF_WITHOUT_IF, "ENDIF without IF at line \"" + currentLine + "\"!");
                             }
                         });
-                if (error.get()) { return null; }
+                if (error.get() != null) { return error.get(); }
             } else {
                 // newNode is if, elif or else
                 // push the node to the relevant stacks
                 diffType.matchBeforeAfter(beforeStack, afterStack, stack ->
-                        pushNodeToStack(newNode, stack, lastLineNo).onError(errorHandler)
+                        pushNodeToStack(newNode, stack, lastLineNo).onError(errorPropagation)
                 );
-                if (error.get()) { return null; }
+                if (error.get() != null) { return error.get(); }
             }
         }
 
         if (beforeStack.size() > 1 || afterStack.size() > 1) {
-            errorHandler.accept("Not all annotations closed!");
-            return null;
+            return DiffResult.Failure(DiffError.NOT_ALL_ANNOTATIONS_CLOSED);
         }
 
         if (lastCode != null) {
@@ -169,7 +169,7 @@ public class DiffTreeParser {
             node.getToLine().as(node.diffType);
         }
 
-        return new DiffTree(root);
+        return DiffResult.Success(new DiffTree(root));
     }
 
     static ParseResult pushNodeToStack(
@@ -178,7 +178,7 @@ public class DiffTreeParser {
             final DiffLineNumber lastLineNo) {
         if (newNode.isElif() || newNode.isElse()) {
             if (stack.size() == 1) {
-                return ParseResult.ERROR("#else or #elif without if!");
+                return ParseResult.ERROR(ELSE_OR_ELIF_WITHOUT_IF);
             }
 
             // set corresponding line of now closed annotation

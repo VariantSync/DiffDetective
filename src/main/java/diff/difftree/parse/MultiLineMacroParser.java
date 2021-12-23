@@ -4,10 +4,11 @@ import diff.DiffLineNumber;
 import diff.difftree.CodeType;
 import diff.difftree.DiffNode;
 import diff.difftree.DiffType;
-import diff.difftree.error.IllFormedAnnotationException;
 
 import java.util.List;
 import java.util.Stack;
+
+import static diff.result.DiffError.MLMACRO_WITHIN_MLMACRO;
 
 public class MultiLineMacroParser {
     private MultilineMacro beforeMLMacro = null;
@@ -55,13 +56,13 @@ public class MultiLineMacroParser {
                 // ... create a new multi line macro to complete.
                 if (!isAdd) {
                     if (beforeMLMacro != null) {
-                        return ParseResult.ERROR("Found definition of multiline macro within multiline macro at line " + line + "!");
+                        return ParseResult.ERROR(MLMACRO_WITHIN_MLMACRO, "Found definition of multiline macro within multiline macro at line " + line + "!");
                     }
                     beforeMLMacro = new MultilineMacro(line, lineNo, beforeStack.peek(), afterStack.peek());
                 }
                 if (!isRem) {
                     if (afterMLMacro != null) {
-                        return ParseResult.ERROR("Found definition of multiline macro within multiline macro at line " + line + "!");
+                        return ParseResult.ERROR(MLMACRO_WITHIN_MLMACRO, "Found definition of multiline macro within multiline macro at line " + line + "!");
                     }
                     afterMLMacro = new MultilineMacro(line, lineNo, beforeStack.peek(), afterStack.peek());
                 }

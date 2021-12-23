@@ -2,7 +2,7 @@ package diff.difftree;
 
 import diff.DiffLineNumber;
 import diff.Lines;
-import diff.difftree.error.IllFormedAnnotationException;
+import diff.difftree.parse.IllFormedAnnotationException;
 import org.prop4j.*;
 import util.Assert;
 import util.fide.FixTrueFalse;
@@ -701,7 +701,7 @@ public class DiffNode {
                 fm = matcher.group(4);
             }
         } else {
-            throw new IllFormedAnnotationException("Could not extract formula from line \""+ line + "\".");
+            throw IllFormedAnnotationException.IfWithoutCondition("Could not extract formula from line \""+ line + "\".");
         }
 
         // remove comments

@@ -12,7 +12,7 @@ public class AtomicPatternsTest {
     @Test
     public void testAtomics() throws IOException {
         final Path path = testDir.resolve("atomics.diff");
-        final DiffTree t = DiffTree.fromFile(path, false, true);
+        final DiffTree t = DiffTree.fromFile(path, false, true).unwrap().getSuccess();
         t.forAll(node -> {
             if (node.isCode()) {
                 Assert.assertEquals(

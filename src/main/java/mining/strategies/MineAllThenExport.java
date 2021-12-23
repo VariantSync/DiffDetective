@@ -1,32 +1,30 @@
-package main.mining.strategies;
+package mining.strategies;
 
 import datasets.Repository;
 import diff.CommitDiff;
 import diff.difftree.serialize.DiffTreeLineGraphExportOptions;
-import main.mining.monitoring.TaskCompletionMonitor;
+import util.IO;
 
 import java.nio.file.Path;
 
-public class MiningMonitor extends DiffTreeMiningStrategy {
-    private final TaskCompletionMonitor monitor;
-
-    public MiningMonitor(int seconds) {
-        monitor = new TaskCompletionMonitor(seconds, TaskCompletionMonitor.LogProgress("commits"));
-    }
+public class MineAllThenExport extends DiffTreeMiningStrategy {
+    private StringBuilder waitForAll;
 
     @Override
     public void start(Repository repo, Path outputPath, DiffTreeLineGraphExportOptions options) {
         super.start(repo, outputPath, options);
-        monitor.start();
+        waitForAll = new StringBuilder();
     }
 
     @Override
     public void onCommit(CommitDiff commit, String lineGraph) {
-        monitor.addFinishedTasks(1);
+        waitForAll.append(lineGraph);
     }
 
     @Override
     public void end() {
-        monitor.reportProgress();
+        final String lineGraph = waitForAll.toString();
+//        Logger.info("Writing file " + outputPath);
+        IO.tryWrite(outputPath, lineGraph);
     }
 }

@@ -47,7 +47,7 @@ public class PCTest {
 
     private void test(final TestCase testCase) throws IOException {
         final Path path = testDir.resolve(testCase.file);
-        final DiffTree t = DiffTree.fromFile(path, false, true);
+        final DiffTree t = DiffTree.fromFile(path, false, true).unwrap().getSuccess();
         t.forAll(node -> {
            if (node.isCode()) {
                final String text = node.getLabel().trim();

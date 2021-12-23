@@ -1,11 +1,11 @@
-package main.mining;
+package mining;
 
 import datasets.DebugOptions;
 import datasets.DefaultRepositories;
 import datasets.Repository;
 import diff.GitDiffer;
 import diff.difftree.filter.DiffTreeFilter;
-import diff.difftree.filter.TaggedPredicate;
+import diff.difftree.filter.ExplainedFilter;
 import diff.difftree.serialize.DiffTreeLineGraphExportOptions;
 import diff.difftree.serialize.GraphFormat;
 import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
@@ -13,10 +13,10 @@ import diff.difftree.transform.CollapseNestedNonEditedMacros;
 import diff.difftree.transform.CutNonEditedSubtrees;
 import diff.difftree.transform.DiffTreeTransformer;
 import main.Main;
-import main.mining.formats.ReleaseMiningDiffNodeFormat;
-import main.mining.monitoring.TaskCompletionMonitor;
-import main.mining.strategies.DiffTreeMiningStrategy;
-import main.mining.strategies.MineAllThenExport;
+import mining.formats.ReleaseMiningDiffNodeFormat;
+import mining.monitoring.TaskCompletionMonitor;
+import mining.strategies.DiffTreeMiningStrategy;
+import mining.strategies.MineAllThenExport;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.pmw.tinylog.Level;
 import org.pmw.tinylog.Logger;
@@ -49,18 +49,16 @@ public class DiffTreeMiner {
 
     public static DiffTreeLineGraphExportOptions ExportOptions() {
         return new DiffTreeLineGraphExportOptions(
-                GraphFormat.DIFFTREE
+                  GraphFormat.DIFFTREE
                 // We have to ensure that all DiffTrees have unique IDs, so use name of changed file and commit hash.
                 , new CommitDiffDiffTreeLabelFormat()
-//            , new DebugMiningDiffNodeFormat()
+//                , new DebugMiningDiffNodeFormat()
                 , new ReleaseMiningDiffNodeFormat()
-                , TaggedPredicate.and(
-                        TaggedPredicate.and(
-                            DiffTreeFilter.notEmpty(),
-                            DiffTreeFilter.moreThanTwoCodeNodes()
-                        ),
+                , new ExplainedFilter<>(
+                        DiffTreeFilter.notEmpty(),
+                        DiffTreeFilter.moreThanTwoCodeNodes(),
                         /// We want to exclude patches that do not edit variability.
-                        /// In particular we noticed that most edits just insert or delete code (or replace it).
+                        /// In particular, we noticed that most edits just insert or delete code (or replace it).
                         /// This is reasonable and was also observed in previous studies: Edits to code are more frequent than edits to variability.
                         /// Yet, such edits cannot reveal compositions of more complex edits to variability.
                         /// We thus filter them.
@@ -118,7 +116,7 @@ public class DiffTreeMiner {
         }
         Logger.info("<<< done after " + clock.printPassedSeconds());
 
-        totalResult.exportTo(outputDir.resolve("totalresult" + DiffTreeMiningResult.EXTENSION));
+        exportMetadata(outputDir, totalResult);
     }
 
     public static void mineAsync(
@@ -157,7 +155,7 @@ public class DiffTreeMiner {
         try (final ScheduledTasksIterator<DiffTreeMiningResult> threads = new ScheduledTasksIterator<>(tasks, nThreads)) {
             while (threads.hasNext()) {
                 final DiffTreeMiningResult threadsResult = threads.next();
-                totalResult.mappend(threadsResult);
+                totalResult.append(threadsResult);
                 commitSpeedMonitor.addFinishedTasks(threadsResult.exportedCommits);
             }
         } catch (Exception e) {
@@ -166,11 +164,17 @@ public class DiffTreeMiner {
         }
         Logger.info("<<< done in " + clock.printPassedSeconds());
 
-        totalResult.exportTo(outputDir.resolve("totalresult" + DiffTreeMiningResult.EXTENSION));
+        exportMetadata(outputDir, totalResult);
+    }
+
+    public static void exportMetadata(final Path outputDir, final DiffTreeMiningResult totalResult) {
+        final String prettyMetadata = totalResult.exportTo(outputDir.resolve("totalresult" + DiffTreeMiningResult.EXTENSION));
+        Logger.info("Metadata:\n" + prettyMetadata);
     }
 
     public static void main(String[] args) {
         Main.setupLogger(Level.INFO);
+//        Main.setupLogger(Level.DEBUG);
 
         final DebugOptions debugOptions = new DebugOptions(DebugOptions.DiffStoragePolicy.REMEMBER_STRIPPED_DIFF);
 
@@ -179,8 +183,8 @@ public class DiffTreeMiner {
         final Path outputDir = Paths.get("results", "mining");
 
         final List<Repository> repos = List.of(
-                DefaultRepositories.stanciulescuMarlinZip(Path.of("."))
-//                DefaultRepositories.createRemoteLinuxRepo(linuxDir.resolve("linux"))
+//                DefaultRepositories.stanciulescuMarlinZip(Path.of("."))
+                DefaultRepositories.createRemoteLinuxRepo(linuxDir.resolve("linux"))
 //                DefaultRepositories.createRemoteVimRepo(inputDir.resolve("vim"))
         );
 

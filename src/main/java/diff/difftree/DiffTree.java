@@ -3,6 +3,7 @@ package diff.difftree;
 import diff.difftree.parse.DiffTreeParser;
 import diff.difftree.traverse.DiffTreeTraversal;
 import diff.difftree.traverse.DiffTreeVisitor;
+import diff.result.DiffResult;
 import util.Assert;
 import util.IO;
 
@@ -17,7 +18,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-import static util.Functional.when;
+import static de.variantsync.functjonal.Functjonal.when;
 
 /**
  * Implementation of the diff tree.
@@ -35,13 +36,11 @@ public class DiffTree {
         this.source = source;
     }
 
-    public static DiffTree fromFile(final Path p, boolean collapseMultipleCodeLines, boolean ignoreEmptyLines) throws IOException {
+    public static DiffResult<DiffTree> fromFile(final Path p, boolean collapseMultipleCodeLines, boolean ignoreEmptyLines) throws IOException {
         final String fullDiff = IO.readAsString(p);
-        final DiffTree t = DiffTreeParser.createDiffTree(fullDiff, collapseMultipleCodeLines, ignoreEmptyLines);
-        if (t != null) {
-            t.setSource(new PatchFile(p));
-        }
-        return t;
+        final DiffResult<DiffTree> tree = DiffTreeParser.createDiffTree(fullDiff, collapseMultipleCodeLines, ignoreEmptyLines);
+        tree.unwrap().ifSuccess(t -> t.setSource(new PatchFile(p)));
+        return tree;
     }
 
     public DiffTree forAll(final Consumer<DiffNode> procedure) {
@@ -88,7 +87,7 @@ public class DiffTree {
 
     public List<DiffNode> computeAllNodesThat(final Predicate<DiffNode> property) {
         final List<DiffNode> nodes = new ArrayList<>();
-        forAll(when(property, nodes::add));
+        forAll(when(property, (Consumer<? super DiffNode>) nodes::add));
         return nodes;
     }
 
