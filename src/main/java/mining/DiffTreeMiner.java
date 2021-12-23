@@ -173,8 +173,8 @@ public class DiffTreeMiner {
     }
 
     public static void main(String[] args) {
-//        Main.setupLogger(Level.INFO);
-        Main.setupLogger(Level.DEBUG);
+        Main.setupLogger(Level.INFO);
+//        Main.setupLogger(Level.DEBUG);
 
         final DebugOptions debugOptions = new DebugOptions(DebugOptions.DiffStoragePolicy.REMEMBER_STRIPPED_DIFF);
 
@@ -183,8 +183,8 @@ public class DiffTreeMiner {
         final Path outputDir = Paths.get("results", "mining");
 
         final List<Repository> repos = List.of(
-                DefaultRepositories.stanciulescuMarlinZip(Path.of("."))
-//                DefaultRepositories.createRemoteLinuxRepo(linuxDir.resolve("linux"))
+//                DefaultRepositories.stanciulescuMarlinZip(Path.of("."))
+                DefaultRepositories.createRemoteLinuxRepo(linuxDir.resolve("linux"))
 //                DefaultRepositories.createRemoteVimRepo(inputDir.resolve("vim"))
         );
 

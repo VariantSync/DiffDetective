@@ -42,6 +42,10 @@ public record MiningTask(
                 continue;
             }
 
+            /*
+             * We export all difftrees that match our filter criteria (e.g., has more than one atomic pattern).
+             * However, we count atomic patterns of all DiffTrees, even those that are not exported to Linegraph.
+             */
             final CommitDiff commitDiff = commitDiffResult.unwrap().first().get();
             final StringBuilder lineGraph = new StringBuilder();
             miningResult.append(LineGraphExport.toLineGraphFormat(commitDiff, lineGraph, exportOptions));
