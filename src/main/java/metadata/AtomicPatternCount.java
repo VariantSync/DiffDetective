@@ -1,13 +1,13 @@
 package metadata;
 
 import de.variantsync.functjonal.Functjonal;
+import de.variantsync.functjonal.category.InplaceSemigroup;
+import de.variantsync.functjonal.map.MergeMap;
 import diff.CommitDiff;
 import pattern.atomic.AtomicPattern;
 import pattern.atomic.AtomicPatternCatalogue;
 import pattern.atomic.proposed.ProposedAtomicPatterns;
 import util.Assert;
-import util.semigroup.InlineSemigroup;
-import util.semigroup.MergeMap;
 
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 
 public class AtomicPatternCount implements Metadata<AtomicPatternCount> {
     public static class Occurrences {
-        public static InlineSemigroup<Occurrences> ISEMIGROUP = (a, b) -> {
+        public static InplaceSemigroup<Occurrences> ISEMIGROUP = (a, b) -> {
             a.totalAmount += b.totalAmount;
             a.uniqueCommits.addAll(b.uniqueCommits);
         };
@@ -38,7 +38,7 @@ public class AtomicPatternCount implements Metadata<AtomicPatternCount> {
         }
     }
 
-    public static InlineSemigroup<AtomicPatternCount> ISEMIGROUP = (a, b) -> MergeMap.putAllValues(a.occurences, b.occurences, Occurrences.ISEMIGROUP);
+    public static InplaceSemigroup<AtomicPatternCount> ISEMIGROUP = (a, b) -> MergeMap.putAllValues(a.occurences, b.occurences, Occurrences.ISEMIGROUP);
 
     private final LinkedHashMap<AtomicPattern, Occurrences> occurences;
 
@@ -81,7 +81,7 @@ public class AtomicPatternCount implements Metadata<AtomicPatternCount> {
      * Mutates and returns first element.
      */
     @Override
-    public InlineSemigroup<AtomicPatternCount> semigroup() {
+    public InplaceSemigroup<AtomicPatternCount> semigroup() {
         return ISEMIGROUP;
     }
 }

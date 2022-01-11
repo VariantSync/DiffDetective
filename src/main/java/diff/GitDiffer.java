@@ -2,8 +2,9 @@ package diff;
 
 import datasets.DebugOptions;
 import datasets.Repository;
+import de.variantsync.functjonal.Product;
 import de.variantsync.functjonal.Result;
-import de.variantsync.functjonal.category.Product;
+import de.variantsync.functjonal.iteration.SideEffectIterator;
 import de.variantsync.functjonal.iteration.Yield;
 import diff.difftree.DiffTree;
 import diff.difftree.parse.DiffTreeParser;
@@ -23,7 +24,6 @@ import org.eclipse.jgit.treewalk.CanonicalTreeParser;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.pmw.tinylog.Logger;
-import util.iterator.SideEffectIteratorDecorator;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -84,7 +84,7 @@ public class GitDiffer {
         // we specifically count the commits here because the amount of unfiltered commits is
         // otherwise lost
         final int[] commitAmount = {0};
-        final Iterator<RevCommit> commitIterator = new SideEffectIteratorDecorator<>(
+        final Iterator<RevCommit> commitIterator = new SideEffectIterator<>(
                 commitsIterable.iterator(),
                 r -> ++commitAmount[0]);
         for (CommitDiffResult commitDiff : loadAllValidIn(commitIterator)) {

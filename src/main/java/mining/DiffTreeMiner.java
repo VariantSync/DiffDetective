@@ -3,6 +3,8 @@ package mining;
 import datasets.DebugOptions;
 import datasets.DefaultRepositories;
 import datasets.Repository;
+import de.variantsync.functjonal.iteration.ClusteredIterator;
+import de.variantsync.functjonal.iteration.MappedIterator;
 import diff.GitDiffer;
 import diff.difftree.filter.DiffTreeFilter;
 import diff.difftree.filter.ExplainedFilter;
@@ -23,8 +25,6 @@ import org.pmw.tinylog.Logger;
 import parallel.ScheduledTasksIterator;
 import util.Clock;
 import util.Diagnostics;
-import util.iterator.ClusteredIterator;
-import util.iterator.MappedIterator;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -183,8 +183,8 @@ public class DiffTreeMiner {
         final Path outputDir = Paths.get("results", "mining");
 
         final List<Repository> repos = List.of(
-//                DefaultRepositories.stanciulescuMarlinZip(Path.of("."))
-                DefaultRepositories.createRemoteLinuxRepo(linuxDir.resolve("linux"))
+                DefaultRepositories.stanciulescuMarlinZip(Path.of("."))
+//                DefaultRepositories.createRemoteLinuxRepo(linuxDir.resolve("linux"))
 //                DefaultRepositories.createRemoteVimRepo(inputDir.resolve("vim"))
         );
 

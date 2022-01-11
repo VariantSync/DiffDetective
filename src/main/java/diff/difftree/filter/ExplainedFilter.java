@@ -1,7 +1,7 @@
 package diff.difftree.filter;
 
-import util.semigroup.InlineSemigroup;
-import util.semigroup.SemigroupCannotAppend;
+import de.variantsync.functjonal.category.InplaceSemigroup;
+import de.variantsync.functjonal.category.SemigroupCannotAppend;
 
 import java.util.Arrays;
 import java.util.List;
@@ -22,7 +22,7 @@ public class ExplainedFilter<T> implements Predicate<T> {
      * Metadata to log how often each filter was applied.
      */
     public static class Explanation {
-        public final static InlineSemigroup<Explanation> ISEMIGROUP = (a, b) -> {
+        public final static InplaceSemigroup<Explanation> ISEMIGROUP = (a, b) -> {
             if (a.name.equals(b.name)) {
                 a.filterCount += b.filterCount;
             } else {

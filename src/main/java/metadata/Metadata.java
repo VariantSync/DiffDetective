@@ -1,7 +1,7 @@
 package metadata;
 
 import de.variantsync.functjonal.Cast;
-import util.semigroup.InlineSemigroup;
+import de.variantsync.functjonal.category.InplaceSemigroup;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -14,7 +14,7 @@ public interface Metadata<T> {
      */
     LinkedHashMap<String, ?> snapshot();
 
-    InlineSemigroup<T> semigroup();
+    InplaceSemigroup<T> semigroup();
 
     default void append(T other) {
         semigroup().appendToFirst(Cast.unchecked(this), other);

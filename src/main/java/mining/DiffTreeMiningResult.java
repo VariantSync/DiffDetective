@@ -1,6 +1,9 @@
 package mining;
 
 import de.variantsync.functjonal.Functjonal;
+import de.variantsync.functjonal.category.InplaceSemigroup;
+import de.variantsync.functjonal.category.Semigroup;
+import de.variantsync.functjonal.map.MergeMap;
 import diff.difftree.serialize.DiffTreeSerializeDebugData;
 import diff.result.DiffError;
 import metadata.AtomicPatternCount;
@@ -8,9 +11,6 @@ import metadata.ExplainedFilterSummary;
 import metadata.Metadata;
 import org.pmw.tinylog.Logger;
 import util.IO;
-import util.semigroup.InlineSemigroup;
-import util.semigroup.MergeMap;
-import util.semigroup.Semigroup;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -21,7 +21,7 @@ import java.util.List;
 public class DiffTreeMiningResult implements Metadata<DiffTreeMiningResult> {
     public final static String EXTENSION = ".metadata.txt";
 
-    public final static InlineSemigroup<DiffTreeMiningResult> ISEMIGROUP = (a, b) -> {
+    public final static InplaceSemigroup<DiffTreeMiningResult> ISEMIGROUP = (a, b) -> {
         a.exportedCommits += b.exportedCommits;
         a.exportedTrees += b.exportedTrees;
         a.debugData.append(b.debugData);
@@ -92,7 +92,7 @@ public class DiffTreeMiningResult implements Metadata<DiffTreeMiningResult> {
     }
 
     @Override
-    public InlineSemigroup<DiffTreeMiningResult> semigroup() {
+    public InplaceSemigroup<DiffTreeMiningResult> semigroup() {
         return ISEMIGROUP;
     }
 }

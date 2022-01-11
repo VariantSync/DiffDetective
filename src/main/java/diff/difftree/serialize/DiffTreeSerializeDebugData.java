@@ -1,12 +1,12 @@
 package diff.difftree.serialize;
 
+import de.variantsync.functjonal.category.InplaceSemigroup;
 import metadata.Metadata;
-import util.semigroup.InlineSemigroup;
 
 import java.util.LinkedHashMap;
 
 public class DiffTreeSerializeDebugData implements Metadata<DiffTreeSerializeDebugData> {
-    public static final InlineSemigroup<DiffTreeSerializeDebugData> ISEMIGROUP = (a, b) -> {
+    public static final InplaceSemigroup<DiffTreeSerializeDebugData> ISEMIGROUP = (a, b) -> {
         a.numExportedNonNodes += b.numExportedNonNodes;
         a.numExportedAddNodes += b.numExportedAddNodes;
         a.numExportedRemNodes += b.numExportedRemNodes;
@@ -26,7 +26,7 @@ public class DiffTreeSerializeDebugData implements Metadata<DiffTreeSerializeDeb
     }
 
     @Override
-    public InlineSemigroup<DiffTreeSerializeDebugData> semigroup() {
+    public InplaceSemigroup<DiffTreeSerializeDebugData> semigroup() {
         return ISEMIGROUP;
     }
 }

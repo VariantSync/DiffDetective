@@ -1,6 +1,6 @@
 package diff.result;
 
-import de.variantsync.functjonal.category.Product;
+import de.variantsync.functjonal.Product;
 import diff.CommitDiff;
 
 import java.util.List;
