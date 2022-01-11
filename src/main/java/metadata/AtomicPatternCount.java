@@ -6,16 +6,20 @@ import pattern.atomic.AtomicPattern;
 import pattern.atomic.AtomicPatternCatalogue;
 import pattern.atomic.proposed.ProposedAtomicPatterns;
 import util.Assert;
+import util.semigroup.InlineSemigroup;
 import util.semigroup.MergeMap;
-import util.semigroup.Semigroup;
 
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 public class AtomicPatternCount implements Metadata<AtomicPatternCount> {
-    public static class Occurrences implements Semigroup<Occurrences> {
+    public static class Occurrences {
+        public static InlineSemigroup<Occurrences> ISEMIGROUP = (a, b) -> {
+            a.totalAmount += b.totalAmount;
+            a.uniqueCommits.addAll(b.uniqueCommits);
+        };
+
         private int totalAmount = 0;
         private final HashSet<String> uniqueCommits = new HashSet<>();
 
@@ -29,16 +33,12 @@ public class AtomicPatternCount implements Metadata<AtomicPatternCount> {
         }
 
         @Override
-        public void append(Occurrences other) {
-            this.totalAmount += other.totalAmount;
-            this.uniqueCommits.addAll(other.uniqueCommits);
-        }
-
-        @Override
         public String toString() {
             return "{ total = " + totalAmount + "; commits = " + uniqueCommits.size() + " }";
         }
     }
+
+    public static InlineSemigroup<AtomicPatternCount> ISEMIGROUP = (a, b) -> MergeMap.putAllValues(a.occurences, b.occurences, Occurrences.ISEMIGROUP);
 
     private final LinkedHashMap<AtomicPattern, Occurrences> occurences;
 
@@ -68,13 +68,6 @@ public class AtomicPatternCount implements Metadata<AtomicPatternCount> {
     }
 
     @Override
-    public void append(AtomicPatternCount other) {
-        for (final Map.Entry<AtomicPattern, Occurrences> otherEntry : other.occurences.entrySet()) {
-            MergeMap.putValue(this.occurences, otherEntry.getKey(), otherEntry.getValue());
-        }
-    }
-
-    @Override
     public LinkedHashMap<String, String> snapshot() {
         return Functjonal.bimap(
                 occurences,
@@ -82,5 +75,13 @@ public class AtomicPatternCount implements Metadata<AtomicPatternCount> {
                 Occurrences::toString,
                 LinkedHashMap::new
         );
+    }
+
+    /**
+     * Mutates and returns first element.
+     */
+    @Override
+    public InlineSemigroup<AtomicPatternCount> semigroup() {
+        return ISEMIGROUP;
     }
 }

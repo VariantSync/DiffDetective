@@ -1,6 +1,7 @@
 package diff.difftree.filter;
 
-import util.semigroup.Semigroup;
+import util.semigroup.InlineSemigroup;
+import util.semigroup.SemigroupCannotAppend;
 
 import java.util.Arrays;
 import java.util.List;
@@ -20,7 +21,15 @@ public class ExplainedFilter<T> implements Predicate<T> {
     /**
      * Metadata to log how often each filter was applied.
      */
-    public static class Explanation implements Semigroup<Explanation> {
+    public static class Explanation {
+        public final static InlineSemigroup<Explanation> ISEMIGROUP = (a, b) -> {
+            if (a.name.equals(b.name)) {
+                a.filterCount += b.filterCount;
+            } else {
+                throw new SemigroupCannotAppend("Cannot append explanation with different name. Expected \"" + a.name + "\" but was \"" + b.name + "\"!");
+            }
+        };
+
         private int filterCount;
         private final String name;
 
@@ -51,15 +60,6 @@ public class ExplainedFilter<T> implements Predicate<T> {
 
         public String getName() {
             return name;
-        }
-
-        @Override
-        public void append(Explanation other) {
-            if (other.name.equals(this.name)) {
-                this.filterCount += other.filterCount;
-            } else {
-                throw new UnsupportedOperationException("Cannot append explanation with different name. Expected \"" + this.name + "\" but was \"" + other.name + "\"!");
-            }
         }
     }
 

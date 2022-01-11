@@ -2,12 +2,16 @@ package metadata;
 
 import de.variantsync.functjonal.Functjonal;
 import diff.difftree.filter.ExplainedFilter;
+import util.semigroup.InlineSemigroup;
 import util.semigroup.MergeMap;
 
 import java.util.LinkedHashMap;
 import java.util.stream.Collectors;
 
 public class ExplainedFilterSummary implements Metadata<ExplainedFilterSummary> {
+    public static final InlineSemigroup<ExplainedFilterSummary> ISEMIGROUP =
+            (a, b) -> MergeMap.putAllValues(a.explanations, b.explanations, ExplainedFilter.Explanation.ISEMIGROUP);
+
     private final LinkedHashMap<String, ExplainedFilter.Explanation> explanations;
 
     public ExplainedFilterSummary() {
@@ -26,13 +30,6 @@ public class ExplainedFilterSummary implements Metadata<ExplainedFilterSummary> 
     }
 
     @Override
-    public void append(final ExplainedFilterSummary other) {
-        for (final ExplainedFilter.Explanation e : other.explanations.values()) {
-            MergeMap.putValue(this.explanations, e.getName(), e);
-        }
-    }
-
-    @Override
     public LinkedHashMap<String, Integer> snapshot() {
         return Functjonal.bimap(
                 explanations,
@@ -40,5 +37,10 @@ public class ExplainedFilterSummary implements Metadata<ExplainedFilterSummary> 
                 ExplainedFilter.Explanation::getFilterCount,
                 LinkedHashMap::new
         );
+    }
+
+    @Override
+    public InlineSemigroup<ExplainedFilterSummary> semigroup() {
+        return ISEMIGROUP;
     }
 }
