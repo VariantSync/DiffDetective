@@ -1,6 +1,8 @@
 package diff.difftree.render;
 
+import diff.GitPatch;
 import diff.PatchDiff;
+import diff.difftree.DiffTree;
 import diff.difftree.serialize.GraphFormat;
 import diff.difftree.serialize.nodeformat.DebugDiffNodeFormat;
 import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
@@ -39,7 +41,11 @@ public class PatchDiffRenderer {
     }
 
     public void render(final PatchDiff patch, final Path outputDirectory) {
-        renderer.render(patch, outputDirectory, options);
+        render(patch.getDiffTree(), patch, outputDirectory);
+    }
+
+    public void render(final DiffTree diffTree, final GitPatch patch, final Path outputDirectory) {
+        renderer.render(diffTree, patch, outputDirectory, options);
         try {
             IO.write(outputDirectory.resolve(patch.getFileName() + ".diff"), patch.getDiff());
         } catch (IOException e) {

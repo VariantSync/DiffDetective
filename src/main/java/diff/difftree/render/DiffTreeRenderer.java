@@ -1,6 +1,7 @@
 package diff.difftree.render;
 
 import de.ovgu.featureide.fm.core.analysis.cnf.generator.configuration.util.Pair;
+import diff.GitPatch;
 import diff.PatchDiff;
 import diff.difftree.DiffTree;
 import diff.difftree.LineGraphConstants;
@@ -94,16 +95,20 @@ public class DiffTreeRenderer {
                 workDir);
     }
 
-    public void render(PatchDiff patchDiff, final Path directory) {
-        render(patchDiff, directory, RenderOptions.DEFAULT);
+    public boolean render(PatchDiff patchDiff, final Path directory) {
+        return render(patchDiff, directory, RenderOptions.DEFAULT);
     }
 
-    public boolean render(PatchDiff patchDiff, final Path directory, RenderOptions options) {
+    public boolean render(PatchDiff patchDiff, final Path directory, final RenderOptions options) {
+        return render(patchDiff.getDiffTree(), patchDiff, directory, options);
+    }
+
+    public boolean render(final DiffTree tree, final GitPatch patch, final Path directory, final RenderOptions options) {
         final String treeAndFileName =
-                patchDiff.getFileName()
+                patch.getFileName()
                         + LineGraphConstants.TREE_NAME_SEPARATOR
-                        + patchDiff.getCommitDiff().getCommitHash();
-        return render(patchDiff.getDiffTree(), treeAndFileName, directory, options);
+                        + patch.getCommitHash();
+        return render(tree, treeAndFileName, directory, options);
     }
 
     public boolean render(final DiffTree tree, final String treeAndFileName, final Path directory) {

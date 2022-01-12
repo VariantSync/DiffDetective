@@ -1,6 +1,7 @@
 package mining;
 
 import diff.Diff;
+import diff.GitPatch;
 import diff.difftree.DiffTree;
 import diff.difftree.DiffTreeSource;
 import diff.difftree.filter.DiffTreeFilter;
@@ -33,11 +34,14 @@ public class RunningExampleFinder {
                 diffTree -> {
                     final String localDiff = getDiff(diffTree);
                     final DiffResult<DiffTree> parseResult = DiffTree.fromDiff(localDiff, true, true);
-                    // Not every local diff can be parsed to a difftree because diffs are unaware of the underyling language (i.e., CPP).
+                    // Not every local diff can be parsed to a difftree because diffs are unaware of the underlying language (i.e., CPP).
                     // We want only running examples whose diffs describe entire diff trees for easier understanding.
                     return parseResult.unwrap().match(
                             localTree -> {
                                 if (treeConditions.test(localTree)) {
+                                    Assert.assertTrue(diffTree.getSource() instanceof GitPatch);
+                                    final GitPatch diffTreeSource = (GitPatch) diffTree.getSource();
+                                    localTree.setSource(diffTreeSource.shallowClone());
                                     return Optional.of(localTree);
                                 }
                                 return Optional.empty();

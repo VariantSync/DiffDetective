@@ -1,6 +1,6 @@
 package diff.difftree.transform;
 
-import diff.PatchDiff;
+import diff.GitPatch;
 import diff.difftree.DiffTree;
 import diff.difftree.render.DiffTreeRenderer;
 import diff.difftree.render.PatchDiffRenderer;
@@ -47,16 +47,16 @@ public class ExampleFinder implements DiffTreeTransformer {
     }
 
     private void exportExample(final DiffTree example) {
-        Assert.assertTrue(example.getSource() instanceof PatchDiff);
-        final PatchDiff patch = (PatchDiff) example.getSource();
-        final Path treeDir = outputDir.resolve(Path.of(patch.getCommitDiff().getCommitHash()));
+        Assert.assertTrue(example.getSource() instanceof GitPatch);
+        final GitPatch patch = (GitPatch) example.getSource();
+        final Path treeDir = outputDir.resolve(Path.of(patch.getCommitHash()));
 
         Logger.info("Exporting example candidate: " + patch);
-        exampleExport.render(patch, treeDir);
+        exampleExport.render(example, patch, treeDir);
 
         String metadata = "";
-        metadata += "Child commit: " + patch.getCommitDiff().getCommitHash() + "\n";
-        metadata += "Parent commit: " + patch.getCommitDiff().getParentCommitHash() + "\n";
+        metadata += "Child commit: " + patch.getCommitHash() + "\n";
+        metadata += "Parent commit: " + patch.getParentCommitHash() + "\n";
         metadata += "File: " + patch.getFileName() + "\n";
         IO.tryWrite(treeDir.resolve(patch.getFileName() + ".metadata.txt"), metadata);
     }
