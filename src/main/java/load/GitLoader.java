@@ -45,7 +45,7 @@ public class GitLoader {
      */
     public static Git fromRemote(Path localPath, URI remoteURI) {
         if (!Files.exists(localPath)) {
-            localPath.toFile().mkdirs();
+            Assert.assertTrue(localPath.toFile().mkdirs(), "Could not create directory for repository at " + localPath + "!");
         }
 
         Assert.assertTrue(Files.isDirectory(localPath), "Given path " + localPath + " is not a directory!");
