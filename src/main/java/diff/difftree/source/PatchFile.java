@@ -1,4 +1,6 @@
-package diff.difftree;
+package diff.difftree.source;
+
+import diff.difftree.DiffTreeSource;
 
 import java.nio.file.Path;
 

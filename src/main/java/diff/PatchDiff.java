@@ -12,7 +12,7 @@ import org.eclipse.jgit.diff.DiffEntry;
  *
  * @author Sören Viegener
  */
-public class PatchDiff implements DiffTreeSource {
+public class PatchDiff implements DiffTreeSource, Diff {
     private final String fullDiff;
     private final DiffTree diffTree;
     private final CommitDiff commitDiff;
@@ -43,10 +43,6 @@ public class PatchDiff implements DiffTreeSource {
         return path;
     }
 
-    public String getFullDiff() {
-        return fullDiff;
-    }
-
     public String getFileExtension() {
         return FilenameUtils.getExtension(getFileName()).toLowerCase();
     }
@@ -62,5 +58,10 @@ public class PatchDiff implements DiffTreeSource {
     @Override
     public String toString() {
         return path + "@" + commitDiff;
+    }
+
+    @Override
+    public String getDiff() {
+        return fullDiff;
     }
 }

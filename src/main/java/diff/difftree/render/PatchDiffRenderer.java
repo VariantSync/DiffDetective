@@ -41,7 +41,7 @@ public class PatchDiffRenderer {
     public void render(final PatchDiff patch, final Path outputDirectory) {
         renderer.render(patch, outputDirectory, options);
         try {
-            IO.write(outputDirectory.resolve(patch.getFileName() + ".diff"), patch.getFullDiff());
+            IO.write(outputDirectory.resolve(patch.getFileName() + ".diff"), patch.getDiff());
         } catch (IOException e) {
             Logger.error(e);
         }

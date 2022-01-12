@@ -1,6 +1,8 @@
 package diff.difftree;
 
 import diff.difftree.parse.DiffTreeParser;
+import diff.difftree.source.PatchFile;
+import diff.difftree.source.PatchString;
 import diff.difftree.traverse.DiffTreeTraversal;
 import diff.difftree.traverse.DiffTreeVisitor;
 import diff.result.DiffResult;
@@ -40,6 +42,12 @@ public class DiffTree {
         final String fullDiff = IO.readAsString(p);
         final DiffResult<DiffTree> tree = DiffTreeParser.createDiffTree(fullDiff, collapseMultipleCodeLines, ignoreEmptyLines);
         tree.unwrap().ifSuccess(t -> t.setSource(new PatchFile(p)));
+        return tree;
+    }
+
+    public static DiffResult<DiffTree> fromDiff(final String diff, boolean collapseMultipleCodeLines, boolean ignoreEmptyLines) {
+        final DiffResult<DiffTree> tree = DiffTreeParser.createDiffTree(diff, collapseMultipleCodeLines, ignoreEmptyLines);
+        tree.unwrap().ifSuccess(t -> t.setSource(new PatchString(diff)));
         return tree;
     }
 
