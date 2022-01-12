@@ -43,6 +43,7 @@ public class RunningExampleFinder {
 
                 // We would like to have a complex formula in the tree (complex := not just a positive literal).
                 if (!diffTree.anyMatch(n -> {
+                    // and the formula should be visible before the edit
                     if (n.isMacro() && !n.isAdd()) {
                         return isComplexFormula(n.getDirectFeatureMapping());
                     }
