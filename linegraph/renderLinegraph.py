@@ -191,7 +191,7 @@ def parseNodeDefault(id, name):
         # remove parenthesis ""
         code = code[1:len(code)-1]
         # print(code)
-        if ismacro:
+        if isMacro:
             code = '#' + code
     # prepend line number
     code = str(lineNoOfNode(id)) + ("\n" + code if len(code) > 0 else "")
