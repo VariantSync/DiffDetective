@@ -204,6 +204,19 @@ public class DiffNode {
         return afterParent.getAfterDepth() + 1;
     }
 
+    public boolean beforePathEqualsAfterPath() {
+        if (beforeParent == afterParent) {
+            if (beforeParent == null) {
+                // root
+                return true;
+            }
+
+            return beforeParent.beforePathEqualsAfterPath();
+        }
+
+        return false;
+    }
+
     /**
      * @return The number of unique child nodes.
      */
