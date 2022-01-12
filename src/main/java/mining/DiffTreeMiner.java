@@ -15,6 +15,8 @@ import diff.difftree.transform.CollapseNestedNonEditedMacros;
 import diff.difftree.transform.CutNonEditedSubtrees;
 import diff.difftree.transform.DiffTreeTransformer;
 import main.Main;
+import metadata.ExplainedFilterSummary;
+import metadata.Metadata;
 import mining.formats.ReleaseMiningDiffNodeFormat;
 import mining.monitoring.TaskCompletionMonitor;
 import mining.strategies.DiffTreeMiningStrategy;
@@ -42,7 +44,7 @@ public class DiffTreeMiner {
         return List.of(
 //                new NaiveMovedCodeDetection(), // do this first as it might introduce non-edited subtrees
                 new CutNonEditedSubtrees(),
-//                RunningExampleFinder.Default,
+                RunningExampleFinder.The_Diff_Itself_Is_A_Valid_DiffTree_And(RunningExampleFinder.DefaultExampleConditions),
                 new CollapseNestedNonEditedMacros()
         );
     }
@@ -167,7 +169,7 @@ public class DiffTreeMiner {
         exportMetadata(outputDir, totalResult);
     }
 
-    public static void exportMetadata(final Path outputDir, final DiffTreeMiningResult totalResult) {
+    public static <T> void exportMetadata(final Path outputDir, final Metadata<T> totalResult) {
         final String prettyMetadata = totalResult.exportTo(outputDir.resolve("totalresult" + DiffTreeMiningResult.EXTENSION));
         Logger.info("Metadata:\n" + prettyMetadata);
     }
@@ -201,6 +203,9 @@ public class DiffTreeMiner {
             final Path repoOutputDir = outputDir.resolve(repo.getRepositoryName());
             mineAsync(repo, repoOutputDir, DiffTreeMiner::ExportOptions, DiffTreeMiner::MiningStrategy);
 //            mine(repo, repoOutputDir, ExportOptions(), MiningStrategy());
+
+            new ExplainedFilterSummary(RunningExampleFinder.DefaultExampleConditions).exportTo(repoOutputDir.resolve("runningExampleFilterReasons.txt"));
+            RunningExampleFinder.DefaultExampleConditions.resetExplanations();
 
             Logger.info(" === End Processing " + repo.getRepositoryName() + " after " + clock.printPassedSeconds() + " ===");
         }

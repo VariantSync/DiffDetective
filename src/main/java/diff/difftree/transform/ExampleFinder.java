@@ -13,7 +13,8 @@ import util.IO;
 
 import java.nio.file.Path;
 import java.util.List;
-import java.util.function.Predicate;
+import java.util.Optional;
+import java.util.function.Function;
 
 public class ExampleFinder implements DiffTreeTransformer {
     public static final DiffTreeRenderer.RenderOptions ExportOptions = new DiffTreeRenderer.RenderOptions(
@@ -30,11 +31,11 @@ public class ExampleFinder implements DiffTreeTransformer {
             List.of()
     );
 
-    private final Predicate<DiffTree> isGoodExample;
+    private final Function<DiffTree, Optional<DiffTree>> isGoodExample;
     private final PatchDiffRenderer exampleExport;
     private final Path outputDir;
 
-    public ExampleFinder(final Predicate<DiffTree> isGoodExample, final Path outDir, DiffTreeRenderer renderer) {
+    public ExampleFinder(final Function<DiffTree, Optional<DiffTree>> isGoodExample, final Path outDir, DiffTreeRenderer renderer) {
         this.isGoodExample = isGoodExample;
         this.exampleExport = new PatchDiffRenderer(renderer, ExportOptions);
         this.outputDir = outDir;
@@ -42,19 +43,21 @@ public class ExampleFinder implements DiffTreeTransformer {
 
     @Override
     public void transform(DiffTree diffTree) {
-        if (isGoodExample.test(diffTree)) {
-            Assert.assertTrue(diffTree.getSource() instanceof PatchDiff);
-            final PatchDiff patch = (PatchDiff) diffTree.getSource();
-            final Path treeDir = outputDir.resolve(Path.of(patch.getCommitDiff().getCommitHash()));
+        isGoodExample.apply(diffTree).ifPresent(this::exportExample);
+    }
 
-            Logger.info("Exporting example candidate: " + patch);
-            exampleExport.render(patch, treeDir);
+    private void exportExample(final DiffTree example) {
+        Assert.assertTrue(example.getSource() instanceof PatchDiff);
+        final PatchDiff patch = (PatchDiff) example.getSource();
+        final Path treeDir = outputDir.resolve(Path.of(patch.getCommitDiff().getCommitHash()));
 
-            String metadata = "";
-            metadata += "Child commit: " + patch.getCommitDiff().getCommitHash() + "\n";
-            metadata += "Parent commit: " + patch.getCommitDiff().getParentCommitHash() + "\n";
-            metadata += "File: " + patch.getFileName() + "\n";
-            IO.tryWrite(treeDir.resolve(patch.getFileName() + ".metadata.txt"), metadata);
-        }
+        Logger.info("Exporting example candidate: " + patch);
+        exampleExport.render(patch, treeDir);
+
+        String metadata = "";
+        metadata += "Child commit: " + patch.getCommitDiff().getCommitHash() + "\n";
+        metadata += "Parent commit: " + patch.getCommitDiff().getParentCommitHash() + "\n";
+        metadata += "File: " + patch.getFileName() + "\n";
+        IO.tryWrite(treeDir.resolve(patch.getFileName() + ".metadata.txt"), metadata);
     }
 }
