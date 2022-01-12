@@ -57,6 +57,6 @@ public class CommitDiff {
 
     @Override
     public String toString() {
-        return "Diff from " + parentCommitHash + " (parent) to " + commitHash + " (child)";
+        return "commit from " + parentCommitHash + " (parent) to " + commitHash + " (child)";
     }
 }

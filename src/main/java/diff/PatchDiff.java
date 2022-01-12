@@ -73,7 +73,7 @@ public class PatchDiff implements GitPatch {
 
     @Override
     public String toString() {
-        return path + "@" + commitDiff;
+        return path + "@ " + commitDiff;
     }
 
     public GitPatch shallowClone() {

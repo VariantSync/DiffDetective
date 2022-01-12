@@ -10,6 +10,11 @@ public interface GitPatch extends DiffTreeSource, Diff {
         public GitPatch shallowClone() {
             return new SimpleGitPatch(getDiff, getChangeType, getFileName, getCommitHash, getParentCommitHash);
         }
+
+        @Override
+        public String toString() {
+            return getFileName + "@ commit from " + getParentCommitHash + " (parent) to " + getCommitHash + " (child)";
+        }
     }
 
     DiffEntry.ChangeType getChangeType();
