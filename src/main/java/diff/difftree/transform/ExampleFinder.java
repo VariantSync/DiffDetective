@@ -36,7 +36,7 @@ public class ExampleFinder implements DiffTreeTransformer {
 
     public ExampleFinder(final Predicate<DiffTree> isGoodExample, final Path outDir, DiffTreeRenderer renderer) {
         this.isGoodExample = isGoodExample;
-        this.exampleExport = new PatchDiffRenderer(outDir, renderer, ExportOptions);
+        this.exampleExport = new PatchDiffRenderer(renderer, ExportOptions);
         this.outputDir = outDir;
     }
 
@@ -45,14 +45,16 @@ public class ExampleFinder implements DiffTreeTransformer {
         if (isGoodExample.test(diffTree)) {
             Assert.assertTrue(diffTree.getSource() instanceof PatchDiff);
             final PatchDiff patch = (PatchDiff) diffTree.getSource();
+            final Path treeDir = outputDir.resolve(Path.of(patch.getCommitDiff().getCommitHash()));
+
             Logger.info("Exporting example candidate: " + patch);
-            exampleExport.render(patch);
+            exampleExport.render(patch, treeDir);
 
             String metadata = "";
             metadata += "Child commit: " + patch.getCommitDiff().getCommitHash() + "\n";
             metadata += "Parent commit: " + patch.getCommitDiff().getParentCommitHash() + "\n";
             metadata += "File: " + patch.getFileName() + "\n";
-            IO.tryWrite(outputDir.resolve(patch.getFileName() + ".metadata.txt"), metadata);
+            IO.tryWrite(treeDir.resolve(patch.getFileName() + ".metadata.txt"), metadata);
         }
     }
 }

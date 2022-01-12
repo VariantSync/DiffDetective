@@ -26,24 +26,22 @@ public class PatchDiffRenderer {
             List.of()
     );
 
-    private final Path outDirectory;
     private final DiffTreeRenderer renderer;
     private final DiffTreeRenderer.RenderOptions options;
 
-    public PatchDiffRenderer(final Path outDirectory, final DiffTreeRenderer renderer, DiffTreeRenderer.RenderOptions options) {
-        this.outDirectory = outDirectory;
+    public PatchDiffRenderer(final DiffTreeRenderer renderer, DiffTreeRenderer.RenderOptions options) {
         this.renderer = renderer;
         this.options = options;
     }
 
     public static PatchDiffRenderer ErrorRendering(final DiffTreeRenderer renderer) {
-        return new PatchDiffRenderer(Path.of("error"), renderer, ErrorDiffTreeRenderOptions);
+        return new PatchDiffRenderer(renderer, ErrorDiffTreeRenderOptions);
     }
 
-    public void render(final PatchDiff patch) {
-        renderer.render(patch, outDirectory, options);
+    public void render(final PatchDiff patch, final Path outputDirectory) {
+        renderer.render(patch, outputDirectory, options);
         try {
-            IO.write(outDirectory.resolve(patch.getFileName() + ".diff"), patch.getFullDiff());
+            IO.write(outputDirectory.resolve(patch.getFileName() + ".diff"), patch.getFullDiff());
         } catch (IOException e) {
             Logger.error(e);
         }
