@@ -157,12 +157,14 @@ public class Repository {
 		return repositoryName;
 	}
 
-	public void setDebugOptions(DebugOptions debugOptions) {
+	public Repository setDebugOptions(DebugOptions debugOptions) {
 		this.debugOptions = debugOptions;
+        return this;
 	}
 
-	public void setDiffFilter(final DiffFilter filter) {
+	public Repository setDiffFilter(final DiffFilter filter) {
 		this.diffFilter = filter;
+        return this;
 	}
 
 	public DiffFilter getDiffFilter() {

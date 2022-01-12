@@ -28,6 +28,11 @@ public final class DefaultRepositories {
             .allowedChangeTypes(DiffEntry.ChangeType.MODIFY)
             .allowedFileExtensions("c", "h")
             .build();
+    public static final DiffFilter VIM_FILTER = new DiffFilter.Builder()
+            .allowMerge(false)
+            .allowedChangeTypes(DiffEntry.ChangeType.MODIFY)
+            .allowedFileExtensions("c", "h", "cpp")
+            .build();
 
     /**
      * Instance for the default predefined Marlin repository.
@@ -48,11 +53,10 @@ public final class DefaultRepositories {
      * @return Linux repository
      */
     public static Repository createRemoteLinuxRepo(Path localPath) {
-        final Repository linux = Repository
+        return Repository
                 .tryFromRemote(localPath, "https://github.com/torvalds/linux", "Linux")
-                .orElseThrow();
-        linux.setDiffFilter(LINUX_FILTER);
-        return linux;
+                .orElseThrow()
+                .setDiffFilter(LINUX_FILTER);
     }
 
     /**
@@ -63,7 +67,8 @@ public final class DefaultRepositories {
     public static Repository createRemoteBusyboxRepo(Path localPath) {
         return Repository
                 .tryFromRemote(localPath, "https://git.busybox.net/busybox", "Busybox")
-                .orElseThrow();
+                .orElseThrow()
+                .setDiffFilter(VIM_FILTER);
     }
 
     /**
