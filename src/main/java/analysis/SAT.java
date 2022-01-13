@@ -15,7 +15,7 @@ public class SAT {
         // TODO: Remove this block once issue #1333 of FeatureIDE is resolved because FixTrueFalse::On is expensive.
         //       https://github.com/FeatureIDE/FeatureIDE/issues/1333
         {
-            formula = FixTrueFalse.On(formula);
+            formula = FixTrueFalse.EliminateTrueAndFalse(formula);
             if (FixTrueFalse.isTrue(formula)) {
                 return true;
             } else if (FixTrueFalse.isFalse(formula)) {
