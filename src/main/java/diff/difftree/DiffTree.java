@@ -151,21 +151,37 @@ public class DiffTree {
         return root == null || root.getCardinality() == 0;
     }
 
-    private static class HasPathToRootCached {
+    private static class AllPathsEndAtRoot {
         private final Map<Integer, Boolean> cache = new HashMap<>();
+        private final DiffNode root;
+
+        private AllPathsEndAtRoot(final DiffNode root) {
+            this.root = root;
+        }
 
         public boolean hasPathToRoot(final DiffNode d) {
-            if (d == null || d.isRoot()) {
+            if (d == root) {
                 return true;
             }
 
             final int i = d.getID();
             final Boolean res = cache.getOrDefault(i, null);
-            final boolean result;
+            boolean result = true;
             if (res != null) {
                 result = res;
             } else {
-                result = hasPathToRoot(d.getBeforeParent()) && hasPathToRoot(d.getAfterParent());
+                final DiffNode b = d.getBeforeParent();
+                final DiffNode a = d.getAfterParent();
+                if (a == null && b == null) {
+                    // We found a second root node which is invalid.
+                    return false;
+                }
+                if (b != null) {
+                    result &= hasPathToRoot(b);
+                }
+                if (a != null) {
+                    result &= hasPathToRoot(a);
+                }
                 cache.put(i, result);
             }
 
@@ -174,7 +190,7 @@ public class DiffTree {
     }
 
     public void assertConsistency() {
-        final HasPathToRootCached c = new HasPathToRootCached();
+        final AllPathsEndAtRoot c = new AllPathsEndAtRoot(root);
         forAll(n -> {
             n.assertConsistency();
             Assert.assertTrue(c.hasPathToRoot(n), () -> "Not all ancestors of " + n + " are descendants of the root!");
