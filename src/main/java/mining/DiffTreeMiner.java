@@ -196,8 +196,8 @@ public class DiffTreeMiner {
         final Path outputDir = Paths.get("results", "mining");
 
         final List<Repository> repos = List.of(
-//                DefaultRepositories.stanciulescuMarlinZip(Path.of(".")),
-//                DefaultRepositories.createRemoteVimRepo(inputDir.resolve("vim"))
+                DefaultRepositories.stanciulescuMarlinZip(Path.of(".")),
+                DefaultRepositories.createRemoteVimRepo(inputDir.resolve("vim")),
                 DefaultRepositories.createRemoteLinuxRepo(linuxDir.resolve("linux"))
         );
 

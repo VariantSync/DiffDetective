@@ -1,0 +1,18 @@
+struct S {
+  int a;
+#if X
+  int b;
+#endif
+
+  void foo() {
+    doSomethingWith(a);
+#if X
+    doSomethingWith(b);
+  #if Y
+    doY();
+  #endif
+#else
+    doSomethingElse();
+#endif
+  }
+}

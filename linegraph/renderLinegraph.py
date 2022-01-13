@@ -57,7 +57,7 @@ DPI = 300
 FONT_SIZE = 3
 
 # other parameters
-WITH_TITLE = False
+WITH_TITLE = True
 INDEX_OUTPUT_FILENAME = False
 
 RELEASE_PATTERNS_CODE_PREFIX = "c"
