@@ -106,6 +106,8 @@ public class DiffNode {
         if (diffNode.isCode() || diffNode.isEndif() || diffNode.isElse()) {
             diffNode.featureMapping = null;
         } else {
+            // TODO: check here whether the expression indeed is a variability expression (i.e., contains features).
+            //       If not, the line should be interpreted as code.
             diffNode.featureMapping = parseFeatureMapping(line);
         }
 
@@ -693,7 +695,7 @@ public class DiffNode {
         Node node = nodeReader.stringToNode(formulaStr);
         // if parsing succeeded
         if (node != null) {
-            node = FixTrueFalse.On(node);
+            node = FixTrueFalse.EliminateTrueAndFalseInplace(node);
         } else {
 //            Logger.warn("Could not parse expression \"{}\" to feature mapping. Using it as literal.", fmString);
             node = new Literal(line);
