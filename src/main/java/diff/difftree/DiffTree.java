@@ -151,30 +151,61 @@ public class DiffTree {
         return root == null || root.getCardinality() == 0;
     }
 
-    private static class HasPathToRootCached {
-        private final Map<Integer, Boolean> cache = new HashMap<>();
+    private static class AllPathsEndAtRoot {
+        private enum VisitStatus {
+            STRANGER,
+            VISITED,
+            ALL_PATHS_END_AT_ROOT,
+            NOT_ALL_PATHS_END_AT_ROOT
+        }
+        private final Map<Integer, VisitStatus> cache = new HashMap<>();
+        private final DiffNode root;
+
+        private AllPathsEndAtRoot(final DiffNode root) {
+            this.root = root;
+        }
 
         public boolean hasPathToRoot(final DiffNode d) {
-            if (d == null || d.isRoot()) {
+            if (d == root) {
                 return true;
             }
 
-            final int i = d.getID();
-            final Boolean res = cache.getOrDefault(i, null);
-            final boolean result;
-            if (res != null) {
-                result = res;
-            } else {
-                result = hasPathToRoot(d.getBeforeParent()) && hasPathToRoot(d.getAfterParent());
-                cache.put(i, result);
-            }
+            final int id = d.getID();
+            return switch (cache.getOrDefault(id, VisitStatus.STRANGER)) {
+                case STRANGER -> {
+                    // The stranger is now known.
+                    cache.putIfAbsent(id, VisitStatus.VISITED);
 
-            return result;
+                    final DiffNode b = d.getBeforeParent();
+                    final DiffNode a = d.getAfterParent();
+                    if (a == null && b == null) {
+                        // We found a second root node which is invalid.
+                        yield false;
+                    }
+
+                    boolean result = true;
+                    if (b != null) {
+                        result &= hasPathToRoot(b);
+                    }
+                    if (a != null) {
+                        result &= hasPathToRoot(a);
+                    }
+
+                    // Now we also know the result for the stranger.
+                    cache.put(id, result ? VisitStatus.ALL_PATHS_END_AT_ROOT : VisitStatus.NOT_ALL_PATHS_END_AT_ROOT);
+                    yield result;
+                }
+                // We detected a cycle because we visited a node but did not determine its value yet!
+                // Thus, we are stuck in a recursion.
+                case VISITED -> false;
+                case ALL_PATHS_END_AT_ROOT -> true;
+                case NOT_ALL_PATHS_END_AT_ROOT -> false;
+            };
         }
     }
 
     public void assertConsistency() {
-        final HasPathToRootCached c = new HasPathToRootCached();
+        final AllPathsEndAtRoot c = new AllPathsEndAtRoot(root);
         forAll(n -> {
             n.assertConsistency();
             Assert.assertTrue(c.hasPathToRoot(n), () -> "Not all ancestors of " + n + " are descendants of the root!");
