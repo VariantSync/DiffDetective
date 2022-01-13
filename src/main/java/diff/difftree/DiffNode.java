@@ -651,6 +651,14 @@ public class DiffNode {
         for (final DiffNode c : allChildren) {
             Assert.assertTrue(beforeChildren.contains(c) || afterChildren.contains(c), () -> "Child " + c + " of " + this + " is neither a before not an after child!");
         }
+
+        // a node with exactly one parent was edited
+        if (beforeParent == null && afterParent != null) {
+            Assert.assertTrue(isAdd());
+        }
+        if (beforeParent != null && afterParent == null) {
+            Assert.assertTrue(isRem());
+        }
     }
 
     @Override
