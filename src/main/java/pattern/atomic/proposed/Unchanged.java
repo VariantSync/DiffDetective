@@ -9,16 +9,16 @@ import evaluation.FeatureContext;
 import org.prop4j.Node;
 import pattern.atomic.AtomicPattern;
 
-final class Refactoring extends AtomicPattern {
-    Refactoring() {
-        super("Refactoring", DiffType.NON);
+public class Unchanged extends AtomicPattern {
+    Unchanged() {
+        super("Unchanged", DiffType.NON);
     }
 
     @Override
     protected boolean matchesCodeNode(DiffNode codeNode) {
         final Node pcb = codeNode.getBeforeFeatureMapping();
         final Node pca = codeNode.getAfterFeatureMapping();
-        return SAT.equivalent(pcb, pca) && !codeNode.beforePathEqualsAfterPath();
+        return SAT.equivalent(pcb, pca) && codeNode.beforePathEqualsAfterPath();
     }
 
     @Override

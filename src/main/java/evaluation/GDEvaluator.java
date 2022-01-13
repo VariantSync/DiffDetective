@@ -496,7 +496,7 @@ public class GDEvaluator {
         try(BufferedWriter writer = new BufferedWriter(new FileWriter(fileName))){
             writer.write(patchDiff.getCommitDiff().getCommitHash() + ", " + patchDiff.getFileName());
             writer.newLine();
-            writer.write(patchDiff.getFullDiff());
+            writer.write(patchDiff.getDiff());
             writer.flush();
         }catch(IOException e){
             Logger.warn("Could not export patch {} to {}", patchDiff, fileName);
@@ -608,7 +608,7 @@ public class GDEvaluator {
 
             System.out.printf("patch (%s, %s)%n",
                     patchDiff.getCommitDiff().getAbbreviatedCommitHash(), patchDiff.getFileName());
-            System.out.println(patchDiff.getFullDiff());
+            System.out.println(patchDiff.getDiff());
 
             System.out.println("######################################");
             System.out.println("######        END OF PATCH      ######");

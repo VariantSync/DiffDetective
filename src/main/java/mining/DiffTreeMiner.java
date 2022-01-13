@@ -15,6 +15,8 @@ import diff.difftree.transform.CollapseNestedNonEditedMacros;
 import diff.difftree.transform.CutNonEditedSubtrees;
 import diff.difftree.transform.DiffTreeTransformer;
 import main.Main;
+import metadata.ExplainedFilterSummary;
+import metadata.Metadata;
 import mining.formats.ReleaseMiningDiffNodeFormat;
 import mining.monitoring.TaskCompletionMonitor;
 import mining.strategies.DiffTreeMiningStrategy;
@@ -30,6 +32,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class DiffTreeMiner {
@@ -39,15 +42,22 @@ public class DiffTreeMiner {
     public static final int EXPECTED_NUMBER_OF_COMMITS_IN_LINUX = 495284;
 
     public static List<DiffTreeTransformer> Postprocessing() {
+        return Postprocessing(null);
+    }
+
+    public static List<DiffTreeTransformer> Postprocessing(final Repository repository) {
         return List.of(
 //                new NaiveMovedCodeDetection(), // do this first as it might introduce non-edited subtrees
                 new CutNonEditedSubtrees(),
-//                RunningExampleFinder.Default,
+                RunningExampleFinder.The_Diff_Itself_Is_A_Valid_DiffTree_And(
+                        RunningExampleFinder.DefaultExampleConditions,
+                        RunningExampleFinder.DefaultExamplesDirectory.resolve(repository == null ? "unknown" : repository.getRepositoryName())
+                ),
                 new CollapseNestedNonEditedMacros()
         );
     }
 
-    public static DiffTreeLineGraphExportOptions ExportOptions() {
+    public static DiffTreeLineGraphExportOptions ExportOptions(final Repository repository) {
         return new DiffTreeLineGraphExportOptions(
                   GraphFormat.DIFFTREE
                 // We have to ensure that all DiffTrees have unique IDs, so use name of changed file and commit hash.
@@ -64,7 +74,7 @@ public class DiffTreeMiner {
                         /// We thus filter them.
                         DiffTreeFilter.hasAtLeastOneEditToVariability()
                 )
-                , Postprocessing()
+                , Postprocessing(repository)
                 , DiffTreeLineGraphExportOptions.LogError()
                 .andThen(DiffTreeLineGraphExportOptions.RenderError())
                 .andThen(DiffTreeLineGraphExportOptions.SysExitOnError())
@@ -122,7 +132,7 @@ public class DiffTreeMiner {
     public static void mineAsync(
             final Repository repo,
             final Path outputDir,
-            final Supplier<DiffTreeLineGraphExportOptions> exportOptions,
+            final Function<Repository, DiffTreeLineGraphExportOptions> exportOptions,
             final Supplier<DiffTreeMiningStrategy> strategyFactory)
     {
         final DiffTreeMiningResult totalResult = new DiffTreeMiningResult();
@@ -142,7 +152,7 @@ public class DiffTreeMiner {
                     repo,
                     differ,
                     outputDir.resolve(commitList.get(0).getId().getName() + ".lg"),
-                    exportOptions.get(),
+                    exportOptions.apply(repo),
                     strategyFactory.get(),
                     commitList)
         );
@@ -162,12 +172,15 @@ public class DiffTreeMiner {
             Logger.error("Failed to run all mining task!");
             Logger.error(e);
         }
-        Logger.info("<<< done in " + clock.printPassedSeconds());
+        final String runtime = clock.printPassedSeconds();
+        Logger.info("<<< done in " + runtime);
+
+        totalResult.putCustomInfo("runtime in seconds", runtime);
 
         exportMetadata(outputDir, totalResult);
     }
 
-    public static void exportMetadata(final Path outputDir, final DiffTreeMiningResult totalResult) {
+    public static <T> void exportMetadata(final Path outputDir, final Metadata<T> totalResult) {
         final String prettyMetadata = totalResult.exportTo(outputDir.resolve("totalresult" + DiffTreeMiningResult.EXTENSION));
         Logger.info("Metadata:\n" + prettyMetadata);
     }
@@ -183,9 +196,9 @@ public class DiffTreeMiner {
         final Path outputDir = Paths.get("results", "mining");
 
         final List<Repository> repos = List.of(
-                DefaultRepositories.stanciulescuMarlinZip(Path.of("."))
-//                DefaultRepositories.createRemoteLinuxRepo(linuxDir.resolve("linux"))
+//                DefaultRepositories.stanciulescuMarlinZip(Path.of(".")),
 //                DefaultRepositories.createRemoteVimRepo(inputDir.resolve("vim"))
+                DefaultRepositories.createRemoteLinuxRepo(linuxDir.resolve("linux"))
         );
 
         /* ************************ *\
@@ -200,7 +213,10 @@ public class DiffTreeMiner {
             repo.setDebugOptions(debugOptions);
             final Path repoOutputDir = outputDir.resolve(repo.getRepositoryName());
             mineAsync(repo, repoOutputDir, DiffTreeMiner::ExportOptions, DiffTreeMiner::MiningStrategy);
-//            mine(repo, repoOutputDir, ExportOptions(), MiningStrategy());
+//            mine(repo, repoOutputDir, ExportOptions(repo), MiningStrategy());
+
+            new ExplainedFilterSummary(RunningExampleFinder.DefaultExampleConditions).exportTo(repoOutputDir.resolve("runningExampleFilterReasons.txt"));
+            RunningExampleFinder.DefaultExampleConditions.resetExplanations();
 
             Logger.info(" === End Processing " + repo.getRepositoryName() + " after " + clock.printPassedSeconds() + " ===");
         }

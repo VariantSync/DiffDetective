@@ -2,7 +2,11 @@ package metadata;
 
 import de.variantsync.functjonal.Cast;
 import de.variantsync.functjonal.category.InplaceSemigroup;
+import org.pmw.tinylog.Logger;
+import util.IO;
 
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -14,15 +18,19 @@ public interface Metadata<T> {
      */
     LinkedHashMap<String, ?> snapshot();
 
+    /**
+     * Metadata should be composable.
+     * Composition should be inplace to optimize performance.
+     */
     InplaceSemigroup<T> semigroup();
 
     default void append(T other) {
         semigroup().appendToFirst(Cast.unchecked(this), other);
     }
 
-    static String show(final Map<String, Object> properties) {
+    static String show(final Map<String, ?> properties) {
         StringBuilder result = new StringBuilder();
-        for (final Map.Entry<String, Object> property : properties.entrySet()) {
+        for (final Map.Entry<String, ?> property : properties.entrySet()) {
             result.append(show(property.getKey(), property.getValue()));
         }
         return result.toString();
@@ -30,5 +38,17 @@ public interface Metadata<T> {
 
     static <T> String show(final String name, T value) {
         return name + ": " + value.toString() + "\n";
+    }
+
+    default String exportTo(final Path file) {
+        try {
+            final String result = show(snapshot());
+            IO.write(file, result);
+            return result;
+        } catch (IOException e) {
+            Logger.error(e);
+            System.exit(0);
+            return "";
+        }
     }
 }

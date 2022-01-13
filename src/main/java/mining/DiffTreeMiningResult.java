@@ -9,11 +9,7 @@ import diff.result.DiffError;
 import metadata.AtomicPatternCount;
 import metadata.ExplainedFilterSummary;
 import metadata.Metadata;
-import org.pmw.tinylog.Logger;
-import util.IO;
 
-import java.io.IOException;
-import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -63,18 +59,6 @@ public class DiffTreeMiningResult implements Metadata<DiffTreeMiningResult> {
     public void reportDiffErrors(final List<DiffError> errors) {
         for (final DiffError e : errors) {
             diffErrors.put(e, 1);
-        }
-    }
-
-    public String exportTo(final Path file) {
-        try {
-            final String result = Metadata.show(snapshot());
-            IO.write(file, result);
-            return result;
-        } catch (IOException e) {
-            Logger.error(e);
-            System.exit(0);
-            return "";
         }
     }
 

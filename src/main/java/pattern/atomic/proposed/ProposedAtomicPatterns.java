@@ -19,11 +19,12 @@ public class ProposedAtomicPatterns implements AtomicPatternCatalogue {
     public static final AtomicPattern Generalization = new Generalization();
     public static final AtomicPattern Reconfiguration = new Reconfiguration();
     public static final AtomicPattern Refactoring = new Refactoring();
+    public static final AtomicPattern Unchanged = new Unchanged();
 
     public static final List<AtomicPattern> All = List.of(
             AddToPC, AddWithMapping,
             RemFromPC, RemWithMapping,
-            Specialization, Generalization, Reconfiguration, Refactoring
+            Specialization, Generalization, Reconfiguration, Refactoring, Unchanged
     );
 
     public static final Map<DiffType, List<AtomicPattern>> PatternsByType;
@@ -85,16 +86,24 @@ public class ProposedAtomicPatterns implements AtomicPatternCatalogue {
 //            System.out.println("TAUT(" + pcb + " => " + pca + ") = " + beforeVariantsSubsetOfAfterVariants);
 //            System.out.println("TAUT(" + pca + " => " + pcb + ") = " + afterVariantsSubsetOfBeforeVariants);
 
+            // If the set of variants stayed the same.
             if (beforeVariantsSubsetOfAfterVariants && afterVariantsSubsetOfBeforeVariants) {
-                return Refactoring;
+                if (node.beforePathEqualsAfterPath()) {
+                    return Unchanged;
+                } else {
+                    return Refactoring;
+                }
             }
+            // If the set of variants grew.
             if (beforeVariantsSubsetOfAfterVariants) { // && !afterVariantsSubsetOfBeforeVariants
                 return Generalization;
             }
+            // If the set of variants shrank.
             if (afterVariantsSubsetOfBeforeVariants) { // && !beforeVariantsSubsetOfAfterVariants
                 return Specialization;
             }
 
+            // If the set of variants changed but there is no subset relation.
             // !beforeVariantsSubsetOfAfterVariants && !afterVariantsSubsetOfBeforeVariants
             return Reconfiguration;
         }

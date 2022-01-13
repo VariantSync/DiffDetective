@@ -10,6 +10,7 @@ import diff.difftree.serialize.treeformat.DiffTreeLabelFormat;
 import diff.difftree.transform.DiffTreeTransformer;
 import org.pmw.tinylog.Logger;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -39,7 +40,7 @@ public record DiffTreeLineGraphExportOptions(
         return (p, e) -> {
             Logger.error(e);
             Logger.error("Rendering patch");
-            errorRenderer.render(p);
+            errorRenderer.render(p, Path.of("error"));
         };
     }
 

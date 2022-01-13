@@ -3,8 +3,7 @@ package diff.difftree.filter;
 import diff.difftree.DiffNode;
 import diff.difftree.DiffTree;
 
-import static pattern.atomic.proposed.ProposedAtomicPatterns.AddToPC;
-import static pattern.atomic.proposed.ProposedAtomicPatterns.RemFromPC;
+import static pattern.atomic.proposed.ProposedAtomicPatterns.*;
 
 /**
  * A filter on difftrees that is equipped with some metadata T (e.g., for debugging or logging).
@@ -44,7 +43,9 @@ public final class DiffTreeFilter {
     public static TaggedPredicate<String, DiffTree> hasAtLeastOneEditToVariability() {
         return new TaggedPredicate<>(
                 "has edits to variability",
-                tree -> tree.anyMatch(node -> node.isCode() && !AddToPC.matches(node) && !RemFromPC.matches(node))
+                tree -> tree.anyMatch(n ->
+                        n.isCode() && !AddToPC.matches(n) && !RemFromPC.matches(n) && !Unchanged.matches(n)
+                )
         );
     }
 }

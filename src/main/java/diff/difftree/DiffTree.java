@@ -1,6 +1,8 @@
 package diff.difftree;
 
 import diff.difftree.parse.DiffTreeParser;
+import diff.difftree.source.PatchFile;
+import diff.difftree.source.PatchString;
 import diff.difftree.traverse.DiffTreeTraversal;
 import diff.difftree.traverse.DiffTreeVisitor;
 import diff.result.DiffResult;
@@ -43,6 +45,12 @@ public class DiffTree {
         return tree;
     }
 
+    public static DiffResult<DiffTree> fromDiff(final String diff, boolean collapseMultipleCodeLines, boolean ignoreEmptyLines) {
+        final DiffResult<DiffTree> tree = DiffTreeParser.createDiffTree(diff, collapseMultipleCodeLines, ignoreEmptyLines);
+        tree.unwrap().ifSuccess(t -> t.setSource(new PatchString(diff)));
+        return tree;
+    }
+
     public DiffTree forAll(final Consumer<DiffNode> procedure) {
         DiffTreeTraversal.forAll(procedure).visit(this);
         return this;
@@ -57,7 +65,10 @@ public class DiffTree {
         final AtomicBoolean all = new AtomicBoolean(true);
         DiffTreeTraversal.with((traversal, subtree) -> {
             if (condition.test(subtree)) {
-                traversal.visitChildrenOf(subtree);
+                for (final DiffNode child : subtree.getAllChildren()) {
+                    traversal.visit(child);
+                    if (!all.get()) break;
+                }
             } else {
                 all.set(false);
             }
@@ -71,7 +82,10 @@ public class DiffTree {
             if (condition.test(subtree)) {
                 matchFound.set(true);
             } else {
-                traversal.visitChildrenOf(subtree);
+                for (final DiffNode child : subtree.getAllChildren()) {
+                    traversal.visit(child);
+                    if (matchFound.get()) break;
+                }
             }
         }).visit(this);
         return matchFound.get();

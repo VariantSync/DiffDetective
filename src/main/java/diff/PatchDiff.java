@@ -1,7 +1,6 @@
 package diff;
 
 import diff.difftree.DiffTree;
-import diff.difftree.DiffTreeSource;
 import org.apache.commons.io.FilenameUtils;
 import org.eclipse.jgit.diff.DiffEntry;
 
@@ -12,7 +11,7 @@ import org.eclipse.jgit.diff.DiffEntry;
  *
  * @author Sören Viegener
  */
-public class PatchDiff implements DiffTreeSource {
+public class PatchDiff implements GitPatch {
     private final String fullDiff;
     private final DiffTree diffTree;
     private final CommitDiff commitDiff;
@@ -35,15 +34,28 @@ public class PatchDiff implements DiffTreeSource {
         return this.commitDiff;
     }
 
+    @Override
     public DiffEntry.ChangeType getChangeType() {
         return changeType;
     }
 
+    @Override
     public String getFileName() {
         return path;
     }
 
-    public String getFullDiff() {
+    @Override
+    public String getCommitHash() {
+        return commitDiff.getCommitHash();
+    }
+
+    @Override
+    public String getParentCommitHash() {
+        return commitDiff.getParentCommitHash();
+    }
+
+    @Override
+    public String getDiff() {
         return fullDiff;
     }
 
@@ -61,6 +73,10 @@ public class PatchDiff implements DiffTreeSource {
 
     @Override
     public String toString() {
-        return path + "@" + commitDiff;
+        return path + "@ " + commitDiff;
+    }
+
+    public GitPatch shallowClone() {
+        return new GitPatch.SimpleGitPatch(getDiff(), getChangeType(), getFileName(), getCommitHash(), getParentCommitHash());
     }
 }
