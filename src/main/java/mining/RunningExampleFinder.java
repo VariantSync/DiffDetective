@@ -18,7 +18,7 @@ import java.nio.file.Path;
 import java.util.Optional;
 
 public class RunningExampleFinder {
-    private static final Path DefaultExamplesDirectory = Path.of("examples");
+    public static final Path DefaultExamplesDirectory = Path.of("examples");
     public static final int DefaultMaxDiffLineCount = 20;
     public static final ExplainedFilter<DiffTree> DefaultExampleConditions = new ExplainedFilter<>(
             new TaggedPredicate<>("diff length <= " + DefaultMaxDiffLineCount, t -> diffIsNotLongerThan(t, DefaultMaxDiffLineCount)),
@@ -29,7 +29,10 @@ public class RunningExampleFinder {
             new TaggedPredicate<>("has a complex formula", RunningExampleFinder::hasAtLeastOneComplexFormula)
     );
 
-    public static ExampleFinder The_Diff_Itself_Is_A_Valid_DiffTree_And(final ExplainedFilter<DiffTree> treeConditions) {
+    public static ExampleFinder The_Diff_Itself_Is_A_Valid_DiffTree_And(
+            final ExplainedFilter<DiffTree> treeConditions,
+            final Path exportDirectory)
+    {
         return new ExampleFinder(
                 diffTree -> {
                     final String localDiff = getDiff(diffTree);
@@ -49,7 +52,7 @@ public class RunningExampleFinder {
                             error -> Optional.empty()
                     );
                 },
-                DefaultExamplesDirectory,
+                exportDirectory,
                 DiffTreeRenderer.WithinDiffDetective()
         );
     }
