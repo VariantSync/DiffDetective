@@ -639,7 +639,7 @@ public class DiffNode {
     }
 
     public void assertConsistency() {
-        // check consistency of children
+        // check consistency of children lists and edges
         for (final DiffNode bc : beforeChildren) {
             Assert.assertTrue(bc.beforeParent == this, () -> "Before child " + bc + " of " + this + " has another parent " + bc.beforeParent + "!");
             Assert.assertTrue(allChildren.contains(bc), () -> "Before child " + bc + " of " + this + " is not in the list of all children!");
@@ -658,6 +658,10 @@ public class DiffNode {
         }
         if (beforeParent != null && afterParent == null) {
             Assert.assertTrue(isRem());
+        }
+        // a node with exactly two parents was not edited
+        if (beforeParent != null && afterParent != null) {
+            Assert.assertTrue(isNon());
         }
     }
 
