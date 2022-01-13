@@ -2,6 +2,7 @@ package mining;
 
 import diff.Diff;
 import diff.GitPatch;
+import diff.difftree.DiffNode;
 import diff.difftree.DiffTree;
 import diff.difftree.DiffTreeSource;
 import diff.difftree.filter.DiffTreeFilter;
@@ -22,11 +23,13 @@ public class RunningExampleFinder {
     public static final int DefaultMaxDiffLineCount = 20;
     public static final ExplainedFilter<DiffTree> DefaultExampleConditions = new ExplainedFilter<>(
             new TaggedPredicate<>("diff length <= " + DefaultMaxDiffLineCount, t -> diffIsNotLongerThan(t, DefaultMaxDiffLineCount)),
-            new TaggedPredicate<>("has nesting", RunningExampleFinder::hasNestingBeforeEdit),
+            new TaggedPredicate<>("has nesting before the edit", RunningExampleFinder::hasNestingBeforeEdit),
+            new TaggedPredicate<>("has additions", t -> t.anyMatch(DiffNode::isAdd)),
+            new TaggedPredicate<>("code was edited", t -> t.anyMatch(n -> n.isCode() && !n.isNon())),
             DiffTreeFilter.hasAtLeastOneEditToVariability(),
             DiffTreeFilter.moreThanTwoCodeNodes(),
             new TaggedPredicate<>("has no annotated macros", t -> !RunningExampleFinder.hasAnnotatedMacros(t)),
-            new TaggedPredicate<>("has a complex formula", RunningExampleFinder::hasAtLeastOneComplexFormula)
+            new TaggedPredicate<>("has a complex formula", RunningExampleFinder::hasAtLeastOneComplexFormulaBeforeTheEdit)
     );
 
     public static ExampleFinder The_Diff_Itself_Is_A_Valid_DiffTree_And(
@@ -66,10 +69,14 @@ public class RunningExampleFinder {
     }
 
     private static boolean hasNestingBeforeEdit(final DiffTree diffTree) {
-        return diffTree.anyMatch(n -> !n.isAdd() && n.getBeforeDepth() > 2);
+        return diffTree.anyMatch(n ->
+                           !n.isAdd()
+                        && n.getBeforeDepth() > 2
+                        && !(n.getBeforeParent().isElse() || n.getBeforeParent().isElif())
+        );
     }
 
-    private static boolean hasAtLeastOneComplexFormula(final DiffTree diffTree) {
+    private static boolean hasAtLeastOneComplexFormulaBeforeTheEdit(final DiffTree diffTree) {
         // We would like to have a complex formula in the tree (complex := not just a positive literal).
         return diffTree.anyMatch(n -> {
             // and the formula should be visible before the edit
