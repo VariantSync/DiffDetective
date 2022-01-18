@@ -2,19 +2,17 @@ package diff.difftree;
 
 import diff.DiffLineNumber;
 import diff.Lines;
-import diff.difftree.parse.IllFormedAnnotationException;
-import org.prop4j.*;
+import org.prop4j.And;
+import org.prop4j.Node;
+import org.prop4j.Not;
 import util.Assert;
 import util.fide.FixTrueFalse;
-import util.fide.FormulaUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Implementation of a node of the diff tree.
@@ -398,9 +396,9 @@ public class DiffNode {
         }
     }
 
-    public void stealChildrenOf(final DiffNode parent) {
-        addBeforeChildren(parent.removeBeforeChildren());
-        addAfterChildren(parent.removeAfterChildren());
+    public void stealChildrenOf(final DiffNode other) {
+        addBeforeChildren(other.removeBeforeChildren());
+        addAfterChildren(other.removeAfterChildren());
     }
 
     /**

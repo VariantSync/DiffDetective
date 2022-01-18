@@ -1,4 +1,4 @@
-import de.ovgu.featureide.fm.core.analysis.cnf.generator.configuration.util.Pair;
+import de.variantsync.functjonal.Product;
 import diff.difftree.DiffTree;
 import diff.difftree.parse.DiffNodeParser;
 import diff.difftree.parse.DiffTreeParser;
@@ -29,16 +29,16 @@ public class TestMultiLineMacros {
                 true,
                 DiffNodeParser.Default).unwrap().getSuccess();
 
-        final Pair<DiffTreeSerializeDebugData, String> result = LineGraphExport.toLineGraphFormat(tree, exportOptions);
+        final Product<DiffTreeSerializeDebugData, String> result = LineGraphExport.toLineGraphFormat(tree, exportOptions);
         Assert.assertNotNull(result);
-        final DiffTreeSerializeDebugData debugData = result.getKey();
+        final DiffTreeSerializeDebugData debugData = result.first();
         Logger.info("Parsed " + debugData.numExportedNonNodes + " nodes of diff type NON.");
         Logger.info("Parsed " + debugData.numExportedAddNodes + " nodes of diff type ADD.");
         Logger.info("Parsed " + debugData.numExportedRemNodes + " nodes of diff type REM.");
 
         final String lg = "t # 1" +
                 StringUtils.LINEBREAK +
-                result.getValue();
+                result.second();
 
         IO.write(resDir.resolve("gen").resolve(p.getFileName() + ".lg"), lg);
     }

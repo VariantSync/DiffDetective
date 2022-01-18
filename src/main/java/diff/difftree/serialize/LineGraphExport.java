@@ -1,6 +1,6 @@
 package diff.difftree.serialize;
 
-import de.ovgu.featureide.fm.core.analysis.cnf.generator.configuration.util.Pair;
+import de.variantsync.functjonal.Product;
 import diff.CommitDiff;
 import diff.PatchDiff;
 import diff.difftree.DiffNode;
@@ -14,14 +14,14 @@ import util.StringUtils;
 
 public class LineGraphExport {
 
-    public static Pair<DiffTreeSerializeDebugData, String> toLineGraphFormat(final DiffTree diffTree, final DiffTreeLineGraphExportOptions options) {
+    public static Product<DiffTreeSerializeDebugData, String> toLineGraphFormat(final DiffTree diffTree, final DiffTreeLineGraphExportOptions options) {
         DiffTreeTransformer.apply(options.treePreProcessing(), diffTree);
         diffTree.assertConsistency();
 
         if (options.treeFilter().test(diffTree)) {
             final DiffTreeLineGraphExporter exporter = new DiffTreeLineGraphExporter(diffTree);
             final String result = exporter.export(options);
-            return new Pair<>(exporter.getDebugData(), result);
+            return new Product<>(exporter.getDebugData(), result);
         }
 
         return null;
@@ -40,7 +40,7 @@ public class LineGraphExport {
         for (final PatchDiff patchDiff : commitDiff.getPatchDiffs()) {
             if (patchDiff.isValid()) {
                 //Logger.info("  Exporting DiffTree #" + treeCounter);
-                final Pair<DiffTreeSerializeDebugData, String> patchDiffLg;
+                final Product<DiffTreeSerializeDebugData, String> patchDiffLg;
                 try {
                     patchDiffLg = toLineGraphFormat(patchDiff.getDiffTree(), options);
                 } catch (Exception e) {
@@ -49,8 +49,8 @@ public class LineGraphExport {
                 }
 
                 if (patchDiffLg != null) {
-                    result.debugData.append(patchDiffLg.getKey());
-                    composeTreeInLineGraph(lineGraph, patchDiff, patchDiffLg.getValue(), options);
+                    result.debugData.append(patchDiffLg.first());
+                    composeTreeInLineGraph(lineGraph, patchDiff, patchDiffLg.second(), options);
                     ++result.exportedTrees;
                 }
             } else {

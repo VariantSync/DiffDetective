@@ -18,4 +18,10 @@ public class Assert {
             throw new AssertionError(errorMessage);
         }
     }
+
+    public static void assertNonNull(Object o) {
+        if (o == null) {
+            throw new AssertionError("Given object is null but assumed to be not null.");
+        }
+    }
 }
