@@ -1,5 +1,6 @@
 package diff.difftree;
 
+import diff.difftree.parse.DiffNodeParser;
 import diff.difftree.parse.DiffTreeParser;
 import diff.difftree.source.PatchFile;
 import diff.difftree.source.PatchString;
@@ -39,14 +40,22 @@ public class DiffTree {
     }
 
     public static DiffResult<DiffTree> fromFile(final Path p, boolean collapseMultipleCodeLines, boolean ignoreEmptyLines) throws IOException {
+        return fromFile(p, collapseMultipleCodeLines, ignoreEmptyLines, DiffNodeParser.Default);
+    }
+
+    public static DiffResult<DiffTree> fromDiff(final String diff, boolean collapseMultipleCodeLines, boolean ignoreEmptyLines) {
+        return fromDiff(diff, collapseMultipleCodeLines, ignoreEmptyLines, DiffNodeParser.Default);
+    }
+
+    public static DiffResult<DiffTree> fromFile(final Path p, boolean collapseMultipleCodeLines, boolean ignoreEmptyLines, final DiffNodeParser annotationParser) throws IOException {
         final String fullDiff = IO.readAsString(p);
-        final DiffResult<DiffTree> tree = DiffTreeParser.createDiffTree(fullDiff, collapseMultipleCodeLines, ignoreEmptyLines);
+        final DiffResult<DiffTree> tree = DiffTreeParser.createDiffTree(fullDiff, collapseMultipleCodeLines, ignoreEmptyLines, annotationParser);
         tree.unwrap().ifSuccess(t -> t.setSource(new PatchFile(p)));
         return tree;
     }
 
-    public static DiffResult<DiffTree> fromDiff(final String diff, boolean collapseMultipleCodeLines, boolean ignoreEmptyLines) {
-        final DiffResult<DiffTree> tree = DiffTreeParser.createDiffTree(diff, collapseMultipleCodeLines, ignoreEmptyLines);
+    public static DiffResult<DiffTree> fromDiff(final String diff, boolean collapseMultipleCodeLines, boolean ignoreEmptyLines, final DiffNodeParser annotationParser) {
+        final DiffResult<DiffTree> tree = DiffTreeParser.createDiffTree(diff, collapseMultipleCodeLines, ignoreEmptyLines, annotationParser);
         tree.unwrap().ifSuccess(t -> t.setSource(new PatchString(diff)));
         return tree;
     }
@@ -149,6 +158,26 @@ public class DiffTree {
 
     public boolean isEmpty() {
         return root == null || root.getCardinality() == 0;
+    }
+
+    /**
+     * Removes the given node from the DiffTree but keeps its children.
+     * @param node The node to remove.
+     */
+    public void removeNode(DiffNode node) {
+        Assert.assertTrue(node != root);
+
+        final DiffNode beforeParent = node.getBeforeParent();
+        if (beforeParent != null) {
+            beforeParent.removeBeforeChild(node);
+            beforeParent.addBeforeChildren(node.removeBeforeChildren());
+        }
+
+        final DiffNode afterParent = node.getAfterParent();
+        if (afterParent != null) {
+            afterParent.removeAfterChild(node);
+            afterParent.addAfterChildren(node.removeAfterChildren());
+        }
     }
 
     private static class AllPathsEndAtRoot {

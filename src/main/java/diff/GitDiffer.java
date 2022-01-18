@@ -1,6 +1,6 @@
 package diff;
 
-import datasets.DebugOptions;
+import datasets.ParseOptions;
 import datasets.Repository;
 import de.variantsync.functjonal.Product;
 import de.variantsync.functjonal.Result;
@@ -56,12 +56,12 @@ public class GitDiffer {
 
     private final Git git;
     private final DiffFilter diffFilter;
-    private final DebugOptions debugOptions;
+    private final ParseOptions parseOptions;
 
     public GitDiffer(final Repository repository) {
         this.git = repository.load();
         this.diffFilter = repository.getDiffFilter();
-        this.debugOptions = repository.getDebugOptions();
+        this.parseOptions = repository.getParseOptions();
     }
 
     /**
@@ -148,7 +148,7 @@ public class GitDiffer {
     }
 
     public CommitDiffResult createCommitDiff(final RevCommit revCommit) {
-        return createCommitDiffFromFirstParent(git, diffFilter, revCommit, debugOptions);
+        return createCommitDiffFromFirstParent(git, diffFilter, revCommit, parseOptions);
     }
 
     /**
@@ -158,20 +158,20 @@ public class GitDiffer {
      *
      * @param git The git repo which the commit stems from.
      * @param currentCommit The commit from which to create a CommitDiff
-     * @param debugOptions
+     * @param parseOptions
      * @return The CommitDiff of the given commit
      */
     public static CommitDiffResult createCommitDiffFromFirstParent(
             Git git,
             DiffFilter diffFilter,
             RevCommit currentCommit,
-            final DebugOptions debugOptions) {
+            final ParseOptions parseOptions) {
         if (currentCommit.getParentCount() == 0) {
             return CommitDiffResult.Failure(
                     COMMIT_HAS_NO_PARENTS, "Commit " + currentCommit.getId().getName() + " does not have parents");
         }
 
-        return createCommitDiff(git, diffFilter, currentCommit.getParent(0), currentCommit, debugOptions);
+        return createCommitDiff(git, diffFilter, currentCommit.getParent(0), currentCommit, parseOptions);
     }
 
     /**
@@ -187,7 +187,7 @@ public class GitDiffer {
             DiffFilter diffFilter,
             RevCommit parentCommit,
             RevCommit childCommit,
-            final DebugOptions debugOptions) {
+            final ParseOptions parseOptions) {
         // get TreeParsers
         final CanonicalTreeParser currentTreeParser = new CanonicalTreeParser();
         final CanonicalTreeParser prevTreeParser = new CanonicalTreeParser();
@@ -236,7 +236,7 @@ public class GitDiffer {
                                 diffEntry,
                                 gitDiff,
                                 file,
-                                debugOptions).unwrap()
+                                parseOptions).unwrap()
                         );
 
                 patchDiff.ifSuccess(commitDiff::addPatchDiff);
@@ -264,7 +264,7 @@ public class GitDiffer {
             DiffEntry diffEntry,
             final String gitDiff,
             String beforeFullFile,
-            final DebugOptions debugOptions) {
+            final ParseOptions parseOptions) {
         final Pattern headerPattern = Pattern.compile(DIFF_HEADER_REGEX, Pattern.MULTILINE);
         final Matcher matcher = headerPattern.matcher(gitDiff);
         final String strippedDiff;
@@ -275,7 +275,7 @@ public class GitDiffer {
         }
 
         final String fullDiff = getFullDiff(beforeFullFile, strippedDiff);
-        final DiffResult<DiffTree> diffTree = DiffTreeParser.createDiffTree(fullDiff, true, true);
+        final DiffResult<DiffTree> diffTree = DiffTreeParser.createDiffTree(fullDiff, true, true, parseOptions.annotationParser());
 
 //        if (diffTree.isFailure()) {
 //            Logger.debug("Something went wrong parsing patch for file {} at commit {}!",
@@ -284,7 +284,7 @@ public class GitDiffer {
 
         return diffTree.map(t -> {
             // not storing the full diff reduces memory usage by around 40-50%
-            final String diffToRemember = switch (debugOptions.diffStoragePolicy()) {
+            final String diffToRemember = switch (parseOptions.diffStoragePolicy()) {
                 case DO_NOT_REMEMBER -> "";
                 case REMEMBER_DIFF -> gitDiff;
                 case REMEMBER_FULL_DIFF -> fullDiff;

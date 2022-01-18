@@ -13,6 +13,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Objects;
 
 import static org.junit.Assert.assertEquals;
 /**
@@ -72,7 +73,7 @@ public class LineGraphTest {
         final StringBuilder lineGraphOutput = new StringBuilder();
         for (var tree : treeList) {
         	if (tree.getSource() instanceof CommitDiffDiffTreeSource source) {
-                LineGraphExport.composeTreeInLineGraph(lineGraphOutput, source, LineGraphExport.toLineGraphFormat(tree, EXPORT_OPTIONS).getValue(), EXPORT_OPTIONS);
+                LineGraphExport.composeTreeInLineGraph(lineGraphOutput, source, Objects.requireNonNull(LineGraphExport.toLineGraphFormat(tree, EXPORT_OPTIONS)).second(), EXPORT_OPTIONS);
         	} else throw new RuntimeException("The DiffTreeSoruce of DiffTree " + tree + " is not a CommitDiffDiffTreeSource: " + tree.getSource());
         }
         return lineGraphOutput.toString();

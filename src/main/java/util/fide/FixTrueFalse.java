@@ -66,10 +66,6 @@ public class FixTrueFalse {
         return filtered.toArray(Node[]::new);
     }
 
-    public static Node On(final Node formula) {
-        return OnInline(formula.clone());
-    }
-
     private static <T> boolean contains(T[] ts, Predicate<T> elem) {
         for (final T t : ts) {
             if (elem.test(t)) {
@@ -83,12 +79,23 @@ public class FixTrueFalse {
      * Replaces all literals in the given `formula` with the literals True and False that
      * represent the respective atomic values w.r.t. FixTrueFalse::isTrueLiteral and FixTrueFalse::isFalseLiteral.
      * This e.g. includes replacing literals representing variables with name "1" or "true" with the respective constants.
-     *
-     * Mutates the given object `formula` and it should not be used after invoking this method.
+     * Returns a formula in which the values True and False are eliminated.
+     * So you either get True, False, or a formula that does not contain any True or False value.
+     * For a non-pure inplace version of this method (which is likely more performant) see {@link FixTrueFalse#EliminateTrueAndFalseInplace(Node)}.
+     * @param formula Formula to simplify. It remains unchanged.
+     * @return Either True, False, or a formula without True and False.
+     */
+    public static Node EliminateTrueAndFalse(final Node formula) {
+        return EliminateTrueAndFalseInplace(formula.clone());
+    }
+
+    /**
+     * Same as {@link FixTrueFalse#EliminateTrueAndFalse(Node)} but mutates the given formula inplace.
+     * Thus, the given formula should  not be used after invoking this method as it might be corrupted.
      * Instead, the returned node should be used.
      * @return A formula with a consistent representation of true and false values.
      */
-    public static Node OnInline(final Node formula) {
+    public static Node EliminateTrueAndFalseInplace(final Node formula) {
         if (formula instanceof Literal l) {
             if (isTrueLiteral(l)) {
                 return l.positive ? True : False;
@@ -101,7 +108,7 @@ public class FixTrueFalse {
 
         Node[] children = formula.getChildren();
         for (int i = 0; i < children.length; ++i) {
-            children[i] = On(children[i]);
+            children[i] = EliminateTrueAndFalseInplace(children[i]);
         }
 
         if (formula instanceof And) {

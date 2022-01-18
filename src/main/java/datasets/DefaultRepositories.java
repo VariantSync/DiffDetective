@@ -1,9 +1,15 @@
 package datasets;
 
+import datasets.custom.MarlinCPPDiffLineFormulaExtractor;
 import diff.DiffFilter;
+import diff.difftree.DiffNode;
+import diff.difftree.parse.DiffNodeParser;
+import feature.CPPAnnotationParser;
+import feature.PropositionalFormulaParser;
 import org.eclipse.jgit.diff.DiffEntry;
 
 import java.nio.file.Path;
+import java.util.function.Predicate;
 
 /**
  * A collection of default repository datasets.
@@ -11,10 +17,13 @@ import java.nio.file.Path;
  * @author Kevin Jedelhauser, Paul Maximilian Bittner
  */
 public final class DefaultRepositories {
-    private DefaultRepositories() {}
-
     private static final Path DIFFDETECTIVE_DEFAULT_REPOSITORIES_DIRECTORY = Path.of("repositories");
-    public static final DiffFilter STANCIULESCU_MARLIN_FILTER = new DiffFilter.Builder()
+
+    /// Marlin
+    public static final DiffNodeParser MARLIN_ANNOTATION_PARSER = new DiffNodeParser(
+            new CPPAnnotationParser(PropositionalFormulaParser.Default, new MarlinCPPDiffLineFormulaExtractor())
+    );
+    public static final DiffFilter STANCIULESCU_MARLIN_DIFF_FILTER = new DiffFilter.Builder()
             //.allowBinary(false)
             .allowMerge(false)
             .allowedPaths("Marlin.*")
@@ -22,17 +31,25 @@ public final class DefaultRepositories {
             .allowedChangeTypes(DiffEntry.ChangeType.MODIFY)
             .allowedFileExtensions("c", "cpp", "h", "pde")
             .build();
-    public static final DiffFilter LINUX_FILTER = new DiffFilter.Builder()
+
+    /// Linux
+    public static final Predicate<DiffNode> LINUX_FEATURE_EXPRESSION_FILTER =
+            node -> node.getLabel().contains("CONFIG_") ;
+    public static final DiffFilter LINUX_DIFF_FILTER = new DiffFilter.Builder()
             .allowMerge(false)
 //            .blockedPaths(DiffEntry.DEV_NULL) // <- I'm with stupid.
             .allowedChangeTypes(DiffEntry.ChangeType.MODIFY)
             .allowedFileExtensions("c", "h")
             .build();
-    public static final DiffFilter VIM_FILTER = new DiffFilter.Builder()
+
+    /// Vim
+    public static final DiffFilter VIM_DIFF_FILTER = new DiffFilter.Builder()
             .allowMerge(false)
             .allowedChangeTypes(DiffEntry.ChangeType.MODIFY)
             .allowedFileExtensions("c", "h", "cpp")
             .build();
+
+    private DefaultRepositories() {}
 
     /**
      * Instance for the default predefined Marlin repository.
@@ -42,9 +59,10 @@ public final class DefaultRepositories {
         final Path marlinPath = pathToDiffDetective
                 .resolve(DIFFDETECTIVE_DEFAULT_REPOSITORIES_DIRECTORY)
                 .resolve("Marlin_old.zip");
-        final Repository marlin = Repository.fromZip(marlinPath, "Marlin_old");
-        marlin.setDiffFilter(STANCIULESCU_MARLIN_FILTER);
-        return marlin;
+        return Repository
+                .fromZip(marlinPath, "Marlin_old")
+                .setDiffFilter(STANCIULESCU_MARLIN_DIFF_FILTER)
+                .setParseOptions(new ParseOptions(MARLIN_ANNOTATION_PARSER));
     }
 
     /**
@@ -56,7 +74,8 @@ public final class DefaultRepositories {
         return Repository
                 .tryFromRemote(localPath, "https://github.com/torvalds/linux", "Linux")
                 .orElseThrow()
-                .setDiffFilter(LINUX_FILTER);
+                .setDiffFilter(LINUX_DIFF_FILTER)
+                .setFeatureAnnotationFilter(LINUX_FEATURE_EXPRESSION_FILTER);
     }
 
     /**
@@ -68,7 +87,7 @@ public final class DefaultRepositories {
         return Repository
                 .tryFromRemote(localPath, "https://git.busybox.net/busybox", "Busybox")
                 .orElseThrow()
-                .setDiffFilter(VIM_FILTER);
+                .setDiffFilter(VIM_DIFF_FILTER);
     }
 
     /**

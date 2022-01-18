@@ -48,7 +48,7 @@ public class MultilineMacro {
         lines.add(line);
     }
 
-    public DiffNode toDiffNode() throws IllFormedAnnotationException {
+    public DiffNode toDiffNode(DiffNodeParser nodeParser) throws IllFormedAnnotationException {
         final StringBuilder asSingleLine = new StringBuilder(diffType.symbol);
 
         for (int l = 0; l < lines.size(); ++l) {
@@ -60,7 +60,7 @@ public class MultilineMacro {
             }
         }
 
-        final DiffNode result = DiffNode.fromDiffLine(asSingleLine.toString());
+        final DiffNode result = nodeParser.fromDiffLine(asSingleLine.toString());
         result.getFromLine().set(startLine);
         result.addBelow(beforeParent, afterParent);
         result.setIsMultilineMacro(true);

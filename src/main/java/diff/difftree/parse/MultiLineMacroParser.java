@@ -11,8 +11,14 @@ import java.util.Stack;
 import static diff.result.DiffError.MLMACRO_WITHIN_MLMACRO;
 
 public class MultiLineMacroParser {
+    private final DiffNodeParser nodeParser;
+
     private MultilineMacro beforeMLMacro = null;
     private MultilineMacro afterMLMacro = null;
+
+    public MultiLineMacroParser(DiffNodeParser nodeParser) {
+        this.nodeParser = nodeParser;
+    }
 
     /**
      * Converts a multiline macro to a DiffNode.
@@ -23,7 +29,7 @@ public class MultiLineMacroParser {
      * @param nodes The list to add the node to.
      * @return The finalized macro converted to a DiffNode.
      */
-    private static DiffNode finalizeMLMacro(
+    private DiffNode finalizeMLMacro(
             final DiffLineNumber lineNo,
             final String line,
             final MultilineMacro macro,
@@ -32,7 +38,7 @@ public class MultiLineMacroParser {
         macro.addLine(line);
         macro.diffType = diffType;
 
-        final DiffNode node = macro.toDiffNode();
+        final DiffNode node = macro.toDiffNode(nodeParser);
         node.getToLine().set(lineNo);
         nodes.add(node);
         return node;

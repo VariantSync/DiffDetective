@@ -1,6 +1,6 @@
 package diff.difftree.render;
 
-import de.ovgu.featureide.fm.core.analysis.cnf.generator.configuration.util.Pair;
+import de.variantsync.functjonal.Product;
 import diff.GitPatch;
 import diff.PatchDiff;
 import diff.difftree.DiffTree;
@@ -17,6 +17,7 @@ import org.pmw.tinylog.Logger;
 import shell.PythonCommand;
 import shell.ShellException;
 import shell.ShellExecutor;
+import util.Assert;
 import util.IO;
 import util.StringUtils;
 
@@ -120,8 +121,9 @@ public class DiffTreeRenderer {
 
         final Path tempFile = directory.resolve(treeAndFileName + ".lg");
 
-        final Pair<DiffTreeSerializeDebugData, String> result = LineGraphExport.toLineGraphFormat(tree, lgoptions);
-        final String lg = "t # " + treeAndFileName + LineGraphConstants.TREE_NAME_SEPARATOR + "0" + StringUtils.LINEBREAK + result.getValue();
+        final Product<DiffTreeSerializeDebugData, String> result = LineGraphExport.toLineGraphFormat(tree, lgoptions);
+        Assert.assertNonNull(result);
+        final String lg = "t # " + treeAndFileName + LineGraphConstants.TREE_NAME_SEPARATOR + "0" + StringUtils.LINEBREAK + result.second();
         try {
             IO.write(tempFile, lg);
         } catch (IOException e) {

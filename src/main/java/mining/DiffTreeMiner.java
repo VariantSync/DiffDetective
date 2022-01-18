@@ -1,19 +1,21 @@
 package mining;
 
-import datasets.DebugOptions;
 import datasets.DefaultRepositories;
+import datasets.ParseOptions;
 import datasets.Repository;
 import de.variantsync.functjonal.iteration.ClusteredIterator;
 import de.variantsync.functjonal.iteration.MappedIterator;
 import diff.GitDiffer;
 import diff.difftree.filter.DiffTreeFilter;
 import diff.difftree.filter.ExplainedFilter;
+import diff.difftree.parse.DiffNodeParser;
 import diff.difftree.serialize.DiffTreeLineGraphExportOptions;
 import diff.difftree.serialize.GraphFormat;
 import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
 import diff.difftree.transform.CollapseNestedNonEditedMacros;
 import diff.difftree.transform.CutNonEditedSubtrees;
 import diff.difftree.transform.DiffTreeTransformer;
+import diff.difftree.transform.FeatureExpressionFilter;
 import main.Main;
 import metadata.ExplainedFilterSummary;
 import metadata.Metadata;
@@ -30,6 +32,7 @@ import util.Diagnostics;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Function;
@@ -46,15 +49,18 @@ public class DiffTreeMiner {
     }
 
     public static List<DiffTreeTransformer> Postprocessing(final Repository repository) {
-        return List.of(
-//                new NaiveMovedCodeDetection(), // do this first as it might introduce non-edited subtrees
-                new CutNonEditedSubtrees(),
-                RunningExampleFinder.The_Diff_Itself_Is_A_Valid_DiffTree_And(
+        final List<DiffTreeTransformer> processing = new ArrayList<>();
+        processing.add(new CutNonEditedSubtrees());
+        if (repository != null && repository.hasFeatureAnnotationFilter()) {
+            processing.add(new FeatureExpressionFilter(repository.getFeatureAnnotationFilter()));
+        }
+        processing.add(new RunningExampleFinder(repository == null ? DiffNodeParser.Default : repository.getParseOptions().annotationParser()).
+                The_Diff_Itself_Is_A_Valid_DiffTree_And(
                         RunningExampleFinder.DefaultExampleConditions,
                         RunningExampleFinder.DefaultExamplesDirectory.resolve(repository == null ? "unknown" : repository.getRepositoryName())
-                ),
-                new CollapseNestedNonEditedMacros()
-        );
+                ));
+        processing.add(new CollapseNestedNonEditedMacros());
+        return processing;
     }
 
     public static DiffTreeLineGraphExportOptions ExportOptions(final Repository repository) {
@@ -189,16 +195,16 @@ public class DiffTreeMiner {
         Main.setupLogger(Level.INFO);
 //        Main.setupLogger(Level.DEBUG);
 
-        final DebugOptions debugOptions = new DebugOptions(DebugOptions.DiffStoragePolicy.REMEMBER_STRIPPED_DIFF);
+        final ParseOptions.DiffStoragePolicy diffStoragePolicy = ParseOptions.DiffStoragePolicy.REMEMBER_STRIPPED_DIFF;
 
         final Path inputDir = Paths.get("..", "DiffDetectiveMining");
         final Path linuxDir = Paths.get("..", "variantevolution_datasets");
         final Path outputDir = Paths.get("results", "mining");
 
         final List<Repository> repos = List.of(
-                DefaultRepositories.stanciulescuMarlinZip(Path.of(".")),
-                DefaultRepositories.createRemoteVimRepo(inputDir.resolve("vim")),
-                DefaultRepositories.createRemoteLinuxRepo(linuxDir.resolve("linux"))
+                DefaultRepositories.stanciulescuMarlinZip(Path.of("."))
+//                DefaultRepositories.createRemoteVimRepo(inputDir.resolve("vim")),
+//                DefaultRepositories.createRemoteLinuxRepo(linuxDir.resolve("linux"))
         );
 
         /* ************************ *\
@@ -210,7 +216,7 @@ public class DiffTreeMiner {
             final Clock clock = new Clock();
             clock.start();
 
-            repo.setDebugOptions(debugOptions);
+            repo.setParseOptions(repo.getParseOptions().withDiffStoragePolicy(diffStoragePolicy));
             final Path repoOutputDir = outputDir.resolve(repo.getRepositoryName());
             mineAsync(repo, repoOutputDir, DiffTreeMiner::ExportOptions, DiffTreeMiner::MiningStrategy);
 //            mine(repo, repoOutputDir, ExportOptions(repo), MiningStrategy());

@@ -2,10 +2,12 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.prop4j.*;
+import util.fide.FixTrueFalse;
 
 import java.util.List;
 
-import static util.fide.FixTrueFalse.*;
+import static util.fide.FixTrueFalse.False;
+import static util.fide.FixTrueFalse.True;
 import static util.fide.FormulaUtils.negate;
 
 public class FixTrueFalseTest {
@@ -54,7 +56,7 @@ public class FixTrueFalseTest {
     @Test
     public void testAll() {
         for (TestCase testCase : testCases) {
-            Assert.assertEquals(On(testCase.formula), testCase.expectedResult);
+            Assert.assertEquals(FixTrueFalse.EliminateTrueAndFalse(testCase.formula), testCase.expectedResult);
         }
     }
 }
