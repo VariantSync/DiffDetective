@@ -1,4 +1,4 @@
-import datasets.DefaultRepositories;
+import datasets.predefined.LinuxKernel;
 import de.variantsync.functjonal.Result;
 import diff.difftree.DiffTree;
 import diff.difftree.render.DiffTreeRenderer;
@@ -25,7 +25,7 @@ public class LinuxParsingTest {
         }
 
         final DiffTree t = parseResult.getSuccess();
-        new FeatureExpressionFilter(DefaultRepositories.LINUX_FEATURE_EXPRESSION_FILTER).transform(t);
+        new FeatureExpressionFilter(LinuxKernel::isFeature).transform(t);
 
         t.forAll(n -> {
             if (n.isMacro()) {

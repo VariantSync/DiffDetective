@@ -1,8 +1,11 @@
 package mining;
 
-import datasets.DefaultRepositories;
 import datasets.ParseOptions;
 import datasets.Repository;
+import datasets.predefined.Godot;
+import datasets.predefined.LinuxKernel;
+import datasets.predefined.StanciulescuMarlin;
+import datasets.predefined.Vim;
 import de.variantsync.functjonal.iteration.ClusteredIterator;
 import de.variantsync.functjonal.iteration.MappedIterator;
 import diff.GitDiffer;
@@ -198,13 +201,14 @@ public class DiffTreeMiner {
         final ParseOptions.DiffStoragePolicy diffStoragePolicy = ParseOptions.DiffStoragePolicy.REMEMBER_STRIPPED_DIFF;
 
         final Path inputDir = Paths.get("..", "DiffDetectiveMining");
-        final Path linuxDir = Paths.get("..", "variantevolution_datasets");
+        final Path variantEvolutionDatasetsDir = Paths.get("..", "variantevolution_datasets");
         final Path outputDir = Paths.get("results", "mining");
 
         final List<Repository> repos = List.of(
-                DefaultRepositories.stanciulescuMarlinZip(Path.of("."))
-//                DefaultRepositories.createRemoteVimRepo(inputDir.resolve("vim")),
-//                DefaultRepositories.createRemoteLinuxRepo(linuxDir.resolve("linux"))
+                Godot.cloneFromGithubTo(inputDir),
+                StanciulescuMarlin.fromZipInDiffDetectiveAt(Path.of(".")),
+                Vim.cloneFromGithubTo(inputDir),
+                LinuxKernel.cloneFromGithubTo(variantEvolutionDatasetsDir)
         );
 
         /* ************************ *\

@@ -4,8 +4,8 @@ import analysis.GDAnalysisUtils;
 import analysis.GDAnalyzer;
 import analysis.TreeGDAnalyzer;
 import analysis.data.GDAnalysisResult;
-import datasets.DefaultRepositories;
 import datasets.Repository;
+import datasets.predefined.StanciulescuMarlin;
 import diff.GitDiff;
 import diff.GitDiffer;
 import evaluation.GDEvaluator;
@@ -34,7 +34,7 @@ public class Main {
         Repository repo = null;
         
         // Create Marlin Repo
-		repo = DefaultRepositories.stanciulescuMarlinZip(Path.of("."));
+		repo = StanciulescuMarlin.fromZipInDiffDetectiveAt(Path.of("."));
 
         // which analyzer will be used
         String analysisName = ATOMIC_TREE_ANALYSIS;

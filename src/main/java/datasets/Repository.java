@@ -140,15 +140,15 @@ public class Repository {
 	/**
 	 * Creates a repository from a remote repository.
 	 *
-	 * @param localPath Path to clone the repository to.
+	 * @param localDir Directory to clone the repository to.
 	 * @param repoUri The address of the remote repository
 	 * @param repoName Name of the folder, where the git repository is cloned to
 	 * @return A repository from a remote location (e.g. Github repository)
 	 */
-	public static Optional<Repository> tryFromRemote(Path localPath, String repoUri, String repoName) {
+	public static Optional<Repository> tryFromRemote(Path localDir, String repoUri, String repoName) {
 		return IO
 				.tryParseURI(repoUri)
-				.map(remote -> fromRemote(localPath, remote, repoName));
+				.map(remote -> fromRemote(localDir.resolve(repoName), remote, repoName));
 	}
 
 	public LoadingParameter getRepoLocation() {

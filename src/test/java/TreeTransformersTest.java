@@ -1,5 +1,5 @@
-import datasets.DefaultRepositories;
 import datasets.Repository;
+import datasets.predefined.StanciulescuMarlin;
 import diff.CommitDiff;
 import diff.GitDiffer;
 import diff.PatchDiff;
@@ -101,7 +101,7 @@ public class TreeTransformersTest {
     }
 
     private void testCommit(String file, String commitHash) throws IOException {
-        final Repository marlin = DefaultRepositories.stanciulescuMarlinZip(Path.of("."));
+        final Repository marlin = StanciulescuMarlin.fromZipInDiffDetectiveAt(Path.of("."));
 
         final Git git = marlin.load();
         assert git != null;
