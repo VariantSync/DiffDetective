@@ -24,9 +24,6 @@ import java.util.regex.Pattern;
 public class DiffNode {
 	private static final short ID_OFFSET = 8;
 
-    public static final String EQUAL_PLACEHOLDER = "__eq__";
-    public static final String INVALID_ANNOTATION = "__INVALID_ANNOTATION__";
-
     public DiffType diffType;
     public CodeType codeType;
     private boolean isMultilineMacro = false;
@@ -89,29 +86,6 @@ public class DiffNode {
 
     public static DiffNode createCode(DiffType diffType, DiffLineNumber fromLines, DiffLineNumber toLines, String code) {
         return new DiffNode(diffType, CodeType.CODE, fromLines, toLines, null, code);
-    }
-
-    /**
-     * Creates a DiffNode from a line and two parents
-     *
-     * @param line The line which the new node node corresponds to
-     * @return A DiffNode with a code type, diff type, feature mapping and parents
-     */
-    public static DiffNode fromDiffLine(String line) throws IllFormedAnnotationException {
-        DiffNode diffNode = new DiffNode();
-        diffNode.diffType = DiffType.ofDiffLine(line);
-        diffNode.codeType = CodeType.ofDiffLine(line);
-        diffNode.label = line.isEmpty() ? line : line.substring(1);
-
-        if (diffNode.isCode() || diffNode.isEndif() || diffNode.isElse()) {
-            diffNode.featureMapping = null;
-        } else {
-            // TODO: check here whether the expression indeed is a variability expression (i.e., contains features).
-            //       If not, the line should be interpreted as code.
-            diffNode.featureMapping = parseFeatureMapping(line);
-        }
-
-        return diffNode;
     }
 
     public void setLabel(final String label) {
@@ -679,83 +653,6 @@ public class DiffNode {
                     from.inDiff, to.inDiff, featureMapping);
         }
         return s;
-    }
-
-    /**
-     * Gets a feature mapping from an annotation line using a NodeReader
-     * @param line The line of which to get the feature mapping
-     * @return The feature mapping of the given line
-     */
-    private static Node parseFeatureMapping(String line) throws IllFormedAnnotationException {
-        final String formulaStr = extractFormula(line);
-
-        final NodeReader nodeReader = new NodeReader();
-        nodeReader.activateJavaSymbols();
-
-        Node node = nodeReader.stringToNode(formulaStr);
-        // if parsing succeeded
-        if (node != null) {
-            node = FixTrueFalse.EliminateTrueAndFalseInplace(node);
-        } else {
-//            Logger.warn("Could not parse expression \"{}\" to feature mapping. Using it as literal.", fmString);
-            node = new Literal(line);
-        }
-
-        // negate for ifndef
-        if (line.contains("ifndef")) {
-            node = FormulaUtils.negate(node);
-        }
-
-        return node;
-    }
-
-    /**
-     * Gets the feature mapping as a String from an annotation line
-     * @param line The line of which to get the feature mapping
-     * @return The feature mapping as a String of the given line
-     */
-    private static String extractFormula(String line) throws IllFormedAnnotationException {
-        // ^[+-]?\s*#\s*(if|ifdef|ifndef|elif)(\s+(.*)|\((.*)\))$
-        String regex = "^[+-]?\\s*#\\s*(if|ifdef|ifndef|elif)(\\s+(.*)|\\((.*)\\))$";
-        Pattern regexPattern = Pattern.compile(regex);
-        Matcher matcher = regexPattern.matcher(line);
-
-        String fm;
-        if (matcher.find()) {
-            if (matcher.group(3) != null) {
-                fm = matcher.group(3);
-            } else {
-                fm = matcher.group(4);
-            }
-        } else {
-            throw IllFormedAnnotationException.IfWithoutCondition("Could not extract formula from line \""+ line + "\".");
-        }
-
-        // remove comments
-        fm = fm.split("//")[0];
-        fm = fm.replaceAll("/\\*.*\\*/", "");
-
-        // remove whitespace
-        fm = fm.trim();
-
-        // remove defined(), ENABLED() and DISABLED()
-        fm = fm.replaceAll("defined\\s*\\(([^)]*)\\)", "$1");
-        fm = fm.replaceAll("defined ", " ");
-        fm = fm.replaceAll("ENABLED\\s*\\(([^)]*)\\)", "$1");
-        fm = fm.replaceAll("DISABLED\\s*\\(([^)]*)\\)", "!($1)");
-
-        // remove whitespace
-
-        fm = fm.replaceAll("\\s", "");
-
-        // remove parentheses from custom cpp functions such as MB() or PIN_EXISTS()
-        fm = fm.replaceAll("(\\w+)\\((\\w*)\\)", "$1__$2");
-
-        // replace all "=="'s with a placeholder because NodeReader interprets these as propositional equality
-        // but == does not denote propositional equality in macros
-        fm = fm.replaceAll("==", EQUAL_PLACEHOLDER);
-
-        return fm;
     }
 
     @Override

@@ -1,13 +1,14 @@
 package mining;
 
-import datasets.DebugOptions;
 import datasets.DefaultRepositories;
+import datasets.ParseOptions;
 import datasets.Repository;
 import de.variantsync.functjonal.iteration.ClusteredIterator;
 import de.variantsync.functjonal.iteration.MappedIterator;
 import diff.GitDiffer;
 import diff.difftree.filter.DiffTreeFilter;
 import diff.difftree.filter.ExplainedFilter;
+import diff.difftree.parse.DiffNodeParser;
 import diff.difftree.serialize.DiffTreeLineGraphExportOptions;
 import diff.difftree.serialize.GraphFormat;
 import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
@@ -49,10 +50,11 @@ public class DiffTreeMiner {
         return List.of(
 //                new NaiveMovedCodeDetection(), // do this first as it might introduce non-edited subtrees
                 new CutNonEditedSubtrees(),
-                RunningExampleFinder.The_Diff_Itself_Is_A_Valid_DiffTree_And(
-                        RunningExampleFinder.DefaultExampleConditions,
-                        RunningExampleFinder.DefaultExamplesDirectory.resolve(repository == null ? "unknown" : repository.getRepositoryName())
-                ),
+                new RunningExampleFinder(repository == null ? DiffNodeParser.Default : repository.getParseOptions().annotationParser()).
+                        The_Diff_Itself_Is_A_Valid_DiffTree_And(
+                                RunningExampleFinder.DefaultExampleConditions,
+                                RunningExampleFinder.DefaultExamplesDirectory.resolve(repository == null ? "unknown" : repository.getRepositoryName())
+                        ),
                 new CollapseNestedNonEditedMacros()
         );
     }
@@ -189,16 +191,16 @@ public class DiffTreeMiner {
         Main.setupLogger(Level.INFO);
 //        Main.setupLogger(Level.DEBUG);
 
-        final DebugOptions debugOptions = new DebugOptions(DebugOptions.DiffStoragePolicy.REMEMBER_STRIPPED_DIFF);
+        final ParseOptions.DiffStoragePolicy diffStoragePolicy = ParseOptions.DiffStoragePolicy.REMEMBER_STRIPPED_DIFF;
 
         final Path inputDir = Paths.get("..", "DiffDetectiveMining");
         final Path linuxDir = Paths.get("..", "variantevolution_datasets");
         final Path outputDir = Paths.get("results", "mining");
 
         final List<Repository> repos = List.of(
-                DefaultRepositories.stanciulescuMarlinZip(Path.of(".")),
-                DefaultRepositories.createRemoteVimRepo(inputDir.resolve("vim")),
-                DefaultRepositories.createRemoteLinuxRepo(linuxDir.resolve("linux"))
+                DefaultRepositories.stanciulescuMarlinZip(Path.of("."))
+//                DefaultRepositories.createRemoteVimRepo(inputDir.resolve("vim")),
+//                DefaultRepositories.createRemoteLinuxRepo(linuxDir.resolve("linux"))
         );
 
         /* ************************ *\
@@ -210,7 +212,7 @@ public class DiffTreeMiner {
             final Clock clock = new Clock();
             clock.start();
 
-            repo.setDebugOptions(debugOptions);
+            repo.setParseOptions(repo.getParseOptions().withDiffStoragePolicy(diffStoragePolicy));
             final Path repoOutputDir = outputDir.resolve(repo.getRepositoryName());
             mineAsync(repo, repoOutputDir, DiffTreeMiner::ExportOptions, DiffTreeMiner::MiningStrategy);
 //            mine(repo, repoOutputDir, ExportOptions(repo), MiningStrategy());

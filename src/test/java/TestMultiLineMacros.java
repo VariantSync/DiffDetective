@@ -1,5 +1,6 @@
 import de.ovgu.featureide.fm.core.analysis.cnf.generator.configuration.util.Pair;
 import diff.difftree.DiffTree;
+import diff.difftree.parse.DiffNodeParser;
 import diff.difftree.parse.DiffTreeParser;
 import diff.difftree.serialize.DiffTreeLineGraphExportOptions;
 import diff.difftree.serialize.DiffTreeSerializeDebugData;
@@ -7,6 +8,7 @@ import diff.difftree.serialize.GraphFormat;
 import diff.difftree.serialize.LineGraphExport;
 import diff.difftree.serialize.nodeformat.DebugDiffNodeFormat;
 import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
+import org.junit.Assert;
 import org.junit.Test;
 import org.pmw.tinylog.Logger;
 import util.IO;
@@ -24,9 +26,11 @@ public class TestMultiLineMacros {
         final DiffTree tree = DiffTreeParser.createDiffTree(
                 fullDiff,
                 true,
-                true).unwrap().getSuccess();
+                true,
+                DiffNodeParser.Default).unwrap().getSuccess();
 
         final Pair<DiffTreeSerializeDebugData, String> result = LineGraphExport.toLineGraphFormat(tree, exportOptions);
+        Assert.assertNotNull(result);
         final DiffTreeSerializeDebugData debugData = result.getKey();
         Logger.info("Parsed " + debugData.numExportedNonNodes + " nodes of diff type NON.");
         Logger.info("Parsed " + debugData.numExportedAddNodes + " nodes of diff type ADD.");

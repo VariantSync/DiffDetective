@@ -41,7 +41,10 @@ public class Repository {
 	 */
 	private DiffFilter diffFilter;
 
-	private DebugOptions debugOptions;
+    /**
+     * Options to configure parsing and memory consumption (e.g., by not keeping full diffs in memory).
+     */
+	private ParseOptions parseOptions;
 	
 	/**
 	 * Creates a repository.
@@ -50,7 +53,7 @@ public class Repository {
 	 * @param localPath The local path where the repository can be found or should be cloned to.
 	 * @param remote The remote url of the repository. May be <code>null</code> if local.
 	 * @param repositoryName Name of the cloned repository (<code>null</code> if local)
-	 * @param debugOptions Omit some debug data to save RAM.
+	 * @param parseOptions Omit some debug data to save RAM.
 	 * @param diffFilter Filter determining which files and commits to consider for diffs.
 	 */
 	public Repository(
@@ -58,13 +61,13 @@ public class Repository {
 			final Path localPath,
 			final URI remote,
 			final String repositoryName,
-			final DebugOptions debugOptions,
+			final ParseOptions parseOptions,
 			final DiffFilter diffFilter) {
 		this.repoLocation = repoLocation;
 		this.localPath = localPath;
 		this.remote = remote;
 		this.repositoryName = repositoryName;
-		this.debugOptions = debugOptions;
+		this.parseOptions = parseOptions;
 		this.diffFilter = diffFilter;
 	}
 
@@ -78,7 +81,7 @@ public class Repository {
 			final URI remote,
 			final String repositoryName) {
 		this(repoLocation, localPath, remote, repositoryName,
-                DebugOptions.DEFAULT, DiffFilter.ALLOW_ALL);
+                ParseOptions.Default, DiffFilter.ALLOW_ALL);
 	}
 
 	/**
@@ -157,8 +160,8 @@ public class Repository {
 		return repositoryName;
 	}
 
-	public Repository setDebugOptions(DebugOptions debugOptions) {
-		this.debugOptions = debugOptions;
+	public Repository setParseOptions(ParseOptions parseOptions) {
+		this.parseOptions = parseOptions;
         return this;
 	}
 
@@ -171,8 +174,8 @@ public class Repository {
 		return diffFilter;
 	}
 
-	public DebugOptions getDebugOptions() {
-		return debugOptions;
+	public ParseOptions getParseOptions() {
+		return parseOptions;
 	}
 
 	public Git load() {

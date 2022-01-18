@@ -1,6 +1,7 @@
 package main;
 
 import diff.difftree.DiffTree;
+import diff.difftree.parse.DiffNodeParser;
 import diff.difftree.render.DiffTreeRenderer;
 import diff.difftree.serialize.GraphFormat;
 import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
@@ -39,7 +40,7 @@ public class SimpleRenderer {
             Logger.info("Rendering " + fileToRender);
             final DiffTree t;
             try {
-                t = DiffTree.fromFile(fileToRender, collapseMultipleCodeLines, ignoreEmptyLines).unwrap().getSuccess();
+                t = DiffTree.fromFile(fileToRender, collapseMultipleCodeLines, ignoreEmptyLines, DiffNodeParser.Default).unwrap().getSuccess();
             } catch (IOException e) {
                 System.err.println("Could not read given file \"" + fileToRender + "\" because:\n" + e.getMessage());
                 return;

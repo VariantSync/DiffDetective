@@ -30,7 +30,6 @@ public class TreeTransformersTest {
     private static final boolean RENDER = true;
     private static final Path resDir = Constants.RESOURCE_DIR.resolve("diffs/collapse");
     private static final Path genDir = resDir.resolve("gen");
-    private static final List<DiffTreeTransformer> transformers = DiffTreeMiner.Postprocessing();
     private static final DiffTreeRenderer.RenderOptions renderOptions = new DiffTreeRenderer.RenderOptions(
             GraphFormat.DIFFTREE,
             new CommitDiffDiffTreeLabelFormat(),
@@ -49,10 +48,10 @@ public class TreeTransformersTest {
 
     private void transformAndRender(String diffFileName) throws IOException {
         final DiffTree t = DiffTree.fromFile(resDir.resolve(diffFileName), true, true).unwrap().getSuccess();
-        transformAndRender(t, diffFileName, "0");
+        transformAndRender(t, diffFileName, "0", null);
     }
 
-    private void transformAndRender(DiffTree diffTree, String name, String commit) {
+    private void transformAndRender(DiffTree diffTree, String name, String commit, Repository repository) {
         final DiffTreeRenderer renderer = DiffTreeRenderer.WithinDiffDetective();
         final String treeName = name + LineGraphConstants.TREE_NAME_SEPARATOR + commit;
 
@@ -63,6 +62,7 @@ public class TreeTransformersTest {
 
         int i = 1;
         int prevSize = diffTree.computeSize();
+        final List<DiffTreeTransformer> transformers = DiffTreeMiner.Postprocessing(repository);
         for (final DiffTreeTransformer f : transformers) {
             INFO.accept("Applying transformation " + f + ".");
             f.transform(diffTree);
@@ -85,7 +85,7 @@ public class TreeTransformersTest {
     @Before
     public void init() {
         Main.setupLogger(Level.INFO);
-        DiffTreeTransformer.checkDependencies(transformers);
+//        DiffTreeTransformer.checkDependencies(transformers);
     }
 
 //    @Test
@@ -114,11 +114,11 @@ public class TreeTransformersTest {
                 marlin.getDiffFilter(),
                 parentCommit,
                 childCommit,
-                marlin.getDebugOptions()).unwrap().first().orElseThrow();
+                marlin.getParseOptions()).unwrap().first().orElseThrow();
 
         for (final PatchDiff pd : commitDiff.getPatchDiffs()) {
             if (file.equals(pd.getFileName())) {
-                transformAndRender(pd.getDiffTree(), file, commitHash);
+                transformAndRender(pd.getDiffTree(), file, commitHash, marlin);
                 revWalk.close();
                 return;
             }

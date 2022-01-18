@@ -33,9 +33,12 @@ public class DiffTreeParser {
      *                                  or remained unchanged) should be ignored
      * @return The DiffTree created from the given git diff
      */
-    public static DiffResult<DiffTree> createDiffTree(String fullDiff,
-                                                             boolean collapseMultipleCodeLines,
-                                                             boolean ignoreEmptyLines) {
+    public static DiffResult<DiffTree> createDiffTree(
+            String fullDiff,
+            boolean collapseMultipleCodeLines,
+            boolean ignoreEmptyLines,
+            DiffNodeParser nodeParser)
+    {
         final String[] fullDiffLines = fullDiff.split(NEW_LINE_REGEX);
 
         final List<DiffNode> nodes = new ArrayList<>();
@@ -52,7 +55,7 @@ public class DiffTreeParser {
             }
         };
 
-        final MultiLineMacroParser mlMacroParser = new MultiLineMacroParser();
+        final MultiLineMacroParser mlMacroParser = new MultiLineMacroParser(nodeParser);
 
         final DiffNode root = DiffNode.createRoot();
         beforeStack.push(root);
@@ -103,7 +106,7 @@ public class DiffTreeParser {
             // Note that the node is not yet added to the diff tree.
             final DiffNode newNode;
             try {
-                newNode = DiffNode.fromDiffLine(currentLine);
+                newNode = nodeParser.fromDiffLine(currentLine);
             } catch (IllFormedAnnotationException e) {
                 return DiffResult.Failure(e);
             }

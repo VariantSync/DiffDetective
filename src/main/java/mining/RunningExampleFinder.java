@@ -8,6 +8,7 @@ import diff.difftree.DiffTreeSource;
 import diff.difftree.filter.DiffTreeFilter;
 import diff.difftree.filter.ExplainedFilter;
 import diff.difftree.filter.TaggedPredicate;
+import diff.difftree.parse.DiffNodeParser;
 import diff.difftree.render.DiffTreeRenderer;
 import diff.difftree.transform.ExampleFinder;
 import diff.result.DiffResult;
@@ -32,14 +33,20 @@ public class RunningExampleFinder {
             new TaggedPredicate<>("has a complex formula", RunningExampleFinder::hasAtLeastOneComplexFormulaBeforeTheEdit)
     );
 
-    public static ExampleFinder The_Diff_Itself_Is_A_Valid_DiffTree_And(
+    private final DiffNodeParser nodeParser;
+
+    public RunningExampleFinder(final DiffNodeParser nodeParser) {
+        this.nodeParser = nodeParser;
+    }
+
+    public ExampleFinder The_Diff_Itself_Is_A_Valid_DiffTree_And(
             final ExplainedFilter<DiffTree> treeConditions,
             final Path exportDirectory)
     {
         return new ExampleFinder(
                 diffTree -> {
                     final String localDiff = getDiff(diffTree);
-                    final DiffResult<DiffTree> parseResult = DiffTree.fromDiff(localDiff, true, true);
+                    final DiffResult<DiffTree> parseResult = DiffTree.fromDiff(localDiff, true, true, nodeParser);
                     // Not every local diff can be parsed to a difftree because diffs are unaware of the underlying language (i.e., CPP).
                     // We want only running examples whose diffs describe entire diff trees for easier understanding.
                     return parseResult.unwrap().match(
