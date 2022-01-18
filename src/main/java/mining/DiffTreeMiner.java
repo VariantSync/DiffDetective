@@ -15,6 +15,7 @@ import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
 import diff.difftree.transform.CollapseNestedNonEditedMacros;
 import diff.difftree.transform.CutNonEditedSubtrees;
 import diff.difftree.transform.DiffTreeTransformer;
+import diff.difftree.transform.FeatureExpressionFilter;
 import main.Main;
 import metadata.ExplainedFilterSummary;
 import metadata.Metadata;
@@ -31,6 +32,7 @@ import util.Diagnostics;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Function;
@@ -47,16 +49,18 @@ public class DiffTreeMiner {
     }
 
     public static List<DiffTreeTransformer> Postprocessing(final Repository repository) {
-        return List.of(
-//                new NaiveMovedCodeDetection(), // do this first as it might introduce non-edited subtrees
-                new CutNonEditedSubtrees(),
-                new RunningExampleFinder(repository == null ? DiffNodeParser.Default : repository.getParseOptions().annotationParser()).
-                        The_Diff_Itself_Is_A_Valid_DiffTree_And(
-                                RunningExampleFinder.DefaultExampleConditions,
-                                RunningExampleFinder.DefaultExamplesDirectory.resolve(repository == null ? "unknown" : repository.getRepositoryName())
-                        ),
-                new CollapseNestedNonEditedMacros()
-        );
+        final List<DiffTreeTransformer> processing = new ArrayList<>();
+        processing.add(new CutNonEditedSubtrees());
+        if (repository != null && repository.hasFeatureAnnotationFilter()) {
+            processing.add(new FeatureExpressionFilter(repository.getFeatureAnnotationFilter()));
+        }
+        processing.add(new RunningExampleFinder(repository == null ? DiffNodeParser.Default : repository.getParseOptions().annotationParser()).
+                The_Diff_Itself_Is_A_Valid_DiffTree_And(
+                        RunningExampleFinder.DefaultExampleConditions,
+                        RunningExampleFinder.DefaultExamplesDirectory.resolve(repository == null ? "unknown" : repository.getRepositoryName())
+                ));
+        processing.add(new CollapseNestedNonEditedMacros());
+        return processing;
     }
 
     public static DiffTreeLineGraphExportOptions ExportOptions(final Repository repository) {

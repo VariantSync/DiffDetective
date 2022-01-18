@@ -5,11 +5,10 @@ import diff.difftree.CodeType;
 import diff.difftree.DiffNode;
 import diff.difftree.DiffType;
 import feature.CPPAnnotationParser;
-import feature.IsFeatureAnnotation;
 import org.prop4j.Node;
 
-public record DiffNodeParser(CPPAnnotationParser annotationParser, IsFeatureAnnotation isFeatureAnnotation) {
-    public static final DiffNodeParser Default = new DiffNodeParser(CPPAnnotationParser.Default, IsFeatureAnnotation.YES_TO_ALL);
+public record DiffNodeParser(CPPAnnotationParser annotationParser) {
+    public static final DiffNodeParser Default = new DiffNodeParser(CPPAnnotationParser.Default);
 
     /**
      * Creates a DiffNode from a line and two parents
@@ -27,10 +26,6 @@ public record DiffNodeParser(CPPAnnotationParser annotationParser, IsFeatureAnno
             featureMapping = null;
         } else {
             featureMapping = annotationParser.parseDiffLine(diffLine);
-            if (!isFeatureAnnotation.test(diffLine, featureMapping)) {
-                codeType = CodeType.CODE;
-                featureMapping = null;
-            }
         }
 
         return new DiffNode(

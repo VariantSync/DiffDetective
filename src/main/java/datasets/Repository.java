@@ -1,6 +1,7 @@
 package datasets;
 
 import diff.DiffFilter;
+import diff.difftree.DiffNode;
 import load.GitLoader;
 import org.eclipse.jgit.api.Git;
 import org.pmw.tinylog.Logger;
@@ -9,6 +10,7 @@ import util.IO;
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 /**
  * Representation of git repositories used as datasets for DiffDetective.
@@ -45,6 +47,11 @@ public class Repository {
      * Options to configure parsing and memory consumption (e.g., by not keeping full diffs in memory).
      */
 	private ParseOptions parseOptions;
+
+    /**
+     * A tree transformer that eliminates all nodes in a diff tree that
+     */
+    private Predicate<DiffNode> isFeatureAnnotation = null;
 	
 	/**
 	 * Creates a repository.
@@ -170,6 +177,11 @@ public class Repository {
         return this;
 	}
 
+    public Repository setFeatureAnnotationFilter(final Predicate<DiffNode> isFeatureAnnotation) {
+        this.isFeatureAnnotation = isFeatureAnnotation;
+        return this;
+    }
+
 	public DiffFilter getDiffFilter() {
 		return diffFilter;
 	}
@@ -177,6 +189,14 @@ public class Repository {
 	public ParseOptions getParseOptions() {
 		return parseOptions;
 	}
+
+    public boolean hasFeatureAnnotationFilter() {
+        return isFeatureAnnotation != null;
+    }
+
+    public Predicate<DiffNode> getFeatureAnnotationFilter() {
+        return isFeatureAnnotation;
+    }
 
 	public Git load() {
 		Logger.info("Loading git at {} ...", getLocalPath());

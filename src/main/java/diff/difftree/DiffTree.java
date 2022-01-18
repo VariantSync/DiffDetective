@@ -160,6 +160,26 @@ public class DiffTree {
         return root == null || root.getCardinality() == 0;
     }
 
+    /**
+     * Removes the given node from the DiffTree but keeps its children.
+     * @param node The node to remove.
+     */
+    public void removeNode(DiffNode node) {
+        Assert.assertTrue(node != root);
+
+        final DiffNode beforeParent = node.getBeforeParent();
+        if (beforeParent != null) {
+            beforeParent.removeBeforeChild(node);
+            beforeParent.addBeforeChildren(node.removeBeforeChildren());
+        }
+
+        final DiffNode afterParent = node.getAfterParent();
+        if (afterParent != null) {
+            afterParent.removeAfterChild(node);
+            afterParent.addAfterChildren(node.removeAfterChildren());
+        }
+    }
+
     private static class AllPathsEndAtRoot {
         private enum VisitStatus {
             STRANGER,
