@@ -1,6 +1,6 @@
 ﻿module DiffTree where
 
-import Data.List ( find )
+import Data.List ( find, intercalate )
 
 import Definitions
 import Feature ( Feature, FeatureAnnotation )
@@ -62,6 +62,12 @@ data VDT f = VDT {
     edges :: [VDTEdge f]
 }
 
+instance Show f => Show (VDTEdge f) where
+    show edge = show (time edge) ++ ": " ++ show (child edge) ++ " -> " ++ show (parent edge)
+
+instance Show f => Show (VDT f) where
+    show vdt = "VDT {" ++ intercalate "\n  " ("":(show <$> edges vdt)) ++ "\n}"
+
 parentEdge :: (Eq f) => VDT f -> VDTNode f -> Time -> Maybe (VDTEdge f)
 parentEdge tree node t = find (\edge -> child edge == node && time edge == t) (edges tree)
 
@@ -82,3 +88,6 @@ findNodeWithCode :: CodeFragment -> VDT f -> VDTNode f
 findNodeWithCode code vdt = case find (hasCode code) (nodes vdt) of
     Nothing -> error "Cannot compute pc of code that was not part of the initial VDT."
     Just node -> node
+
+printNodes :: Show f => VDT f -> String 
+printNodes vdt = intercalate "\n" (show <$> nodes vdt)

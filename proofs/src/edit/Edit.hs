@@ -1,5 +1,7 @@
 ﻿module Edit where
 
+import Data.List
+
 import Definitions
 import Feature
 import Util
@@ -9,6 +11,22 @@ data Edit f = Edit {
     editTypes :: CodeFragment -> DiffType,
     pc :: Time -> CodeFragment -> f   -- PC_b and PC_a in the paper
 }
+
+instance Show f => Show (Edit f) where
+    show e =
+        "Edit {\n"
+        ++ intercalate "\n" (fmap (\s ->
+            let d = editTypes e s in
+            unwords [
+                "  ",
+                show d,
+                show s,
+                "with PC_b =",
+                if existsBefore d then show (pc e BEFORE s) else "undef",
+                "and PC_a =",
+                if existsAfter d then show (pc e AFTER s) else "undef"
+            ]) (editedCodeFragments e))
+        ++ "\n}"
 
 instance (FeatureAnnotation f) => Eq (Edit f) where
     x == y =

@@ -28,3 +28,8 @@ propertiesEqual = propertiesEqualUnder (==)
 
 -- foreach :: [a] -> (a -> [b]) -> [b]
 -- foreach = (>>=)
+
+removeDuplicates :: (Eq a) => [a] -> [a]
+removeDuplicates [] = []
+removeDuplicates [x] = [x]
+removeDuplicates (x:xs) = x : [ k  | k  <- removeDuplicates xs, k /= x ]

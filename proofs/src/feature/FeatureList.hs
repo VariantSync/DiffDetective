@@ -4,7 +4,10 @@ import Data.List.Ordered
 
 import Feature
 
-newtype FeatureList = Features [Feature] deriving (Eq, Show)
+newtype FeatureList = Features [Feature] deriving (Eq)
+
+instance Show FeatureList where
+    show (Features list) = show list
 
 instance Semigroup FeatureList where
     Features a <> Features b = Features (a ++ b)

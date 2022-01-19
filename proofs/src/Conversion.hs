@@ -71,16 +71,14 @@ complete edit =
         codeToPCEdges = createPartialVDT edit
 
         root = createRoot
-        macroNodes = parent <$> codeToPCEdges
-        codeNodes  = child <$> codeToPCEdges
-        allEdges = macroNodes >>= \m -> -- for each macro node m
-            -- create edges to root for each time t at which m exists
-                (\t -> VDTEdge { child = m, parent = root, time = t})
-                <$> fromDiffType (diffType m)
+        macroNodes = removeDuplicates $ parent <$> codeToPCEdges
+        codeNodes  = removeDuplicates $ child <$> codeToPCEdges
+        -- create edges to the root from each macro node m (at all times t at which m exists).
+        pcToRootEdges = [VDTEdge { child = m, parent = root, time = t} | m <- macroNodes, t <- fromDiffType (diffType m)]
         in
     VDT {
         nodes = root:(macroNodes++codeNodes),
-        edges = allEdges
+        edges = codeToPCEdges++pcToRootEdges
     }
 
 {-
