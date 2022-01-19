@@ -2,55 +2,83 @@
 
 import Data.List ( find )
 
-import Names
+import Definitions
 import Feature ( Feature, FeatureAnnotation )
 
-data CodeType = CODE | MAPPING
-data Label f = Leaf CodeFragment | Inner f
-type DiffTreePC f = Time -> DiffTreeNode f -> f
+----- VDT NODES
 
-data DiffTreeNode f = DiffTreeNode {
+-- The label of diff tree nodes. Because we have sum types in haskell, we can directly encode the code type, too.
+data Label f = Code CodeFragment | Mapping f deriving (Eq, Show)
+
+data VDTNode f = Node {
     label :: Label f,
-    codeType :: CodeType,
-    diffType :: DiffType,
-    parent :: Time -> Maybe (DiffTreeNode f)
+    diffType :: DiffType
+} deriving (Eq, Show)
+
+createRoot :: FeatureAnnotation f => VDTNode f
+createRoot = Node {
+    label = Mapping mempty,
+    diffType = NON
 }
 
-data DiffTree f = DiffTree {
-    v :: [DiffTreeNode f] -- TODO: This format is shit. We need a generic tree structure. Either store only leaves or make a rose tree with a parent function.
+createCodeNode :: CodeFragment -> DiffType -> VDTNode f
+createCodeNode c d = Node {
+    label = Code c,
+    diffType = d
+}
+
+createMappingNode :: f -> DiffType -> VDTNode f
+createMappingNode m d = Node {
+    label = Mapping m,
+    diffType = d
 }
 
 {- called F in the paper -}
-featureOf :: (FeatureAnnotation f) => DiffTreeNode f -> f
+featureOf :: (FeatureAnnotation f) => VDTNode f -> f
 featureOf v = case label v of
-    Leaf code -> mempty
-    Inner fm  -> fm
+    Code code -> mempty
+    Mapping m  -> m
 
-{- called pc in the paper -}
-pcInDiffTree :: (FeatureAnnotation f) => DiffTreePC f
-pcInDiffTree t v = case parent v t of
-    Nothing -> featureOf v
-    Just p -> mappend (featureOf v) (pcInDiffTree t p)
+hasCode :: CodeFragment -> VDTNode f -> Bool
+hasCode code node = case label node of
+    Code c -> c == code
+    Mapping _ -> False
 
-codeOf :: DiffTreeNode f -> Maybe CodeFragment
+codeOf :: VDTNode f -> Maybe CodeFragment
 codeOf v = case label v of
-    Leaf c -> Just c
-    Inner _ -> Nothing
+    Code c -> Just c
+    Mapping _ -> Nothing
 
-equalsCodeFragment :: CodeFragment -> DiffTreeNode f -> Bool
-equalsCodeFragment code node = case label node of
-    Leaf c -> c == code
-    Inner _ -> False
+----- VDTS
 
-findNodeWithCode :: CodeFragment -> DiffTree f -> DiffTreeNode f
-findNodeWithCode code tree = case find (equalsCodeFragment code) (v tree) of
-            Nothing -> error "Cannot compute pc of code that was not part of the initial DiffTree."
-            Just node -> node
-
-createLeaf :: CodeFragment -> DiffType -> (Time -> Maybe (DiffTreeNode f)) -> DiffTreeNode f
-createLeaf code diffType parents = DiffTreeNode {
-    label = Leaf code,
-    codeType = CODE,
-    diffType = diffType,
-    parent = parents
+data VDTEdge f = VDTEdge {
+    child :: VDTNode f,
+    parent :: VDTNode f,
+    time :: Time
 }
+
+data VDT f = VDT {
+    nodes :: [VDTNode f],
+    edges :: [VDTEdge f]
+}
+
+parentEdge :: (Eq f) => VDT f -> VDTNode f -> Time -> Maybe (VDTEdge f)
+parentEdge tree node t = find (\edge -> child edge == node && time edge == t) (edges tree)
+
+parentOf :: (Eq f) => VDT f -> VDTNode f -> Time -> Maybe (VDTNode f)
+parentOf tree node time = parent <$> parentEdge tree node time
+
+pathToRoot :: (Eq f) => Time -> VDT f -> VDTNode f -> [VDTNode f]
+pathToRoot time vdt node = node:(case parentOf vdt node time of
+    Just p -> pathToRoot time vdt p
+    Nothing -> []
+    )
+
+{- called PC in the paper -}
+pcInVDT :: (FeatureAnnotation f) => Time -> VDT f -> VDTNode f -> f
+pcInVDT time vdt node = mconcat (featureOf <$> pathToRoot time vdt node)
+
+findNodeWithCode :: CodeFragment -> VDT f -> VDTNode f
+findNodeWithCode code vdt = case find (hasCode code) (nodes vdt) of
+    Nothing -> error "Cannot compute pc of code that was not part of the initial VDT."
+    Just node -> node

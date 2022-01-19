@@ -1,32 +1,85 @@
 ﻿module Conversion where
 
-import Data.Maybe ( mapMaybe )
+import Data.Maybe ( catMaybes )
 
-import Names
+import Definitions
 import DiffTree
 import Edit
 import Feature
+import Util
 
-sound :: (FeatureAnnotation f) => DiffTree f -> Edit f
-sound t = Edit {
-    editedCodeFragments = mapMaybe codeOf (v t),
-    pcInEdit = \time code -> pcInDiffTree time (findNodeWithCode code t),
-    editTypes = \code -> d (findNodeWithCode code t)
+sound :: (FeatureAnnotation f) => VDT f -> Edit f
+sound vdt = Edit {
+    editedCodeFragments = catMaybes (codeOf <$> nodes vdt),
+    editTypes = \code -> diffType (findNodeWithCode code vdt),
+    pc = \time code -> pcInVDT time vdt (findNodeWithCode code vdt)
 }
 
-transformPC :: EditPC f -> DiffTreePC f
-transformPC = error "lol"
+{- |
+This function is an intermediate step in converting edits to VDTs.
+For each code fragment s, a code node is created.
+For each code fragment s, a mapping node is created for each time t at which s exists (e.g., ADD nodes only exist after the edit, see 'Definitions.existsAtTime').
+Each mapping node represents exactly one presence condition.
+The node of each code fragment s is then connected to its respective mapping nodes via 'VDTEdge's.
 
-complete :: (FeatureAnnotation f) => Edit f -> DiffTree f
-complete = error "not implemented"
---complete edit = DiffTree {
---    v = (\code -> createLeaf code (editTypes edit code) (computeParents)) <$> (editedCodeFragments edit)
---}
-
-{-
-sound (complete e) == e
-(==) (sound (complete e)) e
+Example:
+Given edited code fragments /[1, 2, 3]/
+with diff types /d(1) = ADD/, /d(2) = REM/, and /d(3) = NON/
+and presence conditions /PC_a(1) = X/, /PC_b(2) = Y/, /PC_b(3) = Y/, and /PC_a(3) = X/
+then the following VDT Edites are constructed (note that presence conditions are only defined at times where the respective code fragments exist):
+[
+    VDTEdge {
+        child  = VDTNode { label = Code "1", difftype = ADD},
+        parent = VDTNode { label = Mapping X, difftype = NON},
+        time   = AFTER
+    },
+    VDTEdge {
+        child  = VDTNode { label = Code "2", difftype = REM},
+        parent = VDTNode { label = Mapping Y, difftype = NON},
+        time   = BEFORE
+    },
+    VDTEdge {
+        child  = VDTNode { label = Code "3", difftype = NON},
+        parent = VDTNode { label = Mapping X, difftype = NON},
+        time   = BEFORE
+    },
+    VDTEdge {
+        child  = VDTNode { label = Code "3", difftype = NON},
+        parent = VDTNode { label = Mapping Y, difftype = NON},
+        time   = AFTER
+    },
+]
 -}
+createPartialVDT :: (FeatureAnnotation f) => Edit f -> [VDTEdge f]
+createPartialVDT edit =
+    --- for each edited code fragment s
+    editedCodeFragments edit >>= \s ->
+        let --- create a code node
+            d = editTypes edit s
+            codenode = createCodeNode s d
+        in
+            --- for each time t
+            [BEFORE, AFTER] >>= \t ->
+                --- create the respective mapping node and connect it with an edge if s exists at that time
+                [VDTEdge { child = codenode, parent = createMappingNode (pc edit t s) NON, time = t} | existsAtTime t d]
+
+complete :: (FeatureAnnotation f) => Edit f -> VDT f
+complete edit =
+    let
+        codeToPCEdges = createPartialVDT edit
+
+        root = createRoot
+        macroNodes = parent <$> codeToPCEdges
+        codeNodes  = child <$> codeToPCEdges
+        allEdges = macroNodes >>= \m -> -- for each macro node m
+            -- create edges to root for each time t at which m exists
+                (\t -> VDTEdge { child = m, parent = root, time = t})
+                <$> fromDiffType (diffType m)
+        in
+    VDT {
+        nodes = root:(macroNodes++codeNodes),
+        edges = allEdges
+    }
 
 {-
 I have to prove that sound . complete = id and complete . sound = id w.r.t. to isomorphism (implemented as Eq currently).

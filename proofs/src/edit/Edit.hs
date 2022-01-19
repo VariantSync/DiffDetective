@@ -1,29 +1,26 @@
 ﻿module Edit where
 
-import Names
+import Definitions
 import Feature
-
-type EditPC f = Time -> CodeFragment -> f
+import Util
 
 data Edit f = Edit {
     editedCodeFragments :: [CodeFragment], -- S in the paper
     editTypes :: CodeFragment -> DiffType,
-    pcInEdit :: EditPC f   -- p_b and p_a in the paper
+    pc :: Time -> CodeFragment -> f   -- PC_b and PC_a in the paper
 }
 
--- IMPORTANT: We dont need eval on feature annotations anymore because we have editTypes! So we dont need a "false" value anymore.
-
 instance (FeatureAnnotation f) => Eq (Edit f) where
-    a == b =
+    x == y =
         let
-            editedCodeA = editedCodeFragments a
-            editedCodeB = editedCodeFragments b
+            editedCodeX = editedCodeFragments x
+            editedCodeY = editedCodeFragments y
             in
-        -- edited code fragments have to be equal
-        (editedCodeA == editedCodeB) -- set equals
-        -- the type of edit to each code fragment should be equal
-        && (fmap (editTypes a) editedCodeA == fmap (editTypes b) editedCodeB) -- zu naiv: Weil set equals: Über eine Liste itereiren und bei beiden Funktionen muss das Gleiche rauskommen
-        -- all presence condition should be equivalent
-        -- TODO: Beautify the following
-        && and (fmap (\code -> equivalent (pcInEdit a BEFORE code) (pcInEdit b BEFORE code)) editedCodeA)
-        && and (fmap (\code -> equivalent (pcInEdit a AFTER code) (pcInEdit b AFTER code)) editedCodeA)
+        -- 1.) edited code fragments have to be equal
+        (editedCodeX == editedCodeY) -- set equals
+        -- 2.) the type of edit to each code fragment should be equal
+        -- If the edited code fragements are equall, we can just look at one of the lists (lets say editedCodeX) from now on.
+        && propertiesEqual (editTypes x) (editTypes y) editedCodeX
+        -- 3.) all presence condition should be equivalent
+        && propertiesEqualUnder equivalent (pc x BEFORE) (pc y BEFORE) editedCodeX
+        && propertiesEqualUnder equivalent (pc x AFTER)  (pc y AFTER)  editedCodeX
