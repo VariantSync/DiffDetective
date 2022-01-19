@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 8832e2304db408c87b31427db3b8e783bc54337c88a22342a9639c762647872d
+-- hash: 5acb01d60e4d9cbdc060c6eaf8b3a94325fc20e433769dbd4b829e6103c8acf7
 
 name:           proofs
 version:        0.1.0.0
@@ -28,9 +28,10 @@ source-repository head
 library
   exposed-modules:
       Conversion
+      Definitions
+      Util
       DiffTree
       Edit
-      Names
       Feature
       FeatureList
   other-modules:
