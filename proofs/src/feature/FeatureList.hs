@@ -4,7 +4,7 @@ import Data.List.Ordered
 
 import Feature
 
-newtype FeatureList = Features [Feature]
+newtype FeatureList = Features [Feature] deriving (Eq, Show)
 
 instance Semigroup FeatureList where
     Features a <> Features b = Features (a ++ b)
@@ -14,4 +14,4 @@ instance Monoid FeatureList where
 
 instance FeatureAnnotation FeatureList where
     (Features a) `implies` (Features b) = b `subset` a
-    eval assignment (Features f) = and (fmap assignment f)
+    -- eval assignment (Features f) = and (fmap assignment f)
