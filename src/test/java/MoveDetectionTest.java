@@ -12,7 +12,7 @@ public class MoveDetectionTest {
 
     @Test
     public void simpleTest() throws IOException {
-        final DiffTree t = DiffTree.fromFile(resDir.resolve("simple.txt"), true, true);
+        final DiffTree t = DiffTree.fromFile(resDir.resolve("simple.txt"), true, true).unwrap().getSuccess();
         final DiffTreeRenderer renderer = DiffTreeRenderer.WithinDiffDetective();
         renderer.render(t, "MoveDetectionTestSimpleTest_Before", genDir);
         new NaiveMovedCodeDetection().transform(t);

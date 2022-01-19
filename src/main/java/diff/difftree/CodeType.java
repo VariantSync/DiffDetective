@@ -38,4 +38,14 @@ public enum CodeType {
             return CODE;
         }
     }
+
+    public static CodeType fromName(final String name) {
+        for (CodeType candidate : values()) {
+            if (candidate.toString().equalsIgnoreCase(name)) {
+                return candidate;
+            }
+        }
+
+        throw new IllegalArgumentException("Given string \"" + name + "\" is not the name of a CodeType.");
+    }
 }

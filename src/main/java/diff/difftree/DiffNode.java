@@ -2,16 +2,17 @@ package diff.difftree;
 
 import diff.DiffLineNumber;
 import diff.Lines;
-import org.prop4j.*;
+import org.prop4j.And;
+import org.prop4j.Node;
+import org.prop4j.Not;
 import util.Assert;
+import util.fide.FixTrueFalse;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Implementation of a node of the diff tree.
@@ -20,10 +21,6 @@ import java.util.regex.Pattern;
  */
 public class DiffNode {
 	private static final short ID_OFFSET = 8;
-
-    public static final String EQUAL_PLACEHOLDER = "__eq__";
-    public static final String TRUE_LITERAL_NAME = "__true__";
-    public static final String INVALID_ANNOTATION = "__INVALID_ANNOTATION__";
 
     public DiffType diffType;
     public CodeType codeType;
@@ -80,35 +77,13 @@ public class DiffNode {
                 CodeType.ROOT,
                 new DiffLineNumber(1, 1, 1),
                 DiffLineNumber.Invalid(),
-                // new True() sadly does not work
-                new Literal(TRUE_LITERAL_NAME),
+                FixTrueFalse.True,
                 ""
         );
     }
 
     public static DiffNode createCode(DiffType diffType, DiffLineNumber fromLines, DiffLineNumber toLines, String code) {
         return new DiffNode(diffType, CodeType.CODE, fromLines, toLines, null, code);
-    }
-
-    /**
-     * Creates a DiffNode from a line and two parents
-     *
-     * @param line The line which the new node node corresponds to
-     * @return A DiffNode with a code type, diff type, feature mapping and parents
-     */
-    public static DiffNode fromDiffLine(String line) {
-        DiffNode diffNode = new DiffNode();
-        diffNode.diffType = DiffType.ofDiffLine(line);
-        diffNode.codeType = CodeType.ofDiffLine(line);
-        diffNode.label = line.isEmpty() ? line : line.substring(1);
-
-        if (diffNode.isCode() || diffNode.isEndif() || diffNode.isElse()) {
-            diffNode.featureMapping = null;
-        } else {
-            diffNode.featureMapping = parseFeatureMapping(line);
-        }
-
-        return diffNode;
     }
 
     public void setLabel(final String label) {
@@ -201,6 +176,19 @@ public class DiffNode {
         }
 
         return afterParent.getAfterDepth() + 1;
+    }
+
+    public boolean beforePathEqualsAfterPath() {
+        if (beforeParent == afterParent) {
+            if (beforeParent == null) {
+                // root
+                return true;
+            }
+
+            return beforeParent.beforePathEqualsAfterPath();
+        }
+
+        return false;
     }
 
     /**
@@ -408,9 +396,9 @@ public class DiffNode {
         }
     }
 
-    public void stealChildrenOf(final DiffNode parent) {
-        addBeforeChildren(parent.removeBeforeChildren());
-        addAfterChildren(parent.removeAfterChildren());
+    public void stealChildrenOf(final DiffNode other) {
+        addBeforeChildren(other.removeBeforeChildren());
+        addAfterChildren(other.removeAfterChildren());
     }
 
     /**
@@ -463,14 +451,15 @@ public class DiffNode {
         return isMultilineMacro;
     }
 
-    private Node getFeatureMapping(Function<DiffNode, DiffNode> parentOf, Function<DiffNode, Node> featureMappingOf) {
+    private Node getFeatureMapping(Function<DiffNode, DiffNode> parentOf) {
         final DiffNode parent = parentOf.apply(this);
 
-        if (isElse()) {
-            return new Not(featureMappingOf.apply(parent));
-        } else if (isElif()) {
+        if (isElse() || isElif()) {
             List<Node> and = new ArrayList<>();
-            and.add(featureMapping);
+
+            if (isElif()) {
+                and.add(featureMapping);
+            }
 
             // Negate all previous cases
             DiffNode ancestor = parent;
@@ -482,18 +471,10 @@ public class DiffNode {
 
             return new And(and);
         } else if (isCode()) {
-            return featureMappingOf.apply(parent);
+            return parent.getFeatureMapping(parentOf);
         }
 
         return featureMapping;
-    }
-
-    /**
-     * Gets the feature mapping of the node after the patch
-     * @return the feature mapping of the node after the patch
-     */
-    public Node getAfterFeatureMapping() {
-        return getFeatureMapping(DiffNode::getAfterParent, DiffNode::getAfterFeatureMapping);
     }
 
     /**
@@ -501,7 +482,63 @@ public class DiffNode {
      * @return the feature mapping of the node before the patch
      */
     public Node getBeforeFeatureMapping() {
-        return getFeatureMapping(DiffNode::getBeforeParent, DiffNode::getBeforeFeatureMapping);
+        return getFeatureMapping(DiffNode::getBeforeParent);
+    }
+
+    /**
+     * Gets the feature mapping of the node after the patch
+     * @return the feature mapping of the node after the patch
+     */
+    public Node getAfterFeatureMapping() {
+        return getFeatureMapping(DiffNode::getAfterParent);
+    }
+
+    private List<Node> getPresenceCondition(Function<DiffNode, DiffNode> parentOf) {
+        final DiffNode parent = parentOf.apply(this);
+
+        if (isElse() || isElif()) {
+            final List<Node> clauses = new ArrayList<>();
+
+            if (isElif()) {
+                clauses.add(featureMapping);
+            }
+
+            // Negate all previous cases
+            DiffNode ancestor = parent;
+            while (!ancestor.isIf()) {
+                clauses.add(new Not(ancestor.getDirectFeatureMapping()));
+                ancestor = parentOf.apply(ancestor);
+            }
+            // negate the if that started this elif-else-chain
+            clauses.add(new Not(ancestor.getDirectFeatureMapping()));
+
+            // If this elif-else-chain was again nested in another annotation, add its pc.
+            final DiffNode outerNesting = parentOf.apply(ancestor);
+            if (outerNesting != null) {
+                clauses.addAll(outerNesting.getPresenceCondition(parentOf));
+            }
+
+            return clauses;
+        } else if (isCode()) {
+            return parent.getPresenceCondition(parentOf);
+        }
+
+        final List<Node> clauses;
+        if (parent == null) {
+            clauses = new ArrayList<>();
+        } else {
+            clauses = parent.getPresenceCondition(parentOf);
+        }
+        clauses.add(featureMapping);
+        return clauses;
+    }
+
+    public Node getBeforePresenceCondition() {
+        return new And(getPresenceCondition(DiffNode::getBeforeParent));
+    }
+
+    public Node getAfterPresenceCondition() {
+        return new And(getPresenceCondition(DiffNode::getAfterParent));
     }
 
     public boolean isRem() {
@@ -576,7 +613,7 @@ public class DiffNode {
     }
 
     public void assertConsistency() {
-        // check consistency of children
+        // check consistency of children lists and edges
         for (final DiffNode bc : beforeChildren) {
             Assert.assertTrue(bc.beforeParent == this, () -> "Before child " + bc + " of " + this + " has another parent " + bc.beforeParent + "!");
             Assert.assertTrue(allChildren.contains(bc), () -> "Before child " + bc + " of " + this + " is not in the list of all children!");
@@ -587,6 +624,18 @@ public class DiffNode {
         }
         for (final DiffNode c : allChildren) {
             Assert.assertTrue(beforeChildren.contains(c) || afterChildren.contains(c), () -> "Child " + c + " of " + this + " is neither a before not an after child!");
+        }
+
+        // a node with exactly one parent was edited
+        if (beforeParent == null && afterParent != null) {
+            Assert.assertTrue(isAdd());
+        }
+        if (beforeParent != null && afterParent == null) {
+            Assert.assertTrue(isRem());
+        }
+        // a node with exactly two parents was not edited
+        if (beforeParent != null && afterParent != null) {
+            Assert.assertTrue(isNon());
         }
     }
 
@@ -602,85 +651,6 @@ public class DiffNode {
                     from.inDiff, to.inDiff, featureMapping);
         }
         return s;
-    }
-
-    /**
-     * Gets a feature mapping from an annotation line using a NodeReader
-     * @param line The line of which to get the feature mapping
-     * @return The feature mapping of the given line
-     */
-    private static Node parseFeatureMapping(String line) {
-        String fmString = getFMString(line);
-
-        Node node = null;
-        if (fmString != null) {
-            NodeReader nodeReader = new NodeReader();
-            nodeReader.activateJavaSymbols();
-            node = nodeReader.stringToNode(fmString);
-        } else {
-            fmString = INVALID_ANNOTATION;
-        }
-
-        if (node == null) {
-//            Logger.warn("Could not parse expression \"{}\" to feature mapping. Using it as literal.", fmString);
-            node = new Literal(fmString);
-        }
-
-        // negate for ifndef
-        if (line.contains("ifndef")) {
-            node = new Not(node);
-        }
-
-        return node;
-
-    }
-
-    /**
-     * Gets the feature mapping as a String from an annotation line
-     * @param line The line of which to get the feature mapping
-     * @return The feature mapping as a String of the given line
-     */
-    private static String getFMString(String line) {
-        // ^[+-]?\s*#\s*(if|ifdef|ifndef|elif)(\s+(.*)|\((.*)\))$
-        String regex = "^[+-]?\\s*#\\s*(if|ifdef|ifndef|elif)(\\s+(.*)|\\((.*)\\))$";
-        Pattern regexPattern = Pattern.compile(regex);
-        Matcher matcher = regexPattern.matcher(line);
-
-        String fm;
-        if (matcher.find()) {
-            if (matcher.group(3) != null) {
-                fm = matcher.group(3);
-            } else {
-                fm = matcher.group(4);
-            }
-        } else {
-            return null;
-        }
-
-        // remove comments
-        fm = fm.split("//")[0];
-        fm = fm.replaceAll("/\\*.*\\*/", "");
-
-        // remove whitespace
-        fm = fm.trim();
-
-        // remove defined(), ENABLED() and DISABLED()
-        fm = fm.replaceAll("defined\\s*\\(([^)]*)\\)", "$1");
-        fm = fm.replaceAll("defined ", " ");
-        fm = fm.replaceAll("ENABLED\\s*\\(([^)]*)\\)", "$1");
-        fm = fm.replaceAll("DISABLED\\s*\\(([^)]*)\\)", "!($1)");
-
-        // remove whitespace
-
-        fm = fm.replaceAll("\\s", "");
-
-        // remove parentheses from custom cpp functions such as MB() or PIN_EXISTS()
-        fm = fm.replaceAll("(\\w+)\\((\\w*)\\)", "$1__$2");
-
-        // replace all "=="'s with a placeholder because NodeReader parses these
-        fm = fm.replaceAll("==", EQUAL_PLACEHOLDER);
-
-        return fm;
     }
 
     @Override

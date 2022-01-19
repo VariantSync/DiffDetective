@@ -6,12 +6,8 @@ import analysis.data.PatchDiffAnalysisResult;
 import diff.CommitDiff;
 import diff.GitDiff;
 import diff.PatchDiff;
-import diff.difftree.DiffNode;
 import pattern.EditPattern;
-import pattern.InvalidPatchPattern;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -22,17 +18,16 @@ import java.util.List;
 public abstract class GDAnalyzer<E> {
 
     final GitDiff gitDiff;
-    final EditPattern<E>[] patterns;
+    final List<EditPattern<E>> patterns;
 
-    @SuppressWarnings("unchecked")
-    public GDAnalyzer(GitDiff gitDiff, EditPattern<DiffNode>[] patterns) {
+    public GDAnalyzer(GitDiff gitDiff, List<EditPattern<E>> patterns) {
         this.gitDiff = gitDiff;
-        List<EditPattern<DiffNode>> patternList = new ArrayList<>(Arrays.asList(patterns));
-        patternList.add(0, new InvalidPatchPattern<>());
-        this.patterns = patternList.toArray(new EditPattern[0]);
+//        List<EditPattern<DiffNode>> patternList = new ArrayList<>(Arrays.asList(patterns));
+//        patternList.add(0, new InvalidPatchPattern<>());
+        this.patterns = patterns;
     }
 
-    public EditPattern<E>[] getPatterns() {
+    public List<EditPattern<E>> getPatterns() {
         return patterns;
     }
 

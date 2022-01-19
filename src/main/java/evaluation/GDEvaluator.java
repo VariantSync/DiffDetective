@@ -6,6 +6,7 @@ import analysis.data.GDAnalysisResult;
 import analysis.data.PatchDiffAnalysisResult;
 import analysis.data.PatternMatch;
 import diff.PatchDiff;
+import diff.difftree.DiffNode;
 import org.pmw.tinylog.Logger;
 import org.prop4j.Implies;
 import org.prop4j.Node;
@@ -29,10 +30,10 @@ public class GDEvaluator {
             "Start Line", "End Line", "Feature Context"};
 
     private final GDAnalysisResult analysisResult;
-    private final GDAnalyzer analyzer;
+    private final GDAnalyzer<DiffNode> analyzer;
     private final List<PatternMatchEvaluation> pmEvaluations;
 
-    public GDEvaluator(GDAnalyzer analyzer, GDAnalysisResult analysisResult) {
+    public GDEvaluator(GDAnalyzer<DiffNode> analyzer, GDAnalysisResult analysisResult) {
         this.analyzer = analyzer;
         this.analysisResult = analysisResult;
         this.pmEvaluations = getEvaluations();
@@ -50,7 +51,7 @@ public class GDEvaluator {
                 analysisResult.getCommitDiffAnalysisResults()) {
             for (PatchDiffAnalysisResult patchResult :
                     commitResult.getPatchDiffAnalysisResults()) {
-                for (PatternMatch patternMatch : patchResult.getPatternMatches()) {
+                for (PatternMatch<DiffNode> patternMatch : patchResult.getPatternMatches()) {
                     PatternMatchEvaluation pme = new PatternMatchEvaluation(commitResult,
                             patchResult, patternMatch, patternMatch.getFeatureContexts());
                     evaluations.add(pme);
@@ -65,12 +66,12 @@ public class GDEvaluator {
      * @param patterns The patterns to search for
      * @return An int array containing the amount of matches for each pattern
      */
-    public int[] getPatternCounts(EditPattern[] patterns) {
-        int[] patternCounts = new int[patterns.length];
+    public <E> int[] getPatternCounts(List<EditPattern<E>> patterns) {
+        int[] patternCounts = new int[patterns.size()];
 
         for (PatternMatchEvaluation pme : pmEvaluations) {
-            for (int i = 0; i < patterns.length; i++) {
-                if (pme.getPatternMatch().getPattern().getClass() == patterns[i].getClass()) {
+            for (int i = 0; i < patterns.size(); i++) {
+                if (pme.getPatternMatch().getPattern().getClass() == patterns.get(i).getClass()) {
                     patternCounts[i]++;
                 }
             }
@@ -84,14 +85,14 @@ public class GDEvaluator {
      * @param patterns The patterns to search for
      * @return An int array containing the amount of patches tha contain a match for each pattern
      */
-    public int[] getPatchesWithPatternCounts(EditPattern[] patterns) {
-        int[] patternCounts = new int[patterns.length];
+    public <E> int[] getPatchesWithPatternCounts(List<EditPattern<E>> patterns) {
+        int[] patternCounts = new int[patterns.size()];
 
         for (CommitDiffAnalysisResult cdar : analysisResult.getCommitDiffAnalysisResults()) {
             for (PatchDiffAnalysisResult pdar : cdar.getPatchDiffAnalysisResults()) {
-                for (int i = 0; i < patterns.length; i++) {
-                    for (PatternMatch pm : pdar.getPatternMatches()) {
-                        if (pm.getPattern().getClass() == patterns[i].getClass()) {
+                for (int i = 0; i < patterns.size(); i++) {
+                    for (PatternMatch<DiffNode> pm : pdar.getPatternMatches()) {
+                        if (pm.getPattern().getClass() == patterns.get(i).getClass()) {
                             patternCounts[i]++;
                             break;
                         }
@@ -102,12 +103,12 @@ public class GDEvaluator {
         return patternCounts;
     }
 
-    private int[] getLineCounts(EditPattern[] patterns) {
-        int[] lineCounts = new int[patterns.length];
+    private <E> int[] getLineCounts(List<EditPattern<E>> patterns) {
+        int[] lineCounts = new int[patterns.size()];
 
         for (PatternMatchEvaluation pme : pmEvaluations) {
-            for (int i = 0; i < patterns.length; i++) {
-                if (pme.getPatternMatch().getPattern().getClass() == patterns[i].getClass()) {
+            for (int i = 0; i < patterns.size(); i++) {
+                if (pme.getPatternMatch().getPattern().getClass() == patterns.get(i).getClass()) {
                     lineCounts[i] += pme.getPatternMatch().getEndLineDiff() - pme.getPatternMatch().getStartLineDiff();
                 }
             }
@@ -143,7 +144,7 @@ public class GDEvaluator {
                 analysisResult.getCommitDiffAnalysisResults()) {
             for (PatchDiffAnalysisResult patchResult :
                     commitResult.getPatchDiffAnalysisResults()) {
-                for (PatternMatch patternMatch : patchResult.getPatternMatches()) {
+                for (PatternMatch<DiffNode> patternMatch : patchResult.getPatternMatches()) {
                     if (patternName.equals(patternMatch.getPatternName())) {
                         patches.add(patchResult.getPatchDiff());
                     }
@@ -495,7 +496,7 @@ public class GDEvaluator {
         try(BufferedWriter writer = new BufferedWriter(new FileWriter(fileName))){
             writer.write(patchDiff.getCommitDiff().getCommitHash() + ", " + patchDiff.getFileName());
             writer.newLine();
-            writer.write(patchDiff.getFullDiff());
+            writer.write(patchDiff.getDiff());
             writer.flush();
         }catch(IOException e){
             Logger.warn("Could not export patch {} to {}", patchDiff, fileName);
@@ -544,9 +545,9 @@ public class GDEvaluator {
         int[] lineCounts = getLineCounts(analyzer.getPatterns());
         System.out.printf("%-22s | %-6s | %-6s | %-6s%n", "Pattern", "#patch", "#total", "#lines");
         System.out.println("---------------------------------------------------");
-        for (int i = 0; i < analyzer.getPatterns().length; i++) {
+        for (int i = 0; i < analyzer.getPatterns().size(); i++) {
             System.out.printf("%-22s | %-6s | %-6s | %-6s%n",
-                    analyzer.getPatterns()[i].getName(),
+                    analyzer.getPatterns().get(i).getName(),
                     patternCounts[i],
                     patternCountsTotal[i],
                     lineCounts[i]);
@@ -607,7 +608,7 @@ public class GDEvaluator {
 
             System.out.printf("patch (%s, %s)%n",
                     patchDiff.getCommitDiff().getAbbreviatedCommitHash(), patchDiff.getFileName());
-            System.out.println(patchDiff.getFullDiff());
+            System.out.println(patchDiff.getDiff());
 
             System.out.println("######################################");
             System.out.println("######        END OF PATCH      ######");

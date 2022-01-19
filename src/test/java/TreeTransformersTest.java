@@ -1,5 +1,5 @@
-import datasets.DefaultRepositories;
 import datasets.Repository;
+import datasets.predefined.StanciulescuMarlin;
 import diff.CommitDiff;
 import diff.GitDiffer;
 import diff.PatchDiff;
@@ -11,14 +11,14 @@ import diff.difftree.serialize.nodeformat.TypeDiffNodeFormat;
 import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
 import diff.difftree.transform.DiffTreeTransformer;
 import main.Main;
-import main.mining.DiffTreeMiner;
+import mining.DiffTreeMiner;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Test;
+import org.junit.Ignore;
 import org.pmw.tinylog.Level;
 
 import java.io.IOException;
@@ -30,7 +30,6 @@ public class TreeTransformersTest {
     private static final boolean RENDER = true;
     private static final Path resDir = Constants.RESOURCE_DIR.resolve("diffs/collapse");
     private static final Path genDir = resDir.resolve("gen");
-    private static final List<DiffTreeTransformer> transformers = DiffTreeMiner.PostProcessing;
     private static final DiffTreeRenderer.RenderOptions renderOptions = new DiffTreeRenderer.RenderOptions(
             GraphFormat.DIFFTREE,
             new CommitDiffDiffTreeLabelFormat(),
@@ -41,17 +40,18 @@ public class TreeTransformersTest {
             0.3,
             3,
             3,
-            true
+            true,
+            List.of()
             );
 
     private static final Consumer<String> INFO = System.out::println;
 
     private void transformAndRender(String diffFileName) throws IOException {
-        final DiffTree t = DiffTree.fromFile(resDir.resolve(diffFileName), true, true);
-        transformAndRender(t, diffFileName, "0");
+        final DiffTree t = DiffTree.fromFile(resDir.resolve(diffFileName), true, true).unwrap().getSuccess();
+        transformAndRender(t, diffFileName, "0", null);
     }
 
-    private void transformAndRender(DiffTree diffTree, String name, String commit) {
+    private void transformAndRender(DiffTree diffTree, String name, String commit, Repository repository) {
         final DiffTreeRenderer renderer = DiffTreeRenderer.WithinDiffDetective();
         final String treeName = name + LineGraphConstants.TREE_NAME_SEPARATOR + commit;
 
@@ -62,6 +62,7 @@ public class TreeTransformersTest {
 
         int i = 1;
         int prevSize = diffTree.computeSize();
+        final List<DiffTreeTransformer> transformers = DiffTreeMiner.Postprocessing(repository);
         for (final DiffTreeTransformer f : transformers) {
             INFO.accept("Applying transformation " + f + ".");
             f.transform(diffTree);
@@ -84,21 +85,23 @@ public class TreeTransformersTest {
     @Before
     public void init() {
         Main.setupLogger(Level.INFO);
-        DiffTreeTransformer.checkDependencies(transformers);
+//        DiffTreeTransformer.checkDependencies(transformers);
     }
 
-    @Test
+//    @Test
+    @Ignore
     public void simpleTest() throws IOException {
         transformAndRender("simple.txt");
     }
 
-    @Test
+//    @Test
+    @Ignore
     public void elifTest() throws IOException {
         transformAndRender("elif.txt");
     }
 
     private void testCommit(String file, String commitHash) throws IOException {
-        final Repository marlin = DefaultRepositories.stanciulescuMarlinZip(Path.of("."));
+        final Repository marlin = StanciulescuMarlin.fromZipInDiffDetectiveAt(Path.of("."));
 
         final Git git = marlin.load();
         assert git != null;
@@ -111,11 +114,11 @@ public class TreeTransformersTest {
                 marlin.getDiffFilter(),
                 parentCommit,
                 childCommit,
-                marlin.getDebugOptions());
+                marlin.getParseOptions()).unwrap().first().orElseThrow();
 
         for (final PatchDiff pd : commitDiff.getPatchDiffs()) {
             if (file.equals(pd.getFileName())) {
-                transformAndRender(pd.getDiffTree(), file, commitHash);
+                transformAndRender(pd.getDiffTree(), file, commitHash, marlin);
                 revWalk.close();
                 return;
             }
@@ -124,32 +127,38 @@ public class TreeTransformersTest {
         Assert.fail("Did not find file \"" + file + "\" in commit " + commitHash + "!");
     }
 
-    @Test
+//    @Test
+    @Ignore
     public void testWurmcoil() throws IOException {
         testCommit("Marlin/pins.h", "d6d6fb8930be8d0b3bd34592c915732937c6f4d9");
     }
 
-    @Test
+//    @Test
+    @Ignore
     public void testConfiguration_adv() throws IOException {
         testCommit("Marlin/example_configurations/RigidBot/Configuration_adv.h", "d3fe3a0962fdbdcd9548abaf765e0cff72d9cf8d");
     }
 
-    @Test
+//    @Test
+    @Ignore
     public void test_pins_SANGUINOLOLU_11() throws IOException {
         testCommit("Marlin/pins_SANGUINOLOLU_11.h", "d3fe3a0962fdbdcd9548abaf765e0cff72d9cf8d");
     }
 
-    @Test
+//    @Test
+    @Ignore
     public void test_pins_RAMPS_13() throws IOException {
         testCommit("Marlin/pins_RAMPS_13.h", "d882e1aee7fb4e4afb43445899b477caf1fffce3");
     }
 
-    @Test
+//    @Test
+    @Ignore
     public void test_SanityCheck() throws IOException {
         testCommit("Marlin/SanityCheck.h", "cbd582865e2a76b7be3b03533a0e06e8daf76f15");
     }
 
-    @Test
+//    @Test
+    @Ignore
     public void test_pins_MINIRAMBO() throws IOException {
         testCommit("Marlin/pins_MINIRAMBO.h", "50f1a8fd92b351bf1fa29e5cd31f24fc884999c0");
     }

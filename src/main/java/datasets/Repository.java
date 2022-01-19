@@ -1,6 +1,7 @@
 package datasets;
 
 import diff.DiffFilter;
+import diff.difftree.DiffNode;
 import load.GitLoader;
 import org.eclipse.jgit.api.Git;
 import org.pmw.tinylog.Logger;
@@ -9,6 +10,7 @@ import util.IO;
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 /**
  * Representation of git repositories used as datasets for DiffDetective.
@@ -41,7 +43,15 @@ public class Repository {
 	 */
 	private DiffFilter diffFilter;
 
-	private DebugOptions debugOptions;
+    /**
+     * Options to configure parsing and memory consumption (e.g., by not keeping full diffs in memory).
+     */
+	private ParseOptions parseOptions;
+
+    /**
+     * A tree transformer that eliminates all nodes in a diff tree that
+     */
+    private Predicate<DiffNode> isFeatureAnnotation = null;
 	
 	/**
 	 * Creates a repository.
@@ -50,7 +60,7 @@ public class Repository {
 	 * @param localPath The local path where the repository can be found or should be cloned to.
 	 * @param remote The remote url of the repository. May be <code>null</code> if local.
 	 * @param repositoryName Name of the cloned repository (<code>null</code> if local)
-	 * @param debugOptions Omit some debug data to save RAM.
+	 * @param parseOptions Omit some debug data to save RAM.
 	 * @param diffFilter Filter determining which files and commits to consider for diffs.
 	 */
 	public Repository(
@@ -58,13 +68,13 @@ public class Repository {
 			final Path localPath,
 			final URI remote,
 			final String repositoryName,
-			final DebugOptions debugOptions,
+			final ParseOptions parseOptions,
 			final DiffFilter diffFilter) {
 		this.repoLocation = repoLocation;
 		this.localPath = localPath;
 		this.remote = remote;
 		this.repositoryName = repositoryName;
-		this.debugOptions = debugOptions;
+		this.parseOptions = parseOptions;
 		this.diffFilter = diffFilter;
 	}
 
@@ -78,7 +88,7 @@ public class Repository {
 			final URI remote,
 			final String repositoryName) {
 		this(repoLocation, localPath, remote, repositoryName,
-                DebugOptions.DEFAULT, DiffFilter.ALLOW_ALL);
+                ParseOptions.Default, DiffFilter.ALLOW_ALL);
 	}
 
 	/**
@@ -130,15 +140,15 @@ public class Repository {
 	/**
 	 * Creates a repository from a remote repository.
 	 *
-	 * @param localPath Path to clone the repository to.
+	 * @param localDir Directory to clone the repository to.
 	 * @param repoUri The address of the remote repository
 	 * @param repoName Name of the folder, where the git repository is cloned to
 	 * @return A repository from a remote location (e.g. Github repository)
 	 */
-	public static Optional<Repository> tryFromRemote(Path localPath, String repoUri, String repoName) {
+	public static Optional<Repository> tryFromRemote(Path localDir, String repoUri, String repoName) {
 		return IO
 				.tryParseURI(repoUri)
-				.map(remote -> fromRemote(localPath, remote, repoName));
+				.map(remote -> fromRemote(localDir.resolve(repoName), remote, repoName));
 	}
 
 	public LoadingParameter getRepoLocation() {
@@ -157,21 +167,36 @@ public class Repository {
 		return repositoryName;
 	}
 
-	public void setDebugOptions(DebugOptions debugOptions) {
-		this.debugOptions = debugOptions;
+	public Repository setParseOptions(ParseOptions parseOptions) {
+		this.parseOptions = parseOptions;
+        return this;
 	}
 
-	public void setDiffFilter(final DiffFilter filter) {
+	public Repository setDiffFilter(final DiffFilter filter) {
 		this.diffFilter = filter;
+        return this;
 	}
+
+    public Repository setFeatureAnnotationFilter(final Predicate<DiffNode> isFeatureAnnotation) {
+        this.isFeatureAnnotation = isFeatureAnnotation;
+        return this;
+    }
 
 	public DiffFilter getDiffFilter() {
 		return diffFilter;
 	}
 
-	public DebugOptions getDebugOptions() {
-		return debugOptions;
+	public ParseOptions getParseOptions() {
+		return parseOptions;
 	}
+
+    public boolean hasFeatureAnnotationFilter() {
+        return isFeatureAnnotation != null;
+    }
+
+    public Predicate<DiffNode> getFeatureAnnotationFilter() {
+        return isFeatureAnnotation;
+    }
 
 	public Git load() {
 		Logger.info("Loading git at {} ...", getLocalPath());

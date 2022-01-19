@@ -1,30 +1,33 @@
 package main;
 
 import diff.difftree.DiffTree;
+import diff.difftree.parse.DiffNodeParser;
 import diff.difftree.render.DiffTreeRenderer;
 import diff.difftree.serialize.GraphFormat;
-import diff.difftree.serialize.nodeformat.DebugDiffNodeFormat;
 import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
+import mining.formats.ReleaseMiningDiffNodeFormat;
 import org.pmw.tinylog.Logger;
 import util.FileUtils;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
 public class SimpleRenderer {
     private static final DiffTreeRenderer renderer = DiffTreeRenderer.WithinDiffDetective();
     private static final DiffTreeRenderer.RenderOptions renderOptions = new DiffTreeRenderer.RenderOptions(
             GraphFormat.DIFFTREE,
             new CommitDiffDiffTreeLabelFormat(),
-            new DebugDiffNodeFormat(),
-            false,
-            DiffTreeRenderer.RenderOptions.DEFAULT.dpi(),
+            new ReleaseMiningDiffNodeFormat(),
+            true,
+            DiffTreeRenderer.RenderOptions.DEFAULT.dpi() / 2,
             DiffTreeRenderer.RenderOptions.DEFAULT.nodesize(),
             DiffTreeRenderer.RenderOptions.DEFAULT.edgesize(),
             DiffTreeRenderer.RenderOptions.DEFAULT.arrowsize(),
             DiffTreeRenderer.RenderOptions.DEFAULT.fontsize(),
-            true
+            true,
+            List.of("--format", "patternsrelease")
     );
     private final static boolean collapseMultipleCodeLines = true;
     private final static boolean ignoreEmptyLines = true;
@@ -32,17 +35,17 @@ public class SimpleRenderer {
     private static void render(final Path fileToRender) {
         if (fileToRender.toString().endsWith(".lg")) {
             Logger.info("Rendering " + fileToRender);
-            renderer.renderFile(fileToRender);
+            renderer.renderFile(fileToRender, renderOptions);
         } else if (fileToRender.toString().endsWith(".diff")) {
             Logger.info("Rendering " + fileToRender);
             final DiffTree t;
             try {
-                t = DiffTree.fromFile(fileToRender, collapseMultipleCodeLines, ignoreEmptyLines);
+                t = DiffTree.fromFile(fileToRender, collapseMultipleCodeLines, ignoreEmptyLines, DiffNodeParser.Default).unwrap().getSuccess();
             } catch (IOException e) {
                 System.err.println("Could not read given file \"" + fileToRender + "\" because:\n" + e.getMessage());
                 return;
             }
-            renderer.render(t, fileToRender.getFileName().toString(), fileToRender.getParent());
+            renderer.render(t, fileToRender.getFileName().toString(), fileToRender.getParent(), renderOptions);
         } else {
             Logger.warn("Skipping unsupported file " + fileToRender);
         }

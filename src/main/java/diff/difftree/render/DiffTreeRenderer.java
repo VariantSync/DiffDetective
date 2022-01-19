@@ -1,6 +1,7 @@
 package diff.difftree.render;
 
-import de.ovgu.featureide.fm.core.analysis.cnf.generator.configuration.util.Pair;
+import de.variantsync.functjonal.Product;
+import diff.GitPatch;
 import diff.PatchDiff;
 import diff.difftree.DiffTree;
 import diff.difftree.LineGraphConstants;
@@ -16,12 +17,14 @@ import org.pmw.tinylog.Logger;
 import shell.PythonCommand;
 import shell.ShellException;
 import shell.ShellExecutor;
+import util.Assert;
 import util.IO;
 import util.StringUtils;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.function.Supplier;
 
 public class DiffTreeRenderer {
@@ -43,7 +46,8 @@ public class DiffTreeRenderer {
             double edgesize,
             int arrowsize,
             int fontsize,
-            boolean withlabels) {
+            boolean withlabels,
+            List<String> extraArguments) {
         public static RenderOptions DEFAULT = new RenderOptions(
         		GraphFormat.DIFFTREE,
         		new CommitDiffDiffTreeLabelFormat(),
@@ -54,7 +58,8 @@ public class DiffTreeRenderer {
                 1.2,
                 15,
                 5,
-                true
+                true,
+                List.of()
         );
     }
 
@@ -91,16 +96,20 @@ public class DiffTreeRenderer {
                 workDir);
     }
 
-    public void render(PatchDiff patchDiff, final Path directory) {
-        render(patchDiff, directory, RenderOptions.DEFAULT);
+    public boolean render(PatchDiff patchDiff, final Path directory) {
+        return render(patchDiff, directory, RenderOptions.DEFAULT);
     }
 
-    public boolean render(PatchDiff patchDiff, final Path directory, RenderOptions options) {
+    public boolean render(PatchDiff patchDiff, final Path directory, final RenderOptions options) {
+        return render(patchDiff.getDiffTree(), patchDiff, directory, options);
+    }
+
+    public boolean render(final DiffTree tree, final GitPatch patch, final Path directory, final RenderOptions options) {
         final String treeAndFileName =
-                patchDiff.getFileName()
+                patch.getFileName()
                         + LineGraphConstants.TREE_NAME_SEPARATOR
-                        + patchDiff.getCommitDiff().getCommitHash();
-        return render(patchDiff.getDiffTree(), treeAndFileName, directory, options);
+                        + patch.getCommitHash();
+        return render(tree, treeAndFileName, directory, options);
     }
 
     public boolean render(final DiffTree tree, final String treeAndFileName, final Path directory) {
@@ -112,8 +121,9 @@ public class DiffTreeRenderer {
 
         final Path tempFile = directory.resolve(treeAndFileName + ".lg");
 
-        final Pair<DiffTreeSerializeDebugData, String> result = LineGraphExport.toLineGraphFormat(tree, lgoptions);
-        final String lg = "t # " + treeAndFileName + LineGraphConstants.TREE_NAME_SEPARATOR + "0" + StringUtils.LINEBREAK + result.getValue();
+        final Product<DiffTreeSerializeDebugData, String> result = LineGraphExport.toLineGraphFormat(tree, lgoptions);
+        Assert.assertNonNull(result);
+        final String lg = "t # " + treeAndFileName + LineGraphConstants.TREE_NAME_SEPARATOR + "0" + StringUtils.LINEBREAK + result.second();
         try {
             IO.write(tempFile, lg);
         } catch (IOException e) {
@@ -146,6 +156,9 @@ public class DiffTreeRenderer {
         cmd.addArg("--fontsize").addArg(options.fontsize);
         if (!options.withlabels) {
             cmd.addArg("--nolabels");
+        }
+        for (final String arg : options.extraArguments) {
+            cmd.addArg(arg);
         }
         cmd.addArg(lineGraphFile.toString());
 

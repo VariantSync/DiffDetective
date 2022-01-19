@@ -116,7 +116,9 @@ buildNumber.properties
 patches/*
 /.venv/
 
-error/
+/error
+examples/
+results/
 
 ### Eclipse ###
 .settings/

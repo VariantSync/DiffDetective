@@ -8,9 +8,17 @@ import diff.difftree.DiffType;
 import java.util.List;
 import java.util.Stack;
 
+import static diff.result.DiffError.MLMACRO_WITHIN_MLMACRO;
+
 public class MultiLineMacroParser {
+    private final DiffNodeParser nodeParser;
+
     private MultilineMacro beforeMLMacro = null;
     private MultilineMacro afterMLMacro = null;
+
+    public MultiLineMacroParser(DiffNodeParser nodeParser) {
+        this.nodeParser = nodeParser;
+    }
 
     /**
      * Converts a multiline macro to a DiffNode.
@@ -21,16 +29,16 @@ public class MultiLineMacroParser {
      * @param nodes The list to add the node to.
      * @return The finalized macro converted to a DiffNode.
      */
-    private static DiffNode finalizeMLMacro(
+    private DiffNode finalizeMLMacro(
             final DiffLineNumber lineNo,
             final String line,
             final MultilineMacro macro,
             final DiffType diffType,
-            final List<DiffNode> nodes) {
+            final List<DiffNode> nodes) throws IllFormedAnnotationException {
         macro.addLine(line);
         macro.diffType = diffType;
 
-        final DiffNode node = macro.toDiffNode();
+        final DiffNode node = macro.toDiffNode(nodeParser);
         node.getToLine().set(lineNo);
         nodes.add(node);
         return node;
@@ -42,7 +50,7 @@ public class MultiLineMacroParser {
             final Stack<DiffNode> beforeStack,
             final Stack<DiffNode> afterStack,
             final List<DiffNode> nodes
-    ) {
+    ) throws IllFormedAnnotationException {
         final CodeType codeType = CodeType.ofDiffLine(line);
         final DiffType diffType = DiffType.ofDiffLine(line);
         final boolean isAdd = diffType == DiffType.ADD;
@@ -54,13 +62,13 @@ public class MultiLineMacroParser {
                 // ... create a new multi line macro to complete.
                 if (!isAdd) {
                     if (beforeMLMacro != null) {
-                        return ParseResult.ERROR("Found definition of multiline macro within multiline macro at line " + line + "!");
+                        return ParseResult.ERROR(MLMACRO_WITHIN_MLMACRO, "Found definition of multiline macro within multiline macro at line " + line + "!");
                     }
                     beforeMLMacro = new MultilineMacro(line, lineNo, beforeStack.peek(), afterStack.peek());
                 }
                 if (!isRem) {
                     if (afterMLMacro != null) {
-                        return ParseResult.ERROR("Found definition of multiline macro within multiline macro at line " + line + "!");
+                        return ParseResult.ERROR(MLMACRO_WITHIN_MLMACRO, "Found definition of multiline macro within multiline macro at line " + line + "!");
                     }
                     afterMLMacro = new MultilineMacro(line, lineNo, beforeStack.peek(), afterStack.peek());
                 }

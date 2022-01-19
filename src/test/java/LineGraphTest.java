@@ -9,11 +9,11 @@ import org.pmw.tinylog.Logger;
 import util.FileUtils;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Objects;
 
 import static org.junit.Assert.assertEquals;
 /**
@@ -45,29 +45,13 @@ public class LineGraphTest {
 	public void idempotentReadWrite() {
         for (final Path testFile : TEST_FILES) {
             Logger.info("Testing " + testFile);
-            final String lineGraph = readLineGraphFile(testFile);
-            final List<DiffTree> diffTrees = LineGraphImport.fromLineGraphFormat(lineGraph, IMPORT_OPTIONS);
+            final String lineGraph = FileUtils.readUTF8(testFile);
+            final List<DiffTree> diffTrees = LineGraphImport.fromLineGraph(lineGraph, IMPORT_OPTIONS);
             assertConsistencyForAll(diffTrees);
 //            diffTrees.forEach(d -> d.forAll(n -> System.out.println(n.getLabel())));
             final String lineGraphResult = exportDiffTreeToLineGraph(diffTrees);
             assertEqualFileContent(lineGraph, lineGraphResult);
         }
-	}
-	
-	/**
-	 * Read in line graph.
-	 * 
-	 * @param path Relative path to the line graph
-	 * @return The line graph as a string
-	 */
-	private static String readLineGraphFile(final Path path) {
-		try {
-			byte[] encoded = Files.readAllBytes(path);
-			return new String(encoded, StandardCharsets.UTF_8);
-		} catch (IOException e) {
-			e.printStackTrace();
-			return "";
-		}
 	}
 	
 	/**
@@ -89,7 +73,7 @@ public class LineGraphTest {
         final StringBuilder lineGraphOutput = new StringBuilder();
         for (var tree : treeList) {
         	if (tree.getSource() instanceof CommitDiffDiffTreeSource source) {
-                LineGraphExport.composeTreeInLineGraph(lineGraphOutput, source, LineGraphExport.toLineGraphFormat(tree, EXPORT_OPTIONS).getValue(), EXPORT_OPTIONS);
+                LineGraphExport.composeTreeInLineGraph(lineGraphOutput, source, Objects.requireNonNull(LineGraphExport.toLineGraphFormat(tree, EXPORT_OPTIONS)).second(), EXPORT_OPTIONS);
         	} else throw new RuntimeException("The DiffTreeSoruce of DiffTree " + tree + " is not a CommitDiffDiffTreeSource: " + tree.getSource());
         }
         return lineGraphOutput.toString();
