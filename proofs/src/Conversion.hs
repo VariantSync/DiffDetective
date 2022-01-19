@@ -58,10 +58,12 @@ createPartialVDT edit =
             d = editTypes edit s
             codenode = createCodeNode s d
         in
-            --- for each time t
-            [BEFORE, AFTER] >>= \t ->
-                --- create the respective mapping node and connect it with an edge if s exists at that time
-                [VDTEdge { child = codenode, parent = createMappingNode (pc edit t s) NON, time = t} | existsAtTime t d]
+            {-
+            1. Create a mapping node for the presence condition of s at each time s exists.
+            2. Connect each created node with s, such that s is child and the mapping node is the parent.
+            This will create at least 1 and at most 2 mapping nodes.
+            -}
+            [VDTEdge { child = codenode, parent = createMappingNode (pc edit t s) NON, time = t} | t <- [BEFORE, AFTER], existsAtTime t d]
 
 complete :: (FeatureAnnotation f) => Edit f -> VDT f
 complete edit =
