@@ -63,4 +63,9 @@ public final class DirectedEdgeLabelFormat extends EdgeLabelFormat {
                 )
         );
     }
+
+    @Override
+    public String getName() {
+        return this.getClass().getName() + " with " + nodeFormatter.getName();
+    }
 }
