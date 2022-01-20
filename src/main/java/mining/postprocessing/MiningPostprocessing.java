@@ -5,8 +5,9 @@ import diff.difftree.render.DiffTreeRenderer;
 import diff.difftree.serialize.DiffTreeLineGraphImportOptions;
 import diff.difftree.serialize.GraphFormat;
 import diff.difftree.serialize.LineGraphImport;
-import diff.difftree.serialize.nodeformat.LabelOnlyDiffNodeFormat;
+import diff.difftree.serialize.edgeformat.DefaultEdgeLabelFormat;
 import diff.difftree.serialize.treeformat.IndexedTreeFormat;
+import mining.formats.MiningNodeFormat;
 import mining.formats.ReleaseMiningDiffNodeFormat;
 import util.FileUtils;
 
@@ -23,10 +24,18 @@ import java.util.stream.Collectors;
  */
 public class MiningPostprocessing {
     private static final DiffTreeRenderer DefaultRenderer = DiffTreeRenderer.WithinDiffDetective();
+    private static final MiningNodeFormat NodeFormat = new ReleaseMiningDiffNodeFormat();
+    private static final DiffTreeLineGraphImportOptions IMPORT_OPTIONS = new DiffTreeLineGraphImportOptions(
+            GraphFormat.DIFFGRAPH,
+            new IndexedTreeFormat(),
+            NodeFormat,
+            new DefaultEdgeLabelFormat()
+            );
     private static final DiffTreeRenderer.RenderOptions DefaultRenderOptions = new DiffTreeRenderer.RenderOptions(
             GraphFormat.DIFFTREE,
-            new IndexedTreeFormat(),
-            new LabelOnlyDiffNodeFormat(),
+            IMPORT_OPTIONS.treeFormat(),
+            IMPORT_OPTIONS.nodeFormat(),
+            IMPORT_OPTIONS.edgeFormat(),
             false,
             DiffTreeRenderer.RenderOptions.DEFAULT.dpi(),
             DiffTreeRenderer.RenderOptions.DEFAULT.nodesize(),
@@ -35,11 +44,6 @@ public class MiningPostprocessing {
             DiffTreeRenderer.RenderOptions.DEFAULT.fontsize(),
             true,
             List.of()
-    );
-    private static final DiffTreeLineGraphImportOptions IMPORT_OPTIONS = new DiffTreeLineGraphImportOptions(
-            GraphFormat.DIFFGRAPH,
-            new IndexedTreeFormat(),
-            new ReleaseMiningDiffNodeFormat()
     );
 
     public static void main(String[] args) throws IOException {

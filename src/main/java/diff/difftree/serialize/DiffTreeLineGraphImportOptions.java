@@ -1,6 +1,7 @@
 package diff.difftree.serialize;
 
 import diff.difftree.DiffTree;
+import diff.difftree.serialize.edgeformat.EdgeLabelFormat;
 import diff.difftree.serialize.nodeformat.DiffNodeLabelFormat;
 import diff.difftree.serialize.treeformat.DiffTreeLabelFormat;
 
@@ -10,5 +11,6 @@ import diff.difftree.serialize.treeformat.DiffTreeLabelFormat;
  */
 public record DiffTreeLineGraphImportOptions(
         GraphFormat graphFormat,
-		DiffTreeLabelFormat treeFormat,
-        DiffNodeLabelFormat nodeFormat) { }
+        DiffTreeLabelFormat treeFormat,
+        DiffNodeLabelFormat nodeFormat,
+        EdgeLabelFormat edgeFormat) { }

@@ -6,6 +6,7 @@ import diff.difftree.serialize.DiffTreeLineGraphExportOptions;
 import diff.difftree.serialize.DiffTreeSerializeDebugData;
 import diff.difftree.serialize.GraphFormat;
 import diff.difftree.serialize.LineGraphExport;
+import diff.difftree.serialize.edgeformat.DefaultEdgeLabelFormat;
 import diff.difftree.serialize.nodeformat.DebugDiffNodeFormat;
 import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
 import org.junit.Assert;
@@ -48,7 +49,8 @@ public class TestMultiLineMacros {
         final DiffTreeLineGraphExportOptions exportOptions = new DiffTreeLineGraphExportOptions(
                 GraphFormat.DIFFTREE,
                 new CommitDiffDiffTreeLabelFormat(),
-                new DebugDiffNodeFormat()
+                new DebugDiffNodeFormat(),
+                new DefaultEdgeLabelFormat()
         );
 
         diffToDiffTree(exportOptions, resDir.resolve("mldiff1.txt"));

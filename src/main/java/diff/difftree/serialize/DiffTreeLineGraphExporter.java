@@ -2,7 +2,6 @@ package diff.difftree.serialize;
 
 import diff.difftree.DiffNode;
 import diff.difftree.DiffTree;
-import diff.difftree.LineGraphConstants;
 import util.StringUtils;
 
 public class DiffTreeLineGraphExporter {
@@ -19,40 +18,18 @@ public class DiffTreeLineGraphExporter {
     }
 
     private void visit(DiffNode node, DiffTreeLineGraphExportOptions options) {
-    	
         switch (node.diffType) {
             case ADD -> ++debugData.numExportedAddNodes;
             case REM -> ++debugData.numExportedRemNodes;
             case NON -> ++debugData.numExportedNonNodes;
         }
 
-        final int nodeId = node.getID();
         nodesString
                 .append(options.nodeFormat().toLineGraphLine(node))
                 .append(StringUtils.LINEBREAK);
 
-        final DiffNode beforeParent = node.getBeforeParent();
-        final DiffNode afterParent = node.getAfterParent();
-        final boolean hasBeforeParent = beforeParent != null;
-        final boolean hasAfterParent = afterParent != null;
-
-        // If the node has exactly one parent
-        if (hasBeforeParent && hasAfterParent && beforeParent == afterParent) {
-            edgesString
-                    .append(edgeToLineGraph(nodeId, beforeParent.getID(), LineGraphConstants.BEFORE_AND_AFTER_PARENT))
-                    .append(StringUtils.LINEBREAK);
-        } else {
-            if (hasBeforeParent) {
-                edgesString
-                        .append(edgeToLineGraph(nodeId, beforeParent.getID(), LineGraphConstants.BEFORE_PARENT))
-                        .append(StringUtils.LINEBREAK);
-            }
-            if (hasAfterParent) {
-                edgesString
-                        .append(edgeToLineGraph(nodeId, afterParent.getID(), LineGraphConstants.AFTER_PARENT))
-                        .append(StringUtils.LINEBREAK);
-            }
-        }
+        edgesString
+                .append(options.edgeFormat().getParentEdgeLines(node));
     }
 
     public String export(DiffTreeLineGraphExportOptions options) {
@@ -67,7 +44,4 @@ public class DiffTreeLineGraphExporter {
         return debugData;
     }
 
-    private static String edgeToLineGraph(int fromNodeId, int toNodeId, final String name) {
-        return "e " + fromNodeId + " " + toNodeId + " " + name;
-    }
 }

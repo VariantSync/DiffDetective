@@ -9,6 +9,8 @@ import diff.difftree.serialize.DiffTreeLineGraphExportOptions;
 import diff.difftree.serialize.DiffTreeSerializeDebugData;
 import diff.difftree.serialize.GraphFormat;
 import diff.difftree.serialize.LineGraphExport;
+import diff.difftree.serialize.edgeformat.DefaultEdgeLabelFormat;
+import diff.difftree.serialize.edgeformat.EdgeLabelFormat;
 import diff.difftree.serialize.nodeformat.DebugDiffNodeFormat;
 import diff.difftree.serialize.nodeformat.DiffNodeLabelFormat;
 import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
@@ -40,6 +42,7 @@ public class DiffTreeRenderer {
     		GraphFormat format, 
     		DiffTreeLabelFormat treeParser, 
     		DiffNodeLabelFormat nodeParser,
+            EdgeLabelFormat edgeParser,
             boolean cleanUpTemporaryFiles,
             int dpi,
             int nodesize,
@@ -52,6 +55,7 @@ public class DiffTreeRenderer {
         		GraphFormat.DIFFTREE,
         		new CommitDiffDiffTreeLabelFormat(),
                 new DebugDiffNodeFormat(),
+                new DefaultEdgeLabelFormat(),
                 true,
                 300,
                 700,
@@ -117,7 +121,7 @@ public class DiffTreeRenderer {
     }
 
     public boolean render(final DiffTree tree, final String treeAndFileName, final Path directory, RenderOptions options) {
-        final DiffTreeLineGraphExportOptions lgoptions = new DiffTreeLineGraphExportOptions(options.format(), options.treeParser(), options.nodeParser());
+        final DiffTreeLineGraphExportOptions lgoptions = new DiffTreeLineGraphExportOptions(options.format(), options.treeParser(), options.nodeParser(), options.edgeParser());
 
         final Path tempFile = directory.resolve(treeAndFileName + ".lg");
 

@@ -2,10 +2,7 @@ package mining;
 
 import datasets.ParseOptions;
 import datasets.Repository;
-import datasets.predefined.Godot;
-import datasets.predefined.LinuxKernel;
 import datasets.predefined.StanciulescuMarlin;
-import datasets.predefined.Vim;
 import de.variantsync.functjonal.iteration.ClusteredIterator;
 import de.variantsync.functjonal.iteration.MappedIterator;
 import diff.GitDiffer;
@@ -22,6 +19,8 @@ import diff.difftree.transform.FeatureExpressionFilter;
 import main.Main;
 import metadata.ExplainedFilterSummary;
 import metadata.Metadata;
+import mining.formats.DirectedEdgeLabelFormat;
+import mining.formats.MiningNodeFormat;
 import mining.formats.ReleaseMiningDiffNodeFormat;
 import mining.monitoring.TaskCompletionMonitor;
 import mining.strategies.DiffTreeMiningStrategy;
@@ -67,12 +66,15 @@ public class DiffTreeMiner {
     }
 
     public static DiffTreeLineGraphExportOptions ExportOptions(final Repository repository) {
+        final MiningNodeFormat nodeFormat =
+//                new DebugMiningDiffNodeFormat();
+                new ReleaseMiningDiffNodeFormat();
         return new DiffTreeLineGraphExportOptions(
                   GraphFormat.DIFFTREE
                 // We have to ensure that all DiffTrees have unique IDs, so use name of changed file and commit hash.
                 , new CommitDiffDiffTreeLabelFormat()
-//                , new DebugMiningDiffNodeFormat()
-                , new ReleaseMiningDiffNodeFormat()
+                , nodeFormat
+                , new DirectedEdgeLabelFormat(nodeFormat)
                 , new ExplainedFilter<>(
                         DiffTreeFilter.notEmpty(),
                         DiffTreeFilter.moreThanTwoCodeNodes(),
@@ -205,10 +207,10 @@ public class DiffTreeMiner {
         final Path outputDir = Paths.get("results", "mining");
 
         final List<Repository> repos = List.of(
-                Godot.cloneFromGithubTo(inputDir),
-                StanciulescuMarlin.fromZipInDiffDetectiveAt(Path.of(".")),
-                Vim.cloneFromGithubTo(inputDir),
-                LinuxKernel.cloneFromGithubTo(variantEvolutionDatasetsDir)
+//                Godot.cloneFromGithubTo(inputDir),
+                StanciulescuMarlin.fromZipInDiffDetectiveAt(Path.of("."))
+//                Vim.cloneFromGithubTo(inputDir),
+//                LinuxKernel.cloneFromGithubTo(variantEvolutionDatasetsDir)
         );
 
         /* ************************ *\

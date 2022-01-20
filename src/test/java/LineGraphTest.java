@@ -1,6 +1,7 @@
 import diff.difftree.CommitDiffDiffTreeSource;
 import diff.difftree.DiffTree;
 import diff.difftree.serialize.*;
+import diff.difftree.serialize.edgeformat.DefaultEdgeLabelFormat;
 import diff.difftree.serialize.nodeformat.LabelOnlyDiffNodeFormat;
 import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
 import org.junit.BeforeClass;
@@ -23,12 +24,11 @@ public class LineGraphTest {
 	private final static DiffTreeLineGraphImportOptions IMPORT_OPTIONS = new DiffTreeLineGraphImportOptions(
             GraphFormat.DIFFTREE,
             new CommitDiffDiffTreeLabelFormat(),
-            new LabelOnlyDiffNodeFormat()
+            new LabelOnlyDiffNodeFormat(),
+            new DefaultEdgeLabelFormat()
     );
     private final static DiffTreeLineGraphExportOptions EXPORT_OPTIONS = new DiffTreeLineGraphExportOptions(
-            IMPORT_OPTIONS.graphFormat(),
-            IMPORT_OPTIONS.treeFormat(),
-            IMPORT_OPTIONS.nodeFormat()
+            IMPORT_OPTIONS
     );
 
     private static List<Path> TEST_FILES;

@@ -14,6 +14,8 @@ import java.util.List;
 
 /**
  * Import patches from line graphs.
+ *
+ * @author Kevin Jedelhauser, Paul Maximilian Bittner
  */
 public class LineGraphImport {
     public static List<DiffTree> fromFile(final Path path, final DiffTreeLineGraphImportOptions options) {
@@ -73,39 +75,11 @@ public class LineGraphImport {
 				
 			} else if (ln.startsWith(LineGraphConstants.LG_EDGE)) {
 				// the line represent a connection with two DiffNodes
-				
-				String[] edge = ln.split(" ");
-				String fromNodeId = edge[1]; // the id of the child DiffNode
-				String toNodeId = edge[2]; // the id of the parent DiffNode
-				String name = edge[3];
-				
-				// Both child and parent DiffNode should exist since all DiffNodes have been read in before. Otherwise, the line graph input is faulty
-				DiffNode childNode = diffNodes.get(Integer.parseInt(fromNodeId));
-				DiffNode parentNode = diffNodes.get(Integer.parseInt(toNodeId));
-
-				if (childNode == null) {
-					input.close();
-					throw new IllegalArgumentException(fromNodeId + " does not exits. Faulty line graph.");
-				}
-				if (parentNode == null) {
-					input.close();
-					throw new IllegalArgumentException(toNodeId + " does not exits. Faulty line graph.");
-				}
-
-                switch (name) {
-                    // Nothing has been changed. The child-parent relationship remains the same
-                    case LineGraphConstants.BEFORE_AND_AFTER_PARENT -> {
-                        parentNode.addAfterChild(childNode);
-                        parentNode.addBeforeChild(childNode);
-                    }
-                    // The child DiffNode lost its parent DiffNode (an orphan DiffNode)
-                    case LineGraphConstants.BEFORE_PARENT -> parentNode.addBeforeChild(childNode);
-
-                    // The parent DiffNode has a new child DiffNode
-                    case LineGraphConstants.AFTER_PARENT -> parentNode.addAfterChild(childNode);
-
-                    // A syntax error has occurred.
-                    default -> throw new RuntimeException("Syntax error. Invalid name in edge: " + ln);
+                try {
+                    options.edgeFormat().connect(ln, diffNodes);
+                } catch (IllegalArgumentException e) {
+                    input.close();
+                    throw e;
                 }
 			} else {
 				// ignore blank spaces
