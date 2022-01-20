@@ -5,6 +5,7 @@ import diff.difftree.DiffTree;
 import diff.difftree.filter.ExplainedFilter;
 import diff.difftree.render.DiffTreeRenderer;
 import diff.difftree.render.PatchDiffRenderer;
+import diff.difftree.serialize.edgeformat.EdgeLabelFormat;
 import diff.difftree.serialize.nodeformat.DiffNodeLabelFormat;
 import diff.difftree.serialize.treeformat.DiffTreeLabelFormat;
 import diff.difftree.transform.DiffTreeTransformer;
@@ -23,12 +24,22 @@ public record DiffTreeLineGraphExportOptions(
         GraphFormat graphFormat,
 		DiffTreeLabelFormat treeFormat,
 		DiffNodeLabelFormat nodeFormat,
+        EdgeLabelFormat edgeFormat,
 		ExplainedFilter<DiffTree> treeFilter,
         List<DiffTreeTransformer> treePreProcessing,
         BiConsumer<PatchDiff, Exception> onError) {
 	
-    public DiffTreeLineGraphExportOptions(GraphFormat graphFormat, DiffTreeLabelFormat treeFormat, DiffNodeLabelFormat nodeFormat) {
-        this(graphFormat, treeFormat, nodeFormat, ExplainedFilter.Any(), new ArrayList<>(), LogError());
+    public DiffTreeLineGraphExportOptions(GraphFormat graphFormat, DiffTreeLabelFormat treeFormat, DiffNodeLabelFormat nodeFormat, EdgeLabelFormat edgeFormat) {
+        this(graphFormat, treeFormat, nodeFormat, edgeFormat, ExplainedFilter.Any(), new ArrayList<>(), LogError());
+    }
+
+    public DiffTreeLineGraphExportOptions(final DiffTreeLineGraphImportOptions importOptions) {
+        this(
+                importOptions.graphFormat(),
+                importOptions.treeFormat(),
+                importOptions.nodeFormat(),
+                importOptions.edgeFormat()
+        );
     }
 
     public static BiConsumer<PatchDiff, Exception> LogError() {

@@ -1,0 +1,9 @@
+ #if X
+  #if Y
+   foo
+  #endif
+ #endif
+ baz
+ #if X
+   bar
+ #endif

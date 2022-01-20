@@ -104,12 +104,12 @@ class NodeData:
 _ALL_PATTERN_NAMES = [
     "AddToPC", "AddWithMapping",
     "RemFromPC", "RemWithMapping",
-    "Specialization", "Generalization", "Reconfiguration", "Refactoring"
+    "Specialization", "Generalization", "Reconfiguration", "Refactoring", "Unchanged"
 ]
 _ALL_PATTERN_DIFFTYPES = [
      DIFFTYPE_ADD, DIFFTYPE_ADD,
      DIFFTYPE_REM, DIFFTYPE_REM,
-     DIFFTYPE_NON, DIFFTYPE_NON, DIFFTYPE_NON, DIFFTYPE_NON
+     DIFFTYPE_NON, DIFFTYPE_NON, DIFFTYPE_NON, DIFFTYPE_NON, DIFFTYPE_NON
 ]
 ALL_PATTERNS = [Pattern(name, i, _ALL_PATTERN_DIFFTYPES[i]) for i,name in enumerate(_ALL_PATTERN_NAMES)]
 ADD_PATTERNS = list(filter(lambda pattern: pattern.difftype == DIFFTYPE_ADD, ALL_PATTERNS))
@@ -237,6 +237,7 @@ def parseNodeReleaseAtomics(id, name):
     result = NodeData()
 
     if name.startswith(RELEASE_PATTERNS_CODE_PREFIX):
+        print("getPatternFromId(", name[len(RELEASE_PATTERNS_CODE_PREFIX):], ")")
         pattern = getPatternFromId(name[len(RELEASE_PATTERNS_CODE_PREFIX):])
 #         print(name)
 #         print(name[len(RELEASE_PATTERNS_CODE_PREFIX):])

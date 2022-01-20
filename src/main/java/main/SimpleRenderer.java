@@ -4,6 +4,7 @@ import diff.difftree.DiffTree;
 import diff.difftree.parse.DiffNodeParser;
 import diff.difftree.render.DiffTreeRenderer;
 import diff.difftree.serialize.GraphFormat;
+import diff.difftree.serialize.edgeformat.DefaultEdgeLabelFormat;
 import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
 import mining.formats.ReleaseMiningDiffNodeFormat;
 import org.pmw.tinylog.Logger;
@@ -20,6 +21,7 @@ public class SimpleRenderer {
             GraphFormat.DIFFTREE,
             new CommitDiffDiffTreeLabelFormat(),
             new ReleaseMiningDiffNodeFormat(),
+            new DefaultEdgeLabelFormat(),
             true,
             DiffTreeRenderer.RenderOptions.DEFAULT.dpi() / 2,
             DiffTreeRenderer.RenderOptions.DEFAULT.nodesize(),

@@ -4,6 +4,7 @@ import diff.GitPatch;
 import diff.PatchDiff;
 import diff.difftree.DiffTree;
 import diff.difftree.serialize.GraphFormat;
+import diff.difftree.serialize.edgeformat.DefaultEdgeLabelFormat;
 import diff.difftree.serialize.nodeformat.DebugDiffNodeFormat;
 import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
 import org.pmw.tinylog.Logger;
@@ -18,6 +19,7 @@ public class PatchDiffRenderer {
             GraphFormat.DIFFTREE,
             new CommitDiffDiffTreeLabelFormat(),
             new DebugDiffNodeFormat(),
+            new DefaultEdgeLabelFormat(),
             true,
             1000,
             DiffTreeRenderer.RenderOptions.DEFAULT.nodesize()/3,

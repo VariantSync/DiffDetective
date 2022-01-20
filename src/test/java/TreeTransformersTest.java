@@ -7,6 +7,7 @@ import diff.difftree.DiffTree;
 import diff.difftree.LineGraphConstants;
 import diff.difftree.render.DiffTreeRenderer;
 import diff.difftree.serialize.GraphFormat;
+import diff.difftree.serialize.edgeformat.DefaultEdgeLabelFormat;
 import diff.difftree.serialize.nodeformat.TypeDiffNodeFormat;
 import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
 import diff.difftree.transform.DiffTreeTransformer;
@@ -34,6 +35,7 @@ public class TreeTransformersTest {
             GraphFormat.DIFFTREE,
             new CommitDiffDiffTreeLabelFormat(),
             new TypeDiffNodeFormat(),
+            new DefaultEdgeLabelFormat(),
             false,
             500,
             50,
