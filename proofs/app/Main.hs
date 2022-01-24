@@ -2,6 +2,7 @@
 module Main where
 
 import Data.List
+import qualified Data.Map.Strict as Map
 
 import Definitions
 import Edit
@@ -10,40 +11,26 @@ import FeatureList
 import Conversion
 import DiffTree
 
+featureUndef = Features ["unknown"]
 featureA = Features ["A"]
 featureB = Features ["B"]
 featureC = Features ["C"]
 featureD = Features ["D"]
 
-edit1 = Edit {
-    editedCodeFragments = ["Bulbasaur", "Charmander", "Squirtle"], -- S in the paper
-    editTypes = \case
-        "Bulbasaur" -> ADD
-        "Charmander" -> REM
-        "Squirtle" -> NON
-        otherwise -> error (otherwise++" is not part of this edit"),
-    pc = \time code -> case code of
-        "Bulbasaur" -> featureA
-        "Charmander" -> featureB <> featureC
-        "Squirtle" -> featureD
-        otherwise -> error (otherwise++" is not part of this edit")
-}
+edit1 :: Edit FeatureList
+edit1 = fromList [
+    ("Bulbasaur", ADD, featureUndef, featureA),
+    ("Charmander", REM, featureB <> featureC, featureUndef),
+    ("Squirtle", NON, featureD, featureD <> featureA)
+    ]
 
-edit2 = Edit {
-    editedCodeFragments = ["Charmander", "Squirtle", "Treecko", "Torchic"], -- S in the paper
-    editTypes = \case
-        "Charmander" -> ADD
-        "Squirtle" -> REM
-        "Treecko" -> NON
-        "Torchic" -> NON
-        otherwise -> error (otherwise++" is not part of this edit"),
-    pc = \time code -> case code of
-        "Charmander" -> featureA
-        "Squirtle" -> featureA
-        "Treecko" -> featureA
-        "Torchic" -> featureA
-        otherwise -> error (otherwise++" is not part of this edit")
-}
+edit2 :: Edit FeatureList
+edit2 = fromList [
+    ("Treecko", ADD, featureUndef, featureA),
+    ("Torchic", REM, featureA, featureUndef),
+    ("Mudkip", NON, featureA, featureA),
+    ("Shroomish", NON, featureD <> featureC <> featureB, featureA)
+    ]
 
 testCase :: FeatureAnnotation f => Edit f -> IO ()
 testCase edit = do

@@ -38,3 +38,6 @@ isSubset :: Eq a => [a] -> [a] -> Bool
 isSubset [] _ = True
 isSubset _ [] = False
 isSubset (x:xs) list = x `elem` list && isSubset xs list
+
+packTail :: (a, b, c, d) -> (a, (b, c, d))
+packTail (a, b, c, d) = (a, (b, c, d))

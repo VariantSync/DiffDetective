@@ -6,17 +6,33 @@ import Definitions
 import Feature
 import Util
 
+import qualified Data.Map.Strict as Map
+
 data Edit f = Edit {
     editedCodeFragments :: [CodeFragment], -- S in the paper
     editTypes :: CodeFragment -> DiffType,
     pc :: Time -> CodeFragment -> f   -- PC_b and PC_a in the paper
 }
 
+fromMap :: Map.Map CodeFragment (DiffType, f, f) -> Edit f
+fromMap m = Edit {
+    editedCodeFragments = Map.keys m,
+    editTypes = \code -> case Map.lookup code m of
+        Just (d, _, _) -> d
+        Nothing -> error (show code ++ " is not part of this edit!"),
+    pc = \time code -> case Map.lookup code m of
+        Just (_, before, after) -> if time == BEFORE then before else after
+        Nothing -> error (show code ++ " is not part of this edit!")
+}
+
+fromList :: [(CodeFragment, DiffType, f, f)] -> Edit f
+fromList = fromMap . Map.fromList . fmap packTail
+
 pcEqualsFor :: FeatureAnnotation f => DiffType -> Edit f -> Edit f -> CodeFragment -> Bool
-pcEqualsFor diffType x y s = and $ fmap
-    (\t ->
-        not (existsAtTime t diffType) ||
-        equivalent (pc x t s) (pc y t s)
+pcEqualsFor diffType x y code = and $ fmap
+    (\time ->
+        not (existsAtTime time diffType) ||
+        equivalent (pc x time code) (pc y time code)
     )
     [BEFORE, AFTER]
 
