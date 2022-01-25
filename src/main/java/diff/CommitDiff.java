@@ -11,9 +11,22 @@ import java.util.List;
  * @author Sören Viegener
  */
 public class CommitDiff {
+	
+	/**
+	 * A list of all {@link PatchDiff PatchDiffs} of a {@link CommitDiff}.
+	 */
     private final List<PatchDiff> patchDiffs;
+
+    /**
+     * The hash of the parent commit.
+     */
     private final String parentCommitHash;
+
+    /**
+     * The hash of the current commit.
+     */
     private final String commitHash;
+    
     final boolean merge;
 
     public CommitDiff(RevCommit commit, RevCommit parent) {
@@ -23,14 +36,25 @@ public class CommitDiff {
         this.patchDiffs = new ArrayList<>();
     }
 
+    /**
+     * Add a {@link PatchDiff} to a {@link DiffCommit}.
+     * 
+     * @param patchDiff The {@link PatchDiff PatchDiff} to be added
+     */
     public void addPatchDiff(PatchDiff patchDiff){
         patchDiffs.add(patchDiff);
     }
 
+    /**
+     * @return The list of {@link PatchDiff PatchDiffs} that belong to the {@link CommitDiff}
+     */
     public List<PatchDiff> getPatchDiffs() {
         return patchDiffs;
     }
 
+    /**
+     * @return The amount of {@link PatchDiff PatchDiffs} that belong to the {@link CommitDiff}
+     */
     public int getPatchAmount() {
         return patchDiffs.size();
     }

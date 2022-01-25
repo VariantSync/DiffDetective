@@ -14,8 +14,20 @@ import org.eclipse.jgit.diff.DiffEntry;
 public class PatchDiff implements GitPatch {
     private final String fullDiff;
     private final DiffTree diffTree;
+    
+    /**
+     * The commit the patch belongs to.
+     */
     private final CommitDiff commitDiff;
+    
+    /**
+     * The general change type of a single file. See {@link DiffEntry.ChangeType Type}.
+     */
     private final DiffEntry.ChangeType changeType;
+    
+    /**
+     * Path of the file (patch) that has been modified.
+     */
     private final String path;
 
     public PatchDiff(CommitDiff commitDiff, DiffEntry diffEntry, String fullDiff,

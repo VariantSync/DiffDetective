@@ -20,12 +20,15 @@ import org.eclipse.jgit.lib.ObjectLoader;
 import org.eclipse.jgit.lib.ObjectReader;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevTree;
+import org.eclipse.jgit.treewalk.AbstractTreeIterator;
 import org.eclipse.jgit.treewalk.CanonicalTreeParser;
+import org.eclipse.jgit.treewalk.FileTreeIterator;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.pmw.tinylog.Logger;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -250,6 +253,80 @@ public class GitDiffer {
         return new CommitDiffResult(result);
     }
 
+    /**
+     * Creates a CommitDiff from a given commit.
+     * For this, the git diff is retrieved using JGit.
+     * For each file in the diff, a PatchDiff is created.
+     *
+     * @param git The git repo which the commit stems from
+     * @param commit The commit which the working tree is compared with
+     * @param keepFullDiffs  If true, the PatchDiff will contain the full diff as a string. Set to false if you want to
+     *                       reduce memory consumption
+     * @return The CommitDiff of the given commit
+     */
+    public static CommitDiffResult createWorkingTreeDiff(
+            Git git,
+            DiffFilter diffFilter,
+    		RevCommit commit,
+    		final ParseOptions parseOptions) {
+		// get TreeParsers
+        final AbstractTreeIterator workingTreeParser = new FileTreeIterator(git.getRepository());
+        final CanonicalTreeParser prevTreeParser = new CanonicalTreeParser();
+        try (ObjectReader reader = git.getRepository().newObjectReader()) {
+            if (commit.getTree() == null) {
+                return CommitDiffResult.Failure(JGIT_ERROR, "Could not obtain RevTree from child commit " + commit.getId());
+            }
+
+            try {
+                prevTreeParser.reset(reader, commit.getTree());
+            } catch (IOException e) {
+                return CommitDiffResult.Failure(JGIT_ERROR, e.toString());
+            }
+        }
+
+        final CommitDiff commitDiff = new CommitDiff(commit, commit);
+        final Product<Optional<CommitDiff>, List<DiffError>> result = new Product<>(
+                Optional.of(commitDiff),
+                new ArrayList<>()
+        );
+
+        // get PatchDiffs
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+             DiffFormatter diffFormatter = new DiffFormatter(outputStream))
+        {
+            diffFormatter.setRepository(git.getRepository());
+            diffFormatter.setDetectRenames(true);
+            diffFormatter.getRenameDetector().setRenameScore(50);
+
+            List<DiffEntry> entries = diffFormatter.scan(prevTreeParser, workingTreeParser);
+            for (DiffEntry diffEntry : entries) {
+                if (!diffFilter.filter(diffEntry)) {
+                    continue;
+                }
+
+                diffFormatter.format(diffEntry);
+                final String gitDiff = outputStream.toString(StandardCharsets.UTF_8);
+                final Result<PatchDiff, DiffError> patchDiff =
+                        getBeforeFullFile(git, commit, diffEntry.getOldPath()).unwrap()
+                        .bind(file -> createPatchDiff(
+                                commitDiff,
+                                diffEntry,
+                                gitDiff,
+                                file,
+                                parseOptions).unwrap()
+                        );
+
+                patchDiff.ifSuccess(commitDiff::addPatchDiff);
+                patchDiff.ifFailure(error -> result.second().add(error));
+                outputStream.reset();
+            }
+        } catch (IOException e) {
+            return CommitDiffResult.Failure(JGIT_ERROR, e.toString());
+        }
+
+        return new CommitDiffResult(result);
+    }
+    
     /**
      * Creates a PatchDiff from a given DiffEntry of a commit
      *
