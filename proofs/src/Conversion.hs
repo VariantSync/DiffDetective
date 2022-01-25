@@ -63,7 +63,7 @@ createPartialVDT edit =
             2. Connect each created node with s, such that s is child and the mapping node is the parent.
             This will create at least 1 and at most 2 mapping nodes.
             -}
-            [VDTEdge { child = codenode, parent = createMappingNode (pc edit t s) NON, time = t} | t <- [BEFORE, AFTER], existsAtTime t d]
+            [VDTEdge { child = codenode, parent = createMappingNode (pc edit t s) NON, time = t} | t <- always, existsAtTime t d]
 
 complete :: (FeatureAnnotation f) => Edit f -> VDT f
 complete edit =

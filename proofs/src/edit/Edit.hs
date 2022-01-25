@@ -34,7 +34,7 @@ pcEqualsFor diffType x y code = and $ fmap
         not (existsAtTime time diffType) ||
         equivalent (pc x time code) (pc y time code)
     )
-    [BEFORE, AFTER]
+    always
 
 instance Show f => Show (Edit f) where
     show e =
@@ -52,19 +52,19 @@ instance Show f => Show (Edit f) where
             ]) (editedCodeFragments e))
         ++ "\n}"
 
-instance (FeatureAnnotation f) => Eq (Edit f) where
-    x == y =
-        let
-            editedCodeX = editedCodeFragments x
-            editedCodeY = editedCodeFragments y
-            in
-        -- 1.) edited code fragments have to be equal
-        (editedCodeX == editedCodeY) -- set equals
-        -- 2.) the type of edit to each code fragment should be equal
-        -- If the edited code fragements are equall, we can just look at one of the lists (lets say editedCodeX) from now on.
-        && propertiesEqual (editTypes x) (editTypes y) editedCodeX
-        -- 3.) all presence condition should be equivalent
-        && and (fmap (\s -> pcEqualsFor (editTypes x s) x y s) editedCodeX)
+isomorph :: (FeatureAnnotation f) => Edit f -> Edit f -> Bool
+x `isomorph` y =
+    let
+        editedCodeX = editedCodeFragments x
+        editedCodeY = editedCodeFragments y
+        in
+    -- 1.) edited code fragments have to be equal
+    (editedCodeX == editedCodeY) -- set equals
+    -- 2.) the type of edit to each code fragment should be equal
+    -- If the edited code fragements are equall, we can just look at one of the lists (lets say editedCodeX) from now on.
+    && propertiesEqual (editTypes x) (editTypes y) editedCodeX
+    -- 3.) all presence condition should be equivalent
+    && and (fmap (\s -> pcEqualsFor (editTypes x s) x y s) editedCodeX)
 
 debugEqualityClauses :: (FeatureAnnotation f) => Edit f -> Edit f -> IO ()
 debugEqualityClauses x y = let
