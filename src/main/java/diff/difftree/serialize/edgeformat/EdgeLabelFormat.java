@@ -1,5 +1,6 @@
 package diff.difftree.serialize.edgeformat;
 
+import de.variantsync.functjonal.Product;
 import diff.difftree.DiffNode;
 import diff.difftree.LineGraphConstants;
 import diff.difftree.serialize.LinegraphFormat;
@@ -13,6 +14,38 @@ import java.util.Map;
  * @author Kevin Jedelhauser, Paul Maximilian Bittner
  */
 public abstract class EdgeLabelFormat implements LinegraphFormat {
+    public EdgeLabelFormat() {
+        this(Direction.Default);
+    }
+
+    public EdgeLabelFormat(Direction direction) {
+        setEdgeDirection(direction);
+    }
+
+    public enum Direction {
+        ChildToParent, ParentToChild;
+
+        public static final Direction Default = ChildToParent;
+
+        <A> Product<A, A> sort(A child, A parent) {
+            if (this == ChildToParent) {
+                return new Product<>(child, parent);
+            } else {
+                return new Product<>(parent, child);
+            }
+        }
+    }
+
+    private Direction edgeDirection = Direction.Default;
+
+    public void setEdgeDirection(final Direction direction) {
+        this.edgeDirection = direction;
+    }
+
+    public Direction getEdgeDirection() {
+        return edgeDirection;
+    }
+
     protected void connectAccordingToLabel(final DiffNode child, final DiffNode parent, final String edgeLabel) {
         if (edgeLabel.startsWith(LineGraphConstants.BEFORE_AND_AFTER_PARENT)) {
             // Nothing has been changed. The child-parent relationship remains the same
@@ -41,19 +74,21 @@ public abstract class EdgeLabelFormat implements LinegraphFormat {
         if (!lineGraphLine.startsWith(LineGraphConstants.LG_EDGE)) throw new IllegalArgumentException("Failed to parse DiffNode: Expected \"v ...\" but got \"" + lineGraphLine + "\"!"); // check if encoded DiffNode
 
         String[] edge = lineGraphLine.split(" ");
-        String fromNodeId = edge[1]; // the id of the child DiffNode
-        String toNodeId = edge[2]; // the id of the parent DiffNode
         String name = edge[3];
 
+        // first is the id of the child DiffNode
+        // second the id of the parent DiffNode
+        final Product<String, String> fromAndToIds = edgeDirection.sort(edge[1], edge[2]);
+
         // Both child and parent DiffNode should exist since all DiffNodes have been read in before. Otherwise, the line graph input is faulty
-        DiffNode childNode = nodes.get(Integer.parseInt(fromNodeId));
-        DiffNode parentNode = nodes.get(Integer.parseInt(toNodeId));
+        DiffNode childNode = nodes.get(Integer.parseInt(fromAndToIds.first()));
+        DiffNode parentNode = nodes.get(Integer.parseInt(fromAndToIds.second()));
 
         if (childNode == null) {
-            throw new IllegalArgumentException(fromNodeId + " does not exits. Faulty line graph.");
+            throw new IllegalArgumentException(fromAndToIds.first() + " does not exits. Faulty line graph.");
         }
         if (parentNode == null) {
-            throw new IllegalArgumentException(toNodeId + " does not exits. Faulty line graph.");
+            throw new IllegalArgumentException(fromAndToIds.second() + " does not exits. Faulty line graph.");
         }
 
         connectAccordingToLabel(childNode, parentNode, name);
@@ -76,21 +111,26 @@ public abstract class EdgeLabelFormat implements LinegraphFormat {
         // If the node has exactly one parent
         if (hasBeforeParent && hasAfterParent && beforeParent == afterParent) {
             edgesString
-                    .append(edgeToLineGraph(node, beforeParent, LineGraphConstants.BEFORE_AND_AFTER_PARENT))
+                    .append(edgeToLineGraphSorted(node, beforeParent, LineGraphConstants.BEFORE_AND_AFTER_PARENT))
                     .append(StringUtils.LINEBREAK);
         } else {
             if (hasBeforeParent) {
                 edgesString
-                        .append(edgeToLineGraph(node, beforeParent, LineGraphConstants.BEFORE_PARENT))
+                        .append(edgeToLineGraphSorted(node, beforeParent, LineGraphConstants.BEFORE_PARENT))
                         .append(StringUtils.LINEBREAK);
             }
             if (hasAfterParent) {
                 edgesString
-                        .append(edgeToLineGraph(node, afterParent, LineGraphConstants.AFTER_PARENT))
+                        .append(edgeToLineGraphSorted(node, afterParent, LineGraphConstants.AFTER_PARENT))
                         .append(StringUtils.LINEBREAK);
             }
         }
         return edgesString.toString();
+    }
+
+    private String edgeToLineGraphSorted(DiffNode desiredFrom, DiffNode desiredTo, final String labelPrefix) {
+        final Product<DiffNode, DiffNode> sorted = edgeDirection.sort(desiredFrom, desiredTo);
+        return edgeToLineGraph(sorted.first(), sorted.second(), labelPrefix);
     }
 
     protected abstract String edgeToLineGraph(DiffNode from, DiffNode to, final String labelPrefix);

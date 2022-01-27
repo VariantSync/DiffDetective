@@ -11,6 +11,7 @@ import diff.difftree.filter.ExplainedFilter;
 import diff.difftree.parse.DiffNodeParser;
 import diff.difftree.serialize.DiffTreeLineGraphExportOptions;
 import diff.difftree.serialize.GraphFormat;
+import diff.difftree.serialize.edgeformat.EdgeLabelFormat;
 import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
 import diff.difftree.transform.CollapseNestedNonEditedMacros;
 import diff.difftree.transform.CutNonEditedSubtrees;
@@ -69,12 +70,27 @@ public class DiffTreeMiner {
         final MiningNodeFormat nodeFormat =
 //                new DebugMiningDiffNodeFormat();
                 new ReleaseMiningDiffNodeFormat();
+    }
+
+    public static EdgeLabelFormat EdgeFormat() {
+        return EdgeFormat(NodeFormat());
+    }
+
+    private static EdgeLabelFormat EdgeFormat(final MiningNodeFormat nodeFormat) {
+        final EdgeLabelFormat.Direction direction = EdgeLabelFormat.Direction.ParentToChild;
+        return
+//                new DefaultEdgeLabelFormat(direction);
+                new DirectedEdgeLabelFormat(nodeFormat, false, direction);
+    }
+
+    public static DiffTreeLineGraphExportOptions ExportOptions(final Repository repository) {
+        final MiningNodeFormat nodeFormat = NodeFormat();
         return new DiffTreeLineGraphExportOptions(
                   GraphFormat.DIFFTREE
                 // We have to ensure that all DiffTrees have unique IDs, so use name of changed file and commit hash.
                 , new CommitDiffDiffTreeLabelFormat()
                 , nodeFormat
-                , new DirectedEdgeLabelFormat(nodeFormat)
+                , EdgeFormat(nodeFormat)
                 , new ExplainedFilter<>(
                         DiffTreeFilter.notEmpty(),
                         DiffTreeFilter.moreThanTwoCodeNodes(),

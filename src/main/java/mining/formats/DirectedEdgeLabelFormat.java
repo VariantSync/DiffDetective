@@ -12,13 +12,14 @@ public final class DirectedEdgeLabelFormat extends EdgeLabelFormat {
     private final MiningNodeFormat nodeFormatter;
     private final boolean useDirectionHeuristic;
 
-    public DirectedEdgeLabelFormat(MiningNodeFormat nodeFormatter, boolean useDirectionHeuristic) {
-        this.nodeFormatter = nodeFormatter;
-        this.useDirectionHeuristic = useDirectionHeuristic;
+    public DirectedEdgeLabelFormat(MiningNodeFormat nodeFormatter) {
+        this(nodeFormatter, true, Direction.Default);
     }
 
-    public DirectedEdgeLabelFormat(MiningNodeFormat nodeFormatter) {
-        this(nodeFormatter, true);
+    public DirectedEdgeLabelFormat(MiningNodeFormat nodeFormatter, boolean useDirectionHeuristic, EdgeLabelFormat.Direction direction) {
+        super(direction);
+        this.nodeFormatter = nodeFormatter;
+        this.useDirectionHeuristic = useDirectionHeuristic;
     }
 
     private Edge recoverEdgeDirectionFromLabelIfPossible(DiffNode hypothesizedFrom, DiffNode hypothesizedTo, String edgeLabel) {

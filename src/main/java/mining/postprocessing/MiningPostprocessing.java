@@ -7,8 +7,7 @@ import diff.difftree.serialize.GraphFormat;
 import diff.difftree.serialize.LineGraphImport;
 import diff.difftree.serialize.edgeformat.DefaultEdgeLabelFormat;
 import diff.difftree.serialize.treeformat.IndexedTreeFormat;
-import mining.formats.MiningNodeFormat;
-import mining.formats.ReleaseMiningDiffNodeFormat;
+import mining.DiffTreeMiner;
 import util.FileUtils;
 
 import java.io.IOException;
@@ -24,18 +23,17 @@ import java.util.stream.Collectors;
  */
 public class MiningPostprocessing {
     private static final DiffTreeRenderer DefaultRenderer = DiffTreeRenderer.WithinDiffDetective();
-    private static final MiningNodeFormat NodeFormat = new ReleaseMiningDiffNodeFormat();
     private static final DiffTreeLineGraphImportOptions IMPORT_OPTIONS = new DiffTreeLineGraphImportOptions(
             GraphFormat.DIFFGRAPH,
             new IndexedTreeFormat(),
-            NodeFormat,
-            new DefaultEdgeLabelFormat()
+            DiffTreeMiner.NodeFormat(),
+            DiffTreeMiner.EdgeFormat()
             );
     private static final DiffTreeRenderer.RenderOptions DefaultRenderOptions = new DiffTreeRenderer.RenderOptions(
             GraphFormat.DIFFTREE,
             IMPORT_OPTIONS.treeFormat(),
             IMPORT_OPTIONS.nodeFormat(),
-            IMPORT_OPTIONS.edgeFormat(),
+            new DefaultEdgeLabelFormat(),
             false,
             DiffTreeRenderer.RenderOptions.DEFAULT.dpi(),
             DiffTreeRenderer.RenderOptions.DEFAULT.nodesize(),
