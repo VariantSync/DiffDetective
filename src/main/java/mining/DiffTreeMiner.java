@@ -11,6 +11,7 @@ import diff.difftree.filter.ExplainedFilter;
 import diff.difftree.parse.DiffNodeParser;
 import diff.difftree.serialize.DiffTreeLineGraphExportOptions;
 import diff.difftree.serialize.GraphFormat;
+import diff.difftree.serialize.edgeformat.EdgeLabelFormat;
 import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
 import diff.difftree.transform.CollapseNestedNonEditedMacros;
 import diff.difftree.transform.CutNonEditedSubtrees;
@@ -45,6 +46,7 @@ public class DiffTreeMiner {
 //    public static final int COMMITS_TO_PROCESS_PER_THREAD = 10000;
     public static final int COMMITS_TO_PROCESS_PER_THREAD = 1000;
     public static final int EXPECTED_NUMBER_OF_COMMITS_IN_LINUX = 495284;
+    public static final boolean SEARCH_FOR_GOOD_RUNNING_EXAMPLES = false;
 
     public static List<DiffTreeTransformer> Postprocessing() {
         return Postprocessing(null);
@@ -56,25 +58,42 @@ public class DiffTreeMiner {
         if (repository != null && repository.hasFeatureAnnotationFilter()) {
             processing.add(new FeatureExpressionFilter(repository.getFeatureAnnotationFilter()));
         }
-        processing.add(new RunningExampleFinder(repository == null ? DiffNodeParser.Default : repository.getParseOptions().annotationParser()).
-                The_Diff_Itself_Is_A_Valid_DiffTree_And(
-                        RunningExampleFinder.DefaultExampleConditions,
-                        RunningExampleFinder.DefaultExamplesDirectory.resolve(repository == null ? "unknown" : repository.getRepositoryName())
-                ));
+        if (SEARCH_FOR_GOOD_RUNNING_EXAMPLES) {
+            processing.add(new RunningExampleFinder(repository == null ? DiffNodeParser.Default : repository.getParseOptions().annotationParser()).
+                    The_Diff_Itself_Is_A_Valid_DiffTree_And(
+                            RunningExampleFinder.DefaultExampleConditions,
+                            RunningExampleFinder.DefaultExamplesDirectory.resolve(repository == null ? "unknown" : repository.getRepositoryName())
+                    ));
+        }
         processing.add(new CollapseNestedNonEditedMacros());
         return processing;
     }
 
-    public static DiffTreeLineGraphExportOptions ExportOptions(final Repository repository) {
-        final MiningNodeFormat nodeFormat =
+    public static MiningNodeFormat NodeFormat() {
+        return
 //                new DebugMiningDiffNodeFormat();
                 new ReleaseMiningDiffNodeFormat();
+    }
+
+    public static EdgeLabelFormat EdgeFormat() {
+        return EdgeFormat(NodeFormat());
+    }
+
+    private static EdgeLabelFormat EdgeFormat(final MiningNodeFormat nodeFormat) {
+        final EdgeLabelFormat.Direction direction = EdgeLabelFormat.Direction.ParentToChild;
+        return
+//                new DefaultEdgeLabelFormat(direction);
+                new DirectedEdgeLabelFormat(nodeFormat, false, direction);
+    }
+
+    public static DiffTreeLineGraphExportOptions ExportOptions(final Repository repository) {
+        final MiningNodeFormat nodeFormat = NodeFormat();
         return new DiffTreeLineGraphExportOptions(
                   GraphFormat.DIFFTREE
                 // We have to ensure that all DiffTrees have unique IDs, so use name of changed file and commit hash.
                 , new CommitDiffDiffTreeLabelFormat()
                 , nodeFormat
-                , new DirectedEdgeLabelFormat(nodeFormat)
+                , EdgeFormat(nodeFormat)
                 , new ExplainedFilter<>(
                         DiffTreeFilter.notEmpty(),
                         DiffTreeFilter.moreThanTwoCodeNodes(),
@@ -227,8 +246,10 @@ public class DiffTreeMiner {
             mineAsync(repo, repoOutputDir, DiffTreeMiner::ExportOptions, DiffTreeMiner::MiningStrategy);
 //            mine(repo, repoOutputDir, ExportOptions(repo), MiningStrategy());
 
-            new ExplainedFilterSummary(RunningExampleFinder.DefaultExampleConditions).exportTo(repoOutputDir.resolve("runningExampleFilterReasons.txt"));
-            RunningExampleFinder.DefaultExampleConditions.resetExplanations();
+            if (SEARCH_FOR_GOOD_RUNNING_EXAMPLES) {
+                new ExplainedFilterSummary(RunningExampleFinder.DefaultExampleConditions).exportTo(repoOutputDir.resolve("runningExampleFilterReasons.txt"));
+                RunningExampleFinder.DefaultExampleConditions.resetExplanations();
+            }
 
             Logger.info(" === End Processing " + repo.getRepositoryName() + " after " + clock.printPassedSeconds() + " ===");
         }
