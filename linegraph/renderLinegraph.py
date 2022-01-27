@@ -237,7 +237,7 @@ def parseNodeReleaseAtomics(id, name):
     result = NodeData()
 
     if name.startswith(RELEASE_PATTERNS_CODE_PREFIX):
-        print("getPatternFromId(", name[len(RELEASE_PATTERNS_CODE_PREFIX):], ")")
+#         print("getPatternFromId(", name[len(RELEASE_PATTERNS_CODE_PREFIX):], ")")
         pattern = getPatternFromId(name[len(RELEASE_PATTERNS_CODE_PREFIX):])
 #         print(name)
 #         print(name[len(RELEASE_PATTERNS_CODE_PREFIX):])
