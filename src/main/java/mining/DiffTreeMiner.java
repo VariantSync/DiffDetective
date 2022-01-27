@@ -46,6 +46,7 @@ public class DiffTreeMiner {
 //    public static final int COMMITS_TO_PROCESS_PER_THREAD = 10000;
     public static final int COMMITS_TO_PROCESS_PER_THREAD = 1000;
     public static final int EXPECTED_NUMBER_OF_COMMITS_IN_LINUX = 495284;
+    public static final boolean SEARCH_FOR_GOOD_RUNNING_EXAMPLES = false;
 
     public static List<DiffTreeTransformer> Postprocessing() {
         return Postprocessing(null);
@@ -57,17 +58,19 @@ public class DiffTreeMiner {
         if (repository != null && repository.hasFeatureAnnotationFilter()) {
             processing.add(new FeatureExpressionFilter(repository.getFeatureAnnotationFilter()));
         }
-        processing.add(new RunningExampleFinder(repository == null ? DiffNodeParser.Default : repository.getParseOptions().annotationParser()).
-                The_Diff_Itself_Is_A_Valid_DiffTree_And(
-                        RunningExampleFinder.DefaultExampleConditions,
-                        RunningExampleFinder.DefaultExamplesDirectory.resolve(repository == null ? "unknown" : repository.getRepositoryName())
-                ));
+        if (SEARCH_FOR_GOOD_RUNNING_EXAMPLES) {
+            processing.add(new RunningExampleFinder(repository == null ? DiffNodeParser.Default : repository.getParseOptions().annotationParser()).
+                    The_Diff_Itself_Is_A_Valid_DiffTree_And(
+                            RunningExampleFinder.DefaultExampleConditions,
+                            RunningExampleFinder.DefaultExamplesDirectory.resolve(repository == null ? "unknown" : repository.getRepositoryName())
+                    ));
+        }
         processing.add(new CollapseNestedNonEditedMacros());
         return processing;
     }
 
-    public static DiffTreeLineGraphExportOptions ExportOptions(final Repository repository) {
-        final MiningNodeFormat nodeFormat =
+    public static MiningNodeFormat NodeFormat() {
+        return
 //                new DebugMiningDiffNodeFormat();
                 new ReleaseMiningDiffNodeFormat();
     }
@@ -243,8 +246,10 @@ public class DiffTreeMiner {
             mineAsync(repo, repoOutputDir, DiffTreeMiner::ExportOptions, DiffTreeMiner::MiningStrategy);
 //            mine(repo, repoOutputDir, ExportOptions(repo), MiningStrategy());
 
-            new ExplainedFilterSummary(RunningExampleFinder.DefaultExampleConditions).exportTo(repoOutputDir.resolve("runningExampleFilterReasons.txt"));
-            RunningExampleFinder.DefaultExampleConditions.resetExplanations();
+            if (SEARCH_FOR_GOOD_RUNNING_EXAMPLES) {
+                new ExplainedFilterSummary(RunningExampleFinder.DefaultExampleConditions).exportTo(repoOutputDir.resolve("runningExampleFilterReasons.txt"));
+                RunningExampleFinder.DefaultExampleConditions.resetExplanations();
+            }
 
             Logger.info(" === End Processing " + repo.getRepositoryName() + " after " + clock.printPassedSeconds() + " ===");
         }
