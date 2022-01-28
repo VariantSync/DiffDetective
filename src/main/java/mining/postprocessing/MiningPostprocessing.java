@@ -52,7 +52,7 @@ public class MiningPostprocessing {
 
         final Path inputPath = Path.of(args[0]);
         final Path outputPath = Path.of(args[1]);
-        if (!Files.isDirectory(inputPath)) {
+        if (!Files.isDirectory(inputPath) && !FileUtils.hasExtension(inputPath, ".lg")) {
             throw new IllegalArgumentException("Expected path to directory of mined patterns as first argument but got a path that is not a directory, namely \"" + inputPath + "\"!");
         }
         if (!FileUtils.tryIsEmptyDirectory(outputPath)) {
@@ -70,17 +70,21 @@ public class MiningPostprocessing {
     }
 
     /**
-     * Parses all linegraph files in the given directory as patterns (i.e., as DiffGraphs).
+     * Parses all linegraph files in the given directory or file as patterns (i.e., as DiffGraphs).
      * non-recursive
-     * @param directory A directory containing linegraph files.
+     * @param path A path to a linegraph file or a directory containing linegraph files.
      * @return The list of all diffgraphs parsed from linegraph files in the given directory.
      * @throws IOException If the directory could not be accessed ({@link Files::list}).
      */
-    public static List<DiffTree> parseFrequentSubgraphsIn(final Path directory) throws IOException {
-        return Files.list(directory)
-                .filter(FileUtils::isLineGraph)
-                .flatMap(path -> LineGraphImport.fromFile(path, IMPORT_OPTIONS).stream())
-                .collect(Collectors.toList());
+    public static List<DiffTree> parseFrequentSubgraphsIn(final Path path) throws IOException {
+        if (Files.isDirectory(path)) {
+            return Files.list(path)
+                    .filter(FileUtils::isLineGraph)
+                    .flatMap(file -> LineGraphImport.fromFile(file, IMPORT_OPTIONS).stream())
+                    .collect(Collectors.toList());
+        } else {
+            return LineGraphImport.fromFile(path, IMPORT_OPTIONS);
+        }
     }
 
     public static void postprocessAndInterpretResults(
