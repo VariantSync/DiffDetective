@@ -8,6 +8,7 @@ import diff.difftree.serialize.LineGraphImport;
 import diff.difftree.serialize.edgeformat.DefaultEdgeLabelFormat;
 import diff.difftree.serialize.treeformat.IndexedTreeFormat;
 import mining.DiffTreeMiner;
+import mining.formats.DebugMiningDiffNodeFormat;
 import util.FileUtils;
 
 import java.io.IOException;
@@ -32,7 +33,7 @@ public class MiningPostprocessing {
     private static final DiffTreeRenderer.RenderOptions DefaultRenderOptions = new DiffTreeRenderer.RenderOptions(
             GraphFormat.DIFFTREE,
             IMPORT_OPTIONS.treeFormat(),
-            IMPORT_OPTIONS.nodeFormat(),
+            new DebugMiningDiffNodeFormat(),
             new DefaultEdgeLabelFormat(),
             false,
             DiffTreeRenderer.RenderOptions.DEFAULT.dpi(),
@@ -41,7 +42,7 @@ public class MiningPostprocessing {
             DiffTreeRenderer.RenderOptions.DEFAULT.arrowsize(),
             DiffTreeRenderer.RenderOptions.DEFAULT.fontsize(),
             true,
-            List.of()
+            List.of("--format", "patternsdebug")
     );
 
     public static void main(String[] args) throws IOException {
