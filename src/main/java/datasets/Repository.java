@@ -18,7 +18,9 @@ import java.util.function.Predicate;
  * @author Kevin Jedelhauser, Paul Maximilian Bittner
  */
 public class Repository {
-	/**
+    public static final Path DIFFDETECTIVE_DEFAULT_REPOSITORIES_DIRECTORY = Path.of("repositories");
+
+    /**
 	 * The location from where the input repository is read from.
 	 */
 	private final LoadingParameter repoLocation;

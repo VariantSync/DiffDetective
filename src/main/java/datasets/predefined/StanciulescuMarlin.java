@@ -1,6 +1,5 @@
 package datasets.predefined;
 
-import datasets.DefaultRepositories;
 import datasets.ParseOptions;
 import datasets.Repository;
 import diff.DiffFilter;
@@ -31,7 +30,7 @@ public class StanciulescuMarlin {
      */
     public static Repository fromZipInDiffDetectiveAt(Path pathToDiffDetective) {
         final Path marlinPath = pathToDiffDetective
-                .resolve(DefaultRepositories.DIFFDETECTIVE_DEFAULT_REPOSITORIES_DIRECTORY)
+                .resolve(Repository.DIFFDETECTIVE_DEFAULT_REPOSITORIES_DIRECTORY)
                 .resolve("Marlin_old.zip");
         return Repository
                 .fromZip(marlinPath, "Marlin_old")

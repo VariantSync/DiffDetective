@@ -20,6 +20,8 @@ import diff.difftree.transform.FeatureExpressionFilter;
 import main.Main;
 import metadata.ExplainedFilterSummary;
 import metadata.Metadata;
+import mining.dataset.MiningDataset;
+import mining.dataset.MiningDatasetFactory;
 import mining.formats.DirectedEdgeLabelFormat;
 import mining.formats.MiningNodeFormat;
 import mining.formats.ReleaseMiningDiffNodeFormat;
@@ -33,6 +35,7 @@ import parallel.ScheduledTasksIterator;
 import util.Clock;
 import util.Diagnostics;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -40,6 +43,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 public class DiffTreeMiner {
     private final static Diagnostics DIAGNOSTICS = new Diagnostics();
@@ -222,15 +226,40 @@ public class DiffTreeMiner {
         final ParseOptions.DiffStoragePolicy diffStoragePolicy = ParseOptions.DiffStoragePolicy.REMEMBER_STRIPPED_DIFF;
 
         final Path inputDir = Paths.get("..", "DiffDetectiveMining");
-        final Path variantEvolutionDatasetsDir = Paths.get("..", "variantevolution_datasets");
         final Path outputDir = Paths.get("results", "mining");
 
-        final List<Repository> repos = List.of(
+        final List<Repository> repos;
+        final boolean DEBUG_TEST = false;
+
+        if (DEBUG_TEST) {
+            final Path variantEvolutionDatasetsDir = Paths.get("..", "variantevolution_datasets");
+
+            repos = List.of(
 //                Godot.cloneFromGithubTo(inputDir),
-                StanciulescuMarlin.fromZipInDiffDetectiveAt(Path.of("."))
+                    StanciulescuMarlin.fromZipInDiffDetectiveAt(Path.of("."))
 //                Vim.cloneFromGithubTo(inputDir),
 //                LinuxKernel.cloneFromGithubTo(variantEvolutionDatasetsDir)
-        );
+            );
+        } else {
+            final Path datasetsFile = Path.of("docs", "datasets.md");
+
+            final List<MiningDataset> datasets;
+            try {
+                datasets = MiningDataset.fromMarkdown(datasetsFile);
+            } catch (IOException e) {
+                Logger.error("Failed to load at least one dataset from " + datasetsFile + " because:", e);
+                Logger.error("Aborting execution!");
+                return;
+            }
+
+            final MiningDatasetFactory miningDatasetFactory = new MiningDatasetFactory(inputDir);
+            repos = datasets.stream().map(miningDatasetFactory::create).collect(Collectors.toList());
+        }
+
+        Logger.info("Mining the following repositories:");
+        for (final Repository repo : repos) {
+            Logger.info("  - " + repo.getRepositoryName() + " from " + repo.getRemoteURI());
+        }
 
         /* ************************ *\
         |      END OF ARGUMENTS      |
