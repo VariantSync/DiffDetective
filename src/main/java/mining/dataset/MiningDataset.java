@@ -14,7 +14,7 @@ public record MiningDataset(
 ) {
     public static List<MiningDataset> fromMarkdown(final Path markdownFile) throws IOException {
         final String markdown = FileUtils.readUTF8(markdownFile);
-        final String[] lines = markdown.split(StringUtils.LINEBREAK);
+        final String[] lines = markdown.split(StringUtils.LINEBREAK_REGEX);
 
         final List<MiningDataset> datasets = new ArrayList<>(lines.length - 2);
         // Start at 2 to skip header and separator line of table
