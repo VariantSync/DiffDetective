@@ -114,7 +114,7 @@ public class MiningPostprocessing {
             printer.accept("Exporting and rendering semantic patterns to " + outputDir);
             int patternNo = 0;
             for (final DiffTree semanticPattern : semanticPatterns) {
-                renderer.render(semanticPattern, "SemanticPattern " + patternNo, outputDir, renderOptions);
+                renderer.render(semanticPattern, "SemanticPattern_" + patternNo, outputDir, renderOptions);
                 ++patternNo;
             }
         }
