@@ -210,7 +210,63 @@ public class GitDiffer {
             }
         }
 
-        final CommitDiff commitDiff = new CommitDiff(childCommit, parentCommit);
+        return getPatchDiffs(git, diffFilter, parseOptions, prevTreeParser, currentTreeParser, parentCommit, childCommit);
+    }
+
+    /**
+     * Creates a CommitDiff from a given commit that compares the given commit with the current working tree.
+     * For this, the git diff is retrieved using JGit.
+     * For each file in the diff, a PatchDiff is created.
+     *
+     * @param git The git repo which the commit stems from
+     * @param commit The commit which the working tree is compared with
+     * @param keepFullDiffs  If true, the PatchDiff will contain the full diff as a string. Set to false if you want to
+     *                       reduce memory consumption
+     * @return The CommitDiff of the given commit
+     */
+    public static CommitDiffResult createWorkingTreeDiff(
+    		Git git,
+    		DiffFilter diffFilter,
+    		RevCommit commit,
+    		final ParseOptions parseOptions) {
+		// get TreeParsers
+        final AbstractTreeIterator workingTreeParser = new FileTreeIterator(git.getRepository());
+        final CanonicalTreeParser prevTreeParser = new CanonicalTreeParser();
+        try (ObjectReader reader = git.getRepository().newObjectReader()) {
+            if (commit.getTree() == null) {
+                return CommitDiffResult.Failure(JGIT_ERROR, "Could not obtain RevTree from child commit " + commit.getId());
+            }
+
+            try {
+                prevTreeParser.reset(reader, commit.getTree());
+            } catch (IOException e) {
+                return CommitDiffResult.Failure(JGIT_ERROR, e.toString());
+            }
+        }
+        
+        return getPatchDiffs(git, diffFilter, parseOptions, prevTreeParser, workingTreeParser, commit, commit);
+    }
+    
+    /**
+     * 
+     * @param git The git repo which the commit stems from
+     * @param diffFilter {@link DiffFilter}
+     * @param parseOptions {@link ParseOptions}
+     * @param prevTreeParser The tree parser for parentCommit
+     * @param currentTreeParser The tree parser for childCommit or the working tree
+     * @param parentCommit The {@link RevCommit} for the parent commit
+     * @param childCommit The {@link RevCommit} for the child commit (equal to parentCommit if working tree is requested)
+     * @return {@link CommitDiffResult}
+     */
+    private static CommitDiffResult getPatchDiffs(
+    		Git git,
+    		DiffFilter diffFilter,
+    		final ParseOptions parseOptions,
+    		AbstractTreeIterator prevTreeParser,
+    		AbstractTreeIterator currentTreeParser,
+    		RevCommit parentCommit,
+    		RevCommit childCommit) {
+    	final CommitDiff commitDiff = new CommitDiff(childCommit, parentCommit);
         final Product<Optional<CommitDiff>, List<DiffError>> result = new Product<>(
                 Optional.of(commitDiff),
                 new ArrayList<>()
@@ -234,80 +290,6 @@ public class GitDiffer {
                 final String gitDiff = outputStream.toString(StandardCharsets.UTF_8);
                 final Result<PatchDiff, DiffError> patchDiff =
                         getBeforeFullFile(git, parentCommit, diffEntry.getOldPath()).unwrap()
-                        .bind(file -> createPatchDiff(
-                                commitDiff,
-                                diffEntry,
-                                gitDiff,
-                                file,
-                                parseOptions).unwrap()
-                        );
-
-                patchDiff.ifSuccess(commitDiff::addPatchDiff);
-                patchDiff.ifFailure(error -> result.second().add(error));
-                outputStream.reset();
-            }
-        } catch (IOException e) {
-            return CommitDiffResult.Failure(JGIT_ERROR, e.toString());
-        }
-
-        return new CommitDiffResult(result);
-    }
-
-    /**
-     * Creates a CommitDiff from a given commit.
-     * For this, the git diff is retrieved using JGit.
-     * For each file in the diff, a PatchDiff is created.
-     *
-     * @param git The git repo which the commit stems from
-     * @param commit The commit which the working tree is compared with
-     * @param keepFullDiffs  If true, the PatchDiff will contain the full diff as a string. Set to false if you want to
-     *                       reduce memory consumption
-     * @return The CommitDiff of the given commit
-     */
-    public static CommitDiffResult createWorkingTreeDiff(
-            Git git,
-            DiffFilter diffFilter,
-    		RevCommit commit,
-    		final ParseOptions parseOptions) {
-		// get TreeParsers
-        final AbstractTreeIterator workingTreeParser = new FileTreeIterator(git.getRepository());
-        final CanonicalTreeParser prevTreeParser = new CanonicalTreeParser();
-        try (ObjectReader reader = git.getRepository().newObjectReader()) {
-            if (commit.getTree() == null) {
-                return CommitDiffResult.Failure(JGIT_ERROR, "Could not obtain RevTree from child commit " + commit.getId());
-            }
-
-            try {
-                prevTreeParser.reset(reader, commit.getTree());
-            } catch (IOException e) {
-                return CommitDiffResult.Failure(JGIT_ERROR, e.toString());
-            }
-        }
-
-        final CommitDiff commitDiff = new CommitDiff(commit, commit);
-        final Product<Optional<CommitDiff>, List<DiffError>> result = new Product<>(
-                Optional.of(commitDiff),
-                new ArrayList<>()
-        );
-
-        // get PatchDiffs
-        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-             DiffFormatter diffFormatter = new DiffFormatter(outputStream))
-        {
-            diffFormatter.setRepository(git.getRepository());
-            diffFormatter.setDetectRenames(true);
-            diffFormatter.getRenameDetector().setRenameScore(50);
-
-            List<DiffEntry> entries = diffFormatter.scan(prevTreeParser, workingTreeParser);
-            for (DiffEntry diffEntry : entries) {
-                if (!diffFilter.filter(diffEntry)) {
-                    continue;
-                }
-
-                diffFormatter.format(diffEntry);
-                final String gitDiff = outputStream.toString(StandardCharsets.UTF_8);
-                final Result<PatchDiff, DiffError> patchDiff =
-                        getBeforeFullFile(git, commit, diffEntry.getOldPath()).unwrap()
                         .bind(file -> createPatchDiff(
                                 commitDiff,
                                 diffEntry,
@@ -453,4 +435,9 @@ public class GitDiffer {
             return DiffResult.Failure(COULD_NOT_OBTAIN_FULLDIFF, "Could not obtain full diff of file " + filename + " before commit " + commit + "!");
         }
     }
+    
+    public Git getJGitRepo() {
+    	return git;
+    }
+    
 }

@@ -26,7 +26,7 @@ public class PatchDiff implements GitPatch {
     private final DiffEntry.ChangeType changeType;
     
     /**
-     * Path of the file (patch) that has been modified.
+     * Path of the file that has been modified.
      */
     private final String path;
 

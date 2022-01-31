@@ -37,7 +37,7 @@ public class CommitDiff {
     }
 
     /**
-     * Add a {@link PatchDiff} to a {@link DiffCommit}.
+     * Add a {@link PatchDiff}.
      * 
      * @param patchDiff The {@link PatchDiff PatchDiff} to be added
      */
@@ -46,14 +46,14 @@ public class CommitDiff {
     }
 
     /**
-     * @return The list of {@link PatchDiff PatchDiffs} that belong to the {@link CommitDiff}
+     * @return The list of {@link PatchDiff PatchDiffs} that belong to this {@link CommitDiff}
      */
     public List<PatchDiff> getPatchDiffs() {
         return patchDiffs;
     }
 
     /**
-     * @return The amount of {@link PatchDiff PatchDiffs} that belong to the {@link CommitDiff}
+     * @return The amount of {@link PatchDiff PatchDiffs} that belong to this {@link CommitDiff}
      */
     public int getPatchAmount() {
         return patchDiffs.size();
