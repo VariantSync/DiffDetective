@@ -19,5 +19,9 @@ public class CommitDiffDiffTreeSource implements DiffTreeSource {
 	public String getCommitHash() {
 		return commitHash;
 	}
-	
+
+    @Override
+    public String toString() {
+        return fileName + "@" + commitHash;
+    }
 }
