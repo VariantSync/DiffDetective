@@ -49,7 +49,7 @@ public abstract class EdgeLabelFormat implements LinegraphFormat {
     protected void connectAccordingToLabel(final DiffNode child, final DiffNode parent, final String edgeLabel) {
         if (edgeLabel.startsWith(LineGraphConstants.BEFORE_AND_AFTER_PARENT)) {
             // Nothing has been changed. The child-parent relationship remains the same
-            child.addAfterChild(child);
+            parent.addAfterChild(child);
             parent.addBeforeChild(child);
         } else if (edgeLabel.startsWith(LineGraphConstants.BEFORE_PARENT)) {
             // The child DiffNode lost its parent DiffNode (an orphan DiffNode)
