@@ -1,0 +1,1 @@
+java -cp target/your_file.jar mining.postprocessing.MiningPostprocessing "results/minedpatterns" "results/candidatepatterns"
