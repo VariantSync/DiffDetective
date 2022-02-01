@@ -9,10 +9,8 @@ import java.nio.file.Path;
 import java.util.List;
 
 public class FileUtils {
-    public static final String LINEBREAK_REGEX = "\\r?\\n";
-
     public static String normalizedLineEndings(final String text) {
-        return text.replace(FileUtils.LINEBREAK_REGEX, "\\n");
+        return text.replace(StringUtils.LINEBREAK_REGEX, "\\n");
     }
 
     public static boolean isEmptyDirectory(final Path p) throws IOException {
