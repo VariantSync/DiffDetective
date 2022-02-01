@@ -258,6 +258,7 @@ public class DiffTreeMiner {
 
         Logger.info("Mining the following repositories:");
         for (final Repository repo : repos) {
+            repo.setParseOptions(repo.getParseOptions().withDiffStoragePolicy(diffStoragePolicy));
             Logger.info("  - " + repo.getRepositoryName() + " from " + repo.getRemoteURI());
         }
 
@@ -270,7 +271,6 @@ public class DiffTreeMiner {
             final Clock clock = new Clock();
             clock.start();
 
-            repo.setParseOptions(repo.getParseOptions().withDiffStoragePolicy(diffStoragePolicy));
             final Path repoOutputDir = outputDir.resolve(repo.getRepositoryName());
             mineAsync(repo, repoOutputDir, DiffTreeMiner::ExportOptions, DiffTreeMiner::MiningStrategy);
 //            mine(repo, repoOutputDir, ExportOptions(repo), MiningStrategy());
