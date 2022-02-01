@@ -99,3 +99,74 @@ We show that any DiffTree in fact represents an edit.
 How to do this properly is the question.
 Using Haskell+Agda? Using Idris? Using Pen&Paper?
 -}
+
+proofComplete :: FeatureAnnotation f => Edit f -> Bool
+proofComplete edit = sound (complete edit) `Edit.isomorph` edit
+
+proofSound :: FeatureAnnotation f => VDT f -> Bool
+proofSound vdt = complete (sound vdt) `DiffTree.isomorph` vdt
+
+{-
+Theorem: forall e. proofComplete e
+Proof:
+
+proofComplete edit
+    = sound (complete edit) `Edit.isomorph` edit
+    = edit `Edit.isomorph` sound (complete edit) // TODO: Prove commutativity of Edit.isomorph
+// let sce = sound (complete edit)
+    = let
+        editedCodeX = editedCodeFragments edit
+        editedCodeY = editedCodeFragments sce
+        in
+    (editedCodeX == editedCodeY)
+    && propertiesEqual (editTypes edit) (editTypes edit) editedCodeX
+    && and (fmap (\s -> pcEqualsFor (editTypes edit s) edit sce s) editedCodeX)
+
+Interleave:
+editedCodeY = editedCodeFragments sce
+            = editedCodeFragments (sound c) -- where c = complete edit
+            =  editedCodeFragments $ Edit {
+                editedCodeFragments = catMaybes (codeOf <$> nodes c),
+                editTypes = \code -> diffType (findNodeWithCode code c),
+                pc = \time code -> pcInVDT time c (findNodeWithCode code c)
+            }
+            = catMaybes (codeOf <$> nodes c)
+            = catMaybes (codeOf <$> nodes (complete edit))
+          * =
+-}
+
+{- *
+nodes (complete edit) 
+    = nodes $ let
+        codeToPCEdges = createPartialVDT edit
+
+        root = createRoot
+        macroNodes = removeDuplicates $ parent <$> codeToPCEdges
+        codeNodes  = removeDuplicates $ child <$> codeToPCEdges
+        -- create edges to the root from each macro node m (at all times t at which m exists).
+        pcToRootEdges = [VDTEdge { child = m, parent = root, time = t} | m <- macroNodes, t <- fromDiffType (diffType m)]
+        in
+    VDT {
+        nodes = root:(macroNodes++codeNodes),
+        edges = codeToPCEdges++pcToRootEdges
+    }
+    = let
+        codeToPCEdges = createPartialVDT edit
+
+        root = createRoot
+        macroNodes = removeDuplicates $ parent <$> codeToPCEdges
+        codeNodes  = removeDuplicates $ child <$> codeToPCEdges
+        -- create edges to the root from each macro node m (at all times t at which m exists).
+        pcToRootEdges = [VDTEdge { child = m, parent = root, time = t} | m <- macroNodes, t <- fromDiffType (diffType m)]
+        in
+        root:(macroNodes++codeNodes)
+    = let
+        codeToPCEdges = createPartialVDT edit
+        in
+        createRoot:((removeDuplicates $ parent <$> codeToPCEdges)++(removeDuplicates $ child <$> codeToPCEdges))
+
+-- I think we will definitely need some pre and post conditions for complex functions here.
+-- We now have to unfold createPartialVDT which is huge again.
+-- It would be better if we could avoid some computations right away by knowing that codeOf works correctly (in terms of pre- and postconditions).
+-- Then we could simplify all of this within the place where * is used directly perhaps.
+-}
