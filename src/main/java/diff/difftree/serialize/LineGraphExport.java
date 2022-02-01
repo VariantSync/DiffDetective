@@ -27,6 +27,26 @@ public class LineGraphExport {
         return null;
     }
 
+    public static Product<DiffTreeMiningResult, String> toLineGraphFormat(final Iterable<DiffTree> trees, final DiffTreeLineGraphExportOptions options) {
+        final DiffTreeMiningResult result = new DiffTreeMiningResult();
+
+        final StringBuilder lineGraph = new StringBuilder();
+        for (final DiffTree t : trees) {
+            final Product<DiffTreeSerializeDebugData, String> lg = toLineGraphFormat(t, options);
+
+            if (lg != null) {
+                result.debugData.append(lg.first());
+                composeTreeInLineGraph(lineGraph, t.getSource(), lg.second(), options);
+                ++result.exportedTrees;
+            }
+        }
+
+        result.exportedCommits = 1;
+        result.filterHits = new ExplainedFilterSummary(options.treeFilter());
+
+        return new Product<>(result, lineGraph.toString());
+    }
+
     /**
      * Writes the given commitDiff in line graph format to the given StringBuilder.
      * @param commitDiff The diff to convert to line graph format.
