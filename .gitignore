@@ -119,6 +119,7 @@ patches/*
 /error
 examples/
 results/
+/input
 
 ### Eclipse ###
 .settings/
