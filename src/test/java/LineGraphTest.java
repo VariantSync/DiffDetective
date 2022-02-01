@@ -48,7 +48,6 @@ public class LineGraphTest {
             final String lineGraph = FileUtils.readUTF8(testFile);
             final List<DiffTree> diffTrees = LineGraphImport.fromLineGraph(lineGraph, IMPORT_OPTIONS);
             assertConsistencyForAll(diffTrees);
-//            diffTrees.forEach(d -> d.forAll(n -> System.out.println(n.getLabel())));
             final String lineGraphResult = exportDiffTreeToLineGraph(diffTrees);
             assertEqualFileContent(lineGraph, lineGraphResult);
         }
@@ -60,6 +59,9 @@ public class LineGraphTest {
 	 * @param treeList {@link DiffTree} list
 	 */
 	private static void assertConsistencyForAll(final List<DiffTree> treeList) {
+//        for (final DiffTree t : treeList) {
+//            DiffTreeRenderer.WithinDiffDetective().render(t, t.getSource().toString(), Path.of("error"), PatchDiffRenderer.ErrorDiffTreeRenderOptions);
+//        }
 		treeList.forEach(DiffTree::assertConsistency);
 	}
 	
@@ -86,7 +88,13 @@ public class LineGraphTest {
 	 * @param generatedLineGraph The generated line graph
 	 */
 	private static void assertEqualFileContent(final String originalLineGraph, final String generatedLineGraph) {
-		assertEquals(FileUtils.normalizedLineEndings(originalLineGraph), FileUtils.normalizedLineEndings(generatedLineGraph));
+        final String o = FileUtils.normalizedLineEndings(originalLineGraph).trim();
+        final String g = FileUtils.normalizedLineEndings(generatedLineGraph).trim();
+//        System.out.println("ORIGINAL");
+//        System.out.println(o);
+//        System.out.println("GENERATED");
+//        System.out.println(g);
+        assertEquals(o, g);
 	}
 	
 }
