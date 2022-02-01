@@ -1,0 +1,10 @@
+t # SemanticPattern 0$$$0
+v 131589 NON_IF
+v 512 NON_IF
+v 260 RemFromPC
+v 4 AddToPC
+v 0 ADD_IF
+e 512 131589 ba
+e 260 512 b
+e 4 512 a
+e 0 512 a
