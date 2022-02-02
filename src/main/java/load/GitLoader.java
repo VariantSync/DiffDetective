@@ -76,11 +76,11 @@ public class GitLoader {
         Assert.assertTrue(Files.isRegularFile(pathToZip), "Given path " + pathToZip + " is not a file!");
 
         final Path targetDir = pathToZip.getParent();
-        // If the repository is already unzipped, use the unzipped files.
-        if (!FileUtils.tryIsEmptyDirectory(targetDir)) {
-            final Path unzippedRepoName = Path.of(FilenameUtils.removeExtension(pathToZip.toString()));
-            return fromDirectory(unzippedRepoName);
+        final Path unzippedRepoName = Path.of(FilenameUtils.removeExtension(pathToZip.toString()));
 
+        // If the repository is already unzipped, use the unzipped files.
+        if (Files.exists(unzippedRepoName) && !FileUtils.tryIsEmptyDirectory(unzippedRepoName)) {
+            return fromDirectory(unzippedRepoName);
         }
 
         try {
