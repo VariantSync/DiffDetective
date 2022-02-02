@@ -28,10 +28,12 @@ import mining.formats.ReleaseMiningDiffNodeFormat;
 import mining.monitoring.TaskCompletionMonitor;
 import mining.strategies.DiffTreeMiningStrategy;
 import mining.strategies.MineAllThenExport;
+import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.pmw.tinylog.Level;
 import org.pmw.tinylog.Logger;
 import parallel.ScheduledTasksIterator;
+import util.Assert;
 import util.Clock;
 import util.Diagnostics;
 
@@ -52,6 +54,7 @@ public class DiffTreeMiner {
     public static final int EXPECTED_NUMBER_OF_COMMITS_IN_LINUX = 495284;
 
     public static final boolean SEARCH_FOR_GOOD_RUNNING_EXAMPLES = false;
+    public static final boolean UPDATE_REPOS_BEFORE_MINING = false;
     public static final boolean DEBUG_TEST = false;
 
     public static List<DiffTreeTransformer> Postprocessing() {
@@ -266,6 +269,17 @@ public class DiffTreeMiner {
         Logger.info("Preloading repositories:");
         for (final Repository repo : repos) {
             repo.getGitRepo().run();
+        }
+
+        if (UPDATE_REPOS_BEFORE_MINING) {
+            Logger.info("Updating repositories:");
+            for (final Repository repo : repos) {
+                try {
+                    Assert.assertTrue(repo.getGitRepo().run().pull().call().isSuccessful());
+                } catch (GitAPIException e) {
+                    Logger.error("Failed to pull repository \"" + repo.getRepositoryName() + "\"!", e);
+                }
+            }
         }
 
         /* ************************ *\
