@@ -55,6 +55,7 @@ public class DiffTreeMiner {
 
     public static final boolean SEARCH_FOR_GOOD_RUNNING_EXAMPLES = false;
     public static final boolean UPDATE_REPOS_BEFORE_MINING = false;
+    public static final boolean PRINT_LATEX_TABLE = false;
     public static final boolean DEBUG_TEST = false;
 
     public static List<DiffTreeTransformer> Postprocessing() {
@@ -256,8 +257,10 @@ public class DiffTreeMiner {
                 return;
             }
 
-            Logger.info("Its dangerous outside. Take this!");
-            System.out.println(MiningDataset.asLaTeXTable(datasets));
+            if (PRINT_LATEX_TABLE) {
+                Logger.info("Its dangerous outside. Take this!");
+                System.out.println(MiningDataset.asLaTeXTable(datasets));
+            }
 
             final MiningDatasetFactory miningDatasetFactory = new MiningDatasetFactory(inputDir);
             repos = datasets.stream().map(miningDatasetFactory::create).collect(Collectors.toList());
