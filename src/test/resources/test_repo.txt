@@ -1,0 +1,4 @@
+-alte Änderung
++neue Änderung
+-B
++B ist auch neu

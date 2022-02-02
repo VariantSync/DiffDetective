@@ -2,6 +2,7 @@
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.revwalk.RevCommit;
@@ -44,13 +45,16 @@ public class PrintWorkingTreeDiff {
 			String diffOutput = "";
 			for (PatchDiff patchDiff : commitDiff.getPatchDiffs()) {
 				diffOutput += patchDiff.getDiff();
-				diffOutput = diffOutput.substring(0, diffOutput.length() - 1); // remove trailing white space
 			}
 			
 			// Load diff to verfiy computed output
-			String fileForVerification = System.getProperty("user.dir") + "/src/test/resources/" + repoName + ".txt";
-			String result = read(fileForVerification);
-			
+			String fileForVerification = "src/test/resources/" + repoName + ".txt";
+			String result = read(Paths.get(fileForVerification));
+
+			// Remove all white spaces to simplify comparison 
+			diffOutput = diffOutput.replaceAll("\\s", "");
+			result = result.replaceAll("\\s", "");
+		
 			// Check whether diffs match
 			Assert.assertTrue(diffOutput.equals(result));
 			
@@ -65,9 +69,9 @@ public class PrintWorkingTreeDiff {
 	 * @param filePath Path to the file
 	 * @return The diff
 	 */
-	private static String read(String filePath) {
+	private static String read(Path filePath) {
 		try {
-            return new String(Files.readAllBytes(Paths.get(filePath)));
+            return util.IO.readAsString(filePath);
         } catch (IOException e) {
             e.printStackTrace();
             return null;
