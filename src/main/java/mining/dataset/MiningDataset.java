@@ -10,8 +10,13 @@ import java.util.List;
 
 public record MiningDataset(
         String name,
-        String repoURL
+        String repoURL,
+        String domain,
+        String commits
 ) {
+    private static final String LATEX_TABLE_SEPARATOR = "&";
+    private static final String LATEX_TABLE_ENDROW = "\\\\";
+
     public static List<MiningDataset> fromMarkdown(final Path markdownFile) throws IOException {
         final String markdown = FileUtils.readUTF8(markdownFile);
         final String[] lines = markdown.split(StringUtils.LINEBREAK_REGEX);
@@ -27,12 +32,30 @@ public record MiningDataset(
             if (isYes(hasCode) && isYes(isGitRepo)) {
                 datasets.add(new MiningDataset(
                         cells[0].trim(), // name
-                        cells[5].trim()  // clone URL
+                        cells[5].trim(), // clone URL,
+                        cells[1].trim(), // domain
+                        cells[6].trim()  // #commits
                 ));
             }
         }
 
         return datasets;
+    }
+
+    public static String asLaTeXTable(final List<MiningDataset> datasets) {
+        final StringBuilder table = new StringBuilder();
+
+        // TODO: Header
+        for (final MiningDataset dataset : datasets) {
+            table
+                    .append("  ")
+                    .append(dataset.name).append(LATEX_TABLE_SEPARATOR)
+                    .append(dataset.domain).append(LATEX_TABLE_SEPARATOR)
+                    .append(dataset.commits).append(LATEX_TABLE_ENDROW);
+        }
+        // TODO: Footer
+
+        return table.toString();
     }
 
     private static boolean isYes(final String s) {
