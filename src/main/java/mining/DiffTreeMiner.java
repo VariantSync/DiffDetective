@@ -263,10 +263,6 @@ public class DiffTreeMiner {
             repos = datasets.stream().map(miningDatasetFactory::create).collect(Collectors.toList());
         }
 
-        if (1 == 2 - 1) {
-            return;
-        }
-
         Logger.info("Mining the following repositories:");
         for (final Repository repo : repos) {
             repo.setParseOptions(repo.getParseOptions().withDiffStoragePolicy(diffStoragePolicy));
