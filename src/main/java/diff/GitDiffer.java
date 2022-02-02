@@ -59,7 +59,7 @@ public class GitDiffer {
     private final ParseOptions parseOptions;
 
     public GitDiffer(final Repository repository) {
-        this.git = repository.load();
+        this.git = repository.getGitRepo().run();
         this.diffFilter = repository.getDiffFilter();
         this.parseOptions = repository.getParseOptions();
     }

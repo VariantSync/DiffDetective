@@ -50,7 +50,9 @@ public class DiffTreeMiner {
 //    public static final int COMMITS_TO_PROCESS_PER_THREAD = 10000;
     public static final int COMMITS_TO_PROCESS_PER_THREAD = 1000;
     public static final int EXPECTED_NUMBER_OF_COMMITS_IN_LINUX = 495284;
+
     public static final boolean SEARCH_FOR_GOOD_RUNNING_EXAMPLES = false;
+    public static final boolean DEBUG_TEST = false;
 
     public static List<DiffTreeTransformer> Postprocessing() {
         return Postprocessing(null);
@@ -226,10 +228,9 @@ public class DiffTreeMiner {
         final ParseOptions.DiffStoragePolicy diffStoragePolicy = ParseOptions.DiffStoragePolicy.REMEMBER_STRIPPED_DIFF;
 
         final Path inputDir = Paths.get("..", "DiffDetectiveMining");
-        final Path outputDir = Paths.get("results", "mining");
+        final Path outputDir = Paths.get("results", "difftrees");
 
         final List<Repository> repos;
-        final boolean DEBUG_TEST = false;
 
         if (DEBUG_TEST) {
             final Path variantEvolutionDatasetsDir = Paths.get("..", "variantevolution_datasets");
@@ -260,6 +261,11 @@ public class DiffTreeMiner {
         for (final Repository repo : repos) {
             repo.setParseOptions(repo.getParseOptions().withDiffStoragePolicy(diffStoragePolicy));
             Logger.info("  - " + repo.getRepositoryName() + " from " + repo.getRemoteURI());
+        }
+
+        Logger.info("Preloading repositories:");
+        for (final Repository repo : repos) {
+            repo.getGitRepo().run();
         }
 
         /* ************************ *\

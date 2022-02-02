@@ -105,7 +105,7 @@ public class TreeTransformersTest {
     private void testCommit(String file, String commitHash) throws IOException {
         final Repository marlin = StanciulescuMarlin.fromZipInDiffDetectiveAt(Path.of("."));
 
-        final Git git = marlin.load();
+        final Git git = marlin.getGitRepo().run();
         assert git != null;
         final RevWalk revWalk = new RevWalk(git.getRepository());
         final RevCommit childCommit = revWalk.parseCommit(ObjectId.fromString(commitHash));

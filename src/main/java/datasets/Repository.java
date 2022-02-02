@@ -12,6 +12,8 @@ import java.nio.file.Path;
 import java.util.Optional;
 import java.util.function.Predicate;
 
+import de.variantsync.functjonal.Lazy;
+
 /**
  * Representation of git repositories used as datasets for DiffDetective.
  * 
@@ -54,6 +56,8 @@ public class Repository {
      * A tree transformer that eliminates all nodes in a diff tree that
      */
     private Predicate<DiffNode> isFeatureAnnotation = null;
+
+	private final Lazy<Git> git = Lazy.of(this::load);
 	
 	/**
 	 * Creates a repository.
@@ -200,7 +204,11 @@ public class Repository {
         return isFeatureAnnotation;
     }
 
-	public Git load() {
+	public Lazy<Git> getGitRepo() {
+		return git;
+	}
+
+	private Git load() {
 		Logger.info("Loading git at {} ...", getLocalPath());
 		return switch (getRepoLocation()) {
 			case FROM_DIR -> GitLoader.fromDirectory(getLocalPath());
