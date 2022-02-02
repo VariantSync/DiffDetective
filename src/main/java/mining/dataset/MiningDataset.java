@@ -14,8 +14,8 @@ public record MiningDataset(
         String domain,
         String commits
 ) {
-    private static final String LATEX_TABLE_SEPARATOR = "&";
-    private static final String LATEX_TABLE_ENDROW = "\\\\";
+    private static final String LATEX_TABLE_SEPARATOR = " & ";
+    private static final String LATEX_TABLE_ENDROW = "\\\\" + StringUtils.LINEBREAK;
 
     public static List<MiningDataset> fromMarkdown(final Path markdownFile) throws IOException {
         final String markdown = FileUtils.readUTF8(markdownFile);
@@ -44,8 +44,11 @@ public record MiningDataset(
 
     public static String asLaTeXTable(final List<MiningDataset> datasets) {
         final StringBuilder table = new StringBuilder();
+        final String indent = "  ";
 
-        // TODO: Header
+        table.append("\\begin{tabular}{l l l}").append(StringUtils.LINEBREAK);
+        table.append(indent).append("Name").append(LATEX_TABLE_SEPARATOR).append("Domain").append(LATEX_TABLE_SEPARATOR).append("\\#commits").append(LATEX_TABLE_ENDROW);
+        table.append(indent).append("\\hline").append(StringUtils.LINEBREAK);
         for (final MiningDataset dataset : datasets) {
             table
                     .append("  ")
@@ -53,7 +56,7 @@ public record MiningDataset(
                     .append(dataset.domain).append(LATEX_TABLE_SEPARATOR)
                     .append(dataset.commits).append(LATEX_TABLE_ENDROW);
         }
-        // TODO: Footer
+        table.append("\\end{tabular}").append(StringUtils.LINEBREAK);
 
         return table.toString();
     }

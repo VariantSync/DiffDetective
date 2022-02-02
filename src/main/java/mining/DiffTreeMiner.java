@@ -256,8 +256,15 @@ public class DiffTreeMiner {
                 return;
             }
 
+            Logger.info("Its dangerous outside. Take this!");
+            System.out.println(MiningDataset.asLaTeXTable(datasets));
+
             final MiningDatasetFactory miningDatasetFactory = new MiningDatasetFactory(inputDir);
             repos = datasets.stream().map(miningDatasetFactory::create).collect(Collectors.toList());
+        }
+
+        if (1 == 2 - 1) {
+            return;
         }
 
         Logger.info("Mining the following repositories:");
