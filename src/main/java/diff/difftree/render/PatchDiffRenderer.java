@@ -15,25 +15,25 @@ import java.nio.file.Path;
 import java.util.List;
 
 public class PatchDiffRenderer {
-    public static final DiffTreeRenderer.RenderOptions ErrorDiffTreeRenderOptions = new DiffTreeRenderer.RenderOptions(
+    public static final RenderOptions ErrorDiffTreeRenderOptions = new RenderOptions(
             GraphFormat.DIFFTREE,
             new CommitDiffDiffTreeLabelFormat(),
             new DebugDiffNodeFormat(),
             new DefaultEdgeLabelFormat(),
             true,
             1000,
-            DiffTreeRenderer.RenderOptions.DEFAULT.nodesize()/3,
-            0.5*DiffTreeRenderer.RenderOptions.DEFAULT.edgesize(),
-            DiffTreeRenderer.RenderOptions.DEFAULT.arrowsize()/2,
+            RenderOptions.DEFAULT.nodesize()/3,
+            0.5*RenderOptions.DEFAULT.edgesize(),
+            RenderOptions.DEFAULT.arrowsize()/2,
             2,
             true,
             List.of()
     );
 
     private final DiffTreeRenderer renderer;
-    private final DiffTreeRenderer.RenderOptions options;
+    private final RenderOptions options;
 
-    public PatchDiffRenderer(final DiffTreeRenderer renderer, DiffTreeRenderer.RenderOptions options) {
+    public PatchDiffRenderer(final DiffTreeRenderer renderer, RenderOptions options) {
         this.renderer = renderer;
         this.options = options;
     }

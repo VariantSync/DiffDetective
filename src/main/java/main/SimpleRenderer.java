@@ -3,6 +3,7 @@ package main;
 import diff.difftree.DiffTree;
 import diff.difftree.parse.DiffNodeParser;
 import diff.difftree.render.DiffTreeRenderer;
+import diff.difftree.render.RenderOptions;
 import diff.difftree.serialize.GraphFormat;
 import diff.difftree.serialize.edgeformat.DefaultEdgeLabelFormat;
 import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
@@ -17,17 +18,17 @@ import java.util.List;
 
 public class SimpleRenderer {
     private static final DiffTreeRenderer renderer = DiffTreeRenderer.WithinDiffDetective();
-    private static final DiffTreeRenderer.RenderOptions renderOptions = new DiffTreeRenderer.RenderOptions(
+    private static final RenderOptions renderOptions = new RenderOptions(
             GraphFormat.DIFFTREE,
             new CommitDiffDiffTreeLabelFormat(),
             new ReleaseMiningDiffNodeFormat(),
             new DefaultEdgeLabelFormat(),
             true,
-            DiffTreeRenderer.RenderOptions.DEFAULT.dpi() / 2,
-            DiffTreeRenderer.RenderOptions.DEFAULT.nodesize(),
-            DiffTreeRenderer.RenderOptions.DEFAULT.edgesize(),
-            DiffTreeRenderer.RenderOptions.DEFAULT.arrowsize(),
-            DiffTreeRenderer.RenderOptions.DEFAULT.fontsize(),
+            RenderOptions.DEFAULT.dpi() / 2,
+            RenderOptions.DEFAULT.nodesize(),
+            RenderOptions.DEFAULT.edgesize(),
+            RenderOptions.DEFAULT.arrowsize(),
+            RenderOptions.DEFAULT.fontsize(),
             true,
             List.of("--format", "patternsrelease")
     );

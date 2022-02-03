@@ -2,6 +2,7 @@ package mining.postprocessing;
 
 import diff.difftree.DiffTree;
 import diff.difftree.render.DiffTreeRenderer;
+import diff.difftree.render.RenderOptions;
 import diff.difftree.serialize.DiffTreeLineGraphImportOptions;
 import diff.difftree.serialize.GraphFormat;
 import diff.difftree.serialize.LineGraphImport;
@@ -29,17 +30,17 @@ public class MiningPostprocessing {
             DiffTreeMiner.NodeFormat(),
             DiffTreeMiner.EdgeFormat()
             );
-    private static final DiffTreeRenderer.RenderOptions DefaultRenderOptions = new DiffTreeRenderer.RenderOptions(
+    private static final RenderOptions DefaultRenderOptions = new RenderOptions(
             GraphFormat.DIFFTREE,
             IMPORT_OPTIONS.treeFormat(),
             IMPORT_OPTIONS.nodeFormat(),
             new DefaultEdgeLabelFormat(),
             false,
-            DiffTreeRenderer.RenderOptions.DEFAULT.dpi(),
-            DiffTreeRenderer.RenderOptions.DEFAULT.nodesize(),
-            DiffTreeRenderer.RenderOptions.DEFAULT.edgesize(),
-            DiffTreeRenderer.RenderOptions.DEFAULT.arrowsize(),
-            DiffTreeRenderer.RenderOptions.DEFAULT.fontsize(),
+            RenderOptions.DEFAULT.dpi(),
+            RenderOptions.DEFAULT.nodesize(),
+            RenderOptions.DEFAULT.edgesize(),
+            RenderOptions.DEFAULT.arrowsize(),
+            RenderOptions.DEFAULT.fontsize(),
             true,
             List.of()
     );
@@ -87,7 +88,7 @@ public class MiningPostprocessing {
             final Postprocessor postprocessor,
             final Consumer<String> printer,
             final DiffTreeRenderer renderer,
-            DiffTreeRenderer.RenderOptions renderOptions,
+            RenderOptions renderOptions,
             final Path outputDir)
     {
         final Postprocessor.Result result = postprocessor.postprocess(frequentSubgraphs);
@@ -103,7 +104,7 @@ public class MiningPostprocessing {
 
         if (renderer != null) {
             if (renderOptions == null) {
-                renderOptions = DiffTreeRenderer.RenderOptions.DEFAULT;
+                renderOptions = RenderOptions.DEFAULT;
             }
 
             printer.accept("Exporting and rendering semantic patterns to " + outputDir);

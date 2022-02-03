@@ -38,35 +38,6 @@ public class DiffTreeRenderer {
     private final Path workDir;
     private final Supplier<PythonCommand> pythonCommandFactory;
 
-    public record RenderOptions(
-    		GraphFormat format, 
-    		DiffTreeLabelFormat treeParser, 
-    		DiffNodeLabelFormat nodeParser,
-            EdgeLabelFormat edgeParser,
-            boolean cleanUpTemporaryFiles,
-            int dpi,
-            int nodesize,
-            double edgesize,
-            int arrowsize,
-            int fontsize,
-            boolean withlabels,
-            List<String> extraArguments) {
-        public static RenderOptions DEFAULT = new RenderOptions(
-        		GraphFormat.DIFFTREE,
-        		new CommitDiffDiffTreeLabelFormat(),
-                new DebugDiffNodeFormat(),
-                new DefaultEdgeLabelFormat(),
-                true,
-                300,
-                700,
-                1.2,
-                15,
-                5,
-                true,
-                List.of()
-        );
-    }
-
     private DiffTreeRenderer(final Supplier<PythonCommand> pythonCommandFactory, final Path workDir) {
         this.workDir = workDir;
         this.pythonCommandFactory = pythonCommandFactory;
@@ -134,8 +105,8 @@ public class DiffTreeRenderer {
             Logger.error("Could not render difftree " + treeAndFileName + " because:", e);
             return false;
         }
-
-        if (renderFile(tempFile, options) && options.cleanUpTemporaryFiles) {
+        
+        if (renderFile(tempFile, options) && options.cleanUpTemporaryFiles()) {
             try {
                 Files.delete(tempFile);
             } catch (IOException e) {
@@ -153,15 +124,15 @@ public class DiffTreeRenderer {
     public boolean renderFile(final Path lineGraphFile, RenderOptions options) {
         final PythonCommand cmd = pythonCommandFactory.get();//apply(lineGraphFile);
 
-        cmd.addArg("--nodesize").addArg(options.nodesize);
-        cmd.addArg("--dpi").addArg(options.dpi);
-        cmd.addArg("--edgesize").addArg(options.edgesize);
-        cmd.addArg("--arrowsize").addArg(options.arrowsize);
-        cmd.addArg("--fontsize").addArg(options.fontsize);
-        if (!options.withlabels) {
+        cmd.addArg("--nodesize").addArg(options.nodesize());
+        cmd.addArg("--dpi").addArg(options.dpi());
+        cmd.addArg("--edgesize").addArg(options.edgesize());
+        cmd.addArg("--arrowsize").addArg(options.arrowsize());
+        cmd.addArg("--fontsize").addArg(options.fontsize());
+        if (!options.withlabels()) {
             cmd.addArg("--nolabels");
         }
-        for (final String arg : options.extraArguments) {
+        for (final String arg : options.extraArguments()) {
             cmd.addArg(arg);
         }
         cmd.addArg(lineGraphFile.toString());
