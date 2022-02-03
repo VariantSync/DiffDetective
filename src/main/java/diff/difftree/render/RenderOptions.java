@@ -22,6 +22,7 @@ public record RenderOptions(
         int fontsize,
         boolean withlabels,
         List<String> extraArguments) {
+	
     public static RenderOptions DEFAULT = new RenderOptions(
     		GraphFormat.DIFFTREE,
     		new CommitDiffDiffTreeLabelFormat(),
@@ -36,4 +37,33 @@ public record RenderOptions(
             true,
             List.of()
     );
+    
+//    public RenderOptions(Builder builder) {
+//		// TODO Auto-generated constructor stub
+//	}
+
+	/**
+     * Builder for a RenderOptions.
+     *
+     * See field descriptions of RenderOptions for more details.
+     */
+    public static class Builder {
+    	
+    	private RenderOptions options;
+    	
+    	public Builder() {
+    		options = RenderOptions.DEFAULT;
+    	}
+    	
+//        public RenderOptions build() {
+//            return new RenderOptions(this);
+//        }
+        
+        public Builder setGraphFormat(GraphFormat format) {
+        	options.format = format;
+        	return(this);
+        }
+    	
+    }
+    
 }
