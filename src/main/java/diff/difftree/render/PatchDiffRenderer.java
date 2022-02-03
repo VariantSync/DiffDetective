@@ -3,10 +3,13 @@ package diff.difftree.render;
 import diff.GitPatch;
 import diff.PatchDiff;
 import diff.difftree.DiffTree;
+import diff.difftree.LineGraphConstants;
 import diff.difftree.serialize.GraphFormat;
 import diff.difftree.serialize.edgeformat.DefaultEdgeLabelFormat;
 import diff.difftree.serialize.nodeformat.DebugDiffNodeFormat;
+import diff.difftree.serialize.nodeformat.TypeDiffNodeFormat;
 import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
+import mining.formats.DebugMiningDiffNodeFormat;
 import org.tinylog.Logger;
 import util.IO;
 
@@ -18,9 +21,9 @@ public class PatchDiffRenderer {
     public static final DiffTreeRenderer.RenderOptions ErrorDiffTreeRenderOptions = new DiffTreeRenderer.RenderOptions(
             GraphFormat.DIFFTREE,
             new CommitDiffDiffTreeLabelFormat(),
-            new DebugDiffNodeFormat(),
+            new TypeDiffNodeFormat(),
             new DefaultEdgeLabelFormat(),
-            true,
+            false,
             1000,
             DiffTreeRenderer.RenderOptions.DEFAULT.nodesize()/3,
             0.5*DiffTreeRenderer.RenderOptions.DEFAULT.edgesize(),
@@ -49,7 +52,10 @@ public class PatchDiffRenderer {
     public void render(final DiffTree diffTree, final GitPatch patch, final Path outputDirectory) {
         renderer.render(diffTree, patch, outputDirectory, options);
         try {
-            IO.write(outputDirectory.resolve(patch.getFileName() + ".diff"), patch.getDiff());
+            IO.write(outputDirectory.resolve(
+                    patch.getFileName() + LineGraphConstants.TREE_NAME_SEPARATOR + patch.getCommitHash() + ".diff"
+                    ),
+                    patch.getDiff());
         } catch (IOException e) {
             Logger.error(e);
         }
