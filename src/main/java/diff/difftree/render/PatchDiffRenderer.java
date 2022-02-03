@@ -7,7 +7,7 @@ import diff.difftree.LineGraphConstants;
 import diff.difftree.serialize.GraphFormat;
 import diff.difftree.serialize.edgeformat.DefaultEdgeLabelFormat;
 import diff.difftree.serialize.nodeformat.DebugDiffNodeFormat;
-import diff.difftree.serialize.nodeformat.TypeDiffNodeFormat;
+import diff.difftree.serialize.nodeformat.MappingsDiffNodeFormat;
 import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
 import mining.formats.DebugMiningDiffNodeFormat;
 import org.tinylog.Logger;
@@ -21,7 +21,7 @@ public class PatchDiffRenderer {
     public static final DiffTreeRenderer.RenderOptions ErrorDiffTreeRenderOptions = new DiffTreeRenderer.RenderOptions(
             GraphFormat.DIFFTREE,
             new CommitDiffDiffTreeLabelFormat(),
-            new TypeDiffNodeFormat(),
+            new MappingsDiffNodeFormat(),
             new DefaultEdgeLabelFormat(),
             false,
             1000,
