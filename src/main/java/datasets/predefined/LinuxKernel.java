@@ -20,6 +20,10 @@ public class LinuxKernel {
             .allowedFileExtensions("c", "h")
             .build();
 
+    /**
+     * This can cause bugs.
+     */
+    @Deprecated
     public static boolean isFeature(DiffNode node) {
         return node.getLabel().contains("CONFIG_");
     }
@@ -34,6 +38,7 @@ public class LinuxKernel {
                 .tryFromRemote(localDir, "https://github.com/torvalds/linux", "Linux")
                 .orElseThrow()
                 .setDiffFilter(DIFF_FILTER)
-                .setFeatureAnnotationFilter(LinuxKernel::isFeature);
+//                .setFeatureAnnotationFilter(LinuxKernel::isFeature)
+                ;
     }
 }

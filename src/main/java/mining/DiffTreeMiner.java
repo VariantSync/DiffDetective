@@ -16,7 +16,6 @@ import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
 import diff.difftree.transform.CollapseNestedNonEditedMacros;
 import diff.difftree.transform.CutNonEditedSubtrees;
 import diff.difftree.transform.DiffTreeTransformer;
-import diff.difftree.transform.FeatureExpressionFilter;
 import metadata.ExplainedFilterSummary;
 import metadata.Metadata;
 import mining.dataset.MiningDataset;
@@ -65,9 +64,6 @@ public class DiffTreeMiner {
     public static List<DiffTreeTransformer> Postprocessing(final Repository repository) {
         final List<DiffTreeTransformer> processing = new ArrayList<>();
         processing.add(new CutNonEditedSubtrees());
-        if (repository != null && repository.hasFeatureAnnotationFilter()) {
-            processing.add(new FeatureExpressionFilter(repository.getFeatureAnnotationFilter()));
-        }
         if (SEARCH_FOR_GOOD_RUNNING_EXAMPLES) {
             processing.add(new RunningExampleFinder(repository == null ? DiffNodeParser.Default : repository.getParseOptions().annotationParser()).
                     The_Diff_Itself_Is_A_Valid_DiffTree_And(
@@ -230,7 +226,7 @@ public class DiffTreeMiner {
 //        setupLogger(Level.INFO);
 //        setupLogger(Level.DEBUG);
 
-        final ParseOptions.DiffStoragePolicy diffStoragePolicy = ParseOptions.DiffStoragePolicy.REMEMBER_STRIPPED_DIFF;
+        final ParseOptions.DiffStoragePolicy diffStoragePolicy = ParseOptions.DiffStoragePolicy.REMEMBER_FULL_DIFF;
 
         final Path inputDir = Paths.get("..", "DiffDetectiveMining");
         final Path outputDir = Paths.get("results", "difftrees");

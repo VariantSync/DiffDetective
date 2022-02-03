@@ -51,11 +51,6 @@ public class Repository {
      */
 	private ParseOptions parseOptions;
 
-    /**
-     * A tree transformer that eliminates all nodes in a diff tree that
-     */
-    private Predicate<DiffNode> isFeatureAnnotation = null;
-
 	private final Lazy<Git> git = Lazy.of(this::load);
 	
 	/**
@@ -182,11 +177,6 @@ public class Repository {
         return this;
 	}
 
-    public Repository setFeatureAnnotationFilter(final Predicate<DiffNode> isFeatureAnnotation) {
-        this.isFeatureAnnotation = isFeatureAnnotation;
-        return this;
-    }
-
 	public DiffFilter getDiffFilter() {
 		return diffFilter;
 	}
@@ -194,14 +184,6 @@ public class Repository {
 	public ParseOptions getParseOptions() {
 		return parseOptions;
 	}
-
-    public boolean hasFeatureAnnotationFilter() {
-        return isFeatureAnnotation != null;
-    }
-
-    public Predicate<DiffNode> getFeatureAnnotationFilter() {
-        return isFeatureAnnotation;
-    }
 
 	public Lazy<Git> getGitRepo() {
 		return git;

@@ -41,18 +41,9 @@ public class MiningDatasetFactory {
         return ParseOptions.Default;
     }
 
-    private static Predicate<DiffNode> getAnnotationFilterFor(final String repositoryName) {
-        if (repositoryName.equalsIgnoreCase(LINUX)) {
-            return LinuxKernel::isFeature;
-        }
-        return null;
-    }
-
-
     public Repository create(final MiningDataset dataset) {
         final DiffFilter diffFilter = getDiffFilterFor(dataset.name());
         final ParseOptions parseOptions = getParseOptionsFor(dataset.name());
-        final Predicate<DiffNode> annotationFilter = getAnnotationFilterFor(dataset.name());
 
         final Repository repo = Repository.tryFromRemote(
                 cloneDirectory,
@@ -61,10 +52,6 @@ public class MiningDatasetFactory {
                 .orElseThrow();
 
         repo.setDiffFilter(diffFilter).setParseOptions(parseOptions);
-
-        if (annotationFilter != null) {
-            repo.setFeatureAnnotationFilter(annotationFilter);
-        }
 
         return repo;
     }
