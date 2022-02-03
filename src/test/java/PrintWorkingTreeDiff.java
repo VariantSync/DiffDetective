@@ -26,8 +26,8 @@ public class PrintWorkingTreeDiff {
 		String repoName = "test_repo";
 		
 		// Retrieve repository
-		final String repo_path = "repositories/" + repoName;
-		final Repository repository = Repository.fromDirectory(Paths.get(repo_path), repoName);
+		final String repo_path = "repositories/" + repoName; 
+		final Repository repository = Repository.fromZip(Paths.get(repo_path + ".zip"), repoName); // remove ".zip" when using fromDirectory()
 		repository.setParseOptions(repository.getParseOptions().withDiffStoragePolicy(DiffStoragePolicy.REMEMBER_FULL_DIFF));
 		
 		final GitDiffer differ = new GitDiffer(repository);
