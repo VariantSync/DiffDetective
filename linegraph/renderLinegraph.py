@@ -5,6 +5,12 @@ import os
 import re
 import sys
 
+## settings for running example
+#
+# NODE_POSITION_LAYOUT = "circo"
+# POS_SCALING_X = 1
+# POS_SCALING_Y = 0.5
+
 # + install graphviz on your system: https://www.graphviz.org/download/
 
 # format
@@ -14,17 +20,17 @@ OUTPUT_FORMAT = ".png"
 
 # NODE_POSITION_LAYOUT = "dot"
 
-# NODE_POSITION_LAYOUT = "circo"
-NODE_POSITION_LAYOUT = "sfdp"
+NODE_POSITION_LAYOUT = "circo"
+# NODE_POSITION_LAYOUT = "sfdp"
 # NODE_POSITION_LAYOUT = "neato"
 # NODE_POSITION_LAYOUT = "fdp"
 # NODE_POSITION_LAYOUT = "twopi"
 # NODE_POSITION_LAYOUT = "osage"
 # NODE_POSITION_LAYOUT = "patchwork"
 POS_SCALING_X = 1
-POS_SCALING_Y = -1
-FIG_WIDTH = 3.5
-FIG_HEIGHT = 2.5
+POS_SCALING_Y = 0.5
+FIG_WIDTH = 13.5
+FIG_HEIGHT = 12.5
 # FIG_WIDTH = 10
 # FIG_HEIGHT = 10
 
@@ -38,15 +44,24 @@ JAVA_ID_DIFFLINE_FROM_OFFSET = 1
 # DIR_SEPARATOR = "$"
 DIR_SEPARATOR = "___"
 
+COLORFUL_DELETED = '#A00000'
+COLORFUL_INSERTED = '#00A000'
+COLORFUL_MACRO = '#579'
+
 # colour of a node shows diff type
-DIFFTYPE_ADD_COLOR = 'green'
-DIFFTYPE_REM_COLOR = 'red'
+DIFFTYPE_ADD_COLOR = 'green' #COLORFUL_INSERTED #
+DIFFTYPE_REM_COLOR = 'red' #COLORFUL_DELETED #'#ff9129'
 DIFFTYPE_NON_COLOR = '#d1d1e0' # light purple gray
 
 # border colour of a node shows code type
-CODE_TYPE_CODE_COLOR = '#3399ff'
-CODE_TYPE_OTHER_COLOR = 'black'
+CODE_TYPE_CODE_COLOR = 'black'
+CODE_TYPE_OTHER_COLOR = '#3399ff'#COLORFUL_MACRO#
 TYPE_BORDER_SIZE = (8.0 / 7.0)
+
+# colour of edges
+EDGE_ADD_COLOR = '#bbeb37'
+EDGE_REM_COLOR = '#ff9129'
+EDGE_NON_COLOR = 'black'
 
 # drawing parameters
 NODE_SIZE = 700
@@ -331,7 +346,7 @@ def load_as_line_graph(input_file):
 def plot_graphs(S, exportDir):
     # plt.figure(0, figsize=(FIG_WIDTH,2.5))
 #     plt.figure(0, figsize=(FIG_WIDTH, FIG_HEIGHT))
-    plt.figure(0)
+    fig = plt.figure(0)
     for i in range(len(S)):
         difftree = S[i]
 
@@ -369,11 +384,11 @@ def plot_graphs(S, exportDir):
         for _, _, d in difftree.edges.data():
             typeName = str(d['label'])
             if typeName.startswith("a"):
-                edge_colors.append('#bbeb37')
+                edge_colors.append(EDGE_ADD_COLOR)
             if typeName.startswith("ba"):
-                edge_colors.append('black')
+                edge_colors.append(EDGE_NON_COLOR)
             elif typeName.startswith("b"):
-                edge_colors.append('#ff9129')
+                edge_colors.append(EDGE_REM_COLOR)
 
         # pos = nx.spring_layout(S[i], scale=3)
         # pos = nx.planar_layout(S[i], scale=3)
@@ -384,10 +399,33 @@ def plot_graphs(S, exportDir):
         H_layout = nx.drawing.nx_pydot.pydot_layout(H, prog=NODE_POSITION_LAYOUT, root=rootNode)
         pos = {H.nodes[n]['label']: p for n, p in H_layout.items()}
 
+        # To scale our graph on the y axis, we have to specify a fixed interval for the y axis in the plot.
+        # Otherwise, matplotlib will automatically re-scale the axis once we shifted or scaled the nodes positions.
+        # Matplotlib does this to always capture our data best.
+        # However, to scale we thus specify explicitly the interval for each axis. We do it here for the y axis.
+
+        # 1: Compute the lower and upper bound of node positions (ymin and ymax).
+        ymin = 999999999999999999999999999999999999999
+        ymax = -ymin
+        for k, v in pos.items():
+            y = v[1]
+            if y < ymin:
+                ymin = y
+            if y > ymax:
+                ymax = y
+        # 2: Compute the center between the bounds and compute how far the center is away from the lower and upper bound
+        ycenter = (ymax + ymin) / 2
+        yhalf = (ymax - ymin) / 2
+
+        # 3: shift our nodes and normalize their position on the y scale
         new_pos = {}
         for k, v in pos.items():
-            new_pos[k] = (POS_SCALING_X * v[0], POS_SCALING_Y * v[1])
+            new_pos[k] = (POS_SCALING_X * v[0], POS_SCALING_Y * (v[1] - ycenter))
         pos = new_pos
+
+        # 4: fix the axis interval
+        axes = fig.get_axes()[0]
+        axes.set_ylim([-yhalf, +yhalf])
 
         # draw type borders
         nx.draw_networkx_nodes(difftree, pos,
@@ -420,7 +458,8 @@ def plot_graphs(S, exportDir):
         # Save
         print("Exporting", save_path)
         plt.tight_layout()
-        plt.savefig(save_path, format="PNG", dpi=DPI)
+        plt.margins(x=0.1) # This is to prevent labels being cut off. Don't ask me what it does or how it works but it does work.
+        plt.savefig(save_path, format="PNG", dpi=DPI, bbox_inches='tight')
 
 
 def render(pathIn, outDir):

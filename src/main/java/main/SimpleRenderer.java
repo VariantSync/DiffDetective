@@ -5,8 +5,9 @@ import diff.difftree.parse.DiffNodeParser;
 import diff.difftree.render.DiffTreeRenderer;
 import diff.difftree.serialize.GraphFormat;
 import diff.difftree.serialize.edgeformat.DefaultEdgeLabelFormat;
+import diff.difftree.serialize.nodeformat.DebugDiffNodeFormat;
+import diff.difftree.serialize.nodeformat.MappingsDiffNodeFormat;
 import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
-import mining.formats.ReleaseMiningDiffNodeFormat;
 import org.tinylog.Logger;
 import util.FileUtils;
 
@@ -20,16 +21,32 @@ public class SimpleRenderer {
     private static final DiffTreeRenderer.RenderOptions renderOptions = new DiffTreeRenderer.RenderOptions(
             GraphFormat.DIFFTREE,
             new CommitDiffDiffTreeLabelFormat(),
-            new ReleaseMiningDiffNodeFormat(),
+//            new ReleaseMiningDiffNodeFormat(),
+            new MappingsDiffNodeFormat(),
             new DefaultEdgeLabelFormat(),
             true,
             DiffTreeRenderer.RenderOptions.DEFAULT.dpi() / 2,
-            DiffTreeRenderer.RenderOptions.DEFAULT.nodesize(),
-            DiffTreeRenderer.RenderOptions.DEFAULT.edgesize(),
-            DiffTreeRenderer.RenderOptions.DEFAULT.arrowsize(),
-            DiffTreeRenderer.RenderOptions.DEFAULT.fontsize(),
+            3*DiffTreeRenderer.RenderOptions.DEFAULT.nodesize(),
+            2*DiffTreeRenderer.RenderOptions.DEFAULT.edgesize(),
+            2*DiffTreeRenderer.RenderOptions.DEFAULT.arrowsize(),
+            8,
             true,
-            List.of("--format", "patternsrelease")
+//            List.of("--format", "patternsrelease")
+            List.of()
+    );
+    private static final DiffTreeRenderer.RenderOptions renderExampleOptions = new DiffTreeRenderer.RenderOptions(
+            GraphFormat.DIFFTREE,
+            new CommitDiffDiffTreeLabelFormat(),
+            new DebugDiffNodeFormat(),
+            new DefaultEdgeLabelFormat(),
+            true,
+            DiffTreeRenderer.RenderOptions.DEFAULT.dpi(),
+            3*DiffTreeRenderer.RenderOptions.DEFAULT.nodesize(),
+            2*DiffTreeRenderer.RenderOptions.DEFAULT.edgesize(),
+            2*DiffTreeRenderer.RenderOptions.DEFAULT.arrowsize(),
+            8,
+            true,
+            List.of()
     );
     private final static boolean collapseMultipleCodeLines = true;
     private final static boolean ignoreEmptyLines = true;
@@ -37,7 +54,7 @@ public class SimpleRenderer {
     private static void render(final Path fileToRender) {
         if (fileToRender.toString().endsWith(".lg")) {
             Logger.info("Rendering " + fileToRender);
-            renderer.renderFile(fileToRender, renderOptions);
+            renderer.renderFile(fileToRender, renderExampleOptions);
         } else if (fileToRender.toString().endsWith(".diff")) {
             Logger.info("Rendering " + fileToRender);
             final DiffTree t;
@@ -47,7 +64,7 @@ public class SimpleRenderer {
                 System.err.println("Could not read given file \"" + fileToRender + "\" because:\n" + e.getMessage());
                 return;
             }
-            renderer.render(t, fileToRender.getFileName().toString(), fileToRender.getParent(), renderOptions);
+            renderer.render(t, fileToRender.getFileName().toString(), fileToRender.getParent(), renderExampleOptions);
         } else {
             Logger.warn("Skipping unsupported file " + fileToRender);
         }
