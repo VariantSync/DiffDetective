@@ -10,6 +10,7 @@ import sys
 # NODE_POSITION_LAYOUT = "circo"
 # POS_SCALING_X = 1
 # POS_SCALING_Y = 0.5
+# plt.margins(x=0.11)
 
 # + install graphviz on your system: https://www.graphviz.org/download/
 
@@ -458,7 +459,7 @@ def plot_graphs(S, exportDir):
         # Save
         print("Exporting", save_path)
         plt.tight_layout()
-        plt.margins(x=0.1) # This is to prevent labels being cut off. Don't ask me what it does or how it works but it does work.
+        plt.margins(x=0.11) # This is to prevent labels being cut off. Don't ask me what it does or how it works but it does work.
         plt.savefig(save_path, format="PNG", dpi=DPI, bbox_inches='tight')
 
 
