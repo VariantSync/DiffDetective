@@ -4,11 +4,9 @@ import de.variantsync.functjonal.Product;
 import diff.difftree.DiffTree;
 import diff.difftree.render.DiffTreeRenderer;
 import diff.difftree.serialize.*;
-import diff.difftree.serialize.edgeformat.DefaultEdgeLabelFormat;
 import diff.difftree.serialize.treeformat.IndexedTreeFormat;
 import mining.DiffTreeMiner;
 import mining.DiffTreeMiningResult;
-import mining.formats.DebugMiningDiffNodeFormat;
 import util.FileUtils;
 import util.IO;
 
@@ -25,7 +23,7 @@ import java.util.stream.Collectors;
  */
 public class MiningPostprocessing {
     private static final DiffTreeRenderer DefaultRenderer = DiffTreeRenderer.WithinDiffDetective();
-    private static final boolean RENDER_CANDIDATES = true;
+    private static final boolean RENDER_CANDIDATES = false;
     private static final DiffTreeLineGraphImportOptions IMPORT_OPTIONS = new DiffTreeLineGraphImportOptions(
             GraphFormat.DIFFGRAPH,
             new IndexedTreeFormat(),
@@ -35,8 +33,8 @@ public class MiningPostprocessing {
     private static final DiffTreeLineGraphExportOptions EXPORT_OPTIONS = new DiffTreeLineGraphExportOptions(
             GraphFormat.DIFFTREE,
             IMPORT_OPTIONS.treeFormat(),
-            new DebugMiningDiffNodeFormat(),
-            new DefaultEdgeLabelFormat()
+            DiffTreeMiner.NodeFormat(),
+            DiffTreeMiner.EdgeFormat()
     );
     private static final DiffTreeRenderer.RenderOptions DefaultRenderOptions = new DiffTreeRenderer.RenderOptions(
             EXPORT_OPTIONS.graphFormat(),
@@ -50,7 +48,8 @@ public class MiningPostprocessing {
             DiffTreeRenderer.RenderOptions.DEFAULT.arrowsize(),
             DiffTreeRenderer.RenderOptions.DEFAULT.fontsize(),
             true,
-            List.of("--format", "patternsdebug")
+//            List.of("--format", "patternsdebug")
+            List.of("--format", "patternsrelease")
     );
 
     public static void main(String[] args) throws IOException {
