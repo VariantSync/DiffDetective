@@ -368,12 +368,12 @@ def plot_graphs(S, exportDir):
         edge_colors = []
         for _, _, d in difftree.edges.data():
             typeName = str(d['label'])
-            if typeName == "a":
+            if typeName.startswith("a"):
                 edge_colors.append('#bbeb37')
-            if typeName == "b":
-                edge_colors.append('#ff9129')
-            if typeName == "ba":
+            if typeName.startswith("ba"):
                 edge_colors.append('black')
+            elif typeName.startswith("b"):
+                edge_colors.append('#ff9129')
 
         # pos = nx.spring_layout(S[i], scale=3)
         # pos = nx.planar_layout(S[i], scale=3)
