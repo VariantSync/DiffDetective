@@ -9,7 +9,7 @@ import diff.difftree.DiffTreeSource;
 import diff.difftree.transform.DiffTreeTransformer;
 import metadata.ExplainedFilterSummary;
 import mining.DiffTreeMiningResult;
-import org.pmw.tinylog.Logger;
+import org.tinylog.Logger;
 import util.StringUtils;
 
 public class LineGraphExport {

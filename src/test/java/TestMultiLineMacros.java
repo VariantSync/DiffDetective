@@ -11,7 +11,7 @@ import diff.difftree.serialize.nodeformat.DebugDiffNodeFormat;
 import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
 import org.junit.Assert;
 import org.junit.Test;
-import org.pmw.tinylog.Logger;
+import org.tinylog.Logger;
 import util.IO;
 import util.StringUtils;
 

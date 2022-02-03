@@ -3,7 +3,7 @@ package mining.strategies;
 import datasets.Repository;
 import diff.CommitDiff;
 import diff.difftree.serialize.DiffTreeLineGraphExportOptions;
-import org.pmw.tinylog.Logger;
+import org.tinylog.Logger;
 import util.IO;
 
 import java.io.IOException;

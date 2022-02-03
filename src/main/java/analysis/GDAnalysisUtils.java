@@ -5,8 +5,8 @@ import analysis.data.GDAnalysisResult;
 import analysis.data.PatchDiffAnalysisResult;
 import analysis.data.PatternMatch;
 import diff.difftree.DiffNode;
-import org.pmw.tinylog.Logger;
 import org.prop4j.Node;
+import org.tinylog.Logger;
 import util.IO;
 
 import java.io.FileNotFoundException;

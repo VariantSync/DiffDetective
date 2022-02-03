@@ -17,7 +17,6 @@ import diff.difftree.transform.CollapseNestedNonEditedMacros;
 import diff.difftree.transform.CutNonEditedSubtrees;
 import diff.difftree.transform.DiffTreeTransformer;
 import diff.difftree.transform.FeatureExpressionFilter;
-import main.Main;
 import metadata.ExplainedFilterSummary;
 import metadata.Metadata;
 import mining.dataset.MiningDataset;
@@ -30,8 +29,7 @@ import mining.strategies.DiffTreeMiningStrategy;
 import mining.strategies.MineAllThenExport;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.revwalk.RevCommit;
-import org.pmw.tinylog.Level;
-import org.pmw.tinylog.Logger;
+import org.tinylog.Logger;
 import parallel.ScheduledTasksIterator;
 import util.Assert;
 import util.Clock;
@@ -225,9 +223,10 @@ public class DiffTreeMiner {
         Logger.info("Metadata:\n" + prettyMetadata);
     }
 
+
     public static void main(String[] args) {
-        Main.setupLogger(Level.INFO);
-//        Main.setupLogger(Level.DEBUG);
+//        setupLogger(Level.INFO);
+//        setupLogger(Level.DEBUG);
 
         final ParseOptions.DiffStoragePolicy diffStoragePolicy = ParseOptions.DiffStoragePolicy.REMEMBER_STRIPPED_DIFF;
 
@@ -270,6 +269,10 @@ public class DiffTreeMiner {
         for (final Repository repo : repos) {
             repo.setParseOptions(repo.getParseOptions().withDiffStoragePolicy(diffStoragePolicy));
             Logger.info("  - " + repo.getRepositoryName() + " from " + repo.getRemoteURI());
+        }
+
+        if (2 == 1 + 1) {
+            return;
         }
 
         Logger.info("Preloading repositories:");

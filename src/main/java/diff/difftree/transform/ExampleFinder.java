@@ -8,7 +8,7 @@ import diff.difftree.serialize.GraphFormat;
 import diff.difftree.serialize.edgeformat.DefaultEdgeLabelFormat;
 import diff.difftree.serialize.nodeformat.MappingsDiffNodeFormat;
 import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
-import org.pmw.tinylog.Logger;
+import org.tinylog.Logger;
 import util.Assert;
 import util.IO;
 

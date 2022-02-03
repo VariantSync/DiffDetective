@@ -2,7 +2,7 @@ package diff.result;
 
 import de.variantsync.functjonal.Result;
 import diff.difftree.parse.IllFormedAnnotationException;
-import org.pmw.tinylog.Logger;
+import org.tinylog.Logger;
 
 import java.util.function.Function;
 

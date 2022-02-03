@@ -2,10 +2,10 @@ import analysis.SAT;
 import diff.difftree.DiffTree;
 import org.junit.Assert;
 import org.junit.Test;
-import org.pmw.tinylog.Logger;
 import org.prop4j.And;
 import org.prop4j.Literal;
 import org.prop4j.Node;
+import org.tinylog.Logger;
 
 import java.io.IOException;
 import java.nio.file.Path;

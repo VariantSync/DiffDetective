@@ -1,6 +1,6 @@
 package load;
 
-import org.pmw.tinylog.Logger;
+import org.tinylog.Logger;
 
 public class LoggingProgressMonitor extends CancellableProgressMonitor {
     @Override

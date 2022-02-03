@@ -9,10 +9,8 @@ import datasets.predefined.StanciulescuMarlin;
 import diff.GitDiff;
 import diff.GitDiffer;
 import evaluation.GDEvaluator;
-import org.pmw.tinylog.Configurator;
-import org.pmw.tinylog.Level;
-import org.pmw.tinylog.Logger;
-import org.pmw.tinylog.writers.ConsoleWriter;
+import org.tinylog.Level;
+import org.tinylog.Logger;
 
 import java.nio.file.Path;
 
@@ -58,7 +56,7 @@ public class Main {
         |      END OF ARGUMENTS      |
         \* ************************ */
 
-        setupLogger(loggingLevel);
+//        setupLogger(loggingLevel);
 
         // create GitDiff
         GitDiff gitDiff = new GitDiffer(repo).createGitDiff();
@@ -175,10 +173,10 @@ public class Main {
 //        evaluator.exportFeatureContextComplexityDistributionCsv("semantic_fc_complexity.csv");
     }
 
-    public static void setupLogger(Level loggingLevel) {
-        Configurator configurator = Configurator.defaultConfig()
-                .writer(new ConsoleWriter(), loggingLevel)
-                .formatPattern("{{level}:|min-size=8} {message}");
-        configurator.activate();
-    }
+//    public static void setupLogger(Level loggingLevel) {
+//        Configurator configurator = Configurator.defaultConfig()
+//                .writer(new ConsoleWriter(), loggingLevel)
+//                .formatPattern("{{level}:|min-size=8} {message}");
+//        configurator.activate();
+//    }
 }

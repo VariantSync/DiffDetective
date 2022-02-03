@@ -11,7 +11,6 @@ import diff.difftree.serialize.edgeformat.DefaultEdgeLabelFormat;
 import diff.difftree.serialize.nodeformat.TypeDiffNodeFormat;
 import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
 import diff.difftree.transform.DiffTreeTransformer;
-import main.Main;
 import mining.DiffTreeMiner;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.ObjectId;
@@ -20,7 +19,6 @@ import org.eclipse.jgit.revwalk.RevWalk;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
-import org.pmw.tinylog.Level;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -86,7 +84,7 @@ public class TreeTransformersTest {
 
     @Before
     public void init() {
-        Main.setupLogger(Level.INFO);
+//        Main.setupLogger(Level.INFO);
 //        DiffTreeTransformer.checkDependencies(transformers);
     }
 

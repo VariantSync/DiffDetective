@@ -1,6 +1,6 @@
 package util;
 
-import org.pmw.tinylog.Logger;
+import org.tinylog.Logger;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;

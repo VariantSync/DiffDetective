@@ -7,7 +7,7 @@ import diff.difftree.serialize.GraphFormat;
 import diff.difftree.serialize.edgeformat.DefaultEdgeLabelFormat;
 import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
 import mining.formats.ReleaseMiningDiffNodeFormat;
-import org.pmw.tinylog.Logger;
+import org.tinylog.Logger;
 import util.FileUtils;
 
 import java.io.IOException;

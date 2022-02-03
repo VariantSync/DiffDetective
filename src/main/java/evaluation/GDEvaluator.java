@@ -7,12 +7,12 @@ import analysis.data.PatchDiffAnalysisResult;
 import analysis.data.PatternMatch;
 import diff.PatchDiff;
 import diff.difftree.DiffNode;
-import org.pmw.tinylog.Logger;
 import org.prop4j.Implies;
 import org.prop4j.Node;
 import org.prop4j.Not;
 import org.prop4j.explain.solvers.SatSolver;
 import org.prop4j.explain.solvers.SatSolverFactory;
+import org.tinylog.Logger;
 import pattern.EditPattern;
 import util.IO;
 

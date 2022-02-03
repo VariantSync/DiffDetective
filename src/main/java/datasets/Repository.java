@@ -1,18 +1,17 @@
 package datasets;
 
+import de.variantsync.functjonal.Lazy;
 import diff.DiffFilter;
 import diff.difftree.DiffNode;
 import load.GitLoader;
 import org.eclipse.jgit.api.Git;
-import org.pmw.tinylog.Logger;
+import org.tinylog.Logger;
 import util.IO;
 
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.function.Predicate;
-
-import de.variantsync.functjonal.Lazy;
 
 /**
  * Representation of git repositories used as datasets for DiffDetective.

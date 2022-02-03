@@ -6,7 +6,7 @@ import diff.difftree.serialize.nodeformat.LabelOnlyDiffNodeFormat;
 import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.pmw.tinylog.Logger;
+import org.tinylog.Logger;
 import util.FileUtils;
 
 import java.io.IOException;

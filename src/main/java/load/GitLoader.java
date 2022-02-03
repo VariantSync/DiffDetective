@@ -5,7 +5,7 @@ import net.lingala.zip4j.exception.ZipException;
 import org.apache.commons.io.FilenameUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.pmw.tinylog.Logger;
+import org.tinylog.Logger;
 import util.Assert;
 import util.FileUtils;
 import util.IO;

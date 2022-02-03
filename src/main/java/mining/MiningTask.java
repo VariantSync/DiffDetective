@@ -10,7 +10,7 @@ import diff.difftree.serialize.LineGraphExport;
 import diff.result.CommitDiffResult;
 import mining.strategies.DiffTreeMiningStrategy;
 import org.eclipse.jgit.revwalk.RevCommit;
-import org.pmw.tinylog.Logger;
+import org.tinylog.Logger;
 import pattern.atomic.proposed.ProposedAtomicPatterns;
 import util.FileUtils;
 

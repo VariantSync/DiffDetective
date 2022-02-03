@@ -2,7 +2,7 @@ package metadata;
 
 import de.variantsync.functjonal.Cast;
 import de.variantsync.functjonal.category.InplaceSemigroup;
-import org.pmw.tinylog.Logger;
+import org.tinylog.Logger;
 import util.IO;
 
 import java.io.IOException;

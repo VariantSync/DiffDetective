@@ -9,7 +9,7 @@ import diff.difftree.serialize.edgeformat.EdgeLabelFormat;
 import diff.difftree.serialize.nodeformat.DiffNodeLabelFormat;
 import diff.difftree.serialize.treeformat.DiffTreeLabelFormat;
 import diff.difftree.transform.DiffTreeTransformer;
-import org.pmw.tinylog.Logger;
+import org.tinylog.Logger;
 
 import java.nio.file.Path;
 import java.util.ArrayList;

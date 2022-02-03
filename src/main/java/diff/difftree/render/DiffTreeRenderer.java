@@ -15,7 +15,7 @@ import diff.difftree.serialize.nodeformat.DebugDiffNodeFormat;
 import diff.difftree.serialize.nodeformat.DiffNodeLabelFormat;
 import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
 import diff.difftree.serialize.treeformat.DiffTreeLabelFormat;
-import org.pmw.tinylog.Logger;
+import org.tinylog.Logger;
 import shell.PythonCommand;
 import shell.ShellException;
 import shell.ShellExecutor;
