@@ -36,6 +36,7 @@ import util.Clock;
 import util.Diagnostics;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -50,6 +51,7 @@ public class DiffTreeMiner {
 //    public static final int COMMITS_TO_PROCESS_PER_THREAD = 10000;
     public static final int COMMITS_TO_PROCESS_PER_THREAD = 1000;
     public static final int EXPECTED_NUMBER_OF_COMMITS_IN_LINUX = 495284;
+    public static final String TOTAL_RESULTS_FILE_NAME = "totalresult" + DiffTreeMiningResult.EXTENSION;
 
     public static final boolean SEARCH_FOR_GOOD_RUNNING_EXAMPLES = false;
     public static final boolean UPDATE_REPOS_BEFORE_MINING = false;
@@ -219,7 +221,7 @@ public class DiffTreeMiner {
     }
 
     public static <T> void exportMetadata(final Path outputDir, final Metadata<T> totalResult) {
-        final String prettyMetadata = totalResult.exportTo(outputDir.resolve("totalresult" + DiffTreeMiningResult.EXTENSION));
+        final String prettyMetadata = totalResult.exportTo(outputDir.resolve(TOTAL_RESULTS_FILE_NAME));
         Logger.info("Metadata:\n" + prettyMetadata);
     }
 
@@ -271,10 +273,6 @@ public class DiffTreeMiner {
             Logger.info("  - " + repo.getRepositoryName() + " from " + repo.getRemoteURI());
         }
 
-        if (2 == 1 + 1) {
-            return;
-        }
-
         Logger.info("Preloading repositories:");
         for (final Repository repo : repos) {
             repo.getGitRepo().run();
@@ -301,12 +299,17 @@ public class DiffTreeMiner {
             clock.start();
 
             final Path repoOutputDir = outputDir.resolve(repo.getRepositoryName());
-            mineAsync(repo, repoOutputDir, DiffTreeMiner::ExportOptions, DiffTreeMiner::MiningStrategy);
-//            mine(repo, repoOutputDir, ExportOptions(repo), MiningStrategy());
+            /// Don't repeat work we already did:
+            if (!Files.exists(repoOutputDir.resolve(TOTAL_RESULTS_FILE_NAME))) {
+                mineAsync(repo, repoOutputDir, DiffTreeMiner::ExportOptions, DiffTreeMiner::MiningStrategy);
+//                mine(repo, repoOutputDir, ExportOptions(repo), MiningStrategy());
 
-            if (SEARCH_FOR_GOOD_RUNNING_EXAMPLES) {
-                new ExplainedFilterSummary(RunningExampleFinder.DefaultExampleConditions).exportTo(repoOutputDir.resolve("runningExampleFilterReasons.txt"));
-                RunningExampleFinder.DefaultExampleConditions.resetExplanations();
+                if (SEARCH_FOR_GOOD_RUNNING_EXAMPLES) {
+                    new ExplainedFilterSummary(RunningExampleFinder.DefaultExampleConditions).exportTo(repoOutputDir.resolve("runningExampleFilterReasons.txt"));
+                    RunningExampleFinder.DefaultExampleConditions.resetExplanations();
+                }
+            } else {
+                Logger.info("  Skipping repository " + repo.getRepositoryName() + " because it has already been processed.");
             }
 
             Logger.info(" === End Processing " + repo.getRepositoryName() + " after " + clock.printPassedSeconds() + " ===");
