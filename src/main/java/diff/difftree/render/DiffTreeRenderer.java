@@ -7,14 +7,7 @@ import diff.difftree.DiffTree;
 import diff.difftree.LineGraphConstants;
 import diff.difftree.serialize.DiffTreeLineGraphExportOptions;
 import diff.difftree.serialize.DiffTreeSerializeDebugData;
-import diff.difftree.serialize.GraphFormat;
 import diff.difftree.serialize.LineGraphExport;
-import diff.difftree.serialize.edgeformat.DefaultEdgeLabelFormat;
-import diff.difftree.serialize.edgeformat.EdgeLabelFormat;
-import diff.difftree.serialize.nodeformat.DebugDiffNodeFormat;
-import diff.difftree.serialize.nodeformat.DiffNodeLabelFormat;
-import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
-import diff.difftree.serialize.treeformat.DiffTreeLabelFormat;
 import org.pmw.tinylog.Logger;
 import shell.PythonCommand;
 import shell.ShellException;
@@ -26,7 +19,6 @@ import util.StringUtils;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.function.Supplier;
 
 public class DiffTreeRenderer {

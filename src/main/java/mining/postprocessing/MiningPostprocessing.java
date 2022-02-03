@@ -6,7 +6,6 @@ import diff.difftree.render.RenderOptions;
 import diff.difftree.serialize.DiffTreeLineGraphImportOptions;
 import diff.difftree.serialize.GraphFormat;
 import diff.difftree.serialize.LineGraphImport;
-import diff.difftree.serialize.edgeformat.DefaultEdgeLabelFormat;
 import diff.difftree.serialize.treeformat.IndexedTreeFormat;
 import mining.DiffTreeMiner;
 import util.FileUtils;
@@ -30,20 +29,11 @@ public class MiningPostprocessing {
             DiffTreeMiner.NodeFormat(),
             DiffTreeMiner.EdgeFormat()
             );
-    private static final RenderOptions DefaultRenderOptions = new RenderOptions(
-            GraphFormat.DIFFTREE,
-            IMPORT_OPTIONS.treeFormat(),
-            IMPORT_OPTIONS.nodeFormat(),
-            new DefaultEdgeLabelFormat(),
-            false,
-            RenderOptions.DEFAULT.dpi(),
-            RenderOptions.DEFAULT.nodesize(),
-            RenderOptions.DEFAULT.edgesize(),
-            RenderOptions.DEFAULT.arrowsize(),
-            RenderOptions.DEFAULT.fontsize(),
-            true,
-            List.of()
-    );
+    private static final RenderOptions DefaultRenderOptions = new RenderOptions.Builder()
+    		.setTreeParser(IMPORT_OPTIONS.treeFormat())
+    		.setNodeParser(IMPORT_OPTIONS.nodeFormat())
+    		.setCleanUpTemporaryFiles(false)
+    		.build();
 
     public static void main(String[] args) throws IOException {
         if (args.length < 2) {

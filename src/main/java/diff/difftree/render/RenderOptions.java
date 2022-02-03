@@ -23,45 +23,114 @@ public record RenderOptions(
         boolean withlabels,
         List<String> extraArguments) {
 	
-    public static RenderOptions DEFAULT = new RenderOptions(
-    		GraphFormat.DIFFTREE,
-    		new CommitDiffDiffTreeLabelFormat(),
-            new DebugDiffNodeFormat(),
-            new DefaultEdgeLabelFormat(),
-            true,
-            300,
-            700,
-            1.2,
-            15,
-            5,
-            true,
-            List.of()
-    );
-    
-//    public RenderOptions(Builder builder) {
-//		// TODO Auto-generated constructor stub
-//	}
-
 	/**
-     * Builder for a RenderOptions.
-     *
-     * See field descriptions of RenderOptions for more details.
+	 * Default options.
+	 */
+    public static RenderOptions DEFAULT = new Builder().build();
+    
+    /**
+     * Builder for {@link RenderOptions}.
      */
     public static class Builder {
+
+		private GraphFormat format;
+		private DiffTreeLabelFormat treeParser;
+		private DiffNodeLabelFormat nodeParser;
+		private EdgeLabelFormat edgeParser;
+		private boolean cleanUpTemporaryFiles;
+		private int dpi;
+		private int nodesize;
+		private double edgesize;
+		private int arrowsize;
+		private int fontsize;
+		private boolean withlabels;
+		private List<String> extraArguments;
     	
-    	private RenderOptions options;
-    	
+		/**
+		 * Default options for {@link RenderOptions}.
+		 */
     	public Builder() {
-    		options = RenderOptions.DEFAULT;
+    		format = GraphFormat.DIFFTREE;
+    		treeParser = new CommitDiffDiffTreeLabelFormat();
+    		nodeParser = new DebugDiffNodeFormat();
+    		edgeParser = new DefaultEdgeLabelFormat();
+    		cleanUpTemporaryFiles = true;
+    		dpi = 300;
+    		nodesize = 700;
+    		edgesize = 1.2;
+    		arrowsize = 15;
+    		fontsize = 5;
+    		withlabels = true;
+    		extraArguments = List.of();
     	}
     	
-//        public RenderOptions build() {
-//            return new RenderOptions(this);
-//        }
+    	/**
+    	 * Complete creation of {@link RenderOptions}.
+    	 * 
+    	 * @return {@link RenderOptions}
+    	 */
+        public RenderOptions build() {
+            return new RenderOptions(format, treeParser, nodeParser, edgeParser, cleanUpTemporaryFiles, dpi, nodesize, edgesize, arrowsize, fontsize, withlabels, extraArguments);
+        }
         
         public Builder setGraphFormat(GraphFormat format) {
-        	options.format = format;
-        	return(this);
+        	this.format = format;
+        	return this;
+        }
+        
+        public Builder setTreeParser(DiffTreeLabelFormat treeParser) {
+        	this.treeParser = treeParser;
+        	return this;
+        }
+        
+        public Builder setNodeParser(DiffNodeLabelFormat nodeParser) {
+        	this.nodeParser = nodeParser;
+        	return this;
+        }
+        
+        public Builder setEdgeParser(EdgeLabelFormat edgeParser) {
+        	this.edgeParser = edgeParser;
+        	return this;
+        }
+        
+        public Builder setCleanUpTemporaryFiles(boolean cleanUpTemporaryFiles) {
+        	this.cleanUpTemporaryFiles = cleanUpTemporaryFiles;
+        	return this;
+        }
+        
+        public Builder setDpi(int dpi) {
+        	this.dpi = dpi;
+        	return this;
+        }
+        
+        public Builder setNodesize(int nodesize) {
+        	this.nodesize = nodesize;
+        	return this;
+        }
+        
+        public Builder setEdgesize(double edgesize) {
+        	this.edgesize = edgesize;
+        	return this;
+        }
+        
+        public Builder setArrowsize(int arrowsize) {
+        	this.arrowsize = arrowsize;
+        	return this;
+        }
+        
+        public Builder setFontsize(int fontsize) {
+        	this.fontsize = fontsize;
+        	return this;
+        }
+        
+        public Builder setWithlabels(boolean withlabels) {
+        	this.withlabels = withlabels;
+        	return this;
+        }
+        
+        public Builder setExtraArguments(List<String> extraArguments) {
+        	this.extraArguments = extraArguments;
+        	return this;
         }
     	
     }

@@ -3,32 +3,20 @@ package diff.difftree.render;
 import diff.GitPatch;
 import diff.PatchDiff;
 import diff.difftree.DiffTree;
-import diff.difftree.serialize.GraphFormat;
-import diff.difftree.serialize.edgeformat.DefaultEdgeLabelFormat;
-import diff.difftree.serialize.nodeformat.DebugDiffNodeFormat;
-import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
 import org.pmw.tinylog.Logger;
 import util.IO;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.List;
 
 public class PatchDiffRenderer {
-    public static final RenderOptions ErrorDiffTreeRenderOptions = new RenderOptions(
-            GraphFormat.DIFFTREE,
-            new CommitDiffDiffTreeLabelFormat(),
-            new DebugDiffNodeFormat(),
-            new DefaultEdgeLabelFormat(),
-            true,
-            1000,
-            RenderOptions.DEFAULT.nodesize()/3,
-            0.5*RenderOptions.DEFAULT.edgesize(),
-            RenderOptions.DEFAULT.arrowsize()/2,
-            2,
-            true,
-            List.of()
-    );
+    public static final RenderOptions ErrorDiffTreeRenderOptions = new RenderOptions.Builder()
+    		.setDpi(1000)
+    		.setNodesize(RenderOptions.DEFAULT.nodesize()/3)
+    		.setEdgesize(0.5*RenderOptions.DEFAULT.edgesize())
+    		.setArrowsize(RenderOptions.DEFAULT.arrowsize()/2)
+    		.setFontsize(2)
+    		.build();
 
     private final DiffTreeRenderer renderer;
     private final RenderOptions options;
