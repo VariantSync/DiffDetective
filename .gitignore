@@ -120,6 +120,7 @@ patches/*
 examples/
 results/
 /input
+log.txt
 
 ### Eclipse ###
 .settings/
