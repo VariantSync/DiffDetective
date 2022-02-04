@@ -75,6 +75,10 @@ public class MiningPostprocessing {
                 DefaultRenderOptions,
                 outputPath
         );
+
+//        for (Map.Entry<CodeType, Integer> entry : LineGraphImport.countRootTypes.entrySet()) {
+//            System.out.println(entry);
+//        }
     }
 
     /**

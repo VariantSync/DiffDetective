@@ -7,7 +7,7 @@ public final class DiffGraph {
 
     private DiffGraph() {}
 
-    private static boolean hasNoParents(final DiffNode node) {
+    public static boolean hasNoParents(final DiffNode node) {
         return node.getBeforeParent() == null && node.getAfterParent() == null;
     }
 

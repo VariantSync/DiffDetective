@@ -18,6 +18,8 @@ import java.util.List;
  * @author Kevin Jedelhauser, Paul Maximilian Bittner
  */
 public class LineGraphImport {
+    //    public static Map<CodeType, Integer> countRootTypes = new HashMap<>();
+
     public static List<DiffTree> fromFile(final Path path, final DiffTreeLineGraphImportOptions options) {
         Assert.assertTrue(Files.isRegularFile(path));
         Assert.assertTrue(FileUtils.isLineGraph(path));
@@ -123,15 +125,27 @@ public class LineGraphImport {
 			return DiffGraph.fromNodes(diffNodeList, diffTreeSource);
 		} else if (options.graphFormat() == GraphFormat.DIFFTREE) {
 			// If you should interpret the input data as DiffTrees, always expect a root to be present. Parse all nodes (v) to a list of nodes. Search for the root. Assert that there is exactly one root.
-			int rootCount = 0;
-			DiffNode root = null;
-			for (DiffNode v : diffNodeList) { 
-				if (v.isRoot()) {
-					rootCount++; 
-					root = v;
-				}
-			}
-			Assert.assertTrue(rootCount == 1);// test if it’s a tree
+            DiffNode root = null;
+            for (final DiffNode v : diffNodeList) {
+                if (DiffGraph.hasNoParents(v)) {
+                    // v is root candidate
+                    if (root != null) {
+                        throw new RuntimeException("Not a DiffTree but a DiffGraph: Got more than one root! Got \"" + root + "\" and \"" + v + "\"!");
+                    }
+                    if (v.codeType == CodeType.IF || v.codeType == CodeType.ROOT) {
+                        root = v;
+                    } else {
+                        throw new RuntimeException("Not a DiffTree but a DiffGraph: The node \"" + v + "\" is not labeled as ROOT or IF but has no parents!");
+                    }
+                }
+            }
+
+            if (root == null) {
+                throw new RuntimeException("Not a DiffTree but a DiffGraph: No root found!");
+            }
+
+//            countRootTypes.merge(root.codeType, 1, Integer::sum);
+
 			return new DiffTree(root, diffTreeSource);
 		} else {
 			throw new RuntimeException("Unsupported GraphFormat");
