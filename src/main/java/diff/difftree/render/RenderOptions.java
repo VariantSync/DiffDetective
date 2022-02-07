@@ -8,6 +8,8 @@ import diff.difftree.serialize.nodeformat.DiffNodeLabelFormat;
 import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
 import diff.difftree.serialize.treeformat.DiffTreeLabelFormat;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public record RenderOptions(
 		GraphFormat format,
@@ -144,10 +146,10 @@ public record RenderOptions(
 			this.extraArguments = extraArguments;
 			return this;
 		}
-		
 
 		public Builder addExtraArguments(String... args) {
-			setExtraArguments(List.of(args));
+			// add new list arguments to already existing arguments
+			setExtraArguments(Stream.concat(List.of(args).stream(), extraArguments.stream()).collect(Collectors.toList()));
 			return this;
 		}
 
