@@ -16,9 +16,9 @@ import java.util.List;
 public class SimpleRenderer {
     private static final DiffTreeRenderer renderer = DiffTreeRenderer.WithinDiffDetective();
     private static final RenderOptions renderOptions = new RenderOptions.Builder()
-    		.setNodeParser(new ReleaseMiningDiffNodeFormat())
+    		.setNodeFormat(new ReleaseMiningDiffNodeFormat())
     		.setDpi(RenderOptions.DEFAULT.dpi() / 2)
-    		.setExtraArguments(List.of("--format", "patternsrelease"))
+    		.setExtraArguments(addExtraArguments("--format", "patternsrelease"))
     		.build();
     private final static boolean collapseMultipleCodeLines = true;
     private final static boolean ignoreEmptyLines = true;
@@ -65,5 +65,9 @@ public class SimpleRenderer {
         }
 
         System.out.println("done");
+    }
+    
+    private static List<String> addExtraArguments(String... args) {
+    	return List.of(args);
     }
 }

@@ -84,7 +84,7 @@ public class DiffTreeRenderer {
     }
 
     public boolean render(final DiffTree tree, final String treeAndFileName, final Path directory, RenderOptions options) {
-        final DiffTreeLineGraphExportOptions lgoptions = new DiffTreeLineGraphExportOptions(options.format(), options.treeParser(), options.nodeParser(), options.edgeParser());
+        final DiffTreeLineGraphExportOptions lgoptions = new DiffTreeLineGraphExportOptions(options.format(), options.treeFormat(), options.nodeFormat(), options.edgeFormat());
 
         final Path tempFile = directory.resolve(treeAndFileName + ".lg");
 

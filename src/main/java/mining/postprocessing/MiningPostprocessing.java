@@ -30,8 +30,8 @@ public class MiningPostprocessing {
             DiffTreeMiner.EdgeFormat()
             );
     private static final RenderOptions DefaultRenderOptions = new RenderOptions.Builder()
-    		.setTreeParser(IMPORT_OPTIONS.treeFormat())
-    		.setNodeParser(IMPORT_OPTIONS.nodeFormat())
+    		.setTreeFormat(IMPORT_OPTIONS.treeFormat())
+    		.setNodeFormat(IMPORT_OPTIONS.nodeFormat())
     		.setCleanUpTemporaryFiles(false)
     		.build();
 
