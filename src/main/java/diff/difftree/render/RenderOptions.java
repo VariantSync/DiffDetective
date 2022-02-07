@@ -144,6 +144,12 @@ public record RenderOptions(
 			this.extraArguments = extraArguments;
 			return this;
 		}
+		
+
+		public Builder addExtraArguments(String... args) {
+			setExtraArguments(List.of(args));
+			return this;
+		}
 
 	}
 
