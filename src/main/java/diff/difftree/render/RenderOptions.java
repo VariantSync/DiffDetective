@@ -7,9 +7,9 @@ import diff.difftree.serialize.nodeformat.DebugDiffNodeFormat;
 import diff.difftree.serialize.nodeformat.DiffNodeLabelFormat;
 import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
 import diff.difftree.serialize.treeformat.DiffTreeLabelFormat;
+
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public record RenderOptions(
 		GraphFormat format,
@@ -63,7 +63,7 @@ public record RenderOptions(
 			arrowsize = 15;
 			fontsize = 5;
 			withlabels = true;
-			extraArguments = List.of();
+			extraArguments = new ArrayList<>();
 		}
 		
 		/**
@@ -143,13 +143,13 @@ public record RenderOptions(
 		}
 
 		public Builder setExtraArguments(List<String> extraArguments) {
-			this.extraArguments = extraArguments;
+			this.extraArguments = new ArrayList<>(extraArguments);
 			return this;
 		}
 
 		public Builder addExtraArguments(String... args) {
 			// add new list arguments to already existing arguments
-			setExtraArguments(Stream.concat(List.of(args).stream(), extraArguments.stream()).collect(Collectors.toList()));
+            this.extraArguments.addAll(List.of(args));
 			return this;
 		}
 
