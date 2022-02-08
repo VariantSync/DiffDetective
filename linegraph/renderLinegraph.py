@@ -6,8 +6,13 @@ import re
 import sys
 
 ## settings for running example
-#
+# for diff
 # NODE_POSITION_LAYOUT = "circo"
+# POS_SCALING_X = 1
+# POS_SCALING_Y = 0.5
+# plt.margins(x=0.11)
+# for code
+# NODE_POSITION_LAYOUT = "sfdp"
 # POS_SCALING_X = 1
 # POS_SCALING_Y = 0.5
 # plt.margins(x=0.11)
@@ -21,8 +26,8 @@ OUTPUT_FORMAT = ".png"
 
 # NODE_POSITION_LAYOUT = "dot"
 
-NODE_POSITION_LAYOUT = "circo"
-# NODE_POSITION_LAYOUT = "sfdp"
+# NODE_POSITION_LAYOUT = "circo"
+NODE_POSITION_LAYOUT = "sfdp"
 # NODE_POSITION_LAYOUT = "neato"
 # NODE_POSITION_LAYOUT = "fdp"
 # NODE_POSITION_LAYOUT = "twopi"
