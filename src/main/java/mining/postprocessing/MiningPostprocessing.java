@@ -4,9 +4,6 @@ import de.variantsync.functjonal.Product;
 import diff.difftree.DiffTree;
 import diff.difftree.render.DiffTreeRenderer;
 import diff.difftree.render.RenderOptions;
-import diff.difftree.serialize.DiffTreeLineGraphImportOptions;
-import diff.difftree.serialize.GraphFormat;
-import diff.difftree.serialize.LineGraphImport;
 import diff.difftree.serialize.*;
 import diff.difftree.serialize.edgeformat.DefaultEdgeLabelFormat;
 import diff.difftree.serialize.edgeformat.EdgeLabelFormat;
@@ -42,21 +39,14 @@ public class MiningPostprocessing {
             DiffTreeMiner.NodeFormat(),
             new DefaultEdgeLabelFormat(EdgeLabelFormat.Direction.ParentToChild)
     );
-    private static final DiffTreeRenderer.RenderOptions DefaultRenderOptions = new DiffTreeRenderer.RenderOptions(
-            EXPORT_OPTIONS.graphFormat(),
-            EXPORT_OPTIONS.treeFormat(),
-            EXPORT_OPTIONS.nodeFormat(),
-            EXPORT_OPTIONS.edgeFormat(),
-            false,
-            DiffTreeRenderer.RenderOptions.DEFAULT.dpi(),
-            DiffTreeRenderer.RenderOptions.DEFAULT.nodesize(),
-            DiffTreeRenderer.RenderOptions.DEFAULT.edgesize(),
-            DiffTreeRenderer.RenderOptions.DEFAULT.arrowsize(),
-            DiffTreeRenderer.RenderOptions.DEFAULT.fontsize(),
-            true,
-//            List.of("--format", "patternsdebug")
-            List.of("--format", "patternsrelease")
-    );
+    private static final RenderOptions DefaultRenderOptions = new RenderOptions.Builder()
+            .setGraphFormat(EXPORT_OPTIONS.graphFormat())
+            .setTreeFormat(EXPORT_OPTIONS.treeFormat())
+            .setNodeFormat(EXPORT_OPTIONS.nodeFormat())
+            .setEdgeFormat(EXPORT_OPTIONS.edgeFormat())
+            .setCleanUpTemporaryFiles(false)
+            .addExtraArguments("--format", "patternsrelease")
+            .build();
 
     public static void main(String[] args) throws IOException {
         if (args.length < 2) {

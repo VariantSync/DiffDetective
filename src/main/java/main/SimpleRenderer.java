@@ -3,11 +3,8 @@ package main;
 import diff.difftree.DiffTree;
 import diff.difftree.parse.DiffNodeParser;
 import diff.difftree.render.DiffTreeRenderer;
-import diff.difftree.serialize.GraphFormat;
-import diff.difftree.serialize.edgeformat.DefaultEdgeLabelFormat;
-import diff.difftree.serialize.nodeformat.DebugDiffNodeFormat;
+import diff.difftree.render.RenderOptions;
 import diff.difftree.serialize.nodeformat.MappingsDiffNodeFormat;
-import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
 import org.tinylog.Logger;
 import util.FileUtils;
 
@@ -18,36 +15,24 @@ import java.util.List;
 
 public class SimpleRenderer {
     private static final DiffTreeRenderer renderer = DiffTreeRenderer.WithinDiffDetective();
-    private static final DiffTreeRenderer.RenderOptions renderOptions = new DiffTreeRenderer.RenderOptions(
-            GraphFormat.DIFFTREE,
-            new CommitDiffDiffTreeLabelFormat(),
-//            new ReleaseMiningDiffNodeFormat(),
-            new MappingsDiffNodeFormat(),
-            new DefaultEdgeLabelFormat(),
-            true,
-            DiffTreeRenderer.RenderOptions.DEFAULT.dpi() / 2,
-            3*DiffTreeRenderer.RenderOptions.DEFAULT.nodesize(),
-            2*DiffTreeRenderer.RenderOptions.DEFAULT.edgesize(),
-            2*DiffTreeRenderer.RenderOptions.DEFAULT.arrowsize(),
-            8,
-            true,
-//            List.of("--format", "patternsrelease")
-            List.of()
-    );
-    private static final DiffTreeRenderer.RenderOptions renderExampleOptions = new DiffTreeRenderer.RenderOptions(
-            GraphFormat.DIFFTREE,
-            new CommitDiffDiffTreeLabelFormat(),
-            new DebugDiffNodeFormat(),
-            new DefaultEdgeLabelFormat(),
-            true,
-            DiffTreeRenderer.RenderOptions.DEFAULT.dpi(),
-            3*DiffTreeRenderer.RenderOptions.DEFAULT.nodesize(),
-            2*DiffTreeRenderer.RenderOptions.DEFAULT.edgesize(),
-            2*DiffTreeRenderer.RenderOptions.DEFAULT.arrowsize(),
-            8,
-            true,
-            List.of()
-    );
+    private static final RenderOptions renderOptions = new RenderOptions.Builder()
+//            .setNodeFormat(new ReleaseMiningDiffNodeFormat()),
+            .setNodeFormat(new MappingsDiffNodeFormat())
+            .setDpi(RenderOptions.DEFAULT.dpi() / 2)
+            .setNodesize(3*RenderOptions.DEFAULT.nodesize())
+            .setEdgesize(2*RenderOptions.DEFAULT.edgesize())
+            .setArrowsize(2*RenderOptions.DEFAULT.arrowsize())
+            .setFontsize(8)
+//            .addExtraArguments("--format", "patternsrelease")
+            .build();
+
+    private static final RenderOptions renderExampleOptions = new RenderOptions.Builder()
+            .setNodesize(3*RenderOptions.DEFAULT.nodesize())
+            .setEdgesize(2*RenderOptions.DEFAULT.edgesize())
+            .setArrowsize(2*RenderOptions.DEFAULT.arrowsize())
+            .setFontsize(8)
+            .build();
+
     private final static boolean collapseMultipleCodeLines = true;
     private final static boolean ignoreEmptyLines = true;
     private final static List<String> SUPPORTED_FILE_TYPES = List.of(".diff", ".c", ".cpp", ".h", ".hpp");
