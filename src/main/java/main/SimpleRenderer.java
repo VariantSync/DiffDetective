@@ -3,9 +3,7 @@ package main;
 import diff.difftree.DiffTree;
 import diff.difftree.parse.DiffNodeParser;
 import diff.difftree.render.DiffTreeRenderer;
-import diff.difftree.serialize.GraphFormat;
-import diff.difftree.serialize.edgeformat.DefaultEdgeLabelFormat;
-import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
+import diff.difftree.render.RenderOptions;
 import mining.formats.ReleaseMiningDiffNodeFormat;
 import org.pmw.tinylog.Logger;
 import util.FileUtils;
@@ -17,20 +15,11 @@ import java.util.List;
 
 public class SimpleRenderer {
     private static final DiffTreeRenderer renderer = DiffTreeRenderer.WithinDiffDetective();
-    private static final DiffTreeRenderer.RenderOptions renderOptions = new DiffTreeRenderer.RenderOptions(
-            GraphFormat.DIFFTREE,
-            new CommitDiffDiffTreeLabelFormat(),
-            new ReleaseMiningDiffNodeFormat(),
-            new DefaultEdgeLabelFormat(),
-            true,
-            DiffTreeRenderer.RenderOptions.DEFAULT.dpi() / 2,
-            DiffTreeRenderer.RenderOptions.DEFAULT.nodesize(),
-            DiffTreeRenderer.RenderOptions.DEFAULT.edgesize(),
-            DiffTreeRenderer.RenderOptions.DEFAULT.arrowsize(),
-            DiffTreeRenderer.RenderOptions.DEFAULT.fontsize(),
-            true,
-            List.of("--format", "patternsrelease")
-    );
+    private static final RenderOptions renderOptions = new RenderOptions.Builder()
+    		.setNodeFormat(new ReleaseMiningDiffNodeFormat())
+    		.setDpi(RenderOptions.DEFAULT.dpi() / 2)
+    		.addExtraArguments("--format", "patternsrelease")
+    		.build();
     private final static boolean collapseMultipleCodeLines = true;
     private final static boolean ignoreEmptyLines = true;
 
@@ -77,4 +66,5 @@ public class SimpleRenderer {
 
         System.out.println("done");
     }
+    
 }
