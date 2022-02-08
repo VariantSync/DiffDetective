@@ -15,28 +15,21 @@ import util.IO;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.List;
 
 public class PatchDiffRenderer {
-    public static final DiffTreeRenderer.RenderOptions ErrorDiffTreeRenderOptions = new DiffTreeRenderer.RenderOptions(
-            GraphFormat.DIFFTREE,
-            new CommitDiffDiffTreeLabelFormat(),
-            new MappingsDiffNodeFormat(),
-            new DefaultEdgeLabelFormat(),
-            false,
-            1000,
-            DiffTreeRenderer.RenderOptions.DEFAULT.nodesize()/3,
-            0.5*DiffTreeRenderer.RenderOptions.DEFAULT.edgesize(),
-            DiffTreeRenderer.RenderOptions.DEFAULT.arrowsize()/2,
-            2,
-            true,
-            List.of()
-    );
+    public static final RenderOptions ErrorDiffTreeRenderOptions = new RenderOptions.Builder()
+            .setNodeFormat(new MappingsDiffNodeFormat())
+            .setDpi(1000)
+    		.setNodesize(RenderOptions.DEFAULT.nodesize()/3)
+    		.setEdgesize(0.5*RenderOptions.DEFAULT.edgesize())
+    		.setArrowsize(RenderOptions.DEFAULT.arrowsize()/2)
+    		.setFontsize(2)
+    		.build();
 
     private final DiffTreeRenderer renderer;
-    private final DiffTreeRenderer.RenderOptions options;
+    private final RenderOptions options;
 
-    public PatchDiffRenderer(final DiffTreeRenderer renderer, DiffTreeRenderer.RenderOptions options) {
+    public PatchDiffRenderer(final DiffTreeRenderer renderer, RenderOptions options) {
         this.renderer = renderer;
         this.options = options;
     }

@@ -7,7 +7,6 @@ import diff.difftree.DiffTree;
 import diff.difftree.LineGraphConstants;
 import diff.difftree.serialize.DiffTreeLineGraphExportOptions;
 import diff.difftree.serialize.DiffTreeSerializeDebugData;
-import diff.difftree.serialize.GraphFormat;
 import diff.difftree.serialize.LineGraphExport;
 import diff.difftree.serialize.edgeformat.DefaultEdgeLabelFormat;
 import diff.difftree.serialize.edgeformat.EdgeLabelFormat;
@@ -26,7 +25,6 @@ import util.StringUtils;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.function.Supplier;
 
 public class DiffTreeRenderer {
@@ -37,35 +35,6 @@ public class DiffTreeRenderer {
 
     private final Path workDir;
     private final Supplier<PythonCommand> pythonCommandFactory;
-
-    public record RenderOptions(
-    		GraphFormat format, 
-    		DiffTreeLabelFormat treeParser, 
-    		DiffNodeLabelFormat nodeParser,
-            EdgeLabelFormat edgeParser,
-            boolean cleanUpTemporaryFiles,
-            int dpi,
-            int nodesize,
-            double edgesize,
-            int arrowsize,
-            int fontsize,
-            boolean withlabels,
-            List<String> extraArguments) {
-        public static RenderOptions DEFAULT = new RenderOptions(
-        		GraphFormat.DIFFTREE,
-        		new CommitDiffDiffTreeLabelFormat(),
-                new DebugDiffNodeFormat(),
-                new DefaultEdgeLabelFormat(),
-                true,
-                300,
-                700,
-                1.2,
-                15,
-                5,
-                true,
-                List.of()
-        );
-    }
 
     private DiffTreeRenderer(final Supplier<PythonCommand> pythonCommandFactory, final Path workDir) {
         this.workDir = workDir;
@@ -121,7 +90,7 @@ public class DiffTreeRenderer {
     }
 
     public boolean render(final DiffTree tree, final String treeAndFileName, final Path directory, RenderOptions options) {
-        final DiffTreeLineGraphExportOptions lgoptions = new DiffTreeLineGraphExportOptions(options.format(), options.treeParser(), options.nodeParser(), options.edgeParser());
+        final DiffTreeLineGraphExportOptions lgoptions = new DiffTreeLineGraphExportOptions(options.format(), options.treeFormat(), options.nodeFormat(), options.edgeFormat());
 
         final Path tempFile = directory.resolve(treeAndFileName + ".lg");
 
@@ -135,7 +104,7 @@ public class DiffTreeRenderer {
             return false;
         }
 
-        if (renderFile(tempFile, options) && options.cleanUpTemporaryFiles) {
+        if (renderFile(tempFile, options) && options.cleanUpTemporaryFiles()) {
             try {
                 Files.delete(tempFile);
             } catch (IOException e) {
@@ -153,15 +122,15 @@ public class DiffTreeRenderer {
     public boolean renderFile(final Path lineGraphFile, RenderOptions options) {
         final PythonCommand cmd = pythonCommandFactory.get();//apply(lineGraphFile);
 
-        cmd.addArg("--nodesize").addArg(options.nodesize);
-        cmd.addArg("--dpi").addArg(options.dpi);
-        cmd.addArg("--edgesize").addArg(options.edgesize);
-        cmd.addArg("--arrowsize").addArg(options.arrowsize);
-        cmd.addArg("--fontsize").addArg(options.fontsize);
-        if (!options.withlabels) {
+        cmd.addArg("--nodesize").addArg(options.nodesize());
+        cmd.addArg("--dpi").addArg(options.dpi());
+        cmd.addArg("--edgesize").addArg(options.edgesize());
+        cmd.addArg("--arrowsize").addArg(options.arrowsize());
+        cmd.addArg("--fontsize").addArg(options.fontsize());
+        if (!options.withlabels()) {
             cmd.addArg("--nolabels");
         }
-        for (final String arg : options.extraArguments) {
+        for (final String arg : options.extraArguments()) {
             cmd.addArg(arg);
         }
         cmd.addArg(lineGraphFile.toString());

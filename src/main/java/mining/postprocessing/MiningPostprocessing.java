@@ -3,6 +3,10 @@ package mining.postprocessing;
 import de.variantsync.functjonal.Product;
 import diff.difftree.DiffTree;
 import diff.difftree.render.DiffTreeRenderer;
+import diff.difftree.render.RenderOptions;
+import diff.difftree.serialize.DiffTreeLineGraphImportOptions;
+import diff.difftree.serialize.GraphFormat;
+import diff.difftree.serialize.LineGraphImport;
 import diff.difftree.serialize.*;
 import diff.difftree.serialize.edgeformat.DefaultEdgeLabelFormat;
 import diff.difftree.serialize.edgeformat.EdgeLabelFormat;
@@ -105,7 +109,7 @@ public class MiningPostprocessing {
             final Postprocessor postprocessor,
             final Consumer<String> printer,
             final DiffTreeRenderer renderer,
-            DiffTreeRenderer.RenderOptions renderOptions,
+            RenderOptions renderOptions,
             final Path outputDir)
     {
         final Postprocessor.Result result = postprocessor.postprocess(frequentSubgraphs);
@@ -121,7 +125,7 @@ public class MiningPostprocessing {
 
         if (RENDER_CANDIDATES && renderer != null) {
             if (renderOptions == null) {
-                renderOptions = DiffTreeRenderer.RenderOptions.DEFAULT;
+                renderOptions = RenderOptions.DEFAULT;
             }
 
             printer.accept("Exporting and rendering semantic patterns to " + outputDir);

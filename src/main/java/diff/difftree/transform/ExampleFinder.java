@@ -4,6 +4,7 @@ import diff.GitPatch;
 import diff.difftree.DiffTree;
 import diff.difftree.render.DiffTreeRenderer;
 import diff.difftree.render.PatchDiffRenderer;
+import diff.difftree.render.RenderOptions;
 import diff.difftree.serialize.GraphFormat;
 import diff.difftree.serialize.edgeformat.DefaultEdgeLabelFormat;
 import diff.difftree.serialize.nodeformat.MappingsDiffNodeFormat;
@@ -18,16 +19,16 @@ import java.util.Optional;
 import java.util.function.Function;
 
 public class ExampleFinder implements DiffTreeTransformer {
-    public static final DiffTreeRenderer.RenderOptions ExportOptions = new DiffTreeRenderer.RenderOptions(
+    public static final RenderOptions ExportOptions = new RenderOptions(
             GraphFormat.DIFFTREE,
             new CommitDiffDiffTreeLabelFormat(),
             new MappingsDiffNodeFormat(),
             new DefaultEdgeLabelFormat(),
             false,
             1000,
-            DiffTreeRenderer.RenderOptions.DEFAULT.nodesize()/3,
-            0.5*DiffTreeRenderer.RenderOptions.DEFAULT.edgesize(),
-            DiffTreeRenderer.RenderOptions.DEFAULT.arrowsize()/2,
+            RenderOptions.DEFAULT.nodesize()/3,
+            0.5*RenderOptions.DEFAULT.edgesize(),
+            RenderOptions.DEFAULT.arrowsize()/2,
             2,
             true,
             List.of()
