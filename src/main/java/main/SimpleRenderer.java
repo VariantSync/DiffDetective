@@ -50,12 +50,14 @@ public class SimpleRenderer {
     );
     private final static boolean collapseMultipleCodeLines = true;
     private final static boolean ignoreEmptyLines = true;
+    private final static List<String> SUPPORTED_FILE_TYPES = List.of(".diff", ".c", ".cpp", ".h", ".hpp");
 
     private static void render(final Path fileToRender) {
-        if (fileToRender.toString().endsWith(".lg")) {
+        final String fileToRenderStr = fileToRender.toString();
+        if (fileToRenderStr.endsWith(".lg")) {
             Logger.info("Rendering " + fileToRender);
             renderer.renderFile(fileToRender, renderExampleOptions);
-        } else if (fileToRender.toString().endsWith(".diff")) {
+        } else if (SUPPORTED_FILE_TYPES.stream().anyMatch(fileToRenderStr::endsWith)) {
             Logger.info("Rendering " + fileToRender);
             final DiffTree t;
             try {
