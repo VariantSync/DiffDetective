@@ -5,6 +5,7 @@ import diff.difftree.DiffTree;
 import diff.difftree.render.DiffTreeRenderer;
 import diff.difftree.serialize.*;
 import diff.difftree.serialize.edgeformat.DefaultEdgeLabelFormat;
+import diff.difftree.serialize.edgeformat.EdgeLabelFormat;
 import diff.difftree.serialize.treeformat.IndexedTreeFormat;
 import mining.DiffTreeMiner;
 import mining.DiffTreeMiningResult;
@@ -35,7 +36,7 @@ public class MiningPostprocessing {
             GraphFormat.DIFFTREE,
             IMPORT_OPTIONS.treeFormat(),
             DiffTreeMiner.NodeFormat(),
-            new DefaultEdgeLabelFormat()
+            new DefaultEdgeLabelFormat(EdgeLabelFormat.Direction.ParentToChild)
     );
     private static final DiffTreeRenderer.RenderOptions DefaultRenderOptions = new DiffTreeRenderer.RenderOptions(
             EXPORT_OPTIONS.graphFormat(),
