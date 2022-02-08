@@ -1,6 +1,7 @@
 ﻿module DiffTree where
 
 import Data.List ( find, intercalate )
+import Data.Maybe ( catMaybes )
 
 import Definitions
 import Feature
@@ -123,11 +124,49 @@ findNodeWithCode code vdt = case find (hasCode code) (nodes vdt) of
     Nothing -> error "Cannot compute pc of code that was not part of the initial VDT."
     Just node -> node
 
-printNodes :: Show f => VDT f -> String 
+printNodes :: Show f => VDT f -> String
 printNodes vdt = intercalate "\n" (show <$> nodes vdt)
 
+-- This should actually have a Variation Tree as output
+project :: Time -> VDT f -> VDT f
+project t vdt = VDT {
+    nodes = catMaybes $ projectNode t <$> nodes vdt,
+    edges = catMaybes $ projectEdge t <$> edges vdt
+}
+
+projectNode :: Time -> VDTNode f -> Maybe (VDTNode f)
+projectNode t node =
+    if existsAtTime t (diffType node) then
+        Just $ Node {
+            label = label node,
+            diffType = NON
+        }
+    else
+        Nothing
+
+-- This would be much more easy and beautiful if we would store vertex UUIDs rather than vertices directly in edges.
+projectEdge :: Time -> VDTEdge f -> Maybe (VDTEdge f)
+projectEdge t edge =
+    let
+        child' = projectNode t (child edge)
+        parent' = projectNode t (parent edge)
+        in
+    if t == time edge then
+        case (child', parent') of
+            (Just c, Just p) -> Just $ VDTEdge { child = c, parent = p, time = t} -- There is no time in fact
+            (_, _) -> Nothing
+    else
+        Nothing
+
+-- data VDTEdge f = VDTEdge {
+--     child :: VDTNode f,
+--     parent :: VDTNode f,
+--     time :: Time
+-- }
+
+
 isomorph :: (FeatureAnnotation f) => VDT f -> VDT f -> Bool
-x `isomorph` y = 
+x `isomorph` y =
     -- 1.) edited code fragments have to be equal
     codenodes x == codenodes y -- should be set equals
     -- 2.) presence conditions have to be equal
