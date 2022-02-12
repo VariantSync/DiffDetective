@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 5a44b1b251778c6506576ddd5081fbe4d7a4a5c470a8718c04c158ca3ad2891c
+-- hash: 63da7c76cb06734a066ee5a9d7e85073991abe4e804adca81f2f0163c5c18619
 
 name:           proofs
 version:        0.1.0.0
@@ -27,13 +27,11 @@ source-repository head
 
 library
   exposed-modules:
-      Conversion
       Definitions
       Util
-      DiffTree
-      Edit
-      Feature
-      FeatureList
+      VariationTree
+      Logic
+      Propositions
   other-modules:
       Paths_proofs
   hs-source-dirs:
@@ -49,6 +47,9 @@ library
 executable proofs-exe
   main-is: Main.hs
   other-modules:
+      ExampleFeatures
+      MainUtils
+      VariationTreeExamples
       Paths_proofs
   hs-source-dirs:
       app
