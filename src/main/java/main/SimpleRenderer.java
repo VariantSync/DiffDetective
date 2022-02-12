@@ -31,6 +31,7 @@ public class SimpleRenderer {
             .setEdgesize(2*RenderOptions.DEFAULT.edgesize())
             .setArrowsize(2*RenderOptions.DEFAULT.arrowsize())
             .setFontsize(8)
+            .addExtraArguments("--startlineno", "4201")
             .build();
 
     private final static boolean collapseMultipleCodeLines = true;

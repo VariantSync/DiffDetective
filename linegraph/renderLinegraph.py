@@ -80,6 +80,7 @@ FONT_SIZE = 3
 # other parameters
 WITH_TITLE = True
 INDEX_OUTPUT_FILENAME = False
+LINE_NO_OFFSET = 0
 
 RELEASE_PATTERNS_CODE_PREFIX = "c"
 RELEASE_PATTERNS_MACRO_PREFIX = "m"
@@ -101,7 +102,7 @@ def substringGraceful(s, fromIndex):
 def lineNoOfNode(v):
     # inverse of DiffNode::getID in our Java code
     # ((1 + fromLine) << ID_LINE_NUMBER_OFFSET) + diffType.ordinal()
-    return (v >> JAVA_ID_LINE_NUMBER_OFFSET) - JAVA_ID_DIFFLINE_FROM_OFFSET
+    return LINE_NO_OFFSET + ((v >> JAVA_ID_LINE_NUMBER_OFFSET) - JAVA_ID_DIFFLINE_FROM_OFFSET)
 
 DIFFTYPE_ADD = "add"
 DIFFTYPE_REM = "rem"
@@ -494,6 +495,7 @@ if __name__ == "__main__":
     argparser.add_argument('--recursive', action='store_const', const=True, default=False)
 #     argparser.add_argument('--pattern', action='store_const', const=True, default=False)
     argparser.add_argument('--format', nargs='?', default="default", type=str)
+    argparser.add_argument('--startlineno', nargs='?', default=LINE_NO_OFFSET, type=int)
     args = argparser.parse_args()
 
     infile = args.infile
@@ -505,6 +507,7 @@ if __name__ == "__main__":
     EDGE_SIZE = args.edgesize
     ARROW_SIZE = args.arrowsize
     FONT_SIZE = args.fontsize
+    LINE_NO_OFFSET = args.startlineno
 
     if args.format == "default":
         NODE_PARSER = parseNodeDefault
