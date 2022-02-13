@@ -39,6 +39,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Function;
@@ -54,7 +55,8 @@ public class DiffTreeMiner {
 
     public static final boolean SEARCH_FOR_GOOD_RUNNING_EXAMPLES = false;
     public static final boolean UPDATE_REPOS_BEFORE_MINING = false;
-    public static final boolean PRINT_LATEX_TABLE = false;
+    public static final boolean PRINT_LATEX_TABLE = true;
+    public static final int PRINT_LARGEST_SUBJECTS = 3;
     public static final boolean DEBUG_TEST = false;
 
     public static List<DiffTreeTransformer> Postprocessing() {
@@ -257,6 +259,25 @@ public class DiffTreeMiner {
             if (PRINT_LATEX_TABLE) {
                 Logger.info("Its dangerous outside. Take this!");
                 System.out.println(MiningDataset.asLaTeXTable(datasets));
+
+                Logger.info("The " + PRINT_LARGEST_SUBJECTS + " largest systems are:");
+                final Comparator<MiningDataset> larger = (a, b) -> {
+                    final int ai = Integer.parseInt(a.commits().replaceAll(",", ""));
+                    final int bi = Integer.parseInt(b.commits().replaceAll(",", ""));
+                    return -Integer.compare(ai, bi);
+                };
+                final List<MiningDataset> largestDatasets = datasets.stream()
+                        .sorted(larger)
+                        .limit(PRINT_LARGEST_SUBJECTS)
+                        .collect(Collectors.toList());
+                datasets.stream()
+                        .filter(m -> m.name().equalsIgnoreCase("Marlin")
+                                || m.name().equalsIgnoreCase("libssh")
+                                || m.name().equalsIgnoreCase("Busybox")
+                                || m.name().equalsIgnoreCase("Godot"))
+                        .forEach(largestDatasets::add);
+                largestDatasets.sort(larger);
+                System.out.println(MiningDataset.asLaTeXTable(largestDatasets));
             }
 
             final MiningDatasetFactory miningDatasetFactory = new MiningDatasetFactory(inputDir);

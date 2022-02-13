@@ -46,7 +46,7 @@ public record MiningDataset(
         final StringBuilder table = new StringBuilder();
         final String indent = "  ";
 
-        table.append("\\begin{tabular}{l l l}").append(StringUtils.LINEBREAK);
+        table.append("\\begin{tabular}{l l r}").append(StringUtils.LINEBREAK);
         table.append(indent).append("Name").append(LATEX_TABLE_SEPARATOR).append("Domain").append(LATEX_TABLE_SEPARATOR).append("\\#commits").append(LATEX_TABLE_ENDROW);
         table.append(indent).append("\\hline").append(StringUtils.LINEBREAK);
         for (final MiningDataset dataset : datasets) {
