@@ -6,7 +6,7 @@ import diff.difftree.CodeType;
 import diff.difftree.DiffNode;
 import diff.difftree.DiffType;
 import diff.difftree.serialize.nodeformat.DiffNodeLabelFormat;
-import org.prop4j.True;
+import util.fide.FixTrueFalse;
 
 public interface MiningNodeFormat extends DiffNodeLabelFormat {
     Product<DiffType, CodeType> fromEncodedTypes(final String tag);
@@ -22,7 +22,7 @@ public interface MiningNodeFormat extends DiffNodeLabelFormat {
             return DiffNode.createCode(types.first(),
                     lineFrom, lineTo, resultLabel);
         } else {
-            return new DiffNode(types.first(), types.second(), lineFrom, lineTo, new True(), resultLabel);
+            return new DiffNode(types.first(), types.second(), lineFrom, lineTo, FixTrueFalse.True, resultLabel);
         }
     }
 }
