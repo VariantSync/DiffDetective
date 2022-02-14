@@ -46,14 +46,14 @@ public class FixTrueFalse {
      * @return True iff the given name represents the atomic value true w.r.t. the constant TrueNames.
      */
     public static boolean isTrueLiteral(final Literal l) {
-        return TrueNames.stream().anyMatch(t -> t.equals(l.var.toString().toLowerCase()));
+        return TrueNames.stream().anyMatch(t -> t.equalsIgnoreCase(l.var.toString()));
     }
 
     /**
      * @return True iff the given name represents the atomic value false w.r.t. the constant FalseNames.
      */
     public static boolean isFalseLiteral(final Literal l) {
-        return FalseNames.stream().anyMatch(f -> f.equals(l.var.toString().toLowerCase()));
+        return FalseNames.stream().anyMatch(f -> f.equalsIgnoreCase(l.var.toString()));
     }
 
     private static Node[] filterMatches(final Node[] nodes, Predicate<Node> filter) {
