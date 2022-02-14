@@ -16,7 +16,6 @@ public class CPPDiffLineFormulaExtractor {
     // ^[+-]?\s*#\s*(if|ifdef|ifndef|elif)(\s+(.*)|\((.*)\))$
     public static final String CPP_ANNOTATION_REGEX = "^[+-]?\\s*#\\s*(if|ifdef|ifndef|elif)(\\s+(.*)|\\((.*)\\))$";
     public static final Pattern CPP_ANNOTATION_REGEX_PATTERN = Pattern.compile(CPP_ANNOTATION_REGEX);
-    public static final String EQUAL_PLACEHOLDER = "__eq__";
 
     protected String resolveFeatureMacroFunctions(String formula) {
         return formula;
@@ -48,21 +47,16 @@ public class CPPDiffLineFormulaExtractor {
 
         // remove whitespace
         fm = fm.trim();
+        fm = fm.replaceAll("\\s", "");
 
-        // remove defined(), ENABLED() and DISABLED()
-        fm = fm.replaceAll("defined\\s*\\(([^)]*)\\)", "$1");
+        // remove defined()
+        fm = fm.replaceAll("defined\\(([^)]*)\\)", "$1");
         fm = fm.replaceAll("defined ", " ");
         fm = resolveFeatureMacroFunctions(fm);
 
-        // remove whitespace
-        fm = fm.replaceAll("\\s", "");
-
-        // remove parentheses from custom cpp functions such as MB() or PIN_EXISTS()
-        fm = fm.replaceAll("(\\w+)\\((\\w*)\\)", "$1__$2");
-
-        // replace all "=="'s with a placeholder because NodeReader interprets these as propositional equality
-        // but == does not denote propositional equality in macros
-        fm = fm.replaceAll("==", EQUAL_PLACEHOLDER);
+        ////// abstract arithmetics
+        fm = BooleanAbstraction.arithmetics(fm);
+        fm = BooleanAbstraction.functionCalls(fm);
 
         // negate for ifndef
         if (line.contains("ifndef")) {
