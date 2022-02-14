@@ -4,12 +4,7 @@ import diff.GitPatch;
 import diff.PatchDiff;
 import diff.difftree.DiffTree;
 import diff.difftree.LineGraphConstants;
-import diff.difftree.serialize.GraphFormat;
-import diff.difftree.serialize.edgeformat.DefaultEdgeLabelFormat;
-import diff.difftree.serialize.nodeformat.DebugDiffNodeFormat;
-import diff.difftree.serialize.nodeformat.MappingsDiffNodeFormat;
-import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
-import mining.formats.DebugMiningDiffNodeFormat;
+import diff.difftree.serialize.nodeformat.TypeDiffNodeFormat;
 import org.tinylog.Logger;
 import util.IO;
 
@@ -18,11 +13,12 @@ import java.nio.file.Path;
 
 public class PatchDiffRenderer {
     public static final RenderOptions ErrorDiffTreeRenderOptions = new RenderOptions.Builder()
-            .setNodeFormat(new MappingsDiffNodeFormat())
-            .setDpi(1000)
-    		.setNodesize(RenderOptions.DEFAULT.nodesize()/3)
-    		.setEdgesize(0.5*RenderOptions.DEFAULT.edgesize())
-    		.setArrowsize(RenderOptions.DEFAULT.arrowsize()/2)
+//            .setNodeFormat(new MappingsDiffNodeFormat())
+            .setNodeFormat(new TypeDiffNodeFormat())
+            .setDpi(2000)
+    		.setNodesize(RenderOptions.DEFAULT.nodesize()/30)
+    		.setEdgesize(0.2*RenderOptions.DEFAULT.edgesize())
+    		.setArrowsize(RenderOptions.DEFAULT.arrowsize()/5)
     		.setFontsize(2)
     		.build();
 
