@@ -23,7 +23,7 @@ public class SAT {
             }
         }
 
-        solver.addFormulas(formula);
+        solver.addFormula(formula);
         return solver.isSatisfiable();
     }
 
