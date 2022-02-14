@@ -1,6 +1,6 @@
 package diff.difftree.serialize;
 
-import de.ovgu.featureide.fm.core.analysis.cnf.generator.configuration.util.Pair;
+import de.variantsync.functjonal.Product;
 import diff.difftree.*;
 import util.Assert;
 import util.FileUtils;
@@ -69,11 +69,11 @@ public class LineGraphImport {
 				// the line represents a DiffNode
 				
 				// parse node from input line
-				final Pair<Integer, DiffNode> idAndNode = options.nodeFormat().fromLineGraphLine(ln);
+				final Product<Integer, DiffNode> idAndNode = options.nodeFormat().fromLineGraphLine(ln);
 			
 				// add DiffNode to lists of current DiffTree
-				diffNodeList.add(idAndNode.getValue());
-				diffNodes.put(idAndNode.getKey(), idAndNode.getValue());
+				diffNodeList.add(idAndNode.second());
+				diffNodes.put(idAndNode.first(), idAndNode.second());
 				
 			} else if (ln.startsWith(LineGraphConstants.LG_EDGE)) {
 				// the line represent a connection with two DiffNodes
