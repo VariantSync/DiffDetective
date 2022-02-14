@@ -28,7 +28,7 @@ public class RunningExampleFinder {
             new TaggedPredicate<>("has additions", t -> t.anyMatch(DiffNode::isAdd)),
             new TaggedPredicate<>("code was edited", t -> t.anyMatch(n -> n.isCode() && !n.isNon())),
             DiffTreeFilter.hasAtLeastOneEditToVariability(),
-            DiffTreeFilter.moreThanTwoCodeNodes(),
+            DiffTreeFilter.moreThanOneCodeNode(),
             new TaggedPredicate<>("has no annotated macros", t -> !RunningExampleFinder.hasAnnotatedMacros(t)),
             new TaggedPredicate<>("has a complex formula", RunningExampleFinder::hasAtLeastOneComplexFormulaBeforeTheEdit)
     );

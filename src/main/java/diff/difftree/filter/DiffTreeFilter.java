@@ -19,7 +19,7 @@ public final class DiffTreeFilter {
         return Any("any");
     }
 
-    public static TaggedPredicate<String, DiffTree> moreThanTwoCodeNodes() {
+    public static TaggedPredicate<String, DiffTree> moreThanOneCodeNode() {
         return new TaggedPredicate<>(
                 "has more than two atomic patterns",
                 tree -> tree.count(DiffNode::isCode) > 1
