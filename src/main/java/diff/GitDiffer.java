@@ -20,6 +20,7 @@ import org.eclipse.jgit.lib.ObjectLoader;
 import org.eclipse.jgit.lib.ObjectReader;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevTree;
+import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.treewalk.AbstractTreeIterator;
 import org.eclipse.jgit.treewalk.CanonicalTreeParser;
 import org.eclipse.jgit.treewalk.FileTreeIterator;
@@ -173,7 +174,13 @@ public class GitDiffer {
                     COMMIT_HAS_NO_PARENTS, "Commit " + currentCommit.getId().getName() + " does not have parents");
         }
 
-        return createCommitDiff(git, diffFilter, currentCommit.getParent(0), currentCommit, parseOptions);
+        final RevCommit parent;
+        try {
+            parent = new RevWalk(git.getRepository()).parseCommit(currentCommit.getParent(0).getId());
+        } catch (IOException e) {
+            return CommitDiffResult.Failure(JGIT_ERROR, "Could not parse parent commit of " + currentCommit.getId().getName() + "!");
+        }
+        return createCommitDiff(git, diffFilter, parent, currentCommit, parseOptions);
     }
 
     /**
