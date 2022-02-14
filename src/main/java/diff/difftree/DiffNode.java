@@ -534,11 +534,19 @@ public class DiffNode {
     }
 
     public Node getBeforePresenceCondition() {
-        return new And(getPresenceCondition(DiffNode::getBeforeParent));
+        if (diffType.existsBefore()) {
+            return new And(getPresenceCondition(DiffNode::getBeforeParent));
+        } else {
+            throw new WrongTimeException("Cannot determine before PC of added node " + this);
+        }
     }
 
     public Node getAfterPresenceCondition() {
-        return new And(getPresenceCondition(DiffNode::getAfterParent));
+        if (diffType.existsAfter()) {
+            return new And(getPresenceCondition(DiffNode::getAfterParent));
+        } else {
+            throw new WrongTimeException("Cannot determine after PC of removed node " + this);
+        }
     }
 
     public boolean isRem() {

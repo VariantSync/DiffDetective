@@ -90,4 +90,12 @@ public enum DiffType {
             return NON;
         }
     }
+
+    public boolean existsBefore() {
+        return this != ADD;
+    }
+
+    public boolean existsAfter() {
+        return this != REM;
+    }
 }
