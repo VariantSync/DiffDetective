@@ -10,12 +10,15 @@ import diff.difftree.transform.DiffTreeTransformer;
 import feature.CPPAnnotationParser;
 import mining.DiffTreeMiner;
 import mining.MiningTask;
+import mining.dataset.MiningDataset;
+import mining.dataset.MiningDatasetFactory;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Test;
 import org.prop4j.Node;
 import org.tinylog.Logger;
 import pattern.atomic.proposed.ProposedAtomicPatterns;
@@ -40,11 +43,13 @@ public class MarlinDebug {
 
     @Before
     public void init() {
-        repository = Repository.tryFromRemote(
-                repoPath,
+        MiningDataset marlin = new MiningDataset(
+                "Marlin",
                 "https://github.com/MarlinFirmware/Marlin.git",
-                "Marlin"
-        ).orElseThrow();
+                "3d printing",
+                "keine Ahnung man"
+        );
+        repository = new MiningDatasetFactory(repoPath).create(marlin);
         repository.setParseOptions(repository.getParseOptions().withDiffStoragePolicy(ParseOptions.DiffStoragePolicy.REMEMBER_STRIPPED_DIFF));
     }
 
@@ -100,7 +105,7 @@ public class MarlinDebug {
         m.call();
     }
 
-//    @Test
+    @Test
     public void test() throws Exception {
         for (final String spooky : SUSPICIOUS_COMMITS) {
 //            testCommit(spooky);
@@ -108,7 +113,7 @@ public class MarlinDebug {
         }
     }
 
-//    @Test
+    @Test
     public void testFormulaParsing() throws IllFormedAnnotationException {
         final String original = "#if defined ( a ) && x > 200 + 2 && A && (foo(3, 4) || bar ( 3 , 4, 9, baz(3)) || z==3-1) && h<=7/2 && x == 4 % 2 && m>=k && k<11*3";
 //        String adapted = original;
