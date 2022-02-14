@@ -1,7 +1,5 @@
 import datasets.Repository;
 import datasets.predefined.StanciulescuMarlin;
-import diff.CommitDiff;
-import diff.GitDiffer;
 import diff.PatchDiff;
 import diff.difftree.DiffTree;
 import diff.difftree.LineGraphConstants;
@@ -13,10 +11,6 @@ import diff.difftree.serialize.nodeformat.TypeDiffNodeFormat;
 import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
 import diff.difftree.transform.DiffTreeTransformer;
 import mining.DiffTreeMiner;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.lib.ObjectId;
-import org.eclipse.jgit.revwalk.RevCommit;
-import org.eclipse.jgit.revwalk.RevWalk;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -103,29 +97,9 @@ public class TreeTransformersTest {
 
     private void testCommit(String file, String commitHash) throws IOException {
         final Repository marlin = StanciulescuMarlin.fromZipInDiffDetectiveAt(Path.of("."));
-
-        final Git git = marlin.getGitRepo().run();
-        assert git != null;
-        final RevWalk revWalk = new RevWalk(git.getRepository());
-        final RevCommit childCommit = revWalk.parseCommit(ObjectId.fromString(commitHash));
-        final RevCommit parentCommit = revWalk.parseCommit(childCommit.getParent(0).getId());
-
-        final CommitDiff commitDiff = GitDiffer.createCommitDiff(
-                git,
-                marlin.getDiffFilter(),
-                parentCommit,
-                childCommit,
-                marlin.getParseOptions()).unwrap().first().orElseThrow();
-
-        for (final PatchDiff pd : commitDiff.getPatchDiffs()) {
-            if (file.equals(pd.getFileName())) {
-                transformAndRender(pd.getDiffTree(), file, commitHash, marlin);
-                revWalk.close();
-                return;
-            }
-        }
-
-        Assert.fail("Did not find file \"" + file + "\" in commit " + commitHash + "!");
+        final PatchDiff patch = Constants.parsePatch(marlin, file, commitHash);
+        Assert.assertNotNull(patch);
+        transformAndRender(patch.getDiffTree(), file, commitHash, marlin);
     }
 
 //    @Test
