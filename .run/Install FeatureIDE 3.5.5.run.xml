@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Install FeatureIDE 3.8.1" type="MavenRunConfiguration" factoryName="Maven">
+  <configuration default="false" name="Install FeatureIDE 3.5.5" type="MavenRunConfiguration" factoryName="Maven">
     <MavenSettings>
       <option name="myGeneralSettings" />
       <option name="myRunnerSettings" />
@@ -13,11 +13,11 @@
               <option value="deploy:deploy-file" />
               <option value="-DgroupId=de.ovgu" />
               <option value="-DartifactId=featureide.lib.fm" />
-              <option value="-Dversion=3.8.1" />
+              <option value="-Dversion=3.5.5" />
               <option value="-Durl=file:./local-maven-repo/" />
               <option value="-DrepositoryId=local-maven-repo" />
               <option value="-DupdateReleaseInfo=true" />
-              <option value="-Dfile=./lib/de.ovgu.featureide.lib.fm-v3.8.1.jar" />
+              <option value="-Dfile=./lib/de.ovgu.featureide.lib.fm-v3.5.5.jar" />
             </list>
           </option>
           <option name="pomFileName" />
