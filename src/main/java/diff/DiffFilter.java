@@ -45,13 +45,13 @@ public class DiffFilter {
      * Regex of allowed file paths for patches.
      * When this is set, all file paths that do not match will be filtered.
      */
-    private final String allowedPaths;
+    private final List<String> allowedPaths;
 
     /**
      * Regex of blocked file paths for patches.
      * When this is set, all file paths that match will be filtered.
      */
-    private final String blockedPaths;
+    private final List<String> blockedPaths;
 
     /**
      * When set to true, all merge commits will be filtered.
@@ -68,26 +68,35 @@ public class DiffFilter {
         private final List<String> allowedFileExtensions;
         private final List<String> blockedFileExtensions;
         private final List<DiffEntry.ChangeType> allowedChangeTypes;
-        private String allowedPaths;
-        private String blockedPaths;
+        private final List<String> allowedPaths;
+        private final List<String> blockedPaths;
         private boolean allowMerge;
 
         public Builder() {
             allowedFileExtensions = new ArrayList<>();
             allowedChangeTypes = new ArrayList<>();
             blockedFileExtensions = new ArrayList<>();
-            allowedPaths = "";
-            blockedPaths = "";
+            allowedPaths = new ArrayList<>();
+            blockedPaths = new ArrayList<>();
             allowMerge = true;
         }
 
+        public Builder(final DiffFilter other) {
+            allowedFileExtensions = new ArrayList<>(other.allowedFileExtensions);
+            allowedChangeTypes = new ArrayList<>(other.allowedChangeTypes);
+            blockedFileExtensions = new ArrayList<>(other.blockedFileExtensions);
+            allowedPaths = new ArrayList<>(other.allowedPaths);
+            blockedPaths = new ArrayList<>(other.blockedPaths);
+            allowMerge = other.allowMerge;
+        }
+
         public Builder allowedPaths(String regex) {
-            allowedPaths = regex;
+            allowedPaths.add(regex);
             return this;
         }
 
         public Builder blockedPaths(String regex) {
-            blockedPaths = regex;
+            blockedPaths.add(regex);
             return this;
         }
 
@@ -146,10 +155,10 @@ public class DiffFilter {
     }
 
     public boolean filter(PatchDiff patchDiff) {
-        if (!allowedPaths.isEmpty() && !patchDiff.getFileName().matches(allowedPaths)) {
+        if (!allowedPaths.isEmpty() && !isAllowedPath(patchDiff.getFileName())) {
             return false;
         }
-        if (!blockedPaths.isEmpty() && patchDiff.getFileName().matches(blockedPaths)) {
+        if (!blockedPaths.isEmpty() && isBlockedPath(patchDiff.getFileName())) {
             return false;
         }
         if (!allowedChangeTypes.isEmpty() && !allowedChangeTypes.contains(patchDiff.getChangeType())) {
@@ -194,11 +203,11 @@ public class DiffFilter {
     }
 
     private boolean isAllowedPath(String filename) {
-        return filename.matches(allowedPaths);
+        return allowedPaths.stream().anyMatch(filename::matches);
     }
 
     private boolean isBlockedPath(String filename) {
-        return filename.matches(blockedPaths);
+        return blockedPaths.stream().anyMatch(filename::matches);
     }
 
     private boolean hasAllowedExtension(String filename) {
