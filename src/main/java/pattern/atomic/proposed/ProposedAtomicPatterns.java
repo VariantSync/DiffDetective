@@ -79,6 +79,12 @@ public class ProposedAtomicPatterns implements AtomicPatternCatalogue {
 
             final Node pcb = node.getBeforePresenceCondition();
             final Node pca = node.getAfterPresenceCondition();
+
+            /// We can avoid any SAT calls in case both formulas are syntactically equal.
+            if (pcb.equals(pca)) {
+                return Unchanged;
+            }
+
             final boolean beforeVariantsSubsetOfAfterVariants = SAT.implies(pcb, pca);
             final boolean afterVariantsSubsetOfBeforeVariants = SAT.implies(pca, pcb);
 
