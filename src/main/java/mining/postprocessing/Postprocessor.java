@@ -51,7 +51,7 @@ public class Postprocessor {
                         // Filter ill-formed patterns
                         DiffTreeFilter.consistent(),
                         // filter patterns containing less than two atomic patterns
-                        DiffTreeFilter.moreThanTwoCodeNodes(),
+                        DiffTreeFilter.moreThanOneCodeNode(),
                         DiffTreeFilter.hasAtLeastOneEditToVariability()
                 )
         );
