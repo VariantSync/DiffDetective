@@ -60,7 +60,7 @@ public class SAT {
             }
         }
 
-        if (FormulaUtils.numberOfLiterals(formula) > 50) {
+        if (FormulaUtils.numberOfLiterals(formula) > 40) {
             formula = Tseytin.toEquivalentCNF(formula);
         }
 

@@ -2,15 +2,12 @@ package mining.dataset;
 
 import datasets.ParseOptions;
 import datasets.Repository;
-import datasets.predefined.LinuxKernel;
 import datasets.predefined.Marlin;
 import datasets.predefined.StanciulescuMarlin;
 import diff.DiffFilter;
-import diff.difftree.DiffNode;
 import org.eclipse.jgit.diff.DiffEntry;
 
 import java.nio.file.Path;
-import java.util.function.Predicate;
 
 public class MiningDatasetFactory {
     public static final String MARLIN = "Marlin";
@@ -21,10 +18,6 @@ public class MiningDatasetFactory {
                     .allowedChangeTypes(DiffEntry.ChangeType.MODIFY)
                     .allowedFileExtensions("h", "hpp", "c", "cpp")
                     .build();
-    public static final DiffFilter MARLIN_DIFF_FILTER =
-            new DiffFilter.Builder(StanciulescuMarlin.DIFF_FILTER)
-                    .blockedPaths("Marlin/src/inc/SanityCheck\\.h")
-                    .build();
 
     private final Path cloneDirectory;
 
@@ -34,7 +27,7 @@ public class MiningDatasetFactory {
 
     private static DiffFilter getDiffFilterFor(final String repositoryName) {
         if (repositoryName.equalsIgnoreCase(MARLIN)) {
-            return MARLIN_DIFF_FILTER;
+            return StanciulescuMarlin.DIFF_FILTER;
         }
         return DEFAULT_DIFF_FILTER;
     }
