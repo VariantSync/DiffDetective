@@ -39,6 +39,7 @@ public class TseytinTest {
         satisfiableTestCases = new ArrayList<>(List.of(
                 A,
                 negate(A),
+                negate(new And(A, B)),
                 new And(A, B),
                 new Or(A, B),
                 new Implies(A, B),
