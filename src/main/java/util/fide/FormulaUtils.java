@@ -22,4 +22,16 @@ public class FormulaUtils {
         }
         return new Literal(lit.var, !lit.positive);
     }
+
+    public static int numberOfLiterals(final Node formula) {
+        if (formula instanceof Literal) {
+            return 1;
+        }
+
+        int sum = 0;
+        for (final Node child : formula.getChildren()) {
+            sum += numberOfLiterals(child);
+        }
+        return sum;
+    }
 }

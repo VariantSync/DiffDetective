@@ -22,17 +22,31 @@ public class Tseytin {
             formula.simplifyTree();
             helperVariables = new ArrayList<>();
             newSubFormulas = new ArrayList<>();
-            newSubFormulas.add(tseytin(formula));
+            newSubFormulas.add(tseytin(formula
+//                    , true
+            ));
         }
 
-        private Node tseytin(Node formula) {
+        private Node tseytin(Node formula
+//                , boolean isRoot
+        ) {
             if (formula instanceof Literal) {
                 return formula;
             } else {
                 List<Node> newChildren = new ArrayList<>();
                 for (Node child : formula.getChildren()) {
-                    newChildren.add(tseytin(child));
+                    newChildren.add(tseytin(child
+//                            , false
+                    ));
                 }
+
+//                BiFunction<Node, Node, Node> eq;
+//                if (isRoot) {
+//                    eq = Equals::new;
+//                } else {
+//                    eq = Implies::new;
+//                }
+
                 String helperVariable = getNextVariableName();
                 Literal tseitinVar = new Literal(helperVariable, true);
                 helperVariables.add(helperVariable);

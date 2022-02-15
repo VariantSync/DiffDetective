@@ -6,13 +6,33 @@ import org.prop4j.Node;
 import org.prop4j.explain.solvers.SatSolver;
 import org.prop4j.explain.solvers.SatSolverFactory;
 import util.fide.FixTrueFalse;
+import util.fide.FormulaUtils;
 
 import static util.fide.FormulaUtils.negate;
 
 public class SAT {
-    public static boolean isSatisfiable(Node formula) {
+    private static boolean checkSAT(final Node formula) {
         final SatSolver solver = SatSolverFactory.getDefault().getSatSolver();
-        // TODO: Remove this block once issue #1333 of FeatureIDE is resolved because FixTrueFalse::On is expensive.
+        solver.addFormula(formula);
+        return solver.isSatisfiable();
+    }
+
+    public static boolean isSatisfiableNoTseytin(Node formula) {
+        // TODO: Remove this block once issue #1333 of FeatureIDE is resolved because FixTrueFalse::EliminateTrueAndFalse is expensive.
+        //       https://github.com/FeatureIDE/FeatureIDE/issues/1333
+        {
+            formula = FixTrueFalse.EliminateTrueAndFalse(formula);
+            if (FixTrueFalse.isTrue(formula)) {
+                return true;
+            } else if (FixTrueFalse.isFalse(formula)) {
+                return false;
+            }
+        }
+        return checkSAT(formula);
+    }
+
+    public static boolean isSatisfiableAlwaysTseytin(Node formula) {
+        // TODO: Remove this block once issue #1333 of FeatureIDE is resolved because FixTrueFalse::EliminateTrueAndFalse is expensive.
         //       https://github.com/FeatureIDE/FeatureIDE/issues/1333
         {
             formula = FixTrueFalse.EliminateTrueAndFalse(formula);
@@ -23,8 +43,28 @@ public class SAT {
             }
         }
 
-        solver.addFormula(formula);
-        return solver.isSatisfiable();
+        formula = Tseytin.toEquivalentCNF(formula);
+
+        return checkSAT(formula);
+    }
+
+    public static boolean isSatisfiable(Node formula) {
+        // TODO: Remove this block once issue #1333 of FeatureIDE is resolved because FixTrueFalse::EliminateTrueAndFalse is expensive.
+        //       https://github.com/FeatureIDE/FeatureIDE/issues/1333
+        {
+            formula = FixTrueFalse.EliminateTrueAndFalse(formula);
+            if (FixTrueFalse.isTrue(formula)) {
+                return true;
+            } else if (FixTrueFalse.isFalse(formula)) {
+                return false;
+            }
+        }
+
+        if (FormulaUtils.numberOfLiterals(formula) > 50) {
+            formula = Tseytin.toEquivalentCNF(formula);
+        }
+
+        return checkSAT(formula);
     }
 
     public static boolean isTautology(final Node formula) {
