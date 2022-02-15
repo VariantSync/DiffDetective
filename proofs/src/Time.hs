@@ -1,7 +1,6 @@
-﻿module Definitions where
+﻿module Time where
 import Data.List
 
-type CodeFragment = String
 data Time = BEFORE | AFTER deriving (Eq, Show)
 data DiffType = ADD | REM | NON deriving (Eq, Show)
 
@@ -12,11 +11,12 @@ abbreviate :: Time -> String
 abbreviate BEFORE = "B"
 abbreviate AFTER = "A"
 
-fromDiffType :: DiffType -> [Time]
-fromDiffType ADD = [AFTER]
-fromDiffType REM = [BEFORE]
-fromDiffType NON = always
+timesOfExistence :: DiffType -> [Time]
+timesOfExistence ADD = [AFTER]
+timesOfExistence REM = [BEFORE]
+timesOfExistence NON = always
 
+-- TODO: Arguments are swapped in paper
 existsAtTime :: Time -> DiffType -> Bool
 existsAtTime BEFORE ADD = False
 existsAtTime AFTER REM = False

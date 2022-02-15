@@ -74,7 +74,7 @@ complete edit =
         macroNodes = removeDuplicates $ parent <$> codeToPCEdges
         codeNodes  = removeDuplicates $ child <$> codeToPCEdges
         -- create edges to the root from each macro node m (at all times t at which m exists).
-        pcToRootEdges = [VDTEdge { child = m, parent = root, time = t} | m <- macroNodes, t <- fromDiffType (diffType m)]
+        pcToRootEdges = [VDTEdge { child = m, parent = root, time = t} | m <- macroNodes, t <- timesOfExistence (diffType m)]
         in
     VDT {
         nodes = root:(macroNodes++codeNodes),
@@ -144,7 +144,7 @@ nodes (complete edit)
         macroNodes = removeDuplicates $ parent <$> codeToPCEdges
         codeNodes  = removeDuplicates $ child <$> codeToPCEdges
         -- create edges to the root from each macro node m (at all times t at which m exists).
-        pcToRootEdges = [VDTEdge { child = m, parent = root, time = t} | m <- macroNodes, t <- fromDiffType (diffType m)]
+        pcToRootEdges = [VDTEdge { child = m, parent = root, time = t} | m <- macroNodes, t <- timesOfExistence (diffType m)]
         in
     VDT {
         nodes = root:(macroNodes++codeNodes),
@@ -157,7 +157,7 @@ nodes (complete edit)
         macroNodes = removeDuplicates $ parent <$> codeToPCEdges
         codeNodes  = removeDuplicates $ child <$> codeToPCEdges
         -- create edges to the root from each macro node m (at all times t at which m exists).
-        pcToRootEdges = [VDTEdge { child = m, parent = root, time = t} | m <- macroNodes, t <- fromDiffType (diffType m)]
+        pcToRootEdges = [VDTEdge { child = m, parent = root, time = t} | m <- macroNodes, t <- timesOfExistence (diffType m)]
         in
         root:(macroNodes++codeNodes)
     = let

@@ -1,37 +1,91 @@
 ﻿module VariationTreeExamples where
 
+import Time
+import Logic
 import VariationTree
+import VariationDiff
 import Propositions
 import ExampleFeatures
 import MainUtils
 
-starters :: String -> String -> String -> VariationTree (PropositionalFormula String)
-starters grass fire water = fromNodesAndEdges
+import Control.Monad.State
+
+genUUID :: State UUID UUID
+genUUID = do
+    id <- get
+    put (id+1)
+    return id
+
+makeUniqueArtifact :: ArtifactReference -> State UUID (VTNode f)
+makeUniqueArtifact a = flip makeArtifact a <$> genUUID
+-- makeUniqueArtifact a = get >>= \id -> put (id+1) >>= \whatever -> return (makeArtifact id a)
+-- makeUniqueArtifact a = State {runState = \s -> (s+1, makeArtifact (s+1) a) }
+
+makeUniqueMapping :: f -> State UUID (VTNode f)
+makeUniqueMapping f = flip makeMapping  f <$> genUUID
+
+makeUniqueElse :: State UUID (VTNode f)
+makeUniqueElse = makeElse <$> genUUID
+
+genVariationTree :: Logic f => [State UUID (VTNode f)] -> [(Int, Int)] -> State UUID (VariationTree f)
+genVariationTree stateNodes edges = sequence stateNodes >>= \nodes -> return $ fromNodesAndEdgeIndices nodes edges
+
+starters :: String -> String -> String -> State UUID (VariationTree (PropositionalFormula String))
+starters grass fire water = genVariationTree
     [
-        makeRoot 0, 
-        makeArtifact 1 grass,
-        makeArtifact 4 fire,
-        makeArtifact 7 water,
-        makeMapping  11 fGrass,
-        makeMapping  44 fFire,
-        makeMapping  77 fWater
+        makeUniqueArtifact grass,
+        makeUniqueArtifact fire,
+        makeUniqueArtifact water,
+        makeUniqueMapping fGrass,
+        makeUniqueMapping fFire,
+        makeUniqueMapping fWater
     ]
     [
-        ( 1, 11),
-        ( 4, 44),
-        ( 7, 77),
-        (11,  0),
-        (44,  0),
-        (77,  0)
+        ( 1, 4),
+        ( 2, 5),
+        ( 3, 6),
+        (4,  0),
+        (5,  0),
+        (6,  0)
     ]
 
-kanto = starters "Bulbasaur" "Charmander" "Squirtle"
-johto = starters "Chikorita" "Cyndaquil"  "Totodile"
+kantoFactory = starters "Bulbasaur" "Charmander" "Squirtle"
+johtoFactory = starters "Chikorita" "Cyndaquil"  "Totodile"
+
+printBlockIO :: String -> IO () -> IO ()
+printBlockIO title inner = do
+    headline title
+    inner
+    linebreak
+
+printBlock :: Show a => String -> a -> IO ()
+printBlock title content = printBlockIO title (print content)
+
+assertEquals :: Eq a => String -> a -> a -> IO ()
+assertEquals message a b = printBlockIO message $
+    if a == b then
+        putStrLn " ===> Elements equal! Great Success!"
+    else do
+        let errormsg = "ERROR!"
+        putStrLn errormsg
+        error errormsg
 
 showVariationTreeExamples :: IO ()
-showVariationTreeExamples = do
-    headline "Kanto Starters"
-    print kanto
-    linebreak
-    headline "Johto Starters"
-    print johto
+showVariationTreeExamples =
+    let
+        (kanto, next) = runState kantoFactory 1
+        (johto,    _) = runState johtoFactory next
+
+        diff = stupidDiff kanto johto
+
+        projectedKanto = project BEFORE diff
+        projectedJohto = project AFTER  diff
+        in
+            do
+                printBlock "Kanto Starters" kanto
+                printBlock "Johto Starters" johto
+                printBlock "Stupid Diff" diff
+                printBlock "Projected Kanto" projectedKanto
+                printBlock "Projected Johto" projectedJohto
+                assertEquals "Assert(Kanto == Projected Kanto)" kanto projectedKanto
+                assertEquals "Assert(Johto == Projected Johto)" johto projectedJohto

@@ -4,6 +4,7 @@ import Data.List ( find, intercalate )
 import Data.Maybe ( catMaybes )
 
 import Definitions
+import Defs
 import Feature
 import Util
 

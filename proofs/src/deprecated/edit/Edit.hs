@@ -3,6 +3,7 @@
 import Data.List
 
 import Definitions
+import Defs
 import Feature
 import Util
 

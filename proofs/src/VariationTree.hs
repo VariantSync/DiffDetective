@@ -26,8 +26,8 @@ data VariationTree f = VariationTree {
     edges :: [VTEdge f]
 }
 
-makeRoot :: Logic f => UUID -> VTNode f
-makeRoot id = VTNode id (Mapping ltrue)
+root :: Logic f => VTNode f
+root = VTNode 0 (Mapping ltrue)
 
 makeArtifact :: UUID -> ArtifactReference -> VTNode f
 makeArtifact id a = VTNode id (Artifact a)
@@ -41,6 +41,9 @@ makeElse id = VTNode id Else
 getID :: VTNode f -> UUID
 getID (VTNode i l) = i
 
+setID :: VTNode f -> UUID -> VTNode f
+setID (VTNode i l) i' = VTNode i' l
+
 withId :: UUID -> [VTNode f] -> Maybe (VTNode f)
 withId id = find ((id ==) . getID)
 
@@ -50,15 +53,30 @@ fromIds nodes (from, to) = VTEdge {
     parent = fromJust (withId to   nodes)
 }
 
-fromNodesAndEdges :: [VTNode f] -> [(UUID, UUID)] -> VariationTree f
-fromNodesAndEdges nodes edges = VariationTree {
-    nodes = nodes,
-    edges = fmap (fromIds nodes) edges
+fromIndices :: [VTNode f] -> (Int, Int) -> VTEdge f
+fromIndices nodes (from, to) = VTEdge {
+    child  = nodes !! from,
+    parent = nodes !! to
 }
 
--- stupidDiff :: VariationTree f -> VariationTree f -> VariationDiff f
--- stupidDiff old new = ...
+fromNodesAndEdges :: (Logic f) => [VTNode f] -> [VTEdge f] -> VariationTree f
+fromNodesAndEdges nodes edges =
+    let
+        allnodes = root:nodes
+        in
+    VariationTree {
+        nodes = allnodes,
+        edges = edges
+    }
 
+fromNodesAndIDEdges :: (Logic f) => [VTNode f] -> [(UUID, UUID)] -> VariationTree f
+fromNodesAndIDEdges nodes edges = fromNodesAndEdges nodes (fmap (fromIds $ root:nodes) edges)
+
+fromNodesAndEdgeIndices :: (Logic f) => [VTNode f] -> [(Int, Int)] -> VariationTree f
+fromNodesAndEdgeIndices nodes edges = fromNodesAndEdges nodes (fmap (fromIndices $ root:nodes) edges)
+
+nodesWithoutRoot :: (Eq f, Logic f) => VariationTree f -> [VTNode f]
+nodesWithoutRoot tree = [n | n <- nodes tree, n /= root] --delete (root tree) (nodes tree)
 
 instance Eq f => Eq (Label f) where
     x == y = case (x, y) of
@@ -70,6 +88,12 @@ instance Eq f => Eq (Label f) where
 instance Eq f => Eq (VTNode f) where
     (VTNode name label) == (VTNode name' label') =
         name == name' && label == label'
+
+instance Eq f => Eq (VTEdge f) where
+    e == e' = child e == child e' && parent e == parent e'
+
+instance Eq f => Eq (VariationTree f) where
+    a == b = nodes a == nodes b && edges a == edges b
 
 instance Show f => Show (VTNode f) where
     show (VTNode name label) = mconcat ["(", show name, ", ", show label, ")"]
