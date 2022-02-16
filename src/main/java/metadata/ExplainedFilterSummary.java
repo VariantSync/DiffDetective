@@ -6,6 +6,7 @@ import de.variantsync.functjonal.map.MergeMap;
 import diff.difftree.filter.ExplainedFilter;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class ExplainedFilterSummary implements Metadata<ExplainedFilterSummary> {
@@ -27,6 +28,31 @@ public class ExplainedFilterSummary implements Metadata<ExplainedFilterSummary> 
                         LinkedHashMap::new
                 )
         );
+    }
+    
+    /**
+     * Parses lines containing {@link ExplainedFilter.Explanation Explanations} to {@link ExplainedFilterSummary}.
+     * 
+     * @param lines Lines containing {@link ExplainedFilter.Explanation Explanations} to be parsed
+     * @return {@link ExplainedFilterSummary}
+     */
+    public static ExplainedFilterSummary parse(final List<String> lines) {
+    	ExplainedFilterSummary summmary = new ExplainedFilterSummary();
+    	String[] keyValuePair;
+    	String key;
+    	int value;
+    	for (final String line : lines) {
+    		keyValuePair = line.split(": ");
+    		key = keyValuePair[0];
+    		value = Integer.parseInt(keyValuePair[1]);
+    		
+    		// create explanation
+    		ExplainedFilter.Explanation explanation = new ExplainedFilter.Explanation(value, key);
+    		
+    		// add explanation
+        	summmary.explanations.put(key, explanation);
+    	}
+    	return summmary;
     }
 
     @Override
