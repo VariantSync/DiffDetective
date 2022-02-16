@@ -44,6 +44,7 @@ public class ExplainedFilterSummary implements Metadata<ExplainedFilterSummary> 
     	for (final String line : lines) {
     		keyValuePair = line.split(": ");
     		key = keyValuePair[0];
+    		key = key.substring("filtered because not (".length(), key.length() - ")".length());
     		value = Integer.parseInt(keyValuePair[1]);
     		
     		// create explanation
