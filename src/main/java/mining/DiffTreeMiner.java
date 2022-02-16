@@ -211,7 +211,7 @@ public class DiffTreeMiner {
     }
 
     public static <T> void exportMetadata(final Path outputDir, final Metadata<T> totalResult) {
-        final String prettyMetadata = totalResult.exportTo(outputDir.resolve("totalresult" + DiffTreeMiningResult.EXTENSION));
+        final String prettyMetadata = totalResult.exportTo(outputDir.resolve(DiffTreeMiningResult.TOTAL_RESULT + DiffTreeMiningResult.EXTENSION));
         Logger.info("Metadata:\n" + prettyMetadata);
     }
 

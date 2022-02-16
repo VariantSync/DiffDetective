@@ -19,6 +19,7 @@ import java.util.List;
 
 public class DiffTreeMiningResult implements Metadata<DiffTreeMiningResult> {
     public final static String EXTENSION = ".metadata.txt";
+    public final static String TOTAL_RESULT = "totalresult";
     public final static String ERROR_BEGIN = "#Error[";
     public final static String ERROR_END = "]";
     
@@ -75,72 +76,69 @@ public class DiffTreeMiningResult implements Metadata<DiffTreeMiningResult> {
      * @throws IOException
      */
     public static DiffTreeMiningResult importFrom(final Path p) throws IOException {
-    	DiffTreeMiningResult result = new DiffTreeMiningResult();
-    	
-    	final List<String> filterHitsLines = new ArrayList<>();
-    	final List<String> atomicPatternCountsLines = new ArrayList<>();
-    	
-    	String fileInput = IO.readAsString(p); // read in metadata file
-    	fileInput = fileInput.replace("\r", ""); // remove carriage returns if present
-    	final String[] lines = fileInput.split("\n");
-    	String[] keyValuePair;
-    	String key;
-    	String value;
-    	
-    	// examine each line of the metadata file separately
-    	for (final String line : lines) {
-    		keyValuePair = line.split(": ");
-    		key = keyValuePair[0];
-    		value = keyValuePair[1];
-    		
-    		switch (key) {
-    		case "trees":
-    			result.exportedTrees = Integer.parseInt(value);
-    			break;
-    		case "commits":
-    			result.exportedCommits = Integer.parseInt(value);
-    			break;
-    		case "#NON nodes":
-    			result.debugData.numExportedNonNodes = Integer.parseInt(value);
-    			break;
-    		case "#ADD nodes":
-    			result.debugData.numExportedAddNodes = Integer.parseInt(value);
-    			break;
-    		case "#REM nodes":
-    			result.debugData.numExportedRemNodes = Integer.parseInt(value);
-    			break;
-    		case "filtered because not (is not empty)":
-    		case "filtered because not (has more than two atomic patterns)":
-    		case "filtered because not (has edits to variability)":
-    			filterHitsLines.add(line);
-    			break;
-    		case "AddToPC":
-    		case "AddWithMapping":
-    		case "RemFromPC":
-    		case "RemWithMapping":
-    		case "Specialization":
-    		case "Generalization":
-    		case "Reconfiguration":
-    		case "Refactoring":
-    		case "Unchanged":
-    			atomicPatternCountsLines.add(line);
-    			break;
-    		default:
-    			if(key.startsWith(ERROR_BEGIN)) {
-    				DiffError e = new DiffError(key.substring(ERROR_BEGIN.length(), key.length() - ERROR_END.length()));
-    				// add DiffError
-    				result.diffErrors.put(e, Integer.parseInt(value));
-    			} else {
-    				// ignore other lines that do not match
-    			}
-    			break;
-    		}
-    	}
-    	
-    	result.filterHits = ExplainedFilterSummary.parse(filterHitsLines);
-    	result.atomicPatternCounts = AtomicPatternCount.parse(atomicPatternCountsLines);
-    	
-    	return result;
+        DiffTreeMiningResult result = new DiffTreeMiningResult();
+        
+        final List<String> filterHitsLines = new ArrayList<>();
+        final List<String> atomicPatternCountsLines = new ArrayList<>();
+        
+        String fileInput = IO.readAsString(p); // read in metadata file
+        fileInput = fileInput.replace("\r", ""); // remove carriage returns if present
+        final String[] lines = fileInput.split("\n");
+        String[] keyValuePair;
+        String key;
+        String value;
+        
+        // examine each line of the metadata file separately
+        for (final String line : lines) {
+            keyValuePair = line.split(": ");
+            key = keyValuePair[0];
+            value = keyValuePair[1];
+            
+            switch (key) {
+            case "trees":
+                result.exportedTrees = Integer.parseInt(value);
+                break;
+            case "commits":
+                result.exportedCommits = Integer.parseInt(value);
+                break;
+            case "#NON nodes":
+                result.debugData.numExportedNonNodes = Integer.parseInt(value);
+                break;
+            case "#ADD nodes":
+                result.debugData.numExportedAddNodes = Integer.parseInt(value);
+                break;
+            case "#REM nodes":
+                result.debugData.numExportedRemNodes = Integer.parseInt(value);
+                break;
+            case "AddToPC":
+            case "AddWithMapping":
+            case "RemFromPC":
+            case "RemWithMapping":
+            case "Specialization":
+            case "Generalization":
+            case "Reconfiguration":
+            case "Refactoring":
+            case "Unchanged":
+                atomicPatternCountsLines.add(line);
+                break;
+            default:
+                if (key.startsWith(ExplainedFilterSummary.FILTERED_MESSAGE_BEGIN)) {
+                    filterHitsLines.add(line);
+                } else if(key.startsWith(ERROR_BEGIN)) {
+                    DiffError e = new DiffError(key.substring(ERROR_BEGIN.length(), key.length() - ERROR_END.length()));
+                    // add DiffError
+                    result.diffErrors.put(e, Integer.parseInt(value));
+                } else {
+                    // ignore other lines that do not match
+                }
+                break;
+            }
+        }
+        
+        result.filterHits = ExplainedFilterSummary.parse(filterHitsLines);
+        result.atomicPatternCounts = AtomicPatternCount.parse(atomicPatternCountsLines);
+        
+        return result;
     }
 
     @Override

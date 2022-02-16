@@ -10,6 +10,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class ExplainedFilterSummary implements Metadata<ExplainedFilterSummary> {
+
+    public static final String FILTERED_MESSAGE_BEGIN = "filtered because not (";
+    public static final String FILTERED_MESSAGE_END = ")";
+
     public static final InplaceSemigroup<ExplainedFilterSummary> ISEMIGROUP =
             (a, b) -> MergeMap.putAllValues(a.explanations, b.explanations, ExplainedFilter.Explanation.ISEMIGROUP);
 
@@ -37,30 +41,30 @@ public class ExplainedFilterSummary implements Metadata<ExplainedFilterSummary> 
      * @return {@link ExplainedFilterSummary}
      */
     public static ExplainedFilterSummary parse(final List<String> lines) {
-    	ExplainedFilterSummary summmary = new ExplainedFilterSummary();
-    	String[] keyValuePair;
-    	String key;
-    	int value;
-    	for (final String line : lines) {
-    		keyValuePair = line.split(": ");
-    		key = keyValuePair[0];
-    		key = key.substring("filtered because not (".length(), key.length() - ")".length());
-    		value = Integer.parseInt(keyValuePair[1]);
-    		
-    		// create explanation
-    		ExplainedFilter.Explanation explanation = new ExplainedFilter.Explanation(value, key);
-    		
-    		// add explanation
-        	summmary.explanations.put(key, explanation);
-    	}
-    	return summmary;
+        ExplainedFilterSummary summary = new ExplainedFilterSummary();
+        String[] keyValuePair;
+        String key;
+        int value;
+        for (final String line : lines) {
+            keyValuePair = line.split(": ");
+            key = keyValuePair[0];
+            key = key.substring(FILTERED_MESSAGE_BEGIN.length(), key.length() - FILTERED_MESSAGE_END.length());
+            value = Integer.parseInt(keyValuePair[1]);
+            
+            // create explanation
+            ExplainedFilter.Explanation explanation = new ExplainedFilter.Explanation(value, key);
+            
+            // add explanation
+            summary.explanations.put(key, explanation);
+        }
+        return summary;
     }
 
     @Override
     public LinkedHashMap<String, Integer> snapshot() {
         return Functjonal.bimap(
                 explanations,
-                name -> "filtered because not (" + name + ")",
+                name -> FILTERED_MESSAGE_BEGIN + name + FILTERED_MESSAGE_END,
                 ExplainedFilter.Explanation::getFilterCount,
                 LinkedHashMap::new
         );
