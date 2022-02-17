@@ -120,6 +120,9 @@ patches/*
 examples/
 results/
 
+/log.txt
+/local-maven-repo
+
 ### Eclipse ###
 .settings/
 .classpath
