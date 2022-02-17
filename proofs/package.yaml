@@ -28,7 +28,6 @@ dependencies:
 library:
   source-dirs:
     - src
-    - src/edit
     - src/feature
 
 executables:
