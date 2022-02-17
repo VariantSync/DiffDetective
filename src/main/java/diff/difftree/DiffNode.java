@@ -464,6 +464,7 @@ public class DiffNode {
             // Negate all previous cases
             DiffNode ancestor = parent;
             while (!ancestor.isIf()) {
+                // TODO: simplify to "negate"
                 and.add(new Not(ancestor.getDirectFeatureMapping()));
                 ancestor = parentOf.apply(ancestor);
             }
