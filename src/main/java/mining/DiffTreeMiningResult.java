@@ -9,7 +9,9 @@ import diff.result.DiffError;
 import metadata.AtomicPatternCount;
 import metadata.ExplainedFilterSummary;
 import metadata.Metadata;
+import pattern.atomic.proposed.ProposedAtomicPatterns;
 import util.IO;
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -93,46 +95,28 @@ public class DiffTreeMiningResult implements Metadata<DiffTreeMiningResult> {
             keyValuePair = line.split(": ");
             key = keyValuePair[0];
             value = keyValuePair[1];
-            
+
             switch (key) {
-            case "trees":
-                result.exportedTrees = Integer.parseInt(value);
-                break;
-            case "commits":
-                result.exportedCommits = Integer.parseInt(value);
-                break;
-            case "#NON nodes":
-                result.debugData.numExportedNonNodes = Integer.parseInt(value);
-                break;
-            case "#ADD nodes":
-                result.debugData.numExportedAddNodes = Integer.parseInt(value);
-                break;
-            case "#REM nodes":
-                result.debugData.numExportedRemNodes = Integer.parseInt(value);
-                break;
-            case "AddToPC":
-            case "AddWithMapping":
-            case "RemFromPC":
-            case "RemWithMapping":
-            case "Specialization":
-            case "Generalization":
-            case "Reconfiguration":
-            case "Refactoring":
-            case "Unchanged":
-                atomicPatternCountsLines.add(line);
-                break;
-            default:
-                if (key.startsWith(ExplainedFilterSummary.FILTERED_MESSAGE_BEGIN)) {
-                    filterHitsLines.add(line);
-                } else if(key.startsWith(ERROR_BEGIN)) {
-                    DiffError e = new DiffError(key.substring(ERROR_BEGIN.length(), key.length() - ERROR_END.length()));
-                    // add DiffError
-                    result.diffErrors.put(e, Integer.parseInt(value));
-                } else {
-                    // other lines that do not match
-                    throw new IOException("unknown entry: " + line);
+                case "trees" -> result.exportedTrees = Integer.parseInt(value);
+                case "commits" -> result.exportedCommits = Integer.parseInt(value);
+                case "#NON nodes" -> result.debugData.numExportedNonNodes = Integer.parseInt(value);
+                case "#ADD nodes" -> result.debugData.numExportedAddNodes = Integer.parseInt(value);
+                case "#REM nodes" -> result.debugData.numExportedRemNodes = Integer.parseInt(value);
+                default -> {
+                    final String finalKey = key;
+                    if (ProposedAtomicPatterns.All.stream().anyMatch(pattern -> pattern.getName().equals(finalKey))) {
+                        atomicPatternCountsLines.add(line);
+                    } else if (key.startsWith(ExplainedFilterSummary.FILTERED_MESSAGE_BEGIN)) {
+                        filterHitsLines.add(line);
+                    } else if (key.startsWith(ERROR_BEGIN)) {
+                        DiffError e = new DiffError(key.substring(ERROR_BEGIN.length(), key.length() - ERROR_END.length()));
+                        // add DiffError
+                        result.diffErrors.put(e, Integer.parseInt(value));
+                    } else {
+                        // other lines that do not match
+                        throw new IOException("unknown entry: " + line);
+                    }
                 }
-                break;
             }
         }
         
