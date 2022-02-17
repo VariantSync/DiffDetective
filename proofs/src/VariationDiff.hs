@@ -24,6 +24,7 @@ project t diff = VariationTree {
 
 -- We just assume that the UUIDs stored in both trees are unique (i.e., all ids in old are not in new and vice versa)
 -- We further assume that the root has always UUID zero as it is constant.
+-- Otherwise this function as well as the equality checks afterwards are tremendously more complex.
 stupidDiff :: (Eq f, Logic f) => VariationTree f -> VariationTree f -> VariationDiff f
 stupidDiff old new =
     let
@@ -54,26 +55,7 @@ stupidDiff old new =
                         error "Given edge is not part of this Variation Diff!"
         }
 
--- data UUIDReassignment = UUIDReassignment {
---     nextAvailableUUID :: UUID,
---     oldToNew :: UUID -> UUID
--- }
-
--- generateNewUUIDsStartingFrom :: UUID -> [VTNode f] -> (UUIDReassignment, [VTNode f])
--- generateNewUUIDsStartingFrom begin nodes =
---     let
---         ids = generateUUIDs begin (length nodes)
---         idUpdate = \node newId -> setID newId node
---         in
---     UUIDReassignment {
---         nextAvailableUUID = begin + length nodes,
---         oldToNew = \i -> 
---     }
-
--- generateUUIDs :: UUID -> Int -> [UUID]
--- generateUUIDs offset 0 = []
--- generateUUIDs offset amount = [offset..(offset + amount - 1)]
-
+-- This data type is just used for pretty printing
 data EditedEdge f = EditedEdge (VTNode f) (VTNode f) DiffType
 
 fromEdge :: Delta f -> VTEdge f -> EditedEdge f

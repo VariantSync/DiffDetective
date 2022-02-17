@@ -41,12 +41,12 @@ starters grass fire water = genVariationTree
         makeUniqueMapping fWater
     ]
     [
-        ( 1, 4),
-        ( 2, 5),
-        ( 3, 6),
-        (4,  0),
-        (5,  0),
-        (6,  0)
+        (1, 4),
+        (2, 5),
+        (3, 6),
+        (4, 0),
+        (5, 0),
+        (6, 0)
     ]
 
 kantoFactory = starters "Bulbasaur" "Charmander" "Squirtle"
