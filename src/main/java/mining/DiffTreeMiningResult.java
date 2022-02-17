@@ -129,7 +129,8 @@ public class DiffTreeMiningResult implements Metadata<DiffTreeMiningResult> {
                     // add DiffError
                     result.diffErrors.put(e, Integer.parseInt(value));
                 } else {
-                    // ignore other lines that do not match
+                    // other lines that do not match
+                    throw new IOException("unknown entry: " + line);
                 }
                 break;
             }
