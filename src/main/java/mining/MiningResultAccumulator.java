@@ -14,18 +14,13 @@ import java.util.stream.Stream;
 public class MiningResultAccumulator {
 
     /**
-     * Path to the directory where all metadata files are located in
-     */
-    public final static String FOLDER_PATH = "results/difftrees/";
-    
-    /**
      * The actual computation of a total {@link DiffTreeMiningResult} from multiple metadata outputs.
      * 
      * @return Total {@link DiffTreeMiningResult}
      */
-    public static DiffTreeMiningResult computeTotalMetadataResult() throws IOException {
+    public static DiffTreeMiningResult computeTotalMetadataResult(final Path folderPath) throws IOException {
         
-        Stream<Path> paths = Files.walk(Paths.get(FOLDER_PATH));
+        Stream<Path> paths = Files.walk(folderPath);
         List<Path> pathsOfTotalMetadataFiles = new ArrayList<Path>();
         
         // get all files in the directory which are outputs of DiffTreeMiningResult
