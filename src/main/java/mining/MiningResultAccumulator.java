@@ -3,7 +3,6 @@ package mining;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
@@ -21,13 +20,13 @@ public class MiningResultAccumulator {
     public static DiffTreeMiningResult computeTotalMetadataResult(final Path folderPath) throws IOException {
         
         Stream<Path> paths = Files.walk(folderPath);
-        List<Path> pathsOfTotalMetadataFiles = new ArrayList<Path>();
+        List<Path> pathsOfTotalMetadataFiles = new ArrayList<>();
         
         // get all files in the directory which are outputs of DiffTreeMiningResult
         paths
             .filter(Files::isRegularFile)
-            .filter(p -> p.toString().toLowerCase().endsWith(DiffTreeMiningResult.TOTAL_RESULT + DiffTreeMiningResult.EXTENSION))
-            .forEachOrdered(p -> pathsOfTotalMetadataFiles.add(p));
+            .filter(p -> p.toString().toLowerCase().endsWith(DiffTreeMiner.TOTAL_RESULTS_FILE_NAME))
+            .forEachOrdered(pathsOfTotalMetadataFiles::add);
         
         final DiffTreeMiningResult totalResult = new DiffTreeMiningResult();
         // join all metadata files into one

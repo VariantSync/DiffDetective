@@ -20,8 +20,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 public class DiffTreeMiningResult implements Metadata<DiffTreeMiningResult> {
-    public final static String EXTENSION = ".metadata.txt";
-    public final static String TOTAL_RESULT = "totalresult";
     public final static String ERROR_BEGIN = "#Error[";
     public final static String ERROR_END = "]";
     
