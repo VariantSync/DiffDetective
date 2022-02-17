@@ -122,6 +122,9 @@ results/
 /input
 log.txt
 
+/log.txt
+/local-maven-repo
+
 ### Eclipse ###
 .settings/
 .classpath

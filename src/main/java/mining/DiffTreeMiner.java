@@ -223,7 +223,6 @@ public class DiffTreeMiner {
         Logger.info("Metadata:\n" + prettyMetadata);
     }
 
-
     public static void main(String[] args) {
 //        setupLogger(Level.INFO);
 //        setupLogger(Level.DEBUG);

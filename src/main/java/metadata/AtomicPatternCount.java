@@ -11,6 +11,7 @@ import util.Assert;
 
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class AtomicPatternCount implements Metadata<AtomicPatternCount> {
@@ -65,6 +66,43 @@ public class AtomicPatternCount implements Metadata<AtomicPatternCount> {
                         + "!"
         );
         occurences.get(pattern).increment(commit);
+    }
+    
+    /**
+     * Parses lines containing {@link AtomicPattern AtomicPatterns} to {@link AtomicPatternCount}.
+     * 
+     * @param lines Lines containing {@link AtomicPattern AtomicPatterns} to be parsed
+     * @return {@link AtomicPatternCount}
+     */
+    public static AtomicPatternCount parse(final List<String> lines) {
+        AtomicPatternCount count = new AtomicPatternCount();
+        String[] keyValuePair;
+        String key;
+        String value;
+        String[] innerKeyValuePair;
+        int total;
+        int commits;
+        for (final String line : lines) {
+            keyValuePair = line.split(": ");
+            key = keyValuePair[0]; // atomic pattern
+            value = keyValuePair[1]; // key value content
+            value = value.replaceAll("[{} ]", ""); // remove unnecessary symbols
+            innerKeyValuePair = value.split(";");
+            total = Integer.parseInt(innerKeyValuePair[0].split("=")[1]); // total count
+            commits = Integer.parseInt(innerKeyValuePair[1].split("=")[1]);
+            
+            // get pattern from key
+            AtomicPattern pattern = ProposedAtomicPatterns.Instance.fromName(key).get();
+            
+            Occurrences occurence = new Occurrences();
+            occurence.totalAmount = total;
+            // TODO occurence.uniqueCommits = ?
+            
+            // add occurrence
+            count.occurences.put(pattern, occurence);
+        }
+        
+        return count;
     }
 
     @Override
