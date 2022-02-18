@@ -29,6 +29,7 @@ library:
   source-dirs:
     - src
     - src/feature
+    - src/nodetypes
 
 executables:
   proofs-exe:

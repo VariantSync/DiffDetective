@@ -19,28 +19,25 @@ data PropositionalFormula a =
     | POr [PropositionalFormula a]
     deriving (Eq)
 
--- | 'PropositionalFormula's form a 'Logic'.
-instance Eq a => Logic (PropositionalFormula a) where
-    ltrue = PTrue
-    -- lfalse = PFalse
 
+instance Negatable (PropositionalFormula a) where
+    -- | Negation of a logical formula.
     lnot PTrue = PFalse
     lnot PFalse = PTrue
     lnot p = PNot p
-    
+
+instance HasNeutral (PropositionalFormula a) where
+    ltrue = PTrue
+
+instance Composable (PropositionalFormula a) where
     land [] = PTrue
     land l = PAnd l
 
-    -- lor [] = PFalse
-    -- lor l = POr l
-    
-    -- leval config (PNot x) = lnot $ leval config x -- This should evaluate as config should only map to lvalues and lnot directly inverts PTrue and PFalse.
-    -- leval config (PAnd cs) = liftBool.not $ any isPFalse $ fmap (leval config) cs
-    -- leval config (POr cs) = liftBool $ any isPTrue $ fmap (leval config) cs
-    -- leval config p = config p
+instance Eq a => Comparable (PropositionalFormula a) where
+    -- We only check for syntactic equality for now but this should be TAUT(a, b) in fact.
+    limplies a b = a == b
 
-    -- We only check for syntactic equality for now but this should be semantic equality in fact.
-    lequivalent a b = a == b
+instance Eq a => Logic (PropositionalFormula a) where
 
 instance Functor PropositionalFormula where
     fmap _ PTrue = PTrue

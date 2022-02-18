@@ -11,42 +11,10 @@ type UUID = Int
 type ArtifactReference = String
 
 class NodeTypes t where
-    featuremapping :: Logic f => VariationTree t f -> VTNode t f -> f
-
-data PaperTypes f =
-      Artifact ArtifactReference
-    | Mapping f
-    | Else
-    deriving Show
-
-data WithElif f =
-      WEArtifact ArtifactReference
-    | WEMapping f
-    | WEElse
-    | WEElif f
-    deriving Show
-
-instance NodeTypes PaperTypes where
-    featuremapping tree node@(VTNode i label) = case label of
-        Artifact _ -> featuremapping tree $ fromJust $ parent tree node
-        Mapping f -> f
-        Else -> lnot $ featuremapping tree $ fromJust $ parent tree node
-
-instance NodeTypes WithElif where
-    featuremapping tree node@(VTNode i label) = case label of
-        -- TODO: Can we directly say that we just invoke the functions of PaperTypes for WEArtifact and WEMapping?
-        WEArtifact a -> featuremapping tree $ fromJust $ parent tree node
-        WEMapping f -> f
-        WEElse ->            notTheOtherBranches
-        WEElif f -> land [f, notTheOtherBranches]
-        where
-            notTheOtherBranches = land $ lnot <$> branches tree (fromJust (parent tree node))
-
-            branches :: VariationTree WithElif f -> VTNode WithElif f -> [f]
-            branches _ (VTNode _ (WEMapping f)) = [f]
-            branches tree node@(VTNode _ (WEElif f)) = f:branches tree (fromJust (parent tree node))
-            branches tree node = branches tree (fromJust (parent tree node))
-
+    makeArtifactLabel :: ArtifactReference -> t f
+    makeMappingLabel :: f -> t f
+    -- TODO: Move the type constraints down to the instances. This constraint is only required for some instances and other instances might require further constraints.
+    featuremapping :: VariationTree t f -> VTNode t f -> f
 
 data VTNode t f = VTNode UUID (t f)
 
@@ -60,41 +28,60 @@ data VariationTree t f = VariationTree {
     edges :: [VTEdge t f]
 }
 
-type DefaultVariationTree f = VariationTree PaperTypes f
-
 getID :: VTNode t f -> UUID
-getID (VTNode i l) = i
+getID (VTNode i _) = i
 
 setID :: VTNode t f -> UUID -> VTNode t f
-setID (VTNode i l) i' = VTNode i' l
+setID (VTNode _ l) i' = VTNode i' l
 
 withId :: UUID -> [VTNode t f] -> Maybe (VTNode t f)
-withId id = find ((id ==) . getID)
+withId i = find ((i ==) . getID)
 
 fromIds :: [VTNode t f] -> (UUID, UUID) -> VTEdge t f
-fromIds nodes (from, to) = VTEdge {
-    childNode  = fromJust (withId from nodes),
-    parentNode = fromJust (withId to   nodes)
+fromIds nodeSet (from, to) = VTEdge {
+    childNode  = fromJust (withId from nodeSet),
+    parentNode = fromJust (withId to   nodeSet)
 }
 
 fromIndices :: [VTNode t f] -> (Int, Int) -> VTEdge t f
-fromIndices nodes (from, to) = VTEdge {
-    childNode  = nodes !! from,
-    parentNode = nodes !! to
+fromIndices nodeSet (from, to) = VTEdge {
+    childNode  = nodeSet !! from,
+    parentNode = nodeSet !! to
 }
 
 parent :: VariationTree t f -> VTNode t f -> Maybe (VTNode t f)
 parent tree node = parentNode <$> find (\edge -> childNode edge == node) (edges tree)
 
-instance Logic f => Eq (PaperTypes f) where
-    x == y = case (x, y) of
-        (Artifact a, Artifact b) -> a == b
-        (Mapping a, Mapping b) -> lequivalent a b
-        (Else, Else) -> True
-        (_, _) -> False
+root :: (HasNeutral f, NodeTypes t) => VTNode t f
+root = VTNode 0 (makeMappingLabel ltrue)
+
+makeArtifact :: NodeTypes t => UUID -> ArtifactReference -> VTNode t f
+makeArtifact i a = VTNode i (makeArtifactLabel a)
+
+makeMapping :: NodeTypes t => UUID -> f -> VTNode t f
+makeMapping i f = VTNode i (makeMappingLabel f)
+
+fromNodesAndEdges :: (HasNeutral f, NodeTypes t) => [VTNode t f] -> [VTEdge t f] -> VariationTree t f
+fromNodesAndEdges nodeSet edgeSet =
+    let
+        allnodes = root:nodeSet
+        in
+    VariationTree {
+        nodes = allnodes,
+        edges = edgeSet
+    }
+
+fromNodesAndIDEdges :: (HasNeutral f, NodeTypes t) => [VTNode t f] -> [(UUID, UUID)] -> VariationTree t f
+fromNodesAndIDEdges nodeSet edgeSet = fromNodesAndEdges nodeSet (fmap (fromIds $ root:nodeSet) edgeSet)
+
+fromNodesAndEdgeIndices :: (HasNeutral f, NodeTypes t) => [VTNode t f] -> [(Int, Int)] -> VariationTree t f
+fromNodesAndEdgeIndices nodeSet edgeSet = fromNodesAndEdges nodeSet (fmap (fromIndices $ root:nodeSet) edgeSet)
+
+nodesWithoutRoot :: (HasNeutral f, NodeTypes t) => VariationTree t f -> [VTNode t f]
+nodesWithoutRoot tree = [n | n <- nodes tree, n /= root] --delete (root tree) (nodes tree)
 
 instance Eq (VTNode t f) where
-    (VTNode name label) == (VTNode name' label') = name == name'
+    (VTNode name _) == (VTNode name' _) = name == name'
 
 instance Eq (VTEdge t f) where
     e == e' = childNode e == childNode e' && parentNode e == parentNode e'
@@ -110,37 +97,3 @@ instance Show (t f) => Show (VTEdge t f) where
 
 instance Show (t f) => Show (VariationTree t f) where
     show t = "Variation Tree with edges {" ++ intercalate "\n  " ("":(show <$> edges t)) ++ "\n}"
-
---- Default implementation
-
-
-root :: Logic f => VTNode PaperTypes f
-root = VTNode 0 (Mapping ltrue)
-
-makeArtifact :: UUID -> ArtifactReference -> VTNode PaperTypes f
-makeArtifact id a = VTNode id (Artifact a)
-
-makeMapping :: UUID -> f -> VTNode PaperTypes f
-makeMapping id f = VTNode id (Mapping f)
-
-makeElse :: UUID -> VTNode PaperTypes f
-makeElse id = VTNode id Else
-
-fromNodesAndEdges :: (Logic f) => [VTNode PaperTypes f] -> [VTEdge PaperTypes f] -> VariationTree PaperTypes f
-fromNodesAndEdges nodes edges =
-    let
-        allnodes = root:nodes
-        in
-    VariationTree {
-        nodes = allnodes,
-        edges = edges
-    }
-
-fromNodesAndIDEdges :: (Logic f) => [VTNode PaperTypes f] -> [(UUID, UUID)] -> VariationTree PaperTypes f
-fromNodesAndIDEdges nodes edges = fromNodesAndEdges nodes (fmap (fromIds $ root:nodes) edges)
-
-fromNodesAndEdgeIndices :: (Logic f) => [VTNode PaperTypes f] -> [(Int, Int)] -> VariationTree PaperTypes f
-fromNodesAndEdgeIndices nodes edges = fromNodesAndEdges nodes (fmap (fromIndices $ root:nodes) edges)
-
-nodesWithoutRoot :: (Eq f, Logic f) => VariationTree PaperTypes f -> [VTNode PaperTypes f]
-nodesWithoutRoot tree = [n | n <- nodes tree, n /= root] --delete (root tree) (nodes tree)

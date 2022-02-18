@@ -4,6 +4,7 @@ import Time
 import Logic
 import VariationTree
 import VariationDiff
+import PaperTypes
 import Propositions
 import ExampleFeatures
 import MainUtils
@@ -16,18 +17,18 @@ genUUID = do
     put (id+1)
     return id
 
-makeUniqueArtifact :: ArtifactReference -> State UUID (VTNode PaperTypes f)
+makeUniqueArtifact :: ArtifactReference -> State UUID (DefaultVTNode f)
 makeUniqueArtifact a = flip makeArtifact a <$> genUUID
 -- makeUniqueArtifact a = get >>= \id -> put (id+1) >>= \whatever -> return (makeArtifact id a)
 -- makeUniqueArtifact a = State {runState = \s -> (s+1, makeArtifact (s+1) a) }
 
-makeUniqueMapping :: f -> State UUID (VTNode PaperTypes f)
+makeUniqueMapping :: f -> State UUID (DefaultVTNode f)
 makeUniqueMapping f = flip makeMapping  f <$> genUUID
 
-makeUniqueElse :: State UUID (VTNode PaperTypes f)
+makeUniqueElse :: State UUID (DefaultVTNode f)
 makeUniqueElse = makeElse <$> genUUID
 
-genVariationTree :: Logic f => [State UUID (VTNode PaperTypes f)] -> [(Int, Int)] -> State UUID (DefaultVariationTree f)
+genVariationTree :: (HasNeutral f) => [State UUID (DefaultVTNode f)] -> [(Int, Int)] -> State UUID (DefaultVariationTree f)
 genVariationTree stateNodes edges = sequence stateNodes >>= \nodes -> return $ fromNodesAndEdgeIndices nodes edges
 
 starters :: String -> String -> String -> State UUID (DefaultVariationTree (PropositionalFormula String))

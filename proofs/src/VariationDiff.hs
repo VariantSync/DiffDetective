@@ -25,7 +25,7 @@ project t diff = VariationTree {
 -- We just assume that the UUIDs stored in both trees are unique (i.e., all ids in old are not in new and vice versa)
 -- We further assume that the root has always UUID zero as it is constant.
 -- Otherwise this function as well as the equality checks afterwards are tremendously more complex.
-stupidDiff :: (Eq f, Logic f) => VariationTree PaperTypes f -> VariationTree PaperTypes f -> VariationDiff PaperTypes f
+stupidDiff :: (HasNeutral f, NodeTypes t) => VariationTree t f -> VariationTree t f -> VariationDiff t f
 stupidDiff old new =
     let
         nodesBefore = nodesWithoutRoot old

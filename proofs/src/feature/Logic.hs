@@ -6,44 +6,33 @@ Type class for reasoning on 'Logic's.
 -}
 module Logic where
 
+class Negatable n where
+    -- | Negation of a logical formula.
+    lnot :: n -> n
+
+class HasNeutral n where
+    ltrue :: n
+
+class Composable n where
+    land :: [n] -> n
+
+class Comparable n where
+    limplies :: n -> n -> Bool
+    
+    lequivalent :: n -> n -> Bool
+    lequivalent a b = a `limplies` b && b `limplies` a
+
 {- |
 Type class to reason on logics.
 -}
-class Logic l where
-    -- | The atomic value representing /true/ in this logic.
-    ltrue :: l
-    -- -- | The atomic value representing /false/ in this logic.
-    -- lfalse :: l
-    -- -- | A list of all atomic values of this logic. Default implementation comprises 'ltrue' and 'lfalse'.
-    -- lvalues :: [l]
-    -- lvalues = [lfalse, ltrue]
+class (Negatable l, HasNeutral l, Composable l, Comparable l) => Logic l where
+    lfalse :: l
+    lfalse = lnot ltrue
 
-    -- | Negation of a logical formula.
-    lnot :: l -> l
-    -- lnot q = limplies q lfalse
-    -- | Conjunction of a list of logical formulas.
-    land :: [l] -> l
-    -- -- land = lnot.lor.map lnot
-    -- -- | Disjunction of a list of logical formulas.
-    -- lor :: [l] -> l
-    -- -- lor p q = limplies (limplies p q) q
-    -- lor = lnot.land.map lnot
-    -- -- | Implication between two logical formulas.
-    -- -- The first argument @p@ is one the left side of the implication and the second argument 'q' is on the right (i.e., @p => q@).
-    -- limplies :: l -> l -> l
-    -- limplies p q = lor [lnot p, q]
-    -- -- | Equivalence between two logical formulas.
-    -- lequals :: l -> l -> l
-    -- lequals p q = land [limplies p q, limplies q p]
+    lor :: [l] -> l
+    lor = lnot . land . map lnot
 
-    -- {- |
-    -- Evaluates a logical formula.
-    -- Arguments are
-    
-    -- (1) a function assigning variables to values
-    -- (2) a formula to evaluate
-    -- This function should return an element of 'lvalues'.
-    -- -}
-    -- leval :: (l -> l) -> l -> l
+--- Interoperability
 
-    lequivalent :: l -> l -> Bool
+-- instance Composable l => Semigroup l where
+--     a <> b = land [a, b]
