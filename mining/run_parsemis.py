@@ -4,12 +4,25 @@ import subprocess
 import signal
 import re
 
+import math
 
 regex_file_id = r".*_(\d+).*"
 
-########################### Parsemis #####################################################
-def run_parsemis(lib_path, in_folder, output_folder, threshold, min_size, max_size, memory='28G', nb_threads=12, timeout_seconds=180):
+#### helper to compute memory for mining from machine specs ####
+def get_available_memory(fraction=0.8):
 
+    with open('/proc/meminfo') as f:
+        meminfo = f.read()
+    matched = re.search(r'^MemTotal:\s+(\d+)', meminfo)
+    if matched: 
+        mem_total_gig = int(matched.groups()[0])/(1024*1024)
+        
+    available_mem = math.ceil(mem_total_gig * fraction)
+
+########################### Parsemis #####################################################
+def run_parsemis(lib_path, in_folder, output_folder, threshold, min_size, max_size, timeout_seconds=180):
+    memory = str(get_available_memory()) + 'G'
+    nb_threads = os.cpu_count()
     # Template for shell command shell command
     parsemis_cmd_template = "java -Xmx{memory} -jar  '{parsemis_path}' --graphFile='{in_file}' --outputFile='{out_file}' --minimumFrequency={threshold} --maximumNodeCount={max_size} --minimumNodeCount={min_size} --algorithm=dagma --singleRooted=true --closeGraph=true --zaretsky=true --subdue=true --storeEmbeddings=true --distribution=threads --threads={nb_threads} --swapFile={swap_file}" 
     
