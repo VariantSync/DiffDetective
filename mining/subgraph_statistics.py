@@ -12,6 +12,7 @@ from plot_utils import plot_graphs, plot_graph_dot
 from isograph import IsoGraph, remove_duplicates
 import csv
 import sys
+import os
 import time
 
 
@@ -296,22 +297,25 @@ def main(graph_db_path: str, subgraphs_path:str, results_dir:str):
     if stats.lattice is not None:
         print("Exporting lattice.")
         nx_lattice = stats.lattice.to_networkx()
-        export_TLV([nx_lattice], results_dir + './lattice.lg')
-        #plot_graphs([nx_lattice], results_dir + './lattice.png')
-        #plot_graph_dot(nx_lattice, results_dir + './lattice_dot.png')
-        with open(results_dir + './lattice.graphml', 'w') as f:
+        export_TLV([nx_lattice], results_dir + 'lattice.lg')
+        #plot_graphs([nx_lattice], results_dir + 'lattice.png')
+        #plot_graph_dot(nx_lattice, results_dir + 'lattice_dot.png')
+        with open(results_dir + 'lattice.graphml', 'w') as f:
             f.write(stats.lattice.to_graphml())
                       
     # Write subgraphs without clones
     print("Writing subgraphs without occurrences.")
-    export_TLV(subgraphs, results_dir + './subgraph_candidates.lg')
+    export_TLV(subgraphs, results_dir + 'subgraph_candidates.lg')
     
     # Write statistics to file
     print("Write occurrence statistics...")
-    stats.write_as_csv(results_dir + './occurrence_stats.csv')
+    stats.write_as_csv(results_dir + 'occurrence_stats.csv')
     print("Done")
     
 if __name__ == "__main__":
     if len(sys.argv) < 4:
         print("Three arguments expected: path to graph database folder, path to subgraph database folder, path to results directory")
+    
+    # Create output folder if it doesn't exist yet
+    os.makedirs(sys.argv[3], exist_ok=True)    
     main(sys.argv[1], sys.argv[2], sys.argv[3])
