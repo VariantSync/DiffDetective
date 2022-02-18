@@ -1,11 +1,12 @@
 ﻿module VariationTreeExamples where
 
 import Time
-import Logic
 import VariationTree
 import VariationDiff
-import PaperTypes
-import Propositions
+import LabelSets.PaperLabels
+
+import Feature.Logic
+import Feature.Propositions
 import ExampleFeatures
 import MainUtils
 
@@ -25,7 +26,7 @@ makeUniqueArtifact a = flip makeArtifact a <$> genUUID
 makeUniqueMapping :: f -> State UUID (DefaultVTNode f)
 makeUniqueMapping f = flip makeMapping  f <$> genUUID
 
-makeUniqueElse :: State UUID (DefaultVTNode f)
+makeUniqueElse :: Negatable f => State UUID (DefaultVTNode f)
 makeUniqueElse = makeElse <$> genUUID
 
 genVariationTree :: (HasNeutral f) => [State UUID (DefaultVTNode f)] -> [(Int, Int)] -> State UUID (DefaultVariationTree f)

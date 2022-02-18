@@ -2,7 +2,7 @@
 
 module VariationTree where
 
-import Logic
+import Feature.Logic
 
 import Data.List (find, intercalate)
 import Data.Maybe (fromJust)
@@ -10,7 +10,7 @@ import Data.Maybe (fromJust)
 type UUID = Int
 type ArtifactReference = String
 
-class NodeTypes t where
+class VTLabel t where
     makeArtifactLabel :: ArtifactReference -> t f
     makeMappingLabel :: f -> t f
     -- TODO: Move the type constraints down to the instances. This constraint is only required for some instances and other instances might require further constraints.
@@ -52,16 +52,16 @@ fromIndices nodeSet (from, to) = VTEdge {
 parent :: VariationTree t f -> VTNode t f -> Maybe (VTNode t f)
 parent tree node = parentNode <$> find (\edge -> childNode edge == node) (edges tree)
 
-root :: (HasNeutral f, NodeTypes t) => VTNode t f
+root :: (HasNeutral f, VTLabel t) => VTNode t f
 root = VTNode 0 (makeMappingLabel ltrue)
 
-makeArtifact :: NodeTypes t => UUID -> ArtifactReference -> VTNode t f
+makeArtifact :: VTLabel t => UUID -> ArtifactReference -> VTNode t f
 makeArtifact i a = VTNode i (makeArtifactLabel a)
 
-makeMapping :: NodeTypes t => UUID -> f -> VTNode t f
+makeMapping :: VTLabel t => UUID -> f -> VTNode t f
 makeMapping i f = VTNode i (makeMappingLabel f)
 
-fromNodesAndEdges :: (HasNeutral f, NodeTypes t) => [VTNode t f] -> [VTEdge t f] -> VariationTree t f
+fromNodesAndEdges :: (HasNeutral f, VTLabel t) => [VTNode t f] -> [VTEdge t f] -> VariationTree t f
 fromNodesAndEdges nodeSet edgeSet =
     let
         allnodes = root:nodeSet
@@ -71,13 +71,13 @@ fromNodesAndEdges nodeSet edgeSet =
         edges = edgeSet
     }
 
-fromNodesAndIDEdges :: (HasNeutral f, NodeTypes t) => [VTNode t f] -> [(UUID, UUID)] -> VariationTree t f
+fromNodesAndIDEdges :: (HasNeutral f, VTLabel t) => [VTNode t f] -> [(UUID, UUID)] -> VariationTree t f
 fromNodesAndIDEdges nodeSet edgeSet = fromNodesAndEdges nodeSet (fmap (fromIds $ root:nodeSet) edgeSet)
 
-fromNodesAndEdgeIndices :: (HasNeutral f, NodeTypes t) => [VTNode t f] -> [(Int, Int)] -> VariationTree t f
+fromNodesAndEdgeIndices :: (HasNeutral f, VTLabel t) => [VTNode t f] -> [(Int, Int)] -> VariationTree t f
 fromNodesAndEdgeIndices nodeSet edgeSet = fromNodesAndEdges nodeSet (fmap (fromIndices $ root:nodeSet) edgeSet)
 
-nodesWithoutRoot :: (HasNeutral f, NodeTypes t) => VariationTree t f -> [VTNode t f]
+nodesWithoutRoot :: (HasNeutral f, VTLabel t) => VariationTree t f -> [VTNode t f]
 nodesWithoutRoot tree = [n | n <- nodes tree, n /= root] --delete (root tree) (nodes tree)
 
 instance Eq (VTNode t f) where

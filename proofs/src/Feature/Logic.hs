@@ -4,7 +4,7 @@ License: GNU LGPLv3
 Maintainer: paul.bittner@uni-ulm.de
 Type class for reasoning on 'Logic's.
 -}
-module Logic where
+module Feature.Logic where
 
 class Negatable n where
     -- | Negation of a logical formula.

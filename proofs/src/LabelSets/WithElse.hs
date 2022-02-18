@@ -1,10 +1,10 @@
 ﻿{-# LANGUAGE GADTs #-}
 
-module WithElse where
+module LabelSets.WithElse where
 
 import VariationTree
 import Data.Maybe (fromJust)
-import Logic ( Negatable(lnot), Composable(land) )
+import Feature.Logic ( Negatable(lnot), Composable(land) )
 
 data WithElif f where
     WEArtifact :: ArtifactReference -> WithElif f
@@ -12,11 +12,11 @@ data WithElif f where
     WEElse :: (Composable f, Negatable f) => WithElif f
     WEElif :: (Composable f, Negatable f) => f -> WithElif f
 
-instance NodeTypes WithElif where
+instance VTLabel WithElif where
     makeArtifactLabel a = WEArtifact a
     makeMappingLabel f = WEMapping f
     featuremapping tree node@(VTNode _ label) = case label of
-        -- TODO: Can we directly say that we just invoke the functions of PaperTypes for WEArtifact and WEMapping?
+        -- TODO: Can we directly say that we just invoke the functions of PaperLabels for WEArtifact and WEMapping?
         WEArtifact _ -> featuremapping tree $ fromJust $ parent tree node
         WEMapping f -> f
         WEElse ->            notTheOtherBranches tree node

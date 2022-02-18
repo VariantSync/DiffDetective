@@ -1,17 +1,20 @@
 ﻿{-# LANGUAGE GADTs #-}
+{-# LANGUAGE StandaloneDeriving #-}
 
-module PaperTypes where
+module LabelSets.PaperLabels where
     
 import VariationTree
-import Logic
+import Feature.Logic
 import Data.Maybe ( fromJust )
 
-data PaperTypes f where
-    Artifact :: ArtifactReference -> PaperTypes f
-    Mapping :: f -> PaperTypes f
-    Else :: (Negatable f) => PaperTypes f
+data PaperLabels f where
+    Artifact :: ArtifactReference -> PaperLabels f
+    Mapping :: f -> PaperLabels f
+    Else :: (Negatable f) => PaperLabels f
 
-instance NodeTypes PaperTypes where
+deriving instance Show f => Show (PaperLabels f)
+
+instance VTLabel PaperLabels where
     makeArtifactLabel a = Artifact a
     makeMappingLabel f = Mapping f
 
@@ -21,15 +24,15 @@ instance NodeTypes PaperTypes where
         Else -> lnot featureMappingOfParent
         where featureMappingOfParent = featuremapping tree $ fromJust $ parent tree node
 
-instance Comparable f => Eq (PaperTypes f) where
+instance Comparable f => Eq (PaperLabels f) where
     x == y = case (x, y) of
         (Artifact a, Artifact b) -> a == b
         (Mapping a, Mapping b) -> lequivalent a b
         (Else, Else) -> True
         (_, _) -> False
 
-makeElse :: Negatable f => UUID -> VTNode PaperTypes f
+makeElse :: Negatable f => UUID -> VTNode PaperLabels f
 makeElse i = VTNode i Else
 
-type DefaultVariationTree f = VariationTree PaperTypes f
-type DefaultVTNode f = VTNode PaperTypes f
+type DefaultVariationTree f = VariationTree PaperLabels f
+type DefaultVTNode f = VTNode PaperLabels f
