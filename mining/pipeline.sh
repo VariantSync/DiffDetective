@@ -12,6 +12,8 @@ threshold=10 # 0 means read threshold from files
 min_size=4
 max_size=15
 
+mkdir $2
+
 # Step 1 - Read graph databases, filter and chunk - Default filter config: Not larger than 15 nodes, 30 edges, no more than
 python compute_components.py $1 $output_filtered LG
 
