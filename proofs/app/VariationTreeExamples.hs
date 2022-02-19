@@ -63,14 +63,20 @@ printBlockIO title inner = do
 printBlock :: Show a => String -> a -> IO ()
 printBlock title content = printBlockIO title (print content)
 
-assertEquals :: Eq a => String -> a -> a -> IO ()
-assertEquals message a b = printBlockIO message $
-    if a == b then
-        putStrLn " ===> Elements equal! Great Success!"
+assertion :: String -> String -> String -> Bool -> IO()
+assertion message successMessage errorMessage val = printBlockIO message $
+    if val then
+        putStrLn $ feedback successMessage
     else do
-        let errormsg = "ERROR!"
-        putStrLn errormsg
-        error errormsg
+        putStrLn $ feedback errorMessage
+        error errorMessage
+    where feedback = (<>) " ===> "
+
+assertTrue :: String -> Bool -> IO ()
+assertTrue message = assertion message "True" "False"
+
+assertEquals :: Eq a => String -> a -> a -> IO ()
+assertEquals message a b = assertion message "Elements equal! Great Success!" "ERROR!" (a == b)
 
 showVariationTreeExamples :: IO ()
 showVariationTreeExamples =
@@ -86,6 +92,8 @@ showVariationTreeExamples =
             do
                 printBlock "Kanto Starters" kanto
                 printBlock "Johto Starters" johto
+                assertTrue "Kanto is a Tree" (isTree kanto)
+                assertTrue "Johto is a Tree" (isTree johto)
                 printBlock "Stupid Diff" diff
                 printBlock "Projected Kanto" projectedKanto
                 printBlock "Projected Johto" projectedJohto

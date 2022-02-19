@@ -4,19 +4,53 @@ module VariationTree where
 
 import Logic
 
-import Data.List (find, intercalate)
-import Data.Maybe (fromJust)
+import Data.List
+import Data.Maybe
+import Data.Map
 
 type UUID = Int
 type ArtifactReference = String
+type WellformednessConstraint l f = VariationTree l f -> Bool
+
+-- getAllChildrenLists :: VariationTree l f -> Map (VTNode l f) [VTNode l f]
+-- getAllChildrenLists (VariationTree _ edges) = Data.List.foldl processEdge empty edges
+--     where
+--         processEdge mp edge = insertWith (++) (parentNode edge) [childNode edge] mp
+
+-- getReachableNodes :: VariationTree l f -> VTNode l f -> [VTNode l f]
+-- getReachableNodes tree node =
+--     let 
+--         childrenMap = getAllChildrenLists tree
+--         childrenOf node = fromMaybe [] (Data.Map.lookup node childrenMap)
+--         in
+--     node : childrenMap
+
+isTree :: (VTLabel l, HasNeutral f, Composable f) => WellformednessConstraint l f
+isTree tree@(VariationTree nodes edges) = and [
+        root `elem` nodes,
+        isNothing (parent tree root),
+        nonRootNodesHaveExactlyOneParent
+        -- allPathsStartAtRoot
+    ]
+    where
+        nonRootNodesHaveExactlyOneParent = all hasExactlyOneParent (nodesWithoutRoot nodes)
+        hasExactlyOneParent node = length (Data.List.filter (\edge -> childNode edge == node) edges) == 1
+        -- allPathsStartAtRoot = getReachableNodes tree root == nodes
 
 class VTLabel l where
     makeArtifactLabel :: ArtifactReference -> l f
     makeMappingLabel :: (Composable f) => f -> l f
+
     featuremapping :: VariationTree l f -> VTNode l f -> f
     presencecondition :: VariationTree l f -> VTNode l f -> f
 
+    wellformednessConstraints :: (HasNeutral f, Composable f) => [WellformednessConstraint l f]
+    wellformednessConstraints = [isTree]
+
 data VTNode l f = VTNode UUID (l f)
+
+instance Ord (VTNode l f) where
+    (VTNode i _) <= (VTNode j _) = i <= j
 
 data VTEdge l f = VTEdge {
     childNode  :: VTNode l f,
@@ -48,6 +82,9 @@ fromIndices nodeSet (from, to) = VTEdge {
 
 parent :: VariationTree l f -> VTNode l f -> Maybe (VTNode l f)
 parent (VariationTree _ edges) node = parentNode <$> find (\edge -> childNode edge == node) edges
+
+children :: VariationTree l f -> VTNode l f -> [VTNode l f]
+children (VariationTree _ edges) node = childNode <$> Data.List.filter (\edge -> parentNode edge == node) edges
 
 root :: (HasNeutral f, Composable f, VTLabel l) => VTNode l f
 root = VTNode 0 (makeMappingLabel ltrue)

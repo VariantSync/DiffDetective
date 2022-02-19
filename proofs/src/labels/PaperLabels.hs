@@ -2,7 +2,7 @@
 {-# LANGUAGE StandaloneDeriving #-}
 
 module PaperLabels where
-    
+
 import VariationTree
 import Logic
 import Data.Maybe ( fromJust )
@@ -13,6 +13,22 @@ data PaperLabels f where
     Else :: (Composable f, Negatable f) => PaperLabels f
 
 deriving instance Show f => Show (PaperLabels f)
+
+isElse :: VTNode PaperLabels f -> Bool
+isElse (VTNode _ Else) = True
+isElse _ = False
+
+isMapping :: VTNode PaperLabels f -> Bool
+isMapping (VTNode _ (Mapping _)) = True
+isMapping _ = False
+
+allElsesBelowIfs :: (HasNeutral f, Composable f) => WellformednessConstraint PaperLabels f
+allElsesBelowIfs tree@(VariationTree nodes _) = and $ isBelowNonRootIf <$> filter isElse nodes
+    where isBelowNonRootIf = (\n -> isMapping n && root /= n) . fromJust . parent tree
+
+allMappingsHaveAtMostOneElse :: WellformednessConstraint PaperLabels f
+allMappingsHaveAtMostOneElse tree@(VariationTree nodes _) = and $ hasAtMostOneElse <$> filter isMapping nodes
+    where hasAtMostOneElse node = length (filter isElse $ children tree node) <= 1
 
 instance VTLabel PaperLabels where
     makeArtifactLabel = Artifact
@@ -30,6 +46,8 @@ instance VTLabel PaperLabels where
         where
             parentPC = fromJust $ presenceConditionOfParent tree node
             getParent = fromJust . parent tree
+    
+    wellformednessConstraints = [isTree, allElsesBelowIfs, allMappingsHaveAtMostOneElse]
 
 instance Comparable f => Eq (PaperLabels f) where
     x == y = case (x, y) of
