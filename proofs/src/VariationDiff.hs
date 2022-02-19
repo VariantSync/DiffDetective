@@ -6,7 +6,7 @@ import Data.List ( intercalate )
 
 import VariationTree
 import Time
-import Logic ( HasNeutral )
+import Logic
 
 type Delta l f = Either (VTNode l f) (VTEdge l f) -> DiffType
 
@@ -20,7 +20,7 @@ project t (VariationDiff nodes edges delta) = VariationTree
 -- We just assume that the UUIDs stored in both trees are unique (i.e., all ids in old are not in new and vice versa)
 -- We further assume that the root has always UUID zero as it is constant.
 -- Otherwise this function as well as the equality checks afterwards are tremendously more complex.
-stupidDiff :: (HasNeutral f, VTLabel l) => VariationTree l f -> VariationTree l f -> VariationDiff l f
+stupidDiff :: (HasNeutral f, Composable f, VTLabel l) => VariationTree l f -> VariationTree l f -> VariationDiff l f
 stupidDiff (VariationTree nodesBefore edgesBefore) (VariationTree nodesAfter edgesAfter) =
     VariationDiff
     (root : nodesWithoutRoot (nodesBefore <> nodesAfter))

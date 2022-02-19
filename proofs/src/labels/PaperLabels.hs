@@ -9,8 +9,8 @@ import Data.Maybe ( fromJust )
 
 data PaperLabels f where
     Artifact :: ArtifactReference -> PaperLabels f
-    Mapping :: f -> PaperLabels f
-    Else :: (Negatable f) => PaperLabels f
+    Mapping :: Composable f => f -> PaperLabels f
+    Else :: (Composable f, Negatable f) => PaperLabels f
 
 deriving instance Show f => Show (PaperLabels f)
 
@@ -19,10 +19,17 @@ instance VTLabel PaperLabels where
     makeMappingLabel f = Mapping f
 
     featuremapping tree node@(VTNode _ label) = case label of
-        Artifact _ -> featureMappingOfParent
+        Artifact _ -> parentFM
         Mapping f -> f
-        Else -> lnot featureMappingOfParent
-        where featureMappingOfParent = featuremapping tree $ fromJust $ parent tree node
+        Else -> lnot parentFM
+        where parentFM = fromJust $ featureMappingOfParent tree node
+    presencecondition tree node@(VTNode _ label) = case label of
+        Artifact _ -> parentPC
+        Mapping f -> land [f, parentPC]
+        Else -> land [featuremapping tree node, presencecondition tree $ getParent (getParent node)]
+        where
+            parentPC = fromJust $ presenceConditionOfParent tree node
+            getParent = fromJust . parent tree
 
 instance Comparable f => Eq (PaperLabels f) where
     x == y = case (x, y) of
@@ -31,7 +38,7 @@ instance Comparable f => Eq (PaperLabels f) where
         (Else, Else) -> True
         (_, _) -> False
 
-makeElse :: Negatable f => UUID -> VTNode PaperLabels f
+makeElse :: (Composable f, Negatable f) => UUID -> VTNode PaperLabels f
 makeElse i = VTNode i Else
 
 type DefaultVariationTree f = VariationTree PaperLabels f

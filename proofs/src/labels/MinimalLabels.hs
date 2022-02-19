@@ -1,13 +1,14 @@
-﻿module MinimalLabels where
+﻿{-# LANGUAGE GADTs #-}
+
+module MinimalLabels where
 
 import VariationTree
-import Logic ( Comparable(lequivalent) )
+import Logic
 import Data.Maybe ( fromJust )
 
-data MinimalLabels f = Artifact ArtifactReference | Mapping f
-
-featureMappingOfParent :: VTLabel t => VariationTree t f -> VTNode t f -> Maybe f
-featureMappingOfParent tree node = featuremapping tree <$> parent tree node
+data MinimalLabels f where
+    Artifact :: ArtifactReference -> MinimalLabels f
+    Mapping :: (Composable f) => f -> MinimalLabels f
 
 instance VTLabel MinimalLabels where
     makeArtifactLabel a = Artifact a
@@ -16,6 +17,11 @@ instance VTLabel MinimalLabels where
     featuremapping tree node@(VTNode _ label) = case label of
         Artifact _ -> fromJust $ featureMappingOfParent tree node
         Mapping f -> f
+    presencecondition tree node@(VTNode _ label) = case label of 
+        Artifact _ -> parentPC
+        Mapping f -> land [f, parentPC]
+        where
+            parentPC = fromJust $ presenceConditionOfParent tree node
 
 instance Comparable f => Eq (MinimalLabels f) where
     x == y = case (x, y) of

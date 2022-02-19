@@ -12,8 +12,9 @@ type ArtifactReference = String
 
 class VTLabel l where
     makeArtifactLabel :: ArtifactReference -> l f
-    makeMappingLabel :: f -> l f
+    makeMappingLabel :: (Composable f) => f -> l f
     featuremapping :: VariationTree l f -> VTNode l f -> f
+    presencecondition :: VariationTree l f -> VTNode l f -> f
 
 data VTNode l f = VTNode UUID (l f)
 
@@ -48,29 +49,29 @@ fromIndices nodeSet (from, to) = VTEdge {
 parent :: VariationTree l f -> VTNode l f -> Maybe (VTNode l f)
 parent (VariationTree _ edges) node = parentNode <$> find (\edge -> childNode edge == node) edges
 
-root :: (HasNeutral f, VTLabel l) => VTNode l f
+root :: (HasNeutral f, Composable f, VTLabel l) => VTNode l f
 root = VTNode 0 (makeMappingLabel ltrue)
 
 makeArtifact :: VTLabel l => UUID -> ArtifactReference -> VTNode l f
 makeArtifact i a = VTNode i (makeArtifactLabel a)
 
-makeMapping :: VTLabel l => UUID -> f -> VTNode l f
+makeMapping :: (Composable f, VTLabel l) => UUID -> f -> VTNode l f
 makeMapping i f = VTNode i (makeMappingLabel f)
 
-fromNodesAndEdges :: (HasNeutral f, VTLabel l) => [VTNode l f] -> [VTEdge l f] -> VariationTree l f
+fromNodesAndEdges :: (HasNeutral f, Composable f, VTLabel l) => [VTNode l f] -> [VTEdge l f] -> VariationTree l f
 fromNodesAndEdges nodeSet edgeSet =
     let
         allnodes = root:nodeSet
         in
     VariationTree allnodes edgeSet
 
-fromNodesAndIDEdges :: (HasNeutral f, VTLabel l) => [VTNode l f] -> [(UUID, UUID)] -> VariationTree l f
+fromNodesAndIDEdges :: (HasNeutral f, Composable f, VTLabel l) => [VTNode l f] -> [(UUID, UUID)] -> VariationTree l f
 fromNodesAndIDEdges nodeSet edgeSet = fromNodesAndEdges nodeSet (fmap (fromIds $ root:nodeSet) edgeSet)
 
-fromNodesAndEdgeIndices :: (HasNeutral f, VTLabel l) => [VTNode l f] -> [(Int, Int)] -> VariationTree l f
+fromNodesAndEdgeIndices :: (HasNeutral f, Composable f, VTLabel l) => [VTNode l f] -> [(Int, Int)] -> VariationTree l f
 fromNodesAndEdgeIndices nodeSet edgeSet = fromNodesAndEdges nodeSet (fmap (fromIndices $ root:nodeSet) edgeSet)
 
-nodesWithoutRoot :: (HasNeutral f, VTLabel l) => [VTNode l f] -> [VTNode l f]
+nodesWithoutRoot :: (HasNeutral f, Composable f, VTLabel l) => [VTNode l f] -> [VTNode l f]
 nodesWithoutRoot nodes = [n | n <- nodes, n /= root] --delete (root tree) (nodes tree)
 
 instance Eq (VTNode l f) where
@@ -90,3 +91,13 @@ instance Show (l f) => Show (VTEdge l f) where
 
 instance Show (l f) => Show (VariationTree l f) where
     show (VariationTree _ edges) = "Variation Tree with edges {" ++ intercalate "\n  " ("":(show <$> edges)) ++ "\n}"
+
+-- Some utility functions for labels
+ofParent :: (VTNode t f -> f) -> VariationTree t f -> VTNode t f -> Maybe f
+ofParent property tree node = property <$> parent tree node
+
+featureMappingOfParent :: VTLabel t => VariationTree t f -> VTNode t f -> Maybe f
+featureMappingOfParent tree = ofParent (featuremapping tree) tree
+
+presenceConditionOfParent :: VTLabel t => VariationTree t f -> VTNode t f -> Maybe f
+presenceConditionOfParent tree = ofParent (presencecondition tree) tree
