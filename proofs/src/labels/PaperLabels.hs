@@ -15,8 +15,8 @@ data PaperLabels f where
 deriving instance Show f => Show (PaperLabels f)
 
 instance VTLabel PaperLabels where
-    makeArtifactLabel a = Artifact a
-    makeMappingLabel f = Mapping f
+    makeArtifactLabel = Artifact
+    makeMappingLabel = Mapping
 
     featuremapping tree node@(VTNode _ label) = case label of
         Artifact _ -> parentFM

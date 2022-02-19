@@ -7,26 +7,26 @@ import Data.Maybe (fromJust)
 import Logic
 
 data WithElif f where
-    WEArtifact :: ArtifactReference -> WithElif f
-    WEMapping :: Composable f => f -> WithElif f
-    WEElse :: (Composable f, Negatable f) => WithElif f
-    WEElif :: (Composable f, Negatable f) => f -> WithElif f
+    Artifact :: ArtifactReference -> WithElif f
+    Mapping :: Composable f => f -> WithElif f
+    Else :: (Composable f, Negatable f) => WithElif f
+    Elif :: (Composable f, Negatable f) => f -> WithElif f
 
 instance VTLabel WithElif where
-    makeArtifactLabel a = WEArtifact a
-    makeMappingLabel f = WEMapping f
+    makeArtifactLabel = Artifact
+    makeMappingLabel = Mapping
+
     featuremapping tree node@(VTNode _ label) = case label of
-        -- TODO: Can we directly say that we just invoke the functions of PaperLabels for WEArtifact and WEMapping?
-        WEArtifact _ -> fromJust $ featureMappingOfParent tree node
-        WEMapping f -> f
-        WEElse ->            notTheOtherBranches tree node
-        WEElif f -> land [f, notTheOtherBranches tree node]
+        Artifact _ -> fromJust $ featureMappingOfParent tree node
+        Mapping f -> f
+        Else ->            notTheOtherBranches tree node
+        Elif f -> land [f, notTheOtherBranches tree node]
+
     presencecondition tree node@(VTNode _ label) = case label of
-        -- TODO: Can we directly say that we just invoke the functions of PaperLabels for WEArtifact and WEMapping?
-        WEArtifact _ -> parentPC
-        WEMapping f -> land [f, parentPC]
-        WEElse ->   land [featuremapping tree node, presencecondition tree (getParent (correspondingIf tree node))]
-        WEElif _ -> land [featuremapping tree node, presencecondition tree (getParent (correspondingIf tree node))] 
+        Artifact _ -> parentPC
+        Mapping f -> land [f, parentPC]
+        Else ->   land [featuremapping tree node, presencecondition tree (getParent (correspondingIf tree node))]
+        Elif _ -> land [featuremapping tree node, presencecondition tree (getParent (correspondingIf tree node))] 
         where
             parentPC = fromJust $ presenceConditionOfParent tree node
             getParent = fromJust . parent tree
@@ -38,10 +38,10 @@ branchesAbove :: VariationTree WithElif f -> VTNode WithElif f -> [f]
 branchesAbove tree node = branches tree (fromJust (parent tree node))
 
 branches :: VariationTree WithElif f -> VTNode WithElif f -> [f]
-branches _ (VTNode _ (WEMapping f)) = [f]
-branches tree node@(VTNode _ (WEElif f)) = f:branches tree (fromJust (parent tree node))
+branches _ (VTNode _ (Mapping f)) = [f]
+branches tree node@(VTNode _ (Elif f)) = f:branches tree (fromJust (parent tree node))
 branches tree node = branches tree (fromJust (parent tree node))
 
 correspondingIf :: VariationTree WithElif f -> VTNode WithElif f -> VTNode WithElif f
-correspondingIf _ fi@(VTNode _ (WEMapping _)) = fi
+correspondingIf _ fi@(VTNode _ (Mapping _)) = fi
 correspondingIf tree node = correspondingIf tree . fromJust $ parent tree node
