@@ -53,7 +53,7 @@ fromNode :: Delta l f -> VTNode l f -> EditedNode l f
 fromNode delta node = EditedNode node (delta . Left $ node)
 
 fromEdge :: Delta l f -> VTEdge l f -> EditedEdge l f
-fromEdge delta edge = EditedEdge (fromNode delta $ childNode edge) (fromNode delta $ childNode edge) (delta . Right $ edge)
+fromEdge delta edge = EditedEdge (fromNode delta $ childNode edge) (fromNode delta $ parentNode edge) (delta . Right $ edge)
 
 instance Show (l f) => Show (EditedNode l f) where
     show (EditedNode (VTNode name label) delta) = mconcat ["(", show delta, ", ", show label, ", ", show name, ")"]
