@@ -1,5 +1,4 @@
 ﻿module Time where
-import Data.List
 
 data Time = BEFORE | AFTER deriving (Eq, Show)
 data DiffType = ADD | REM | NON deriving (Eq, Show)

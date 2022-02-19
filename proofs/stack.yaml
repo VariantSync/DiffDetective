@@ -67,4 +67,4 @@ packages:
 
 # Add some GHC options to report more warnings
 ghc-options:
-  proofs: -Wdefault -Wall -Werror -Wredundant-constraints -Wno-missing-signatures
+  proofs: -Werror -Wdefault -Wall -W -Wredundant-constraints -Wno-missing-signatures #-Wunused-packages 
