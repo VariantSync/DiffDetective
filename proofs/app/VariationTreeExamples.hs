@@ -3,10 +3,10 @@
 import Time
 import VariationTree
 import VariationDiff
-import LabelSets.PaperLabels
+import PaperLabels
 
-import Feature.Logic
-import Feature.Propositions
+import Logic
+import Propositions
 import ExampleFeatures
 import MainUtils
 
@@ -14,9 +14,9 @@ import Control.Monad.State
 
 genUUID :: State UUID UUID
 genUUID = do
-    id <- get
-    put (id+1)
-    return id
+    uuid <- get
+    put (uuid+1)
+    return uuid
 
 makeUniqueArtifact :: ArtifactReference -> State UUID (DefaultVTNode f)
 makeUniqueArtifact a = flip makeArtifact a <$> genUUID

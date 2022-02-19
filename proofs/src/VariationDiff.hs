@@ -6,36 +6,27 @@ import Data.List ( intercalate )
 
 import VariationTree
 import Time
-import Feature.Logic ( HasNeutral )
+import Logic ( HasNeutral )
 
-type Delta t f = Either (VTNode t f) (VTEdge t f) -> DiffType
+type Delta l f = Either (VTNode l f) (VTEdge l f) -> DiffType
 
-data VariationDiff t f = VariationDiff {
-    nodes :: [VTNode t f],
-    edges :: [VTEdge t f],
-    delta :: Delta t f
-}
+data VariationDiff l f = VariationDiff [VTNode l f] [VTEdge l f] (Delta l f)
 
-project :: Time -> VariationDiff t f -> VariationTree t f
-project t diff = VariationTree {
-    VariationTree.nodes = filter (existsAtTime t . delta diff . Left) (VariationDiff.nodes diff),
-    VariationTree.edges = filter (existsAtTime t . delta diff . Right) (VariationDiff.edges diff)
-}
+project :: Time -> VariationDiff l f -> VariationTree l f
+project t (VariationDiff nodes edges delta) = VariationTree
+    (filter (existsAtTime t . delta . Left)  nodes)
+    (filter (existsAtTime t . delta . Right) edges)
 
 -- We just assume that the UUIDs stored in both trees are unique (i.e., all ids in old are not in new and vice versa)
 -- We further assume that the root has always UUID zero as it is constant.
 -- Otherwise this function as well as the equality checks afterwards are tremendously more complex.
-stupidDiff :: (HasNeutral f, VTLabel t) => VariationTree t f -> VariationTree t f -> VariationDiff t f
-stupidDiff old new =
-    let
-        nodesBefore = nodesWithoutRoot old
-        nodesAfter  = nodesWithoutRoot new
-        edgesBefore = VariationTree.edges old
-        edgesAfter  = VariationTree.edges new
-    in
-        VariationDiff {
-            VariationDiff.nodes = root : nodesBefore <> nodesAfter,
-            VariationDiff.edges = edgesBefore <> edgesAfter,
+stupidDiff :: (HasNeutral f, VTLabel l) => VariationTree l f -> VariationTree l f -> VariationDiff l f
+stupidDiff (VariationTree nodesBefore edgesBefore) (VariationTree nodesAfter edgesAfter) =
+    VariationDiff
+    (root : nodesWithoutRoot (nodesBefore <> nodesAfter))
+    (edgesBefore <> edgesAfter)
+    delta
+        where
             delta = \case
                 Left node ->
                     if node == root then
@@ -53,19 +44,25 @@ stupidDiff old new =
                         ADD
                     else
                         error "Given edge is not part of this Variation Diff!"
-        }
 
--- This data type is just used for pretty printing
-data EditedEdge t f = EditedEdge (VTNode t f) (VTNode t f) DiffType
+-- These data types are just used for pretty printing
+data EditedNode l f = EditedNode (VTNode l f) DiffType
+data EditedEdge l f = EditedEdge (EditedNode l f) (EditedNode l f) DiffType
 
-fromEdge :: Delta t f -> VTEdge t f -> EditedEdge t f
-fromEdge delta edge = EditedEdge (childNode edge) (childNode edge) (delta . Right $ edge)
+fromNode :: Delta l f -> VTNode l f -> EditedNode l f
+fromNode delta node = EditedNode node (delta . Left $ node)
 
-instance Show (t f) => Show (EditedEdge t f) where
+fromEdge :: Delta l f -> VTEdge l f -> EditedEdge l f
+fromEdge delta edge = EditedEdge (fromNode delta $ childNode edge) (fromNode delta $ childNode edge) (delta . Right $ edge)
+
+instance Show (l f) => Show (EditedNode l f) where
+    show (EditedNode (VTNode name label) delta) = mconcat ["(", show delta, ", ", show label, ", ", show name, ")"]
+
+instance Show (l f) => Show (EditedEdge l f) where
     show (EditedEdge from to delta) = mconcat [show from, " -", show delta, "-> ", show to]
 
-instance Show (t f) => Show (VariationDiff t f) where
-    show diff =
+instance Show (l f) => Show (VariationDiff l f) where
+    show (VariationDiff _ edges delta) =
         "Variation Diff with edges {" ++ intercalate "\n  " ("":(
-            show . fromEdge (VariationDiff.delta diff) <$> VariationDiff.edges diff
+            show . fromEdge delta <$> edges
         )) ++ "\n}"

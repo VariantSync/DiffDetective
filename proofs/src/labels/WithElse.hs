@@ -1,10 +1,10 @@
 ﻿{-# LANGUAGE GADTs #-}
 
-module LabelSets.WithElse where
+module WithElse where
 
 import VariationTree
 import Data.Maybe (fromJust)
-import Feature.Logic ( Negatable(lnot), Composable(land) )
+import Logic ( Negatable(lnot), Composable(land) )
 
 data WithElif f where
     WEArtifact :: ArtifactReference -> WithElif f

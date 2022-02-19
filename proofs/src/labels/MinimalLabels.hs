@@ -1,7 +1,7 @@
-﻿module LabelSets.MinimalLabels where
+﻿module MinimalLabels where
 
 import VariationTree
-import Feature.Logic ( Comparable(lequivalent) )
+import Logic ( Comparable(lequivalent) )
 import Data.Maybe ( fromJust )
 
 data MinimalLabels f = Artifact ArtifactReference | Mapping f

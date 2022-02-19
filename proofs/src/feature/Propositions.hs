@@ -4,9 +4,9 @@ License: GNU LGPLv3
 Maintainer: paul.bittner@uni-ulm.de
 Definition and operations of propositional logic.
 -}
-module Feature.Propositions where
+module Propositions where
 
-import Feature.Logic
+import Logic
 import Data.List ( intercalate )
 
 -- | Sum type similar to a grammar for building propositional formulas.
@@ -54,7 +54,7 @@ type Assignment a = a -> Bool -- Maybe this should better be implemented as a ma
 eval :: Assignment a -> PropositionalFormula a -> Bool
 eval _ PTrue = True
 eval _ PFalse = False
-eval config v@(PVariable x) = config x
+eval config (PVariable x) = config x
 eval config (PNot x) = not $ eval config x
 eval config (PAnd cs) = and $ fmap (eval config) cs
 eval config (POr cs) = or $ fmap (eval config) cs
@@ -78,7 +78,7 @@ isPFalse _ = False
 isLiteral :: PropositionalFormula a -> Bool
 isLiteral PTrue = True
 isLiteral PFalse = True
-isLiteral (PVariable x) = True
+isLiteral (PVariable _) = True
 isLiteral (PNot f) = isLiteral f
 isLiteral _ = False
 
