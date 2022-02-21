@@ -13,14 +13,14 @@ public class Tseytin {
     private static class Convert {
         private final List<Node> newSubFormulas;
         private int currentIndex = 0;
-        private final List<String> helperVariables;
+//        private final List<String> helperVariables;
 
         private final BiFunction<Node, Node, Node> eq;
 
         private Convert(final Node formula, final BiFunction<Node, Node, Node> eq) {
             this.eq = eq;
             formula.simplifyTree();
-            helperVariables = new ArrayList<>();
+//            helperVariables = new ArrayList<>();
             newSubFormulas = new ArrayList<>();
             newSubFormulas.add(tseytin(formula
 //                    , true
@@ -49,7 +49,7 @@ public class Tseytin {
 
                 String helperVariable = getNextVariableName();
                 Literal tseitinVar = new Literal(helperVariable, true);
-                helperVariables.add(helperVariable);
+//                helperVariables.add(helperVariable);
                 if (formula instanceof And) {
                     newSubFormulas.add(eq.apply(tseitinVar, new And(newChildren)).toCNF());
                 } else if (formula instanceof Or) {
@@ -66,7 +66,7 @@ public class Tseytin {
         }
 
         private String getNextVariableName() {
-            return "t" + currentIndex++;
+            return "$t" + currentIndex++ + "$";
         }
     }
 
