@@ -20,7 +20,7 @@ import java.util.function.Function;
  * Includes methods for creating a node by getting its code type and diff type and for getting the feature mapping of the node.
  */
 public class DiffNode {
-	private static final short ID_OFFSET = 8;
+	private static final short ID_OFFSET = 3;
 
     public DiffType diffType;
     public CodeType codeType;
