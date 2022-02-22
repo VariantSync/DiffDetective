@@ -155,7 +155,7 @@ public class MiningResultAccumulator {
             datasetLines.add(asLaTeXTableLine(dataset.name(), dataset.domain(), dataset.commits(), result));
         }
 
-        datasetLines.sort(String::compareTo);
+        datasetLines.sort(String::compareToIgnoreCase);
         for (final String datasetLine : datasetLines) {
             table.append(datasetLine);
         }
@@ -198,7 +198,13 @@ public class MiningResultAccumulator {
 
         final Map<MiningDataset, DiffTreeMiningResult> datasetsWithResults = Functjonal.bimap(
                 allResults,
-                datasetByName::get,
+                datasetName -> {
+                    final MiningDataset dataset = datasetByName.get(datasetName);
+                    if (dataset == null) {
+                        throw new RuntimeException("Could not find dataset for " + datasetName);
+                    }
+                    return dataset;
+                },
                 Function.identity()
         );
 
