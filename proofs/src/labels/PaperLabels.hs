@@ -14,25 +14,27 @@ data PaperLabels f where
 
 deriving instance Show f => Show (PaperLabels f)
 
-isElse :: VTNode PaperLabels f -> Bool
-isElse (VTNode _ Else) = True
-isElse _ = False
+isElseNode :: VTNode PaperLabels f -> Bool
+isElseNode (VTNode _ Else) = True
+isElseNode _ = False
 
-isMapping :: VTNode PaperLabels f -> Bool
-isMapping (VTNode _ (Mapping _)) = True
-isMapping _ = False
+isMappingNode :: VTNode PaperLabels f -> Bool
+isMappingNode (VTNode _ (Mapping _)) = True
+isMappingNode _ = False
 
 allElsesBelowIfs :: (HasNeutral f, Composable f) => WellformednessConstraint PaperLabels f
-allElsesBelowIfs tree@(VariationTree nodes _) = and $ isBelowNonRootIf <$> filter isElse nodes
-    where isBelowNonRootIf = (\n -> isMapping n && root /= n) . fromJust . parent tree
+allElsesBelowIfs tree@(VariationTree nodes _) = and $ isBelowNonRootIf <$> filter isElseNode nodes
+    where isBelowNonRootIf = (\n -> isMappingNode n && root /= n) . fromJust . parent tree
 
 allMappingsHaveAtMostOneElse :: WellformednessConstraint PaperLabels f
-allMappingsHaveAtMostOneElse tree@(VariationTree nodes _) = and $ hasAtMostOneElse <$> filter isMapping nodes
-    where hasAtMostOneElse node = length (filter isElse $ children tree node) <= 1
+allMappingsHaveAtMostOneElse tree@(VariationTree nodes _) = and $ hasAtMostOneElse <$> filter isMappingNode nodes
+    where hasAtMostOneElse node = length (filter isElseNode $ children tree node) <= 1
 
 instance VTLabel PaperLabels where
     makeArtifactLabel = Artifact
     makeMappingLabel = Mapping
+    isMapping (Artifact _) = False
+    isMapping _ = True
 
     featuremapping tree node@(VTNode _ label) = case label of
         Artifact _ -> parentFM

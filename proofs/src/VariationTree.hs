@@ -6,7 +6,7 @@ import Logic
 
 import Data.List
 import Data.Maybe
-import Data.Map
+-- import Data.Map
 
 type UUID = Int
 type ArtifactReference = String
@@ -40,6 +40,7 @@ isTree tree@(VariationTree nodes edges) = and [
 class VTLabel l where
     makeArtifactLabel :: ArtifactReference -> l f
     makeMappingLabel :: (Composable f) => f -> l f
+    isMapping :: l f -> Bool
 
     featuremapping :: VariationTree l f -> VTNode l f -> f
     presencecondition :: VariationTree l f -> VTNode l f -> f
