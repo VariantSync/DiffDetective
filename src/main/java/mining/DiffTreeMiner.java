@@ -219,7 +219,11 @@ public class DiffTreeMiner {
     }
 
     public static <T> void exportMetadata(final Path outputDir, final Metadata<T> totalResult) {
-        final String prettyMetadata = totalResult.exportTo(outputDir.resolve(TOTAL_RESULTS_FILE_NAME));
+        exportMetadataToFile(outputDir.resolve(TOTAL_RESULTS_FILE_NAME), totalResult);
+    }
+
+    public static <T> void exportMetadataToFile(final Path outputFile, final Metadata<T> totalResult) {
+        final String prettyMetadata = totalResult.exportTo(outputFile);
         Logger.info("Metadata:\n" + prettyMetadata);
     }
 

@@ -1,43 +1,47 @@
 package mining;
 
+import de.variantsync.functjonal.Result;
+import org.tinylog.Logger;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.stream.Stream;
 
 /**
  * Computes a total {@link DiffTreeMiningResult} of several {@link DiffTreeMiningResult} outputs.
  */
 public class MiningResultAccumulator {
-
     /**
      * The actual computation of a total {@link DiffTreeMiningResult} from multiple metadata outputs.
      * 
      * @return Total {@link DiffTreeMiningResult}
      */
-    public static DiffTreeMiningResult computeTotalMetadataResult(final Path folderPath) throws IOException {
-        
-        Stream<Path> paths = Files.walk(folderPath);
-        List<Path> pathsOfTotalMetadataFiles = new ArrayList<>();
+    public static Result<DiffTreeMiningResult, IOException> computeTotalMetadataResult(final Path folderPath) throws IOException {
+        final Stream<Path> paths = Files.walk(folderPath);
         
         // get all files in the directory which are outputs of DiffTreeMiningResult
-        paths
-            .filter(Files::isRegularFile)
-            .filter(p -> p.toString().toLowerCase().endsWith(DiffTreeMiner.TOTAL_RESULTS_FILE_NAME))
-            .forEachOrdered(pathsOfTotalMetadataFiles::add);
-        
-        final DiffTreeMiningResult totalResult = new DiffTreeMiningResult();
-        // join all metadata files into one
-        for (final Path p : pathsOfTotalMetadataFiles) {
-            // parse metadata file and append all info to the total result
-            totalResult.append(DiffTreeMiningResult.importFrom(p));
-        }
-        
-        paths.close();
-        
-        return totalResult;
+        return paths
+                .filter(Files::isRegularFile)
+                .filter(p -> p.toString().endsWith(DiffTreeMiner.TOTAL_RESULTS_FILE_NAME))
+                .peek(path -> Logger.info("Processing file " + path))
+                .map(Result.Try(DiffTreeMiningResult::importFrom))
+                .collect(Result.MONOID(DiffTreeMiningResult.IMONOID, (a, b) -> a));
     }
 
+    public static void main(final String[] args) throws IOException {
+        if (args.length < 1) {
+            throw new IllegalArgumentException("Expected path to input directory but got no arguments!");
+        }
+
+        final Path inputPath = Path.of(args[0]);
+        if (!Files.isDirectory(inputPath)) {
+            throw new IllegalArgumentException("Expected path to directory but the given path is not a directory!");
+        }
+
+        computeTotalMetadataResult(inputPath).peek(
+                metadata -> DiffTreeMiner.exportMetadataToFile(inputPath.resolve("ultimateresult" + DiffTreeMiningResult.EXTENSION), metadata),
+                Logger::error
+        );
+    }
 }

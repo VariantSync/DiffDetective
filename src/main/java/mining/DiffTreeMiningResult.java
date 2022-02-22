@@ -1,6 +1,7 @@
 package mining;
 
 import de.variantsync.functjonal.Functjonal;
+import de.variantsync.functjonal.category.InplaceMonoid;
 import de.variantsync.functjonal.category.InplaceSemigroup;
 import de.variantsync.functjonal.category.Semigroup;
 import de.variantsync.functjonal.map.MergeMap;
@@ -33,6 +34,11 @@ public class DiffTreeMiningResult implements Metadata<DiffTreeMiningResult> {
         MergeMap.putAllValues(a.customInfo, b.customInfo, Semigroup.assertEquals());
         a.diffErrors.append(b.diffErrors);
     };
+
+    public final static InplaceMonoid<DiffTreeMiningResult> IMONOID = InplaceMonoid.From(
+            DiffTreeMiningResult::new,
+            ISEMIGROUP
+    );
 
     public int exportedCommits;
     public int exportedTrees;
@@ -113,7 +119,9 @@ public class DiffTreeMiningResult implements Metadata<DiffTreeMiningResult> {
                         result.diffErrors.put(e, Integer.parseInt(value));
                     } else {
                         // other lines that do not match
-                        throw new IOException("unknown entry: " + line);
+                        final String errorMessage = "unknown entry: " + line;
+//                        Logger.error(errorMessage);
+                        throw new IOException(errorMessage);
                     }
                 }
             }
@@ -121,7 +129,7 @@ public class DiffTreeMiningResult implements Metadata<DiffTreeMiningResult> {
         
         result.filterHits = ExplainedFilterSummary.parse(filterHitsLines);
         result.atomicPatternCounts = AtomicPatternCount.parse(atomicPatternCountsLines);
-        
+
         return result;
     }
 
