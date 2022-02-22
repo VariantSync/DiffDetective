@@ -48,6 +48,7 @@ import java.util.stream.Collectors;
 
 public class DiffTreeMiner {
     private final static Diagnostics DIAGNOSTICS = new Diagnostics();
+    public final static Path DATASETS_FILE = Path.of("docs", "datasets.md");
 //    public static final int COMMITS_TO_PROCESS_PER_THREAD = 10000;
     public static final int COMMITS_TO_PROCESS_PER_THREAD = 1000;
     public static final int EXPECTED_NUMBER_OF_COMMITS_IN_LINUX = 495284;
@@ -127,6 +128,7 @@ public class DiffTreeMiner {
 //                );
     }
 
+    @Deprecated
     public static void mine(
             final Repository repo,
             final Path outputDir,
@@ -215,6 +217,7 @@ public class DiffTreeMiner {
         Logger.info("<<< done in " + Clock.printPassedSeconds(runtime));
 
         totalResult.runtimeInSeconds =  runtime;
+        totalResult.putCustomInfo(MetadataKeys.REPONAME, repo.getRepositoryName());
 
         exportMetadata(outputDir, totalResult);
     }
@@ -232,7 +235,7 @@ public class DiffTreeMiner {
 //        setupLogger(Level.INFO);
 //        setupLogger(Level.DEBUG);
 
-        final ParseOptions.DiffStoragePolicy diffStoragePolicy = ParseOptions.DiffStoragePolicy.REMEMBER_FULL_DIFF;
+        final ParseOptions.DiffStoragePolicy diffStoragePolicy = ParseOptions.DiffStoragePolicy.DO_NOT_REMEMBER;
 
         final Path inputDir = Paths.get("..", "DiffDetectiveMining");
         final Path outputDir = Paths.get("results", "difftrees");
@@ -249,13 +252,11 @@ public class DiffTreeMiner {
 //                LinuxKernel.cloneFromGithubTo(variantEvolutionDatasetsDir)
             );
         } else {
-            final Path datasetsFile = Path.of("docs", "datasets.md");
-
             final List<MiningDataset> datasets;
             try {
-                datasets = MiningDataset.fromMarkdown(datasetsFile);
+                datasets = MiningDataset.fromMarkdown(DATASETS_FILE);
             } catch (IOException e) {
-                Logger.error("Failed to load at least one dataset from " + datasetsFile + " because:", e);
+                Logger.error("Failed to load at least one dataset from " + DATASETS_FILE + " because:", e);
                 Logger.error("Aborting execution!");
                 return;
             }

@@ -1,6 +1,7 @@
 package mining.dataset;
 
 import util.FileUtils;
+import util.LaTeX;
 import util.StringUtils;
 
 import java.io.IOException;
@@ -14,9 +15,6 @@ public record MiningDataset(
         String domain,
         String commits
 ) {
-    private static final String LATEX_TABLE_SEPARATOR = " & ";
-    private static final String LATEX_TABLE_ENDROW = "\\\\" + StringUtils.LINEBREAK;
-
     public static List<MiningDataset> fromMarkdown(final Path markdownFile) throws IOException {
         final String markdown = FileUtils.readUTF8(markdownFile);
         final String[] lines = markdown.split(StringUtils.LINEBREAK_REGEX);
@@ -47,14 +45,14 @@ public record MiningDataset(
         final String indent = "  ";
 
         table.append("\\begin{tabular}{l l r}").append(StringUtils.LINEBREAK);
-        table.append(indent).append("Name").append(LATEX_TABLE_SEPARATOR).append("Domain").append(LATEX_TABLE_SEPARATOR).append("\\#commits").append(LATEX_TABLE_ENDROW);
+        table.append(indent).append("Name").append(LaTeX.TABLE_SEPARATOR).append("Domain").append(LaTeX.TABLE_SEPARATOR).append("\\#commits").append(LaTeX.TABLE_ENDROW);
         table.append(indent).append("\\hline").append(StringUtils.LINEBREAK);
         for (final MiningDataset dataset : datasets) {
             table
                     .append("  ")
-                    .append(dataset.name).append(LATEX_TABLE_SEPARATOR)
-                    .append(dataset.domain).append(LATEX_TABLE_SEPARATOR)
-                    .append(dataset.commits).append(LATEX_TABLE_ENDROW);
+                    .append(dataset.name).append(LaTeX.TABLE_SEPARATOR)
+                    .append(dataset.domain).append(LaTeX.TABLE_SEPARATOR)
+                    .append(dataset.commits).append(LaTeX.TABLE_ENDROW);
         }
         table.append("\\end{tabular}").append(StringUtils.LINEBREAK);
 

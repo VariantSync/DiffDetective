@@ -30,9 +30,9 @@ public record MiningTask(
         miningStrategy.start(repository, outputPath, exportOptions);
 
         final DiffTreeMiningResult miningResult = new DiffTreeMiningResult();
-        miningResult.putCustomInfo("treeformat", exportOptions.treeFormat().getName());
-        miningResult.putCustomInfo("nodeformat", exportOptions.nodeFormat().getName());
-        miningResult.putCustomInfo("edgeformat", exportOptions.edgeFormat().getName());
+        miningResult.putCustomInfo(MetadataKeys.TREEFORMAT, exportOptions.treeFormat().getName());
+        miningResult.putCustomInfo(MetadataKeys.NODEFORMAT, exportOptions.nodeFormat().getName());
+        miningResult.putCustomInfo(MetadataKeys.EDGEFORMAT, exportOptions.edgeFormat().getName());
 
         for (final RevCommit commit : commits) {
             final CommitDiffResult commitDiffResult = differ.createCommitDiff(commit);

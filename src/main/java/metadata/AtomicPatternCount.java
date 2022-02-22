@@ -29,13 +29,17 @@ public class AtomicPatternCount implements Metadata<AtomicPatternCount> {
             uniqueCommits.add(commit.getCommitHash());
         }
 
-        public int get() {
+        public int getTotalAmount() {
             return totalAmount;
+        }
+
+        public int getAmountOfUniqueCommits() {
+            return uniqueCommits.size();
         }
 
         @Override
         public String toString() {
-            return "{ total = " + totalAmount + "; commits = " + uniqueCommits.size() + " }";
+            return "{ total = " + totalAmount + "; commits = " + getAmountOfUniqueCommits() + " }";
         }
     }
 
@@ -125,5 +129,9 @@ public class AtomicPatternCount implements Metadata<AtomicPatternCount> {
     @Override
     public InplaceSemigroup<AtomicPatternCount> semigroup() {
         return ISEMIGROUP;
+    }
+
+    public LinkedHashMap<AtomicPattern, Occurrences> getOccurences() {
+        return occurences;
     }
 }

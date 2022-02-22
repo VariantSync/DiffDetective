@@ -20,13 +20,8 @@ import java.util.function.BiConsumer;
 
 public class DiffTreeMiningResult implements Metadata<DiffTreeMiningResult> {
     public final static String EXTENSION = ".metadata.txt";
-
     public final static String ERROR_BEGIN = "#Error[";
     public final static String ERROR_END = "]";
-
-    public final static String KEY_RUNTIME = "runtime in seconds";
-    public final static String KEY_COMMITS = "commits";
-    public final static String KEY_TREES = "trees";
 
     public static Map.Entry<String, BiConsumer<DiffTreeMiningResult, String>> storeAsCustomInfo(String key) {
         return Map.entry(key, (r, val) -> r.putCustomInfo(key, val));
@@ -113,12 +108,12 @@ public class DiffTreeMiningResult implements Metadata<DiffTreeMiningResult> {
             value = keyValuePair[1];
 
             switch (key) {
-                case KEY_TREES -> result.exportedTrees = Integer.parseInt(value);
-                case KEY_COMMITS -> result.exportedCommits = Integer.parseInt(value);
-                case DiffTreeSerializeDebugData.KEY_NON -> result.debugData.numExportedNonNodes = Integer.parseInt(value);
-                case DiffTreeSerializeDebugData.KEY_ADD -> result.debugData.numExportedAddNodes = Integer.parseInt(value);
-                case DiffTreeSerializeDebugData.KEY_REM -> result.debugData.numExportedRemNodes = Integer.parseInt(value);
-                case KEY_RUNTIME -> {
+                case MetadataKeys.TREES -> result.exportedTrees = Integer.parseInt(value);
+                case MetadataKeys.COMMITS -> result.exportedCommits = Integer.parseInt(value);
+                case MetadataKeys.NON_NODE_COUNT -> result.debugData.numExportedNonNodes = Integer.parseInt(value);
+                case MetadataKeys.ADD_NODE_COUNT -> result.debugData.numExportedAddNodes = Integer.parseInt(value);
+                case MetadataKeys.REM_NODE_COUNT -> result.debugData.numExportedRemNodes = Integer.parseInt(value);
+                case MetadataKeys.RUNTIME -> {
                     if (value.endsWith("s")) {
                         value = value.substring(0, value.length() - 1);
                     }
@@ -156,9 +151,9 @@ public class DiffTreeMiningResult implements Metadata<DiffTreeMiningResult> {
     @Override
     public LinkedHashMap<String, Object> snapshot() {
         LinkedHashMap<String, Object> snap = new LinkedHashMap<>();
-        snap.put(KEY_TREES, exportedTrees);
-        snap.put(KEY_COMMITS, exportedCommits);
-        snap.put(KEY_RUNTIME, runtimeInSeconds);
+        snap.put(MetadataKeys.TREES, exportedTrees);
+        snap.put(MetadataKeys.COMMITS, exportedCommits);
+        snap.put(MetadataKeys.RUNTIME, runtimeInSeconds);
         snap.putAll(debugData.snapshot());
         snap.putAll(filterHits.snapshot());
         snap.putAll(atomicPatternCounts.snapshot());

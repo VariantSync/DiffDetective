@@ -2,13 +2,11 @@ package diff.difftree.serialize;
 
 import de.variantsync.functjonal.category.InplaceSemigroup;
 import metadata.Metadata;
+import mining.MetadataKeys;
 
 import java.util.LinkedHashMap;
 
 public class DiffTreeSerializeDebugData implements Metadata<DiffTreeSerializeDebugData> {
-    public final static String KEY_NON = "#NON nodes";
-    public final static String KEY_ADD = "#ADD nodes";
-    public final static String KEY_REM = "#REM nodes";
 
     public static final InplaceSemigroup<DiffTreeSerializeDebugData> ISEMIGROUP = (a, b) -> {
         a.numExportedNonNodes += b.numExportedNonNodes;
@@ -23,9 +21,9 @@ public class DiffTreeSerializeDebugData implements Metadata<DiffTreeSerializeDeb
     @Override
     public LinkedHashMap<String, Integer> snapshot() {
         final LinkedHashMap<String, Integer> map = new LinkedHashMap<>();
-        map.put(KEY_NON, numExportedNonNodes);
-        map.put(KEY_ADD, numExportedAddNodes);
-        map.put(KEY_REM, numExportedRemNodes);
+        map.put(MetadataKeys.NON_NODE_COUNT, numExportedNonNodes);
+        map.put(MetadataKeys.ADD_NODE_COUNT, numExportedAddNodes);
+        map.put(MetadataKeys.REM_NODE_COUNT, numExportedRemNodes);
         return map;
     }
 
