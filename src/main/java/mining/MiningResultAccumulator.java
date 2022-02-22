@@ -6,12 +6,20 @@ import org.tinylog.Logger;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Map;
+import java.util.function.BiConsumer;
 import java.util.stream.Stream;
 
 /**
  * Computes a total {@link DiffTreeMiningResult} of several {@link DiffTreeMiningResult} outputs.
  */
 public class MiningResultAccumulator {
+    private final static Map<String, BiConsumer<DiffTreeMiningResult, String>> CustomEntryParsers = Map.ofEntries(
+            DiffTreeMiningResult.storeAsCustomInfo("treeformat"),
+            DiffTreeMiningResult.storeAsCustomInfo("nodeformat"),
+            DiffTreeMiningResult.storeAsCustomInfo("edgeformat")
+    );
+
     /**
      * The actual computation of a total {@link DiffTreeMiningResult} from multiple metadata outputs.
      * 
@@ -25,7 +33,7 @@ public class MiningResultAccumulator {
                 .filter(Files::isRegularFile)
                 .filter(p -> p.toString().endsWith(DiffTreeMiner.TOTAL_RESULTS_FILE_NAME))
                 .peek(path -> Logger.info("Processing file " + path))
-                .map(Result.Try(DiffTreeMiningResult::importFrom))
+                .map(Result.Try(path -> DiffTreeMiningResult.importFrom(path, CustomEntryParsers)))
                 .collect(Result.MONOID(DiffTreeMiningResult.IMONOID, (a, b) -> a));
     }
 

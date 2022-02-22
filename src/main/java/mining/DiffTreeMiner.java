@@ -210,10 +210,11 @@ public class DiffTreeMiner {
             Logger.error("Failed to run all mining task!");
             Logger.error(e);
         }
-        final String runtime = clock.printPassedSeconds();
-        Logger.info("<<< done in " + runtime);
 
-        totalResult.putCustomInfo("runtime in seconds", runtime);
+        final double runtime = clock.getPassedSeconds();
+        Logger.info("<<< done in " + Clock.printPassedSeconds(runtime));
+
+        totalResult.runtimeInSeconds =  runtime;
 
         exportMetadata(outputDir, totalResult);
     }

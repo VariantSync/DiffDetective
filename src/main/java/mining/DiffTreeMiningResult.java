@@ -15,19 +15,27 @@ import util.IO;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
+import java.util.*;
+import java.util.function.BiConsumer;
 
 public class DiffTreeMiningResult implements Metadata<DiffTreeMiningResult> {
     public final static String EXTENSION = ".metadata.txt";
+
     public final static String ERROR_BEGIN = "#Error[";
     public final static String ERROR_END = "]";
+
+    public final static String KEY_RUNTIME = "runtime in seconds";
+    public final static String KEY_COMMITS = "commits";
+    public final static String KEY_TREES = "trees";
+
+    public static Map.Entry<String, BiConsumer<DiffTreeMiningResult, String>> storeAsCustomInfo(String key) {
+        return Map.entry(key, (r, val) -> r.putCustomInfo(key, val));
+    }
     
     public final static InplaceSemigroup<DiffTreeMiningResult> ISEMIGROUP = (a, b) -> {
         a.exportedCommits += b.exportedCommits;
         a.exportedTrees += b.exportedTrees;
+        a.runtimeInSeconds += b.runtimeInSeconds;
         a.debugData.append(b.debugData);
         a.filterHits.append(b.filterHits);
         a.atomicPatternCounts.append(b.atomicPatternCounts);
@@ -42,6 +50,7 @@ public class DiffTreeMiningResult implements Metadata<DiffTreeMiningResult> {
 
     public int exportedCommits;
     public int exportedTrees;
+    public double runtimeInSeconds;
     public final DiffTreeSerializeDebugData debugData;
     public ExplainedFilterSummary filterHits;
     public AtomicPatternCount atomicPatternCounts;
@@ -49,17 +58,19 @@ public class DiffTreeMiningResult implements Metadata<DiffTreeMiningResult> {
     private final MergeMap<DiffError, Integer> diffErrors = new MergeMap<>(new HashMap<>(), Integer::sum);
 
     public DiffTreeMiningResult() {
-        this(0, 0, new DiffTreeSerializeDebugData(), new ExplainedFilterSummary());
+        this(0, 0, 0, new DiffTreeSerializeDebugData(), new ExplainedFilterSummary());
     }
 
     public DiffTreeMiningResult(
             int exportedCommits,
             int exportedTrees,
+            double runtimeInSeconds,
             final DiffTreeSerializeDebugData debugData,
             final ExplainedFilterSummary filterHits)
     {
         this.exportedCommits = exportedCommits;
         this.exportedTrees = exportedTrees;
+        this.runtimeInSeconds = runtimeInSeconds;
         this.debugData = debugData;
         this.filterHits = filterHits;
         this.atomicPatternCounts = new AtomicPatternCount();
@@ -82,7 +93,7 @@ public class DiffTreeMiningResult implements Metadata<DiffTreeMiningResult> {
      * @return The reconstructed {@link DiffTreeMiningResult}
      * @throws IOException
      */
-    public static DiffTreeMiningResult importFrom(final Path p) throws IOException {
+    public static DiffTreeMiningResult importFrom(final Path p, final Map<String, BiConsumer<DiffTreeMiningResult, String>> customParsers) throws IOException {
         DiffTreeMiningResult result = new DiffTreeMiningResult();
         
         final List<String> filterHitsLines = new ArrayList<>();
@@ -102,11 +113,17 @@ public class DiffTreeMiningResult implements Metadata<DiffTreeMiningResult> {
             value = keyValuePair[1];
 
             switch (key) {
-                case "trees" -> result.exportedTrees = Integer.parseInt(value);
-                case "commits" -> result.exportedCommits = Integer.parseInt(value);
-                case "#NON nodes" -> result.debugData.numExportedNonNodes = Integer.parseInt(value);
-                case "#ADD nodes" -> result.debugData.numExportedAddNodes = Integer.parseInt(value);
-                case "#REM nodes" -> result.debugData.numExportedRemNodes = Integer.parseInt(value);
+                case KEY_TREES -> result.exportedTrees = Integer.parseInt(value);
+                case KEY_COMMITS -> result.exportedCommits = Integer.parseInt(value);
+                case DiffTreeSerializeDebugData.KEY_NON -> result.debugData.numExportedNonNodes = Integer.parseInt(value);
+                case DiffTreeSerializeDebugData.KEY_ADD -> result.debugData.numExportedAddNodes = Integer.parseInt(value);
+                case DiffTreeSerializeDebugData.KEY_REM -> result.debugData.numExportedRemNodes = Integer.parseInt(value);
+                case KEY_RUNTIME -> {
+                    if (value.endsWith("s")) {
+                        value = value.substring(0, value.length() - 1);
+                    }
+                    result.runtimeInSeconds = Double.parseDouble(value);
+                }
                 default -> {
                     final String finalKey = key;
                     if (ProposedAtomicPatterns.All.stream().anyMatch(pattern -> pattern.getName().equals(finalKey))) {
@@ -118,17 +135,20 @@ public class DiffTreeMiningResult implements Metadata<DiffTreeMiningResult> {
                         // add DiffError
                         result.diffErrors.put(e, Integer.parseInt(value));
                     } else {
-                        // other lines that do not match
-                        final String errorMessage = "unknown entry: " + line;
-//                        Logger.error(errorMessage);
-                        throw new IOException(errorMessage);
+                        final BiConsumer<DiffTreeMiningResult, String> customParser = customParsers.get(key);
+                        if (customParser == null) {
+                            final String errorMessage = "Unknown entry \"" + line + "\"!";
+                            throw new IOException(errorMessage);
+                        } else {
+                            customParser.accept(result, value);
+                        }
                     }
                 }
             }
         }
         
         result.filterHits = ExplainedFilterSummary.parse(filterHitsLines);
-        result.atomicPatternCounts = AtomicPatternCount.parse(atomicPatternCountsLines);
+        result.atomicPatternCounts = AtomicPatternCount.parse(atomicPatternCountsLines, p.toString());
 
         return result;
     }
@@ -136,8 +156,9 @@ public class DiffTreeMiningResult implements Metadata<DiffTreeMiningResult> {
     @Override
     public LinkedHashMap<String, Object> snapshot() {
         LinkedHashMap<String, Object> snap = new LinkedHashMap<>();
-        snap.put("trees", exportedTrees);
-        snap.put("commits", exportedCommits);
+        snap.put(KEY_TREES, exportedTrees);
+        snap.put(KEY_COMMITS, exportedCommits);
+        snap.put(KEY_RUNTIME, runtimeInSeconds);
         snap.putAll(debugData.snapshot());
         snap.putAll(filterHits.snapshot());
         snap.putAll(atomicPatternCounts.snapshot());

@@ -74,7 +74,7 @@ public class AtomicPatternCount implements Metadata<AtomicPatternCount> {
      * @param lines Lines containing {@link AtomicPattern AtomicPatterns} to be parsed
      * @return {@link AtomicPatternCount}
      */
-    public static AtomicPatternCount parse(final List<String> lines) {
+    public static AtomicPatternCount parse(final List<String> lines, final String uuid) {
         AtomicPatternCount count = new AtomicPatternCount();
         String[] keyValuePair;
         String key;
@@ -96,7 +96,11 @@ public class AtomicPatternCount implements Metadata<AtomicPatternCount> {
             
             Occurrences occurence = new Occurrences();
             occurence.totalAmount = total;
-            // TODO occurence.uniqueCommits = ?
+
+            // add fake commits
+            for (int i = 0; i < commits; ++i) {
+                occurence.uniqueCommits.add(uuid + i);
+            }
             
             // add occurrence
             count.occurences.put(pattern, occurence);

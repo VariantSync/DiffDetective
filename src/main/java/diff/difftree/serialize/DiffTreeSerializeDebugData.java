@@ -6,6 +6,10 @@ import metadata.Metadata;
 import java.util.LinkedHashMap;
 
 public class DiffTreeSerializeDebugData implements Metadata<DiffTreeSerializeDebugData> {
+    public final static String KEY_NON = "#NON nodes";
+    public final static String KEY_ADD = "#ADD nodes";
+    public final static String KEY_REM = "#REM nodes";
+
     public static final InplaceSemigroup<DiffTreeSerializeDebugData> ISEMIGROUP = (a, b) -> {
         a.numExportedNonNodes += b.numExportedNonNodes;
         a.numExportedAddNodes += b.numExportedAddNodes;
@@ -19,9 +23,9 @@ public class DiffTreeSerializeDebugData implements Metadata<DiffTreeSerializeDeb
     @Override
     public LinkedHashMap<String, Integer> snapshot() {
         final LinkedHashMap<String, Integer> map = new LinkedHashMap<>();
-        map.put("#NON nodes", numExportedNonNodes);
-        map.put("#ADD nodes", numExportedAddNodes);
-        map.put("#REM nodes", numExportedRemNodes);
+        map.put(KEY_NON, numExportedNonNodes);
+        map.put(KEY_ADD, numExportedAddNodes);
+        map.put(KEY_REM, numExportedRemNodes);
         return map;
     }
 

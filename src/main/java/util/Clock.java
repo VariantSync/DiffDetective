@@ -13,6 +13,10 @@ public class Clock {
     }
 
     public String printPassedSeconds() {
-        return getPassedSeconds() + "s";
+        return printPassedSeconds(getPassedSeconds());
+    }
+
+    public static String printPassedSeconds(double seconds) {
+        return seconds + "s";
     }
 }
