@@ -4,6 +4,7 @@ import diff.CommitDiff;
 import diff.GitDiffer;
 import diff.PatchDiff;
 import diff.difftree.DiffTree;
+import diff.difftree.parse.DiffTreeParser;
 import diff.difftree.parse.IllFormedAnnotationException;
 import diff.difftree.serialize.LineGraphExport;
 import diff.difftree.transform.DiffTreeTransformer;
@@ -54,7 +55,7 @@ public class MarlinDebug {
     }
 
     public static void testCommit(final String commitHash) throws IOException {
-        final CommitDiff commitDiff = Constants.parseCommit(repository, commitHash);
+        final CommitDiff commitDiff = DiffTreeParser.parseCommit(repository, commitHash);
         final List<DiffTreeTransformer> transform = DiffTreeMiner.Postprocessing(repository);
 
         for (final PatchDiff patch : commitDiff.getPatchDiffs()) {

@@ -1,13 +1,23 @@
 package diff.difftree.parse;
 
+import datasets.Repository;
+import diff.CommitDiff;
 import diff.DiffLineNumber;
+import diff.GitDiffer;
+import diff.PatchDiff;
 import diff.difftree.DiffNode;
 import diff.difftree.DiffTree;
 import diff.difftree.DiffType;
 import diff.result.DiffError;
 import diff.result.DiffResult;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.revwalk.RevWalk;
+import util.Assert;
 import util.StringUtils;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
@@ -215,5 +225,37 @@ public class DiffTreeParser {
         } while (!popped.isIf() && !popped.isRoot());
         return popped;
     }
-    
+
+    public static CommitDiff parseCommit(Repository repo, String commitHash) throws IOException {
+        final Git git = repo.getGitRepo().run();
+        Assert.assertNotNull(git);
+        final RevWalk revWalk = new RevWalk(git.getRepository());
+        final RevCommit childCommit = revWalk.parseCommit(ObjectId.fromString(commitHash));
+        final RevCommit parentCommit = revWalk.parseCommit(childCommit.getParent(0).getId());
+
+        final CommitDiff commitDiff =
+                GitDiffer.createCommitDiff(
+                                git,
+                                repo.getDiffFilter(),
+                                parentCommit,
+                                childCommit,
+                                repo.getParseOptions())
+                        .unwrap().first().orElseThrow();
+
+        revWalk.close();
+        return commitDiff;
+    }
+
+    public static PatchDiff parsePatch(Repository repo, String file, String commitHash) throws IOException {
+        final CommitDiff commitDiff = parseCommit(repo, commitHash);
+
+        for (final PatchDiff pd : commitDiff.getPatchDiffs()) {
+            if (file.equals(pd.getFileName())) {
+                return pd;
+            }
+        }
+
+        Assert.fail("Did not find file \"" + file + "\" in commit " + commitHash + "!");
+        return null;
+    }
 }

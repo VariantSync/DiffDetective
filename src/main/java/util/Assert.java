@@ -9,19 +9,23 @@ public class Assert {
 
     public static void assertTrue(boolean cond, final Supplier<String> errorMessage) {
         if (!cond) {
-            throw new AssertionError(errorMessage.get());
+            fail(errorMessage.get());
         }
     }
 
     public static void assertTrue(boolean cond, String errorMessage) {
         if (!cond) {
-            throw new AssertionError(errorMessage);
+            fail(errorMessage);
         }
     }
 
-    public static void assertNonNull(Object o) {
+    public static void fail(String errorMessage) {
+        throw new AssertionError(errorMessage);
+    }
+
+    public static void assertNotNull(Object o) {
         if (o == null) {
-            throw new AssertionError("Given object is null but assumed to be not null.");
+            fail("Given object is null but assumed to be not null.");
         }
     }
 }

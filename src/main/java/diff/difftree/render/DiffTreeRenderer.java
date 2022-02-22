@@ -8,12 +8,6 @@ import diff.difftree.LineGraphConstants;
 import diff.difftree.serialize.DiffTreeLineGraphExportOptions;
 import diff.difftree.serialize.DiffTreeSerializeDebugData;
 import diff.difftree.serialize.LineGraphExport;
-import diff.difftree.serialize.edgeformat.DefaultEdgeLabelFormat;
-import diff.difftree.serialize.edgeformat.EdgeLabelFormat;
-import diff.difftree.serialize.nodeformat.DebugDiffNodeFormat;
-import diff.difftree.serialize.nodeformat.DiffNodeLabelFormat;
-import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
-import diff.difftree.serialize.treeformat.DiffTreeLabelFormat;
 import org.tinylog.Logger;
 import shell.PythonCommand;
 import shell.ShellException;
@@ -95,7 +89,7 @@ public class DiffTreeRenderer {
         final Path tempFile = directory.resolve(treeAndFileName + ".lg");
 
         final Product<DiffTreeSerializeDebugData, String> result = LineGraphExport.toLineGraphFormat(tree, lgoptions);
-        Assert.assertNonNull(result);
+        Assert.assertNotNull(result);
         final String lg = "t # " + treeAndFileName + LineGraphConstants.TREE_NAME_SEPARATOR + "0" + StringUtils.LINEBREAK + result.second();
         try {
             IO.write(tempFile, lg);

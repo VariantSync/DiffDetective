@@ -3,6 +3,7 @@ import datasets.predefined.StanciulescuMarlin;
 import diff.PatchDiff;
 import diff.difftree.DiffTree;
 import diff.difftree.LineGraphConstants;
+import diff.difftree.parse.DiffTreeParser;
 import diff.difftree.render.DiffTreeRenderer;
 import diff.difftree.render.RenderOptions;
 import diff.difftree.serialize.GraphFormat;
@@ -97,7 +98,7 @@ public class TreeTransformersTest {
 
     private void testCommit(String file, String commitHash) throws IOException {
         final Repository marlin = StanciulescuMarlin.fromZipInDiffDetectiveAt(Path.of("."));
-        final PatchDiff patch = Constants.parsePatch(marlin, file, commitHash);
+        final PatchDiff patch = DiffTreeParser.parsePatch(marlin, file, commitHash);
         Assert.assertNotNull(patch);
         transformAndRender(patch.getDiffTree(), file, commitHash, marlin);
     }
