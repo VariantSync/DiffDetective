@@ -50,9 +50,6 @@ class VTLabel l where
 
 data VTNode l f = VTNode UUID (l f)
 
-instance Ord (VTNode l f) where
-    (VTNode i _) <= (VTNode j _) = i <= j
-
 data VTEdge l f = VTEdge {
     childNode  :: VTNode l f,
     parentNode :: VTNode l f
@@ -114,6 +111,9 @@ nodesWithoutRoot nodes = [n | n <- nodes, n /= root] --delete (root tree) (nodes
 
 instance Eq (VTNode l f) where
     (VTNode name _) == (VTNode name' _) = name == name'
+
+instance Ord (VTNode l f) where
+    (VTNode i _) <= (VTNode j _) = i <= j
 
 instance Eq (VTEdge l f) where
     e == e' = childNode e == childNode e' && parentNode e == parentNode e'
