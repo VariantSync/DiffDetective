@@ -30,7 +30,8 @@ public class MiningResultAccumulator {
             DiffTreeMiningResult.storeAsCustomInfo(MetadataKeys.TREEFORMAT),
             DiffTreeMiningResult.storeAsCustomInfo(MetadataKeys.NODEFORMAT),
             DiffTreeMiningResult.storeAsCustomInfo(MetadataKeys.EDGEFORMAT),
-            DiffTreeMiningResult.storeAsCustomInfo(MetadataKeys.REPONAME)
+//            DiffTreeMiningResult.storeAsCustomInfo(MetadataKeys.REPONAME),
+            Map.entry(MetadataKeys.REPONAME, (r, v) -> { /* Ignore repository names as they cannot an shoul not be merged. */ })
     );
 
     public static Map<String, DiffTreeMiningResult> getAllTotalResultsIn(final Path folderPath) throws IOException {
