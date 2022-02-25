@@ -10,9 +10,10 @@ import diff.difftree.serialize.LineGraphExport;
 import diff.difftree.transform.DiffTreeTransformer;
 import feature.CPPAnnotationParser;
 import mining.DiffTreeMiner;
-import mining.MiningTask;
 import mining.dataset.MiningDataset;
 import mining.dataset.MiningDatasetFactory;
+import mining.strategies.CommitHistoryAnalysisTask;
+import mining.strategies.MiningTask;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.revwalk.RevCommit;
@@ -87,7 +88,7 @@ public class MarlinDebug {
         }
 
         StringBuilder bigB = new StringBuilder();
-        LineGraphExport.toLineGraphFormat(commitDiff, bigB, DiffTreeMiner.ExportOptions(repository));
+        LineGraphExport.toLineGraphFormat(commitDiff, bigB, DiffTreeMiner.MiningExportOptions(repository));
     }
 
     public static void asMiningTask(final String commitHash) throws Exception {
@@ -96,13 +97,13 @@ public class MarlinDebug {
         final RevWalk revWalk = new RevWalk(git.getRepository());
         final RevCommit childCommit = revWalk.parseCommit(ObjectId.fromString(commitHash));
 
-        MiningTask m = new MiningTask(
+        MiningTask m = new MiningTask(new CommitHistoryAnalysisTask.Options(
                 repository,
                 new GitDiffer(repository),
                 outputPath,
-                DiffTreeMiner.ExportOptions(repository),
+                DiffTreeMiner.MiningExportOptions(repository),
                 DiffTreeMiner.MiningStrategy(),
-                List.of(childCommit));
+                List.of(childCommit)));
         m.call();
     }
 

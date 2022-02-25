@@ -10,6 +10,7 @@ import diff.result.DiffError;
 import metadata.AtomicPatternCount;
 import metadata.ExplainedFilterSummary;
 import metadata.Metadata;
+import mining.strategies.CommitProcessTime;
 import pattern.atomic.proposed.ProposedAtomicPatterns;
 import util.IO;
 
@@ -31,6 +32,8 @@ public class DiffTreeMiningResult implements Metadata<DiffTreeMiningResult> {
         a.exportedCommits += b.exportedCommits;
         a.exportedTrees += b.exportedTrees;
         a.runtimeInSeconds += b.runtimeInSeconds;
+        a.min.set(CommitProcessTime.min(a.min, b.min));
+        a.max.set(CommitProcessTime.max(a.max, b.max));
         a.debugData.append(b.debugData);
         a.filterHits.append(b.filterHits);
         a.atomicPatternCounts.append(b.atomicPatternCounts);
@@ -46,6 +49,7 @@ public class DiffTreeMiningResult implements Metadata<DiffTreeMiningResult> {
     public int exportedCommits;
     public int exportedTrees;
     public double runtimeInSeconds;
+    public final CommitProcessTime min, max;
     public final DiffTreeSerializeDebugData debugData;
     public ExplainedFilterSummary filterHits;
     public AtomicPatternCount atomicPatternCounts;
@@ -53,13 +57,15 @@ public class DiffTreeMiningResult implements Metadata<DiffTreeMiningResult> {
     private final MergeMap<DiffError, Integer> diffErrors = new MergeMap<>(new HashMap<>(), Integer::sum);
 
     public DiffTreeMiningResult() {
-        this(0, 0, 0, new DiffTreeSerializeDebugData(), new ExplainedFilterSummary());
+        this(0, 0, 0, CommitProcessTime.Unknown(Double.MAX_VALUE), CommitProcessTime.Unknown(Double.MIN_VALUE), new DiffTreeSerializeDebugData(), new ExplainedFilterSummary());
     }
 
     public DiffTreeMiningResult(
             int exportedCommits,
             int exportedTrees,
             double runtimeInSeconds,
+            final CommitProcessTime min,
+            final CommitProcessTime max,
             final DiffTreeSerializeDebugData debugData,
             final ExplainedFilterSummary filterHits)
     {
@@ -69,6 +75,8 @@ public class DiffTreeMiningResult implements Metadata<DiffTreeMiningResult> {
         this.debugData = debugData;
         this.filterHits = filterHits;
         this.atomicPatternCounts = new AtomicPatternCount();
+        this.min = min;
+        this.max = max;
     }
 
     public void putCustomInfo(final String key, final String value) {
@@ -113,6 +121,8 @@ public class DiffTreeMiningResult implements Metadata<DiffTreeMiningResult> {
                 case MetadataKeys.NON_NODE_COUNT -> result.debugData.numExportedNonNodes = Integer.parseInt(value);
                 case MetadataKeys.ADD_NODE_COUNT -> result.debugData.numExportedAddNodes = Integer.parseInt(value);
                 case MetadataKeys.REM_NODE_COUNT -> result.debugData.numExportedRemNodes = Integer.parseInt(value);
+                case MetadataKeys.MINCOMMIT -> result.min.set(CommitProcessTime.fromString(value));
+                case MetadataKeys.MAXCOMMIT -> result.max.set(CommitProcessTime.fromString(value));
                 case MetadataKeys.RUNTIME -> {
                     if (value.endsWith("s")) {
                         value = value.substring(0, value.length() - 1);
@@ -154,6 +164,8 @@ public class DiffTreeMiningResult implements Metadata<DiffTreeMiningResult> {
         snap.put(MetadataKeys.TREES, exportedTrees);
         snap.put(MetadataKeys.COMMITS, exportedCommits);
         snap.put(MetadataKeys.RUNTIME, runtimeInSeconds);
+        snap.put(MetadataKeys.MINCOMMIT, min.toString());
+        snap.put(MetadataKeys.MAXCOMMIT, max.toString());
         snap.putAll(debugData.snapshot());
         snap.putAll(filterHits.snapshot());
         snap.putAll(atomicPatternCounts.snapshot());
