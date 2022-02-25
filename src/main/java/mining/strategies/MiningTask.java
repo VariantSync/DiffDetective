@@ -1,41 +1,27 @@
-package mining;
+package mining.strategies;
 
-import datasets.Repository;
 import diff.CommitDiff;
-import diff.GitDiffer;
 import diff.PatchDiff;
 import diff.difftree.DiffTree;
-import diff.difftree.serialize.DiffTreeLineGraphExportOptions;
 import diff.difftree.serialize.LineGraphExport;
 import diff.result.CommitDiffResult;
-import mining.strategies.DiffTreeMiningStrategy;
+import mining.DiffTreeMiningResult;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.tinylog.Logger;
 import pattern.atomic.proposed.ProposedAtomicPatterns;
 import util.FileUtils;
 
-import java.nio.file.Path;
-import java.util.concurrent.Callable;
+public class MiningTask extends CommitHistoryAnalysisTask {
+    public MiningTask(final Options options) {
+        super(options);
+    }
 
-public record MiningTask(
-        Repository repository,
-        GitDiffer differ,
-        Path outputPath,
-        DiffTreeLineGraphExportOptions exportOptions,
-        DiffTreeMiningStrategy miningStrategy,
-        Iterable<RevCommit> commits
-) implements Callable<DiffTreeMiningResult> {
     @Override
     public DiffTreeMiningResult call() throws Exception {
-        miningStrategy.start(repository, outputPath, exportOptions);
+        final DiffTreeMiningResult miningResult = super.call();
 
-        final DiffTreeMiningResult miningResult = new DiffTreeMiningResult();
-        miningResult.putCustomInfo(MetadataKeys.TREEFORMAT, exportOptions.treeFormat().getName());
-        miningResult.putCustomInfo(MetadataKeys.NODEFORMAT, exportOptions.nodeFormat().getName());
-        miningResult.putCustomInfo(MetadataKeys.EDGEFORMAT, exportOptions.edgeFormat().getName());
-
-        for (final RevCommit commit : commits) {
-            final CommitDiffResult commitDiffResult = differ.createCommitDiff(commit);
+        for (final RevCommit commit : options.commits()) {
+            final CommitDiffResult commitDiffResult = options.differ().createCommitDiff(commit);
 
             miningResult.reportDiffErrors(commitDiffResult.unwrap().second());
             if (commitDiffResult.unwrap().first().isEmpty()) {
@@ -49,9 +35,9 @@ public record MiningTask(
              */
             final CommitDiff commitDiff = commitDiffResult.unwrap().first().get();
             final StringBuilder lineGraph = new StringBuilder();
-            miningResult.append(LineGraphExport.toLineGraphFormat(commitDiff, lineGraph, exportOptions));
-            miningStrategy.onCommit(commitDiff, lineGraph.toString());
-            exportOptions.treeFilter().resetExplanations();
+            miningResult.append(LineGraphExport.toLineGraphFormat(commitDiff, lineGraph, options.exportOptions()));
+            options.miningStrategy().onCommit(commitDiff, lineGraph.toString());
+            options.exportOptions().treeFilter().resetExplanations();
 
             // Count atomic patterns
             for (final PatchDiff patch : commitDiff.getPatchDiffs()) {
@@ -69,8 +55,8 @@ public record MiningTask(
             }
         }
 
-        miningStrategy.end();
-        miningResult.exportTo(FileUtils.addExtension(outputPath, DiffTreeMiningResult.EXTENSION));
+        options.miningStrategy().end();
+        miningResult.exportTo(FileUtils.addExtension(options.outputPath(), DiffTreeMiningResult.EXTENSION));
         return miningResult;
     }
 }
