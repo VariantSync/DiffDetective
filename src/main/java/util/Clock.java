@@ -7,13 +7,20 @@ public class Clock {
         startTime = System.currentTimeMillis();
     }
 
+    public long getPassedMilliseconds() {
+        return System.currentTimeMillis() - startTime;
+    }
+
     public double getPassedSeconds() {
-        final long msPassed = System.currentTimeMillis() - startTime;
-        return (msPassed / 1000.0);
+        return toSeconds(getPassedMilliseconds());
     }
 
     public String printPassedSeconds() {
         return printPassedSeconds(getPassedSeconds());
+    }
+
+    public static double toSeconds(long milliseconds) {
+        return milliseconds / 1000.0;
     }
 
     public static String printPassedSeconds(double seconds) {

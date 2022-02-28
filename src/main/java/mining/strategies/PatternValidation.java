@@ -67,12 +67,12 @@ public class PatternValidation extends CommitHistoryAnalysisTask {
                 }
             }
 
-            final double commitTime = commitProcessTimer.getPassedSeconds();
-            if (commitTime > miningResult.max.seconds()) {
-                miningResult.max.set(commitDiff.getCommitHash(), commitTime);
+            final long commitTimeMS = commitProcessTimer.getPassedMilliseconds();
+            if (commitTimeMS > miningResult.max.milliseconds()) {
+                miningResult.max.set(commitDiff.getCommitHash(), commitTimeMS);
             }
-            if (commitTime < miningResult.min.seconds()) {
-                miningResult.min.set(commitDiff.getCommitHash(), commitTime);
+            if (commitTimeMS < miningResult.min.milliseconds()) {
+                miningResult.min.set(commitDiff.getCommitHash(), commitTimeMS);
             }
 
             ++miningResult.exportedCommits;

@@ -59,7 +59,7 @@ public class DiffTreeMiningResult implements Metadata<DiffTreeMiningResult> {
     private final MergeMap<DiffError, Integer> diffErrors = new MergeMap<>(new HashMap<>(), Integer::sum);
 
     public DiffTreeMiningResult() {
-        this(0, 0, 0, 0, CommitProcessTime.Unknown(Double.MAX_VALUE), CommitProcessTime.Unknown(Double.MIN_VALUE), new DiffTreeSerializeDebugData(), new ExplainedFilterSummary());
+        this(0, 0, 0, 0, CommitProcessTime.Unknown(Long.MAX_VALUE), CommitProcessTime.Unknown(Long.MIN_VALUE), new DiffTreeSerializeDebugData(), new ExplainedFilterSummary());
     }
 
     public DiffTreeMiningResult(
