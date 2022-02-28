@@ -32,6 +32,7 @@ import parallel.ScheduledTasksIterator;
 import util.Assert;
 import util.Clock;
 import util.Diagnostics;
+import util.InvocationCounter;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -217,9 +218,10 @@ public class DiffTreeMiner {
         final int nThreads = DIAGNOSTICS.getNumberOfAvailableProcessors();
         Logger.info(">>> Scheduling asynchronous mining on " + nThreads + " threads.");
         clock.start();
+        final InvocationCounter<RevCommit, RevCommit> numberOfTotalCommits = InvocationCounter.justCount();
         final Iterator<CommitHistoryAnalysisTask> tasks = new MappedIterator<>(
                 /// 1.) Retrieve COMMITS_TO_PROCESS_PER_THREAD commits from the differ and cluster them into one list.
-                new ClusteredIterator<>(differ.yieldRevCommits(), COMMITS_TO_PROCESS_PER_THREAD),
+                new ClusteredIterator<>(differ.yieldRevCommitsAfter(numberOfTotalCommits), COMMITS_TO_PROCESS_PER_THREAD),
                 /// 2.) Create a MiningTask for the list of commits. This task will then be processed by one
                 ///     particular thread.
                 commitList -> taskFactory.create(
@@ -249,6 +251,7 @@ public class DiffTreeMiner {
         Logger.info("<<< done in " + Clock.printPassedSeconds(runtime));
 
         totalResult.runtimeInSeconds =  runtime;
+        totalResult.totalCommits = numberOfTotalCommits.invocationCount().get();
         totalResult.putCustomInfo(MetadataKeys.REPONAME, repo.getRepositoryName());
 
         exportMetadata(outputDir, totalResult);

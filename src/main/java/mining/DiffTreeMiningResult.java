@@ -29,6 +29,7 @@ public class DiffTreeMiningResult implements Metadata<DiffTreeMiningResult> {
     }
     
     public final static InplaceSemigroup<DiffTreeMiningResult> ISEMIGROUP = (a, b) -> {
+        a.totalCommits += b.totalCommits;
         a.exportedCommits += b.exportedCommits;
         a.exportedTrees += b.exportedTrees;
         a.runtimeInSeconds += b.runtimeInSeconds;
@@ -46,6 +47,7 @@ public class DiffTreeMiningResult implements Metadata<DiffTreeMiningResult> {
             ISEMIGROUP
     );
 
+    public int totalCommits;
     public int exportedCommits;
     public int exportedTrees;
     public double runtimeInSeconds;
@@ -57,10 +59,11 @@ public class DiffTreeMiningResult implements Metadata<DiffTreeMiningResult> {
     private final MergeMap<DiffError, Integer> diffErrors = new MergeMap<>(new HashMap<>(), Integer::sum);
 
     public DiffTreeMiningResult() {
-        this(0, 0, 0, CommitProcessTime.Unknown(Double.MAX_VALUE), CommitProcessTime.Unknown(Double.MIN_VALUE), new DiffTreeSerializeDebugData(), new ExplainedFilterSummary());
+        this(0, 0, 0, 0, CommitProcessTime.Unknown(Double.MAX_VALUE), CommitProcessTime.Unknown(Double.MIN_VALUE), new DiffTreeSerializeDebugData(), new ExplainedFilterSummary());
     }
 
     public DiffTreeMiningResult(
+            int totalCommits,
             int exportedCommits,
             int exportedTrees,
             double runtimeInSeconds,
@@ -69,6 +72,7 @@ public class DiffTreeMiningResult implements Metadata<DiffTreeMiningResult> {
             final DiffTreeSerializeDebugData debugData,
             final ExplainedFilterSummary filterHits)
     {
+        this.totalCommits = totalCommits;
         this.exportedCommits = exportedCommits;
         this.exportedTrees = exportedTrees;
         this.runtimeInSeconds = runtimeInSeconds;
@@ -118,6 +122,7 @@ public class DiffTreeMiningResult implements Metadata<DiffTreeMiningResult> {
             switch (key) {
                 case MetadataKeys.TREES -> result.exportedTrees = Integer.parseInt(value);
                 case MetadataKeys.COMMITS -> result.exportedCommits = Integer.parseInt(value);
+                case MetadataKeys.TOTAL_COMMITS -> result.totalCommits = Integer.parseInt(value);
                 case MetadataKeys.NON_NODE_COUNT -> result.debugData.numExportedNonNodes = Integer.parseInt(value);
                 case MetadataKeys.ADD_NODE_COUNT -> result.debugData.numExportedAddNodes = Integer.parseInt(value);
                 case MetadataKeys.REM_NODE_COUNT -> result.debugData.numExportedRemNodes = Integer.parseInt(value);
@@ -161,15 +166,16 @@ public class DiffTreeMiningResult implements Metadata<DiffTreeMiningResult> {
     @Override
     public LinkedHashMap<String, Object> snapshot() {
         LinkedHashMap<String, Object> snap = new LinkedHashMap<>();
-        snap.put(MetadataKeys.TREES, exportedTrees);
+        snap.put(MetadataKeys.TOTAL_COMMITS, totalCommits);
         snap.put(MetadataKeys.COMMITS, exportedCommits);
-        snap.put(MetadataKeys.RUNTIME, runtimeInSeconds);
+        snap.put(MetadataKeys.TREES, exportedTrees);
         snap.put(MetadataKeys.MINCOMMIT, min.toString());
         snap.put(MetadataKeys.MAXCOMMIT, max.toString());
+        snap.put(MetadataKeys.RUNTIME, runtimeInSeconds);
+        snap.putAll(customInfo);
         snap.putAll(debugData.snapshot());
         snap.putAll(filterHits.snapshot());
         snap.putAll(atomicPatternCounts.snapshot());
-        snap.putAll(customInfo);
         snap.putAll(Functjonal.bimap(diffErrors, error -> ERROR_BEGIN + error + ERROR_END, Object::toString));
         return snap;
     }

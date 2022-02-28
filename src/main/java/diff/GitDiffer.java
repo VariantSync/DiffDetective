@@ -2,8 +2,8 @@ package diff;
 
 import datasets.ParseOptions;
 import datasets.Repository;
-import de.variantsync.functjonal.Product;
 import de.variantsync.functjonal.Result;
+import de.variantsync.functjonal.iteration.MappedIterator;
 import de.variantsync.functjonal.iteration.SideEffectIterator;
 import de.variantsync.functjonal.iteration.Yield;
 import diff.difftree.DiffTree;
@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -108,6 +109,18 @@ public class GitDiffer {
         }
 
         return yieldAllValidIn(commitsIterable.iterator());
+    }
+
+    public Yield<RevCommit> yieldRevCommitsAfter(final Function<RevCommit, RevCommit> f) {
+        Iterable<RevCommit> commitsIterable;
+        try {
+            commitsIterable = git.log().call();
+        } catch (GitAPIException e) {
+            Logger.warn("Could not get log for git repository {}", git.toString());
+            return null;
+        }
+
+        return yieldAllValidIn(new MappedIterator<>(commitsIterable.iterator(), f));
     }
 
     public Yield<CommitDiffResult> yieldCommitDiffs() {

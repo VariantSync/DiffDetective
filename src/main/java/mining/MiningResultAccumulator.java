@@ -105,13 +105,13 @@ public class MiningResultAccumulator {
         builder.append(val).append(LaTeX.TABLE_ENDROW);
     }
 
-    public static String asLaTeXTableLine(final String name, final String domain, final String commits, final DiffTreeMiningResult result) {
+    public static String asLaTeXTableLine(final String name, final String domain, final DiffTreeMiningResult result) {
         final StringBuilder lineBuilder = new StringBuilder();
         lineBuilder.append("  ");
 
         addTableCell(lineBuilder, name);
         addTableCell(lineBuilder, domain);
-        addTableCell(lineBuilder, makeReadable(commits));
+        addTableCell(lineBuilder, makeReadable(result.totalCommits));
         addTableCell(lineBuilder, makeReadable(result.exportedCommits));
         addTableCell(lineBuilder, makeReadable(result.exportedTrees));
 
@@ -149,12 +149,10 @@ public class MiningResultAccumulator {
         table.append(indent).append("\\hline").append(StringUtils.LINEBREAK);
         final List<String> datasetLines = new ArrayList<>();
 
-        int sumTotalCommits = 0;
         for (final Map.Entry<MiningDataset, DiffTreeMiningResult> datasetEntry : datasets.entrySet()) {
             final MiningDataset dataset = datasetEntry.getKey();
             final DiffTreeMiningResult result = datasetEntry.getValue();
-            sumTotalCommits += NUMBER_FORMAT.parse(dataset.commits()).intValue();
-            datasetLines.add(asLaTeXTableLine(dataset.name(), dataset.domain(), dataset.commits(), result));
+            datasetLines.add(asLaTeXTableLine(dataset.name(), dataset.domain(), result));
         }
 
         datasetLines.sort(String::compareToIgnoreCase);
@@ -165,7 +163,7 @@ public class MiningResultAccumulator {
         table.append(indent).append("\\hline").append(StringUtils.LINEBREAK);
         table.append(indent).append("\\hline").append(StringUtils.LINEBREAK);
 
-        table.append(asLaTeXTableLine("total", "--", Integer.toString(sumTotalCommits), ultimateResult));
+        table.append(asLaTeXTableLine("total", "--", ultimateResult));
         table.append("\\end{tabular}").append(StringUtils.LINEBREAK);
 
         return table.toString();

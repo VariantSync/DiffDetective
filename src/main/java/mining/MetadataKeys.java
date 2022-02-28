@@ -10,7 +10,8 @@ public final class MetadataKeys {
     public final static String ADD_NODE_COUNT = "#ADD nodes";
     public final static String REM_NODE_COUNT = "#REM nodes";
     public final static String RUNTIME = "runtime in seconds";
-    public final static String COMMITS = "commits";
+    public final static String COMMITS = "processed commits";
+    public final static String TOTAL_COMMITS = "total commits";
     public final static String TREES = "trees";
     public static final String MINCOMMIT = "fastestCommit";
     public static final String MAXCOMMIT = "slowestCommit";
