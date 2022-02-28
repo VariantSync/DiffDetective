@@ -1,20 +1,18 @@
-
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.api.errors.NoHeadException;
-import org.eclipse.jgit.revwalk.RevCommit;
-import org.junit.Assert;
-import org.junit.Test;
 import datasets.ParseOptions.DiffStoragePolicy;
 import datasets.Repository;
 import diff.CommitDiff;
 import diff.GitDiffer;
 import diff.PatchDiff;
 import diff.result.CommitDiffResult;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.api.errors.NoHeadException;
+import org.eclipse.jgit.revwalk.RevCommit;
+import org.junit.Assert;
+import org.junit.Test;
+
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * Perform "git diff" on a git repository.
@@ -38,7 +36,7 @@ public class PrintWorkingTreeDiff {
 		
 		// Extract CommitDiff
 		CommitDiffResult commitDiffResult = GitDiffer.createWorkingTreeDiff(differ.getJGitRepo(), repository.getDiffFilter(), latestCommit, repository.getParseOptions());
-		CommitDiff commitDiff = commitDiffResult.unwrap().first().orElseThrow();
+		CommitDiff commitDiff = commitDiffResult.diff().orElseThrow();
 		
 		// Save diff output
 		String diffOutput = "";
