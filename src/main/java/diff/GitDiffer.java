@@ -91,7 +91,7 @@ public class GitDiffer {
                 commitsIterable.iterator(),
                 r -> ++commitAmount[0]);
         for (CommitDiffResult commitDiff : loadAllValidIn(commitIterator)) {
-            commitDiff.unwrap().first().ifPresent(gitDiff::addCommitDiff);
+            commitDiff.diff().ifPresent(gitDiff::addCommitDiff);
         }
         gitDiff.setCommitAmount(commitAmount[0]);
 
@@ -273,10 +273,7 @@ public class GitDiffer {
     		RevCommit parentCommit,
     		RevCommit childCommit) {
     	final CommitDiff commitDiff = new CommitDiff(childCommit, parentCommit);
-        final Product<Optional<CommitDiff>, List<DiffError>> result = new Product<>(
-                Optional.of(commitDiff),
-                new ArrayList<>()
-        );
+        final List<DiffError> errors = new ArrayList<>();
 
         // get PatchDiffs
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -305,14 +302,14 @@ public class GitDiffer {
                         );
 
                 patchDiff.ifSuccess(commitDiff::addPatchDiff);
-                patchDiff.ifFailure(error -> result.second().add(error));
+                patchDiff.ifFailure(errors::add);
                 outputStream.reset();
             }
         } catch (IOException e) {
             return CommitDiffResult.Failure(JGIT_ERROR, e.toString());
         }
 
-        return new CommitDiffResult(result);
+        return new CommitDiffResult(Optional.of(commitDiff), errors);
     }
     
     /**

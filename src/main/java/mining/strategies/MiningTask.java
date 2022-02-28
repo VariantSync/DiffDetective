@@ -23,9 +23,9 @@ public class MiningTask extends CommitHistoryAnalysisTask {
         for (final RevCommit commit : options.commits()) {
             final CommitDiffResult commitDiffResult = options.differ().createCommitDiff(commit);
 
-            miningResult.reportDiffErrors(commitDiffResult.unwrap().second());
-            if (commitDiffResult.unwrap().first().isEmpty()) {
-                Logger.debug("[MiningTask::call] found commit that failed entirely and was not filtered because:\n" + commitDiffResult.unwrap().second());
+            miningResult.reportDiffErrors(commitDiffResult.errors());
+            if (commitDiffResult.diff().isEmpty()) {
+                Logger.debug("[MiningTask::call] found commit that failed entirely and was not filtered because:\n" + commitDiffResult.errors());
                 continue;
             }
 
@@ -33,7 +33,7 @@ public class MiningTask extends CommitHistoryAnalysisTask {
              * We export all difftrees that match our filter criteria (e.g., has more than one atomic pattern).
              * However, we count atomic patterns of all DiffTrees, even those that are not exported to Linegraph.
              */
-            final CommitDiff commitDiff = commitDiffResult.unwrap().first().get();
+            final CommitDiff commitDiff = commitDiffResult.diff().get();
             final StringBuilder lineGraph = new StringBuilder();
             miningResult.append(LineGraphExport.toLineGraphFormat(commitDiff, lineGraph, options.exportOptions()));
             options.miningStrategy().onCommit(commitDiff, lineGraph.toString());

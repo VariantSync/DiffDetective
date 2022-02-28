@@ -240,7 +240,7 @@ public class DiffTreeParser {
                                 parentCommit,
                                 childCommit,
                                 repo.getParseOptions())
-                        .unwrap().first().orElseThrow();
+                        .diff().orElseThrow();
 
         revWalk.close();
         return commitDiff;
