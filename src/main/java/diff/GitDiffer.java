@@ -139,7 +139,6 @@ public class GitDiffer {
         return new Yield<>(
                 () -> {
                     while (commitsIterator.hasNext()) {
-                        // TODO: Log filter hits
                         final RevCommit c = commitsIterator.next();
                         // If this commit is filtered, go to the next one.
                         if (!diffFilter.filter(c)) {

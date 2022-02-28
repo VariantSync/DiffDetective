@@ -34,7 +34,7 @@ public abstract class CommitHistoryAnalysisTask implements Callable<DiffTreeMini
     public DiffTreeMiningResult call() throws Exception {
         options.miningStrategy().start(options.repository(), options.outputPath(), options.exportOptions());
 
-        final DiffTreeMiningResult miningResult = new DiffTreeMiningResult();
+        final DiffTreeMiningResult miningResult = new DiffTreeMiningResult(options.repository.getRepositoryName());
         final DiffTreeLineGraphExportOptions exportOptions = options.exportOptions();
 
         miningResult.putCustomInfo(MetadataKeys.TREEFORMAT, exportOptions.treeFormat().getName());

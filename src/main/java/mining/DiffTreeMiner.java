@@ -210,7 +210,7 @@ public class DiffTreeMiner {
             final Path outputDir,
             final CommitHistoryAnalysisTaskFactory taskFactory)
     {
-        final DiffTreeMiningResult totalResult = new DiffTreeMiningResult();
+        final DiffTreeMiningResult totalResult = new DiffTreeMiningResult(repo.getRepositoryName());
         final GitDiffer differ = new GitDiffer(repo);
         final Clock clock = new Clock();
 
@@ -252,7 +252,6 @@ public class DiffTreeMiner {
 
         totalResult.runtimeInSeconds =  runtime;
         totalResult.totalCommits = numberOfTotalCommits.invocationCount().get();
-        totalResult.putCustomInfo(MetadataKeys.REPONAME, repo.getRepositoryName());
 
         exportMetadata(outputDir, totalResult);
     }

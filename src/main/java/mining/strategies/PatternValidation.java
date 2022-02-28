@@ -23,8 +23,8 @@ public class PatternValidation extends CommitHistoryAnalysisTask {
     public DiffTreeMiningResult call() throws Exception {
         final DiffTreeMiningResult miningResult = super.call();
         final DiffTreeLineGraphExportOptions exportOptions = options.exportOptions();
+        final Clock commitProcessTimer = new Clock();
 
-        Clock commitProcessTimer = new Clock();
         for (final RevCommit commit : options.commits()) {
             commitProcessTimer.start();
 
@@ -33,17 +33,15 @@ public class PatternValidation extends CommitHistoryAnalysisTask {
             miningResult.reportDiffErrors(commitDiffResult.errors());
             if (commitDiffResult.diff().isEmpty()) {
                 Logger.debug("[MiningTask::call] found commit that failed entirely and was not filtered because:\n" + commitDiffResult.errors());
+                ++miningResult.failedCommits;
                 continue;
             }
 
-            /*
-             * We export all difftrees that match our filter criteria (e.g., has more than one atomic pattern).
-             * However, we count atomic patterns of all DiffTrees, even those that are not exported to Linegraph.
-             */
             final CommitDiff commitDiff = commitDiffResult.diff().get();
             options.miningStrategy().onCommit(commitDiff, "");
 
             // Count atomic patterns
+            int numDiffTrees = 0;
             for (final PatchDiff patch : commitDiff.getPatchDiffs()) {
                 if (patch.isValid()) {
                     final DiffTree t = patch.getDiffTree();
@@ -63,21 +61,26 @@ public class PatternValidation extends CommitHistoryAnalysisTask {
                         }
                     });
 
-                    ++miningResult.exportedTrees;
+                    ++numDiffTrees;
                 }
             }
-
-            final long commitTimeMS = commitProcessTimer.getPassedMilliseconds();
-            if (commitTimeMS > miningResult.max.milliseconds()) {
-                miningResult.max.set(commitDiff.getCommitHash(), commitTimeMS);
-            }
-            if (commitTimeMS < miningResult.min.milliseconds()) {
-                miningResult.min.set(commitDiff.getCommitHash(), commitTimeMS);
-            }
-
-            ++miningResult.exportedCommits;
+            miningResult.exportedTrees += numDiffTrees;
             miningResult.filterHits.append(new ExplainedFilterSummary(exportOptions.treeFilter()));
             exportOptions.treeFilter().resetExplanations();
+
+            // Only consider non-empty commits
+            if (numDiffTrees > 0) {
+                final long commitTimeMS = commitProcessTimer.getPassedMilliseconds();
+                if (commitTimeMS > miningResult.max.milliseconds()) {
+                    miningResult.max.set(commitDiff.getCommitHash(), commitTimeMS);
+                }
+                if (commitTimeMS < miningResult.min.milliseconds()) {
+                    miningResult.min.set(commitDiff.getCommitHash(), commitTimeMS);
+                }
+                ++miningResult.exportedCommits;
+            } else {
+                ++miningResult.emptyCommits;
+            }
         }
 
         options.miningStrategy().end();

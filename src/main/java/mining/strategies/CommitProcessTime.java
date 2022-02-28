@@ -1,13 +1,16 @@
 package mining.strategies;
 
+import mining.DiffTreeMiningResult;
 import util.Assert;
 
 public class CommitProcessTime {
-    private static final String STR_DELIMITER = " with ";
+    private static final String STR_DELIMITER = "___";
     private String hash;
+    private final String repoName;
     private long milliseconds;
 
-    public CommitProcessTime(final String hash, long milliseconds) {
+    public CommitProcessTime(final String hash, final String reponame, long milliseconds) {
+        this.repoName = reponame;
         set(hash, milliseconds);
     }
 
@@ -42,20 +45,22 @@ public class CommitProcessTime {
         return a;
     }
 
-    public static CommitProcessTime Unknown(long milliseconds) {
-        return new CommitProcessTime("Unknown", milliseconds);
+    public static CommitProcessTime Unknown(final String repoName, long milliseconds) {
+        return new CommitProcessTime(DiffTreeMiningResult.NO_REPO, repoName, milliseconds);
     }
 
-    public static CommitProcessTime fromString(final String text) {
+    public static CommitProcessTime fromString(String text) {
+        text = text.substring(0, text.length() - 2); // remove "ms" at end of string
         final String[] words = text.split(STR_DELIMITER);
-        Assert.assertTrue(words.length == 2, "Ill-Formed input. Expected two words separated by \"" + STR_DELIMITER + "\" but got \"" + text + "\"!");
+        Assert.assertTrue(words.length == 3, "Ill-Formed input. Expected three words separated by \"" + STR_DELIMITER + "\" but got \"" + text + "\"!");
         final String hash = words[0];
-        final long ms = Long.parseLong(words[1]);
-        return new CommitProcessTime(hash, ms);
+        final String repoName = words[1];
+        final long ms = Long.parseLong(words[2]);
+        return new CommitProcessTime(hash, repoName, ms);
     }
 
     @Override
     public String toString() {
-        return hash + STR_DELIMITER + milliseconds;
+        return hash + STR_DELIMITER + repoName + STR_DELIMITER + milliseconds + "ms";
     }
 }

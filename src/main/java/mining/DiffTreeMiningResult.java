@@ -20,6 +20,7 @@ import java.util.*;
 import java.util.function.BiConsumer;
 
 public class DiffTreeMiningResult implements Metadata<DiffTreeMiningResult> {
+    public final static String NO_REPO = "<NONE>";
     public final static String EXTENSION = ".metadata.txt";
     public final static String ERROR_BEGIN = "#Error[";
     public final static String ERROR_END = "]";
@@ -31,6 +32,8 @@ public class DiffTreeMiningResult implements Metadata<DiffTreeMiningResult> {
     public final static InplaceSemigroup<DiffTreeMiningResult> ISEMIGROUP = (a, b) -> {
         a.totalCommits += b.totalCommits;
         a.exportedCommits += b.exportedCommits;
+        a.emptyCommits += b.emptyCommits;
+        a.failedCommits += b.failedCommits;
         a.exportedTrees += b.exportedTrees;
         a.runtimeInSeconds += b.runtimeInSeconds;
         a.min.set(CommitProcessTime.min(a.min, b.min));
@@ -42,13 +45,29 @@ public class DiffTreeMiningResult implements Metadata<DiffTreeMiningResult> {
         a.diffErrors.append(b.diffErrors);
     };
 
-    public final static InplaceMonoid<DiffTreeMiningResult> IMONOID = InplaceMonoid.From(
+    public static InplaceMonoid<DiffTreeMiningResult> IMONOID= InplaceMonoid.From(
             DiffTreeMiningResult::new,
             ISEMIGROUP
     );
 
-    public int totalCommits;
-    public int exportedCommits;
+    public String repoName;
+    public int totalCommits; // total number of commits in the observed history
+    public int exportedCommits; // number of processed commits in the observed history. exportedCommits <= totalCommits
+    /**
+     * Number of commits that were not processed because they had no DiffTrees.
+     * A commit is empty iff at least of one of the following conditions is met for every of its patches:
+     * - the patch did not edit a C file,
+     * - the DiffTree became empty after transformations (this can happen if there are only whitespace changes),
+     * - or the patch had syntax errors in its annotations, so the DiffTree could not be parsed.
+     */
+    public int emptyCommits;
+    /**
+     * Number of commits that could not be parsed at all because of exceptions when operating JGit.
+     *
+     * The number of commits that were filtered because they are a merge commit is thus given as
+     * totalCommits - exportedCommits - emptyCommits - failedCommits
+     */
+    public int failedCommits;
     public int exportedTrees;
     public double runtimeInSeconds;
     public final CommitProcessTime min, max;
@@ -59,12 +78,19 @@ public class DiffTreeMiningResult implements Metadata<DiffTreeMiningResult> {
     private final MergeMap<DiffError, Integer> diffErrors = new MergeMap<>(new HashMap<>(), Integer::sum);
 
     public DiffTreeMiningResult() {
-        this(0, 0, 0, 0, CommitProcessTime.Unknown(Long.MAX_VALUE), CommitProcessTime.Unknown(Long.MIN_VALUE), new DiffTreeSerializeDebugData(), new ExplainedFilterSummary());
+        this(NO_REPO);
+    }
+
+    public DiffTreeMiningResult(final String repoName) {
+        this(repoName, 0, 0, 0, 0, 0, 0, CommitProcessTime.Unknown(repoName, Long.MAX_VALUE), CommitProcessTime.Unknown(repoName, Long.MIN_VALUE), new DiffTreeSerializeDebugData(), new ExplainedFilterSummary());
     }
 
     public DiffTreeMiningResult(
+            final String repoName,
             int totalCommits,
             int exportedCommits,
+            int emptyCommits,
+            int failedCommits,
             int exportedTrees,
             double runtimeInSeconds,
             final CommitProcessTime min,
@@ -72,8 +98,11 @@ public class DiffTreeMiningResult implements Metadata<DiffTreeMiningResult> {
             final DiffTreeSerializeDebugData debugData,
             final ExplainedFilterSummary filterHits)
     {
+        this.repoName = repoName;
         this.totalCommits = totalCommits;
         this.exportedCommits = exportedCommits;
+        this.emptyCommits = emptyCommits;
+        this.failedCommits = failedCommits;
         this.exportedTrees = exportedTrees;
         this.runtimeInSeconds = runtimeInSeconds;
         this.debugData = debugData;
@@ -120,9 +149,12 @@ public class DiffTreeMiningResult implements Metadata<DiffTreeMiningResult> {
             value = keyValuePair[1];
 
             switch (key) {
+                case MetadataKeys.REPONAME -> result.repoName = value;
                 case MetadataKeys.TREES -> result.exportedTrees = Integer.parseInt(value);
-                case MetadataKeys.COMMITS -> result.exportedCommits = Integer.parseInt(value);
+                case MetadataKeys.PROCESSED_COMMITS -> result.exportedCommits = Integer.parseInt(value);
                 case MetadataKeys.TOTAL_COMMITS -> result.totalCommits = Integer.parseInt(value);
+                case MetadataKeys.EMPTY_COMMITS -> result.emptyCommits = Integer.parseInt(value);
+                case MetadataKeys.FAILED_COMMITS -> result.failedCommits = Integer.parseInt(value);
                 case MetadataKeys.NON_NODE_COUNT -> result.debugData.numExportedNonNodes = Integer.parseInt(value);
                 case MetadataKeys.ADD_NODE_COUNT -> result.debugData.numExportedAddNodes = Integer.parseInt(value);
                 case MetadataKeys.REM_NODE_COUNT -> result.debugData.numExportedRemNodes = Integer.parseInt(value);
@@ -166,8 +198,11 @@ public class DiffTreeMiningResult implements Metadata<DiffTreeMiningResult> {
     @Override
     public LinkedHashMap<String, Object> snapshot() {
         LinkedHashMap<String, Object> snap = new LinkedHashMap<>();
+        snap.put(MetadataKeys.REPONAME, repoName);
         snap.put(MetadataKeys.TOTAL_COMMITS, totalCommits);
-        snap.put(MetadataKeys.COMMITS, exportedCommits);
+        snap.put(MetadataKeys.PROCESSED_COMMITS, exportedCommits);
+        snap.put(MetadataKeys.EMPTY_COMMITS, emptyCommits);
+        snap.put(MetadataKeys.FAILED_COMMITS, failedCommits);
         snap.put(MetadataKeys.TREES, exportedTrees);
         snap.put(MetadataKeys.MINCOMMIT, min.toString());
         snap.put(MetadataKeys.MAXCOMMIT, max.toString());
