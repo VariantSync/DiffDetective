@@ -6,21 +6,25 @@ import util.Assert;
 public class CommitProcessTime {
     private static final String STR_DELIMITER = "___";
     private String hash;
-    private final String repoName;
+    private String repoName;
     private long milliseconds;
 
     public CommitProcessTime(final String hash, final String reponame, long milliseconds) {
-        this.repoName = reponame;
-        set(hash, milliseconds);
+        set(hash, reponame, milliseconds);
     }
 
     public void set(final String hash, long milliseconds) {
+        set(hash, repoName, milliseconds);
+    }
+
+    public void set(final String hash, final String repoName, long milliseconds) {
         this.hash = hash;
         this.milliseconds = milliseconds;
+        this.repoName = repoName;
     }
 
     public void set(final CommitProcessTime other) {
-        set(other.hash, other.milliseconds);
+        set(other.hash, other.repoName, other.milliseconds);
     }
 
     public String hash() {
