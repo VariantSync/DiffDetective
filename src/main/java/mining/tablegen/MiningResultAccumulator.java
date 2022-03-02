@@ -4,6 +4,8 @@ import mining.DiffTreeMiner;
 import mining.DiffTreeMiningResult;
 import mining.MetadataKeys;
 import mining.dataset.MiningDataset;
+import mining.tablegen.rows.ContentRow;
+import mining.tablegen.styles.ShortTable;
 import mining.tablegen.styles.Table1;
 import org.tinylog.Logger;
 import util.IO;
@@ -104,7 +106,7 @@ public class MiningResultAccumulator {
                 ultimateResult
         );
 
-        final TableDefinition tableDef = new Table1();
+        final TableDefinition tableDef = new ShortTable();
         final String latexTable = new TableGenerator(tableDef).generateTable(datasetsWithResults, ultimateRow);
         Logger.info("Results Table:\n" + latexTable);
         IO.write(latexTablePath, latexTable);

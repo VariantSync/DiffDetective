@@ -1,7 +1,10 @@
-package mining.tablegen;
+package mining.tablegen.rows;
 
 import mining.DiffTreeMiningResult;
 import mining.dataset.MiningDataset;
+import mining.tablegen.ColumnDefinition;
+import mining.tablegen.Row;
+import mining.tablegen.TableGenerator;
 
 import java.util.List;
 

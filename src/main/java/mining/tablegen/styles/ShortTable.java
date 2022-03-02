@@ -1,14 +1,17 @@
 package mining.tablegen.styles;
 
-import mining.tablegen.ContentRow;
-import mining.tablegen.HLine;
+import mining.tablegen.rows.*;
 import mining.tablegen.Row;
 import mining.tablegen.TableDefinition;
+import pattern.atomic.AtomicPattern;
 import pattern.atomic.proposed.ProposedAtomicPatterns;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+
+import static mining.tablegen.Alignment.*;
+import static mining.tablegen.Alignment.RIGHT;
 
 public class ShortTable extends TableDefinition {
 
@@ -34,6 +37,12 @@ public class ShortTable extends TableDefinition {
                         || m.dataset().name().equalsIgnoreCase("Godot"))
                 .sorted(larger)
                 .forEach(res::add);
+
+        res.add(new HLine());
+        res.add(new DummyRow());
+        res.add(new HLine());
+        res.add(new HLine());
+        res.add(ultimateResult);
 
         return res;
     }

@@ -1,5 +1,7 @@
 package mining.tablegen;
 
+import mining.tablegen.rows.ContentRow;
+
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.List;

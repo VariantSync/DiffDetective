@@ -1,6 +1,8 @@
 package mining.tablegen.styles;
 
 import mining.tablegen.*;
+import mining.tablegen.rows.ContentRow;
+import mining.tablegen.rows.HLine;
 import pattern.atomic.AtomicPattern;
 import pattern.atomic.proposed.ProposedAtomicPatterns;
 
@@ -18,14 +20,14 @@ public class Table1 extends TableDefinition {
                 col("Domain", LEFT, row -> row.dataset().domain()),
                 col("\\#total commits", RIGHT_DASH, row -> makeReadable(row.results().totalCommits)),
                 col("\\#processed commits", RIGHT, row -> makeReadable(row.results().exportedCommits)),
-                col("\\#mined tree diffs", RIGHT, row -> makeReadable(row.results().exportedTrees))
+                col("\\#diffs", RIGHT, row -> makeReadable(row.results().exportedTrees))
         ));
 
         for (final AtomicPattern a : ProposedAtomicPatterns.Instance.all()) {
             this.columnDefinitions.add(col(a.getName(), RIGHT, row ->  makeReadable(row.results().atomicPatternCounts.getOccurences().get(a).getTotalAmount())));
         }
 
-        this.columnDefinitions.add(col("runtime (s)", RIGHT, row -> row.results().runtimeInSeconds));
+        this.columnDefinitions.add(col("runtime (s)", RIGHT, row -> makeReadable(row.results().runtimeInSeconds)));
     }
 
     @Override

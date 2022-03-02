@@ -1,5 +1,6 @@
 package mining.tablegen;
 
+import mining.tablegen.rows.ContentRow;
 import util.LaTeX;
 import util.StringUtils;
 

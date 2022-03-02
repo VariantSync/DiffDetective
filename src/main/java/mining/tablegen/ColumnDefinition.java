@@ -1,5 +1,7 @@
 package mining.tablegen;
 
+import mining.tablegen.rows.ContentRow;
+
 import java.util.function.Function;
 
 public record ColumnDefinition(

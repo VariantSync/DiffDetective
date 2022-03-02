@@ -61,7 +61,7 @@ public class AtomicPatternCount implements Metadata<AtomicPatternCount> {
     public void reportOccurrenceFor(final AtomicPattern pattern, CommitDiff commit) {
         Assert.assertTrue(
                 occurences.containsKey(pattern),
-                () ->     "Reported unkown pattern \""
+                () -> "Reported unkown pattern \""
                         + pattern.getName()
                         + "\" but expected one of "
                         + occurences.keySet().stream()
@@ -96,7 +96,10 @@ public class AtomicPatternCount implements Metadata<AtomicPatternCount> {
             commits = Integer.parseInt(innerKeyValuePair[1].split("=")[1]);
             
             // get pattern from key
-            AtomicPattern pattern = ProposedAtomicPatterns.Instance.fromName(key).get();
+            final String finalKey = key;
+            AtomicPattern pattern = ProposedAtomicPatterns.Instance.fromName(key).orElseThrow(
+                    () -> new RuntimeException("Could not find Atomic Pattern with name " + finalKey)
+            );
             
             Occurrences occurence = new Occurrences();
             occurence.totalAmount = total;
