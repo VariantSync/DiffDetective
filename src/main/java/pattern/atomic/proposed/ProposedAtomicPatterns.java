@@ -19,12 +19,12 @@ public class ProposedAtomicPatterns implements AtomicPatternCatalogue {
     public static final AtomicPattern Generalization = new Generalization();
     public static final AtomicPattern Reconfiguration = new Reconfiguration();
     public static final AtomicPattern Refactoring = new Refactoring();
-    public static final AtomicPattern Unchanged = new Unchanged();
+    public static final AtomicPattern Untouched = new Untouched();
 
     public static final List<AtomicPattern> All = List.of(
             AddToPC, AddWithMapping,
             RemFromPC, RemWithMapping,
-            Specialization, Generalization, Reconfiguration, Refactoring, Unchanged
+            Specialization, Generalization, Reconfiguration, Refactoring, Untouched
     );
 
     public static final Map<DiffType, List<AtomicPattern>> PatternsByType;
@@ -99,7 +99,7 @@ public class ProposedAtomicPatterns implements AtomicPatternCatalogue {
             // If the set of variants stayed the same.
             if (beforeVariantsSubsetOfAfterVariants && afterVariantsSubsetOfBeforeVariants) {
                 if (node.beforePathEqualsAfterPath()) {
-                    return Unchanged;
+                    return Untouched;
                 } else {
                     return Refactoring;
                 }

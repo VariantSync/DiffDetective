@@ -126,7 +126,7 @@ class NodeData:
 _ALL_PATTERN_NAMES = [
     "AddToPC", "AddWithMapping",
     "RemFromPC", "RemWithMapping",
-    "Specialization", "Generalization", "Reconfiguration", "Refactoring", "Unchanged"
+    "Specialization", "Generalization", "Reconfiguration", "Refactoring", "Untouched"
 ]
 _ALL_PATTERN_DIFFTYPES = [
      DIFFTYPE_ADD, DIFFTYPE_ADD,

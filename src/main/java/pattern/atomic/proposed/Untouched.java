@@ -9,9 +9,9 @@ import evaluation.FeatureContext;
 import org.prop4j.Node;
 import pattern.atomic.AtomicPattern;
 
-public class Unchanged extends AtomicPattern {
-    Unchanged() {
-        super("Unchanged", DiffType.NON);
+public class Untouched extends AtomicPattern {
+    Untouched() {
+        super("Untouched", DiffType.NON);
     }
 
     @Override

@@ -9,7 +9,7 @@ public abstract class TableDefinition {
     protected NumberFormat numberFormat = NumberFormat.getInstance(Locale.US);
     protected final List<ColumnDefinition> columnDefinitions;
 
-    protected TableDefinition(List<ColumnDefinition> columnDefinitions) {
+    protected TableDefinition(final List<ColumnDefinition> columnDefinitions) {
         this.columnDefinitions = columnDefinitions;
     }
 

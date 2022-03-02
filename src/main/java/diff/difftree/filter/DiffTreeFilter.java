@@ -44,7 +44,7 @@ public final class DiffTreeFilter {
         return new TaggedPredicate<>(
                 "has edits to variability",
                 tree -> tree.anyMatch(n ->
-                        n.isCode() && !AddToPC.matches(n) && !RemFromPC.matches(n) && !Unchanged.matches(n)
+                        n.isCode() && !AddToPC.matches(n) && !RemFromPC.matches(n) && !Untouched.matches(n)
                 )
         );
     }
