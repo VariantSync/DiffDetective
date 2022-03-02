@@ -143,7 +143,7 @@ public class DiffTreeMiningResult implements Metadata<DiffTreeMiningResult> {
         String value;
         
         // examine each line of the metadata file separately
-        for (final String line : lines) {
+        for (/*final*/ String line : lines) {
             keyValuePair = line.split(": ");
             key = keyValuePair[0];
             value = keyValuePair[1];
@@ -167,6 +167,14 @@ public class DiffTreeMiningResult implements Metadata<DiffTreeMiningResult> {
                     result.runtimeInSeconds = Double.parseDouble(value);
                 }
                 default -> {
+
+                    // temporary fix for renaming from Unchanged to Untouched
+                    final String unchanged = "Unchanged";
+                    if (key.startsWith(unchanged)) {
+                        key = ProposedAtomicPatterns.Untouched.getName();
+                        line = key + line.substring(unchanged.length());
+                    }
+
                     final String finalKey = key;
                     if (ProposedAtomicPatterns.All.stream().anyMatch(pattern -> pattern.getName().equals(finalKey))) {
                         atomicPatternCountsLines.add(line);
