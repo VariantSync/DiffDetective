@@ -4,6 +4,7 @@ import mining.DiffTreeMiner;
 import mining.DiffTreeMiningResult;
 import mining.MetadataKeys;
 import mining.dataset.MiningDataset;
+import mining.tablegen.styles.Table1;
 import org.tinylog.Logger;
 import util.IO;
 
@@ -11,7 +12,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.ParseException;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -80,17 +84,17 @@ public class MiningResultAccumulator {
             return;
         }
 
-        final List<Row> datasetsWithResults = allResults.entrySet().stream().map(
+        final List<ContentRow> datasetsWithResults = allResults.entrySet().stream().map(
                 entry -> {
                     final MiningDataset dataset = datasetByName.get(entry.getKey());
                     if (dataset == null) {
                         throw new RuntimeException("Could not find dataset for " + entry.getKey());
                     }
-                    return new Row(dataset, entry.getValue());
+                    return new ContentRow(dataset, entry.getValue());
                 }
         ).toList();
 
-        final Row ultimateRow = new Row(
+        final ContentRow ultimateRow = new ContentRow(
                 new MiningDataset(
                         "total",
                         "",

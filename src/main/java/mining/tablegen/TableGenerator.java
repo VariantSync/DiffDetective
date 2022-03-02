@@ -8,13 +8,15 @@ import java.util.List;
 
 public class TableGenerator {
     protected static final String INDENT = "  ";
+    protected static final String HLINE = "\\hline";
+    protected static final String HLINE_ROW = HLINE + StringUtils.LINEBREAK;
     private final TableDefinition tableDef;
 
     public TableGenerator(final TableDefinition tableDef) {
         this.tableDef = tableDef;
     }
 
-    public String generateTable(final List<Row> datasets, final Row ultimateResult) {
+    public String generateTable(final List<ContentRow> datasets, final ContentRow ultimateResult) {
         final StringBuilder table = new StringBuilder();
         table.append("\\begin{tabular}{");
         final StringBuilder tableHead = new StringBuilder();
@@ -32,36 +34,15 @@ public class TableGenerator {
         }
         table.append("}").append(StringUtils.LINEBREAK);
         table.append(tableHead);
-        table.append(INDENT).append("\\hline").append(StringUtils.LINEBREAK);
+        table.append(INDENT).append(HLINE_ROW);
 
-        final List<Row> sorted = tableDef.sortAndFilter(datasets);
+        final List<? extends Row> sorted = tableDef.sortAndFilter(datasets, ultimateResult);
         for (final Row row : sorted) {
-            table.append(toLaTeXRow(row));
+            table.append(INDENT).append(row.toLaTeXRow(tableDef.columnDefinitions()));
         }
-
-        table.append(INDENT).append("\\hline").append(StringUtils.LINEBREAK);
-        table.append(INDENT).append("\\hline").append(StringUtils.LINEBREAK);
-        table.append(toLaTeXRow(ultimateResult));
 
         table.append("\\end{tabular}").append(StringUtils.LINEBREAK);
         return table.toString();
-    }
-
-    private String toLaTeXRow(final Row row) {
-        final StringBuilder lineBuilder = new StringBuilder();
-        lineBuilder.append(INDENT);
-
-        for (int i = 0; i < tableDef.columnDefinitions().size(); ++i) {
-            final ColumnDefinition col = tableDef.columnDefinitions().get(i);
-            final boolean isLast = i == tableDef.columnDefinitions().size() - 1;
-            if (isLast) {
-                addLastCell(lineBuilder, col.getCell().apply(row));
-            } else {
-                addCell(lineBuilder, col.getCell().apply(row));
-            }
-        }
-
-        return lineBuilder.toString();
     }
 
     private static void addHeader(final StringBuilder builder, final Object val, final String delim) {
@@ -89,8 +70,8 @@ public class TableGenerator {
         builder.append(val).append(LaTeX.TABLE_ENDROW);
     }
 
-    public static List<Row> alphabeticallySorted(final List<Row> row) {
-        final List<Row> copy = new ArrayList<>(row);
+    public static List<ContentRow> alphabeticallySorted(final List<ContentRow> row) {
+        final List<ContentRow> copy = new ArrayList<>(row);
         copy.sort((r1, r2) -> r1.dataset().name().compareToIgnoreCase(r2.dataset().name()));
         return copy;
     }

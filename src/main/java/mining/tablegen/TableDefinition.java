@@ -4,6 +4,7 @@ import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.List;
 import java.util.Locale;
+import java.util.function.Function;
 
 public abstract class TableDefinition {
     protected NumberFormat numberFormat = NumberFormat.getInstance(Locale.US);
@@ -33,9 +34,17 @@ public abstract class TableDefinition {
         }
     }
 
-    public abstract List<Row> sortAndFilter(final List<Row> rows);
+    public abstract List<? extends Row> sortAndFilter(final List<ContentRow> rows, final ContentRow ultimateResult);
 
     public List<ColumnDefinition> columnDefinitions() {
         return columnDefinitions;
+    }
+
+    public static ColumnDefinition col(
+            String header,
+            Alignment alignment,
+            Function<ContentRow, Object> getCell)
+    {
+        return new ColumnDefinition(header, alignment, getCell);
     }
 }

@@ -1,9 +1,7 @@
 package mining.tablegen;
 
-import mining.DiffTreeMiningResult;
-import mining.dataset.MiningDataset;
+import java.util.List;
 
-public record Row(
-        MiningDataset dataset,
-        DiffTreeMiningResult results
-) {}
+public interface Row {
+    String toLaTeXRow(final List<ColumnDefinition> columns);
+}
