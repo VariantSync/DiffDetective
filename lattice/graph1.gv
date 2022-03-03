@@ -1,0 +1,77 @@
+digraph G {
+    
+    Level -> l3 -> l2 -> l1 -> l0;
+    compound = true;
+    newrank=true;
+    
+    
+    subgraph cluster_4 { v4_0 -> v4_1;}
+    subgraph cluster_0 { v0_0 -> v0_1 -> v0_2 -> v0_3 ->v0_4;}
+    subgraph cluster_1 { v1_0 -> v1_1;}
+    subgraph cluster_2 { v2_0 -> v2_1;}
+    subgraph cluster_3 { v3_0 -> v3_1;}
+    
+    {rank = source; Level; T;}
+    {rank = same; l3; v0_0; v1_0;}
+    {rank =same; l2; v2_0;}
+    {rank =same; l1; v3_0; v4_0}
+    {rank =same; l0;}
+    
+    T -> {v0_0, v1_0}[constraint=true];
+    v1_0 -> v2_0[constraint=true];
+    v0_0 -> v3_0[constraint=true,ltail=cluster_0,lhead=cluster_3];
+    v2_0 -> v3_0[constraint=true,ltail=cluster_2,lhead=cluster_3];
+    v2_0 -> v4_0[constraint=true];
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+/*
+e 1 0 ba
+e 2 1 b
+e 3 1 a
+e 4 3 a
+e 5 4 a
+e 6 4 a 
+subgraph cluster_t0 {
+        label = "tree 0";clusterrank=global;
+        
+        v0_0 [label = "Generalisation",
+    color=red,
+    fontcolor=blue,
+    style=filled,
+    fillcolor=yellow];
+        
+        v0_0 -> v0_1;
+        v0_1 -> v0_2 [style=bold,color=red];
+        v0_1 -> v0_3 [color=red];
+        v0_3 -> v0_4;
+        v0_4 -> v0_5;
+        v0_4 -> v0_6;
+    }
+    subgraph cluster_t1 {
+        label = "tree 1";
+        
+        v1_0 [label = "Generalisation",
+    color=red,
+    fontcolor=blue,
+    style=filled,
+    fillcolor=yellow];
+        
+        v1_0 -> v1_1;
+        v1_1 -> v1_2 [style=bold,color=red];
+        v1_1 -> v1_3 [color=red];
+        v1_3 -> v1_4;
+        v1_4 -> v1_5;
+        v1_4 -> v1_6;
+    }
+*/
+    
+}

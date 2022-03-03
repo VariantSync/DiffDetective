@@ -1,0 +1,18 @@
+digraph {
+	{
+		rank=same
+		A
+		X
+	}
+	C
+	{
+		rank=same
+		B
+		D
+		Y
+	}
+	A -> B
+	A -> C
+	C -> D
+	X -> Y
+}
