@@ -12,12 +12,17 @@ import java.nio.file.Path;
 public class MiningDatasetFactory {
     public static final String MARLIN = "Marlin";
     public static final String LINUX = "Linux";
+    public static final String PHP = "PHP";
     public static final DiffFilter DEFAULT_DIFF_FILTER =
             new DiffFilter.Builder()
                     .allowMerge(false)
                     .allowedChangeTypes(DiffEntry.ChangeType.MODIFY)
                     .allowedFileExtensions("h", "hpp", "c", "cpp")
                     .build();
+//    public static final DiffFilter PHP_DIFF_FILTER =
+//            new DiffFilter.Builder(DEFAULT_DIFF_FILTER)
+////                    .blockedPaths("ext/fileinfo/data_file.c")
+//                    .build();
 
     private final Path cloneDirectory;
 
@@ -29,6 +34,9 @@ public class MiningDatasetFactory {
         if (repositoryName.equalsIgnoreCase(MARLIN)) {
             return StanciulescuMarlin.DIFF_FILTER;
         }
+//        if (repositoryName.equalsIgnoreCase(PHP)) {
+//            return PHP_DIFF_FILTER;
+//        }
         return DEFAULT_DIFF_FILTER;
     }
 
