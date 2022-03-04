@@ -3,6 +3,10 @@ package util;
 public class Clock {
     private long startTime;
 
+    public Clock() {
+        start();
+    }
+
     public void start() {
         startTime = System.currentTimeMillis();
     }
