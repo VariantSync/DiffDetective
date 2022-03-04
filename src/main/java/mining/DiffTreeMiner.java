@@ -127,7 +127,7 @@ public class DiffTreeMiner {
                 , nodeFormat
                 , EdgeFormat(nodeFormat)
                 , new ExplainedFilter<>(DiffTreeFilter.notEmpty())
-                , Postprocessing(repository)
+                , List.of(new CutNonEditedSubtrees())
                 , DiffTreeLineGraphExportOptions.LogError()
                 .andThen(DiffTreeLineGraphExportOptions.RenderError())
                 .andThen(DiffTreeLineGraphExportOptions.SysExitOnError())

@@ -6,6 +6,7 @@ import mining.MetadataKeys;
 import mining.dataset.MiningDataset;
 import mining.tablegen.rows.ContentRow;
 import mining.tablegen.styles.ShortTable;
+import mining.tablegen.styles.VariabilityShare;
 import org.tinylog.Logger;
 import util.IO;
 
@@ -64,7 +65,7 @@ public class MiningResultAccumulator {
         }
 
         final Path inputPath = Path.of(args[0]);
-        final Path latexTablePath = Path.of(args[1]);
+        final Path latexTableDir = Path.of(args[1]);
         if (!Files.isDirectory(inputPath)) {
             throw new IllegalArgumentException("Expected path to directory but the given path is not a directory!");
         }
@@ -105,9 +106,15 @@ public class MiningResultAccumulator {
                 ultimateResult
         );
 
-        final TableDefinition tableDef = ShortTable.Relative();
-        final String latexTable = new TableGenerator(tableDef).generateTable(datasetsWithResults, ultimateRow);
-        Logger.info("Results Table:\n" + latexTable);
-        IO.write(latexTablePath, latexTable);
+        final String ultimateResultsTable = new TableGenerator(ShortTable.Relative()).generateTable(datasetsWithResults, ultimateRow);
+        Logger.info("Results Table:\n" + ultimateResultsTable);
+        IO.write(latexTableDir.resolve("ultimateresults.tex"), ultimateResultsTable);
+
+        final String variabilityTable = new TableGenerator(new VariabilityShare()).generateTable(datasetsWithResults, ultimateRow);
+        Logger.info("Results Table:\n" + variabilityTable);
+        IO.write(latexTableDir.resolve("variability.tex"), variabilityTable);
+
+        /// Calculate relative shares of variational patterns
+
     }
 }

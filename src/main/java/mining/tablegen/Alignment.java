@@ -2,11 +2,13 @@ package mining.tablegen;
 
 public enum Alignment {
     LEFT("l"),
+    LEFT_DASH("l |"),
     CENTER("c"),
     RIGHT("r"),
-    RIGHT_DASH("r |");
+    RIGHT_DASH("r |"),
+    DASH_RIGHT("| r");
 
-    private String val;
+    private final String val;
 
     Alignment(String val) {
         this.val = val;

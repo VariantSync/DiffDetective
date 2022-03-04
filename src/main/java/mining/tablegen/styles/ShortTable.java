@@ -7,11 +7,12 @@ import mining.tablegen.TableDefinition;
 import mining.tablegen.rows.ContentRow;
 import mining.tablegen.rows.DummyRow;
 import mining.tablegen.rows.HLine;
+import org.apache.commons.lang3.function.TriFunction;
 import pattern.atomic.AtomicPattern;
 import pattern.atomic.proposed.ProposedAtomicPatterns;
+import util.LaTeX;
 
 import java.util.*;
-import java.util.function.BiFunction;
 
 import static mining.tablegen.Alignment.*;
 
@@ -33,18 +34,26 @@ public class ShortTable extends TableDefinition {
         return t;
     }
 
-    private static List<ColumnDefinition> columns(final ShortTable t, final BiFunction<AtomicPattern, ContentRow, Number> getPatternCount) {
+    private static List<ColumnDefinition> columns(final ShortTable t, final TriFunction<ShortTable, AtomicPattern, ContentRow, String> getPatternCount) {
         final List<ColumnDefinition> cols = new ArrayList<>(List.of(
                 col("Name", LEFT, row -> row.dataset().name()),
-                col("Domain", LEFT, row -> row.dataset().domain()),
-                col("\\#total commits", RIGHT_DASH, row -> t.makeReadable(row.results().totalCommits)),
+                col("Domain", LEFT_DASH, row -> row.dataset().domain()),
+                col("\\#total\\\\ commits", RIGHT, row -> t.makeReadable(row.results().totalCommits)),
                 col("\\#processed commits", RIGHT, row -> t.makeReadable(row.results().exportedCommits)),
-                col("\\#diffs", RIGHT, row -> t.makeReadable(row.results().exportedTrees))
+                col("\\#diffs", RIGHT, row -> t.makeReadable(row.results().exportedTrees)),
+                col("\\#artifact nodes", RIGHT_DASH, row -> t.makeReadable(row
+                        .results()
+                        .atomicPatternCounts
+                        .getOccurences()
+                        .values().stream()
+                        .map(AtomicPatternCount.Occurrences::getTotalAmount)
+                        .reduce(0, Integer::sum)
+                ))
         ));
 
         for (final AtomicPattern a : ProposedAtomicPatterns.Instance.all()) {
             if (a != ProposedAtomicPatterns.Untouched) {
-                cols.add(col(a.getName(), RIGHT, row -> t.makeReadable(getPatternCount.apply(a, row))));
+                cols.add(col(a.getName(), RIGHT, row -> getPatternCount.apply(t, a, row)));
             }
         }
 
@@ -53,11 +62,11 @@ public class ShortTable extends TableDefinition {
         return cols;
     }
 
-    private static int absoluteCountOf(final AtomicPattern pattern, final ContentRow row) {
-        return row.results().atomicPatternCounts.getOccurences().get(pattern).getTotalAmount();
+    private static String absoluteCountOf(final ShortTable t, final AtomicPattern pattern, final ContentRow row) {
+        return t.makeReadable(row.results().atomicPatternCounts.getOccurences().get(pattern).getTotalAmount());
     }
 
-    private static double relativeCountOf(final AtomicPattern pattern, final ContentRow row) {
+    private static String relativeCountOf(final ShortTable t, final AtomicPattern pattern, final ContentRow row) {
         final LinkedHashMap<AtomicPattern, AtomicPatternCount.Occurrences> patternOccurrences =
                 row.results().atomicPatternCounts.getOccurences();
 
@@ -66,7 +75,7 @@ public class ShortTable extends TableDefinition {
             numTotalMatches += occurrence.getValue().getTotalAmount();
         }
 
-        return 100.0 * ((double) patternOccurrences.get(pattern).getTotalAmount()) / ((double) numTotalMatches);
+        return t.makeReadable(100.0 * ((double) patternOccurrences.get(pattern).getTotalAmount()) / ((double) numTotalMatches)) + "\\%";
     }
 
     @Override
@@ -88,7 +97,7 @@ public class ShortTable extends TableDefinition {
                 .forEach(res::add);
 
         res.add(new HLine());
-        res.add(new DummyRow());
+        res.add(cols -> "\\multicolumn{2}{c}{36 other systems} & \\multicolumn{" + (cols.size() - 2) + "}{c}{\\vdots}" + LaTeX.TABLE_ENDROW);
         res.add(new HLine());
         res.add(new HLine());
         res.add(ultimateResult);
