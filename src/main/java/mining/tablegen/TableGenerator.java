@@ -10,7 +10,7 @@ import java.util.List;
 public class TableGenerator {
     protected static final String INDENT = "  ";
     protected static final String HLINE = "\\hline";
-    protected static final String HLINE_ROW = HLINE + StringUtils.LINEBREAK;
+    public static final String HLINE_ROW = HLINE + StringUtils.LINEBREAK;
     private final TableDefinition tableDef;
 
     public TableGenerator(final TableDefinition tableDef) {

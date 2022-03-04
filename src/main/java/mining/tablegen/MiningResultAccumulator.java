@@ -6,7 +6,6 @@ import mining.MetadataKeys;
 import mining.dataset.MiningDataset;
 import mining.tablegen.rows.ContentRow;
 import mining.tablegen.styles.ShortTable;
-import mining.tablegen.styles.Table1;
 import org.tinylog.Logger;
 import util.IO;
 
@@ -106,7 +105,7 @@ public class MiningResultAccumulator {
                 ultimateResult
         );
 
-        final TableDefinition tableDef = new ShortTable();
+        final TableDefinition tableDef = ShortTable.Relative();
         final String latexTable = new TableGenerator(tableDef).generateTable(datasetsWithResults, ultimateRow);
         Logger.info("Results Table:\n" + latexTable);
         IO.write(latexTablePath, latexTable);

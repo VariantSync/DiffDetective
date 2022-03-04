@@ -16,6 +16,10 @@ public abstract class TableDefinition {
         this.columnDefinitions = columnDefinitions;
     }
 
+    public String makeReadable(Number number) {
+        return numberFormat.format(number);
+    }
+
     public String makeReadable(int number) {
         return numberFormat.format(number);
     }
