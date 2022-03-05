@@ -17,19 +17,21 @@ import java.util.*;
 import static mining.tablegen.Alignment.*;
 
 public class ShortTable extends TableDefinition {
+    private final boolean filtered;
 
-    private ShortTable() {
+    private ShortTable(boolean filtered) {
         super(new ArrayList<>());
+        this.filtered = filtered;
     }
 
-    public static ShortTable Absolute() {
-        final ShortTable t = new ShortTable();
+    public static ShortTable Absolute(boolean filtered) {
+        final ShortTable t = new ShortTable(filtered);
         t.columnDefinitions.addAll(columns(t, ShortTable::absoluteCountOf));
         return t;
     }
 
-    public static ShortTable Relative() {
-        final ShortTable t = new ShortTable();
+    public static ShortTable Relative(boolean filtered) {
+        final ShortTable t = new ShortTable(filtered);
         t.columnDefinitions.addAll(columns(t, ShortTable::relativeCountOf));
         return t;
     }
@@ -80,24 +82,31 @@ public class ShortTable extends TableDefinition {
 
     @Override
     public List<? extends Row> sortAndFilter(final List<ContentRow> rows, final ContentRow ultimateResult) {
-        final Comparator<ContentRow> larger = (a, b) -> -Integer.compare(a.results().totalCommits, b.results().totalCommits);
-        final List<Row> res = rows.stream()
-                .sorted(larger)
-                .limit(4)
-                .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
+        final List<Row> res;
 
-        res.add(new HLine());
+        if (filtered) {
+            final Comparator<ContentRow> larger = (a, b) -> -Integer.compare(a.results().totalCommits, b.results().totalCommits);
+            res = rows.stream()
+                    .sorted(larger)
+                    .limit(4)
+                    .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
 
-        rows.stream()
-                .filter(m -> m.dataset().name().equalsIgnoreCase("Marlin")
-                        || m.dataset().name().equalsIgnoreCase("libssh")
-                        || m.dataset().name().equalsIgnoreCase("Busybox")
-                        || m.dataset().name().equalsIgnoreCase("Godot"))
-                .sorted(larger)
-                .forEach(res::add);
+            res.add(new HLine());
 
-        res.add(new HLine());
-        res.add(cols -> "\\multicolumn{2}{c}{36 other systems} & \\multicolumn{" + (cols.size() - 2) + "}{c}{\\vdots}" + LaTeX.TABLE_ENDROW);
+            rows.stream()
+                    .filter(m -> m.dataset().name().equalsIgnoreCase("Marlin")
+                            || m.dataset().name().equalsIgnoreCase("libssh")
+                            || m.dataset().name().equalsIgnoreCase("Busybox")
+                            || m.dataset().name().equalsIgnoreCase("Godot"))
+                    .sorted(larger)
+                    .forEach(res::add);
+
+            res.add(new HLine());
+            res.add(cols -> "\\multicolumn{2}{c}{36 other systems} & \\multicolumn{" + (cols.size() - 2) + "}{c}{\\vdots}" + LaTeX.TABLE_ENDROW);
+        } else {
+            res = new ArrayList<>(rows);
+        }
+
         res.add(new HLine());
         res.add(new HLine());
         res.add(ultimateResult);

@@ -11,13 +11,17 @@ import pattern.atomic.proposed.ProposedAtomicPatterns;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import static mining.tablegen.Alignment.*;
 
 public class VariabilityShare extends TableDefinition {
-    public VariabilityShare() {
+    private final Supplier<TableDefinition> inner;
+
+    public VariabilityShare(final Supplier<TableDefinition> inner) {
         super(new ArrayList<>());
+        this.inner = inner;
 
         this.columnDefinitions.addAll(List.of(
                 col("Name", LEFT_DASH, row -> row.dataset().name()),
@@ -53,6 +57,6 @@ public class VariabilityShare extends TableDefinition {
 
     @Override
     public List<? extends Row> sortAndFilter(List<ContentRow> rows, ContentRow ultimateResult) {
-        return ShortTable.Relative().sortAndFilter(rows, ultimateResult);
+        return inner.get().sortAndFilter(rows, ultimateResult);
     }
 }

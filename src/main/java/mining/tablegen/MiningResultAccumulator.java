@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -106,15 +107,24 @@ public class MiningResultAccumulator {
                 ultimateResult
         );
 
-        final String ultimateResultsTable = new TableGenerator(ShortTable.Relative()).generateTable(datasetsWithResults, ultimateRow);
-        Logger.info("Results Table:\n" + ultimateResultsTable);
-        IO.write(latexTableDir.resolve("ultimateresults.tex"), ultimateResultsTable);
+        for (boolean filtered : List.of(true, false)) {
 
-        final String variabilityTable = new TableGenerator(new VariabilityShare()).generateTable(datasetsWithResults, ultimateRow);
-        Logger.info("Results Table:\n" + variabilityTable);
-        IO.write(latexTableDir.resolve("variability.tex"), variabilityTable);
+            for (final boolean absolute : List.of(true, false)) {
+                final Supplier<TableDefinition> tableDefFactory = absolute
+                        ? (() -> ShortTable.Relative(filtered))
+                        : (() -> ShortTable.Absolute(filtered));
+                String prefix = filtered ? "filtered_" : "all_";
+                prefix += absolute ? "absolute_" : "relative_";
 
-        /// Calculate relative shares of variational patterns
+                final String ultimateResultsTable = new TableGenerator(tableDefFactory.get()).generateTable(datasetsWithResults, ultimateRow);
+                Logger.info("Results Table:\n" + ultimateResultsTable);
+                IO.write(latexTableDir.resolve(prefix + "ultimateresults.tex"), ultimateResultsTable);
+
+                final String variabilityTable = new TableGenerator(new VariabilityShare(tableDefFactory)).generateTable(datasetsWithResults, ultimateRow);
+                Logger.info("Results Table:\n" + variabilityTable);
+                IO.write(latexTableDir.resolve(prefix + "variability.tex"), variabilityTable);
+            }
+        }
 
     }
 }

@@ -25,6 +25,9 @@ public abstract class TableDefinition {
     }
 
     public String makeReadable(double number) {
+        if (Double.isInfinite(number) || Double.isNaN(number)) {
+            return "--";
+        }
         return numberFormat.format(number);
     }
 
