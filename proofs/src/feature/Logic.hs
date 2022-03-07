@@ -6,20 +6,20 @@ Type class for reasoning on 'Logic's.
 -}
 module Logic where
 
-class Negatable n where
+class Negatable f where
     -- | Negation of a logical formula.
-    lnot :: n -> n
+    lnot :: f -> f
 
-class HasNeutral n where
-    ltrue :: n
+class HasNeutral f where
+    ltrue :: f
 
-class Composable n where
-    land :: [n] -> n
+class Composable f where
+    land :: [f] -> f
 
-class Comparable n where
-    limplies :: n -> n -> Bool
+class Comparable f where
+    limplies :: f -> f -> Bool
     
-    lequivalent :: n -> n -> Bool
+    lequivalent :: f -> f -> Bool
     lequivalent a b = a `limplies` b && b `limplies` a
 
 {- |

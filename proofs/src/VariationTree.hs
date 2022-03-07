@@ -134,8 +134,10 @@ instance Show (l f) => Show (VariationTree l f) where
 ofParent :: (VTNode t f -> f) -> VariationTree t f -> VTNode t f -> Maybe f
 ofParent property tree node = property <$> parent tree node
 
-featureMappingOfParent :: VTLabel t => VariationTree t f -> VTNode t f -> Maybe f
+featureMappingOfParent :: VTLabel t =>
+    VariationTree t f -> VTNode t f -> Maybe f
 featureMappingOfParent tree = ofParent (featuremapping tree) tree
 
-presenceConditionOfParent :: VTLabel t => VariationTree t f -> VTNode t f -> Maybe f
+presenceConditionOfParent :: VTLabel t =>
+    VariationTree t f -> VTNode t f -> Maybe f
 presenceConditionOfParent tree = ofParent (presencecondition tree) tree
