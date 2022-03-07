@@ -111,8 +111,8 @@ public class MiningResultAccumulator {
 
             for (final boolean absolute : List.of(true, false)) {
                 final Supplier<TableDefinition> tableDefFactory = absolute
-                        ? (() -> ShortTable.Relative(filtered))
-                        : (() -> ShortTable.Absolute(filtered));
+                        ? (() -> ShortTable.Absolute(filtered))
+                        : (() -> ShortTable.Relative(filtered));
                 String prefix = filtered ? "filtered_" : "all_";
                 prefix += absolute ? "absolute_" : "relative_";
 
