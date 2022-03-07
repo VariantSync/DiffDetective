@@ -5,7 +5,6 @@ import mining.tablegen.ColumnDefinition;
 import mining.tablegen.Row;
 import mining.tablegen.TableDefinition;
 import mining.tablegen.rows.ContentRow;
-import mining.tablegen.rows.DummyRow;
 import mining.tablegen.rows.HLine;
 import org.apache.commons.lang3.function.TriFunction;
 import pattern.atomic.AtomicPattern;
@@ -101,7 +100,7 @@ public class ShortTable extends TableDefinition {
                     .sorted(larger)
                     .forEach(res::add);
 
-            res.add(new HLine());
+//            res.add(new HLine());
             res.add(cols -> "\\multicolumn{2}{c}{36 other systems} & \\multicolumn{" + (cols.size() - 2) + "}{c}{\\vdots}" + LaTeX.TABLE_ENDROW);
         } else {
             res = new ArrayList<>(rows);
