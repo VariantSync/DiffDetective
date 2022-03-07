@@ -14,8 +14,8 @@ data MinimalLabels f where
 instance VTLabel MinimalLabels where
     makeArtifactLabel = Artifact
     makeMappingLabel = Mapping
-    isMapping (Mapping _) = True
-    isMapping _ = False
+    -- isMapping (Mapping _) = True
+    -- isMapping _ = False
 
     featuremapping tree node@(VTNode _ label) = case label of
         Artifact _ -> fromJust $ featureMappingOfParent tree node

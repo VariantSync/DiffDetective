@@ -40,7 +40,7 @@ isTree tree@(VariationTree nodes edges) = and [
 class VTLabel l where
     makeArtifactLabel :: ArtifactReference -> l f
     makeMappingLabel :: (Composable f) => f -> l f
-    isMapping :: l f -> Bool
+    -- isMapping :: l f -> Bool
 
     featuremapping :: VariationTree l f -> VTNode l f -> f
     presencecondition :: VariationTree l f -> VTNode l f -> f
@@ -79,7 +79,7 @@ fromIndices nodeSet (from, to) = VTEdge {
 }
 
 parent :: VariationTree l f -> VTNode l f -> Maybe (VTNode l f)
-parent (VariationTree _ edges) node = parentNode <$> find (\edge -> childNode edge == node) edges
+parent (VariationTree _ edges) v = fmap parentNode (find (\edge -> childNode edge == v) edges)
 
 children :: VariationTree l f -> VTNode l f -> [VTNode l f]
 children (VariationTree _ edges) node = childNode <$> Data.List.filter (\edge -> parentNode edge == node) edges

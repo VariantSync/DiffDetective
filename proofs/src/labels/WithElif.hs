@@ -15,8 +15,8 @@ data WithElif f where
 instance VTLabel WithElif where
     makeArtifactLabel = Artifact
     makeMappingLabel = Mapping
-    isMapping (Artifact _) = False
-    isMapping _ = True
+    -- isMapping (Artifact _) = False
+    -- isMapping _ = True
 
     featuremapping tree node@(VTNode _ label) = case label of
         Artifact _ -> fromJust $ featureMappingOfParent tree node
