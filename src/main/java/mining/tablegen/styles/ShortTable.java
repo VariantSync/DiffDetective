@@ -101,7 +101,13 @@ public class ShortTable extends TableDefinition {
                     .forEach(res::add);
 
 //            res.add(new HLine());
-            res.add(cols -> "\\multicolumn{2}{c}{36 other systems} & \\multicolumn{" + (cols.size() - 2) + "}{c}{\\vdots}" + LaTeX.TABLE_ENDROW);
+//            res.add(cols -> "\\multicolumn{2}{c}{36 other systems} & \\multicolumn{" + (cols.size() - 2) + "}{c}{\\vdots}" + LaTeX.TABLE_ENDROW);
+            final String innerColumnHeader = ">{\\centering}m{.333333\\linewidth}";
+            final String vdots = "$\\vdots$";
+            res.add(cols -> "\\multicolumn{" + cols.size() + "}{c}{\\begin{tabular}{"
+                    + innerColumnHeader + innerColumnHeader + innerColumnHeader + "} "
+                    + vdots + " & 36 other systems & " + vdots
+                    + "\\end{tabular}}" + LaTeX.TABLE_ENDROW);
         } else {
             res = new ArrayList<>(rows);
         }
