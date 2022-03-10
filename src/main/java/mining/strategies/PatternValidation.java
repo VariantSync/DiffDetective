@@ -7,12 +7,16 @@ import diff.difftree.serialize.DiffTreeLineGraphExportOptions;
 import diff.difftree.transform.DiffTreeTransformer;
 import diff.result.CommitDiffResult;
 import metadata.ExplainedFilterSummary;
+import mining.DiffTreeMiner;
 import mining.DiffTreeMiningResult;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.tinylog.Logger;
 import pattern.atomic.proposed.ProposedAtomicPatterns;
 import util.Clock;
 import util.FileUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class PatternValidation extends CommitHistoryAnalysisTask {
     public PatternValidation(Options options) {
@@ -23,6 +27,7 @@ public class PatternValidation extends CommitHistoryAnalysisTask {
     public DiffTreeMiningResult call() throws Exception {
         final DiffTreeMiningResult miningResult = super.call();
         final DiffTreeLineGraphExportOptions exportOptions = options.exportOptions();
+        final List<CommitProcessTime> commitTimes = new ArrayList<>(DiffTreeMiner.COMMITS_TO_PROCESS_PER_THREAD);
         final Clock totalTime = new Clock();
         totalTime.start();
         final Clock commitProcessTimer = new Clock();
@@ -79,6 +84,7 @@ public class PatternValidation extends CommitHistoryAnalysisTask {
                 if (commitTimeMS < miningResult.min.milliseconds()) {
                     miningResult.min.set(commitDiff.getCommitHash(), commitTimeMS);
                 }
+                commitTimes.add(new CommitProcessTime(commitDiff.getCommitHash(), options.repository().getRepositoryName(), commitTimeMS));
                 ++miningResult.exportedCommits;
             } else {
                 ++miningResult.emptyCommits;
@@ -88,6 +94,7 @@ public class PatternValidation extends CommitHistoryAnalysisTask {
         options.miningStrategy().end();
         miningResult.runtimeInSeconds = totalTime.getPassedSeconds();
         miningResult.exportTo(FileUtils.addExtension(options.outputPath(), DiffTreeMiningResult.EXTENSION));
+        exportCommitTimes(commitTimes, FileUtils.addExtension(options.outputPath(), COMMIT_TIME_FILE_EXTENSION));
         return miningResult;
     }
 }

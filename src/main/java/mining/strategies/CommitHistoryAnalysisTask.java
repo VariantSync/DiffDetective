@@ -6,11 +6,18 @@ import diff.difftree.serialize.DiffTreeLineGraphExportOptions;
 import mining.DiffTreeMiningResult;
 import mining.MetadataKeys;
 import org.eclipse.jgit.revwalk.RevCommit;
+import org.tinylog.Logger;
+import util.IO;
+import util.StringUtils;
 
+import java.io.IOException;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.concurrent.Callable;
 
 public abstract class CommitHistoryAnalysisTask implements Callable<DiffTreeMiningResult> {
+    public static final String COMMIT_TIME_FILE_EXTENSION = ".committimes.txt";
+
     public record Options(
         Repository repository,
         GitDiffer differ,
@@ -43,5 +50,20 @@ public abstract class CommitHistoryAnalysisTask implements Callable<DiffTreeMini
         miningResult.putCustomInfo(MetadataKeys.TASKNAME, this.getClass().getName());
 
         return miningResult;
+    }
+
+    public static void exportCommitTimes(final List<CommitProcessTime> commitTimes, final Path pathToOutputFile) {
+        final StringBuilder times = new StringBuilder();
+
+        for (final CommitProcessTime ct : commitTimes) {
+            times.append(ct.toString()).append(StringUtils.LINEBREAK);
+        }
+
+        try {
+            IO.write(pathToOutputFile, times.toString());
+        } catch (IOException e) {
+            Logger.error(e);
+            System.exit(0);
+        }
     }
 }
