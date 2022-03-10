@@ -36,6 +36,7 @@ public class DiffTreeMiningResult implements Metadata<DiffTreeMiningResult> {
         a.failedCommits += b.failedCommits;
         a.exportedTrees += b.exportedTrees;
         a.runtimeInSeconds += b.runtimeInSeconds;
+        a.runtimeWithMultithreadingInSeconds += b.runtimeWithMultithreadingInSeconds;
         a.min.set(CommitProcessTime.min(a.min, b.min));
         a.max.set(CommitProcessTime.max(a.max, b.max));
         a.debugData.append(b.debugData);
@@ -70,6 +71,7 @@ public class DiffTreeMiningResult implements Metadata<DiffTreeMiningResult> {
     public int failedCommits;
     public int exportedTrees;
     public double runtimeInSeconds;
+    public double runtimeWithMultithreadingInSeconds;
     public final CommitProcessTime min, max;
     public final DiffTreeSerializeDebugData debugData;
     public ExplainedFilterSummary filterHits;
@@ -82,7 +84,7 @@ public class DiffTreeMiningResult implements Metadata<DiffTreeMiningResult> {
     }
 
     public DiffTreeMiningResult(final String repoName) {
-        this(repoName, 0, 0, 0, 0, 0, 0, CommitProcessTime.Unknown(repoName, Long.MAX_VALUE), CommitProcessTime.Unknown(repoName, Long.MIN_VALUE), new DiffTreeSerializeDebugData(), new ExplainedFilterSummary());
+        this(repoName, 0, 0, 0, 0, 0, 0, 0, CommitProcessTime.Unknown(repoName, Long.MAX_VALUE), CommitProcessTime.Unknown(repoName, Long.MIN_VALUE), new DiffTreeSerializeDebugData(), new ExplainedFilterSummary());
     }
 
     public DiffTreeMiningResult(
@@ -93,6 +95,7 @@ public class DiffTreeMiningResult implements Metadata<DiffTreeMiningResult> {
             int failedCommits,
             int exportedTrees,
             double runtimeInSeconds,
+            double runtimeWithMultithreadingInSeconds,
             final CommitProcessTime min,
             final CommitProcessTime max,
             final DiffTreeSerializeDebugData debugData,
@@ -105,6 +108,7 @@ public class DiffTreeMiningResult implements Metadata<DiffTreeMiningResult> {
         this.failedCommits = failedCommits;
         this.exportedTrees = exportedTrees;
         this.runtimeInSeconds = runtimeInSeconds;
+        this.runtimeWithMultithreadingInSeconds = runtimeWithMultithreadingInSeconds;
         this.debugData = debugData;
         this.filterHits = filterHits;
         this.atomicPatternCounts = new AtomicPatternCount();
@@ -166,6 +170,12 @@ public class DiffTreeMiningResult implements Metadata<DiffTreeMiningResult> {
                     }
                     result.runtimeInSeconds = Double.parseDouble(value);
                 }
+                case MetadataKeys.RUNTIME_WITH_MULTITHREADING -> {
+                    if (value.endsWith("s")) {
+                        value = value.substring(0, value.length() - 1);
+                    }
+                    result.runtimeWithMultithreadingInSeconds = Double.parseDouble(value);
+                }
                 default -> {
 
                     // temporary fix for renaming from Unchanged to Untouched
@@ -215,6 +225,7 @@ public class DiffTreeMiningResult implements Metadata<DiffTreeMiningResult> {
         snap.put(MetadataKeys.MINCOMMIT, min.toString());
         snap.put(MetadataKeys.MAXCOMMIT, max.toString());
         snap.put(MetadataKeys.RUNTIME, runtimeInSeconds);
+        snap.put(MetadataKeys.RUNTIME_WITH_MULTITHREADING, runtimeWithMultithreadingInSeconds);
         snap.putAll(customInfo);
         snap.putAll(debugData.snapshot());
         snap.putAll(filterHits.snapshot());

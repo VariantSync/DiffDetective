@@ -13,6 +13,7 @@ public final class MetadataKeys {
     public final static String REM_NODE_COUNT = "#REM nodes";
 
     public final static String RUNTIME = "runtime in seconds";
+    public final static String RUNTIME_WITH_MULTITHREADING = "runtime with multithreading in seconds";
     public final static String TOTAL_COMMITS = "total commits";
     public final static String PROCESSED_COMMITS = "processed commits";
     public final static String EMPTY_COMMITS = "empty commits";
