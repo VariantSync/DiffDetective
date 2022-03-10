@@ -9,6 +9,7 @@ import mining.DiffTreeMiningResult;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.tinylog.Logger;
 import pattern.atomic.proposed.ProposedAtomicPatterns;
+import util.Clock;
 import util.FileUtils;
 
 public class MiningTask extends CommitHistoryAnalysisTask {
@@ -19,6 +20,9 @@ public class MiningTask extends CommitHistoryAnalysisTask {
     @Override
     public DiffTreeMiningResult call() throws Exception {
         final DiffTreeMiningResult miningResult = super.call();
+
+        final Clock totalTime = new Clock();
+        totalTime.start();
 
         for (final RevCommit commit : options.commits()) {
             final CommitDiffResult commitDiffResult = options.differ().createCommitDiff(commit);
@@ -56,6 +60,7 @@ public class MiningTask extends CommitHistoryAnalysisTask {
         }
 
         options.miningStrategy().end();
+        miningResult.runtimeInSeconds = totalTime.getPassedSeconds();
         miningResult.exportTo(FileUtils.addExtension(options.outputPath(), DiffTreeMiningResult.EXTENSION));
         return miningResult;
     }

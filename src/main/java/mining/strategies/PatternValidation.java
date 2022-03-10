@@ -23,6 +23,8 @@ public class PatternValidation extends CommitHistoryAnalysisTask {
     public DiffTreeMiningResult call() throws Exception {
         final DiffTreeMiningResult miningResult = super.call();
         final DiffTreeLineGraphExportOptions exportOptions = options.exportOptions();
+        final Clock totalTime = new Clock();
+        totalTime.start();
         final Clock commitProcessTimer = new Clock();
 
         for (final RevCommit commit : options.commits()) {
@@ -84,6 +86,7 @@ public class PatternValidation extends CommitHistoryAnalysisTask {
         }
 
         options.miningStrategy().end();
+        miningResult.runtimeInSeconds = totalTime.getPassedSeconds();
         miningResult.exportTo(FileUtils.addExtension(options.outputPath(), DiffTreeMiningResult.EXTENSION));
         return miningResult;
     }

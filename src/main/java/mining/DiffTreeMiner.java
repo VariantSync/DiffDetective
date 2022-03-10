@@ -250,7 +250,6 @@ public class DiffTreeMiner {
         final double runtime = clock.getPassedSeconds();
         Logger.info("<<< done in " + Clock.printPassedSeconds(runtime));
 
-        totalResult.runtimeInSeconds =  runtime;
         totalResult.totalCommits = numberOfTotalCommits.invocationCount().get();
 
         exportMetadata(outputDir, totalResult);
