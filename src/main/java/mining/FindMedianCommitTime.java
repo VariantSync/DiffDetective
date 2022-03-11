@@ -44,14 +44,19 @@ public class FindMedianCommitTime {
 
         final CommitProcessTime[] alltimesArray = alltimes.toArray(CommitProcessTime[]::new);
         Arrays.parallelSort(alltimesArray, Comparator.comparingDouble(CommitProcessTime::milliseconds));
+        final int numTotalCommits = alltimesArray.length;
 
         final StringBuilder results = new StringBuilder();
-        results.append("#: " + alltimesArray.length).append(StringUtils.LINEBREAK);
+        results.append("#Commits: " + numTotalCommits).append(StringUtils.LINEBREAK);
         results.append("Total   commit process time is: " + ((sum / 1000.0) / 60.0) + "min").append(StringUtils.LINEBREAK);
         results.append("Fastest commit process time is: " + alltimesArray[0]).append(StringUtils.LINEBREAK);
         results.append("Slowest commit process time is: " + alltimesArray[alltimesArray.length - 1]).append(StringUtils.LINEBREAK);
         results.append("Median  commit process time is: " + alltimesArray[alltimesArray.length / 2]).append(StringUtils.LINEBREAK);
-        results.append("Average commit process time is: " + (sum / ((double) alltimesArray.length)) + "ms").append(StringUtils.LINEBREAK);
+        results.append("Average commit process time is: " + (sum / ((double) numTotalCommits)) + "ms").append(StringUtils.LINEBREAK);
+
+        if (alltimesArray.length != NUM_EXPECTED_COMMITS) {
+            Logger.error("Expected " + NUM_EXPECTED_COMMITS + " commits but got " + numTotalCommits + "! " + (NUM_EXPECTED_COMMITS - numTotalCommits) + " commits are missing!");
+        }
 
         final String resultsStr = results.toString();
         Logger.info("Results:\n" + resultsStr);
