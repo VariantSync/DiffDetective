@@ -25,6 +25,7 @@ import mining.formats.MiningNodeFormat;
 import mining.formats.ReleaseMiningDiffNodeFormat;
 import mining.monitoring.TaskCompletionMonitor;
 import mining.strategies.*;
+import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.tinylog.Logger;
@@ -265,7 +266,7 @@ public class DiffTreeMiner {
         Logger.info("Metadata:\n" + prettyMetadata);
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
 //        setupLogger(Level.INFO);
 //        setupLogger(Level.DEBUG);
 
@@ -372,5 +373,8 @@ public class DiffTreeMiner {
         }
 
         Logger.info("Done");
+
+        final String logFile = "log.txt";
+        FileUtils.copyFile(Path.of(logFile).toFile(), outputDir.resolve(logFile).toFile());
     }
 }
