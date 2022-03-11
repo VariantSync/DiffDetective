@@ -159,6 +159,7 @@ public class DiffTreeMiningResult implements Metadata<DiffTreeMiningResult> {
                 case MetadataKeys.TOTAL_COMMITS -> result.totalCommits = Integer.parseInt(value);
                 case MetadataKeys.EMPTY_COMMITS -> result.emptyCommits = Integer.parseInt(value);
                 case MetadataKeys.FAILED_COMMITS -> result.failedCommits = Integer.parseInt(value);
+                case MetadataKeys.FILTERED_COMMITS -> { /* Do nothing because this value is derived. */ }
                 case MetadataKeys.NON_NODE_COUNT -> result.debugData.numExportedNonNodes = Integer.parseInt(value);
                 case MetadataKeys.ADD_NODE_COUNT -> result.debugData.numExportedAddNodes = Integer.parseInt(value);
                 case MetadataKeys.REM_NODE_COUNT -> result.debugData.numExportedRemNodes = Integer.parseInt(value);
@@ -218,9 +219,10 @@ public class DiffTreeMiningResult implements Metadata<DiffTreeMiningResult> {
         LinkedHashMap<String, Object> snap = new LinkedHashMap<>();
         snap.put(MetadataKeys.REPONAME, repoName);
         snap.put(MetadataKeys.TOTAL_COMMITS, totalCommits);
-        snap.put(MetadataKeys.PROCESSED_COMMITS, exportedCommits);
-        snap.put(MetadataKeys.EMPTY_COMMITS, emptyCommits);
+        snap.put(MetadataKeys.FILTERED_COMMITS, totalCommits - exportedCommits - emptyCommits - failedCommits);
         snap.put(MetadataKeys.FAILED_COMMITS, failedCommits);
+        snap.put(MetadataKeys.EMPTY_COMMITS, emptyCommits);
+        snap.put(MetadataKeys.PROCESSED_COMMITS, exportedCommits);
         snap.put(MetadataKeys.TREES, exportedTrees);
         snap.put(MetadataKeys.MINCOMMIT, min.toString());
         snap.put(MetadataKeys.MAXCOMMIT, max.toString());
