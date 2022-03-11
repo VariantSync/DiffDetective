@@ -58,7 +58,8 @@ public class ShortTable extends TableDefinition {
             }
         }
 
-        cols.add(col("runtime (s)", RIGHT, row -> t.makeReadable(row.results().runtimeInSeconds)));
+        cols.add(col("runtime", DASH_RIGHT, row -> t.makeReadable(row.results().runtimeInSeconds) + "s"));
+        cols.add(col("runtime /\\\\ processed commit", RIGHT, row -> t.makeReadable(row.results().runtimeInSeconds / row.results().exportedCommits) + "s"));
 
         return cols;
     }
