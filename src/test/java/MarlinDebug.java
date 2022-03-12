@@ -73,7 +73,8 @@ public class MarlinDebug {
                     ""
             );
             PHP = new RepoInspection(
-                    List.of("e2182a1ba7cdd3c915cf29cd8367a6e02a0c10c8"),
+//                    List.of("e2182a1ba7cdd3c915cf29cd8367a6e02a0c10c8"),
+                    List.of("16d7fd9d7f4849c88acbbfb04f7e09b7c58fd73f"),
                     new MiningDatasetFactory(reposPath).create(php),
                     OUTPATH.resolve(php.name())
             );
@@ -143,9 +144,24 @@ public class MarlinDebug {
         m.call();
     }
 
+    public static void asValidationTask(final RepoInspection repoInspection, final String commitHash) throws Exception {
+        final Git git = repoInspection.repo.getGitRepo().run();
+        Assert.assertNotNull(git);
+        final RevWalk revWalk = new RevWalk(git.getRepository());
+        final RevCommit childCommit = revWalk.parseCommit(ObjectId.fromString(commitHash));
+
+        DiffTreeMiner.Validate().create(
+                repoInspection.repo,
+                new GitDiffer(repoInspection.repo),
+                repoInspection.outputPath,
+                List.of(childCommit)
+        ).call();
+    }
+
     public static void test(final RepoInspection repoInspection) throws Exception {
         for (final String spooky : repoInspection.suspiciousCommits) {
             testCommit(repoInspection, spooky);
+//            asValidationTask(repoInspection, spooky);
 //            asMiningTask(repoInspection, spooky);
         }
     }
