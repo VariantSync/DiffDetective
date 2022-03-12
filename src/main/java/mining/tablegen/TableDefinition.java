@@ -31,6 +31,13 @@ public abstract class TableDefinition {
         return numberFormat.format(number);
     }
 
+    public String makeReadable(long number) {
+        if (number == -1) {
+            return "--";
+        }
+        return numberFormat.format(number);
+    }
+
     public String makeReadable(String number) {
         if (number.isBlank()) {
             return number;
