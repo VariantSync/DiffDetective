@@ -1,0 +1,11 @@
+ #if A
++ #if B
+    1
+ #elif C
+    2
++ #else
+    3
++ #endif
+ #else
+   4
+ #endif

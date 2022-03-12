@@ -40,6 +40,14 @@ public class PCTest {
                     "4", new ExpectedPC(new And(negate(A), negate(B), C), new And(negate(A), negate(B), D)),
                     "5", new ExpectedPC(new And(negate(A), negate(B), negate(C)), new And(negate(A), negate(B), negate(D)))
             ));
+    private final static TestCase elze = new TestCase(
+            Path.of("else.diff"),
+            Map.of(
+                    "1", new ExpectedPC(A, new And(A, B)),
+                    "2", new ExpectedPC(new And(negate(A), C), new And(A, negate(B), C)),
+                    "3", new ExpectedPC(new And(negate(A), C), new And(A, negate(B), negate(C))),
+                    "4", new ExpectedPC(new And(negate(A), negate(C)), negate(A))
+            ));
 
     private static String errorAt(final String node, String time, Node is, Node should) {
         return time + " PC of node \"" + node + "\" is \"" + is + "\" but expected \"" + should + "\"!";
@@ -76,5 +84,10 @@ public class PCTest {
     @Test
     public void testElif() throws IOException {
         test(elif);
+    }
+
+    @Test
+    public void testElse() throws IOException {
+        test(elze);
     }
 }
