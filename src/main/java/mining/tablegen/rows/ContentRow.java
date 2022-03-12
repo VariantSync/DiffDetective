@@ -1,5 +1,6 @@
 package mining.tablegen.rows;
 
+import mining.AutomationResult;
 import mining.DiffTreeMiningResult;
 import mining.dataset.MiningDataset;
 import mining.tablegen.ColumnDefinition;
@@ -10,7 +11,8 @@ import java.util.List;
 
 public record ContentRow(
         MiningDataset dataset,
-        DiffTreeMiningResult results
+        DiffTreeMiningResult results,
+        AutomationResult automationResult
 ) implements Row {
     @Override
     public String toLaTeXRow(final List<ColumnDefinition> columns) {

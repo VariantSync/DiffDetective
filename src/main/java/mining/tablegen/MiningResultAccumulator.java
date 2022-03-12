@@ -1,8 +1,6 @@
 package mining.tablegen;
 
-import mining.DiffTreeMiner;
-import mining.DiffTreeMiningResult;
-import mining.MetadataKeys;
+import mining.*;
 import mining.dataset.MiningDataset;
 import mining.tablegen.rows.ContentRow;
 import mining.tablegen.styles.ShortTable;
@@ -27,7 +25,6 @@ import java.util.stream.Collectors;
  * Computes a total {@link DiffTreeMiningResult} of several {@link DiffTreeMiningResult} outputs.
  */
 public class MiningResultAccumulator {
-
     private final static Map<String, BiConsumer<DiffTreeMiningResult, String>> CustomEntryParsers = Map.ofEntries(
             DiffTreeMiningResult.storeAsCustomInfo(MetadataKeys.TREEFORMAT),
             DiffTreeMiningResult.storeAsCustomInfo(MetadataKeys.NODEFORMAT),
@@ -89,11 +86,23 @@ public class MiningResultAccumulator {
 
         final List<ContentRow> datasetsWithResults = allResults.entrySet().stream().map(
                 entry -> {
+                    final DiffTreeMiningResult result = entry.getValue();
                     final MiningDataset dataset = datasetByName.get(entry.getKey());
                     if (dataset == null) {
                         throw new RuntimeException("Could not find dataset for " + entry.getKey());
                     }
-                    return new ContentRow(dataset, entry.getValue());
+
+                    final AutomationResult automationResult;
+                    final Path automationResultDir = inputPath.resolve(dataset.name());
+                    try {
+                         automationResult = FindMedianCommitTime.getResultOfDirectory(automationResultDir, result.exportedCommits);
+                    } catch (IOException e) {
+                        Logger.error("Could not load automation results for dataset " + dataset.name() + " in " + automationResultDir);
+                        System.exit(0);
+                        return null;
+                    }
+
+                    return new ContentRow(dataset, result, automationResult);
                 }
         ).toList();
 
@@ -104,11 +113,11 @@ public class MiningResultAccumulator {
                         "--",
                         ultimateResult.totalCommits + ""
                 ),
-                ultimateResult
+                ultimateResult,
+                FindMedianCommitTime.getResultOfDirectory(inputPath, FindMedianCommitTime.NUM_EXPECTED_COMMITS)
         );
 
         for (boolean filtered : List.of(true, false)) {
-
             for (final boolean absolute : List.of(true, false)) {
                 final Supplier<TableDefinition> tableDefFactory = absolute
                         ? (() -> ShortTable.Absolute(filtered))

@@ -13,6 +13,10 @@ public class CommitProcessTime {
         set(hash, reponame, milliseconds);
     }
 
+    public static CommitProcessTime Invalid(final String repoName) {
+        return new CommitProcessTime("invalid", repoName, -1);
+    }
+
     public void set(final String hash, long milliseconds) {
         set(hash, repoName, milliseconds);
     }
