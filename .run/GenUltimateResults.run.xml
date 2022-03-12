@@ -1,0 +1,16 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="GenUltimateResults" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="mining.tablegen.MiningResultAccumulator" />
+    <module name="DiffDetective" />
+    <option name="PROGRAM_PARAMETERS" value="results/difftrees results/difftrees/" />
+    <extension name="coverage">
+      <pattern>
+        <option name="PATTERN" value="mining.*" />
+        <option name="ENABLED" value="true" />
+      </pattern>
+    </extension>
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
