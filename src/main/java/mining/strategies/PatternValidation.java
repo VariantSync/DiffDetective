@@ -33,61 +33,68 @@ public class PatternValidation extends CommitHistoryAnalysisTask {
         final Clock commitProcessTimer = new Clock();
 
         for (final RevCommit commit : options.commits()) {
-            commitProcessTimer.start();
+            try {
+                commitProcessTimer.start();
 
-            final CommitDiffResult commitDiffResult = options.differ().createCommitDiff(commit);
+                final CommitDiffResult commitDiffResult = options.differ().createCommitDiff(commit);
 
-            miningResult.reportDiffErrors(commitDiffResult.errors());
-            if (commitDiffResult.diff().isEmpty()) {
-                Logger.debug("[MiningTask::call] found commit that failed entirely and was not filtered because:\n" + commitDiffResult.errors());
-                ++miningResult.failedCommits;
-                continue;
-            }
+                miningResult.reportDiffErrors(commitDiffResult.errors());
+                if (commitDiffResult.diff().isEmpty()) {
+                    Logger.debug("[MiningTask::call] found commit that failed entirely and was not filtered because:\n" + commitDiffResult.errors());
+                    ++miningResult.failedCommits;
+                    continue;
+                }
 
-            final CommitDiff commitDiff = commitDiffResult.diff().get();
-            options.miningStrategy().onCommit(commitDiff, "");
+                final CommitDiff commitDiff = commitDiffResult.diff().get();
+                options.miningStrategy().onCommit(commitDiff, "");
 
-            // Count atomic patterns
-            int numDiffTrees = 0;
-            for (final PatchDiff patch : commitDiff.getPatchDiffs()) {
-                if (patch.isValid()) {
-                    final DiffTree t = patch.getDiffTree();
-                    DiffTreeTransformer.apply(exportOptions.treePreProcessing(), t);
-                    t.assertConsistency();
+                // Count atomic patterns
+                int numDiffTrees = 0;
+                for (final PatchDiff patch : commitDiff.getPatchDiffs()) {
+                    if (patch.isValid()) {
+                        final DiffTree t = patch.getDiffTree();
+                        DiffTreeTransformer.apply(exportOptions.treePreProcessing(), t);
+                        t.assertConsistency();
 
-                    if (!exportOptions.treeFilter().test(t)) {
-                        continue;
-                    }
-
-                    t.forAll(node -> {
-                        if (node.isCode()) {
-                            miningResult.atomicPatternCounts.reportOccurrenceFor(
-                                    ProposedAtomicPatterns.Instance.match(node),
-                                    commitDiff
-                            );
+                        if (!exportOptions.treeFilter().test(t)) {
+                            continue;
                         }
-                    });
 
-                    ++numDiffTrees;
-                }
-            }
-            miningResult.exportedTrees += numDiffTrees;
-            miningResult.filterHits.append(new ExplainedFilterSummary(exportOptions.treeFilter()));
-            exportOptions.treeFilter().resetExplanations();
+                            t.forAll(node -> {
+                                if (node.isCode()) {
+                                    miningResult.atomicPatternCounts.reportOccurrenceFor(
+                                            ProposedAtomicPatterns.Instance.match(node),
+                                            commitDiff
+                                    );
+                                }
+                            });
 
-            // Only consider non-empty commits
-            if (numDiffTrees > 0) {
-                final long commitTimeMS = commitProcessTimer.getPassedMilliseconds();
-                if (commitTimeMS > miningResult.max.milliseconds()) {
-                    miningResult.max.set(commitDiff.getCommitHash(), commitTimeMS);
+                        ++numDiffTrees;
+                    }
                 }
-                if (commitTimeMS < miningResult.min.milliseconds()) {
-                    miningResult.min.set(commitDiff.getCommitHash(), commitTimeMS);
+                miningResult.exportedTrees += numDiffTrees;
+                miningResult.filterHits.append(new ExplainedFilterSummary(exportOptions.treeFilter()));
+                exportOptions.treeFilter().resetExplanations();
+
+                // Only consider non-empty commits
+                if (numDiffTrees > 0) {
+                    final long commitTimeMS = commitProcessTimer.getPassedMilliseconds();
+                    if (commitTimeMS > miningResult.max.milliseconds()) {
+                        miningResult.max.set(commitDiff.getCommitHash(), commitTimeMS);
+                    }
+                    if (commitTimeMS < miningResult.min.milliseconds()) {
+                        miningResult.min.set(commitDiff.getCommitHash(), commitTimeMS);
+                    }
+                    commitTimes.add(new CommitProcessTime(commitDiff.getCommitHash(), options.repository().getRepositoryName(), commitTimeMS));
+                    ++miningResult.exportedCommits;
+                } else {
+                    ++miningResult.emptyCommits;
                 }
-                commitTimes.add(new CommitProcessTime(commitDiff.getCommitHash(), options.repository().getRepositoryName(), commitTimeMS));
-                ++miningResult.exportedCommits;
-            } else {
-                ++miningResult.emptyCommits;
+
+            } catch (Exception e) {
+                Logger.error(e);
+                Logger.error("An unexpected error occurred at " + commit.getId().getName() + " in " + getOptions().repository().getRepositoryName() + "!");
+                throw e;
             }
         }
 
