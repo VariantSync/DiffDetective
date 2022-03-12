@@ -24,8 +24,7 @@ import java.util.Stack;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 
-import static diff.result.DiffError.ELSE_OR_ELIF_WITHOUT_IF;
-import static diff.result.DiffError.ENDIF_WITHOUT_IF;
+import static diff.result.DiffError.*;
 
 public class DiffTreeParser {
     public static final String NEW_LINE_REGEX = "(\\r\\n|\\r|\\n)";
@@ -192,6 +191,10 @@ public class DiffTreeParser {
         if (newNode.isElif() || newNode.isElse()) {
             if (stack.size() == 1) {
                 return ParseResult.ERROR(ELSE_OR_ELIF_WITHOUT_IF);
+            }
+
+            if (stack.peek().isElse()) {
+                return ParseResult.ERROR(ELSE_AFTER_ELSE);
             }
 
             // set corresponding line of now closed annotation

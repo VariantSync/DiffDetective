@@ -10,6 +10,7 @@ public record DiffError(String id) {
     public final static DiffError ENDIF_WITHOUT_IF = new DiffError("#endif without #if");
     public final static DiffError MLMACRO_WITHIN_MLMACRO = new DiffError("definition of multiline macro within multiline macro");
     public final static DiffError ELSE_OR_ELIF_WITHOUT_IF = new DiffError("#else or #elif without #if");
+    public final static DiffError ELSE_AFTER_ELSE = new DiffError("#else after #else");
     public final static DiffError IF_WITHOUT_CONDITION = new DiffError("conditional macro without expression");
 
     @Override
