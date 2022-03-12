@@ -25,48 +25,71 @@ public class FindMedianCommitTime {
         }
 
         final Path inputPath = Path.of(args[0]);
-        if (!Files.isDirectory(inputPath)) {
+        final AutomationResult automationResult = getResultOfDirectory(inputPath, NUM_EXPECTED_COMMITS);
+
+        final String resultsStr = automationResult.exportTo(inputPath.resolve(outputFile));
+        Logger.info("Results:\n" + resultsStr);
+
+//        Logger.info("info");
+//        Logger.warn("warn");
+//        Logger.error("error");
+//        Logger.debug("debug");
+//        Logger.trace("trace");
+    }
+
+    public static AutomationResult getResultOfDirectory(final Path directory, int numExpectedCommits) throws IOException {
+        if (!Files.isDirectory(directory)) {
             throw new IllegalArgumentException("Expected path to directory but the given path is not a directory!");
         }
 
-        final List<Path> paths = Files.walk(inputPath)
+        final List<Path> paths = Files.walk(directory)
                 .filter(Files::isRegularFile)
                 .filter(p -> p.toString().endsWith(CommitHistoryAnalysisTask.COMMIT_TIME_FILE_EXTENSION))
-                .peek(path -> Logger.info("Processing file " + path))
+//                .peek(path -> Logger.info("Processing file " + path))
                 .toList();
 
-        final ArrayList<CommitProcessTime> alltimes = new ArrayList<>(NUM_EXPECTED_COMMITS);
+        final ArrayList<CommitProcessTime> alltimes = new ArrayList<>(numExpectedCommits);
 
-        double sum = 0;
+        long totalTimeMS = 0;
         for (final Path p : paths) {
-            sum += parse(p, alltimes);
+            totalTimeMS += parse(p, alltimes);
         }
 
         final CommitProcessTime[] alltimesArray = alltimes.toArray(CommitProcessTime[]::new);
         Arrays.parallelSort(alltimesArray, Comparator.comparingDouble(CommitProcessTime::milliseconds));
         final int numTotalCommits = alltimesArray.length;
 
-        final StringBuilder results = new StringBuilder();
-        results.append("#Commits: " + numTotalCommits).append(StringUtils.LINEBREAK);
-        results.append("Total   commit process time is: " + ((sum / 1000.0) / 60.0) + "min").append(StringUtils.LINEBREAK);
-        results.append("Fastest commit process time is: " + alltimesArray[0]).append(StringUtils.LINEBREAK);
-        results.append("Slowest commit process time is: " + alltimesArray[alltimesArray.length - 1]).append(StringUtils.LINEBREAK);
-        results.append("Median  commit process time is: " + alltimesArray[alltimesArray.length / 2]).append(StringUtils.LINEBREAK);
-        results.append("Average commit process time is: " + (sum / ((double) numTotalCommits)) + "ms").append(StringUtils.LINEBREAK);
-
-        if (alltimesArray.length != NUM_EXPECTED_COMMITS) {
-            Logger.error("Expected " + NUM_EXPECTED_COMMITS + " commits but got " + numTotalCommits + "! " + (NUM_EXPECTED_COMMITS - numTotalCommits) + " commits are missing!");
+        final AutomationResult automationResult;
+        if (numTotalCommits == 0) {
+            final String repoName = directory.getFileName().toString();
+            automationResult = new AutomationResult(
+                    numTotalCommits,
+                    totalTimeMS,
+                    CommitProcessTime.Invalid(repoName),
+                    CommitProcessTime.Invalid(repoName),
+                    CommitProcessTime.Invalid(repoName)
+            );
+        } else {
+            automationResult = new AutomationResult(
+                    numTotalCommits,
+                    totalTimeMS,
+                    alltimesArray[0],
+                    alltimesArray[alltimesArray.length - 1],
+                    alltimesArray[alltimesArray.length / 2]
+            );
         }
 
-        final String resultsStr = results.toString();
-        Logger.info("Results:\n" + resultsStr);
-        IO.write(inputPath.resolve(outputFile), resultsStr);
+        if (automationResult.numMeasuredCommits() != numExpectedCommits) {
+            Logger.error("Expected " + numExpectedCommits + " commits but got " + automationResult.numMeasuredCommits() + "! " + (numExpectedCommits - automationResult.numMeasuredCommits()) + " commits are missing!");
+        }
+
+        return automationResult;
     }
 
-    private static double parse(final Path file, final List<CommitProcessTime> times) throws IOException {
+    private static long parse(final Path file, final List<CommitProcessTime> times) throws IOException {
         final String fileInput = IO.readAsString(file);
         final String[] lines = fileInput.split(StringUtils.LINEBREAK_REGEX);
-        double sumSeconds = 0;
+        long sumSeconds = 0;
 
         for (final String line : lines) {
             if (!line.isBlank()) {
