@@ -1,7 +1,7 @@
 package analysis;
 
+import org.prop4j.And;
 import org.prop4j.Equals;
-import org.prop4j.Implies;
 import org.prop4j.Node;
 import org.prop4j.explain.solvers.SatSolver;
 import org.prop4j.explain.solvers.SatSolverFactory;
@@ -72,7 +72,13 @@ public class SAT {
     }
 
     public static boolean implies(final Node left, final Node right) {
-        return isTautology(new Implies(left, right));
+        ///   TAUT(left => right)
+//        return isTautology(new Implies(left, right));
+        /// = TAUT(!left || right)
+//        return isTautology(new Or(negate(left), right));
+        /// = !SAT(!(!left || right))
+        /// = !SAT(left && !right))
+        return !isSatisfiable(new And(left, negate(right)));
     }
 
     public static boolean equivalent(final Node left, final Node right) {
