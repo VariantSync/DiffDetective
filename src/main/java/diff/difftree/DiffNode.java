@@ -4,7 +4,6 @@ import diff.DiffLineNumber;
 import diff.Lines;
 import org.prop4j.And;
 import org.prop4j.Node;
-import org.prop4j.Not;
 import util.Assert;
 import util.fide.FixTrueFalse;
 
@@ -13,6 +12,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
+
+import static util.fide.FormulaUtils.negate;
 
 /**
  * Implementation of a node of the diff tree.
@@ -451,7 +452,7 @@ public class DiffNode {
         return isMultilineMacro;
     }
 
-    private Node getFeatureMapping(Function<DiffNode, DiffNode> parentOf) {
+    private List<Node> getFeatureMappingClauses(Function<DiffNode, DiffNode> parentOf) {
         final DiffNode parent = parentOf.apply(this);
 
         if (isElse() || isElif()) {
@@ -464,18 +465,29 @@ public class DiffNode {
             // Negate all previous cases
             DiffNode ancestor = parent;
             while (!ancestor.isIf()) {
-                // TODO: simplify to "negate"
-                and.add(new Not(ancestor.getDirectFeatureMapping()));
+                if (ancestor.isElif()) {
+                    and.add(negate(ancestor.getDirectFeatureMapping()));
+                } else {
+                    Assert.assertTrue(ancestor.isCode());
+                }
                 ancestor = parentOf.apply(ancestor);
             }
-            and.add(new Not(ancestor.getDirectFeatureMapping()));
+            and.add(negate(ancestor.getDirectFeatureMapping()));
 
-            return new And(and);
+            return and;
         } else if (isCode()) {
-            return parent.getFeatureMapping(parentOf);
+            return List.of(parent.getFeatureMapping(parentOf));
         }
 
-        return featureMapping;
+        return List.of(featureMapping);
+    }
+
+    private Node getFeatureMapping(Function<DiffNode, DiffNode> parentOf) {
+        final List<Node> fmClauses = getFeatureMappingClauses(parentOf);
+        if (fmClauses.size() == 1) {
+            return fmClauses.get(0);
+        }
+        return new And(fmClauses);
     }
 
     /**
@@ -498,23 +510,16 @@ public class DiffNode {
         final DiffNode parent = parentOf.apply(this);
 
         if (isElse() || isElif()) {
-            final List<Node> clauses = new ArrayList<>();
+            final List<Node> clauses = new ArrayList<>(getFeatureMappingClauses(parentOf));
 
-            if (isElif()) {
-                clauses.add(featureMapping);
+            // Find corresponding if
+            DiffNode correspondingIf = parent;
+            while (!correspondingIf.isIf()) {
+                correspondingIf = parentOf.apply(correspondingIf);
             }
-
-            // Negate all previous cases
-            DiffNode ancestor = parent;
-            while (!ancestor.isIf()) {
-                clauses.add(new Not(ancestor.getDirectFeatureMapping()));
-                ancestor = parentOf.apply(ancestor);
-            }
-            // negate the if that started this elif-else-chain
-            clauses.add(new Not(ancestor.getDirectFeatureMapping()));
 
             // If this elif-else-chain was again nested in another annotation, add its pc.
-            final DiffNode outerNesting = parentOf.apply(ancestor);
+            final DiffNode outerNesting = parentOf.apply(correspondingIf);
             if (outerNesting != null) {
                 clauses.addAll(outerNesting.getPresenceCondition(parentOf));
             }
@@ -524,9 +529,10 @@ public class DiffNode {
             return parent.getPresenceCondition(parentOf);
         }
 
+        // this is mapping or root
         final List<Node> clauses;
         if (parent == null) {
-            clauses = new ArrayList<>();
+            clauses = new ArrayList<>(1);
         } else {
             clauses = parent.getPresenceCondition(parentOf);
         }
