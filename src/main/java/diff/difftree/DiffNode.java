@@ -648,6 +648,18 @@ public class DiffNode {
         }
     }
 
+    public void assertSemanticConsistency() {
+        // Else and Elif nodes have an If or Elif as parent.
+        if (this.isElse() || this.isElif()) {
+            if (beforeParent != null) {
+                Assert.assertTrue(beforeParent.isIf() || beforeParent.isElif(), "Before parent " + beforeParent + " of " + this + " is neither IF nor ELIF!");
+            }
+            if (afterParent != null) {
+                Assert.assertTrue(afterParent.isIf() || afterParent.isElif(), "After parent " + afterParent + " of " + this + " is neither IF nor ELIF!");
+            }
+        }
+    }
+
     @Override
     public String toString() {
         String s;
