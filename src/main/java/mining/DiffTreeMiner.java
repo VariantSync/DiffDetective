@@ -246,6 +246,7 @@ public class DiffTreeMiner {
         } catch (Exception e) {
             Logger.error("Failed to run all mining task!");
             Logger.error(e);
+            System.exit(0);
         }
 
         final double runtime = clock.getPassedSeconds();
