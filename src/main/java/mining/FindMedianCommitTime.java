@@ -15,7 +15,7 @@ import java.util.Comparator;
 import java.util.List;
 
 public class FindMedianCommitTime {
-    public static final int NUM_EXPECTED_COMMITS = 1_708_181;
+    public static final int NUM_EXPECTED_COMMITS = 1_708_172;
 
     public static final Path outputFile = Path.of("speedstatistics.txt");
 
