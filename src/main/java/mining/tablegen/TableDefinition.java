@@ -2,6 +2,7 @@ package mining.tablegen;
 
 import mining.tablegen.rows.ContentRow;
 
+import java.math.RoundingMode;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.List;
@@ -14,6 +15,11 @@ public abstract class TableDefinition {
 
     protected TableDefinition(final List<ColumnDefinition> columnDefinitions) {
         this.columnDefinitions = columnDefinitions;
+
+        final int fractionDigits = 1;
+        numberFormat.setMaximumFractionDigits(fractionDigits);
+        numberFormat.setMinimumFractionDigits(fractionDigits);
+        numberFormat.setRoundingMode(RoundingMode.HALF_UP);
     }
 
     public String makeReadable(Number number) {
