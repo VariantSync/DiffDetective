@@ -37,7 +37,7 @@ public class ShortTable extends TableDefinition {
 
     private static List<ColumnDefinition> columns(final ShortTable t, final TriFunction<ShortTable, AtomicPattern, ContentRow, String> getPatternCount) {
         final List<ColumnDefinition> cols = new ArrayList<>(List.of(
-                col("Name", LEFT, row -> row.dataset().name()),
+                col("Name", LEFT, row -> row.dataset().name().toLowerCase(Locale.US)),
                 col("Domain", LEFT_DASH, row -> row.dataset().domain()),
                 col("\\#total\\\\ commits", RIGHT, row -> t.makeReadable(row.results().totalCommits)),
                 col("\\#processed commits", RIGHT, row -> t.makeReadable(row.results().exportedCommits)),
@@ -92,6 +92,15 @@ public class ShortTable extends TableDefinition {
                     .limit(4)
                     .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
 
+//            res.add(new HLine());
+//            res.add(cols -> "\\multicolumn{2}{c}{36 other systems} & \\multicolumn{" + (cols.size() - 2) + "}{c}{\\vdots}" + LaTeX.TABLE_ENDROW);
+            final String innerColumnHeader = ">{\\centering}m{.333333\\linewidth}";
+            final String vdots = "$\\vdots$";
+            res.add(cols -> "\\multicolumn{" + cols.size() + "}{c}{\\begin{tabular}{"
+                    + innerColumnHeader + innerColumnHeader + innerColumnHeader + "} "
+                    + vdots + " & 36 other systems & " + vdots
+                    + "\\end{tabular}}" + LaTeX.TABLE_ENDROW);
+
             res.add(new HLine());
 
             rows.stream()
@@ -101,15 +110,6 @@ public class ShortTable extends TableDefinition {
                             || m.dataset().name().equalsIgnoreCase("Godot"))
                     .sorted(larger)
                     .forEach(res::add);
-
-//            res.add(new HLine());
-//            res.add(cols -> "\\multicolumn{2}{c}{36 other systems} & \\multicolumn{" + (cols.size() - 2) + "}{c}{\\vdots}" + LaTeX.TABLE_ENDROW);
-            final String innerColumnHeader = ">{\\centering}m{.333333\\linewidth}";
-            final String vdots = "$\\vdots$";
-            res.add(cols -> "\\multicolumn{" + cols.size() + "}{c}{\\begin{tabular}{"
-                    + innerColumnHeader + innerColumnHeader + innerColumnHeader + "} "
-                    + vdots + " & 36 other systems & " + vdots
-                    + "\\end{tabular}}" + LaTeX.TABLE_ENDROW);
         } else {
             res = new ArrayList<>(rows);
         }
