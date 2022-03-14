@@ -10,38 +10,43 @@ import java.util.Locale;
 import java.util.function.Function;
 
 public abstract class TableDefinition {
-    protected NumberFormat numberFormat = NumberFormat.getInstance(Locale.US);
+    protected NumberFormat intFormat = NumberFormat.getInstance(Locale.US);
+    protected NumberFormat doubleFormat = NumberFormat.getInstance(Locale.US);
     protected final List<ColumnDefinition> columnDefinitions;
 
     protected TableDefinition(final List<ColumnDefinition> columnDefinitions) {
         this.columnDefinitions = columnDefinitions;
 
         final int fractionDigits = 1;
-        numberFormat.setMaximumFractionDigits(fractionDigits);
-        numberFormat.setMinimumFractionDigits(fractionDigits);
-        numberFormat.setRoundingMode(RoundingMode.HALF_UP);
+        doubleFormat.setMaximumFractionDigits(fractionDigits);
+        doubleFormat.setMinimumFractionDigits(fractionDigits);
+        doubleFormat.setRoundingMode(RoundingMode.HALF_UP);
     }
 
     public String makeReadable(Number number) {
-        return numberFormat.format(number);
+        if (number.doubleValue() == (double) number.intValue()) {
+            return intFormat.format(number);
+        } else {
+            return doubleFormat.format(number);
+        }
     }
 
     public String makeReadable(int number) {
-        return numberFormat.format(number);
+        return intFormat.format(number);
     }
 
     public String makeReadable(double number) {
         if (Double.isInfinite(number) || Double.isNaN(number)) {
             return "--";
         }
-        return numberFormat.format(number);
+        return doubleFormat.format(number);
     }
 
     public String makeReadable(long number) {
         if (number == -1) {
             return "--";
         }
-        return numberFormat.format(number);
+        return intFormat.format(number);
     }
 
     public String makeReadable(String number) {
@@ -50,7 +55,7 @@ public abstract class TableDefinition {
         }
 
         try {
-            return makeReadable(numberFormat.parse(number).doubleValue());
+            return makeReadable(doubleFormat.parse(number));
         } catch (ParseException e) {
             throw new RuntimeException(e);
         }
