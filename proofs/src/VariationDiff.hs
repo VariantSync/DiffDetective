@@ -20,8 +20,8 @@ project t (VariationDiff nodes edges delta) = VariationTree
 -- We just assume that the UUIDs stored in both trees are unique (i.e., all ids in old are not in new and vice versa)
 -- We further assume that the root has always UUID zero as it is constant.
 -- Otherwise this function as well as the equality checks afterwards are tremendously more complex.
-stupidDiff :: (HasNeutral f, Composable f, VTLabel l) => VariationTree l f -> VariationTree l f -> VariationDiff l f
-stupidDiff (VariationTree nodesBefore edgesBefore) (VariationTree nodesAfter edgesAfter) =
+naiveDiff :: (HasNeutral f, Composable f, VTLabel l) => VariationTree l f -> VariationTree l f -> VariationDiff l f
+naiveDiff (VariationTree nodesBefore edgesBefore) (VariationTree nodesAfter edgesAfter) =
     VariationDiff
     (root : nodesWithoutRoot (nodesBefore <> nodesAfter))
     (edgesBefore <> edgesAfter)

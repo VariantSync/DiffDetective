@@ -29,12 +29,12 @@ Theorem:
             project AFTER  (d a b) == b
 
 Proof:
-    We prove that there exists at least one diffing function d satisfying the above equailities by showing that d = stupidDiff is a valid diffing function:
+    We prove that there exists at least one diffing function d satisfying the above equailities by showing that d = naiveDiff is a valid diffing function:
 
-   project BEFORE (stupidDiff a b)
+   project BEFORE (naiveDiff a b)
 == // Substitute a b
-    project BEFORE (stupidDiff (VariationTree nodesBefore edgesBefore) (VariationTree nodesAfter edgesAfter))
-== // Substitute stupidDiff
+    project BEFORE (naiveDiff (VariationTree nodesBefore edgesBefore) (VariationTree nodesAfter edgesAfter))
+== // Substitute naiveDiff
     project BEFORE (VariationDiff (root : nodesWithoutRoot (nodesBefore <> nodesAfter)) (edgesBefore <> edgesAfter) delta)
 == // Substitute project
     VariationTree
@@ -83,7 +83,7 @@ where
             else
                 error "Given edge is not part of this Variation Diff!"
 
-    The other proof for project AFTER  (stupidDiff a b) == b is analoguous, we just have to replace all occurences of BEFORE in the equations and the reasoning by AFTER.
+    The other proof for project AFTER  (naiveDiff a b) == b is analoguous, we just have to replace all occurences of BEFORE in the equations and the reasoning by AFTER.
     [ ]
 
 Note that we cannot prove that all possible functions of type "VariationTree l f -> VariationTree l f -> VariationDiff l f" are valid diff as these functions could

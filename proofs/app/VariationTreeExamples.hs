@@ -84,7 +84,7 @@ showVariationTreeExamples =
         (kanto, next) = runState kantoFactory 1
         (johto,    _) = runState johtoFactory next
 
-        diff = stupidDiff kanto johto
+        diff = naiveDiff kanto johto
 
         projectedKanto = project BEFORE diff
         projectedJohto = project AFTER  diff
