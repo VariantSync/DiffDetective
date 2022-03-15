@@ -2,7 +2,6 @@ package main;
 
 import datasets.ParseOptions;
 import datasets.Repository;
-import diff.CommitDiff;
 import diff.PatchDiff;
 import diff.difftree.DiffTree;
 import diff.difftree.parse.DiffNodeParser;
@@ -12,7 +11,8 @@ import diff.difftree.render.RenderOptions;
 import diff.difftree.serialize.nodeformat.MappingsDiffNodeFormat;
 import diff.difftree.transform.DiffTreeTransformer;
 import mining.DiffTreeMiner;
-import org.eclipse.jgit.lib.Constants;
+import mining.RWCompositePatternNodeFormat;
+import mining.RWCompositePatternTreeFormat;
 import org.tinylog.Logger;
 import util.FileUtils;
 
@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.function.Function;
 
 public class SimpleRenderer {
     private static final DiffTreeRenderer renderer = DiffTreeRenderer.WithinDiffDetective();
@@ -55,9 +56,25 @@ public class SimpleRenderer {
             .addExtraArguments("--startlineno", "4201")
             .build();
 
+    private static final RenderOptions renderCompositePatterns = new RenderOptions.Builder()
+            .setNodesize(3*RenderOptions.DEFAULT.nodesize())
+            .setEdgesize(2*RenderOptions.DEFAULT.edgesize())
+            .setArrowsize(2*RenderOptions.DEFAULT.arrowsize())
+            .setFontsize(2*RenderOptions.DEFAULT.fontsize())
+            .setTreeFormat(new RWCompositePatternTreeFormat())
+            .setNodeFormat(new RWCompositePatternNodeFormat())
+            .setCleanUpTemporaryFiles(true)
+            .addExtraArguments("--format", "patternsdebug")
+            .build();
+
     private final static boolean collapseMultipleCodeLines = true;
     private final static boolean ignoreEmptyLines = true;
     private final static List<String> SUPPORTED_FILE_TYPES = List.of(".diff", ".c", ".cpp", ".h", ".hpp");
+
+    private final static Function<Path, Path> GetRelativeOutputDir =
+//            Path::getParent
+            p -> p.getParent().resolve("render")
+            ;
 
     private static void render(final Path fileToRender) {
         final String fileToRenderStr = fileToRender.toString();
@@ -73,7 +90,13 @@ public class SimpleRenderer {
                 System.err.println("Could not read given file \"" + fileToRender + "\" because:\n" + e.getMessage());
                 return;
             }
-            renderer.render(t, fileToRender.getFileName().toString(), fileToRender.getParent(), renderExampleOptions);
+            renderer.renderWithTreeFormat(
+                    t,
+                    fileToRender.getFileName().toString(),
+                    GetRelativeOutputDir.apply(fileToRender),
+//                    renderExampleOptions
+                    renderCompositePatterns
+            );
         } else {
             Logger.warn("Skipping unsupported file " + fileToRender);
         }

@@ -1,0 +1,4 @@
+ #if defined(featureA) && defined(featureB)
+-char array[5]
++char array[4]
+ #endif

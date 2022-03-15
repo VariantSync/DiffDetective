@@ -1,0 +1,2 @@
+ // This pattern matches fixes to syntactically incorrect annotations by removal of #ifdef or #endif directives.
+ // This pattern is neither supported explicitly by DiffDetective nor the variation control system by Stanciulescu et al.

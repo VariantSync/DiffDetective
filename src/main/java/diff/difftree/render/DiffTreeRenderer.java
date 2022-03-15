@@ -4,6 +4,7 @@ import de.variantsync.functjonal.Product;
 import diff.GitPatch;
 import diff.PatchDiff;
 import diff.difftree.DiffTree;
+import diff.difftree.DiffTreeSource;
 import diff.difftree.LineGraphConstants;
 import diff.difftree.serialize.DiffTreeLineGraphExportOptions;
 import diff.difftree.serialize.DiffTreeSerializeDebugData;
@@ -19,6 +20,7 @@ import util.StringUtils;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
 public class DiffTreeRenderer {
@@ -84,13 +86,26 @@ public class DiffTreeRenderer {
     }
 
     public boolean render(final DiffTree tree, final String treeAndFileName, final Path directory, RenderOptions options) {
+        return render(tree, treeAndFileName, directory, options,
+                (treeName, treeSource) -> LineGraphConstants.LG_TREE_HEADER + " " + treeAndFileName + LineGraphConstants.TREE_NAME_SEPARATOR + "0"
+                );
+    }
+
+    public boolean renderWithTreeFormat(final DiffTree tree, final String treeAndFileName, final Path directory, RenderOptions options) {
+        return render(tree, treeAndFileName, directory, options,
+                (treeName, treeSource) -> options.treeFormat().toLineGraphLine(treeSource)
+        );
+    }
+
+    private boolean render(final DiffTree tree, final String treeAndFileName, final Path directory, RenderOptions options, BiFunction<String, DiffTreeSource, String> treeHeader) {
         final DiffTreeLineGraphExportOptions lgoptions = new DiffTreeLineGraphExportOptions(options.format(), options.treeFormat(), options.nodeFormat(), options.edgeFormat());
 
         final Path tempFile = directory.resolve(treeAndFileName + ".lg");
 
         final Product<DiffTreeSerializeDebugData, String> result = LineGraphExport.toLineGraphFormat(tree, lgoptions);
         Assert.assertNotNull(result);
-        final String lg = "t # " + treeAndFileName + LineGraphConstants.TREE_NAME_SEPARATOR + "0" + StringUtils.LINEBREAK + result.second();
+        final String lg = treeHeader.apply(treeAndFileName, tree.getSource()) + StringUtils.LINEBREAK + result.second();
+
         try {
             IO.write(tempFile, lg);
         } catch (IOException e) {

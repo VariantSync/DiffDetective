@@ -228,7 +228,7 @@ def parseNodeDebugAtomics(id, name):
 
     result = NodeData()
     isCode = True
-    pattern = getPatternFromName(name)
+    pattern = getPatternFromName(name[:name.find("<br>")])
     if pattern is not None:
         result.difftype = pattern.difftype
     else:
@@ -252,6 +252,7 @@ def parseNodeDebugAtomics(id, name):
     result.isroot = codetype.startswith("ROOT")
     isMacro = not result.isroot and not isCode
     result.label = "ROOT" if result.isroot else (codetype if isMacro else name)
+    result.label = result.label.replace("<br>", "\n")
     return result
 
 

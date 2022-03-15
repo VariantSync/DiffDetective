@@ -1,0 +1,11 @@
++ #ifdef A
++  a
++ #endif
+
++ #ifdef B
++  b
++ #endif
+
++ #ifdef C
++  c
++ #endif
