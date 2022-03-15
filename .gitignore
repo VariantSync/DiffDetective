@@ -111,11 +111,13 @@ buildNumber.properties
 /repositories/Marlin_old/
 !/repositories/*.zip
 
+
 *.csv
 *.ser
 patches/*
 /.venv/
 
+/input
 /error
 examples/
 results/

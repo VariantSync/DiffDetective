@@ -1,0 +1,11 @@
+{
+#ifdef FEAT_GUI
+    if (gui.in_use)
+        gui_mch_set_foreground();
+#else
+# ifdef MSWIN
+    win32_set_foreground();
+# endif
+#endif
+ }
+
