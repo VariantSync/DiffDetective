@@ -69,7 +69,7 @@ def commit_runtime(runtime_results: []):
     ax.yaxis.set_major_formatter(FuncFormatter(major_formatter))
 
     plt.tight_layout()
-    plt.savefig("commit_runtime.png")
+    plt.savefig("commit_runtime.pdf")
 
 
 # For debugging
