@@ -14,6 +14,7 @@ legend_size = 13
 title_size = 16
 tick_size = 14
 axis_label_size = 16
+text_box_font_size = 14
 
 fig_width = 10
 fig_height = 3
@@ -24,9 +25,11 @@ def commit_runtime(runtime_results: []):
     runtimes = [result.runtime // 60_000 for result in runtime_results]
     runtime_min = numpy.min(runtimes)
     runtime_max = numpy.max(runtimes)
+    runtimes = numpy.sort(runtimes)[::-1]
 
     # Count how often the runtime is less than one minute, aka. our largest bin
-    runtimes_below_one = len([x for x in runtimes if x < 1])
+    runtimes_below_one = [x for x in runtimes if x < 1]
+    runtimes_below_one = len(runtimes_below_one)
 
     # For printing of commits with the greatest runtime
     # largest_commits = [x for x in runtime_results if x.runtime // 60000 == runtime_max]
@@ -51,16 +54,18 @@ def commit_runtime(runtime_results: []):
     plt.yscale('log')
 
     # Add annotation
-    t = ax.annotate(f'{runtimes_below_one:,.0f} commits require\nless than one minute', xy=(0, runtimes_below_one),
-                    xytext=(5, 150_000),
+    t = ax.annotate(f'{runtimes_below_one:,.0f} commits require\nless than one minute.', xy=(0, runtimes_below_one),
+                    xytext=(5, 70_000),
                     arrowprops=dict(arrowstyle="->"),
-                    bbox=dict(boxstyle="round", fc="w")
+                    bbox=dict(boxstyle="round", fc="w"),
+                    fontsize=text_box_font_size
                     )
 
-    t = ax.annotate(f'Two commits require\n{runtime_max:,.0f} minutes', xy=(runtime_max, 2),
-                    xytext=(runtime_max - 20, 10),
+    t = ax.annotate(f'Two commits require\n{runtime_max:,.0f} minutes.', xy=(runtime_max, 2),
+                    xytext=(runtime_max - 25, 10),
                     arrowprops=dict(arrowstyle="->"),
-                    bbox=dict(boxstyle="round", fc="w")
+                    bbox=dict(boxstyle="round", fc="w"),
+                    fontsize=text_box_font_size
                     )
 
     def major_formatter(x, pos):
@@ -69,6 +74,7 @@ def commit_runtime(runtime_results: []):
     ax.yaxis.set_major_formatter(FuncFormatter(major_formatter))
 
     plt.tight_layout()
+    plt.savefig("commit_runtime.png")
     plt.savefig("commit_runtime.pdf")
 
 
