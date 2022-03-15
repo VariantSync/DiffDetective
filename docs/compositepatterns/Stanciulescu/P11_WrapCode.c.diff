@@ -1,0 +1,3 @@
++ #ifdef ULTRA_LCD
+    lcd_setalertstatuspgm(lcd_msg);
++ #endif

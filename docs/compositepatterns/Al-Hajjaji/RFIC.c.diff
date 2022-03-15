@@ -1,0 +1,4 @@
+-#if defined(featureA) && defined(featureB)
++#if defined(featureA)
+ function(int var);
+ #endif

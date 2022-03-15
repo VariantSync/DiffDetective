@@ -1,0 +1,3 @@
++#ifdef featureB
+ #define featureA
++#endif

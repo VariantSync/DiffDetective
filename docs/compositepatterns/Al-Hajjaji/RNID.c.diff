@@ -1,0 +1,4 @@
++#ifdef featureA
+-#ifndef featureA
+ function(int var);
+ #endif

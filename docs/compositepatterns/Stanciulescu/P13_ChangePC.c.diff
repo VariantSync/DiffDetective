@@ -1,0 +1,4 @@
+- #ifdef ULTRA_LCD
++ #if ULTRALCD && ULTIPANEL
+    lcd_setalertstatuspgm(lcd_msg);
+  #endif
