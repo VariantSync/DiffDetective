@@ -13,6 +13,8 @@ public class RWCompositePatternNodeFormat extends DebugMiningDiffNodeFormat {
             return node.diffType + "_" + switch (node.codeType) {
                 case ROOT -> "r";
                 case IF -> "mapping<br> " + node.getLabel();
+                case ELSE -> "else";
+                case ELIF -> "elif<br>" + node.getLabel();
                 default -> node.codeType + "<br>" + node.getLabel();
             };
         }
