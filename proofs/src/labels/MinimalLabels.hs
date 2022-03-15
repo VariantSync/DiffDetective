@@ -10,12 +10,9 @@ data MinimalLabels f where
     Artifact :: ArtifactReference -> MinimalLabels f
     Mapping :: (Composable f) => f -> MinimalLabels f
 
--- TODO: How to make this implementation a mandatory core of the VTLabel type class to avoid redundancy?
 instance VTLabel MinimalLabels where
     makeArtifactLabel = Artifact
     makeMappingLabel = Mapping
-    -- isMapping (Mapping _) = True
-    -- isMapping _ = False
 
     featuremapping tree node@(VTNode _ label) = case label of
         Artifact _ -> fromJust $ featureMappingOfParent tree node

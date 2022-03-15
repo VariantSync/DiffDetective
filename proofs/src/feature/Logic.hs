@@ -31,8 +31,3 @@ class (Negatable l, HasNeutral l, Composable l, Comparable l) => Logic l where
 
     lor :: [l] -> l
     lor = lnot . land . map lnot
-
---- Interoperability
-
--- instance Composable l => Semigroup l where
---     a <> b = land [a, b]

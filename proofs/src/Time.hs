@@ -15,7 +15,6 @@ timesOfExistence ADD = [AFTER]
 timesOfExistence REM = [BEFORE]
 timesOfExistence NON = always
 
--- TODO: Arguments are swapped in paper
 existsAtTime :: Time -> DiffType -> Bool
 existsAtTime BEFORE ADD = False
 existsAtTime AFTER REM = False

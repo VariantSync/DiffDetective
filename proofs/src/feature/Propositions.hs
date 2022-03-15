@@ -34,7 +34,7 @@ instance Composable (PropositionalFormula a) where
     land l = PAnd l
 
 instance Eq a => Comparable (PropositionalFormula a) where
-    -- We only check for syntactic equality for now but this should be TAUT(a, b) in fact.
+    -- We only check for syntactic equality for now but this should be TAUT(a => b) in fact.
     limplies a b = a == b
 
 instance Eq a => Logic (PropositionalFormula a) where
