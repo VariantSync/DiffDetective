@@ -5,3 +5,6 @@ mvn deploy:deploy-file -DgroupId=de.ovgu -DartifactId=featureide.lib.fm -Dversio
 
 # Functjonal
 mvn deploy:deploy-file -DgroupId=anonymized -DartifactId=Functjonal -Dversion=1.0-SNAPSHOT -Durl=file:./local-maven-repo/ -DrepositoryId=local-maven-repo -DupdateReleaseInfo=true -Dfile=./lib/Functjonal-1.0-SNAPSHOT.jar
+
+# sat4j
+mvn deploy:deploy-file -DgroupId=org.sat4j -DartifactId=core -Dversion=2.3.5 -Durl=file:./local-maven-repo/ -DrepositoryId=local-maven-repo -DupdateReleaseInfo=true -Dfile=./lib/org.sat4j.core.jar
