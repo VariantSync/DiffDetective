@@ -16,8 +16,6 @@
 # Lines commented as `EXAMPLE` contain commands that probably have to be adjusted
 # ----------------------------
 
-# TODO: Start main in DiffTreeMiner
-# TODO: proofs: stack installieren, stack update, stack upgrade, stack run im ordner
 
 FROM alpine:3.15
 # PACKAGE STAGE
@@ -42,34 +40,46 @@ FROM ubuntu:latest
 # We have to use an Ubuntu image, because Haskell and Stack are not natively supported by Alpine Linux
 
 # REQUIRED: Create a user
-RUN adduser --disabled-password  --home /home/user --gecos '' user
+RUN adduser --disabled-password --home /home/sherlock --gecos '' sherlock
 
 # Install Haskell and Stack
 RUN DEBIAN_FRONTEND="noninteractive" apt-get update -qy &&\
-    DEBIAN_FRONTEND="noninteractive" apt-get install openjdk-16-jdk haskell-platform haskell-stack -qy
+    DEBIAN_FRONTEND="noninteractive" apt-get install netbase haskell-platform haskell-stack git-all -qy
 RUN stack update
 RUN stack upgrade
 
+# Install java
+RUN DEBIAN_FRONTEND="noninteractive" apt-get install openjdk-16-jdk-headless -qy
+
 # REQUIRED: Change into the home directory
-WORKDIR /home/user
+WORKDIR /home/sherlock
 
 # REQUIRED: Copy the docker resources
 COPY docker/* ./
 
 # Copy the compiled JAR file from the first stage into the second stage
 # Syntax: COPY --from=STAGE_ID SOURCE_PATH TARGET_PATH
+WORKDIR /home/sherlock/holmes
 COPY --from=0 /home/user/target/DiffDetectiveRunner.jar .
+WORKDIR /home/sherlock
 
 # Copy the haskell files
 COPY proofs proofs
 
+# Copy the setup
+COPY docs holmes/docs
+
 # Build the Haskell project
-WORKDIR /home/user/proofs
+## Enable printing utf-8
+ENV LANG=C.UTF-8
+WORKDIR /home/sherlock/proofs
 RUN stack build --copy-bins
 ENV PATH=="/root/.local/bin:${PATH}"
 
+WORKDIR /home/sherlock
+RUN mkdir DiffDetectiveMining
 # REQUIRED: Adjust permissions
-RUN chown user:user /home/user -R
+RUN chown sherlock:sherlock /home/sherlock -R
 RUN chmod +x execute.sh
 RUN chmod +x entrypoint.sh
 RUN chmod +x fix-perms.sh
@@ -81,4 +91,4 @@ RUN ls -l
 ENTRYPOINT ["./entrypoint.sh", "./execute.sh"]
 
 # REQUIRED: Set the user
-USER user
+USER sherlock
