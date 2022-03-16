@@ -15,6 +15,7 @@ then
     echo "Running full replication."
     cd holmes || exit
     java -jar DiffDetectiveRunner.jar
+    cp -r results/* ../results/
 elif [ "$1" == 'validation' ]
 then
     echo "Running a short validation."

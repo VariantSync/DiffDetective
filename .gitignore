@@ -121,7 +121,6 @@ patches/*
 /input
 /error
 examples/
-results/
 
 /log.txt
 

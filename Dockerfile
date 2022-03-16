@@ -54,9 +54,6 @@ RUN DEBIAN_FRONTEND="noninteractive" apt-get install openjdk-16-jdk-headless -qy
 # REQUIRED: Change into the home directory
 WORKDIR /home/sherlock
 
-# REQUIRED: Copy the docker resources
-COPY docker/* ./
-
 # Copy the compiled JAR file from the first stage into the second stage
 # Syntax: COPY --from=STAGE_ID SOURCE_PATH TARGET_PATH
 WORKDIR /home/sherlock/holmes
@@ -77,6 +74,8 @@ RUN stack build --copy-bins
 ENV PATH=="/root/.local/bin:${PATH}"
 
 WORKDIR /home/sherlock
+# REQUIRED: Copy the docker resources
+COPY docker/* ./
 RUN mkdir DiffDetectiveMining
 # REQUIRED: Adjust permissions
 RUN chown sherlock:sherlock /home/sherlock -R

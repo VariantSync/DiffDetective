@@ -1,1 +1,1 @@
-docker run --rm -v "%cd%\docker-output":"/home/user/output" replication-package %*
+docker run --rm -v "%cd%\results":"/home/sherlock/results" replication-package %*
