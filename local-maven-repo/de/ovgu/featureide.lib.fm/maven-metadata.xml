@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+  <groupId>de.ovgu</groupId>
+  <artifactId>featureide.lib.fm</artifactId>
+  <versioning>
+    <release>3.8.1</release>
+    <versions>
+      <version>3.8.1</version>
+    </versions>
+    <lastUpdated>20220316170902</lastUpdated>
+  </versioning>
+</metadata>
