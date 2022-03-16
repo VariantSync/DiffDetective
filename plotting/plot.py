@@ -10,11 +10,11 @@ mpl.rcParams['pdf.fonttype'] = 42
 mpl.rcParams['figure.dpi'] = 600
 mpl.rcParams['savefig.format'] = "png"
 
-legend_size = 13
-title_size = 16
-tick_size = 14
-axis_label_size = 16
-text_box_font_size = 14
+legend_size = 16
+title_size = 22
+tick_size = 18
+axis_label_size = 20
+text_box_font_size = 16
 
 fig_width = 10
 fig_height = 3
@@ -40,7 +40,7 @@ def commit_runtime(runtime_results: []):
     fig, ax = plt.subplots()
     # Manually set size to adjust aspect ratio
     fig.set_size_inches(fig_width, fig_height)
-    ax.set_title("Histogram of required runtimes", fontsize=title_size)
+    # ax.set_title("Histogram of required runtimes", fontsize=title_size)
     ax.hist(runtimes, bins=runtime_max + 1, histtype='stepfilled')
 
     # Format the x-axis
@@ -55,14 +55,14 @@ def commit_runtime(runtime_results: []):
 
     # Add annotation
     t = ax.annotate(f'{runtimes_below_one:,.0f} commits require\nless than one minute.', xy=(0, runtimes_below_one),
-                    xytext=(5, 70_000),
+                    xytext=(5, 40_000),
                     arrowprops=dict(arrowstyle="->"),
                     bbox=dict(boxstyle="round", fc="w"),
                     fontsize=text_box_font_size
                     )
 
     t = ax.annotate(f'Two commits require\n{runtime_max:,.0f} minutes.', xy=(runtime_max, 2),
-                    xytext=(runtime_max - 25, 10),
+                    xytext=(runtime_max - 30, 10),
                     arrowprops=dict(arrowstyle="->"),
                     bbox=dict(boxstyle="round", fc="w"),
                     fontsize=text_box_font_size
