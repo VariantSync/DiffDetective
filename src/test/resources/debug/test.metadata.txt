@@ -1,0 +1,20 @@
+trees: 5
+commits: 1
+#NON nodes: 71
+#ADD nodes: 53
+#REM nodes: 40
+filtered because not (is not empty): 0
+filtered because not (has more than one atomic pattern): 5
+filtered because not (has edits to variability): 2
+AddToPC: { total = 6; commits = 1 }
+AddWithMapping: { total = 14; commits = 1 }
+RemFromPC: { total = 7; commits = 1 }
+RemWithMapping: { total = 7; commits = 1 }
+Specialization: { total = 0; commits = 0 }
+Generalization: { total = 0; commits = 0 }
+Reconfiguration: { total = 23; commits = 1 }
+Refactoring: { total = 2; commits = 1 }
+Unchanged: { total = 0; commits = 0 }
+treeformat: diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat
+nodeformat: mining.formats.ReleaseMiningDiffNodeFormat
+edgeformat: mining.formats.DirectedEdgeLabelFormat with mining.formats.ReleaseMiningDiffNodeFormat
