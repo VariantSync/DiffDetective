@@ -21,6 +21,10 @@ Our appendix consists of:
 
 **DESCRIBE HOW TO RUN EXPERIMENT HERE**
 
+- Install FeatureIDE
+- Install Sat4J
+- Run `mining.DiffTreeMiner`
+
 ## Haskell Formalization
 
 **@Alex: Bitte die Beschreibung für das Docker Setup in der [proofs/INSTALL.md](proofs/INSTALL.md) anpassen!**
