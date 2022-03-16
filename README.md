@@ -7,8 +7,7 @@ This replication package consists of three parts:
 1. **Appendix**: The appendix of our paper is given in PDF format in the file [appendix.pdf](appendix.pdf).
 2. **DiffDetective**: For our validation, we built DiffDetective, a java library and command-line tool to classify edits to variability in git histories of preprocessor-based software product lines.
 3. **Haskell Formalization**: We provide an extended formalization in the Haskell programming language as described in our appendix. Its implementation can be found in the Haskell project in the [proofs](proofs) directory.
-
-Moreover, we provide an overview of the 44 inspected datasets with updated links to their repositories in the file [docs/datasets.md](docs/datasets.md).
+4. **Dataset Overview**: We provide an overview of the 44 inspected datasets with updated links to their repositories in the file [docs/datasets.md](docs/datasets.md).
 
 ## Appendix
 
