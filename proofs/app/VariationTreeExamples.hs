@@ -92,9 +92,7 @@ showVariationTreeExamples =
             do
                 printBlock "Kanto Starters" kanto
                 printBlock "Johto Starters" johto
-                assertTrue "Kanto is a Tree" (isTree kanto)
-                assertTrue "Johto is a Tree" (isTree johto)
-                printBlock "Stupid Diff" diff
+                printBlock "Naive Diff" diff
                 printBlock "Projected Kanto" projectedKanto
                 printBlock "Projected Johto" projectedJohto
                 assertEquals "Assert(Kanto == Projected Kanto)" kanto projectedKanto
