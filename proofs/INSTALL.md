@@ -28,24 +28,11 @@ stack run
 
 ### Option 2: Setup via Dockerfile
 
-First, install [Docker](https://www.docker.com/).
-Second, open a terminal and navigate to the repository's directory (the directory containing this `INSTALL.md`).
-```shell
-cd <path/to/this/repository>
-```
-Third, create the docker image:
-```shell
-docker build -t ftr .
-```
-You can verify that the image was created successfully by running
-```shell
-docker images
-```
-and checking that an image called `ftr` is listed.
-Fourth, you can run the image and thus the demo:
-```shell
-docker run -t ftr
-```
+#### Building the container
+To build the required container, you can follow the instructions provided in the main [INSTALL](../INSTALL.md) file.
+Afterwards, you can run the _execute_ script corresponding to your OS with `proofs` as first argument
+- Windows: `.\execute.bat proofs`
+- Linux/Mac (bash): `./execute.sh proofs`
 
 ## What Is There to See
 

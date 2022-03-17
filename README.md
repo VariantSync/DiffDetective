@@ -18,27 +18,29 @@ Our appendix consists of:
 4. The complete results of our validation for all 44 datasets.
 
 ## DiffDetective
-We offer a [Docker](https://www.docker.com/) setup to easily replicate our validation with _DiffDetective_. 
+We offer a [Docker](https://www.docker.com/) setup to easily __replicate__ our validation with _DiffDetective_. 
+You can find detailed information on how to install Docker and build the container in the [INSTALL](Install.md) file.
 
 ### 1. Build the Docker container
-To build the Docker container you can 
-- call Docker directly: `docker build -t replication-package .`
-- or execute the build script for your OS  
-  - Windows: `.\build.bat`
-  - Linux/Mac (bash): `./build.sh`
+To build the Docker container you can run the _build_ script corresponding to your OS.
+#### Windows: 
+> .\build.bat
+#### Linux/Mac (bash): 
+> ./build.sh
 
 ### 2. Start the replication
-To execute the replication you can 
-- call Docker directly: `docker run --rm -v "$./results":"/home/sherlock/results" replication-package replication`
-- or execute the script corresponding to your OS 
-  - Windows: `.\execute.bat replication`
-  - Linux/Mac (bash): `./execute.sh replication`
+To execute the replication you can run the _execute_ script corresponding to your OS with `replication` as first argument.
 
-```
-The replication will at least require several hours and might require up to a few days depending on your system. 
-Therefore, we offer a short validation (5-10 minutes) which runs _DiffDetective_ on only four of the datasets. 
-You can run it by providing "validation" as argument instead of "replication" (i.e., ./execute.sh validation). 
-```
+> The replication will at least require several hours and might require up to a few days depending on your system.
+> Therefore, we offer a short validation (5-10 minutes) which runs _DiffDetective_ on only four of the datasets.
+> You can run it by providing "validation" as argument instead of "replication" (i.e., ./execute.sh validation).
+
+#### Windows: 
+> .\execute.bat replication
+#### Linux/Mac (bash): 
+> ./execute.sh replication
+
+
 
 ### 3. View the results in the [results](results) directory
 All raw results are stored in the [results](results) directory. The aggregated results can be found in the following files:
@@ -54,10 +56,11 @@ Instructions for manually installing Stack are given in [proofs/REQUIREMENTS.md]
 How to build our library and how to run the example is described in the [proofs/INSTALL.md](proofs/INSTALL.md).
 
 ### Running the example with Docker
-First, you have to build the Docker container as described above in the _DiffDetective_ section. Then, you can
-- call Docker directly: `docker run --rm -v "$./results":"/home/sherlock/results" replication-package proofs`
-- or execute the script corresponding to your OS
-   - Windows: `.\execute.bat proofs`
-   - Linux/Mac (bash): `./execute.sh proofs`
+First, you have to build the Docker container as described above in the _DiffDetective_ section. 
+Then, you can run the _execute_ script corresponding to your OS with `proofs` as first argument.
+#### Windows: 
+> .\execute.bat proofs
+#### Linux/Mac (bash): 
+> ./execute.sh proofs
 
 [haskell]: https://www.haskell.org/
