@@ -128,3 +128,4 @@ examples/
 .settings/
 .classpath
 .project
+plotting/__pycache__
