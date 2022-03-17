@@ -112,5 +112,5 @@ The aggregated results of the validation can be found in the following files.
 ### No results after validation, or 'cannot create directory '../results/difftrees': Permission denied'
 `Problem:` This problem can occur due to how permissions are managed inside the Docker container. More specifically, it will appear, if Docker is executed with elevated permissions (i.e., `sudo`) and if there is no [results](results) directory because it was deleted manually. In this case, Docker will create the directory with elevated permissions, and the Docker user has no permissions to access the directory.
 
-`Fix:` If there is a _results_ directory delete it (e.g., via your file explorer). 
+`Fix:` If there is a _results_ directory delete it with elevated permission (e.g., `sudo rm -r results`). 
 Then, create a new _results_ directory without elevated permissions, or execute `git restore .` to restore the deleted directory.
