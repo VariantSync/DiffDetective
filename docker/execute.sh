@@ -3,8 +3,8 @@
 if [ "$1" == '' ]; then
   echo "Either fully run DiffDetective as presented in the paper (replication) or a do quick setup validation (validation)."
   echo "-- Examples --"
-  echo "Run replication: './experiment.sh replication'"
-  echo "Validate the setup: './experiment.sh validation'"
+  echo "Run replication: './execute.sh replication'"
+  echo "Validate the setup: './execute.sh validation'"
   exit
 fi
 cd /home/sherlock || exit
@@ -28,7 +28,7 @@ else
   echo "INVALID ARGUMENT: $1"
   echo "Either fully run DiffDetective as presented in the paper (replication) or a do quick setup validation (validation)."
   echo "-- Examples --"
-  echo "Run replication: './experiment.sh replication'"
-  echo "Validate the setup: './experiment.sh validation'"
+  echo "Run replication: './execute.sh replication'"
+  echo "Validate the setup: './execute.sh validation'"
   exit
 fi
