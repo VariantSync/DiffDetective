@@ -35,26 +35,20 @@ COPY pom.xml .
 # EXAMPLE: Execute the maven package process
 RUN mvn package || exit
 
-FROM ubuntu:latest
-# ENVIRONMENT PREPARATION PHASE
-# We have to use an Ubuntu image, because Haskell and Stack are not natively supported by Alpine Linux
+FROM alpine:3.15
 
-# REQUIRED: Create a user
-RUN adduser --disabled-password --home /home/sherlock --gecos '' sherlock
+# Create a user
+RUN adduser --disabled-password  --home /home/sherlock --gecos '' sherlock
 
-# Install Haskell and Stack
-RUN DEBIAN_FRONTEND="noninteractive" apt-get update -qy &&\
-    DEBIAN_FRONTEND="noninteractive" apt-get install netbase haskell-platform haskell-stack git-all -qy
-RUN stack update
-RUN stack upgrade
-
-# Install Java
-RUN DEBIAN_FRONTEND="noninteractive" apt-get install openjdk-16-jdk-headless -qy
-
-# Install Python
-RUN DEBIAN_FRONTEND="noninteractive" apt-get install tesseract-ocr python3 python3-pip python3-numpy -qy
-RUN pip3 install --upgrade pip setuptools wheel
-RUN pip3 install matplotlib
+RUN apk add --no-cache --upgrade bash
+RUN apk add --update openjdk17
+RUN apk add --no-cache msttcorefonts-installer fontconfig
+RUN update-ms-fonts
+RUN apk add --no-cache tesseract-ocr python3 py3-pip py3-numpy && \
+    pip3 install --upgrade pip setuptools wheel && \
+    apk add --no-cache --virtual .build-deps gcc g++ zlib-dev make python3-dev py3-numpy-dev jpeg-dev && \
+    pip3 install matplotlib && \
+    apk del .build-deps
 
 # REQUIRED: Change into the home directory
 WORKDIR /home/sherlock
@@ -65,27 +59,17 @@ WORKDIR /home/sherlock/holmes
 COPY --from=0 /home/user/target/DiffDetectiveRunner.jar .
 WORKDIR /home/sherlock
 
-# Copy the haskell files
-COPY proofs proofs
-
 # Copy the setup
 COPY docs holmes/docs
 
 # Copy the plotting scripts
 COPY plotting holmes/plotting
 
-# Build the Haskell project
-## Enable printing utf-8
-ENV LANG=C.UTF-8
-WORKDIR /home/sherlock/proofs
-RUN stack build --copy-bins
-ENV PATH=="/root/.local/bin:${PATH}"
-
-WORKDIR /home/sherlock
-# REQUIRED: Copy the docker resources
+# Copy the docker resources
 COPY docker/* ./
 RUN mkdir DiffDetectiveMining
-# REQUIRED: Adjust permissions
+
+#  Adjust permissions
 RUN chown sherlock:sherlock /home/sherlock -R
 RUN chmod +x execute.sh
 RUN chmod +x entrypoint.sh

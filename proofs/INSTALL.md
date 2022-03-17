@@ -26,14 +26,6 @@ You can then build the library and run the example as follows:
 stack run
 ```
 
-### Option 2: Setup via Dockerfile
-
-#### Building the container
-To build the required container, you can follow the instructions provided in the main [INSTALL](../INSTALL.md) file.
-Afterwards, you can run the _execute_ script corresponding to your OS with `proofs` as first argument
-- Windows: `.\execute.bat proofs`
-- Linux/Mac (bash): `./execute.sh proofs`
-
 ## What Is There to See
 
 Our example executes a simple test. It:

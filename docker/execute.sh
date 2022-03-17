@@ -1,10 +1,9 @@
 #! /bin/bash
 
 if [ "$1" == '' ]; then
-  echo "Either fully run DiffDetective as presented in the paper (replication), run the proofs (proofs) or a do quick setup validation (validation)."
+  echo "Either fully run DiffDetective as presented in the paper (replication) or a do quick setup validation (validation)."
   echo "-- Examples --"
   echo "Run replication: './experiment.sh replication'"
-  echo "Run proofs: './experiment.sh proofs'"
   echo "Validate the setup: './experiment.sh validation'"
   exit
 fi
@@ -25,16 +24,11 @@ if [ "$1" == 'replication' ] || [ "$1" == 'validation' ]; then
   python3 plotting/plot.py
   cp ./runtime_histogram.png ../results/ || exit
   echo "The results are located in the 'results' directory."
-elif [ "$1" == 'proofs' ]; then
-  echo "Running the proofs"
-  cd proofs || exit
-  stack run
 else
   echo "INVALID ARGUMENT: $1"
-  echo "Either fully run DiffDetective as presented in the paper (replication), run the proofs (proofs) or a do quick setup validation (validation)."
+  echo "Either fully run DiffDetective as presented in the paper (replication) or a do quick setup validation (validation)."
   echo "-- Examples --"
   echo "Run replication: './experiment.sh replication'"
-  echo "Run proofs: './experiment.sh proofs'"
   echo "Validate the setup: './experiment.sh validation'"
   exit
 fi
