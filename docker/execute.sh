@@ -15,7 +15,7 @@ if [ "$1" == 'replication' ] || [ "$1" == 'validation' ]; then
     java -jar DiffDetectiveRunner.jar docs/datasets.md
   elif [ "$1" == 'validation' ]; then
     echo "Running a short validation."
-    java -jar DiffDetectiveRunner.jar docs/validation.md
+    java -jar DiffDetectiveRunner.jar docs/validation/datasets.md
   fi
   echo "Starting evaluation."
   cp -r results/* ../results/
