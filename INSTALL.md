@@ -33,10 +33,10 @@ To build the Docker container you can run the build script corresponding to your
   ./build.sh
 ```
 
-### Validation & expected output
+## Validation & expected output
 
-#### Running the validation
-To run the validation you can run the script corresponding to your OS with `validation` as first argument
+### Running the validation
+To run the validation you can run the script corresponding to your OS with `validation` as first argument. The validation should take about 10-20 minutes depending on your hardware.
 ```
 # Windows: 
   .\execute.bat validation
@@ -45,7 +45,7 @@ To run the validation you can run the script corresponding to your OS with `vali
 ```
 The results of the validation are stored in the [results](results) directory.
 
-#### Expected output of the validation
+### Expected output of the validation
 The aggregated results of the validation can be found in the following files.
 
 - The [speed statistics](results/difftrees/speedstatistics.txt) contain information about the total runtime, median runtime, mean runtime, and more:

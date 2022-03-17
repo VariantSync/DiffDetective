@@ -24,9 +24,9 @@ You can find detailed information on how to install Docker and build the contain
 ### 1. Build the Docker container
 To build the Docker container you can run the _build_ script corresponding to your OS.
 #### Windows: 
-> .\build.bat
+`.\build.bat`
 #### Linux/Mac (bash): 
-> ./build.sh
+`./build.sh`
 
 ### 2. Start the replication
 To execute the replication you can run the _execute_ script corresponding to your OS with `replication` as first argument.
@@ -36,9 +36,9 @@ To execute the replication you can run the _execute_ script corresponding to you
 > You can run it by providing "validation" as argument instead of "replication" (i.e., ./execute.sh validation).
 
 #### Windows: 
-> .\execute.bat replication
+`.\execute.bat replication`
 #### Linux/Mac (bash): 
-> ./execute.sh replication
+`./execute.sh replication`
 
 
 
@@ -51,16 +51,7 @@ All raw results are stored in the [results](results) directory. The aggregated r
 ## Haskell Formalization
 The extended formalization in Haskell is a library using the _Stack_ build system.
 
-### Manual setup
 Instructions for manually installing Stack are given in [proofs/REQUIREMENTS.md](proofs/REQUIREMENTS.md).
 How to build our library and how to run the example is described in the [proofs/INSTALL.md](proofs/INSTALL.md).
-
-### Running the example with Docker
-First, you have to build the Docker container as described above in the _DiffDetective_ section. 
-Then, you can run the _execute_ script corresponding to your OS with `proofs` as first argument.
-#### Windows: 
-> .\execute.bat proofs
-#### Linux/Mac (bash): 
-> ./execute.sh proofs
 
 [haskell]: https://www.haskell.org/
