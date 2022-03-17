@@ -48,8 +48,13 @@ RUN DEBIAN_FRONTEND="noninteractive" apt-get update -qy &&\
 RUN stack update
 RUN stack upgrade
 
-# Install java
+# Install Java
 RUN DEBIAN_FRONTEND="noninteractive" apt-get install openjdk-16-jdk-headless -qy
+
+# Install Python
+RUN DEBIAN_FRONTEND="noninteractive" apt-get install tesseract-ocr python3 python3-pip python3-numpy -qy
+RUN pip3 install --upgrade pip setuptools wheel
+RUN pip3 install matplotlib
 
 # REQUIRED: Change into the home directory
 WORKDIR /home/sherlock
@@ -65,6 +70,9 @@ COPY proofs proofs
 
 # Copy the setup
 COPY docs holmes/docs
+
+# Copy the plotting scripts
+COPY plotting holmes/plotting
 
 # Build the Haskell project
 ## Enable printing utf-8

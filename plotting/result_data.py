@@ -28,7 +28,7 @@ def load_runtime_results(result_dir):
 
 # For debugging
 if __name__ == "__main__":
-    folder = "/data/m2/edit-patterns/results"
+    folder = "../results"
     results = load_runtime_results(folder)
     print(len(results))
     assert len(results) == 1708172

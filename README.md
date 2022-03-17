@@ -18,19 +18,46 @@ Our appendix consists of:
 4. The complete results of our validation for all 44 datasets.
 
 ## DiffDetective
+We offer a [Docker](https://www.docker.com/) setup to easily replicate our validation with _DiffDetective_. 
 
-**DESCRIBE HOW TO RUN EXPERIMENT HERE**
+### 1. Build the Docker container
+To build the Docker container you can 
+- call Docker directly: `docker build -t replication-package .`
+- or execute the build script for your OS  
+  - Windows: `.\build.bat`
+  - Linux/Mac (bash): `./build.sh`
 
-- Install FeatureIDE
-- Install Sat4J
-- Run `mining.DiffTreeMiner`
+### 2. Start the replication
+To execute the replication you can 
+- call Docker directly: `docker run --rm -v "$./results":"/home/sherlock/results" replication-package replication`
+- or execute the script corresponding to your OS 
+  - Windows: `.\execute.bat replication`
+  - Linux/Mac (bash): `./execute.sh replication`
+
+```
+The replication will at least require several hours and might require up to a few days depending on your system. 
+Therefore, we offer a short validation (5-10 minutes) which runs _DiffDetective_ on only four of the datasets. 
+You can run it by providing "validation" as argument instead of "replication" (i.e., ./execute.sh validation). 
+```
+
+### 3. View the results in the [results](results) directory
+All raw results are stored in the [results](results) directory. The aggregated results can be found in the following files:
+- [speed statistics](results/difftrees/speedstatistics.txt): contains information about the total runtime, median runtime, mean runtime, and more.
+- [classification results](results/difftrees/ultimateresult.metadata.txt): contains information about how often each pattern was found, and more.
+- [runtime histogram](results/runtime_histogram.png):  the runtime histogram shown in the paper.
 
 ## Haskell Formalization
-
-**@Alex: Bitte die Beschreibung für das Docker Setup in der [proofs/INSTALL.md](proofs/INSTALL.md) anpassen!**
-
 The extended formalization in Haskell is a library using the _Stack_ build system.
-Instructions for installing Stack are given in [proofs/REQUIREMENTS.md](proofs/REQUIREMENTS.md).
+
+### Manual setup
+Instructions for manually installing Stack are given in [proofs/REQUIREMENTS.md](proofs/REQUIREMENTS.md).
 How to build our library and how to run the example is described in the [proofs/INSTALL.md](proofs/INSTALL.md).
+
+### Running the example with Docker
+First, you have to build the Docker container as described above in the _DiffDetective_ section. Then, you can
+- call Docker directly: `docker run --rm -v "$./results":"/home/sherlock/results" replication-package proofs`
+- or execute the script corresponding to your OS
+   - Windows: `.\execute.bat proofs`
+   - Linux/Mac (bash): `./execute.sh proofs`
 
 [haskell]: https://www.haskell.org/

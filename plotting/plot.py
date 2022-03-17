@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy
 from matplotlib.ticker import FuncFormatter
 
-from plotting.result_data import load_runtime_results
+from result_data import load_runtime_results
 
 mpl.rcParams['pdf.fonttype'] = 42
 # mpl.rcParams['font.sans-serif'] = ["Verdana", "Arial", "Helvetica", "Avant Garde", "sans-serif"]
@@ -20,7 +20,7 @@ fig_width = 10
 fig_height = 3
 
 
-def commit_runtime(runtime_results: []):
+def commit_runtime(runtime_results: [], annotate=False):
     # Collect runtimes and convert them from milliseconds to minutes
     runtimes = [result.runtime // 60_000 for result in runtime_results]
     runtime_min = numpy.min(runtimes)
@@ -44,24 +44,25 @@ def commit_runtime(runtime_results: []):
     ax.hist(runtimes, bins=runtime_max + 1, histtype='stepfilled')
 
     # Format the x-axis
-    plt.xlabel("Runtime in minutes", fontsize=axis_label_size)
     ax.tick_params(axis='x', labelsize=tick_size)
     plt.xlim(runtime_min, runtime_max + 1)
+    plt.xlabel("Runtime in minutes", fontsize=axis_label_size)
 
     # Format the y-axis
-    plt.ylabel("#Commits (log)", fontsize=axis_label_size)
     ax.tick_params(axis='y', labelsize=tick_size)
     plt.yscale('log')
+    plt.ylabel("#Commits (log)", fontsize=axis_label_size)
 
     # Add annotation
-    t = ax.annotate(f'{runtimes_below_one:,.0f} commits require\nless than one minute.', xy=(0, runtimes_below_one),
+    if annotate:
+        ax.annotate(f'{runtimes_below_one:,.0f} commits require\nless than one minute.', xy=(0, runtimes_below_one),
                     xytext=(5, 40_000),
                     arrowprops=dict(arrowstyle="->"),
                     bbox=dict(boxstyle="round", fc="w"),
                     fontsize=text_box_font_size
                     )
 
-    t = ax.annotate(f'Two commits require\n{runtime_max:,.0f} minutes.', xy=(runtime_max, 2),
+        ax.annotate(f'Two commits require\n{runtime_max:,.0f} minutes.', xy=(runtime_max, 2),
                     xytext=(runtime_max - 30, 10),
                     arrowprops=dict(arrowstyle="->"),
                     bbox=dict(boxstyle="round", fc="w"),
@@ -74,15 +75,16 @@ def commit_runtime(runtime_results: []):
     ax.yaxis.set_major_formatter(FuncFormatter(major_formatter))
 
     plt.tight_layout()
-    plt.savefig("commit_runtime.png")
-    plt.savefig("commit_runtime.pdf")
+    plt.savefig("runtime_histogram.png")
+    plt.savefig("runtime_histogram.pdf")
 
 
 # For debugging
 if __name__ == "__main__":
-    folder = "/data/m2/edit-patterns/results"
+    folder = "../results"
     print("Loading results...")
     results = load_runtime_results(folder)
     print("Plotting runtime histogram...")
+    # commit_runtime(results, True)
     commit_runtime(results)
     print("Done.")
