@@ -55,14 +55,16 @@ def commit_runtime(runtime_results: [], annotate=False):
 
     # Add annotation
     if annotate:
-        ax.annotate(f'{runtimes_below_one:,.0f} commits require\nless than one minute.', xy=(0, runtimes_below_one),
+        percentage = 100 * runtimes_below_one / len(runtimes)
+        ax.annotate(f'{runtimes_below_one:,.0f} commits require\nless than one minute ({percentage:,.2f}%).', xy=(0, runtimes_below_one),
                     xytext=(5, 40_000),
                     arrowprops=dict(arrowstyle="->"),
                     bbox=dict(boxstyle="round", fc="w"),
                     fontsize=text_box_font_size
                     )
 
-        ax.annotate(f'Two commits require\n{runtime_max:,.0f} minutes.', xy=(runtime_max, 2),
+        percentage = 100 * runtime_max / len(runtimes)
+        ax.annotate(f'Two commits require\n{runtime_max:,.0f} minutes ({percentage:,.2f}%).', xy=(runtime_max, 2),
                     xytext=(runtime_max - 30, 10),
                     arrowprops=dict(arrowstyle="->"),
                     bbox=dict(boxstyle="round", fc="w"),
@@ -81,10 +83,11 @@ def commit_runtime(runtime_results: [], annotate=False):
 
 # For debugging
 if __name__ == "__main__":
+    # folder = "/data/m2/edit-patterns/results/"
     folder = "../results"
     print("Loading results...")
     results = load_runtime_results(folder)
     print("Plotting runtime histogram...")
-    # commit_runtime(results, True)
-    commit_runtime(results)
+    commit_runtime(results, True)
+    # commit_runtime(results)
     print("Done.")
