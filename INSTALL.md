@@ -3,7 +3,8 @@
 In the following, we describe how to build the Docker image and run the experiments in Docker containers.
 
 ### Install Docker (if required)
-How you can install Docker depends on your OS.
+How to install Docker depends on your operating system.
+
 #### Windows or Mac
 You can find download and installation instructions [here](https://www.docker.com/get-started). 
 #### Linux Distributions
