@@ -1,9 +1,8 @@
 ## Installation Instructions
 
 As explained in the [REQUIREMENTS.md](REQUIREMENTS.md), the [_Stack_][stack] build system is our only installation requirement.
-You can install it and run the demo yourself (option 1) or use the [Dockerfile](Dockerfile) (option 2).
 
-### Option 1: Manual Setup
+### Setup
 First, please install Stack.
 Detailed installation instructions for many operating systems are given on the respective [installation webpage][stackinstall].
 

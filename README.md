@@ -20,6 +20,7 @@ Our appendix consists of:
 ## DiffDetective
 We offer a [Docker](https://www.docker.com/) setup to easily __replicate__ our validation with _DiffDetective_. 
 You can find detailed information on how to install Docker and build the container in the [INSTALL](INSTALL.md) file.
+In the following, we provide short instructions for running the replication.
 
 ### 1. Build the Docker container
 To build the Docker container you can run the _build_ script corresponding to your OS.
@@ -47,6 +48,7 @@ All raw results are stored in the [results](results) directory. The aggregated r
 - [speed statistics](results/difftrees/speedstatistics.txt): contains information about the total runtime, median runtime, mean runtime, and more.
 - [classification results](results/difftrees/ultimateresult.metadata.txt): contains information about how often each pattern was found, and more.
 
+(Note that the above links only have a target _after_ running the replication.)
 Moreover, the results comprise the (LaTeX) tables that are part of our paper and appendix.
 
 ## Haskell Formalization
