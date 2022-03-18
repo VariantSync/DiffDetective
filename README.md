@@ -32,9 +32,14 @@ To build the Docker container you can run the _build_ script corresponding to yo
 ### 2. Start the replication
 To execute the replication you can run the _execute_ script corresponding to your OS with `replication` as first argument.
 
-> The replication will at least require several hours and might require up to a few days depending on your system.
+> ! The replication will at least require several hours and might require up to a few days depending on your system.
 > Therefore, we offer a short validation (5-10 minutes) which runs _DiffDetective_ on only four of the datasets.
 > You can run it by providing "validation" as argument instead of "replication" (i.e., ./execute.sh validation).
+> If you want to stop the replication, you can call the provided script for stopping the container. Note that you will have to restart the entire replication, if you stop it at any point.
+> #### Windows:
+> `.\stop-execution.bat`
+> #### Linux/Mac (bash):
+> `./stop-execution.sh`
 
 #### Windows: 
 `.\execute.bat replication`
