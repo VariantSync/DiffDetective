@@ -49,6 +49,7 @@ All raw results are stored in the [results](results) directory. The aggregated r
 - [classification results](results/difftrees/ultimateresult.metadata.txt): contains information about how often each pattern was found, and more.
 
 (Note that the above links only have a target _after_ running the replication.)
+
 Moreover, the results comprise the (LaTeX) tables that are part of our paper and appendix.
 
 ## Haskell Formalization
