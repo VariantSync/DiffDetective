@@ -19,7 +19,7 @@ Our appendix consists of:
 
 ## DiffDetective
 We offer a [Docker](https://www.docker.com/) setup to easily __replicate__ our validation with _DiffDetective_. 
-You can find detailed information on how to install Docker and build the container in the [INSTALL](Install.md) file.
+You can find detailed information on how to install Docker and build the container in the [INSTALL](INSTALL.md) file.
 
 ### 1. Build the Docker container
 To build the Docker container you can run the _build_ script corresponding to your OS.
