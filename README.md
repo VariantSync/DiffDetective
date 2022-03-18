@@ -13,7 +13,7 @@ This replication package consists of four parts:
 
 Our appendix consists of:
 1. An extended formalization of our concepts in the [Haskell][haskell] programming language. The corresponding source code is also part of this replication package (see below).
-2. A proof for completeness of variation tree diffs to represent edits to variation trees.
+2. The proofs for (a) the completeness of variation tree diffs to represent edits to variation trees, and (b) the completeness and unambiguity of our elementary edit patterns.
 3. An inspection of edit patterns from related work to show that existing patterns are either composite patterns built from our elementary patterns or similar to our elementary patterns.
 4. The complete results of our validation for all 44 datasets.
 
@@ -46,7 +46,8 @@ To execute the replication you can run the _execute_ script corresponding to you
 All raw results are stored in the [results](results) directory. The aggregated results can be found in the following files:
 - [speed statistics](results/difftrees/speedstatistics.txt): contains information about the total runtime, median runtime, mean runtime, and more.
 - [classification results](results/difftrees/ultimateresult.metadata.txt): contains information about how often each pattern was found, and more.
-- [runtime histogram](results/runtime_histogram.png):  the runtime histogram shown in the paper.
+
+Moreover, the results comprise the (LaTeX) tables that are part of our paper and appendix.
 
 ## Haskell Formalization
 The extended formalization in Haskell is a library using the _Stack_ build system.
