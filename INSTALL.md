@@ -6,12 +6,13 @@ In the following, we describe how to build the Docker image and run the experime
 How to install Docker depends on your operating system.
 
 #### Windows or Mac
-You can find download and installation instructions [here](https://www.docker.com/get-started). 
+You can find download and installation instructions [here](https://www.docker.com/get-started).
+
 #### Linux Distributions
-How you can install Docker on your system, depends on your distribution. However, the chances are high that Docker is part of your distributions package database.
+How to install Docker on your system, depends on your distribution. However, the chances are high that Docker is part of your distributions package database.
 Docker's [documentation](https://docs.docker.com/engine/install/) contains instructions for common distributions.
 
-### Open a suitable terminal
+### Open a Suitable Terminal
 ```
 # Windows Command Prompt: 
  - Press 'Windows Key + R' on your keyboard
@@ -25,7 +26,8 @@ Docker's [documentation](https://docs.docker.com/engine/install/) contains instr
 # Linux:
  - Press 'ctrl + alt + T' on your keyboard
 ```
-### Build the Docker container
+
+### Build the Docker Container
 To build the Docker container you can run the build script corresponding to your OS
 ```
 # Windows: 
@@ -34,9 +36,9 @@ To build the Docker container you can run the build script corresponding to your
   ./build.sh
 ```
 
-## Validation & expected output
+## Validation & Expected Output
 
-### Running the validation
+### Running the Validation
 To run the validation you can run the script corresponding to your OS with `validation` as first argument. The validation should take about 10-20 minutes depending on your hardware.
 ```
 # Windows: 
@@ -44,9 +46,9 @@ To run the validation you can run the script corresponding to your OS with `vali
 # Linux/Mac (bash): 
   ./execute.sh validation
 ```
-The results of the validation are stored in the [results](results) directory.
+The results of the validation will be stored in the [results](results) directory.
 
-### Expected output of the validation
+### Expected Output of the Validation
 The aggregated results of the validation can be found in the following files.
 
 - The [speed statistics](results/difftrees/speedstatistics.txt) contain information about the total runtime, median runtime, mean runtime, and more:
@@ -93,6 +95,9 @@ The aggregated results of the validation can be found in the following files.
   #Error[#else or #elif without #if]: 9
   #Error[not all annotations closed]: 6
   ```
+  
+(Note that the above links only have a target after running the validation.)
+The processing times might deviate.
 
 ## Troubleshooting
 
@@ -104,7 +109,7 @@ The aggregated results of the validation can be found in the following files.
 ### 'Unable to find image 'replication-package:latest' locally'
 `Problem:` The Docker container could not be found. This either means that the name of the container that was built does not fit the name of the container that is being executed (this only happens if you changed the provided scripts), or that the Docker container was not built yet. 
 
-`Fix:` Build the Docker container.
+`Fix:` Follow the instructions described above in the section `Build the Docker Container`.
 
 ### No results after validation, or 'cannot create directory '../results/difftrees': Permission denied'
 `Problem:` This problem can occur due to how permissions are managed inside the Docker container. More specifically, it will appear, if Docker is executed with elevated permissions (i.e., `sudo`) and if there is no [results](results) directory because it was deleted manually. In this case, Docker will create the directory with elevated permissions, and the Docker user has no permissions to access the directory.
