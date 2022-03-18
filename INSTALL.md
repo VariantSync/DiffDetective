@@ -93,10 +93,6 @@ The aggregated results of the validation can be found in the following files.
   #Error[not all annotations closed]: 6
   ```
 
-- The [runtime histogram](results/runtime_histogram.png) of each processed commit.
-![](docs/validation/validation_histogram.png)
-
-
 ## Troubleshooting
 
 ### 'Got permission denied while trying to connect to the Docker daemon socket'

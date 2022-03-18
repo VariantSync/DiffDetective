@@ -21,8 +21,6 @@ if [ "$1" == 'replication' ] || [ "$1" == 'validation' ]; then
   cp -r results/* ../results/
   java -cp DiffDetectiveRunner.jar mining.FindMedianCommitTime ../results/difftrees
   java -cp DiffDetectiveRunner.jar mining.tablegen.MiningResultAccumulator ../results/difftrees ../results/difftrees
-  python3 plotting/plot.py
-  cp ./runtime_histogram.png ../results/ || exit
   echo "The results are located in the 'results' directory."
 else
   echo "INVALID ARGUMENT: $1"

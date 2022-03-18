@@ -42,13 +42,6 @@ RUN adduser --disabled-password  --home /home/sherlock --gecos '' sherlock
 
 RUN apk add --no-cache --upgrade bash
 RUN apk add --update openjdk17
-RUN apk add --no-cache msttcorefonts-installer fontconfig
-RUN update-ms-fonts
-RUN apk add --no-cache tesseract-ocr python3 py3-pip py3-numpy && \
-    pip3 install --upgrade pip setuptools wheel && \
-    apk add --no-cache --virtual .build-deps gcc g++ zlib-dev make python3-dev py3-numpy-dev jpeg-dev && \
-    pip3 install matplotlib && \
-    apk del .build-deps
 
 # REQUIRED: Change into the home directory
 WORKDIR /home/sherlock
@@ -61,9 +54,6 @@ WORKDIR /home/sherlock
 
 # Copy the setup
 COPY docs holmes/docs
-
-# Copy the plotting scripts
-COPY plotting holmes/plotting
 
 # Copy the docker resources
 COPY docker/* ./
