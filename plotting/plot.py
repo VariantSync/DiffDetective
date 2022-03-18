@@ -27,9 +27,8 @@ def commit_runtime(runtime_results: [], annotate=False):
     runtime_max = numpy.max(runtimes)
     runtimes = numpy.sort(runtimes)[::-1]
 
-    # Count how often the runtime is less than one minute, aka. our largest bin
-    runtimes_below_one = [x for x in runtimes if x < 1]
-    runtimes_below_one = len(runtimes_below_one)
+    # Count how often the runtime is less than one second
+    runtimes_below_one_second = len([x.runtime for x in runtime_results if x.runtime < 1000])
 
     # For printing of commits with the greatest runtime
     # largest_commits = [x for x in runtime_results if x.runtime // 60000 == runtime_max]
@@ -55,17 +54,17 @@ def commit_runtime(runtime_results: [], annotate=False):
 
     # Add annotation
     if annotate:
-        percentage = 100 * runtimes_below_one / len(runtimes)
-        ax.annotate(f'{runtimes_below_one:,.0f} commits require\nless than one minute ({percentage:,.2f}%).', xy=(0, runtimes_below_one),
+        percentage = 100 * (runtimes_below_one_second / len(runtimes))
+        ax.annotate(f'{runtimes_below_one_second:,.0f} commits require\nless than one second ({percentage:,.2f}%).', xy=(0, runtimes_below_one_second),
                     xytext=(5, 40_000),
                     arrowprops=dict(arrowstyle="->"),
                     bbox=dict(boxstyle="round", fc="w"),
                     fontsize=text_box_font_size
                     )
 
-        percentage = 100 * runtime_max / len(runtimes)
+        percentage = 100 * (runtime_max / len(runtimes))
         ax.annotate(f'Two commits require\n{runtime_max:,.0f} minutes ({percentage:,.2f}%).', xy=(runtime_max, 2),
-                    xytext=(runtime_max - 30, 10),
+                    xytext=(runtime_max - 35, 10),
                     arrowprops=dict(arrowstyle="->"),
                     bbox=dict(boxstyle="round", fc="w"),
                     fontsize=text_box_font_size
@@ -89,5 +88,4 @@ if __name__ == "__main__":
     results = load_runtime_results(folder)
     print("Plotting runtime histogram...")
     commit_runtime(results, True)
-    # commit_runtime(results)
     print("Done.")
