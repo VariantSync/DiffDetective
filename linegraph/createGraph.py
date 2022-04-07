@@ -1,14 +1,20 @@
 #!/usr/bin/python3
 
 import argparse
-#import sys
 import graphviz
 
 import graphGeneration as g
 
-
-# 3. networkx subgraph -> nicht so, wie gewünscht (keine abgetrennten Teilgraphen und dazwischen keine Verbindungnen)
-# TODO manuelle Position von Clustern bestimmen (graphviz)
+####################################################################
+# How to
+#
+# Run script with ./createGraph
+# Add arguments, such as
+#     --patterns_path     path to the patterns file (default: ../lattice/patterns.lg)
+#     --lattice_path      path to the lattice file (default: ../lattice/lattice.lg)
+#     --node_parser       (default|patternsdebug|patternsrelease) 
+#                         how the node labels in the patterns file should be interpreted
+####################################################################
 
 d = graphviz.Digraph(filename="../lattice/createGraph.gv", engine='fdp')
 
@@ -182,7 +188,6 @@ def main():
     lattice(lattice_path)
     
     d.view()
-
 
 
 if __name__ == "__main__":
