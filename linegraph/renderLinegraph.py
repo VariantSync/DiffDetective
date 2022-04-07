@@ -43,7 +43,7 @@ WITH_TITLE = True
 INDEX_OUTPUT_FILENAME = False
 
 
-NODE_PARSER = parseNodeDefault
+NODE_PARSER = g.parseNodeDefault
 
 
 def load_as_line_graph(input_file):
@@ -174,7 +174,7 @@ def plot_graphs(S, exportDir):
 
         # draw type borders
         nx.draw_networkx_nodes(difftree, pos,
-                node_size=int(NODE_SIZE * TYPE_BORDER_SIZE),
+                node_size=int(NODE_SIZE * g.TYPE_BORDER_SIZE),
                 node_color=node_type_colors)
 
         # draw nodes
