@@ -115,7 +115,7 @@ buildNumber.properties
 *.csv
 *.ser
 patches/*
-/.venv/
+.venv/
 
 /input
 /error
