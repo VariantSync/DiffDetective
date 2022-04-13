@@ -13,7 +13,7 @@ import org.variantsync.diffdetective.diff.difftree.serialize.DiffTreeLineGraphEx
 import org.variantsync.diffdetective.diff.difftree.transform.DiffTreeTransformer;
 import org.variantsync.diffdetective.diff.result.CommitDiffResult;
 import org.variantsync.diffdetective.metadata.ExplainedFilterSummary;
-import org.variantsync.diffdetective.pattern.atomic.proposed.ProposedAtomicPatterns;
+import org.variantsync.diffdetective.pattern.elementary.proposed.ProposedElementaryPatterns;
 import org.variantsync.diffdetective.util.Clock;
 import org.variantsync.diffdetective.util.FileUtils;
 
@@ -50,7 +50,7 @@ public class PatternValidationTask extends CommitHistoryAnalysisTask {
                 final CommitDiff commitDiff = commitDiffResult.diff().get();
                 options.miningStrategy().onCommit(commitDiff, "");
 
-                // Count atomic patterns
+                // Count elementary patterns
                 int numDiffTrees = 0;
                 for (final PatchDiff patch : commitDiff.getPatchDiffs()) {
                     if (patch.isValid()) {
@@ -64,8 +64,8 @@ public class PatternValidationTask extends CommitHistoryAnalysisTask {
 
                             t.forAll(node -> {
                                 if (node.isCode()) {
-                                    miningResult.atomicPatternCounts.reportOccurrenceFor(
-                                            ProposedAtomicPatterns.Instance.match(node),
+                                    miningResult.elementaryPatternCounts.reportOccurrenceFor(
+                                            ProposedElementaryPatterns.Instance.match(node),
                                             commitDiff
                                     );
                                 }

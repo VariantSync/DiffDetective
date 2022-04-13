@@ -1,10 +1,10 @@
-package org.variantsync.diffdetective.pattern.atomic.proposed;
+package org.variantsync.diffdetective.pattern.elementary.proposed;
 
 import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.diff.difftree.DiffType;
-import org.variantsync.diffdetective.pattern.atomic.AtomicPattern;
+import org.variantsync.diffdetective.pattern.elementary.ElementaryPattern;
 
-final class AddWithMapping extends AtomicPattern {
+final class AddWithMapping extends ElementaryPattern {
     AddWithMapping() {
         super("AddWithMapping", DiffType.ADD);
     }

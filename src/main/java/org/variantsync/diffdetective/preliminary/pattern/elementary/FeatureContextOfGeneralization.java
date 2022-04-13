@@ -1,18 +1,18 @@
-package org.variantsync.diffdetective.preliminary.pattern.atomic;
+package org.variantsync.diffdetective.preliminary.pattern.elementary;
 
 import org.variantsync.diffdetective.diff.Lines;
 import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.pattern.EditPattern;
-import org.variantsync.diffdetective.pattern.atomic.proposed.ProposedAtomicPatterns;
+import org.variantsync.diffdetective.pattern.elementary.proposed.ProposedElementaryPatterns;
 import org.variantsync.diffdetective.preliminary.analysis.data.PatternMatch;
 import org.variantsync.diffdetective.preliminary.evaluation.FeatureContext;
 import org.variantsync.diffdetective.preliminary.pattern.FeatureContextReverseEngineering;
 
 @Deprecated
-public final class FeatureContextOfReconfiguration implements FeatureContextReverseEngineering<DiffNode> {
+public final class FeatureContextOfGeneralization implements FeatureContextReverseEngineering<DiffNode> {
     @Override
     public EditPattern<DiffNode> getPattern() {
-        return ProposedAtomicPatterns.Reconfiguration;
+        return ProposedElementaryPatterns.Generalization;
     }
 
     @Override

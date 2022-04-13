@@ -1,35 +1,30 @@
-package org.variantsync.diffdetective.preliminary.pattern.atomic;
+package org.variantsync.diffdetective.preliminary.pattern.elementary;
 
-import org.prop4j.Node;
 import org.variantsync.diffdetective.diff.Lines;
 import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.pattern.EditPattern;
-import org.variantsync.diffdetective.pattern.atomic.proposed.ProposedAtomicPatterns;
+import org.variantsync.diffdetective.pattern.elementary.proposed.ProposedElementaryPatterns;
 import org.variantsync.diffdetective.preliminary.analysis.data.PatternMatch;
 import org.variantsync.diffdetective.preliminary.evaluation.FeatureContext;
 import org.variantsync.diffdetective.preliminary.pattern.FeatureContextReverseEngineering;
 
 @Deprecated
-public final class FeatureContextOfAddToPC implements FeatureContextReverseEngineering<DiffNode> {
+public final class FeatureContextOfRefactoring implements FeatureContextReverseEngineering<DiffNode> {
     @Override
     public EditPattern<DiffNode> getPattern() {
-        return ProposedAtomicPatterns.AddToPC;
+        return ProposedElementaryPatterns.Refactoring;
     }
 
     @Override
     public PatternMatch<DiffNode> createMatch(DiffNode codeNode) {
-        final Node fm = codeNode.getAfterParent().getAfterFeatureMapping();
         final Lines diffLines = codeNode.getLinesInDiff();
-
         return new PatternMatch<>(this,
-                diffLines.getFromInclusive(), diffLines.getToExclusive(), fm
+                diffLines.getFromInclusive(), diffLines.getToExclusive()
         );
     }
 
     @Override
     public FeatureContext[] getFeatureContexts(PatternMatch<DiffNode> patternMatch) {
-        return new FeatureContext[]{
-                new FeatureContext(patternMatch.getFeatureMappings()[0])
-        };
+        return new FeatureContext[0];
     }
 }

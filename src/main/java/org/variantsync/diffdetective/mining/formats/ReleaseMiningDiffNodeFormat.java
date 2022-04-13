@@ -3,28 +3,28 @@ package org.variantsync.diffdetective.mining.formats;
 import org.variantsync.diffdetective.diff.difftree.CodeType;
 import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.diff.difftree.DiffType;
-import org.variantsync.diffdetective.pattern.atomic.AtomicPattern;
-import org.variantsync.diffdetective.pattern.atomic.proposed.ProposedAtomicPatterns;
+import org.variantsync.diffdetective.pattern.elementary.ElementaryPattern;
+import org.variantsync.diffdetective.pattern.elementary.proposed.ProposedElementaryPatterns;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.functjonal.Pair;
 
 /**
  * Formats for DiffNodes for mining.
  * The label of a node starts with c if it is a code node and with m (for macro) otherwise.
- * The label of code nodes is followed by the index of its matched atomic pattern.
+ * The label of code nodes is followed by the index of its matched elementary pattern.
  * The label of diff nodes is followed by the ordinal of its diff type and the ordinal of its code type.
  *
  * Examples:
- * DiffNode with codeType=CODE and atomic pattern AddWithMapping gets the label "c1" because AddWithMapping has index 1.
+ * DiffNode with codeType=CODE and elementary pattern AddWithMapping gets the label "c1" because AddWithMapping has index 1.
  * DiffNode with codeType=ELSE and difftype=REM gets the label "m23" because the ordinal or REM is 2 and the ordinal of ELSE is 3.
  */
 public class ReleaseMiningDiffNodeFormat implements MiningNodeFormat {
     public final static String CODE_PREFIX = "c";
     public final static String MACRO_PREFIX = "m";
 
-    private static int toId(final AtomicPattern p) {
-        for (int i = 0; i < ProposedAtomicPatterns.All.size(); ++i) {
-            if (p.equals(ProposedAtomicPatterns.All.get(i))) {
+    private static int toId(final ElementaryPattern p) {
+        for (int i = 0; i < ProposedElementaryPatterns.All.size(); ++i) {
+            if (p.equals(ProposedElementaryPatterns.All.get(i))) {
                 return i;
             }
         }
@@ -32,14 +32,14 @@ public class ReleaseMiningDiffNodeFormat implements MiningNodeFormat {
         throw new IllegalArgumentException("bug");
     }
 
-    private static AtomicPattern fromId(int id) {
-        return ProposedAtomicPatterns.All.get(id);
+    private static ElementaryPattern fromId(int id) {
+        return ProposedElementaryPatterns.All.get(id);
     }
 
     @Override
     public String toLabel(DiffNode node) {
         if (node.isCode()) {
-            return CODE_PREFIX + toId(ProposedAtomicPatterns.Instance.match(node));
+            return CODE_PREFIX + toId(ProposedElementaryPatterns.Instance.match(node));
         } else {
             final CodeType codeType = node.isRoot() ? CodeType.IF : node.codeType;
             return MACRO_PREFIX + node.diffType.ordinal() + codeType.ordinal();
@@ -49,7 +49,7 @@ public class ReleaseMiningDiffNodeFormat implements MiningNodeFormat {
     @Override
     public Pair<DiffType, CodeType> fromEncodedTypes(String tag) {
         if (tag.startsWith(CODE_PREFIX)) {
-            final AtomicPattern pattern = fromId(Integer.parseInt(tag.substring(CODE_PREFIX.length())));
+            final ElementaryPattern pattern = fromId(Integer.parseInt(tag.substring(CODE_PREFIX.length())));
             return new Pair<>(pattern.getDiffType(), CodeType.CODE);
         } else {
             Assert.assertTrue(tag.startsWith(MACRO_PREFIX));

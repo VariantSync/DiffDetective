@@ -2,10 +2,10 @@ package org.variantsync.diffdetective.analysis;
 
 import org.variantsync.diffdetective.diff.difftree.serialize.DiffTreeSerializeDebugData;
 import org.variantsync.diffdetective.diff.result.DiffError;
-import org.variantsync.diffdetective.metadata.AtomicPatternCount;
+import org.variantsync.diffdetective.metadata.ElementaryPatternCount;
 import org.variantsync.diffdetective.metadata.ExplainedFilterSummary;
 import org.variantsync.diffdetective.metadata.Metadata;
-import org.variantsync.diffdetective.pattern.atomic.proposed.ProposedAtomicPatterns;
+import org.variantsync.diffdetective.pattern.elementary.proposed.ProposedElementaryPatterns;
 import org.variantsync.diffdetective.util.IO;
 import org.variantsync.functjonal.Functjonal;
 import org.variantsync.functjonal.category.InplaceMonoid;
@@ -40,7 +40,7 @@ public class AnalysisResult implements Metadata<AnalysisResult> {
         a.max.set(CommitProcessTime.max(a.max, b.max));
         a.debugData.append(b.debugData);
         a.filterHits.append(b.filterHits);
-        a.atomicPatternCounts.append(b.atomicPatternCounts);
+        a.elementaryPatternCounts.append(b.elementaryPatternCounts);
         MergeMap.putAllValues(a.customInfo, b.customInfo, Semigroup.assertEquals());
         a.diffErrors.append(b.diffErrors);
     };
@@ -74,7 +74,7 @@ public class AnalysisResult implements Metadata<AnalysisResult> {
     public final CommitProcessTime min, max;
     public final DiffTreeSerializeDebugData debugData;
     public ExplainedFilterSummary filterHits;
-    public AtomicPatternCount atomicPatternCounts;
+    public ElementaryPatternCount elementaryPatternCounts;
     private final LinkedHashMap<String, String> customInfo = new LinkedHashMap<>();
     private final MergeMap<DiffError, Integer> diffErrors = new MergeMap<>(new HashMap<>(), Integer::sum);
 
@@ -110,7 +110,7 @@ public class AnalysisResult implements Metadata<AnalysisResult> {
         this.runtimeWithMultithreadingInSeconds = runtimeWithMultithreadingInSeconds;
         this.debugData = debugData;
         this.filterHits = filterHits;
-        this.atomicPatternCounts = new AtomicPatternCount();
+        this.elementaryPatternCounts = new ElementaryPatternCount();
         this.min = min;
         this.max = max;
     }
@@ -136,7 +136,7 @@ public class AnalysisResult implements Metadata<AnalysisResult> {
         AnalysisResult result = new AnalysisResult();
         
         final List<String> filterHitsLines = new ArrayList<>();
-        final List<String> atomicPatternCountsLines = new ArrayList<>();
+        final List<String> elementaryPatternCountsLines = new ArrayList<>();
         
         String fileInput = IO.readAsString(p); // read in metadata file
         fileInput = fileInput.replace("\r", ""); // remove carriage returns if present
@@ -181,13 +181,13 @@ public class AnalysisResult implements Metadata<AnalysisResult> {
                     // temporary fix for renaming from Unchanged to Untouched
                     final String unchanged = "Unchanged";
                     if (key.startsWith(unchanged)) {
-                        key = ProposedAtomicPatterns.Untouched.getName();
+                        key = ProposedElementaryPatterns.Untouched.getName();
                         line = key + line.substring(unchanged.length());
                     }
 
                     final String finalKey = key;
-                    if (ProposedAtomicPatterns.All.stream().anyMatch(pattern -> pattern.getName().equals(finalKey))) {
-                        atomicPatternCountsLines.add(line);
+                    if (ProposedElementaryPatterns.All.stream().anyMatch(pattern -> pattern.getName().equals(finalKey))) {
+                        elementaryPatternCountsLines.add(line);
                     } else if (key.startsWith(ExplainedFilterSummary.FILTERED_MESSAGE_BEGIN)) {
                         filterHitsLines.add(line);
                     } else if (key.startsWith(ERROR_BEGIN)) {
@@ -208,7 +208,7 @@ public class AnalysisResult implements Metadata<AnalysisResult> {
         }
         
         result.filterHits = ExplainedFilterSummary.parse(filterHitsLines);
-        result.atomicPatternCounts = AtomicPatternCount.parse(atomicPatternCountsLines, p.toString());
+        result.elementaryPatternCounts = ElementaryPatternCount.parse(elementaryPatternCountsLines, p.toString());
 
         return result;
     }
@@ -230,7 +230,7 @@ public class AnalysisResult implements Metadata<AnalysisResult> {
         snap.putAll(customInfo);
         snap.putAll(debugData.snapshot());
         snap.putAll(filterHits.snapshot());
-        snap.putAll(atomicPatternCounts.snapshot());
+        snap.putAll(elementaryPatternCounts.snapshot());
         snap.putAll(Functjonal.bimap(diffErrors, error -> ERROR_BEGIN + error + ERROR_END, Object::toString));
         return snap;
     }

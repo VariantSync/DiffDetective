@@ -1,9 +1,9 @@
 package org.variantsync.diffdetective.metadata;
 
 import org.variantsync.diffdetective.diff.CommitDiff;
-import org.variantsync.diffdetective.pattern.atomic.AtomicPattern;
-import org.variantsync.diffdetective.pattern.atomic.AtomicPatternCatalogue;
-import org.variantsync.diffdetective.pattern.atomic.proposed.ProposedAtomicPatterns;
+import org.variantsync.diffdetective.pattern.elementary.ElementaryPattern;
+import org.variantsync.diffdetective.pattern.elementary.ElementaryPatternCatalogue;
+import org.variantsync.diffdetective.pattern.elementary.proposed.ProposedElementaryPatterns;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.functjonal.Functjonal;
 import org.variantsync.functjonal.category.InplaceSemigroup;
@@ -14,7 +14,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class AtomicPatternCount implements Metadata<AtomicPatternCount> {
+public class ElementaryPatternCount implements Metadata<ElementaryPatternCount> {
     public static class Occurrences {
         public static InplaceSemigroup<Occurrences> ISEMIGROUP = (a, b) -> {
             a.totalAmount += b.totalAmount;
@@ -43,29 +43,29 @@ public class AtomicPatternCount implements Metadata<AtomicPatternCount> {
         }
     }
 
-    public static InplaceSemigroup<AtomicPatternCount> ISEMIGROUP = (a, b) -> MergeMap.putAllValues(a.occurences, b.occurences, Occurrences.ISEMIGROUP);
+    public static InplaceSemigroup<ElementaryPatternCount> ISEMIGROUP = (a, b) -> MergeMap.putAllValues(a.occurences, b.occurences, Occurrences.ISEMIGROUP);
 
-    private final LinkedHashMap<AtomicPattern, Occurrences> occurences;
+    private final LinkedHashMap<ElementaryPattern, Occurrences> occurences;
 
-    public AtomicPatternCount() {
-        this(ProposedAtomicPatterns.Instance);
+    public ElementaryPatternCount() {
+        this(ProposedElementaryPatterns.Instance);
     }
 
-    public AtomicPatternCount(final AtomicPatternCatalogue patterns) {
+    public ElementaryPatternCount(final ElementaryPatternCatalogue patterns) {
         occurences = new LinkedHashMap<>();
-        for (final AtomicPattern p : patterns.all()) {
+        for (final ElementaryPattern p : patterns.all()) {
             occurences.put(p, new Occurrences());
         }
     }
 
-    public void reportOccurrenceFor(final AtomicPattern pattern, CommitDiff commit) {
+    public void reportOccurrenceFor(final ElementaryPattern pattern, CommitDiff commit) {
         Assert.assertTrue(
                 occurences.containsKey(pattern),
                 () -> "Reported unkown pattern \""
                         + pattern.getName()
                         + "\" but expected one of "
                         + occurences.keySet().stream()
-                          .map(AtomicPattern::getName)
+                          .map(ElementaryPattern::getName)
                           .collect(Collectors.joining())
                         + "!"
         );
@@ -73,13 +73,13 @@ public class AtomicPatternCount implements Metadata<AtomicPatternCount> {
     }
     
     /**
-     * Parses lines containing {@link AtomicPattern AtomicPatterns} to {@link AtomicPatternCount}.
+     * Parses lines containing {@link ElementaryPattern elementary patterns} to {@link ElementaryPatternCount}.
      * 
-     * @param lines Lines containing {@link AtomicPattern AtomicPatterns} to be parsed
-     * @return {@link AtomicPatternCount}
+     * @param lines Lines containing {@link ElementaryPattern elementary patterns} to be parsed
+     * @return {@link ElementaryPatternCount}
      */
-    public static AtomicPatternCount parse(final List<String> lines, final String uuid) {
-        AtomicPatternCount count = new AtomicPatternCount();
+    public static ElementaryPatternCount parse(final List<String> lines, final String uuid) {
+        ElementaryPatternCount count = new ElementaryPatternCount();
         String[] keyValuePair;
         String key;
         String value;
@@ -88,7 +88,7 @@ public class AtomicPatternCount implements Metadata<AtomicPatternCount> {
         int commits;
         for (final String line : lines) {
             keyValuePair = line.split(": ");
-            key = keyValuePair[0]; // atomic pattern
+            key = keyValuePair[0]; // elementary pattern
             value = keyValuePair[1]; // key value content
             value = value.replaceAll("[{} ]", ""); // remove unnecessary symbols
             innerKeyValuePair = value.split(";");
@@ -97,8 +97,8 @@ public class AtomicPatternCount implements Metadata<AtomicPatternCount> {
             
             // get pattern from key
             final String finalKey = key;
-            AtomicPattern pattern = ProposedAtomicPatterns.Instance.fromName(key).orElseThrow(
-                    () -> new RuntimeException("Could not find Atomic Pattern with name " + finalKey)
+            ElementaryPattern pattern = ProposedElementaryPatterns.Instance.fromName(key).orElseThrow(
+                    () -> new RuntimeException("Could not find Elementary Pattern with name " + finalKey)
             );
             
             Occurrences occurence = new Occurrences();
@@ -120,7 +120,7 @@ public class AtomicPatternCount implements Metadata<AtomicPatternCount> {
     public LinkedHashMap<String, String> snapshot() {
         return Functjonal.bimap(
                 occurences,
-                AtomicPattern::getName,
+                ElementaryPattern::getName,
                 Occurrences::toString,
                 LinkedHashMap::new
         );
@@ -130,11 +130,11 @@ public class AtomicPatternCount implements Metadata<AtomicPatternCount> {
      * Mutates and returns first element.
      */
     @Override
-    public InplaceSemigroup<AtomicPatternCount> semigroup() {
+    public InplaceSemigroup<ElementaryPatternCount> semigroup() {
         return ISEMIGROUP;
     }
 
-    public LinkedHashMap<AtomicPattern, Occurrences> getOccurences() {
+    public LinkedHashMap<ElementaryPattern, Occurrences> getOccurences() {
         return occurences;
     }
 }

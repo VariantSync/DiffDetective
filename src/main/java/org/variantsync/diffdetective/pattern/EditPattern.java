@@ -1,7 +1,7 @@
 package org.variantsync.diffdetective.pattern;
 
 public abstract class EditPattern<E> {
-    protected String name;
+    protected final String name;
 
     public EditPattern(final String name) {
         this.name = name;

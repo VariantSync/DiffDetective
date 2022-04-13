@@ -3,22 +3,22 @@ package org.variantsync.diffdetective.mining.formats;
 import org.variantsync.diffdetective.diff.difftree.CodeType;
 import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.diff.difftree.DiffType;
-import org.variantsync.diffdetective.pattern.atomic.AtomicPattern;
-import org.variantsync.diffdetective.pattern.atomic.proposed.ProposedAtomicPatterns;
+import org.variantsync.diffdetective.pattern.elementary.ElementaryPattern;
+import org.variantsync.diffdetective.pattern.elementary.proposed.ProposedElementaryPatterns;
 import org.variantsync.functjonal.Pair;
 
 import java.util.Arrays;
 
 /**
  * Analogous to {@link ReleaseMiningDiffNodeFormat} but produces human readable labels instead of using integers.
- * Code nodes are labeled with the name of their matched atomic pattern.
+ * Code nodes are labeled with the name of their matched elementary pattern.
  * Macro nodes are labeled with DIFFTYPE_CODETYPE (e.g., an added IF node gets the label ADD_IF).
  */
 public class DebugMiningDiffNodeFormat implements MiningNodeFormat {
 	@Override
 	public String toLabel(final DiffNode node) {
         if (node.isCode()) {
-            return ProposedAtomicPatterns.Instance.match(node).getName();
+            return ProposedElementaryPatterns.Instance.match(node).getName();
         } else if (node.isRoot()) {
             return node.diffType + "_" + CodeType.IF;
         } else {
@@ -39,8 +39,8 @@ public class DebugMiningDiffNodeFormat implements MiningNodeFormat {
             }
             return new Pair<>(dt, ct);
         } else {
-            final AtomicPattern pattern = ProposedAtomicPatterns.Instance.fromName(tag).orElseThrow(
-                    () -> new IllegalStateException("Label \"" + tag + "\" is neither a macro label, nor an atomic pattern!")
+            final ElementaryPattern pattern = ProposedElementaryPatterns.Instance.fromName(tag).orElseThrow(
+                    () -> new IllegalStateException("Label \"" + tag + "\" is neither a macro label, nor an elementary pattern!")
             );
 
             return new Pair<>(pattern.getDiffType(), CodeType.CODE);

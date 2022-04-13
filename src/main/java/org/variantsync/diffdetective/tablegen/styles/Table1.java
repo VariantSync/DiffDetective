@@ -1,7 +1,7 @@
 package org.variantsync.diffdetective.tablegen.styles;
 
-import org.variantsync.diffdetective.pattern.atomic.AtomicPattern;
-import org.variantsync.diffdetective.pattern.atomic.proposed.ProposedAtomicPatterns;
+import org.variantsync.diffdetective.pattern.elementary.ElementaryPattern;
+import org.variantsync.diffdetective.pattern.elementary.proposed.ProposedElementaryPatterns;
 import org.variantsync.diffdetective.tablegen.Row;
 import org.variantsync.diffdetective.tablegen.TableDefinition;
 import org.variantsync.diffdetective.tablegen.TableGenerator;
@@ -25,8 +25,8 @@ public class Table1 extends TableDefinition {
                 col("\\#diffs", RIGHT, row -> makeReadable(row.results().exportedTrees))
         ));
 
-        for (final AtomicPattern a : ProposedAtomicPatterns.Instance.all()) {
-            this.columnDefinitions.add(col(a.getName(), RIGHT, row ->  makeReadable(row.results().atomicPatternCounts.getOccurences().get(a).getTotalAmount())));
+        for (final ElementaryPattern a : ProposedElementaryPatterns.Instance.all()) {
+            this.columnDefinitions.add(col(a.getName(), RIGHT, row ->  makeReadable(row.results().elementaryPatternCounts.getOccurences().get(a).getTotalAmount())));
         }
 
         this.columnDefinitions.add(col("runtime (s)", RIGHT, row -> makeReadable(row.results().runtimeInSeconds)));

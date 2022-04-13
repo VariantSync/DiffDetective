@@ -1,8 +1,8 @@
 package org.variantsync.diffdetective.tablegen.styles;
 
-import org.variantsync.diffdetective.metadata.AtomicPatternCount;
-import org.variantsync.diffdetective.pattern.atomic.AtomicPattern;
-import org.variantsync.diffdetective.pattern.atomic.proposed.ProposedAtomicPatterns;
+import org.variantsync.diffdetective.metadata.ElementaryPatternCount;
+import org.variantsync.diffdetective.pattern.elementary.ElementaryPattern;
+import org.variantsync.diffdetective.pattern.elementary.proposed.ProposedElementaryPatterns;
 import org.variantsync.diffdetective.tablegen.Row;
 import org.variantsync.diffdetective.tablegen.TableDefinition;
 import org.variantsync.diffdetective.tablegen.rows.ContentRow;
@@ -27,19 +27,19 @@ public class VariabilityShare extends TableDefinition {
                 col("\\#edits to\\\\ variability", RIGHT_DASH, row -> makeReadable(countEditsToVariability(row)))
         ));
 
-        for (final AtomicPattern a : ProposedAtomicPatterns.Instance.all()) {
+        for (final ElementaryPattern a : ProposedElementaryPatterns.Instance.all()) {
             if (isEditToVariability(a)) {
                 this.columnDefinitions.add(col(a.getName(), RIGHT, row -> getRelativeShareOf(a, row)));
             }
         }
     }
 
-    private static boolean isEditToVariability(final AtomicPattern p) {
-        return p != ProposedAtomicPatterns.Untouched && p != ProposedAtomicPatterns.AddToPC && p != ProposedAtomicPatterns.RemFromPC;
+    private static boolean isEditToVariability(final ElementaryPattern p) {
+        return p != ProposedElementaryPatterns.Untouched && p != ProposedElementaryPatterns.AddToPC && p != ProposedElementaryPatterns.RemFromPC;
     }
 
-    private static Stream<Map.Entry<AtomicPattern, AtomicPatternCount.Occurrences>> getVariationalPatterns(final ContentRow row) {
-        return row.results().atomicPatternCounts.getOccurences().entrySet().stream()
+    private static Stream<Map.Entry<ElementaryPattern, ElementaryPatternCount.Occurrences>> getVariationalPatterns(final ContentRow row) {
+        return row.results().elementaryPatternCounts.getOccurences().entrySet().stream()
                 .filter(entry -> isEditToVariability(entry.getKey()));
     }
 
@@ -49,9 +49,9 @@ public class VariabilityShare extends TableDefinition {
                 .reduce(0, Integer::sum);
     }
 
-    private String getRelativeShareOf(final AtomicPattern pattern, final ContentRow row) {
+    private String getRelativeShareOf(final ElementaryPattern pattern, final ContentRow row) {
         final int totalAmount = countEditsToVariability(row);
-        return makeReadable(100.0 *  ((double)row.results().atomicPatternCounts.getOccurences().get(pattern).getTotalAmount()) / ((double) totalAmount)) + "\\%";
+        return makeReadable(100.0 *  ((double)row.results().elementaryPatternCounts.getOccurences().get(pattern).getTotalAmount()) / ((double) totalAmount)) + "\\%";
     }
 
     @Override

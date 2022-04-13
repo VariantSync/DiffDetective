@@ -1,9 +1,9 @@
 package org.variantsync.diffdetective.tablegen.styles;
 
 import org.apache.commons.lang3.function.TriFunction;
-import org.variantsync.diffdetective.metadata.AtomicPatternCount;
-import org.variantsync.diffdetective.pattern.atomic.AtomicPattern;
-import org.variantsync.diffdetective.pattern.atomic.proposed.ProposedAtomicPatterns;
+import org.variantsync.diffdetective.metadata.ElementaryPatternCount;
+import org.variantsync.diffdetective.pattern.elementary.ElementaryPattern;
+import org.variantsync.diffdetective.pattern.elementary.proposed.ProposedElementaryPatterns;
 import org.variantsync.diffdetective.tablegen.ColumnDefinition;
 import org.variantsync.diffdetective.tablegen.Row;
 import org.variantsync.diffdetective.tablegen.TableDefinition;
@@ -35,7 +35,7 @@ public class ShortTable extends TableDefinition {
         return t;
     }
 
-    private static List<ColumnDefinition> columns(final ShortTable t, final TriFunction<ShortTable, AtomicPattern, ContentRow, String> getPatternCount) {
+    private static List<ColumnDefinition> columns(final ShortTable t, final TriFunction<ShortTable, ElementaryPattern, ContentRow, String> getPatternCount) {
         final List<ColumnDefinition> cols = new ArrayList<>(List.of(
                 col("Name", LEFT, row -> row.dataset().name().toLowerCase(Locale.US)),
                 col("Domain", LEFT_DASH, row -> row.dataset().domain()),
@@ -44,16 +44,16 @@ public class ShortTable extends TableDefinition {
                 col("\\#diffs", RIGHT, row -> t.makeReadable(row.results().exportedTrees)),
                 col("\\#artifact nodes", RIGHT_DASH, row -> t.makeReadable(row
                         .results()
-                        .atomicPatternCounts
+                        .elementaryPatternCounts
                         .getOccurences()
                         .values().stream()
-                        .map(AtomicPatternCount.Occurrences::getTotalAmount)
+                        .map(ElementaryPatternCount.Occurrences::getTotalAmount)
                         .reduce(0, Integer::sum)
                 ))
         ));
 
-        for (final AtomicPattern a : ProposedAtomicPatterns.Instance.all()) {
-            if (a != ProposedAtomicPatterns.Untouched) {
+        for (final ElementaryPattern a : ProposedElementaryPatterns.Instance.all()) {
+            if (a != ProposedElementaryPatterns.Untouched) {
                 cols.add(col(a.getName(), RIGHT, row -> getPatternCount.apply(t, a, row)));
             }
         }
@@ -65,16 +65,16 @@ public class ShortTable extends TableDefinition {
         return cols;
     }
 
-    private static String absoluteCountOf(final ShortTable t, final AtomicPattern pattern, final ContentRow row) {
-        return t.makeReadable(row.results().atomicPatternCounts.getOccurences().get(pattern).getTotalAmount());
+    private static String absoluteCountOf(final ShortTable t, final ElementaryPattern pattern, final ContentRow row) {
+        return t.makeReadable(row.results().elementaryPatternCounts.getOccurences().get(pattern).getTotalAmount());
     }
 
-    private static String relativeCountOf(final ShortTable t, final AtomicPattern pattern, final ContentRow row) {
-        final LinkedHashMap<AtomicPattern, AtomicPatternCount.Occurrences> patternOccurrences =
-                row.results().atomicPatternCounts.getOccurences();
+    private static String relativeCountOf(final ShortTable t, final ElementaryPattern pattern, final ContentRow row) {
+        final LinkedHashMap<ElementaryPattern, ElementaryPatternCount.Occurrences> patternOccurrences =
+                row.results().elementaryPatternCounts.getOccurences();
 
         int numTotalMatches = 0;
-        for (final Map.Entry<AtomicPattern, AtomicPatternCount.Occurrences> occurrence : patternOccurrences.entrySet()) {
+        for (final Map.Entry<ElementaryPattern, ElementaryPatternCount.Occurrences> occurrence : patternOccurrences.entrySet()) {
             numTotalMatches += occurrence.getValue().getTotalAmount();
         }
 

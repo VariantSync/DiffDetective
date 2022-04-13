@@ -9,7 +9,7 @@ import org.variantsync.diffdetective.diff.PatchDiff;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
 import org.variantsync.diffdetective.diff.difftree.serialize.LineGraphExport;
 import org.variantsync.diffdetective.diff.result.CommitDiffResult;
-import org.variantsync.diffdetective.pattern.atomic.proposed.ProposedAtomicPatterns;
+import org.variantsync.diffdetective.pattern.elementary.proposed.ProposedElementaryPatterns;
 import org.variantsync.diffdetective.util.Clock;
 import org.variantsync.diffdetective.util.FileUtils;
 
@@ -35,8 +35,8 @@ public class MiningTask extends CommitHistoryAnalysisTask {
             }
 
             /*
-             * We export all difftrees that match our filter criteria (e.g., has more than one atomic pattern).
-             * However, we count atomic patterns of all DiffTrees, even those that are not exported to Linegraph.
+             * We export all difftrees that match our filter criteria (e.g., has more than one elementary pattern).
+             * However, we count elementary patterns of all DiffTrees, even those that are not exported to Linegraph.
              */
             final CommitDiff commitDiff = commitDiffResult.diff().get();
             final StringBuilder lineGraph = new StringBuilder();
@@ -44,14 +44,14 @@ public class MiningTask extends CommitHistoryAnalysisTask {
             options.miningStrategy().onCommit(commitDiff, lineGraph.toString());
             options.exportOptions().treeFilter().resetExplanations();
 
-            // Count atomic patterns
+            // Count elementary patterns
             for (final PatchDiff patch : commitDiff.getPatchDiffs()) {
                 if (patch.isValid()) {
                     final DiffTree t = patch.getDiffTree();
                     t.forAll(node -> {
                         if (node.isCode()) {
-                            miningResult.atomicPatternCounts.reportOccurrenceFor(
-                                    ProposedAtomicPatterns.Instance.match(node),
+                            miningResult.elementaryPatternCounts.reportOccurrenceFor(
+                                    ProposedElementaryPatterns.Instance.match(node),
                                     commitDiff
                             );
                         }

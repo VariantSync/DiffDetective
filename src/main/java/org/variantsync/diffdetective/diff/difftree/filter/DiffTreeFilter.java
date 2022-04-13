@@ -3,7 +3,7 @@ package org.variantsync.diffdetective.diff.difftree.filter;
 import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
 
-import static org.variantsync.diffdetective.pattern.atomic.proposed.ProposedAtomicPatterns.*;
+import static org.variantsync.diffdetective.pattern.elementary.proposed.ProposedElementaryPatterns.*;
 
 /**
  * A filter on difftrees that is equipped with some metadata T (e.g., for debugging or logging).
@@ -21,7 +21,7 @@ public final class DiffTreeFilter {
 
     public static TaggedPredicate<String, DiffTree> moreThanOneCodeNode() {
         return new TaggedPredicate<>(
-                "has more than one atomic pattern",
+                "has more than one elementary pattern",
                 tree -> tree.count(DiffNode::isCode) > 1
         );
     }

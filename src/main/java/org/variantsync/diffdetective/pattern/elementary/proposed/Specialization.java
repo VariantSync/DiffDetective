@@ -1,12 +1,12 @@
-package org.variantsync.diffdetective.pattern.atomic.proposed;
+package org.variantsync.diffdetective.pattern.elementary.proposed;
 
 import org.prop4j.Node;
 import org.variantsync.diffdetective.analysis.logic.SAT;
 import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.diff.difftree.DiffType;
-import org.variantsync.diffdetective.pattern.atomic.AtomicPattern;
+import org.variantsync.diffdetective.pattern.elementary.ElementaryPattern;
 
-final class Specialization extends AtomicPattern {
+final class Specialization extends ElementaryPattern {
     Specialization() {
         super("Specialization", DiffType.NON);
     }

@@ -1,17 +1,17 @@
-package org.variantsync.diffdetective.pattern.atomic;
+package org.variantsync.diffdetective.pattern.elementary;
 
 import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
 import org.variantsync.diffdetective.diff.difftree.DiffType;
 import org.variantsync.diffdetective.pattern.EditPattern;
 
-public abstract class AtomicPattern extends EditPattern<DiffNode> {
+public abstract class ElementaryPattern extends EditPattern<DiffNode> {
     private final DiffType diffType;
 
     /**
-     * Each atomic pattern handles exactly one DiffType.
+     * Each elementary pattern handles exactly one DiffType.
      */
-    public AtomicPattern(final String name, final DiffType diffType) {
+    public ElementaryPattern(final String name, final DiffType diffType) {
         super(name);
         this.diffType = diffType;
     }

@@ -1,57 +1,57 @@
-package org.variantsync.diffdetective.pattern.atomic.proposed;
+package org.variantsync.diffdetective.pattern.elementary.proposed;
 
 import org.prop4j.Node;
 import org.variantsync.diffdetective.analysis.logic.SAT;
 import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.diff.difftree.DiffType;
-import org.variantsync.diffdetective.pattern.atomic.AtomicPattern;
-import org.variantsync.diffdetective.pattern.atomic.AtomicPatternCatalogue;
+import org.variantsync.diffdetective.pattern.elementary.ElementaryPattern;
+import org.variantsync.diffdetective.pattern.elementary.ElementaryPatternCatalogue;
 import org.variantsync.diffdetective.util.Assert;
 
 import java.util.*;
 
-public class ProposedAtomicPatterns implements AtomicPatternCatalogue {
-    public static final AtomicPattern AddToPC = new AddToPC();
-    public static final AtomicPattern AddWithMapping = new AddWithMapping();
-    public static final AtomicPattern RemFromPC = new RemFromPC();
-    public static final AtomicPattern RemWithMapping = new RemWithMapping();
-    public static final AtomicPattern Specialization = new Specialization();
-    public static final AtomicPattern Generalization = new Generalization();
-    public static final AtomicPattern Reconfiguration = new Reconfiguration();
-    public static final AtomicPattern Refactoring = new Refactoring();
-    public static final AtomicPattern Untouched = new Untouched();
+public class ProposedElementaryPatterns implements ElementaryPatternCatalogue {
+    public static final ElementaryPattern AddToPC = new AddToPC();
+    public static final ElementaryPattern AddWithMapping = new AddWithMapping();
+    public static final ElementaryPattern RemFromPC = new RemFromPC();
+    public static final ElementaryPattern RemWithMapping = new RemWithMapping();
+    public static final ElementaryPattern Specialization = new Specialization();
+    public static final ElementaryPattern Generalization = new Generalization();
+    public static final ElementaryPattern Reconfiguration = new Reconfiguration();
+    public static final ElementaryPattern Refactoring = new Refactoring();
+    public static final ElementaryPattern Untouched = new Untouched();
 
-    public static final List<AtomicPattern> All = List.of(
+    public static final List<ElementaryPattern> All = List.of(
             AddToPC, AddWithMapping,
             RemFromPC, RemWithMapping,
             Specialization, Generalization, Reconfiguration, Refactoring, Untouched
     );
 
-    public static final Map<DiffType, List<AtomicPattern>> PatternsByType;
+    public static final Map<DiffType, List<ElementaryPattern>> PatternsByType;
 
-    public static final ProposedAtomicPatterns Instance = new ProposedAtomicPatterns();
+    public static final ProposedElementaryPatterns Instance = new ProposedElementaryPatterns();
 
     static {
         PatternsByType = new HashMap<>();
-        for (final AtomicPattern ap : All) {
+        for (final ElementaryPattern ap : All) {
             PatternsByType.computeIfAbsent(ap.getDiffType(), d -> new ArrayList<>()).add(ap);
         }
     }
 
-    private ProposedAtomicPatterns() {}
+    private ProposedElementaryPatterns() {}
 
     @Override
-    public List<AtomicPattern> all() {
+    public List<ElementaryPattern> all() {
         return All;
     }
 
     @Override
-    public Map<DiffType, List<AtomicPattern>> byType() {
+    public Map<DiffType, List<ElementaryPattern>> byType() {
         return PatternsByType;
     }
 
     @Override
-    public AtomicPattern match(DiffNode node)
+    public ElementaryPattern match(DiffNode node)
     {
         // This is an inlined version of all patterns to optimize runtime when detecting the pattern of a certain node.
 
@@ -119,8 +119,8 @@ public class ProposedAtomicPatterns implements AtomicPatternCatalogue {
         }
     }
 
-    public Optional<AtomicPattern> fromName(String label) {
-        for (final AtomicPattern p : All) {
+    public Optional<ElementaryPattern> fromName(String label) {
+        for (final ElementaryPattern p : All) {
             if (p.getName().equals(label)) {
                 return Optional.of(p);
             }
