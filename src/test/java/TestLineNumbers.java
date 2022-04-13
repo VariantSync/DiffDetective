@@ -1,8 +1,8 @@
-import diff.DiffLineNumber;
-import diff.difftree.DiffTree;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.variantsync.diffdetective.diff.DiffLineNumber;
+import org.variantsync.diffdetective.diff.difftree.DiffTree;
 import org.variantsync.functjonal.Pair;
 
 import java.io.IOException;

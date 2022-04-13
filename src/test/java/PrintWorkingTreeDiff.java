@@ -1,14 +1,15 @@
-import datasets.ParseOptions.DiffStoragePolicy;
-import datasets.Repository;
-import diff.CommitDiff;
-import diff.GitDiffer;
-import diff.PatchDiff;
-import diff.result.CommitDiffResult;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.NoHeadException;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.junit.Assert;
 import org.junit.Test;
+import org.variantsync.diffdetective.datasets.ParseOptions.DiffStoragePolicy;
+import org.variantsync.diffdetective.datasets.Repository;
+import org.variantsync.diffdetective.diff.CommitDiff;
+import org.variantsync.diffdetective.diff.GitDiffer;
+import org.variantsync.diffdetective.diff.PatchDiff;
+import org.variantsync.diffdetective.diff.result.CommitDiffResult;
+import org.variantsync.diffdetective.util.IO;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -65,7 +66,7 @@ public class PrintWorkingTreeDiff {
 	 * @throws IOException 
 	 */
 	private static String read(Path filePath) throws IOException {
-        return util.IO.readAsString(filePath);
+        return IO.readAsString(filePath);
 	}
 	
 }

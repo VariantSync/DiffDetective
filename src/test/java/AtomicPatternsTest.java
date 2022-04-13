@@ -1,7 +1,7 @@
-import diff.difftree.DiffTree;
 import org.junit.Assert;
 import org.junit.Test;
-import pattern.atomic.proposed.ProposedAtomicPatterns;
+import org.variantsync.diffdetective.diff.difftree.DiffTree;
+import org.variantsync.diffdetective.pattern.atomic.proposed.ProposedAtomicPatterns;
 
 import java.io.IOException;
 import java.nio.file.Path;

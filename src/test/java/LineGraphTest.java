@@ -1,13 +1,13 @@
-import diff.difftree.CommitDiffDiffTreeSource;
-import diff.difftree.DiffTree;
-import diff.difftree.serialize.*;
-import diff.difftree.serialize.edgeformat.DefaultEdgeLabelFormat;
-import diff.difftree.serialize.nodeformat.LabelOnlyDiffNodeFormat;
-import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.tinylog.Logger;
-import util.FileUtils;
+import org.variantsync.diffdetective.diff.difftree.CommitDiffDiffTreeSource;
+import org.variantsync.diffdetective.diff.difftree.DiffTree;
+import org.variantsync.diffdetective.diff.difftree.serialize.*;
+import org.variantsync.diffdetective.diff.difftree.serialize.edgeformat.DefaultEdgeLabelFormat;
+import org.variantsync.diffdetective.diff.difftree.serialize.nodeformat.LabelOnlyDiffNodeFormat;
+import org.variantsync.diffdetective.diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
+import org.variantsync.diffdetective.util.FileUtils;
 
 import java.io.IOException;
 import java.nio.file.Files;

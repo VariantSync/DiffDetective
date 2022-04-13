@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="GenAutomationResults" type="Application" factoryName="Application">
-    <option name="MAIN_CLASS_NAME" value="main.FindMedianCommitTime" />
+    <option name="MAIN_CLASS_NAME" value="org.variantsync.diffdetective.main.FindMedianCommitTime" />
     <module name="DiffDetective" />
     <option name="PROGRAM_PARAMETERS" value="results/difftrees" />
     <extension name="coverage">

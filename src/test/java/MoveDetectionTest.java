@@ -1,7 +1,7 @@
-import diff.difftree.DiffTree;
-import diff.difftree.render.DiffTreeRenderer;
-import diff.difftree.transform.NaiveMovedCodeDetection;
 import org.junit.Test;
+import org.variantsync.diffdetective.diff.difftree.DiffTree;
+import org.variantsync.diffdetective.diff.difftree.render.DiffTreeRenderer;
+import org.variantsync.diffdetective.diff.difftree.transform.NaiveMovedCodeDetection;
 
 import java.io.IOException;
 import java.nio.file.Path;

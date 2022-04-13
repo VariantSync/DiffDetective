@@ -1,17 +1,17 @@
-import analysis.logic.SAT;
-import diff.difftree.DiffTree;
 import org.junit.Assert;
 import org.junit.Test;
 import org.prop4j.And;
 import org.prop4j.Literal;
 import org.prop4j.Node;
 import org.tinylog.Logger;
+import org.variantsync.diffdetective.analysis.logic.SAT;
+import org.variantsync.diffdetective.diff.difftree.DiffTree;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Map;
 
-import static util.fide.FormulaUtils.negate;
+import static org.variantsync.diffdetective.util.fide.FormulaUtils.negate;
 
 public class PCTest {
     private static final Literal A = new Literal("A");

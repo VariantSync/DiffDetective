@@ -1,15 +1,15 @@
-import analysis.logic.SAT;
-import analysis.logic.Tseytin;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.prop4j.*;
-import util.fide.FixTrueFalse;
+import org.variantsync.diffdetective.analysis.logic.SAT;
+import org.variantsync.diffdetective.analysis.logic.Tseytin;
+import org.variantsync.diffdetective.util.fide.FixTrueFalse;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static util.fide.FormulaUtils.negate;
+import static org.variantsync.diffdetective.util.fide.FormulaUtils.negate;
 
 public class TseytinTest {
     private static final Literal A = new Literal("A");

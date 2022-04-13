@@ -1,8 +1,8 @@
-import diff.difftree.DiffTree;
-import diff.difftree.render.DiffTreeRenderer;
-import diff.result.DiffError;
+import org.variantsync.diffdetective.diff.difftree.DiffTree;
+import org.variantsync.diffdetective.diff.difftree.render.DiffTreeRenderer;
+import org.variantsync.diffdetective.diff.result.DiffError;
+import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.functjonal.Result;
-import util.Assert;
 
 import java.io.IOException;
 import java.nio.file.Path;
