@@ -5,6 +5,8 @@ import os
 import re
 import sys
 
+import graphGeneration as g
+
 ## settings for running example
 # for diff
 # NODE_POSITION_LAYOUT = "circo"
@@ -16,8 +18,6 @@ import sys
 # POS_SCALING_X = 1
 # POS_SCALING_Y = 0.5
 # plt.margins(x=0.11)
-
-import graphGeneration as g
 
 # + install graphviz on your system: https://www.graphviz.org/download/
 
@@ -153,6 +153,8 @@ def plot_graphs(S, exportDir):
                 node_colors.append(g.DIFFTYPE_ADD_COLOR)
             elif nodedata.difftype == g.DIFFTYPE_REM:
                 node_colors.append(g.DIFFTYPE_REM_COLOR)
+            else:
+                raise Exception("Could not determine color of node " + str(nodedata.difftype))
 
             if nodedata.codetype == g.CODETYPE_CODE:
                 node_type_colors.append(g.CODE_TYPE_CODE_COLOR)
@@ -164,12 +166,7 @@ def plot_graphs(S, exportDir):
         edge_colors = []
         for _, _, d in difftree.edges.data():
             typeName = str(d['label'])
-            if typeName.startswith("a"):
-                edge_colors.append(EDGE_ADD_COLOR)
-            if typeName.startswith("ba"):
-                edge_colors.append(EDGE_NON_COLOR)
-            elif typeName.startswith("b"):
-                edge_colors.append(EDGE_REM_COLOR)
+            edge_colors.append(g.edgeColour(typeName))
 
         # pos = nx.spring_layout(S[i], scale=3)
         # pos = nx.planar_layout(S[i], scale=3)
@@ -198,6 +195,9 @@ def plot_graphs(S, exportDir):
         ycenter = (ymax + ymin) / 2
         yhalf = (ymax - ymin) / 2
 
+        if yhalf == 0:
+            yhalf = ycenter / 2
+
         # 3: shift our nodes and normalize their position on the y scale
         new_pos = {}
         for k, v in pos.items():
@@ -216,7 +216,8 @@ def plot_graphs(S, exportDir):
         # draw nodes
         if SHOW_LABELS:
             node_labels = dict([(v, d['label']) for v, d in difftree.nodes(data=True)])
-            nx.draw(difftree, pos,
+            nx.draw(difftree,
+                    pos,
                     node_size=NODE_SIZE,
                     node_color=node_colors,
                     width=EDGE_SIZE,
@@ -283,6 +284,7 @@ if __name__ == "__main__":
     FONT_SIZE = args.fontsize
     LINE_NO_OFFSET = args.startlineno
 
+#     print("args.format", args.format)
     if args.format == "default":
         NODE_PARSER = g.parseNodeDefault
     elif args.format == "patternsdebug":

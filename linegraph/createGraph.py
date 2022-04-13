@@ -35,17 +35,6 @@ def nodeColour(difftype):
     elif difftype == g.DIFFTYPE_REM:
         return g.DIFFTYPE_REM_COLOR
 
-
-# the colour of the edge according to the specification, for "a", "b", and "ab"
-def edgeColour(edge):
-    if edge == "a":
-        return g.EDGE_A_COLOUR
-    elif edge == "b":
-        return g.EDGE_B_COLOUR
-    else: # "ab"
-        return g.EDGE_AB_COLOUR
-
-
 # draw a node within a sub graph
 def drawNode(cluster, tree, nodeId, nodeLabel):
     nodedata = NODE_PARSER(nodeId, nodeLabel)
@@ -65,7 +54,7 @@ def drawEdge(cluster, tree, childNodeId, parentNodeId, nodeLabel):
     cluster.edge(
         tree + "_" + childNodeId, # identifier of the destination node (where the edge arrow points to)
         tree + "_" + parentNodeId, # identifier of the source node (where the edge arrow points from)
-        color=edgeColour(nodeLabel)) # colour of the edge
+        color=g.edgeColour(nodeLabel)) # colour of the edge
 
 
 # draw one tree, i.e. sub graph, of the patterns file

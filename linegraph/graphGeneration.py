@@ -1,30 +1,33 @@
 #!/bin/python3
 
-
 # constants from our Java code
 JAVA_TREE_NAME_SEPARATOR = "$$$"
-JAVA_ID_LINE_NUMBER_OFFSET = 16
-JAVA_ID_DIFF_TYPE_OFFSET = 8
+JAVA_ID_LINE_NUMBER_OFFSET = 6 #16
+JAVA_ID_DIFF_TYPE_OFFSET = 3 #8
 JAVA_ID_DIFFLINE_FROM_OFFSET = 1
 
 # export names
 # DIR_SEPARATOR = "$"
 DIR_SEPARATOR = "___"
 
+COLORFUL_DELETED = '#A00000'
+COLORFUL_INSERTED = '#00A000'
+COLORFUL_MACRO = '#579'
+
 # colour of a node shows diff type
-DIFFTYPE_ADD_COLOR = 'green'
-DIFFTYPE_REM_COLOR = 'red'
+DIFFTYPE_ADD_COLOR = 'green' #COLORFUL_INSERTED #
+DIFFTYPE_REM_COLOR = 'red' #COLORFUL_DELETED #'#ff9129'
 DIFFTYPE_NON_COLOR = '#d1d1e0' # light purple gray
 
 # border colour of a node shows code type
-CODE_TYPE_CODE_COLOR = '#3399ff'
-CODE_TYPE_OTHER_COLOR = 'black'
+CODE_TYPE_CODE_COLOR = 'black'
+CODE_TYPE_OTHER_COLOR = '#3399ff'#COLORFUL_MACRO#
 TYPE_BORDER_SIZE = (8.0 / 7.0)
 
-# edge colours
-EDGE_A_COLOUR = "#bbeb37"
-EDGE_B_COLOUR = "#ff9129"
-EDGE_AB_COLOUR = "black"
+# colour of edges
+EDGE_ADD_COLOR = '#bbeb37'
+EDGE_REM_COLOR = '#ff9129'
+EDGE_NON_COLOR = 'black'
 
 RELEASE_PATTERNS_CODE_PREFIX = "c"
 RELEASE_PATTERNS_MACRO_PREFIX = "m"
@@ -224,4 +227,14 @@ def parseNodeReleaseAtomics(id, name):
     else:
         raise Exception("Node " + name + " has unknown type. Expected prefix " + RELEASE_PATTERNS_CODE_PREFIX + " or " + RELEASE_PATTERNS_MACRO_PREFIX + " but was none.")
 
-    return result 
+    return result
+
+def edgeColour(edge):
+    if edge.startswith("a"):
+        return EDGE_ADD_COLOR
+    elif edge.startswith("ba"):
+        return EDGE_NON_COLOR
+    elif edge.startswith("b"):
+        return EDGE_REM_COLOR
+    else:
+        raise Exception("Cannot parse edge label " + edge)

@@ -49,6 +49,7 @@ public class SimpleRenderer {
             .build();
 
     private static final RenderOptions renderExampleOptions = new RenderOptions.Builder()
+            .setTreeFormat(new RWCompositePatternTreeFormat())
             .setNodesize(3*RenderOptions.DEFAULT.nodesize())
             .setEdgesize(2*RenderOptions.DEFAULT.edgesize())
             .setArrowsize(2*RenderOptions.DEFAULT.arrowsize())
@@ -67,6 +68,8 @@ public class SimpleRenderer {
             .addExtraArguments("--format", "patternsdebug")
             .build();
 
+    private static final RenderOptions RENDER_OPTIONS_TO_USE = renderExampleOptions;
+
     private final static boolean collapseMultipleCodeLines = true;
     private final static boolean ignoreEmptyLines = true;
     private final static List<String> SUPPORTED_FILE_TYPES = List.of(".diff", ".c", ".cpp", ".h", ".hpp");
@@ -80,7 +83,7 @@ public class SimpleRenderer {
         final String fileToRenderStr = fileToRender.toString();
         if (fileToRenderStr.endsWith(".lg")) {
             Logger.info("Rendering " + fileToRender);
-            renderer.renderFile(fileToRender, vulkanRenderOptions);
+            renderer.renderFile(fileToRender, RENDER_OPTIONS_TO_USE);
         } else if (SUPPORTED_FILE_TYPES.stream().anyMatch(fileToRenderStr::endsWith)) {
             Logger.info("Rendering " + fileToRender);
             final DiffTree t;
@@ -95,7 +98,7 @@ public class SimpleRenderer {
                     fileToRender.getFileName().toString(),
                     GetRelativeOutputDir.apply(fileToRender),
 //                    renderExampleOptions
-                    renderCompositePatterns
+                    RENDER_OPTIONS_TO_USE
             );
         } else {
             Logger.warn("Skipping unsupported file " + fileToRender);
@@ -137,7 +140,7 @@ public class SimpleRenderer {
             final PatchDiff patch = DiffTreeParser.parsePatch(repository, file, commit);
             assert patch != null;
             DiffTreeTransformer.apply(transform, patch.getDiffTree());
-            renderer.render(patch, Path.of("render", repoName), vulkanRenderOptions);
+            renderer.render(patch, Path.of("render", repoName), RENDER_OPTIONS_TO_USE);
         }
 
         System.out.println("done");
