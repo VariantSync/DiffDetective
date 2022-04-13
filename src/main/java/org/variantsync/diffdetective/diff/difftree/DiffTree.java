@@ -180,6 +180,10 @@ public class DiffTree {
         }
     }
 
+    public String toTextDiff() {
+        return root.toTextDiff();
+    }
+
     private static class AllPathsEndAtRoot {
         private enum VisitStatus {
             STRANGER,

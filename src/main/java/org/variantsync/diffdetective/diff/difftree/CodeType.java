@@ -48,4 +48,8 @@ public enum CodeType {
 
         throw new IllegalArgumentException("Given string \"" + name + "\" is not the name of a CodeType.");
     }
+
+    public String asMacroText() {
+        return "#" + this.name;
+    }
 }

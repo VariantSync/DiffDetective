@@ -16,6 +16,13 @@ public enum DiffType {
     final static String addCharacter = "+";
     final static String remCharacter = "-";
 
+    public static DiffType thatExistsOnlyAt(Time time) {
+        return switch (time) {
+            case BEFORE -> REM;
+            case AFTER -> ADD;
+        };
+    }
+
     /**
      * Runs the first given procedure if the edited artefact existed before the edit (DiffType != ADD).
      * Runs the second given procedure if the edited artefact exists after the edit (DiffType != REM).
@@ -92,10 +99,14 @@ public enum DiffType {
     }
 
     public boolean existsBefore() {
-        return this != ADD;
+        return existsAtTime(Time.BEFORE);
     }
 
     public boolean existsAfter() {
-        return this != REM;
+        return existsAtTime(Time.AFTER);
+    }
+
+    public boolean existsAtTime(Time time) {
+        return (time == Time.BEFORE && this != ADD) || (time == Time.AFTER && this != REM);
     }
 }
