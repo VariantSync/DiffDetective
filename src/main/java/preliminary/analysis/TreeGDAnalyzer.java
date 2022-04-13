@@ -1,15 +1,15 @@
-package analysis;
+package preliminary.analysis;
 
-import analysis.data.PatchDiffAnalysisResult;
-import analysis.data.PatternMatch;
 import diff.GitDiff;
 import diff.PatchDiff;
 import diff.difftree.DiffNode;
 import diff.difftree.DiffTree;
-import pattern.EditPattern;
 import pattern.atomic.AtomicPattern;
-import pattern.atomic.proposed.ProposedAtomicPatterns;
-import pattern.semantic.SemanticPattern;
+import preliminary.analysis.data.PatchDiffAnalysisResult;
+import preliminary.analysis.data.PatternMatch;
+import preliminary.pattern.FeatureContextReverseEngineering;
+import preliminary.pattern.atomic.*;
+import preliminary.pattern.semantic.SemanticPattern;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,11 +19,22 @@ import java.util.List;
  *
  * Matches atomic patterns on the code nodes and semantic patterns on the annotation nodes.
  */
+@Deprecated
 public class TreeGDAnalyzer extends GDAnalyzer<DiffNode> {
-    private static List<EditPattern<DiffNode>> getPatterns(boolean atomic, boolean semantic) {
-        final List<EditPattern<DiffNode>> patterns = new ArrayList<>();
+    private static List<FeatureContextReverseEngineering<DiffNode>> getPatterns(boolean atomic, boolean semantic) {
+        final List<FeatureContextReverseEngineering<DiffNode>> patterns = new ArrayList<>();
         if (atomic) {
-            patterns.addAll(ProposedAtomicPatterns.Instance.all());
+            patterns.addAll(List.of(
+                    new FeatureContextOfAddToPC(),
+                    new FeatureContextOfAddWithMapping(),
+                    new FeatureContextOfRemFromPC(),
+                    new FeatureContextOfRemWithMapping(),
+                    new FeatureContextOfGeneralization(),
+                    new FeatureContextOfSpecialization(),
+                    new FeatureContextOfReconfiguration(),
+                    new FeatureContextOfRefactoring(),
+                    new FeatureContextOfUntouched()
+            ));
         }
         if (semantic) {
             patterns.addAll(SemanticPattern.All);
@@ -31,7 +42,7 @@ public class TreeGDAnalyzer extends GDAnalyzer<DiffNode> {
         return patterns;
     }
 
-    public TreeGDAnalyzer(GitDiff gitDiff, List<EditPattern<DiffNode>> patterns) {
+    public TreeGDAnalyzer(GitDiff gitDiff, List<FeatureContextReverseEngineering<DiffNode>> patterns) {
         super(gitDiff, patterns);
     }
 
@@ -57,18 +68,19 @@ public class TreeGDAnalyzer extends GDAnalyzer<DiffNode> {
         if(diffTree != null) {
             // match atomic patterns
             for (DiffNode diffNode : diffTree.computeCodeNodes()) {
-                for (EditPattern<DiffNode> pattern : patterns) {
-                    if(pattern instanceof AtomicPattern) {
-                        pattern.match(diffNode).ifPresent(results::add);
+                for (FeatureContextReverseEngineering<DiffNode> pattern : patterns) {
+                    if (pattern.getPattern() instanceof AtomicPattern) {
+                        results.add(pattern.createMatch(diffNode));
+//                        pattern.match(diffNode).ifPresent(results::add);
                     }
                 }
             }
 
             // match semantic patterns
             for (DiffNode diffNode : diffTree.computeAnnotationNodes()) {
-                for (EditPattern<DiffNode> pattern : patterns) {
-                    if(pattern instanceof SemanticPattern) {
-                        pattern.match(diffNode).ifPresent(results::add);
+                for (FeatureContextReverseEngineering<DiffNode> pattern : patterns) {
+                    if (pattern.getPattern() instanceof SemanticPattern s) {
+                        s.match(diffNode).ifPresent(results::add);
                     }
                 }
             }

@@ -1,15 +1,15 @@
-package pattern.semantic;
+package preliminary.pattern.semantic;
 
-import analysis.data.PatternMatch;
 import diff.difftree.DiffNode;
-import evaluation.FeatureContext;
-import org.prop4j.Not;
+import preliminary.analysis.data.PatternMatch;
+import preliminary.evaluation.FeatureContext;
 
 import java.util.Optional;
 
-class AddIfdefElse extends SemanticPattern {
-    AddIfdefElse() {
-        super("AddIfdefElse");
+@Deprecated
+class AddIfdefWrapElse extends SemanticPattern {
+    public AddIfdefWrapElse() {
+        super("AddIfdefWrapElse");
     }
 
     /*
@@ -18,7 +18,7 @@ class AddIfdefElse extends SemanticPattern {
         has an added code child
         has no elif children
         has an added else child
-          which has an added code child
+            which has an unchanged code child
      */
     @Override
     public Optional<PatternMatch<DiffNode>> match(DiffNode annotationNode) {
@@ -41,14 +41,14 @@ class AddIfdefElse extends SemanticPattern {
                 return Optional.empty();
             }
 
-            boolean addedCodeInElse = false;
-            for(DiffNode child : elseNode.getAllChildren()) {
-                if(child.isCode() && child.isAdd()){
-                    addedCodeInElse = true;
+            boolean noneCodeInElse = false;
+            for(DiffNode child : elseNode.getAllChildren()){
+                if(child.isCode() && child.isNon()){
+                    noneCodeInElse = true;
                 }
             }
 
-            if(!addedCodeInElse){
+            if(!noneCodeInElse){
                 return Optional.empty();
             }
 
@@ -64,8 +64,7 @@ class AddIfdefElse extends SemanticPattern {
     @Override
     public FeatureContext[] getFeatureContexts(PatternMatch<DiffNode> patternMatch) {
         return new FeatureContext[]{
-                new FeatureContext(patternMatch.getFeatureMappings()[0]),
-                new FeatureContext(new Not(patternMatch.getFeatureMappings()[0]))
+                new FeatureContext(patternMatch.getFeatureMappings()[0])
         };
     }
 }

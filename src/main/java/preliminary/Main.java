@@ -1,16 +1,16 @@
-package main;
+package preliminary;
 
-import analysis.GDAnalysisUtils;
-import analysis.GDAnalyzer;
-import analysis.TreeGDAnalyzer;
-import analysis.data.GDAnalysisResult;
 import datasets.Repository;
 import datasets.predefined.StanciulescuMarlin;
 import diff.GitDiff;
 import diff.GitDiffer;
-import evaluation.GDEvaluator;
 import org.tinylog.Level;
 import org.tinylog.Logger;
+import preliminary.analysis.GDAnalysisUtils;
+import preliminary.analysis.GDAnalyzer;
+import preliminary.analysis.TreeGDAnalyzer;
+import preliminary.analysis.data.GDAnalysisResult;
+import preliminary.evaluation.GDEvaluator;
 
 import java.nio.file.Path;
 
@@ -19,6 +19,7 @@ import java.nio.file.Path;
  *
  * @author Sören Viegener
  */
+@Deprecated
 public class Main {
     private static final String TREE_ANALYSIS = "tree";
     private static final String ATOMIC_TREE_ANALYSIS = "tree_atomic";

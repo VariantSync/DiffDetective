@@ -1,12 +1,12 @@
-package analysis;
+package preliminary.analysis;
 
-import analysis.data.CommitDiffAnalysisResult;
-import analysis.data.GDAnalysisResult;
-import analysis.data.PatchDiffAnalysisResult;
-import analysis.data.PatternMatch;
 import diff.difftree.DiffNode;
 import org.prop4j.Node;
 import org.tinylog.Logger;
+import preliminary.analysis.data.CommitDiffAnalysisResult;
+import preliminary.analysis.data.GDAnalysisResult;
+import preliminary.analysis.data.PatchDiffAnalysisResult;
+import preliminary.analysis.data.PatternMatch;
 import util.IO;
 
 import java.io.FileNotFoundException;
@@ -20,6 +20,7 @@ import java.util.StringJoiner;
  *
  * @author Sören Viegener
  */
+@Deprecated
 public class GDAnalysisUtils {
     private static final String[] CSV_COLUMN_NAMES = {"Commit", "Patch", "Pattern", "Mappings",
             "Start Line", "End Line"};

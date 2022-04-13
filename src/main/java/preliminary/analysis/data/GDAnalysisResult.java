@@ -1,4 +1,4 @@
-package analysis.data;
+package preliminary.analysis.data;
 
 import diff.GitDiff;
 
@@ -10,6 +10,7 @@ import java.util.List;
  *
  * @author Sören Viegener
  */
+@Deprecated
 public class GDAnalysisResult {
     private final GitDiff gitDiff;
     private final List<CommitDiffAnalysisResult> commitDiffAnalysisResults;

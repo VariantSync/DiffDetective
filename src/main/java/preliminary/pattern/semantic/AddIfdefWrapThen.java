@@ -1,12 +1,13 @@
-package pattern.semantic;
+package preliminary.pattern.semantic;
 
-import analysis.data.PatternMatch;
 import diff.difftree.DiffNode;
-import evaluation.FeatureContext;
 import org.prop4j.Not;
+import preliminary.analysis.data.PatternMatch;
+import preliminary.evaluation.FeatureContext;
 
 import java.util.Optional;
 
+@Deprecated
 class AddIfdefWrapThen extends SemanticPattern {
     AddIfdefWrapThen() {
         super("AddIfdefWrapThen");

@@ -1,15 +1,16 @@
-package pattern.semantic;
+package preliminary.pattern.semantic;
 
-import analysis.data.PatternMatch;
 import diff.Lines;
 import diff.difftree.DiffNode;
-import evaluation.FeatureContext;
 import org.prop4j.Node;
+import preliminary.analysis.data.PatternMatch;
+import preliminary.evaluation.FeatureContext;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+@Deprecated
 class AddIfdefElif extends SemanticPattern {
     AddIfdefElif() {
         super("AddIfdefElif");

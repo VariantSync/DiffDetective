@@ -1,4 +1,4 @@
-package analysis.data;
+package preliminary.analysis.data;
 
 import diff.CommitDiff;
 
@@ -10,6 +10,7 @@ import java.util.List;
  *
  * @author Sören Viegener
  */
+@Deprecated
 public class CommitDiffAnalysisResult {
     private final CommitDiff commitDiff;
     private final List<PatchDiffAnalysisResult> patchDiffAnalysisResults;

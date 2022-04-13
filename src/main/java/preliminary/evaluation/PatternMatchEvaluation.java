@@ -1,13 +1,14 @@
-package evaluation;
+package preliminary.evaluation;
 
-import analysis.data.CommitDiffAnalysisResult;
-import analysis.data.PatchDiffAnalysisResult;
-import analysis.data.PatternMatch;
 import org.prop4j.Node;
+import preliminary.analysis.data.CommitDiffAnalysisResult;
+import preliminary.analysis.data.PatchDiffAnalysisResult;
+import preliminary.analysis.data.PatternMatch;
 
 /**
  * Data class containing a PatternMatch, the possible reverse-engineered FeatureContexts and the complexity of the feature context.
  */
+@Deprecated
 public class PatternMatchEvaluation {
     private final CommitDiffAnalysisResult commit;
     private final PatchDiffAnalysisResult patch;

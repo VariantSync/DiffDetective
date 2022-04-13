@@ -1,10 +1,5 @@
-package evaluation;
+package preliminary.evaluation;
 
-import analysis.GDAnalyzer;
-import analysis.data.CommitDiffAnalysisResult;
-import analysis.data.GDAnalysisResult;
-import analysis.data.PatchDiffAnalysisResult;
-import analysis.data.PatternMatch;
 import diff.PatchDiff;
 import diff.difftree.DiffNode;
 import org.prop4j.Implies;
@@ -14,6 +9,12 @@ import org.prop4j.explain.solvers.SatSolver;
 import org.prop4j.explain.solvers.SatSolverFactory;
 import org.tinylog.Logger;
 import pattern.EditPattern;
+import preliminary.analysis.GDAnalyzer;
+import preliminary.analysis.data.CommitDiffAnalysisResult;
+import preliminary.analysis.data.GDAnalysisResult;
+import preliminary.analysis.data.PatchDiffAnalysisResult;
+import preliminary.analysis.data.PatternMatch;
+import preliminary.pattern.FeatureContextReverseEngineering;
 import util.IO;
 
 import java.io.*;
@@ -25,6 +26,7 @@ import java.util.*;
  * This class offers methods for calculating metrics from an analysis result, exporting data, and printing
  * the evaluation.
  */
+@Deprecated
 public class GDEvaluator {
     private static final String[] CSV_COLUMN_NAMES = {"Commit", "Patch", "Pattern", "Mappings",
             "Start Line", "End Line", "Feature Context"};
@@ -85,7 +87,7 @@ public class GDEvaluator {
      * @param patterns The patterns to search for
      * @return An int array containing the amount of patches tha contain a match for each pattern
      */
-    public <E> int[] getPatchesWithPatternCounts(List<EditPattern<E>> patterns) {
+    public <E> int[] getPatchesWithPatternCounts(List<FeatureContextReverseEngineering<E>> patterns) {
         int[] patternCounts = new int[patterns.size()];
 
         for (CommitDiffAnalysisResult cdar : analysisResult.getCommitDiffAnalysisResults()) {
@@ -540,7 +542,7 @@ public class GDEvaluator {
         System.out.println();
 
         System.out.println("## Pattern results ##");
-        int[] patternCounts = getPatchesWithPatternCounts(analyzer.getPatterns());
+        int[] patternCounts = getPatchesWithPatternCounts(analyzer.getReverseEngineerings());
         int[] patternCountsTotal = getPatternCounts(analyzer.getPatterns());
         int[] lineCounts = getLineCounts(analyzer.getPatterns());
         System.out.printf("%-22s | %-6s | %-6s | %-6s%n", "Pattern", "#patch", "#total", "#lines");

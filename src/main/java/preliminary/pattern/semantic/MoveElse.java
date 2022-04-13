@@ -1,12 +1,13 @@
-package pattern.semantic;
+package preliminary.pattern.semantic;
 
-import analysis.data.PatternMatch;
 import diff.difftree.DiffNode;
-import evaluation.FeatureContext;
+import preliminary.analysis.data.PatternMatch;
+import preliminary.evaluation.FeatureContext;
 
 import java.util.Collection;
 import java.util.Optional;
 
+@Deprecated
 class MoveElse extends SemanticPattern {
     MoveElse() {
         super("MoveElse");

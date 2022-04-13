@@ -1,8 +1,9 @@
-package analysis.data;
+package preliminary.analysis.data;
 
-import evaluation.FeatureContext;
 import org.prop4j.Node;
 import pattern.EditPattern;
+import preliminary.evaluation.FeatureContext;
+import preliminary.pattern.FeatureContextReverseEngineering;
 
 import java.util.Arrays;
 
@@ -13,27 +14,28 @@ import java.util.Arrays;
  *
  * @author Sören Viegener
  */
+@Deprecated
 public class PatternMatch<E> {
-    private final EditPattern<E> pattern;
+    private final FeatureContextReverseEngineering<E> pattern;
     private final Node[] featureMappings;
     private final int startLineDiff;
     private final int endLineDiff;
 
-    public PatternMatch(EditPattern<E> pattern, int startLineDiff, int endLineDiff, Node... featureMappings) {
+    public PatternMatch(FeatureContextReverseEngineering<E> pattern, int startLineDiff, int endLineDiff, Node... featureMappings) {
         this.pattern = pattern;
         this.featureMappings = featureMappings;
         this.startLineDiff = startLineDiff;
         this.endLineDiff = endLineDiff;
     }
 
-    public PatternMatch(EditPattern<E> pattern, int startLineDiff, int endLineDiff) {
+    public PatternMatch(FeatureContextReverseEngineering<E> pattern, int startLineDiff, int endLineDiff) {
         this.pattern = pattern;
         this.featureMappings = null;
         this.startLineDiff = startLineDiff;
         this.endLineDiff = endLineDiff;
     }
 
-    public PatternMatch(EditPattern<E> pattern) {
+    public PatternMatch(FeatureContextReverseEngineering<E> pattern) {
         this.pattern = pattern;
         this.featureMappings = null;
         this.startLineDiff = -1;
@@ -45,11 +47,11 @@ public class PatternMatch<E> {
     }
 
     public String getPatternName() {
-        return pattern.getName();
+        return pattern.getPattern().getName();
     }
 
     public EditPattern<E> getPattern() {
-        return pattern;
+        return pattern.getPattern();
     }
 
     public Node[] getFeatureMappings() {

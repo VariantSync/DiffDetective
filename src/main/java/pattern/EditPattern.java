@@ -1,10 +1,5 @@
 package pattern;
 
-import analysis.data.PatternMatch;
-import evaluation.FeatureContext;
-
-import java.util.Optional;
-
 public abstract class EditPattern<E> {
     protected String name;
 
@@ -12,9 +7,7 @@ public abstract class EditPattern<E> {
         this.name = name;
     }
 
-    public abstract Optional<PatternMatch<E>> match(E x);
-
-    public abstract FeatureContext[] getFeatureContexts(PatternMatch<E> patternMatch);
+    public abstract boolean matches(E e);
 
     public String getName(){
         return this.name;
@@ -22,6 +15,6 @@ public abstract class EditPattern<E> {
 
     @Override
     public String toString() {
-        return this.name;
+        return getName();
     }
 }

@@ -1,4 +1,4 @@
-package evaluation;
+package preliminary.evaluation;
 
 import org.prop4j.Node;
 
@@ -8,6 +8,7 @@ import java.util.Objects;
  * Class representing a feature context.
  * A feature context consists of a propositional formula over features (Node) and an information if weaker feature contexts are also possible
  */
+@Deprecated
 public class FeatureContext {
     private final Node node;
     private final boolean weakerOrEqual;

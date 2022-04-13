@@ -1,14 +1,16 @@
-package pattern.semantic;
+package preliminary.pattern.semantic;
 
-import analysis.data.PatternMatch;
 import diff.difftree.DiffNode;
-import evaluation.FeatureContext;
+import org.prop4j.Not;
+import preliminary.analysis.data.PatternMatch;
+import preliminary.evaluation.FeatureContext;
 
 import java.util.Optional;
 
-class AddIfdefWrapElse extends SemanticPattern {
-    public AddIfdefWrapElse() {
-        super("AddIfdefWrapElse");
+@Deprecated
+class AddIfdefElse extends SemanticPattern {
+    AddIfdefElse() {
+        super("AddIfdefElse");
     }
 
     /*
@@ -17,7 +19,7 @@ class AddIfdefWrapElse extends SemanticPattern {
         has an added code child
         has no elif children
         has an added else child
-            which has an unchanged code child
+          which has an added code child
      */
     @Override
     public Optional<PatternMatch<DiffNode>> match(DiffNode annotationNode) {
@@ -40,14 +42,14 @@ class AddIfdefWrapElse extends SemanticPattern {
                 return Optional.empty();
             }
 
-            boolean noneCodeInElse = false;
-            for(DiffNode child : elseNode.getAllChildren()){
-                if(child.isCode() && child.isNon()){
-                    noneCodeInElse = true;
+            boolean addedCodeInElse = false;
+            for(DiffNode child : elseNode.getAllChildren()) {
+                if(child.isCode() && child.isAdd()){
+                    addedCodeInElse = true;
                 }
             }
 
-            if(!noneCodeInElse){
+            if(!addedCodeInElse){
                 return Optional.empty();
             }
 
@@ -63,7 +65,8 @@ class AddIfdefWrapElse extends SemanticPattern {
     @Override
     public FeatureContext[] getFeatureContexts(PatternMatch<DiffNode> patternMatch) {
         return new FeatureContext[]{
-                new FeatureContext(patternMatch.getFeatureMappings()[0])
+                new FeatureContext(patternMatch.getFeatureMappings()[0]),
+                new FeatureContext(new Not(patternMatch.getFeatureMappings()[0]))
         };
     }
 }

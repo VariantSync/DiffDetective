@@ -1,4 +1,4 @@
-package analysis.data;
+package preliminary.analysis.data;
 
 import diff.PatchDiff;
 import diff.difftree.DiffNode;
@@ -11,6 +11,7 @@ import java.util.List;
  *
  * @author Sören Viegener
  */
+@Deprecated
 public class PatchDiffAnalysisResult {
     private final PatchDiff patchDiff;
     private final List<PatternMatch<DiffNode>> patternMatches;
