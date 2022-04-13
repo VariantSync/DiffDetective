@@ -1,4 +1,3 @@
-import de.variantsync.functjonal.Product;
 import diff.difftree.DiffTree;
 import diff.difftree.parse.DiffNodeParser;
 import diff.difftree.parse.DiffTreeParser;
@@ -12,6 +11,7 @@ import diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
 import org.junit.Assert;
 import org.junit.Test;
 import org.tinylog.Logger;
+import org.variantsync.functjonal.Pair;
 import util.IO;
 import util.StringUtils;
 
@@ -30,7 +30,7 @@ public class TestMultiLineMacros {
                 true,
                 DiffNodeParser.Default).unwrap().getSuccess();
 
-        final Product<DiffTreeSerializeDebugData, String> result = LineGraphExport.toLineGraphFormat(tree, exportOptions);
+        final Pair<DiffTreeSerializeDebugData, String> result = LineGraphExport.toLineGraphFormat(tree, exportOptions);
         Assert.assertNotNull(result);
         final DiffTreeSerializeDebugData debugData = result.first();
         Logger.info("Parsed " + debugData.numExportedNonNodes + " nodes of diff type NON.");

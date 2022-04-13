@@ -1,9 +1,9 @@
 package mining.formats;
 
-import de.variantsync.functjonal.Product;
 import diff.difftree.CodeType;
 import diff.difftree.DiffNode;
 import diff.difftree.DiffType;
+import org.variantsync.functjonal.Pair;
 import pattern.atomic.AtomicPattern;
 import pattern.atomic.proposed.ProposedAtomicPatterns;
 
@@ -27,7 +27,7 @@ public class DebugMiningDiffNodeFormat implements MiningNodeFormat {
 	}
 
     @Override
-    public Product<DiffType, CodeType> fromEncodedTypes(String tag) {
+    public Pair<DiffType, CodeType> fromEncodedTypes(String tag) {
         // If the label starts with ADD, REM, or NON
         if (Arrays.stream(DiffType.values()).anyMatch(diffType -> tag.startsWith(diffType.toString()))) {
             // then it is a macro node
@@ -37,13 +37,13 @@ public class DebugMiningDiffNodeFormat implements MiningNodeFormat {
             if (ct == CodeType.ROOT) {
                 throw new IllegalArgumentException("There should be no roots in mined patterns!");
             }
-            return new Product<>(dt, ct);
+            return new Pair<>(dt, ct);
         } else {
             final AtomicPattern pattern = ProposedAtomicPatterns.Instance.fromName(tag).orElseThrow(
                     () -> new IllegalStateException("Label \"" + tag + "\" is neither a macro label, nor an atomic pattern!")
             );
 
-            return new Product<>(pattern.getDiffType(), CodeType.CODE);
+            return new Pair<>(pattern.getDiffType(), CodeType.CODE);
         }
     }
 }

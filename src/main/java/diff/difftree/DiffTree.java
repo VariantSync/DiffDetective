@@ -21,7 +21,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-import static de.variantsync.functjonal.Functjonal.when;
+import static org.variantsync.functjonal.Functjonal.when;
 
 /**
  * Implementation of the diff tree.

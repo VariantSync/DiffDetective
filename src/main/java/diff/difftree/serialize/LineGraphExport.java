@@ -1,6 +1,5 @@
 package diff.difftree.serialize;
 
-import de.variantsync.functjonal.Product;
 import diff.CommitDiff;
 import diff.PatchDiff;
 import diff.difftree.DiffNode;
@@ -10,29 +9,30 @@ import diff.difftree.transform.DiffTreeTransformer;
 import metadata.ExplainedFilterSummary;
 import mining.DiffTreeMiningResult;
 import org.tinylog.Logger;
+import org.variantsync.functjonal.Pair;
 import util.StringUtils;
 
 public class LineGraphExport {
 
-    public static Product<DiffTreeSerializeDebugData, String> toLineGraphFormat(final DiffTree diffTree, final DiffTreeLineGraphExportOptions options) {
+    public static Pair<DiffTreeSerializeDebugData, String> toLineGraphFormat(final DiffTree diffTree, final DiffTreeLineGraphExportOptions options) {
         DiffTreeTransformer.apply(options.treePreProcessing(), diffTree);
         diffTree.assertConsistency();
 
         if (options.treeFilter().test(diffTree)) {
             final DiffTreeLineGraphExporter exporter = new DiffTreeLineGraphExporter(diffTree);
             final String result = exporter.export(options);
-            return new Product<>(exporter.getDebugData(), result);
+            return new Pair<>(exporter.getDebugData(), result);
         }
 
         return null;
     }
 
-    public static Product<DiffTreeMiningResult, String> toLineGraphFormat(final String repoName, final Iterable<DiffTree> trees, final DiffTreeLineGraphExportOptions options) {
+    public static Pair<DiffTreeMiningResult, String> toLineGraphFormat(final String repoName, final Iterable<DiffTree> trees, final DiffTreeLineGraphExportOptions options) {
         final DiffTreeMiningResult result = new DiffTreeMiningResult(repoName);
 
         final StringBuilder lineGraph = new StringBuilder();
         for (final DiffTree t : trees) {
-            final Product<DiffTreeSerializeDebugData, String> lg = toLineGraphFormat(t, options);
+            final Pair<DiffTreeSerializeDebugData, String> lg = toLineGraphFormat(t, options);
 
             if (lg != null) {
                 result.debugData.append(lg.first());
@@ -44,10 +44,10 @@ public class LineGraphExport {
         result.exportedCommits = 1;
         result.filterHits = new ExplainedFilterSummary(options.treeFilter());
 
-        return new Product<>(result, lineGraph.toString());
+        return new Pair<>(result, lineGraph.toString());
     }
 
-    public static Product<DiffTreeMiningResult, String> toLineGraphFormat(final Iterable<DiffTree> trees, final DiffTreeLineGraphExportOptions options) {
+    public static Pair<DiffTreeMiningResult, String> toLineGraphFormat(final Iterable<DiffTree> trees, final DiffTreeLineGraphExportOptions options) {
         return toLineGraphFormat(DiffTreeMiningResult.NO_REPO, trees, options);
     }
 
@@ -68,7 +68,7 @@ public class LineGraphExport {
         for (final PatchDiff patchDiff : commitDiff.getPatchDiffs()) {
             if (patchDiff.isValid()) {
                 //Logger.info("  Exporting DiffTree #" + treeCounter);
-                final Product<DiffTreeSerializeDebugData, String> patchDiffLg;
+                final Pair<DiffTreeSerializeDebugData, String> patchDiffLg;
                 try {
                     patchDiffLg = toLineGraphFormat(patchDiff.getDiffTree(), options);
                 } catch (Exception e) {

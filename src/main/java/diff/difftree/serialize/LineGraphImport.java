@@ -1,7 +1,7 @@
 package diff.difftree.serialize;
 
-import de.variantsync.functjonal.Product;
 import diff.difftree.*;
+import org.variantsync.functjonal.Pair;
 import util.Assert;
 import util.FileUtils;
 
@@ -69,7 +69,7 @@ public class LineGraphImport {
 				// the line represents a DiffNode
 				
 				// parse node from input line
-				final Product<Integer, DiffNode> idAndNode = options.nodeFormat().fromLineGraphLine(ln);
+				final Pair<Integer, DiffNode> idAndNode = options.nodeFormat().fromLineGraphLine(ln);
 			
 				// add DiffNode to lists of current DiffTree
 				diffNodeList.add(idAndNode.second());

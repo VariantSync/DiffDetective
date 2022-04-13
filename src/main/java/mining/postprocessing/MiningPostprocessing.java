@@ -1,6 +1,5 @@
 package mining.postprocessing;
 
-import de.variantsync.functjonal.Product;
 import diff.difftree.DiffTree;
 import diff.difftree.render.DiffTreeRenderer;
 import diff.difftree.render.RenderOptions;
@@ -10,6 +9,7 @@ import diff.difftree.serialize.edgeformat.EdgeLabelFormat;
 import diff.difftree.serialize.treeformat.IndexedTreeFormat;
 import mining.DiffTreeMiner;
 import mining.DiffTreeMiningResult;
+import org.variantsync.functjonal.Pair;
 import util.FileUtils;
 import util.IO;
 
@@ -125,7 +125,7 @@ public class MiningPostprocessing {
                 ++patternNo;
             }
         } else {
-            final Product<DiffTreeMiningResult, String> lineGraph = LineGraphExport.toLineGraphFormat(semanticPatterns, EXPORT_OPTIONS);
+            final Pair<DiffTreeMiningResult, String> lineGraph = LineGraphExport.toLineGraphFormat(semanticPatterns, EXPORT_OPTIONS);
             IO.tryWrite(outputDir.resolve("candidates.lg"), lineGraph.second());
         }
     }

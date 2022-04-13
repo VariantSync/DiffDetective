@@ -1,9 +1,9 @@
 package diff.difftree.serialize.edgeformat;
 
-import de.variantsync.functjonal.Product;
 import diff.difftree.DiffNode;
 import diff.difftree.LineGraphConstants;
 import diff.difftree.serialize.LinegraphFormat;
+import org.variantsync.functjonal.Pair;
 import util.StringUtils;
 
 import java.util.Map;
@@ -27,11 +27,11 @@ public abstract class EdgeLabelFormat implements LinegraphFormat {
 
         public static final Direction Default = ChildToParent;
 
-        <A> Product<A, A> sort(A child, A parent) {
+        <A> Pair<A, A> sort(A child, A parent) {
             if (this == ChildToParent) {
-                return new Product<>(child, parent);
+                return new Pair<>(child, parent);
             } else {
-                return new Product<>(parent, child);
+                return new Pair<>(parent, child);
             }
         }
     }
@@ -78,7 +78,7 @@ public abstract class EdgeLabelFormat implements LinegraphFormat {
 
         // first is the id of the child DiffNode
         // second the id of the parent DiffNode
-        final Product<String, String> fromAndToIds = edgeDirection.sort(edge[1], edge[2]);
+        final Pair<String, String> fromAndToIds = edgeDirection.sort(edge[1], edge[2]);
 
         // Both child and parent DiffNode should exist since all DiffNodes have been read in before. Otherwise, the line graph input is faulty
         DiffNode childNode = nodes.get(Integer.parseInt(fromAndToIds.first()));
@@ -129,7 +129,7 @@ public abstract class EdgeLabelFormat implements LinegraphFormat {
     }
 
     private String edgeToLineGraphSorted(DiffNode desiredFrom, DiffNode desiredTo, final String labelPrefix) {
-        final Product<DiffNode, DiffNode> sorted = edgeDirection.sort(desiredFrom, desiredTo);
+        final Pair<DiffNode, DiffNode> sorted = edgeDirection.sort(desiredFrom, desiredTo);
         return edgeToLineGraph(sorted.first(), sorted.second(), labelPrefix);
     }
 

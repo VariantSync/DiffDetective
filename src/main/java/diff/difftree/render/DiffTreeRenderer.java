@@ -1,6 +1,5 @@
 package diff.difftree.render;
 
-import de.variantsync.functjonal.Product;
 import diff.GitPatch;
 import diff.PatchDiff;
 import diff.difftree.DiffTree;
@@ -10,6 +9,7 @@ import diff.difftree.serialize.DiffTreeLineGraphExportOptions;
 import diff.difftree.serialize.DiffTreeSerializeDebugData;
 import diff.difftree.serialize.LineGraphExport;
 import org.tinylog.Logger;
+import org.variantsync.functjonal.Pair;
 import shell.PythonCommand;
 import shell.ShellException;
 import shell.ShellExecutor;
@@ -102,7 +102,7 @@ public class DiffTreeRenderer {
 
         final Path tempFile = directory.resolve(treeAndFileName + ".lg");
 
-        final Product<DiffTreeSerializeDebugData, String> result = LineGraphExport.toLineGraphFormat(tree, lgoptions);
+        final Pair<DiffTreeSerializeDebugData, String> result = LineGraphExport.toLineGraphFormat(tree, lgoptions);
         Assert.assertNotNull(result);
         final String lg = treeHeader.apply(treeAndFileName, tree.getSource()) + StringUtils.LINEBREAK + result.second();
 

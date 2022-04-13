@@ -2,10 +2,6 @@ package diff;
 
 import datasets.ParseOptions;
 import datasets.Repository;
-import de.variantsync.functjonal.Result;
-import de.variantsync.functjonal.iteration.MappedIterator;
-import de.variantsync.functjonal.iteration.SideEffectIterator;
-import de.variantsync.functjonal.iteration.Yield;
 import diff.difftree.DiffTree;
 import diff.difftree.parse.DiffTreeParser;
 import diff.result.CommitDiffResult;
@@ -27,6 +23,10 @@ import org.eclipse.jgit.treewalk.FileTreeIterator;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.tinylog.Logger;
+import org.variantsync.functjonal.Result;
+import org.variantsync.functjonal.iteration.MappedIterator;
+import org.variantsync.functjonal.iteration.SideEffectIterator;
+import org.variantsync.functjonal.iteration.Yield;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

@@ -1,8 +1,8 @@
 package diff.result;
 
-import de.variantsync.functjonal.Result;
 import diff.difftree.parse.IllFormedAnnotationException;
 import org.tinylog.Logger;
+import org.variantsync.functjonal.Result;
 
 import java.util.function.Function;
 

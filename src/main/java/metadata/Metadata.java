@@ -1,8 +1,8 @@
 package metadata;
 
-import de.variantsync.functjonal.Cast;
-import de.variantsync.functjonal.category.InplaceSemigroup;
 import org.tinylog.Logger;
+import org.variantsync.functjonal.Cast;
+import org.variantsync.functjonal.category.InplaceSemigroup;
 import util.IO;
 
 import java.io.IOException;

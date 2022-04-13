@@ -1,16 +1,16 @@
 package mining;
 
-import de.variantsync.functjonal.Functjonal;
-import de.variantsync.functjonal.category.InplaceMonoid;
-import de.variantsync.functjonal.category.InplaceSemigroup;
-import de.variantsync.functjonal.category.Semigroup;
-import de.variantsync.functjonal.map.MergeMap;
 import diff.difftree.serialize.DiffTreeSerializeDebugData;
 import diff.result.DiffError;
 import metadata.AtomicPatternCount;
 import metadata.ExplainedFilterSummary;
 import metadata.Metadata;
 import mining.strategies.CommitProcessTime;
+import org.variantsync.functjonal.Functjonal;
+import org.variantsync.functjonal.category.InplaceMonoid;
+import org.variantsync.functjonal.category.InplaceSemigroup;
+import org.variantsync.functjonal.category.Semigroup;
+import org.variantsync.functjonal.map.MergeMap;
 import pattern.atomic.proposed.ProposedAtomicPatterns;
 import util.IO;
 

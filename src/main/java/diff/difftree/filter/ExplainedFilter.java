@@ -1,7 +1,7 @@
 package diff.difftree.filter;
 
-import de.variantsync.functjonal.category.InplaceSemigroup;
-import de.variantsync.functjonal.category.SemigroupCannotAppend;
+import org.variantsync.functjonal.category.InplaceSemigroup;
+import org.variantsync.functjonal.category.SemigroupCannotAppend;
 
 import java.util.Arrays;
 import java.util.List;

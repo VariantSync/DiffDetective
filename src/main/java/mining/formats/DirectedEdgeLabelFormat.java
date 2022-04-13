@@ -1,9 +1,9 @@
 package mining.formats;
 
-import de.variantsync.functjonal.Functjonal;
 import diff.difftree.DiffNode;
 import diff.difftree.LineGraphConstants;
 import diff.difftree.serialize.edgeformat.EdgeLabelFormat;
+import org.variantsync.functjonal.Functjonal;
 
 public final class DirectedEdgeLabelFormat extends EdgeLabelFormat {
     private final static String LABEL_SEPARATOR = ">";

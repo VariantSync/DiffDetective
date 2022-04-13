@@ -1,9 +1,7 @@
-import datasets.predefined.LinuxKernel;
-import de.variantsync.functjonal.Result;
 import diff.difftree.DiffTree;
 import diff.difftree.render.DiffTreeRenderer;
 import diff.result.DiffError;
-import org.junit.Test;
+import org.variantsync.functjonal.Result;
 import util.Assert;
 
 import java.io.IOException;

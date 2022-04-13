@@ -1,6 +1,6 @@
 package feature;
 
-import de.variantsync.functjonal.Functjonal;
+import org.variantsync.functjonal.Functjonal;
 
 import java.util.Map;
 import java.util.function.Function;

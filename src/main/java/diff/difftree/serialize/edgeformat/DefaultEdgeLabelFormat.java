@@ -1,8 +1,8 @@
 package diff.difftree.serialize.edgeformat;
 
-import de.variantsync.functjonal.Functjonal;
 import diff.difftree.DiffNode;
 import diff.difftree.LineGraphConstants;
+import org.variantsync.functjonal.Functjonal;
 
 public class DefaultEdgeLabelFormat extends EdgeLabelFormat {
     public DefaultEdgeLabelFormat() {

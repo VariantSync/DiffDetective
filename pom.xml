@@ -70,8 +70,8 @@
         </dependency>
 
         <dependency>
-            <groupId>de.variantsync</groupId>
-            <artifactId>Functjonal</artifactId>
+            <groupId>org.variantsync</groupId>
+            <artifactId>functjonal</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
 

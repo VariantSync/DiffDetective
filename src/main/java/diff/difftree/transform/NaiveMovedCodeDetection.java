@@ -1,10 +1,10 @@
 package diff.difftree.transform;
 
-import de.variantsync.functjonal.Product;
 import diff.DiffLineNumber;
 import diff.difftree.DiffNode;
 import diff.difftree.DiffTree;
 import diff.difftree.DiffType;
+import org.variantsync.functjonal.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,9 +18,9 @@ import java.util.List;
 public class NaiveMovedCodeDetection implements DiffTreeTransformer {
     @Override
     public void transform(final DiffTree diffTree) {
-        final List<Product<DiffNode, DiffNode>> twins = findCodeTwins(diffTree);
+        final List<Pair<DiffNode, DiffNode>> twins = findCodeTwins(diffTree);
 
-        for (final Product<DiffNode, DiffNode> twin : twins) {
+        for (final Pair<DiffNode, DiffNode> twin : twins) {
             final DiffNode added;
             final DiffNode removed;
 
@@ -45,9 +45,9 @@ public class NaiveMovedCodeDetection implements DiffTreeTransformer {
         }
     }
 
-    private static List<Product<DiffNode, DiffNode>> findCodeTwins(final DiffTree diffTree) {
+    private static List<Pair<DiffNode, DiffNode>> findCodeTwins(final DiffTree diffTree) {
         final List<DiffNode> codeNodes = diffTree.computeCodeNodes();
-        final List<Product<DiffNode, DiffNode>> twins = new ArrayList<>();
+        final List<Pair<DiffNode, DiffNode>> twins = new ArrayList<>();
 
         while (!codeNodes.isEmpty()) {
             // Always inspect last element as it's the cheapest to remove.
@@ -59,7 +59,7 @@ public class NaiveMovedCodeDetection implements DiffTreeTransformer {
                 // ... check if the opposite operation was applied to the same code somewhere else.
                 final DiffNode twin = findTwinOf(code, codeNodes);
                 if (twin != null) {
-                    twins.add(new Product<>(code, twin));
+                    twins.add(new Pair<>(code, twin));
                     codeNodes.remove(twin);
                 }
             }

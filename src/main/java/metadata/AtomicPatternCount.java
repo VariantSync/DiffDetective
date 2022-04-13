@@ -1,9 +1,9 @@
 package metadata;
 
-import de.variantsync.functjonal.Functjonal;
-import de.variantsync.functjonal.category.InplaceSemigroup;
-import de.variantsync.functjonal.map.MergeMap;
 import diff.CommitDiff;
+import org.variantsync.functjonal.Functjonal;
+import org.variantsync.functjonal.category.InplaceSemigroup;
+import org.variantsync.functjonal.map.MergeMap;
 import pattern.atomic.AtomicPattern;
 import pattern.atomic.AtomicPatternCatalogue;
 import pattern.atomic.proposed.ProposedAtomicPatterns;

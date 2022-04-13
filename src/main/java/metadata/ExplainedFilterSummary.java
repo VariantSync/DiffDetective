@@ -1,9 +1,9 @@
 package metadata;
 
-import de.variantsync.functjonal.Functjonal;
-import de.variantsync.functjonal.category.InplaceSemigroup;
-import de.variantsync.functjonal.map.MergeMap;
 import diff.difftree.filter.ExplainedFilter;
+import org.variantsync.functjonal.Functjonal;
+import org.variantsync.functjonal.category.InplaceSemigroup;
+import org.variantsync.functjonal.map.MergeMap;
 
 import java.util.LinkedHashMap;
 import java.util.List;

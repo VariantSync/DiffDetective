@@ -1,9 +1,9 @@
 package mining.formats;
 
-import de.variantsync.functjonal.Product;
 import diff.difftree.CodeType;
 import diff.difftree.DiffNode;
 import diff.difftree.DiffType;
+import org.variantsync.functjonal.Pair;
 import pattern.atomic.AtomicPattern;
 import pattern.atomic.proposed.ProposedAtomicPatterns;
 import util.Assert;
@@ -47,10 +47,10 @@ public class ReleaseMiningDiffNodeFormat implements MiningNodeFormat {
     }
 
     @Override
-    public Product<DiffType, CodeType> fromEncodedTypes(String tag) {
+    public Pair<DiffType, CodeType> fromEncodedTypes(String tag) {
         if (tag.startsWith(CODE_PREFIX)) {
             final AtomicPattern pattern = fromId(Integer.parseInt(tag.substring(CODE_PREFIX.length())));
-            return new Product<>(pattern.getDiffType(), CodeType.CODE);
+            return new Pair<>(pattern.getDiffType(), CodeType.CODE);
         } else {
             Assert.assertTrue(tag.startsWith(MACRO_PREFIX));
             final int diffTypeBegin = MACRO_PREFIX.length();
@@ -64,7 +64,7 @@ public class ReleaseMiningDiffNodeFormat implements MiningNodeFormat {
             if (codeType == CodeType.ROOT) {
                 throw new IllegalArgumentException("There should be no roots in mined patterns!");
             }
-            return new Product<>(diffType, codeType);
+            return new Pair<>(diffType, codeType);
         }
     }
 }

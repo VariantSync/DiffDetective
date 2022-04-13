@@ -1,8 +1,8 @@
 package mining;
 
-import de.variantsync.functjonal.category.InplaceSemigroup;
 import metadata.Metadata;
 import mining.strategies.CommitProcessTime;
+import org.variantsync.functjonal.category.InplaceSemigroup;
 
 import java.util.LinkedHashMap;
 
