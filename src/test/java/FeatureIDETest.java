@@ -1,4 +1,4 @@
-import analysis.SAT;
+import analysis.logic.SAT;
 import de.ovgu.featureide.fm.core.editing.NodeCreator;
 import org.junit.Assert;
 import org.junit.Test;

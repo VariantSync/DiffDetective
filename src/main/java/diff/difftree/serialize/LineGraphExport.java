@@ -1,5 +1,6 @@
 package diff.difftree.serialize;
 
+import analysis.AnalysisResult;
 import diff.CommitDiff;
 import diff.PatchDiff;
 import diff.difftree.DiffNode;
@@ -7,7 +8,6 @@ import diff.difftree.DiffTree;
 import diff.difftree.DiffTreeSource;
 import diff.difftree.transform.DiffTreeTransformer;
 import metadata.ExplainedFilterSummary;
-import mining.DiffTreeMiningResult;
 import org.tinylog.Logger;
 import org.variantsync.functjonal.Pair;
 import util.StringUtils;
@@ -27,8 +27,8 @@ public class LineGraphExport {
         return null;
     }
 
-    public static Pair<DiffTreeMiningResult, String> toLineGraphFormat(final String repoName, final Iterable<DiffTree> trees, final DiffTreeLineGraphExportOptions options) {
-        final DiffTreeMiningResult result = new DiffTreeMiningResult(repoName);
+    public static Pair<AnalysisResult, String> toLineGraphFormat(final String repoName, final Iterable<DiffTree> trees, final DiffTreeLineGraphExportOptions options) {
+        final AnalysisResult result = new AnalysisResult(repoName);
 
         final StringBuilder lineGraph = new StringBuilder();
         for (final DiffTree t : trees) {
@@ -47,12 +47,12 @@ public class LineGraphExport {
         return new Pair<>(result, lineGraph.toString());
     }
 
-    public static Pair<DiffTreeMiningResult, String> toLineGraphFormat(final Iterable<DiffTree> trees, final DiffTreeLineGraphExportOptions options) {
-        return toLineGraphFormat(DiffTreeMiningResult.NO_REPO, trees, options);
+    public static Pair<AnalysisResult, String> toLineGraphFormat(final Iterable<DiffTree> trees, final DiffTreeLineGraphExportOptions options) {
+        return toLineGraphFormat(AnalysisResult.NO_REPO, trees, options);
     }
 
-    public static DiffTreeMiningResult toLineGraphFormat(final CommitDiff commitDiff, final StringBuilder lineGraph, final DiffTreeLineGraphExportOptions options) {
-        return toLineGraphFormat(DiffTreeMiningResult.NO_REPO, commitDiff, lineGraph, options);
+    public static AnalysisResult toLineGraphFormat(final CommitDiff commitDiff, final StringBuilder lineGraph, final DiffTreeLineGraphExportOptions options) {
+        return toLineGraphFormat(AnalysisResult.NO_REPO, commitDiff, lineGraph, options);
     }
 
         /**
@@ -61,8 +61,8 @@ public class LineGraphExport {
          * @param lineGraph The string builder to write the result to.
          * @return The number of the next diff tree to export (updated value of treeCounter).
          */
-    public static DiffTreeMiningResult toLineGraphFormat(final String repoName, final CommitDiff commitDiff, final StringBuilder lineGraph, final DiffTreeLineGraphExportOptions options) {
-        final DiffTreeMiningResult result = new DiffTreeMiningResult(repoName);
+    public static AnalysisResult toLineGraphFormat(final String repoName, final CommitDiff commitDiff, final StringBuilder lineGraph, final DiffTreeLineGraphExportOptions options) {
+        final AnalysisResult result = new AnalysisResult(repoName);
 
         final String hash = commitDiff.getCommitHash();
         for (final PatchDiff patchDiff : commitDiff.getPatchDiffs()) {

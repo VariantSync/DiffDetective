@@ -1,6 +1,6 @@
 package pattern.atomic.proposed;
 
-import analysis.SAT;
+import analysis.logic.SAT;
 import diff.difftree.DiffNode;
 import diff.difftree.DiffType;
 import org.prop4j.Node;

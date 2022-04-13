@@ -1,3 +1,6 @@
+import analysis.CommitHistoryAnalysisTask;
+import datasets.DatasetDescription;
+import datasets.DatasetFactory;
 import datasets.ParseOptions;
 import datasets.Repository;
 import diff.CommitDiff;
@@ -10,10 +13,7 @@ import diff.difftree.serialize.LineGraphExport;
 import diff.difftree.transform.DiffTreeTransformer;
 import feature.CPPAnnotationParser;
 import mining.DiffTreeMiner;
-import mining.dataset.MiningDataset;
-import mining.dataset.MiningDatasetFactory;
-import mining.strategies.CommitHistoryAnalysisTask;
-import mining.strategies.MiningTask;
+import mining.MiningTask;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.revwalk.RevCommit;
@@ -25,6 +25,7 @@ import org.prop4j.Node;
 import org.tinylog.Logger;
 import pattern.atomic.proposed.ProposedAtomicPatterns;
 import util.Clock;
+import validation.Validation;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -46,7 +47,7 @@ public class MarlinDebug {
     @Before
     public void init() {
         {
-            MiningDataset marlin = new MiningDataset(
+            DatasetDescription marlin = new DatasetDescription(
                     "Marlin",
                     "https://github.com/MarlinFirmware/Marlin.git",
                     "3d printing",
@@ -60,13 +61,13 @@ public class MarlinDebug {
                             "9ecfa1d2528a57eaa71a25acaac3e87fb45e0eb1",
                             "0e60c8b7e04a6cd2758108bcc80f2ab57deec23c"
                     ),
-                    new MiningDatasetFactory(reposPath).create(marlin),
+                    new DatasetFactory(reposPath).create(marlin),
                     OUTPATH.resolve(marlin.name())
             );
             MARLIN.repo.setParseOptions(MARLIN.repo.getParseOptions().withDiffStoragePolicy(ParseOptions.DiffStoragePolicy.REMEMBER_STRIPPED_DIFF));
         }
         {
-            MiningDataset php = new MiningDataset(
+            DatasetDescription php = new DatasetDescription(
                     "php",
                     "https://github.com/php/php-src.git",
                     "program interpreter",
@@ -75,7 +76,7 @@ public class MarlinDebug {
             PHP = new RepoInspection(
 //                    List.of("e2182a1ba7cdd3c915cf29cd8367a6e02a0c10c8"),
                     List.of("16d7fd9d7f4849c88acbbfb04f7e09b7c58fd73f"),
-                    new MiningDatasetFactory(reposPath).create(php),
+                    new DatasetFactory(reposPath).create(php),
                     OUTPATH.resolve(php.name())
             );
             PHP.repo.setParseOptions(PHP.repo.getParseOptions().withDiffStoragePolicy(ParseOptions.DiffStoragePolicy.REMEMBER_STRIPPED_DIFF));
@@ -150,7 +151,7 @@ public class MarlinDebug {
         final RevWalk revWalk = new RevWalk(git.getRepository());
         final RevCommit childCommit = revWalk.parseCommit(ObjectId.fromString(commitHash));
 
-        DiffTreeMiner.Validate().create(
+        Validation.VALIDATION_TASK_FACTORY.create(
                 repoInspection.repo,
                 new GitDiffer(repoInspection.repo),
                 repoInspection.outputPath,

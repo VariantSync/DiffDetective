@@ -1,7 +1,7 @@
 package diff.difftree.serialize;
 
+import analysis.MetadataKeys;
 import metadata.Metadata;
-import mining.MetadataKeys;
 import org.variantsync.functjonal.category.InplaceSemigroup;
 
 import java.util.LinkedHashMap;

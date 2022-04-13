@@ -1,5 +1,5 @@
-import analysis.SAT;
-import analysis.Tseytin;
+import analysis.logic.SAT;
+import analysis.logic.Tseytin;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;

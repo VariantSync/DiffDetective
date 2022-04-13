@@ -1,4 +1,4 @@
-import analysis.SAT;
+import analysis.logic.SAT;
 import diff.difftree.DiffTree;
 import org.junit.Assert;
 import org.junit.Test;

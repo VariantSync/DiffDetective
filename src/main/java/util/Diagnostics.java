@@ -1,12 +1,17 @@
 package util;
 
+import org.variantsync.functjonal.Lazy;
+
 import java.text.NumberFormat;
 
 /**
  * Adapted from https://stackoverflow.com/a/8973770/5410757
  */
 public class Diagnostics {
+    public final static Lazy<Diagnostics> INSTANCE = Lazy.of(Diagnostics::new);
     private final Runtime runtime = Runtime.getRuntime();
+
+    private Diagnostics() {}
 
     public String info() {
         StringBuilder sb = new StringBuilder();
