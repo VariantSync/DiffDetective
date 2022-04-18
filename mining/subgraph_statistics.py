@@ -251,6 +251,7 @@ class Statistics():
         # Store number of occurrences here
         for lattice_node in lattice_nodes:
             self.occurrences_transaction[lattice_node.graph.name] = len(lattice_node.occurrences)
+            print(lattice_node.occurrences)
   
     def write_as_csv(self, save_path):
         with open(save_path, 'w', newline='') as csvfile:

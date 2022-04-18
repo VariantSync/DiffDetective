@@ -36,16 +36,16 @@ def get_graph_components(graphs, filtered=False, filter_config=None):
 
         nb_of_components_per_graph.append(len(new_components))
         components += new_components
-    filtered_total = 0
     if filtered:
-        components, filtered_total = filter_too_large(*filter_too_many_similar_nodes(components, 0, filter_config.filter_too_many_similar_max_similar, filter_config.filter_too_many_similar_max_nodes), filter_config.filter_too_large_nb_nodes, filter_config.filter_too_large_nb_edges)
         
-    print("We have %d connected components in %d graphs. From these components %d have beend filtered." % (len(components) + filtered_total, len(graphs), filtered_total))
+        components, filtered = filter_too_large(*filter_too_many_similar_nodes(components, {}, filter_config.filter_too_many_similar_max_similar, filter_config.filter_too_many_similar_max_nodes), filter_config.filter_too_large_nb_nodes, filter_config.filter_too_large_nb_edges)
         
-    return components, nb_of_components_per_graph, filtered_total
+    #print("We have %d connected components in %d graphs. From these components %d have beend filtered." % (len(components) + sum(filtered.values()), len(graphs), filtered_total))
+        
+    return components, nb_of_components_per_graph, filtered
 
 # Filters components with more than nb_nodes/nb_edges nodes/edges. Use -1 for infinity.
-def filter_too_large(components: list, filtered_total: int, nb_nodes=18, nb_edges=40):
+def filter_too_large(components: list, filtered: dict, nb_nodes=18, nb_edges=40):
     new_components = []
 
     for component in components:
@@ -53,13 +53,13 @@ def filter_too_large(components: list, filtered_total: int, nb_nodes=18, nb_edge
             new_components.append(component)
     
     
-    filtered_total += len(components)-len(new_components)
-    print("Filtered out %d components that are too large, i.e., more than %d nodes or %d edges" % (filtered_total, nb_nodes, nb_edges))
-    return new_components, filtered_total
+    filtered["too_large"] = len(components)-len(new_components)
+    #print("Filtered out %d components that are too large, i.e., more than %d nodes or %d edges" % (filtered["too_large"], nb_nodes, nb_edges))
+    return new_components, filtered
 
 
 # Several filters need to be applied to filter out components which could lead to too high computational efforts
-def filter_too_many_similar_nodes(components: list, filtered_total: int, max_similar=2, max_nodes=10):
+def filter_too_many_similar_nodes(components: list, filtered: dict, max_similar=2, max_nodes=10):
     new_components = []
 
     for component in components:
@@ -68,9 +68,9 @@ def filter_too_many_similar_nodes(components: list, filtered_total: int, max_sim
         if not (np.sum(np.array(list(labels.values())) > max_nodes) > max_similar):
             new_components.append(component)
     
-    filtered_total += len(components)-len(new_components)
-    print("Filtered out %d components with too many similar nodes, i.e., more than %d labels appeared more than %d times" % (filtered_total, max_similar, max_nodes))
-    return new_components, filtered_total
+    filtered["too_many_similar"] = len(components)-len(new_components)
+    #print("Filtered out %d components with too many similar nodes, i.e., more than %d labels appeared more than %d times" % (filtered["too_many_similar"] , max_similar, max_nodes))
+    return new_components, filtered
 
 
 def label_count_for_component(component):
@@ -97,9 +97,9 @@ def get_components(input_folder, formatting=INPUT_FORMAT_NX, filtered=False):
     return components, nb_of_components_per_diff, filtered_total
 
     
-def main(input_folder, output_folder, formatting=INPUT_FORMAT_NX, max_components_per_file=200):
+def main(input_folder, output_folder, dataset_name, max_components_per_file=200, formatting=INPUT_FORMAT_NX):
     # TODO doing this with streams and yield would be a nicer solution to the chunking.
-    components, nb_of_components_per_diff, filtered_total = get_components(input_folder, formatting=formatting, filtered=True)
+    components, nb_of_components_per_diff, filtered = get_components(input_folder, formatting=formatting, filtered=True)
     
     components_batched = [components[i*max_components_per_file:min((i+1)*max_components_per_file, len(components))] for i in range(ceil(len(components)/max_components_per_file))]
     
@@ -117,12 +117,14 @@ def main(input_folder, output_folder, formatting=INPUT_FORMAT_NX, max_components
         #export_subdue_python_json(batch, set_name + '/connected_components.json')
 
     with open(output_folder + '/filter_stats.csv', 'w') as f:
-        f.write(str(len(components)) + "," + str(filtered_total))
+        # ds name, all components, components after filtering, filtered too large, filtered too many similar
+        
+        f.write(dataset_name + "," + str(len(components) + filtered["too_large"] + filtered["too_many_similar"]) + "," + str(len(components)) + "," + str(filtered["too_large"])+ "," + str(filtered["too_many_similar"]))
 
 if __name__ == "__main__":
-    if len(sys.argv) == 3:
-        main(sys.argv[1], sys.argv[2])
-    elif len(sys.argv) == 4:
-        main(sys.argv[1], sys.argv[2], formatting = sys.argv[3])	
+    if len(sys.argv) == 5:
+        main(sys.argv[1], sys.argv[2], sys.argv[3], int(sys.argv[4]))
+    elif len(sys.argv) == 6:
+        main(sys.argv[1], sys.argv[2], sys.argv[3], int(sys.argv[4]), formatting = sys.argv[5])	
     else:
-        print("Unexpected number of arguments. At least input path and output path has to be provided. Optionally as a third argument put NX or LG indicating the input graph formatting.")
+        print("Unexpected number of arguments. At least input path, output path, dataset name, as well as batch_size has to be provided. Optionally as a fourth argument put NX or LG indicating the input graph formatting.")
