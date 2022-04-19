@@ -21,8 +21,10 @@ class LatticeNode():
     Furthermore, the lattice nodes have pointers to graphs in a graph_database where they are contained in (i.e., their occurrences).
     '''
     
-    def __init__(self, graph: IsoGraph):
+    def __init__(self, graph: IsoGraph, label_name = 'label'):
         self.graph = graph
+        self.graph.set_label(label_name)
+        
         self.occurrences = []
         self.parents = []
         self.children = []
@@ -200,16 +202,17 @@ class Statistics():
     '''
     Provides basic counting statistics for a set of subgraphs and a graph database.
     '''
-    def __init__(self, graph_db: List[nx.DiGraph], subgraphs: List[nx.DiGraph], label_name = 'label', override_names=True):
+    def __init__(self, graph_db: List[nx.DiGraph], subgraphs: List[nx.DiGraph], label_name = 'label', override_names=False, lattice: Lattice=None):
         self.graph_db = [IsoGraph(graph) for graph in graph_db]
         self.subgraphs = [IsoGraph(graph) for graph in subgraphs]
         self.label_name = label_name
         self._set_label_name()
         self.override_names = override_names
+        # Rename subgraphs if necessary
         self._name_subgraphs()
         self.occurrences_transaction = {}
         self.occurrences_embeddings = {}
-        self.lattice = None
+        self.lattice = lattice
     
     def _set_label_name(self):
         for graph in self.graph_db:
@@ -242,10 +245,11 @@ class Statistics():
             self.occurrences_transaction[subgraph.name] = occurrences        
   
     def compute_occurrences_lattice_based(self):
-        # First create the lattice node for the subgraphs
-        lattice_nodes = [LatticeNode(subgraph) for subgraph in self.subgraphs]
-        # Create lattice (this might take some time)
-        self.lattice = Lattice(lattice_nodes)
+        if self.lattice is None:
+            # First create the lattice node for the subgraphs
+            lattice_nodes = [LatticeNode(subgraph) for subgraph in self.subgraphs]
+            # Create lattice (this might take some time)
+            self.lattice = Lattice(lattice_nodes)
         # Execute occurrence computation
         self.lattice.count_occurrences(self.graph_db)
         # Store number of occurrences here
@@ -263,9 +267,6 @@ class Statistics():
                 csvwriter.writerow([subgraph.name, occurrences_embeddings, occurrences_transaction])
 
 def main(graph_db_path: str, subgraphs_path:str, results_dir:str):
-    # Read db
-    print("Parsing graph input files")
-    graph_db = import_tlv_folder(graph_db_path, parse_support=False)
     subgraphs = import_tlv_folder(subgraphs_path, parse_support=False)
     
     #TODO REMOVE THIS AGAIN, THIS IS ONLY TO FIT TO THE TEST DATA
@@ -273,7 +274,7 @@ def main(graph_db_path: str, subgraphs_path:str, results_dir:str):
     
     #TODO Workaround since a dummy root has been added by a previous steps
     #subgraphs = [IsoGraph(graph).cut_root() for graph in subgraphs]
-    
+        
     # Get rid of clones
     nb_initial_subgraphs = len(subgraphs)
     print("Removing duplicates. This might take some time...")
@@ -282,9 +283,34 @@ def main(graph_db_path: str, subgraphs_path:str, results_dir:str):
     removed_duplicates = nb_initial_subgraphs - nb_pruned_subgraphs
     print("Removed %d duplicates" % removed_duplicates)
     
+    print("Creating subgraph lattice for lattice-based counting...")
+    # First create the lattice node for the subgraphs
+    lattice_nodes = [LatticeNode(subgraph) for subgraph in subgraphs]
+    # Create lattice (this might take some time)
+    lattice = Lattice(lattice_nodes)  
+    
+    print("Exporting lattice.")
+    nx_lattice = lattice.to_networkx()
+    export_TLV([nx_lattice], results_dir + 'lattice.lg')
+    #plot_graphs([nx_lattice], results_dir + 'lattice.png')
+    #plot_graph_dot(nx_lattice, results_dir + 'lattice_dot.png')
+    with open(results_dir + 'lattice.graphml', 'w') as f:
+        f.write(lattice.to_graphml())
+                       
+    # Write subgraphs without clones
+    print("Writing subgraphs without occurrences.")
+    export_TLV(subgraphs, results_dir + 'subgraph_candidates.lg')
+
+    for folder in os.listdir(graph_db_path):
+        # Read db
+        print(f"Parsing graph database for data set {folder}")
+        graph_db = import_tlv_folder(graph_db_path+"/"+folder+"/", parse_support=False)
+        compute_statistics(graph_db, subgraphs, lattice, results_dir)
+
+def compute_statistics(graph_db, subgraphs, lattice, results_dir):
     # Compute statistics
     print("Counting the subgraph occurrences in the graph database. This might take some time...")
-    stats = Statistics(graph_db, subgraphs)
+    stats = Statistics(graph_db, subgraphs, lattice=lattice)
     #start = time.time()
     #stats.compute_occurrences_brute_force()
     #print(stats.occurrences_transaction)
@@ -295,24 +321,13 @@ def main(graph_db_path: str, subgraphs_path:str, results_dir:str):
     stats.compute_occurrences_lattice_based()
     stop = time.time()
     print("Computing occurrences lattice based took %f seconds." % (stop-start))
-    if stats.lattice is not None:
-        print("Exporting lattice.")
-        nx_lattice = stats.lattice.to_networkx()
-        export_TLV([nx_lattice], results_dir + 'lattice.lg')
-        #plot_graphs([nx_lattice], results_dir + 'lattice.png')
-        #plot_graph_dot(nx_lattice, results_dir + 'lattice_dot.png')
-        with open(results_dir + 'lattice.graphml', 'w') as f:
-            f.write(stats.lattice.to_graphml())
-                      
-    # Write subgraphs without clones
-    print("Writing subgraphs without occurrences.")
-    export_TLV(subgraphs, results_dir + 'subgraph_candidates.lg')
     
     # Write statistics to file
     print("Write occurrence statistics...")
     stats.write_as_csv(results_dir + 'occurrence_stats.csv')
     print("Done")
-    
+
+  
 if __name__ == "__main__":
     if len(sys.argv) < 4:
         print("Three arguments expected: path to graph database folder, path to subgraph database folder, path to results directory")
