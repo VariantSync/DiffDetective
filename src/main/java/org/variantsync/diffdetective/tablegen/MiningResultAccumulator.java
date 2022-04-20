@@ -6,8 +6,8 @@ import org.variantsync.diffdetective.analysis.AutomationResult;
 import org.variantsync.diffdetective.analysis.HistoryAnalysis;
 import org.variantsync.diffdetective.analysis.MetadataKeys;
 import org.variantsync.diffdetective.datasets.DatasetDescription;
+import org.variantsync.diffdetective.datasets.DefaultDatasets;
 import org.variantsync.diffdetective.main.FindMedianCommitTime;
-import org.variantsync.diffdetective.mining.DiffTreeMiner;
 import org.variantsync.diffdetective.tablegen.rows.ContentRow;
 import org.variantsync.diffdetective.tablegen.styles.ShortTable;
 import org.variantsync.diffdetective.tablegen.styles.VariabilityShare;
@@ -79,12 +79,12 @@ public class MiningResultAccumulator {
 
         final Map<String, DatasetDescription> datasetByName;
         try {
-            datasetByName = DatasetDescription.fromMarkdown(DiffTreeMiner.DATASETS_FILE).stream().collect(Collectors.toMap(
+            datasetByName = DatasetDescription.fromMarkdown(DefaultDatasets.DEFAULT_DATASETS_FILE).stream().collect(Collectors.toMap(
                     DatasetDescription::name,
                     Function.identity()
             ));
         } catch (IOException e) {
-            Logger.error("Failed to load at least one dataset from " + DiffTreeMiner.DATASETS_FILE + " because:", e);
+            Logger.error("Failed to load at least one dataset from " + DefaultDatasets.DEFAULT_DATASETS_FILE + " because:", e);
             Logger.error("Aborting execution!");
             return;
         }
