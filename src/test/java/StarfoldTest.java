@@ -33,8 +33,8 @@ public class StarfoldTest {
             starfold.transform(t);
 
             Assert.assertEquals(
-                    t.toTextDiff().trim(),
-                    FileUtils.readUTF8(getExpectedResultFile.apply(testCase)).trim()
+                    FileUtils.normalizedLineEndings(t.toTextDiff().trim()),
+                    FileUtils.normalizedLineEndings(FileUtils.readUTF8(getExpectedResultFile.apply(testCase))).trim()
             );
         }
     }
