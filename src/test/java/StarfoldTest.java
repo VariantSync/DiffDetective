@@ -29,8 +29,8 @@ public class StarfoldTest {
     public void testAll() throws IOException {
         for (TestCase testCase : TEST_CASES) {
             final DiffTree t = DiffTree.fromFile(testCase.inputDiff, true, true).unwrap().getSuccess();
-            Starfold.RespectNodeOrder().transform(t);
-//            System.out.println(t.toTextDiff());
+            Starfold.IgnoreNodeOrder().transform(t);
+            System.out.println(t.toTextDiff());
             Assert.assertEquals(
                     t.toTextDiff().trim(),
                     FileUtils.readUTF8(testCase.expectedDiff).trim()
