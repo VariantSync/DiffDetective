@@ -79,4 +79,15 @@ public class MultilineMacro {
     public int hashCode() {
         return Objects.hash(lines, diffType, startLine);
     }
+
+    @Override
+    public String toString() {
+        return "MultilineMacro{" +
+                "lines=" + lines +
+                ", beforeParent=" + beforeParent +
+                ", afterParent=" + afterParent +
+                ", startLine=" + startLine +
+                ", diffType=" + diffType +
+                '}';
+    }
 }
