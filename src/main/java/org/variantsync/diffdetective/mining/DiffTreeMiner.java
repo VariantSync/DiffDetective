@@ -34,10 +34,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public class DiffTreeMiner {
-    public static final Path DATASET_FILE =
-//            DefaultDatasets.DEFAULT_DATASETS_FILE
-            Path.of("docs", "datasets", "emacs.md")
-            ;
+    public static final Path DATASET_FILE = DefaultDatasets.EMACS;
     public static final boolean SEARCH_FOR_GOOD_RUNNING_EXAMPLES = false;
     public static final boolean UPDATE_REPOS_BEFORE_MINING = false;
     public static final boolean PRINT_LATEX_TABLE = true;
