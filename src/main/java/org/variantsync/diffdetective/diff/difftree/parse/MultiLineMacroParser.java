@@ -100,6 +100,7 @@ public class MultiLineMacroParser {
 
             return ParseResult.SUCCESS;
         } else {
+            // We either found the ending line of a multiline macro or just a plain line outside of a macro.
             final boolean inBeforeMLMacro = beforeMLMacro != null;
             final boolean inAfterMLMacro = afterMLMacro != null;
 
