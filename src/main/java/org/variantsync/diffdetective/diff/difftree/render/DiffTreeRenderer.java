@@ -73,12 +73,24 @@ public class DiffTreeRenderer {
         return render(patchDiff.getDiffTree(), patchDiff, directory, options);
     }
 
+    public boolean render(PatchDiff patchDiff, final Path directory, final RenderOptions options, final DiffTreeLineGraphExportOptions exportOptions) {
+        return render(patchDiff.getDiffTree(), patchDiff, directory, options, exportOptions);
+    }
+
     public boolean render(final DiffTree tree, final GitPatch patch, final Path directory, final RenderOptions options) {
         final String treeAndFileName =
                 patch.getFileName()
                         + LineGraphConstants.TREE_NAME_SEPARATOR
                         + patch.getCommitHash();
-        return render(tree, treeAndFileName, directory, options);
+        return render(tree, treeAndFileName, directory, options, options.toLineGraphOptions());
+    }
+
+    public boolean render(final DiffTree tree, final GitPatch patch, final Path directory, final RenderOptions options, final DiffTreeLineGraphExportOptions exportOptions) {
+        final String treeAndFileName =
+                patch.getFileName()
+                        + LineGraphConstants.TREE_NAME_SEPARATOR
+                        + patch.getCommitHash();
+        return render(tree, treeAndFileName, directory, options, exportOptions);
     }
 
     public boolean render(final DiffTree tree, final String treeAndFileName, final Path directory) {
@@ -86,23 +98,25 @@ public class DiffTreeRenderer {
     }
 
     public boolean render(final DiffTree tree, final String treeAndFileName, final Path directory, RenderOptions options) {
-        return render(tree, treeAndFileName, directory, options,
+        return render(tree, treeAndFileName, directory, options, options.toLineGraphOptions());
+    }
+
+    public boolean render(final DiffTree tree, final String treeAndFileName, final Path directory, RenderOptions options, final DiffTreeLineGraphExportOptions exportOptions) {
+        return render(tree, treeAndFileName, directory, options, exportOptions,
                 (treeName, treeSource) -> LineGraphConstants.LG_TREE_HEADER + " " + treeAndFileName + LineGraphConstants.TREE_NAME_SEPARATOR + "0"
                 );
     }
 
     public boolean renderWithTreeFormat(final DiffTree tree, final String treeAndFileName, final Path directory, RenderOptions options) {
-        return render(tree, treeAndFileName, directory, options,
+        return render(tree, treeAndFileName, directory, options, options.toLineGraphOptions(),
                 (treeName, treeSource) -> options.treeFormat().toLineGraphLine(treeSource)
         );
     }
 
-    private boolean render(final DiffTree tree, final String treeAndFileName, final Path directory, RenderOptions options, BiFunction<String, DiffTreeSource, String> treeHeader) {
-        final DiffTreeLineGraphExportOptions lgoptions = new DiffTreeLineGraphExportOptions(options.format(), options.treeFormat(), options.nodeFormat(), options.edgeFormat());
-
+    private boolean render(final DiffTree tree, final String treeAndFileName, final Path directory, RenderOptions options, DiffTreeLineGraphExportOptions exportOptions, BiFunction<String, DiffTreeSource, String> treeHeader) {
         final Path tempFile = directory.resolve(treeAndFileName + ".lg");
 
-        final Pair<DiffTreeSerializeDebugData, String> result = LineGraphExport.toLineGraphFormat(tree, lgoptions);
+        final Pair<DiffTreeSerializeDebugData, String> result = LineGraphExport.toLineGraphFormat(tree, exportOptions);
         Assert.assertNotNull(result);
         final String lg = treeHeader.apply(treeAndFileName, tree.getSource()) + StringUtils.LINEBREAK + result.second();
 
