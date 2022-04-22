@@ -10,7 +10,10 @@ import java.util.List;
 
 public class FileUtils {
     public static String normalizedLineEndings(final String text) {
-        return text.replaceAll(StringUtils.LINEBREAK_REGEX, StringUtils.LINEBREAK);
+        return replaceLineEndings(text, StringUtils.LINEBREAK);
+    }
+    public static String replaceLineEndings(final String text, final String replacee) {
+        return text.replaceAll(StringUtils.LINEBREAK_REGEX, replacee);
     }
 
     public static boolean isEmptyDirectory(final Path p) throws IOException {
