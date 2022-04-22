@@ -111,7 +111,7 @@ public class MultiLineMacroParser {
                         && inAfterMLMacro
                         && diffType == DiffType.NON
                         && beforeMLMacro.equals(afterMLMacro)) {
-                    // We have one single end line for to equal multi line macros -> Merge the nodes.
+                    // We have one single end line for two equal multi line macros -> Merge the nodes.
                     final DiffNode mlNode = finalizeMLMacro(
                             lineNo,
                             line,
