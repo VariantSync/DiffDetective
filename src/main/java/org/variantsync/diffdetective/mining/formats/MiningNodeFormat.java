@@ -11,13 +11,16 @@ import org.variantsync.functjonal.Pair;
 public interface MiningNodeFormat extends DiffNodeLabelFormat {
     Pair<DiffType, CodeType> fromEncodedTypes(final String tag);
 
+    @Override
     default DiffNode fromLabelAndId(String lineGraphNodeLabel, int nodeId) {
         /// We cannot reuse the id as it is just a sequential integer. It thus, does not contain any information.
-        final DiffLineNumber lineFrom = DiffLineNumber.Invalid();
-        final DiffLineNumber lineTo = DiffLineNumber.Invalid();
+        final DiffLineNumber lineFrom = new DiffLineNumber(nodeId, nodeId, nodeId);
+        final DiffLineNumber lineTo = new DiffLineNumber(nodeId, nodeId, nodeId);
         final String resultLabel = "";
 
         final Pair<DiffType, CodeType> types = fromEncodedTypes(lineGraphNodeLabel);
+        lineFrom.as(types.first());
+        lineTo.as(types.first());
         if (types.second() == CodeType.CODE) {
             return DiffNode.createCode(types.first(),
                     lineFrom, lineTo, resultLabel);
