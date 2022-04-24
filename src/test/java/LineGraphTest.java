@@ -46,7 +46,7 @@ public class LineGraphTest {
         for (final Path testFile : TEST_FILES) {
             Logger.info("Testing " + testFile);
             final String lineGraph = FileUtils.readUTF8(testFile);
-            final List<DiffTree> diffTrees = LineGraphImport.fromLineGraph(lineGraph, IMPORT_OPTIONS);
+            final List<DiffTree> diffTrees = LineGraphImport.fromLineGraph(lineGraph, testFile, IMPORT_OPTIONS);
             assertConsistencyForAll(diffTrees);
             final String lineGraphResult = exportDiffTreeToLineGraph(diffTrees);
             assertEqualFileContent(lineGraph, lineGraphResult);
