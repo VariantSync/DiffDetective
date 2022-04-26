@@ -5,6 +5,7 @@ import signal
 import re
 
 import math
+import time
 
 regex_file_id = r".*_(\d+).*"
 
@@ -68,11 +69,14 @@ def run_parsemis(lib_path, in_folder, output_folder, threshold, min_size, max_si
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 7:
-        print("Call like python run_parsemis.py [lib_path] [in_folder] [out_folder] [threshold] [min_size] [max_size]")
+    if len(sys.argv) < 8:
+        print("Call like python run_parsemis.py [lib_path] [in_folder] [out_folder] [threshold] [min_size] [max_size] [timeout_seconds]")
         
     # Create output folder if it doesn't exist yet
     os.makedirs(sys.argv[3], exist_ok=True)
     
-
-    run_parsemis(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6])
+    start_time = time.time()
+    run_parsemis(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6], int(sys.argv[7]))
+    end_time = time.time()
+    with open(sys.argv[3] + 'time.txt', 'w') as f:
+        f.write(str(end_time-start_time))

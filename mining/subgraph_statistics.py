@@ -212,6 +212,7 @@ class Statistics():
         self._name_subgraphs()
         self.occurrences_transaction = {}
         self.occurrences_embeddings = {}
+        self.occurrences_references = {}
         self.lattice = lattice
     
     def _set_label_name(self):
@@ -253,18 +254,56 @@ class Statistics():
         # Execute occurrence computation
         self.lattice.count_occurrences(self.graph_db)
         # Store number of occurrences here
-        for lattice_node in lattice_nodes:
+        for lattice_node in self.lattice.nodes:
+            print(lattice_node.graph.name)
             self.occurrences_transaction[lattice_node.graph.name] = len(lattice_node.occurrences)
-            print(lattice_node.occurrences)
-  
-    def write_as_csv(self, save_path):
+            # the occurrences of the nodes is just the id in the graph database, we want to get the names of the graphs instead
+            self.occurrences_references[lattice_node.graph.name] = [self.graph_db[graph_id].name for graph_id in lattice_node.occurrences]
+
+
+    def write_as_csv(self, save_path, additional_tag):
+        '''
+        Outputs occurrences statistics in a csv file.
+
+        save_path: the path the csv is to be stored
+        additional_tag: some additional tags to add, e.g., when later merging different results
+        '''
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
+        
         with open(save_path, 'w', newline='') as csvfile:
             csvwriter = csv.writer(csvfile, delimiter=',',
                             quotechar='|', quoting=csv.QUOTE_MINIMAL)
             for subgraph in self.subgraphs:
                 occurrences_embeddings = self.occurrences_embeddings[subgraph.name] if subgraph.name in self.occurrences_embeddings.keys() else 0
                 occurrences_transaction = self.occurrences_transaction[subgraph.name] if subgraph.name in self.occurrences_transaction.keys() else 0
-                csvwriter.writerow([subgraph.name, occurrences_embeddings, occurrences_transaction])
+                occurrences_references = self.occurrences_references[subgraph.name] if subgraph.name in self.occurrences_references.keys() else []
+                csvwriter.writerow([subgraph.name, additional_tag, occurrences_embeddings, occurrences_transaction, occurrences_references])
+
+
+    def write_as_md(self, save_path, project_name):
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
+
+        with open(save_path, 'w', newline='') as mdfile:
+            for subgraph in self.subgraphs:
+                mdfile.write(f"# {subgraph.name}\n")
+                mdfile.write(f"![{subgraph.name}]({subgraph.name}.png)\n")
+                occurrences_transaction = self.occurrences_transaction[subgraph.name] if subgraph.name in self.occurrences_transaction.keys() else 0
+                occurrences_references = self.occurrences_references[subgraph.name] if subgraph.name in self.occurrences_references.keys() else []
+                mdfile.write(f"Frequency: {occurrences_transaction}\n\n")
+                mdfile.write("Put your notes here\n\n")
+                mdfile.write("<details><summary>Matches</summar><p>\n")
+                for occurrence in occurrences_references:
+                    tokens = occurrence.split('$$$')
+                    if not len(tokens) >= 2:
+                        print(f"Illegal occurence string {occurence}")
+                        continue
+                    commit_id = tokens[1].strip()
+                    file_path = tokens[0].strip()
+                    # only works for commits, which are not merge commits
+                    github_commit_url = get_url_for_project(project_name) + '/commit/'  + commit_id
+                    mdfile.write(f"Commit: {github_commit_url}\n")
+                    mdfile.write(f"File: {file_path}\n\n")
+                mdfile.write("</p></details>\n\n")
 
 def main(graph_db_path: str, subgraphs_path:str, results_dir:str):
     subgraphs = import_tlv_folder(subgraphs_path, parse_support=False)
@@ -273,7 +312,7 @@ def main(graph_db_path: str, subgraphs_path:str, results_dir:str):
     #subgraphs = [graph.reverse() for graph in subgraphs]
     
     #TODO Workaround since a dummy root has been added by a previous steps
-    #subgraphs = [IsoGraph(graph).cut_root() for graph in subgraphs]
+    subgraphs = [IsoGraph(graph).cut_root() for graph in subgraphs]
         
     # Get rid of clones
     nb_initial_subgraphs = len(subgraphs)
@@ -302,12 +341,29 @@ def main(graph_db_path: str, subgraphs_path:str, results_dir:str):
     export_TLV(subgraphs, results_dir + 'subgraph_candidates.lg')
 
     for folder in os.listdir(graph_db_path):
+        if not os.path.isdir(graph_db_path + "/" + folder):
+            continue
         # Read db
         print(f"Parsing graph database for data set {folder}")
         graph_db = import_tlv_folder(graph_db_path+"/"+folder+"/", parse_support=False)
-        compute_statistics(graph_db, subgraphs, lattice, results_dir)
+        compute_statistics(graph_db, subgraphs, lattice, results_dir + "/" + folder + "/", folder)
 
-def compute_statistics(graph_db, subgraphs, lattice, results_dir):
+def get_url_for_project(project): 
+    ''' 
+    Looks up the given project in a list of projects and returns the corresponding repository url.
+    '''
+    # TODO project list could be cached
+    with open('project_list.md', 'r') as project_list:
+        while True:
+            line = project_list.readline()
+            if not line:
+                break
+            tokens = line.split('|')
+            # project name is token 0, repository url is token 4
+            if tokens[0].strip() == project:
+                return tokens[4]
+
+def compute_statistics(graph_db, subgraphs, lattice, results_dir, dataset_name):
     # Compute statistics
     print("Counting the subgraph occurrences in the graph database. This might take some time...")
     stats = Statistics(graph_db, subgraphs, lattice=lattice)
@@ -324,8 +380,12 @@ def compute_statistics(graph_db, subgraphs, lattice, results_dir):
     
     # Write statistics to file
     print("Write occurrence statistics...")
-    stats.write_as_csv(results_dir + 'occurrence_stats.csv')
+    stats.write_as_csv(results_dir + 'occurrence_stats.csv', dataset_name)
+    stats.write_as_md(results_dir + 'occurrences_stats.md', dataset_name)
+
     print("Done")
+
+
 
   
 if __name__ == "__main__":

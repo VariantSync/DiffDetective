@@ -1,0 +1,10145 @@
+t # src/systime.h$$$08dc5ae68e9c699410256ca9052bd09f336ac87f
+v 0 m20
+v 1 m20
+v 2 m00
+v 3 c1
+v 4 m02
+v 5 c1
+e 0 1 ba>m20>m20
+e 1 2 a>m20>m00
+e 2 3 a>m00>c1
+e 2 4 a>m00>m02
+e 4 5 a>m02>c1
+t # src/xterm.c$$$7db47798f82694ea85003f3ea004600ab6a68fc3
+v 0 m20
+v 1 m20
+v 2 m20
+v 3 c2
+v 4 c0
+v 5 m00
+v 6 c1
+e 0 1 ba>m20>m20
+e 1 2 ba>m20>m20
+e 1 5 a>m20>m00
+e 2 3 b>m20>c2
+e 2 4 a>m20>c0
+e 5 6 a>m00>c1
+t # src/bidi.c$$$182ce2d254ed316239b8deab8adac05c3dbe0149
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m00
+v 4 c1
+v 5 m00
+v 6 c1
+v 7 m00
+v 8 c1
+v 9 c1
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 a>m20>m00
+e 0 5 a>m20>m00
+e 3 4 a>m00>c1
+e 5 6 a>m00>c1
+e 5 7 a>m00>m00
+e 5 9 a>m00>c1
+e 7 8 a>m00>c1
+t # src/bytecode.c$$$14fe7b530dc927a88169a841afc0cd806593dea8
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 c0
+v 4 m00
+v 5 c1
+e 0 1 ba>m20>m20
+e 0 4 a>m20>m00
+e 1 2 b>m20>c2
+e 1 3 a>m20>c0
+e 4 5 a>m00>c1
+t # nt/inc/stdint.h$$$0a47eac473aec19f1b964cc06649dc0007e05f1f
+v 0 m20
+v 1 m20
+v 2 m00
+v 3 c1
+v 4 m02
+v 5 c1
+v 6 c0
+e 0 1 ba>m20>m20
+e 1 2 a>m20>m00
+e 1 6 a>m20>c0
+e 2 3 a>m00>c1
+e 2 4 a>m00>m02
+e 4 5 a>m02>c1
+t # src/lisp.h$$$122b0c864338fa0c428b0ff2afbed2454dd2d1c7
+v 0 m20
+v 1 m20
+v 2 c0
+v 3 m20
+v 4 m10
+v 5 c4
+v 6 m23
+v 7 m00
+e 0 1 ba>m20>m20
+e 1 2 a>m20>c0
+e 1 3 ba>m20>m20
+e 3 4 b>m20>m10
+e 3 7 a>m20>m00
+e 4 5 b>m10>c4
+e 4 6 b>m10>m23
+e 7 5 a>m00>c4
+e 7 6 a>m00>m23
+t # src/image.c$$$84d358f0d559acc398b019660c4a1a3a50fd6bb2
+v 0 m20
+v 1 m00
+v 2 c4
+v 3 m02
+v 4 c1
+v 5 m00
+v 6 c4
+e 0 1 a>m20>m00
+e 0 2 b>m20>c4
+e 0 5 a>m20>m00
+e 0 6 b>m20>c4
+e 1 2 a>m00>c4
+e 1 3 a>m00>m02
+e 3 4 a>m02>c1
+e 5 6 a>m00>c4
+t # lib/stdlib.in.h$$$19548d0861ced228dd0598240a410bf6a720b59e
+v 0 m20
+v 1 m20
+v 2 m10
+v 3 c5
+v 4 c5
+v 5 m00
+v 6 c1
+e 0 1 ba>m20>m20
+e 1 2 b>m20>m10
+e 1 5 a>m20>m00
+e 2 3 b>m10>c5
+e 2 4 b>m10>c5
+e 5 3 a>m00>c5
+e 5 4 a>m00>c5
+e 5 6 a>m00>c1
+t # src/sysdep.c$$$e16e55d4a02105b03434e1434e1a13562503d0f2
+v 0 m20
+v 1 m10
+v 2 c6
+v 3 m12
+v 4 m10
+v 5 c6
+v 6 m12
+v 7 m10
+v 8 c6
+v 9 m22
+v 10 m00
+v 11 m03
+v 12 m03
+v 13 c1
+v 14 m03
+e 0 1 b>m20>m10
+e 0 10 a>m20>m00
+e 1 2 b>m10>c6
+e 1 3 b>m10>m12
+e 3 4 b>m12>m10
+e 4 5 b>m10>c6
+e 4 6 b>m10>m12
+e 6 7 b>m12>m10
+e 7 8 b>m10>c6
+e 7 9 b>m10>m22
+e 10 2 a>m00>c6
+e 10 11 a>m00>m03
+e 11 5 a>m03>c6
+e 11 12 a>m03>m03
+e 12 13 a>m03>c1
+e 12 14 a>m03>m03
+e 14 8 a>m03>c6
+e 14 9 a>m03>m22
+t # src/callproc.c$$$1ef14cb4b0f726a5e6a86e20fed8cfecb22c67d5
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m00
+v 4 c1
+v 5 m02
+v 6 c1
+v 7 m20
+v 8 m20
+v 9 c2
+v 10 c0
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 a>m20>m00
+e 0 7 ba>m20>m20
+e 0 8 ba>m20>m20
+e 3 4 a>m00>c1
+e 3 5 a>m00>m02
+e 5 6 a>m02>c1
+e 8 9 b>m20>c2
+e 8 10 a>m20>c0
+t # src/doprnt.c$$$ad5f9eeaa2f0f872e063849f8f0d24d2c200acfa
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m10
+v 4 c3
+v 5 c5
+v 6 m12
+v 7 c3
+v 8 m10
+v 9 c3
+v 10 c5
+v 11 m12
+v 12 c3
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 b>m20>m10
+e 0 5 a>m20>c5
+e 0 8 b>m20>m10
+e 0 10 a>m20>c5
+e 3 4 b>m10>c3
+e 3 5 b>m10>c5
+e 3 6 b>m10>m12
+e 6 7 b>m12>c3
+e 8 9 b>m10>c3
+e 8 10 b>m10>c5
+e 8 11 b>m10>m12
+e 11 12 b>m12>c3
+t # src/w32heap.c$$$fab624aa3a159b3d91fae009634dd0875a5b0162
+v 0 m20
+v 1 m00
+v 2 c4
+v 3 m02
+v 4 c1
+v 5 c2
+v 6 c0
+e 0 1 a>m20>m00
+e 0 2 b>m20>c4
+e 0 5 b>m20>c2
+e 0 6 a>m20>c0
+e 1 2 a>m00>c4
+e 1 3 a>m00>m02
+e 3 4 a>m02>c1
+t # src/lisp.h$$$7fd47d5ce2020a22f8db9776e8d1f47891b966dc
+v 0 m20
+v 1 m20
+v 2 m12
+v 3 m20
+v 4 m20
+v 5 m03
+v 6 m00
+v 7 c1
+v 8 m00
+v 9 c1
+v 10 m02
+e 0 1 ba>m20>m20
+e 1 2 b>m20>m12
+e 1 5 a>m20>m03
+e 2 3 b>m12>m20
+e 2 4 b>m12>m20
+e 5 6 a>m03>m00
+e 5 8 a>m03>m00
+e 5 10 a>m03>m02
+e 6 7 a>m00>c1
+e 8 9 a>m00>c1
+e 10 3 a>m02>m20
+e 10 4 a>m02>m20
+t # src/process.c$$$8727937b9656243b361ba3d8d12ff1ac502a9080
+v 0 m20
+v 1 m10
+v 2 c3
+v 3 m20
+v 4 c2
+v 5 c0
+e 0 1 b>m20>m10
+e 0 3 ba>m20>m20
+e 1 2 b>m10>c3
+e 3 4 b>m20>c2
+e 3 5 a>m20>c0
+t # src/doprnt.c$$$283cdbef2afe17fc83d93886ac8c47c5222c4ee2
+v 0 m20
+v 1 m10
+v 2 c3
+v 3 m00
+v 4 c1
+e 0 1 b>m20>m10
+e 0 3 a>m20>m00
+e 1 2 b>m10>c3
+e 3 4 a>m00>c1
+t # src/sysdep.c$$$ede49d7153ed628078bcbc2473f898904b5250ea
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m10
+v 4 c3
+v 5 m10
+v 6 c3
+v 7 m10
+v 8 c3
+v 9 m10
+v 10 c3
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 b>m20>m10
+e 3 4 b>m10>c3
+e 3 5 b>m10>m10
+e 5 6 b>m10>c3
+e 5 7 b>m10>m10
+e 7 8 b>m10>c3
+e 7 9 b>m10>m10
+e 9 10 b>m10>c3
+t # src/w32fns.c$$$b124fd93b090f840e30ad1fd9a9cbf1858c74342
+v 0 m20
+v 1 m00
+v 2 c4
+v 3 c7
+v 4 c4
+v 5 c7
+v 6 c4
+v 7 c7
+v 8 c4
+v 9 m10
+v 10 m10
+v 11 m10
+e 0 1 a>m20>m00
+e 0 2 b>m20>c4
+e 0 4 b>m20>c4
+e 0 6 b>m20>c4
+e 0 8 b>m20>c4
+e 0 9 b>m20>m10
+e 0 10 b>m20>m10
+e 0 11 b>m20>m10
+e 1 2 a>m00>c4
+e 1 3 a>m00>c7
+e 1 4 a>m00>c4
+e 1 5 a>m00>c7
+e 1 6 a>m00>c4
+e 1 7 a>m00>c7
+e 1 8 a>m00>c4
+e 9 3 b>m10>c7
+e 10 5 b>m10>c7
+e 11 7 b>m10>c7
+t # src/doprnt.c$$$e810457d006d336b26335fae512d15a1c445b9cd
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m00
+v 4 c1
+v 5 m02
+v 6 c1
+v 7 m00
+v 8 c1
+v 9 m02
+v 10 c1
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 a>m20>m00
+e 0 7 a>m20>m00
+e 3 4 a>m00>c1
+e 3 5 a>m00>m02
+e 5 6 a>m02>c1
+e 7 8 a>m00>c1
+e 7 9 a>m00>m02
+e 9 10 a>m02>c1
+t # src/gnutls.c$$$e061a11b5a59f02fac66184e991f01a433f6dc8d
+v 0 m20
+v 1 m20
+v 2 m00
+v 3 c1
+v 4 c0
+v 5 c2
+v 6 m00
+v 7 c1
+v 8 m02
+v 9 c4
+v 10 c1
+v 11 m00
+v 12 m02
+e 0 1 ba>m20>m20
+e 1 2 a>m20>m00
+e 1 4 a>m20>c0
+e 1 5 b>m20>c2
+e 1 6 a>m20>m00
+e 1 9 b>m20>c4
+e 1 11 a>m20>m00
+e 2 3 a>m00>c1
+e 6 7 a>m00>c1
+e 6 8 a>m00>m02
+e 8 9 a>m02>c4
+e 8 10 a>m02>c1
+e 11 12 a>m00>m02
+t # src/w32.c$$$e061a11b5a59f02fac66184e991f01a433f6dc8d
+v 0 m20
+v 1 c2
+v 2 m00
+v 3 c1
+v 4 c0
+e 0 1 b>m20>c2
+e 0 2 a>m20>m00
+e 0 4 a>m20>c0
+e 2 3 a>m00>c1
+t # src/bytecode.c$$$0df1eac54fdf82a80a7611fe421d94a23ebd4a0a
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 c0
+v 4 m00
+v 5 c1
+e 0 1 ba>m20>m20
+e 0 4 a>m20>m00
+e 1 2 b>m20>c2
+e 1 3 a>m20>c0
+e 4 5 a>m00>c1
+t # src/doprnt.c$$$e6c3da2065ac72cc4e1a2bef22d367cd75401892
+v 0 m20
+v 1 c0
+v 2 m00
+v 3 c1
+v 4 c2
+e 0 1 a>m20>c0
+e 0 2 a>m20>m00
+e 0 4 b>m20>c2
+e 2 3 a>m00>c1
+t # src/data.c$$$8b9587d73b579fb2fdd0eaaa1ed5fd608653e522
+v 0 m20
+v 1 m10
+v 2 c3
+v 3 c2
+v 4 c0
+e 0 1 b>m20>m10
+e 0 3 b>m20>c2
+e 0 4 a>m20>c0
+e 1 2 b>m10>c3
+t # src/gnutls.c$$$ec8df74431a76616a83806e1c1f4a094731a3f77
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 c0
+v 4 m00
+v 5 c4
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 a>m20>c0
+e 1 4 a>m20>m00
+e 1 5 b>m20>c4
+e 4 5 a>m00>c4
+t # src/gtkutil.c$$$6048fb2a5ade88f36ff1e50eb113726c610115d0
+v 0 m20
+v 1 m20
+v 2 m20
+v 3 m00
+v 4 c4
+v 5 c0
+v 6 c2
+v 7 m20
+v 8 c2
+v 9 c0
+e 0 1 ba>m20>m20
+e 1 2 ba>m20>m20
+e 1 5 a>m20>c0
+e 1 6 b>m20>c2
+e 1 7 ba>m20>m20
+e 2 3 a>m20>m00
+e 2 4 b>m20>c4
+e 3 4 a>m00>c4
+e 7 8 b>m20>c2
+e 7 9 a>m20>c0
+t # src/termhooks.h$$$4581706e272ad522d495dd12040d94b86a333b6d
+v 0 m20
+v 1 c2
+v 2 m10
+v 3 c3
+v 4 m10
+v 5 c3
+v 6 m10
+v 7 c3
+e 0 1 b>m20>c2
+e 0 2 b>m20>m10
+e 0 4 b>m20>m10
+e 0 6 b>m20>m10
+e 2 3 b>m10>c3
+e 4 5 b>m10>c3
+e 6 7 b>m10>c3
+t # src/process.c$$$006c5daa682b5d951fb4a0d7945d45a722f0690b
+v 0 m20
+v 1 m20
+v 2 m00
+v 3 c4
+v 4 m00
+v 5 c1
+v 6 c0
+v 7 m00
+v 8 c4
+e 0 1 ba>m20>m20
+e 1 2 a>m20>m00
+e 1 3 b>m20>c4
+e 1 4 a>m20>m00
+e 1 6 a>m20>c0
+e 1 7 a>m20>m00
+e 1 8 b>m20>c4
+e 2 3 a>m00>c4
+e 4 5 a>m00>c1
+e 7 8 a>m00>c4
+t # lib-src/emacsclient.c$$$c5443aa547b94725ca257718935692212b5d272d
+v 0 m20
+v 1 m20
+v 2 m10
+v 3 c3
+v 4 c0
+v 5 m20
+v 6 c2
+v 7 c0
+e 0 1 ba>m20>m20
+e 0 5 ba>m20>m20
+e 1 2 b>m20>m10
+e 1 4 a>m20>c0
+e 2 3 b>m10>c3
+e 5 6 b>m20>c2
+e 5 7 a>m20>c0
+t # src/xterm.c$$$dda3aeddcbf2dbfb9c517b093726703fa5c24800
+v 0 m20
+v 1 m20
+v 2 m10
+v 3 c6
+v 4 m00
+v 5 m10
+v 6 c5
+v 7 m00
+e 0 1 ba>m20>m20
+e 1 2 b>m20>m10
+e 1 4 a>m20>m00
+e 1 5 b>m20>m10
+e 1 7 a>m20>m00
+e 2 3 b>m10>c6
+e 4 3 a>m00>c6
+e 5 6 b>m10>c5
+e 7 6 a>m00>c5
+t # src/xterm.h$$$098db9dd8b385f13ab74a37046a4cd98c8b314d6
+v 0 m20
+v 1 m10
+v 2 c6
+v 3 m00
+v 4 m10
+v 5 c6
+v 6 m00
+e 0 1 b>m20>m10
+e 0 3 a>m20>m00
+e 0 4 b>m20>m10
+e 0 6 a>m20>m00
+e 1 2 b>m10>c6
+e 3 2 a>m00>c6
+e 4 5 b>m10>c6
+e 6 5 a>m00>c6
+t # src/menu.c$$$60d9e1db81652a244a4f2f450a838637e9d75205
+v 0 m20
+v 1 m00
+v 2 c4
+v 3 m20
+v 4 c2
+v 5 c0
+e 0 1 a>m20>m00
+e 0 2 b>m20>c4
+e 0 3 ba>m20>m20
+e 1 2 a>m00>c4
+e 3 4 b>m20>c2
+e 3 5 a>m20>c0
+t # src/xrdb.c$$$723918432dca82feb36908666270bc58d9368267
+v 0 m20
+v 1 m10
+v 2 c6
+v 3 c7
+v 4 m00
+v 5 m00
+e 0 1 b>m20>m10
+e 0 4 a>m20>m00
+e 0 5 a>m20>m00
+e 1 2 b>m10>c6
+e 1 3 b>m10>c7
+e 4 2 a>m00>c6
+e 5 3 a>m00>c7
+t # src/xdisp.c$$$4887c6e26e2d578f34e647d23a1a7352a48e94c4
+v 0 m20
+v 1 c2
+v 2 m00
+v 3 c1
+v 4 c0
+e 0 1 b>m20>c2
+e 0 2 a>m20>m00
+e 0 4 a>m20>c0
+e 2 3 a>m00>c1
+t # lwlib/lwlib-utils.c$$$4d511c40f437adec6b8a635fe717605c1354f49c
+v 0 m20
+v 1 c2
+v 2 m10
+v 3 c3
+v 4 m12
+v 5 c3
+e 0 1 b>m20>c2
+e 0 2 b>m20>m10
+e 2 3 b>m10>c3
+e 2 4 b>m10>m12
+e 4 5 b>m12>c3
+t # src/term.c$$$64520e5cf9ad7cba4f23288bffeec1aa2fff6c49
+v 0 m20
+v 1 c0
+v 2 c2
+v 3 m20
+v 4 m00
+v 5 c4
+e 0 1 a>m20>c0
+e 0 2 b>m20>c2
+e 0 3 ba>m20>m20
+e 3 4 a>m20>m00
+e 3 5 b>m20>c4
+e 4 5 a>m00>c4
+t # src/keyboard.c$$$8a1414fa0fa4706b59589d11f3deaf6199e9a305
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m00
+v 4 c4
+v 5 m20
+v 6 m00
+v 7 c1
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 a>m20>m00
+e 0 4 b>m20>c4
+e 0 5 ba>m20>m20
+e 3 4 a>m00>c4
+e 5 6 a>m20>m00
+e 6 7 a>m00>c1
+t # src/keyboard.h$$$8a1414fa0fa4706b59589d11f3deaf6199e9a305
+v 0 m20
+v 1 c2
+v 2 m00
+v 3 c4
+e 0 1 b>m20>c2
+e 0 2 a>m20>m00
+e 0 3 b>m20>c4
+e 2 3 a>m00>c4
+t # src/lisp.h$$$8a1414fa0fa4706b59589d11f3deaf6199e9a305
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 m00
+v 4 c4
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 a>m20>m00
+e 1 4 b>m20>c4
+e 3 4 a>m00>c4
+t # src/insdel.c$$$77382fcc33809a84866968ed3f969ea65ea4f1f7
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m10
+v 4 c3
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 b>m20>m10
+e 3 4 b>m10>c3
+t # src/image.c$$$cd44d2ebb43eb738eca182841c903f8419cd6b5b
+v 0 m20
+v 1 m10
+v 2 c6
+v 3 m00
+v 4 m20
+v 5 c2
+v 6 c0
+v 7 m20
+v 8 c2
+v 9 c0
+e 0 1 b>m20>m10
+e 0 3 a>m20>m00
+e 0 4 ba>m20>m20
+e 0 7 ba>m20>m20
+e 1 2 b>m10>c6
+e 3 2 a>m00>c6
+e 4 5 b>m20>c2
+e 4 6 a>m20>c0
+e 7 8 b>m20>c2
+e 7 9 a>m20>c0
+t # src/fringe.c$$$ad9a7a06d48b0be0b1159db566c2760d951d62c1
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 c0
+v 4 m00
+v 5 c1
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 a>m20>c0
+e 1 4 a>m20>m00
+e 4 5 a>m00>c1
+t # src/frame.h$$$816269316fbb2c248873b4387db5624ff57f6303
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 m20
+v 4 m00
+v 5 c4
+v 6 c2
+v 7 m10
+v 8 c3
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 ba>m20>m20
+e 3 4 a>m20>m00
+e 3 5 b>m20>c4
+e 3 6 b>m20>c2
+e 3 7 b>m20>m10
+e 4 5 a>m00>c4
+e 7 8 b>m10>c3
+t # src/fontset.c$$$239f9db96059f3f76e4b4a6f31f6eb56f642ea84
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m00
+v 4 c4
+v 5 m00
+v 6 c4
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 a>m20>m00
+e 0 4 b>m20>c4
+e 0 5 a>m20>m00
+e 0 6 b>m20>c4
+e 3 4 a>m00>c4
+e 5 6 a>m00>c4
+t # src/emacs.c$$$35f08c383e85c6de5a87fc3e16993354b9987ae9
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 c0
+v 4 m00
+v 5 c1
+v 6 m20
+v 7 c2
+v 8 m20
+v 9 m20
+v 10 c2
+v 11 c0
+v 12 c2
+v 13 c0
+v 14 c0
+e 0 1 ba>m20>m20
+e 0 4 a>m20>m00
+e 0 6 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 a>m20>c0
+e 4 5 a>m00>c1
+e 6 7 b>m20>c2
+e 6 8 ba>m20>m20
+e 6 14 a>m20>c0
+e 8 9 ba>m20>m20
+e 8 12 b>m20>c2
+e 8 13 a>m20>c0
+e 9 10 b>m20>c2
+e 9 11 a>m20>c0
+t # src/lisp.h$$$35f08c383e85c6de5a87fc3e16993354b9987ae9
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 m00
+v 4 c4
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 a>m20>m00
+e 1 4 b>m20>c4
+e 3 4 a>m00>c4
+t # src/xterm.c$$$b532497da492ad9fef912bdf41d7f57c6f5bd833
+v 0 m20
+v 1 m20
+v 2 c0
+v 3 m00
+v 4 c1
+v 5 c2
+v 6 m00
+v 7 c1
+e 0 1 ba>m20>m20
+e 1 2 a>m20>c0
+e 1 3 a>m20>m00
+e 1 5 b>m20>c2
+e 1 6 a>m20>m00
+e 3 4 a>m00>c1
+e 6 7 a>m00>c1
+t # src/xterm.h$$$b532497da492ad9fef912bdf41d7f57c6f5bd833
+v 0 m20
+v 1 c2
+v 2 m00
+v 3 c4
+v 4 m00
+v 5 c4
+v 6 m20
+v 7 m00
+v 8 c4
+e 0 1 b>m20>c2
+e 0 2 a>m20>m00
+e 0 3 b>m20>c4
+e 0 4 a>m20>m00
+e 0 5 b>m20>c4
+e 0 6 ba>m20>m20
+e 2 3 a>m00>c4
+e 4 5 a>m00>c4
+e 6 7 a>m20>m00
+e 6 8 b>m20>c4
+e 7 8 a>m00>c4
+t # src/sysdep.c$$$1963a2e0bb07cc8dee6d27f972f93d9cfd7c6b2d
+v 0 m20
+v 1 c0
+v 2 m00
+v 3 c1
+v 4 c2
+e 0 1 a>m20>c0
+e 0 2 a>m20>m00
+e 0 4 b>m20>c2
+e 2 3 a>m00>c1
+t # src/font.h$$$1675728f009404df6bc79b7e0933bc675afa1be1
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 m20
+v 4 m03
+v 5 c1
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 ba>m20>m20
+e 3 4 a>m20>m03
+e 4 5 a>m03>c1
+t # src/ftxfont.c$$$1675728f009404df6bc79b7e0933bc675afa1be1
+v 0 m20
+v 1 m00
+v 2 c1
+v 3 c0
+v 4 c2
+e 0 1 a>m20>m00
+e 0 3 a>m20>c0
+e 0 4 b>m20>c2
+e 1 2 a>m00>c1
+t # src/xfns.c$$$e4cebfca13580f80fb0ecee27afb81b55c031535
+v 0 m20
+v 1 m20
+v 2 m20
+v 3 c2
+v 4 c0
+v 5 c0
+v 6 c2
+v 7 m20
+v 8 m00
+v 9 c4
+v 10 c1
+v 11 c4
+v 12 c2
+e 0 1 ba>m20>m20
+e 1 2 ba>m20>m20
+e 1 5 a>m20>c0
+e 1 6 b>m20>c2
+e 1 7 ba>m20>m20
+e 2 3 b>m20>c2
+e 2 4 a>m20>c0
+e 7 8 a>m20>m00
+e 7 9 b>m20>c4
+e 7 11 b>m20>c4
+e 7 12 b>m20>c2
+e 8 9 a>m00>c4
+e 8 10 a>m00>c1
+e 8 11 a>m00>c4
+t # src/xfaces.c$$$435f4c28d3921770b107973ecb45e36b719eb4c3
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m20
+v 4 m00
+v 5 c4
+v 6 m20
+v 7 c4
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 ba>m20>m20
+e 3 4 a>m20>m00
+e 3 5 b>m20>c4
+e 3 6 b>m20>m20
+e 3 7 b>m20>c4
+e 4 5 a>m00>c4
+e 4 6 a>m00>m20
+e 4 7 a>m00>c4
+t # src/xterm.h$$$435f4c28d3921770b107973ecb45e36b719eb4c3
+v 0 m20
+v 1 c2
+v 2 m00
+v 3 c4
+e 0 1 b>m20>c2
+e 0 2 a>m20>m00
+e 0 3 b>m20>c4
+e 2 3 a>m00>c4
+t # src/xdisp.c$$$8524aef308e0fe9955cfab9dc5c41ca62f7865cd
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m10
+v 4 c3
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 b>m20>m10
+e 3 4 b>m10>c3
+t # src/alloc.c$$$244ed9077fe7ccebbc15c7157cb45832f46a46d3
+v 0 m20
+v 1 m00
+v 2 c1
+v 3 c2
+v 4 c0
+v 5 m00
+v 6 c4
+e 0 1 a>m20>m00
+e 0 3 b>m20>c2
+e 0 4 a>m20>c0
+e 0 5 a>m20>m00
+e 0 6 b>m20>c4
+e 1 2 a>m00>c1
+e 5 6 a>m00>c4
+t # src/eval.c$$$244ed9077fe7ccebbc15c7157cb45832f46a46d3
+v 0 m20
+v 1 m00
+v 2 c1
+v 3 c0
+v 4 m00
+v 5 c1
+v 6 c2
+v 7 m00
+v 8 c4
+e 0 1 a>m20>m00
+e 0 3 a>m20>c0
+e 0 4 a>m20>m00
+e 0 6 b>m20>c2
+e 0 7 a>m20>m00
+e 0 8 b>m20>c4
+e 1 2 a>m00>c1
+e 4 5 a>m00>c1
+e 7 8 a>m00>c4
+t # src/lisp.h$$$244ed9077fe7ccebbc15c7157cb45832f46a46d3
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 m20
+v 4 c0
+v 5 m00
+v 6 c1
+v 7 m00
+v 8 c4
+v 9 m10
+v 10 c7
+v 11 m00
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 ba>m20>m20
+e 1 5 a>m20>m00
+e 1 7 a>m20>m00
+e 1 8 b>m20>c4
+e 1 9 b>m20>m10
+e 1 11 a>m20>m00
+e 3 4 a>m20>c0
+e 5 6 a>m00>c1
+e 7 8 a>m00>c4
+e 9 10 b>m10>c7
+e 11 10 a>m00>c7
+t # src/eval.c$$$eb3f1cc8dfe6a96505f1c5f9174b2712998cb52f
+v 0 m20
+v 1 c0
+v 2 m00
+v 3 c1
+v 4 c2
+e 0 1 a>m20>c0
+e 0 2 a>m20>m00
+e 0 4 b>m20>c2
+e 2 3 a>m00>c1
+t # src/process.c$$$82eaa3332cd0568b8e8f3f3dc3438dab61b7cc1d
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 c0
+v 4 m20
+v 5 c2
+v 6 c0
+v 7 m20
+v 8 c2
+v 9 c0
+v 10 m10
+v 11 c3
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 a>m20>c0
+e 1 4 ba>m20>m20
+e 1 7 ba>m20>m20
+e 1 10 b>m20>m10
+e 4 5 b>m20>c2
+e 4 6 a>m20>c0
+e 7 8 b>m20>c2
+e 7 9 a>m20>c0
+e 10 11 b>m10>c3
+t # src/gtkutil.c$$$552c90edb8cbf673b9a7d07ea39338585fce904a
+v 0 m20
+v 1 m20
+v 2 c0
+v 3 m00
+v 4 c4
+v 5 c2
+e 0 1 ba>m20>m20
+e 1 2 a>m20>c0
+e 1 3 a>m20>m00
+e 1 4 b>m20>c4
+e 1 5 b>m20>c2
+e 3 4 a>m00>c4
+t # lib/string.in.h$$$252444aaa3a7cb9fc70289a5a3920f8a9d848109
+v 0 m20
+v 1 m20
+v 2 c0
+v 3 m00
+v 4 m00
+v 5 c1
+v 6 c1
+v 7 m03
+v 8 c1
+v 9 m00
+v 10 c1
+e 0 1 ba>m20>m20
+e 1 2 a>m20>c0
+e 1 3 a>m20>m00
+e 3 4 a>m00>m00
+e 3 6 a>m00>c1
+e 3 7 a>m00>m03
+e 4 5 a>m00>c1
+e 7 8 a>m03>c1
+e 7 9 a>m03>m00
+e 9 10 a>m00>c1
+t # src/gnutls.c$$$b30ee0c9225bad6e3fd0b511a6c5d9a64b8fd66a
+v 0 m20
+v 1 m20
+v 2 m00
+v 3 c4
+v 4 m00
+v 5 c4
+v 6 m00
+v 7 c4
+e 0 1 ba>m20>m20
+e 1 2 a>m20>m00
+e 1 3 b>m20>c4
+e 1 4 a>m20>m00
+e 1 5 b>m20>c4
+e 1 6 a>m20>m00
+e 1 7 b>m20>c4
+e 2 3 a>m00>c4
+e 4 5 a>m00>c4
+e 6 7 a>m00>c4
+t # src/gnutls.c$$$55d65682ab81ee6e7ca12f4902a6f8799782cd23
+v 0 m20
+v 1 m10
+v 2 c3
+v 3 m12
+v 4 c5
+v 5 m20
+v 6 c7
+v 7 m00
+v 8 c1
+v 9 m02
+e 0 1 b>m20>m10
+e 0 4 a>m20>c5
+e 0 5 a>m20>m20
+e 0 7 a>m20>m00
+e 1 2 b>m10>c3
+e 1 3 b>m10>m12
+e 3 4 b>m12>c5
+e 3 5 b>m12>m20
+e 3 6 b>m12>c7
+e 7 8 a>m00>c1
+e 7 9 a>m00>m02
+e 9 6 a>m02>c7
+t # src/gnutls.c$$$389fb2aebf01fb786e5b18ab87953c90c15279ff
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 c0
+v 4 m20
+v 5 m00
+v 6 c1
+v 7 m00
+v 8 c1
+v 9 c0
+e 0 1 ba>m20>m20
+e 0 4 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 a>m20>c0
+e 4 5 a>m20>m00
+e 4 7 a>m20>m00
+e 4 9 a>m20>c0
+e 5 6 a>m00>c1
+e 7 8 a>m00>c1
+t # src/fns.c$$$583995c62dd424775dda33d5134ce04bee2ae685
+v 0 m20
+v 1 c0
+v 2 c2
+v 3 m00
+v 4 c1
+v 5 m02
+v 6 c1
+e 0 1 a>m20>c0
+e 0 2 b>m20>c2
+e 0 3 a>m20>m00
+e 3 4 a>m00>c1
+e 3 5 a>m00>m02
+e 5 6 a>m02>c1
+t # lib/fpending.c$$$3128d5d10e702ccb0732d947370e539a54046fc9
+v 0 m20
+v 1 m20
+v 2 m13
+v 3 c7
+v 4 m20
+v 5 m13
+v 6 c3
+v 7 m22
+v 8 m03
+e 0 1 ba>m20>m20
+e 1 2 b>m20>m13
+e 1 8 a>m20>m03
+e 2 3 b>m13>c7
+e 2 4 b>m13>m20
+e 4 5 b>m20>m13
+e 4 7 a>m20>m22
+e 5 6 b>m13>c3
+e 5 7 b>m13>m22
+e 8 3 a>m03>c7
+e 8 4 a>m03>m20
+t # src/intervals.c$$$083940a93df17c6e50d6523e30d56ca3d179f688
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m10
+v 4 c3
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 b>m20>m10
+e 3 4 b>m10>c3
+t # src/character.c$$$d6662694d05be03fdd070353637dd22a324c8b7a
+v 0 m20
+v 1 c0
+v 2 m00
+v 3 c1
+v 4 m00
+v 5 c1
+e 0 1 a>m20>c0
+e 0 2 a>m20>m00
+e 0 4 a>m20>m00
+e 2 3 a>m00>c1
+e 4 5 a>m00>c1
+t # src/character.h$$$d6662694d05be03fdd070353637dd22a324c8b7a
+v 0 m20
+v 1 m20
+v 2 m00
+v 3 c1
+v 4 m02
+v 5 c1
+v 6 c0
+e 0 1 ba>m20>m20
+e 1 2 a>m20>m00
+e 1 6 a>m20>c0
+e 2 3 a>m00>c1
+e 2 4 a>m00>m02
+e 4 5 a>m02>c1
+t # src/bytecode.c$$$24faf6b0d2fe990e9334dd2e3238f749fec87897
+v 0 m20
+v 1 m20
+v 2 m10
+v 3 c3
+v 4 m13
+v 5 c3
+v 6 m10
+v 7 c3
+e 0 1 ba>m20>m20
+e 1 2 b>m20>m10
+e 1 6 b>m20>m10
+e 2 3 b>m10>c3
+e 2 4 b>m10>m13
+e 4 5 b>m13>c3
+e 6 7 b>m10>c3
+t # src/nsterm.h$$$0ad5fd4b6cac1824e50e5e8c1a43878825e7d3de
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 c0
+v 4 m00
+v 5 c1
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 a>m20>c0
+e 1 4 a>m20>m00
+e 4 5 a>m00>c1
+t # src/process.c$$$0ad5fd4b6cac1824e50e5e8c1a43878825e7d3de
+v 0 m20
+v 1 m20
+v 2 m22
+v 3 c2
+v 4 m10
+v 5 c3
+v 6 m12
+v 7 c3
+v 8 c0
+v 9 m03
+v 10 c1
+e 0 1 ba>m20>m20
+e 1 2 b>m20>m22
+e 1 9 a>m20>m03
+e 2 3 b>m22>c2
+e 2 4 b>m22>m10
+e 2 8 a>m22>c0
+e 4 5 b>m10>c3
+e 4 6 b>m10>m12
+e 6 7 b>m12>c3
+e 9 2 a>m03>m22
+e 9 10 a>m03>c1
+t # src/systhread.c$$$0ad5fd4b6cac1824e50e5e8c1a43878825e7d3de
+v 0 m20
+v 1 m00
+v 2 c1
+v 3 m20
+v 4 m00
+v 5 c1
+e 0 1 a>m20>m00
+e 0 3 ba>m20>m20
+e 1 2 a>m00>c1
+e 3 4 a>m20>m00
+e 4 5 a>m00>c1
+t # src/keyboard.c$$$1886246f6f40b8c376467f71605141035959cae0
+v 0 m20
+v 1 c0
+v 2 c2
+v 3 m00
+v 4 c1
+v 5 c4
+v 6 c1
+v 7 c4
+v 8 c1
+e 0 1 a>m20>c0
+e 0 2 b>m20>c2
+e 0 3 a>m20>m00
+e 0 5 b>m20>c4
+e 0 7 b>m20>c4
+e 3 4 a>m00>c1
+e 3 5 a>m00>c4
+e 3 6 a>m00>c1
+e 3 7 a>m00>c4
+e 3 8 a>m00>c1
+t # src/xdisp.c$$$1886246f6f40b8c376467f71605141035959cae0
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m20
+v 4 c2
+v 5 c0
+v 6 m00
+v 7 c1
+v 8 m20
+v 9 m20
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 ba>m20>m20
+e 0 6 a>m20>m00
+e 0 8 ba>m20>m20
+e 0 9 ba>m20>m20
+e 3 4 b>m20>c2
+e 3 5 a>m20>c0
+e 6 7 a>m00>c1
+t # src/xfns.c$$$1886246f6f40b8c376467f71605141035959cae0
+v 0 m20
+v 1 c0
+v 2 c2
+v 3 m10
+v 4 c4
+v 5 m22
+v 6 m00
+e 0 1 a>m20>c0
+e 0 2 b>m20>c2
+e 0 3 b>m20>m10
+e 0 6 a>m20>m00
+e 3 4 b>m10>c4
+e 3 5 b>m10>m22
+e 6 4 a>m00>c4
+e 6 5 a>m00>m22
+t # src/xdisp.c$$$6e18841b17c9b7ca9f38b923db4195cade05da2e
+v 0 m20
+v 1 c0
+v 2 m00
+v 3 c1
+v 4 c2
+v 5 m10
+v 6 c3
+v 7 m10
+v 8 c3
+v 9 m10
+v 10 c3
+e 0 1 a>m20>c0
+e 0 2 a>m20>m00
+e 0 4 b>m20>c2
+e 0 5 b>m20>m10
+e 0 7 b>m20>m10
+e 0 9 b>m20>m10
+e 2 3 a>m00>c1
+e 5 6 b>m10>c3
+e 7 8 b>m10>c3
+e 9 10 b>m10>c3
+t # src/xdisp.c$$$9776d7bcf044722909c10c9395d18c81641f27d0
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m00
+v 4 c1
+v 5 m00
+v 6 c1
+v 7 m00
+v 8 c1
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 a>m20>m00
+e 0 5 a>m20>m00
+e 0 7 a>m20>m00
+e 3 4 a>m00>c1
+e 5 6 a>m00>c1
+e 7 8 a>m00>c1
+t # src/charset.c$$$f6ef15cf84c1288e972ef0e6165b97e34d6033b6
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m10
+v 4 c3
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 b>m20>m10
+e 3 4 b>m10>c3
+t # src/lread.c$$$f6ef15cf84c1288e972ef0e6165b97e34d6033b6
+v 0 m20
+v 1 m10
+v 2 c3
+v 3 c2
+v 4 c0
+e 0 1 b>m20>m10
+e 0 3 b>m20>c2
+e 0 4 a>m20>c0
+e 1 2 b>m10>c3
+t # src/charset.c$$$efe200c10da02db68c6eeadc3cd82a8cc3108c96
+v 0 m20
+v 1 m00
+v 2 c1
+v 3 c2
+v 4 c0
+e 0 1 a>m20>m00
+e 0 3 b>m20>c2
+e 0 4 a>m20>c0
+e 1 2 a>m00>c1
+t # src/lread.c$$$efe200c10da02db68c6eeadc3cd82a8cc3108c96
+v 0 m20
+v 1 m00
+v 2 c1
+v 3 c2
+v 4 c0
+e 0 1 a>m20>m00
+e 0 3 b>m20>c2
+e 0 4 a>m20>c0
+e 1 2 a>m00>c1
+t # src/bidi.c$$$35caaf713fb3c3e5e826e52b37e1b389c6bd9cce
+v 0 m20
+v 1 m10
+v 2 c3
+v 3 c0
+v 4 c2
+e 0 1 b>m20>m10
+e 0 3 a>m20>c0
+e 0 4 b>m20>c2
+e 1 2 b>m10>c3
+t # src/fileio.c$$$07a3386fbb4e180f017fab11ea963f4f34493f3c
+v 0 m20
+v 1 m10
+v 2 c3
+v 3 c2
+v 4 c0
+e 0 1 b>m20>m10
+e 0 3 b>m20>c2
+e 0 4 a>m20>c0
+e 1 2 b>m10>c3
+t # lib/gettext.h$$$5261a7d8bc026963032714faa191f292647e4fdd
+v 0 m20
+v 1 m20
+v 2 m10
+v 3 c6
+v 4 m22
+v 5 m00
+v 6 c1
+e 0 1 ba>m20>m20
+e 1 2 b>m20>m10
+e 1 5 a>m20>m00
+e 2 3 b>m10>c6
+e 2 4 b>m10>m22
+e 5 3 a>m00>c6
+e 5 4 a>m00>m22
+e 5 6 a>m00>c1
+t # lib/diffseq.h$$$209ddb1092940c65c4c684fa6d0d8c4e3c6e6bdd
+v 0 m20
+v 1 m20
+v 2 c0
+v 3 m02
+v 4 c1
+v 5 c5
+v 6 c2
+v 7 c5
+v 8 c0
+e 0 1 ba>m20>m20
+e 0 5 a>m20>c5
+e 0 7 a>m20>c5
+e 0 8 a>m20>c0
+e 1 2 a>m20>c0
+e 1 3 a>m20>m02
+e 1 5 b>m20>c5
+e 1 6 b>m20>c2
+e 1 7 b>m20>c5
+e 3 4 a>m02>c1
+t # src/image.c$$$ab4f0326b49e9c5a733b9e773b364f9b4afb1efc
+v 0 m20
+v 1 m20
+v 2 c0
+v 3 m00
+v 4 c1
+v 5 m00
+v 6 c1
+e 0 1 ba>m20>m20
+e 1 2 a>m20>c0
+e 1 3 a>m20>m00
+e 1 5 a>m20>m00
+e 3 4 a>m00>c1
+e 5 6 a>m00>c1
+t # src/emacs.c$$$a2f7cc3499a0d5132bf075aa0da87121be1ed178
+v 0 m20
+v 1 c0
+v 2 m00
+v 3 c1
+v 4 c4
+v 5 m00
+v 6 c4
+e 0 1 a>m20>c0
+e 0 2 a>m20>m00
+e 0 4 b>m20>c4
+e 0 5 a>m20>m00
+e 0 6 b>m20>c4
+e 2 3 a>m00>c1
+e 2 4 a>m00>c4
+e 5 6 a>m00>c4
+t # src/emacs-module.h$$$9af2ab68caf7a0bf3bda521729ac0376489cce19
+v 0 m20
+v 1 m20
+v 2 m10
+v 3 c3
+v 4 m00
+v 5 c1
+v 6 c2
+v 7 m10
+v 8 c4
+v 9 m22
+v 10 m00
+v 11 c1
+v 12 m00
+e 0 1 ba>m20>m20
+e 1 2 b>m20>m10
+e 1 4 a>m20>m00
+e 1 6 b>m20>c2
+e 1 7 b>m20>m10
+e 1 10 a>m20>m00
+e 1 12 a>m20>m00
+e 2 3 b>m10>c3
+e 4 5 a>m00>c1
+e 7 8 b>m10>c4
+e 7 9 b>m10>m22
+e 10 11 a>m00>c1
+e 12 8 a>m00>c4
+e 12 9 a>m00>m22
+t # src/emacs-module.h$$$69899d4a7e6e9e1b5e9f1894c53a81e340907f9d
+v 0 m20
+v 1 m20
+v 2 m10
+v 3 c6
+v 4 m12
+v 5 c6
+v 6 m00
+v 7 m00
+v 8 m00
+e 0 1 ba>m20>m20
+e 1 2 b>m20>m10
+e 1 6 a>m20>m00
+e 1 8 a>m20>m00
+e 2 3 b>m10>c6
+e 2 4 b>m10>m12
+e 4 5 b>m12>c6
+e 6 7 a>m00>m00
+e 7 3 a>m00>c6
+e 8 5 a>m00>c6
+t # src/emacs.c$$$cf97132764572928adc77fd555d04a9f41cd3cfc
+v 0 m20
+v 1 c0
+v 2 m00
+v 3 c1
+e 0 1 a>m20>c0
+e 0 2 a>m20>m00
+e 2 3 a>m00>c1
+t # src/emacs-module.h$$$b49dd3b047bf07994d9577e08daba55f143a8bb1
+v 0 m20
+v 1 m20
+v 2 m00
+v 3 c1
+v 4 m02
+v 5 c1
+v 6 c2
+v 7 c0
+e 0 1 ba>m20>m20
+e 1 2 a>m20>m00
+e 1 6 b>m20>c2
+e 1 7 a>m20>c0
+e 2 3 a>m00>c1
+e 2 4 a>m00>m02
+e 4 5 a>m02>c1
+t # src/emacs-module.h$$$9dc6e93b77ce0d920771060756e65779751fd5f7
+v 0 m20
+v 1 m20
+v 2 m00
+v 3 c1
+v 4 m10
+v 5 c5
+v 6 m22
+v 7 m00
+e 0 1 ba>m20>m20
+e 1 2 a>m20>m00
+e 1 4 b>m20>m10
+e 1 7 a>m20>m00
+e 2 3 a>m00>c1
+e 4 5 b>m10>c5
+e 4 6 b>m10>m22
+e 7 5 a>m00>c5
+e 7 6 a>m00>m22
+t # src/xmenu.c$$$bdf41152af3434307218ac2863b737c4486f740e
+v 0 m20
+v 1 m00
+v 2 c1
+v 3 m20
+v 4 c2
+v 5 c0
+e 0 1 a>m20>m00
+e 0 3 ba>m20>m20
+e 1 2 a>m00>c1
+e 3 4 b>m20>c2
+e 3 5 a>m20>c0
+t # src/image.c$$$517c704a6360356e62752f581c71b38a479e2f59
+v 0 m20
+v 1 m10
+v 2 c4
+v 3 m20
+v 4 c4
+v 5 m00
+e 0 1 b>m20>m10
+e 0 5 a>m20>m00
+e 1 2 b>m10>c4
+e 1 3 b>m10>m20
+e 1 4 b>m10>c4
+e 5 2 a>m00>c4
+e 5 3 a>m00>m20
+e 5 4 a>m00>c4
+t # src/emacs-module.c$$$13e9493ea36df04e2c6b69e9b316d40c072ee88b
+v 0 m20
+v 1 m10
+v 2 c3
+v 3 m12
+v 4 c3
+v 5 c2
+v 6 c0
+e 0 1 b>m20>m10
+e 0 5 b>m20>c2
+e 0 6 a>m20>c0
+e 1 2 b>m10>c3
+e 1 3 b>m10>m12
+e 3 4 b>m12>c3
+t # src/nsterm.h$$$0d676deba49ccab9a6a07bc1deeacff51dd44cbf
+v 0 m20
+v 1 m20
+v 2 m20
+v 3 c2
+v 4 m10
+v 5 c3
+v 6 c0
+v 7 m00
+v 8 c1
+v 9 m20
+v 10 c0
+v 11 m00
+v 12 c1
+e 0 1 ba>m20>m20
+e 1 2 ba>m20>m20
+e 1 9 ba>m20>m20
+e 2 3 b>m20>c2
+e 2 4 b>m20>m10
+e 2 6 a>m20>c0
+e 2 7 a>m20>m00
+e 4 5 b>m10>c3
+e 7 8 a>m00>c1
+e 9 10 a>m20>c0
+e 9 11 a>m20>m00
+e 11 12 a>m00>c1
+t # lib/intprops.h$$$9ebc2bbe3c1efea79810261533791bdf48a63760
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 m00
+v 4 c1
+v 5 m02
+v 6 c1
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 a>m20>m00
+e 3 4 a>m00>c1
+e 3 5 a>m00>m02
+e 5 6 a>m02>c1
+t # src/nsterm.h$$$d61d443fc0559314a2c22b1c120091de88585935
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 m10
+v 4 c7
+v 5 c3
+v 6 c0
+v 7 m00
+v 8 c1
+v 9 c1
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 b>m20>m10
+e 1 6 a>m20>c0
+e 1 7 a>m20>m00
+e 3 4 b>m10>c7
+e 3 5 b>m10>c3
+e 7 4 a>m00>c7
+e 7 8 a>m00>c1
+e 7 9 a>m00>c1
+t # src/nsterm.h$$$4a485410ce74cafd4e9c344e31f7575464a16113
+v 0 m20
+v 1 m20
+v 2 m20
+v 3 c0
+v 4 m00
+v 5 c1
+v 6 m20
+v 7 c0
+e 0 1 ba>m20>m20
+e 1 2 ba>m20>m20
+e 1 6 ba>m20>m20
+e 2 3 a>m20>c0
+e 2 4 a>m20>m00
+e 4 5 a>m00>c1
+e 6 7 a>m20>c0
+t # src/lisp.h$$$cf68bb4aed0c3c65f1b71cb13c506f4f706744cc
+v 0 m20
+v 1 m20
+v 2 c0
+v 3 m00
+v 4 c1
+e 0 1 ba>m20>m20
+e 1 2 a>m20>c0
+e 1 3 a>m20>m00
+e 3 4 a>m00>c1
+t # src/print.c$$$97c7a61d90987e182c1d2ec40fbe0d1d7df844c5
+v 0 m20
+v 1 c0
+v 2 m00
+v 3 c1
+v 4 c2
+v 5 m10
+v 6 c3
+e 0 1 a>m20>c0
+e 0 2 a>m20>m00
+e 0 4 b>m20>c2
+e 0 5 b>m20>m10
+e 2 3 a>m00>c1
+e 5 6 b>m10>c3
+t # src/fileio.c$$$b35293dfd0e9dd95a88ac01051655d0d2d105992
+v 0 m20
+v 1 c2
+v 2 m10
+v 3 m10
+v 4 c3
+e 0 1 b>m20>c2
+e 0 2 b>m20>m10
+e 2 3 b>m10>m10
+e 3 4 b>m10>c3
+t # src/eval.c$$$31fded0370c3aa6d2c4370cae21cdb7475873483
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m00
+v 4 c1
+v 5 m00
+v 6 c1
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 a>m20>m00
+e 0 5 a>m20>m00
+e 3 4 a>m00>c1
+e 5 6 a>m00>c1
+t # src/print.c$$$31fded0370c3aa6d2c4370cae21cdb7475873483
+v 0 m20
+v 1 m00
+v 2 c1
+v 3 m20
+v 4 c2
+e 0 1 a>m20>m00
+e 0 3 ba>m20>m20
+e 1 2 a>m00>c1
+e 3 4 b>m20>c2
+t # src/fileio.c$$$7e3e51f4e288379be6a8731b739b63b9386940f7
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 m00
+v 4 c4
+v 5 c1
+v 6 c4
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 a>m20>m00
+e 1 4 b>m20>c4
+e 1 6 b>m20>c4
+e 3 4 a>m00>c4
+e 3 5 a>m00>c1
+e 3 6 a>m00>c4
+t # src/conf_post.h$$$e54a3b4fde0c3de7964a2e604c7381101e5d9951
+v 0 m20
+v 1 m00
+v 2 c1
+v 3 m02
+v 4 c1
+v 5 c0
+e 0 1 a>m20>m00
+e 0 5 a>m20>c0
+e 1 2 a>m00>c1
+e 1 3 a>m00>m02
+e 3 4 a>m02>c1
+t # src/conf_post.h$$$709259dcc501ef991991a35a6ffb2aef02a62c60
+v 0 m20
+v 1 c0
+v 2 m00
+v 3 c1
+e 0 1 a>m20>c0
+e 0 2 a>m20>m00
+e 2 3 a>m00>c1
+t # src/process.c$$$f861353b684e5c40dade61f89fd1742e4226a282
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 m10
+v 4 c3
+v 5 c0
+v 6 m00
+v 7 c1
+v 8 m00
+v 9 c1
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 b>m20>m10
+e 1 5 a>m20>c0
+e 1 6 a>m20>m00
+e 1 8 a>m20>m00
+e 3 4 b>m10>c3
+e 6 7 a>m00>c1
+e 8 9 a>m00>c1
+t # src/process.c$$$be9e60fc3c43cc49cc5d749924c3e96737ae297c
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 c0
+v 4 m20
+v 5 m10
+v 6 c3
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 a>m20>c0
+e 1 4 ba>m20>m20
+e 1 5 b>m20>m10
+e 5 6 b>m10>c3
+t # lib/strftime.c$$$2e1bebe279b7108f74c3a1e7e30e8a43c2cfa31f
+v 0 m20
+v 1 m00
+v 2 m00
+v 3 c1
+v 4 m02
+v 5 c1
+v 6 c2
+v 7 c0
+e 0 1 a>m20>m00
+e 0 6 b>m20>c2
+e 0 7 a>m20>c0
+e 1 2 a>m00>m00
+e 2 3 a>m00>c1
+e 2 4 a>m00>m02
+e 4 5 a>m02>c1
+t # src/conf_post.h$$$2e1bebe279b7108f74c3a1e7e30e8a43c2cfa31f
+v 0 m20
+v 1 m00
+v 2 c1
+v 3 m02
+v 4 c1
+e 0 1 a>m20>m00
+e 1 2 a>m00>c1
+e 1 3 a>m00>m02
+e 3 4 a>m02>c1
+t # nt/inc/sys/time.h$$$3241c84fd8cfa1e02472e52e6aefe2fff0726b3d
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 m10
+v 4 c3
+v 5 c0
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 b>m20>m10
+e 1 5 a>m20>c0
+e 3 4 b>m10>c3
+t # src/process.c$$$d23a486ba27405acfda67a4dc387ade5e399a29b
+v 0 m20
+v 1 m20
+v 2 m20
+v 3 c2
+v 4 c0
+v 5 m00
+v 6 c1
+v 7 m20
+v 8 c2
+v 9 c0
+e 0 1 ba>m20>m20
+e 1 2 ba>m20>m20
+e 1 7 ba>m20>m20
+e 2 3 b>m20>c2
+e 2 4 a>m20>c0
+e 2 5 a>m20>m00
+e 5 6 a>m00>c1
+e 7 8 b>m20>c2
+e 7 9 a>m20>c0
+t # lib/stat-time.h$$$10037e4be2358597125a05db93f6fee551131d83
+v 0 m20
+v 1 m20
+v 2 c4
+v 3 m00
+v 4 c1
+v 5 m02
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c4
+e 1 3 a>m20>m00
+e 3 4 a>m00>c1
+e 3 5 a>m00>m02
+e 5 2 a>m02>c4
+t # nt/inc/sys/time.h$$$792ffa022380e05d49437e47823cfdf82337a253
+v 0 m20
+v 1 m20
+v 2 m10
+v 3 c3
+v 4 c2
+e 0 1 ba>m20>m20
+e 1 2 b>m20>m10
+e 1 4 b>m20>c2
+e 2 3 b>m10>c3
+t # lib/dup2.c$$$4132bd74e9816ca913f862835cc062e092ab8b79
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 m00
+v 4 c1
+v 5 m00
+v 6 c1
+v 7 m02
+v 8 c1
+v 9 m00
+v 10 c1
+v 11 m02
+v 12 c1
+v 13 c0
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 a>m20>m00
+e 1 5 a>m20>m00
+e 1 9 a>m20>m00
+e 1 13 a>m20>c0
+e 3 4 a>m00>c1
+e 5 6 a>m00>c1
+e 5 7 a>m00>m02
+e 7 8 a>m02>c1
+e 9 10 a>m00>c1
+e 9 11 a>m00>m02
+e 11 12 a>m02>c1
+t # lib/fcntl.c$$$4132bd74e9816ca913f862835cc062e092ab8b79
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 m00
+v 4 c1
+v 5 m02
+v 6 c1
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 a>m20>m00
+e 3 4 a>m00>c1
+e 3 5 a>m00>m02
+e 5 6 a>m02>c1
+t # lib/fsync.c$$$4132bd74e9816ca913f862835cc062e092ab8b79
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 m00
+v 4 c1
+v 5 m02
+v 6 c1
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 a>m20>m00
+e 3 4 a>m00>c1
+e 3 5 a>m00>m02
+e 5 6 a>m02>c1
+t # lib/getdtablesize.c$$$4132bd74e9816ca913f862835cc062e092ab8b79
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 m00
+v 4 c1
+v 5 m20
+v 6 c2
+v 7 m02
+v 8 c1
+v 9 c0
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 a>m20>m00
+e 1 5 ba>m20>m20
+e 1 9 a>m20>c0
+e 3 4 a>m00>c1
+e 5 6 b>m20>c2
+e 5 7 a>m20>m02
+e 7 8 a>m02>c1
+t # lib/utimens.c$$$4132bd74e9816ca913f862835cc062e092ab8b79
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 m00
+v 4 c1
+v 5 m02
+v 6 c1
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 a>m20>m00
+e 3 4 a>m00>c1
+e 3 5 a>m00>m02
+e 5 6 a>m02>c1
+t # lib/intprops.h$$$7ff7624a7aa62f30cabf14744e182e9ea6156290
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 m10
+v 4 c3
+v 5 m10
+v 6 c3
+v 7 c0
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 b>m20>m10
+e 1 5 b>m20>m10
+e 1 7 a>m20>c0
+e 3 4 b>m10>c3
+e 5 6 b>m10>c3
+t # lib/utimens.c$$$7ff7624a7aa62f30cabf14744e182e9ea6156290
+v 0 m20
+v 1 m20
+v 2 m10
+v 3 c5
+v 4 c3
+v 5 m00
+v 6 c1
+v 7 c2
+v 8 c0
+v 9 m10
+v 10 c4
+v 11 m22
+v 12 m00
+v 13 c1
+v 14 m03
+e 0 1 ba>m20>m20
+e 0 9 b>m20>m10
+e 0 12 a>m20>m00
+e 1 2 b>m20>m10
+e 1 3 a>m20>c5
+e 1 5 a>m20>m00
+e 1 7 b>m20>c2
+e 1 8 a>m20>c0
+e 2 3 b>m10>c5
+e 2 4 b>m10>c3
+e 5 6 a>m00>c1
+e 9 10 b>m10>c4
+e 9 11 b>m10>m22
+e 12 13 a>m00>c1
+e 12 14 a>m00>m03
+e 14 10 a>m03>c4
+e 14 11 a>m03>m22
+t # nt/inc/ms-w32.h$$$53348c6b9ffa46c15ec04ff08ffb6ec742c86ea4
+v 0 m20
+v 1 m10
+v 2 c3
+v 3 m12
+v 4 c3
+e 0 1 b>m20>m10
+e 1 2 b>m10>c3
+e 1 3 b>m10>m12
+e 3 4 b>m12>c3
+t # lib/utimens.c$$$9c2b03fe3fc7695867d883f4918d74ba9a7c262e
+v 0 m20
+v 1 m10
+v 2 c4
+v 3 c0
+v 4 m00
+v 5 c1
+v 6 m10
+v 7 c6
+v 8 m20
+v 9 c6
+v 10 m00
+e 0 1 b>m20>m10
+e 0 3 a>m20>c0
+e 0 4 a>m20>m00
+e 0 6 b>m20>m10
+e 0 10 a>m20>m00
+e 1 2 b>m10>c4
+e 4 2 a>m00>c4
+e 4 5 a>m00>c1
+e 6 7 b>m10>c6
+e 6 8 b>m10>m20
+e 6 9 b>m10>c6
+e 10 7 a>m00>c6
+e 10 8 a>m00>m20
+e 10 9 a>m00>c6
+t # lib/gettimeofday.c$$$634d0a907ff7ba5901dfe3624e58d718f3f37cec
+v 0 m20
+v 1 m10
+v 2 c3
+v 3 m10
+v 4 c3
+v 5 c0
+v 6 c2
+e 0 1 b>m20>m10
+e 0 3 b>m20>m10
+e 0 5 a>m20>c0
+e 0 6 b>m20>c2
+e 1 2 b>m10>c3
+e 3 4 b>m10>c3
+t # lib/utimens.c$$$634d0a907ff7ba5901dfe3624e58d718f3f37cec
+v 0 m20
+v 1 m00
+v 2 c1
+v 3 m00
+v 4 c1
+v 5 m00
+v 6 c1
+v 7 c1
+e 0 1 a>m20>m00
+e 0 3 a>m20>m00
+e 1 2 a>m00>c1
+e 3 4 a>m00>c1
+e 3 5 a>m00>m00
+e 3 7 a>m00>c1
+e 5 6 a>m00>c1
+t # src/editfns.c$$$634d0a907ff7ba5901dfe3624e58d718f3f37cec
+v 0 m20
+v 1 m10
+v 2 c5
+v 3 m00
+v 4 m20
+v 5 m10
+v 6 c5
+v 7 m10
+v 8 c5
+v 9 m00
+e 0 1 b>m20>m10
+e 0 3 a>m20>m00
+e 0 4 ba>m20>m20
+e 0 7 b>m20>m10
+e 0 9 a>m20>m00
+e 1 2 b>m10>c5
+e 3 2 a>m00>c5
+e 4 5 b>m20>m10
+e 4 6 a>m20>c5
+e 5 6 b>m10>c5
+e 7 8 b>m10>c5
+e 9 8 a>m00>c5
+t # lib/gettimeofday.c$$$b6aa3446df5e715fd74f010afad75c3c8589a9a1
+v 0 m20
+v 1 m10
+v 2 c3
+v 3 m00
+v 4 c1
+v 5 m00
+v 6 c1
+v 7 m20
+v 8 m10
+v 9 c3
+v 10 m22
+v 11 m00
+v 12 c1
+e 0 1 b>m20>m10
+e 0 3 a>m20>m00
+e 0 5 a>m20>m00
+e 0 7 ba>m20>m20
+e 1 2 b>m10>c3
+e 3 4 a>m00>c1
+e 5 6 a>m00>c1
+e 7 8 b>m20>m10
+e 7 11 a>m20>m00
+e 8 9 b>m10>c3
+e 8 10 b>m10>m22
+e 11 10 a>m00>m22
+e 11 12 a>m00>c1
+t # lib/utimens.c$$$b6aa3446df5e715fd74f010afad75c3c8589a9a1
+v 0 m20
+v 1 c0
+v 2 m10
+v 3 c3
+v 4 c2
+v 5 m10
+v 6 c3
+e 0 1 a>m20>c0
+e 0 2 b>m20>m10
+e 0 4 b>m20>c2
+e 0 5 b>m20>m10
+e 2 3 b>m10>c3
+e 5 6 b>m10>c3
+t # lib/gettext.h$$$abd769131dae3f9693faff9a080267e86936ce99
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 m10
+v 4 c4
+v 5 m20
+v 6 m22
+v 7 c0
+v 8 m00
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 b>m20>m10
+e 1 7 a>m20>c0
+e 1 8 a>m20>m00
+e 3 4 b>m10>c4
+e 3 5 b>m10>m20
+e 3 6 b>m10>m22
+e 8 4 a>m00>c4
+e 8 5 a>m00>m20
+e 8 6 a>m00>m22
+t # lib/time_rz.c$$$abd769131dae3f9693faff9a080267e86936ce99
+v 0 m20
+v 1 c0
+v 2 m00
+v 3 c1
+v 4 c2
+v 5 m20
+v 6 c2
+v 7 c0
+e 0 1 a>m20>c0
+e 0 2 a>m20>m00
+e 0 4 b>m20>c2
+e 0 5 ba>m20>m20
+e 2 3 a>m00>c1
+e 5 6 b>m20>c2
+e 5 7 a>m20>c0
+t # src/font.c$$$b780f16953355e931a70f7b0fd666fa7f9dad795
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 m12
+v 4 c3
+v 5 c0
+v 6 c0
+e 0 1 ba>m20>m20
+e 0 6 a>m20>c0
+e 1 2 b>m20>c2
+e 1 3 b>m20>m12
+e 1 5 a>m20>c0
+e 3 4 b>m12>c3
+t # src/frame.c$$$aca21d42d3c1327ddc202a03585416f2821e6839
+v 0 m20
+v 1 m20
+v 2 m10
+v 3 c5
+v 4 m20
+v 5 c5
+e 0 1 ba>m20>m20
+e 1 2 b>m20>m10
+e 1 3 a>m20>c5
+e 1 4 a>m20>m20
+e 1 5 a>m20>c5
+e 2 3 b>m10>c5
+e 2 4 b>m10>m20
+e 2 5 b>m10>c5
+t # src/nsterm.h$$$aca21d42d3c1327ddc202a03585416f2821e6839
+v 0 m20
+v 1 m20
+v 2 m20
+v 3 c2
+v 4 c0
+v 5 c2
+v 6 m10
+v 7 c3
+v 8 m12
+v 9 c3
+e 0 1 ba>m20>m20
+e 1 2 ba>m20>m20
+e 1 5 b>m20>c2
+e 1 6 b>m20>m10
+e 2 3 b>m20>c2
+e 2 4 a>m20>c0
+e 6 7 b>m10>c3
+e 6 8 b>m10>m12
+e 8 9 b>m12>c3
+t # src/callproc.c$$$a13eaddce2ddbe3ba0b7f4c81715bc0fcdba99f6
+v 0 m20
+v 1 c0
+v 2 m20
+v 3 c4
+v 4 m00
+v 5 c1
+v 6 m02
+e 0 1 a>m20>c0
+e 0 2 ba>m20>m20
+e 2 3 b>m20>c4
+e 2 4 a>m20>m00
+e 4 5 a>m00>c1
+e 4 6 a>m00>m02
+e 6 3 a>m02>c4
+t # src/process.c$$$a13eaddce2ddbe3ba0b7f4c81715bc0fcdba99f6
+v 0 m20
+v 1 m20
+v 2 c4
+v 3 m00
+v 4 c1
+v 5 m02
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c4
+e 1 3 a>m20>m00
+e 3 4 a>m00>c1
+e 3 5 a>m00>m02
+e 5 2 a>m02>c4
+t # src/xdisp.c$$$c25005eda1c5ad8dabb3ce815658bd3c637ae686
+v 0 m20
+v 1 m00
+v 2 c1
+v 3 c2
+v 4 c0
+v 5 m00
+v 6 c1
+v 7 m00
+v 8 c1
+e 0 1 a>m20>m00
+e 0 3 b>m20>c2
+e 0 4 a>m20>c0
+e 0 5 a>m20>m00
+e 0 7 a>m20>m00
+e 1 2 a>m00>c1
+e 5 6 a>m00>c1
+e 7 8 a>m00>c1
+t # src/xfns.c$$$c25005eda1c5ad8dabb3ce815658bd3c637ae686
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m10
+v 4 c3
+v 5 m12
+v 6 c5
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 b>m20>m10
+e 0 6 a>m20>c5
+e 3 4 b>m10>c3
+e 3 5 b>m10>m12
+e 5 6 b>m12>c5
+t # src/w32fns.c$$$3fdd3bb56c006a2a24761b8fcea0cbd9b0cba422
+v 0 m20
+v 1 m00
+v 2 c1
+v 3 c2
+v 4 c0
+v 5 m10
+v 6 c5
+v 7 c3
+v 8 c5
+v 9 c3
+v 10 c5
+e 0 1 a>m20>m00
+e 0 3 b>m20>c2
+e 0 4 a>m20>c0
+e 0 5 b>m20>m10
+e 0 6 a>m20>c5
+e 0 8 a>m20>c5
+e 0 10 a>m20>c5
+e 1 2 a>m00>c1
+e 5 6 b>m10>c5
+e 5 7 b>m10>c3
+e 5 8 b>m10>c5
+e 5 9 b>m10>c3
+e 5 10 b>m10>c5
+t # src/keyboard.c$$$ea6c880aa68bcc8f0e388ecbd8c552392488b38f
+v 0 m20
+v 1 m00
+v 2 c1
+v 3 c0
+e 0 1 a>m20>m00
+e 0 3 a>m20>c0
+e 1 2 a>m00>c1
+t # src/xterm.c$$$ea6c880aa68bcc8f0e388ecbd8c552392488b38f
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m00
+v 4 c1
+v 5 m02
+v 6 c4
+v 7 c1
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 a>m20>m00
+e 0 6 b>m20>c4
+e 3 4 a>m00>c1
+e 3 5 a>m00>m02
+e 5 6 a>m02>c4
+e 5 7 a>m02>c1
+t # lib/getopt1.c$$$022755953fc63ef70b72576e14e94324d055ef60
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m10
+v 4 c3
+v 5 m12
+v 6 c7
+v 7 c3
+v 8 m00
+v 9 m10
+v 10 c3
+v 11 m10
+v 12 c3
+v 13 m20
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 b>m20>m10
+e 0 8 a>m20>m00
+e 0 9 b>m20>m10
+e 0 11 b>m20>m10
+e 0 13 ba>m20>m20
+e 3 4 b>m10>c3
+e 3 5 b>m10>m12
+e 5 6 b>m12>c7
+e 5 7 b>m12>c3
+e 8 6 a>m00>c7
+e 9 10 b>m10>c3
+e 11 12 b>m10>c3
+t # lib/getopt_int.h$$$022755953fc63ef70b72576e14e94324d055ef60
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m20
+v 4 c2
+v 5 c0
+v 6 m10
+v 7 c3
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 ba>m20>m20
+e 3 4 b>m20>c2
+e 3 5 a>m20>c0
+e 3 6 b>m20>m10
+e 6 7 b>m10>c3
+t # src/emacs.c$$$8ca2bd1ce7eebaf3b995786d9f9f61907ebbb060
+v 0 m20
+v 1 m00
+v 2 c4
+v 3 m02
+v 4 c1
+e 0 1 a>m20>m00
+e 0 2 b>m20>c4
+e 1 2 a>m00>c4
+e 1 3 a>m00>m02
+e 3 4 a>m02>c1
+t # src/emacs.c$$$d15719d36e8fab262e7803d9409326321b890941
+v 0 m20
+v 1 m10
+v 2 c6
+v 3 m00
+v 4 m10
+v 5 c6
+v 6 m00
+e 0 1 b>m20>m10
+e 0 3 a>m20>m00
+e 0 4 b>m20>m10
+e 0 6 a>m20>m00
+e 1 2 b>m10>c6
+e 3 2 a>m00>c6
+e 4 5 b>m10>c6
+e 6 5 a>m00>c6
+t # src/font.c$$$f34f49f35e5c000a6ee070678f43d2ca38b76cad
+v 0 m20
+v 1 m00
+v 2 c1
+v 3 m02
+v 4 c4
+e 0 1 a>m20>m00
+e 0 4 b>m20>c4
+e 1 2 a>m00>c1
+e 1 3 a>m00>m02
+e 3 4 a>m02>c4
+t # src/gnutls.c$$$b9e37f551add188f82f2583d3eb13cb81e707387
+v 0 m20
+v 1 m20
+v 2 m10
+v 3 c3
+v 4 m12
+v 5 c3
+v 6 c2
+v 7 c0
+e 0 1 ba>m20>m20
+e 1 2 b>m20>m10
+e 1 6 b>m20>c2
+e 1 7 a>m20>c0
+e 2 3 b>m10>c3
+e 2 4 b>m10>m12
+e 4 5 b>m12>c3
+t # src/gnutls.c$$$a8432661130ac73ecf7606b1132e9b0d388ab60f
+v 0 m20
+v 1 m20
+v 2 c0
+v 3 c2
+v 4 m00
+v 5 c1
+v 6 m02
+v 7 c1
+e 0 1 ba>m20>m20
+e 1 2 a>m20>c0
+e 1 3 b>m20>c2
+e 1 4 a>m20>m00
+e 4 5 a>m00>c1
+e 4 6 a>m00>m02
+e 6 7 a>m02>c1
+t # src/nsterm.h$$$5bf45ec48b781a1165e882e7216892bf201d15f4
+v 0 m20
+v 1 m20
+v 2 m20
+v 3 c0
+v 4 m00
+v 5 c1
+v 6 m02
+v 7 c1
+v 8 m20
+v 9 c0
+v 10 m22
+v 11 c0
+v 12 m20
+v 13 c0
+e 0 1 ba>m20>m20
+e 1 2 ba>m20>m20
+e 1 8 ba>m20>m20
+e 1 12 ba>m20>m20
+e 2 3 a>m20>c0
+e 2 4 a>m20>m00
+e 4 5 a>m00>c1
+e 4 6 a>m00>m02
+e 6 7 a>m02>c1
+e 8 9 a>m20>c0
+e 8 10 ba>m20>m22
+e 10 11 a>m22>c0
+e 12 13 a>m20>c0
+t # src/frame.c$$$3e0ad29a607c8c085de3b74c7505e417ad7f9062
+v 0 m20
+v 1 c0
+v 2 m00
+v 3 c1
+v 4 m20
+v 5 c0
+v 6 m00
+v 7 c1
+v 8 m20
+v 9 c2
+v 10 m20
+v 11 c2
+v 12 c0
+e 0 1 a>m20>c0
+e 0 2 a>m20>m00
+e 0 4 ba>m20>m20
+e 0 6 a>m20>m00
+e 0 8 ba>m20>m20
+e 0 10 ba>m20>m20
+e 2 3 a>m00>c1
+e 4 5 a>m20>c0
+e 6 7 a>m00>c1
+e 8 9 b>m20>c2
+e 10 11 b>m20>c2
+e 10 12 a>m20>c0
+t # src/frame.h$$$3e0ad29a607c8c085de3b74c7505e417ad7f9062
+v 0 m20
+v 1 m20
+v 2 m00
+v 3 c1
+v 4 c0
+v 5 m00
+v 6 c1
+v 7 m00
+v 8 c1
+v 9 m00
+v 10 c1
+v 11 c2
+v 12 m20
+v 13 c2
+v 14 c0
+e 0 1 ba>m20>m20
+e 1 2 a>m20>m00
+e 1 4 a>m20>c0
+e 1 5 a>m20>m00
+e 1 7 a>m20>m00
+e 1 9 a>m20>m00
+e 1 11 b>m20>c2
+e 1 12 ba>m20>m20
+e 2 3 a>m00>c1
+e 5 6 a>m00>c1
+e 7 8 a>m00>c1
+e 9 10 a>m00>c1
+e 12 13 b>m20>c2
+e 12 14 a>m20>c0
+t # src/window.c$$$3e0ad29a607c8c085de3b74c7505e417ad7f9062
+v 0 m20
+v 1 c0
+v 2 c2
+v 3 m00
+v 4 c1
+v 5 m00
+v 6 c1
+v 7 m20
+v 8 c0
+e 0 1 a>m20>c0
+e 0 2 b>m20>c2
+e 0 3 a>m20>m00
+e 0 5 a>m20>m00
+e 0 7 ba>m20>m20
+e 3 4 a>m00>c1
+e 5 6 a>m00>c1
+e 7 8 a>m20>c0
+t # src/window.h$$$3e0ad29a607c8c085de3b74c7505e417ad7f9062
+v 0 m20
+v 1 m20
+v 2 c0
+v 3 c2
+v 4 m00
+v 5 c1
+e 0 1 ba>m20>m20
+e 1 2 a>m20>c0
+e 1 3 b>m20>c2
+e 1 4 a>m20>m00
+e 4 5 a>m00>c1
+t # src/xterm.c$$$3e0ad29a607c8c085de3b74c7505e417ad7f9062
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m10
+v 4 c5
+v 5 c3
+v 6 m00
+v 7 c1
+v 8 m20
+v 9 c2
+v 10 c0
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 b>m20>m10
+e 0 4 a>m20>c5
+e 0 6 a>m20>m00
+e 0 8 ba>m20>m20
+e 3 4 b>m10>c5
+e 3 5 b>m10>c3
+e 6 7 a>m00>c1
+e 8 9 b>m20>c2
+e 8 10 a>m20>c0
+t # src/floatfns.c$$$4a919b1bbc00c8084aea2a4e8196d2b38e657946
+v 0 m20
+v 1 c0
+v 2 m00
+v 3 c1
+e 0 1 a>m20>c0
+e 0 2 a>m20>m00
+e 2 3 a>m00>c1
+t # src/sound.c$$$fdccab473e1f95dae5ee0f07a4531dd4e05b22dd
+v 0 m20
+v 1 m20
+v 2 m10
+v 3 c5
+v 4 m12
+v 5 c3
+e 0 1 ba>m20>m20
+e 1 2 b>m20>m10
+e 1 3 a>m20>c5
+e 2 3 b>m10>c5
+e 2 4 b>m10>m12
+e 4 5 b>m12>c3
+t # src/image.c$$$8826beaf00660eaaeff28016e022af1d9bf40b7c
+v 0 m20
+v 1 m20
+v 2 m20
+v 3 c2
+v 4 m00
+v 5 c1
+v 6 m00
+v 7 c1
+v 8 c0
+v 9 m00
+v 10 c1
+e 0 1 ba>m20>m20
+e 1 2 ba>m20>m20
+e 1 9 a>m20>m00
+e 2 3 b>m20>c2
+e 2 4 a>m20>m00
+e 2 6 a>m20>m00
+e 2 8 a>m20>c0
+e 4 5 a>m00>c1
+e 6 7 a>m00>c1
+e 9 10 a>m00>c1
+t # src/coding.c$$$543ae99fe8cf21a00087ace878dbec909546476b
+v 0 m20
+v 1 c2
+v 2 m10
+v 3 c5
+v 4 c3
+v 5 c5
+v 6 c3
+v 7 c5
+v 8 c3
+v 9 c5
+v 10 c7
+v 11 c0
+v 12 m00
+e 0 1 b>m20>c2
+e 0 2 b>m20>m10
+e 0 3 a>m20>c5
+e 0 5 a>m20>c5
+e 0 7 a>m20>c5
+e 0 9 a>m20>c5
+e 0 11 a>m20>c0
+e 0 12 a>m20>m00
+e 2 3 b>m10>c5
+e 2 4 b>m10>c3
+e 2 5 b>m10>c5
+e 2 6 b>m10>c3
+e 2 7 b>m10>c5
+e 2 8 b>m10>c3
+e 2 9 b>m10>c5
+e 2 10 b>m10>c7
+e 12 10 a>m00>c7
+t # src/coding.c$$$b62eac0f870754bc75b1162246f9901a04910044
+v 0 m20
+v 1 c0
+v 2 m00
+v 3 c4
+v 4 c1
+v 5 c4
+v 6 c1
+v 7 c4
+v 8 c7
+v 9 c2
+v 10 m10
+e 0 1 a>m20>c0
+e 0 2 a>m20>m00
+e 0 3 b>m20>c4
+e 0 5 b>m20>c4
+e 0 7 b>m20>c4
+e 0 9 b>m20>c2
+e 0 10 b>m20>m10
+e 2 3 a>m00>c4
+e 2 4 a>m00>c1
+e 2 5 a>m00>c4
+e 2 6 a>m00>c1
+e 2 7 a>m00>c4
+e 2 8 a>m00>c7
+e 10 8 b>m10>c7
+t # src/gnutls.c$$$80376945952943888bb34c7d4ea06972e422eca7
+v 0 m20
+v 1 m20
+v 2 m20
+v 3 c2
+v 4 m12
+v 5 c3
+v 6 c0
+v 7 c2
+v 8 m20
+v 9 c2
+v 10 c0
+e 0 1 ba>m20>m20
+e 1 2 ba>m20>m20
+e 1 7 b>m20>c2
+e 1 8 ba>m20>m20
+e 2 3 b>m20>c2
+e 2 4 b>m20>m12
+e 2 6 a>m20>c0
+e 4 5 b>m12>c3
+e 8 9 b>m20>c2
+e 8 10 a>m20>c0
+t # src/xdisp.c$$$ad9c8b029c4949b492db778c40b5c94bd7093f85
+v 0 m20
+v 1 m10
+v 2 c5
+v 3 c7
+v 4 m20
+v 5 c7
+v 6 m00
+e 0 1 b>m20>m10
+e 0 2 a>m20>c5
+e 0 6 a>m20>m00
+e 1 2 b>m10>c5
+e 1 3 b>m10>c7
+e 1 4 b>m10>m20
+e 1 5 b>m10>c7
+e 6 3 a>m00>c7
+e 6 4 a>m00>m20
+e 6 5 a>m00>c7
+t # lib/intprops.h$$$9e2ac2559ab44767a56add8ff6e0993325f31971
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 c0
+v 4 m20
+v 5 m22
+v 6 m00
+v 7 c1
+v 8 m02
+v 9 c1
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 a>m20>c0
+e 1 4 ba>m20>m20
+e 4 5 ba>m20>m22
+e 5 6 a>m22>m00
+e 6 7 a>m00>c1
+e 6 8 a>m00>m02
+e 8 9 a>m02>c1
+t # src/lisp.h$$$3548fd8a53869ce6b42c47f690660cb8eddb8aab
+v 0 m20
+v 1 m20
+v 2 m20
+v 3 c2
+v 4 c0
+v 5 m00
+v 6 c1
+v 7 m02
+v 8 c1
+v 9 c0
+v 10 m20
+v 11 c2
+v 12 c0
+v 13 m22
+v 14 c2
+e 0 1 ba>m20>m20
+e 1 2 ba>m20>m20
+e 1 9 a>m20>c0
+e 1 10 ba>m20>m20
+e 1 14 b>m20>c2
+e 2 3 b>m20>c2
+e 2 4 a>m20>c0
+e 2 5 a>m20>m00
+e 5 6 a>m00>c1
+e 5 7 a>m00>m02
+e 7 8 a>m02>c1
+e 10 11 b>m20>c2
+e 10 12 a>m20>c0
+e 10 13 ba>m20>m22
+t # src/lisp.h$$$b80559be212292d44ce14ca5e94505cab4d9a868
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 m10
+v 4 c3
+v 5 m12
+v 6 c3
+v 7 c0
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 b>m20>m10
+e 1 7 a>m20>c0
+e 3 4 b>m10>c3
+e 3 5 b>m10>m12
+e 5 6 b>m12>c3
+t # src/lisp.h$$$a354736e1dfe5a7e4ddbb1ee7f1373be2b5bbe09
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 c0
+v 4 m00
+v 5 c1
+v 6 m02
+v 7 c1
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 a>m20>c0
+e 1 4 a>m20>m00
+e 4 5 a>m00>c1
+e 4 6 a>m00>m02
+e 6 7 a>m02>c1
+t # src/dispextern.h$$$c90975f92fd71be7282293e0ed1098c0fa5d62a0
+v 0 m20
+v 1 m20
+v 2 c0
+v 3 m20
+v 4 c2
+v 5 m10
+v 6 c3
+e 0 1 ba>m20>m20
+e 1 2 a>m20>c0
+e 1 3 ba>m20>m20
+e 1 5 b>m20>m10
+e 3 4 b>m20>c2
+e 5 6 b>m10>c3
+t # src/image.c$$$96e672364cbd6f1a865511d78f3a218c0570345e
+v 0 m20
+v 1 m20
+v 2 m10
+v 3 c3
+v 4 m10
+v 5 c3
+v 6 m00
+v 7 c1
+v 8 m00
+v 9 c1
+e 0 1 ba>m20>m20
+e 1 2 b>m20>m10
+e 1 6 a>m20>m00
+e 2 3 b>m10>c3
+e 2 4 b>m10>m10
+e 4 5 b>m10>c3
+e 6 7 a>m00>c1
+e 6 8 a>m00>m00
+e 8 9 a>m00>c1
+t # src/inotify.c$$$f01597a43ea2eac38cfbb829f301c2e6e3bcbe83
+v 0 m20
+v 1 m00
+v 2 c1
+v 3 c4
+e 0 1 a>m20>m00
+e 0 3 b>m20>c4
+e 1 2 a>m00>c1
+e 1 3 a>m00>c4
+t # src/coding.c$$$a8026dfde9734a03ad03a9872ec801871dd1d81a
+v 0 m20
+v 1 c0
+v 2 m00
+v 3 c1
+v 4 m00
+v 5 c1
+e 0 1 a>m20>c0
+e 0 2 a>m20>m00
+e 0 4 a>m20>m00
+e 2 3 a>m00>c1
+e 4 5 a>m00>c1
+t # src/fileio.c$$$a5063aa8b174db286a0e83b8ffdd4e65c521f733
+v 0 m20
+v 1 c0
+v 2 c2
+v 3 m10
+v 4 c3
+e 0 1 a>m20>c0
+e 0 2 b>m20>c2
+e 0 3 b>m20>m10
+e 3 4 b>m10>c3
+t # src/fileio.c$$$50126f2049a03d2910412572c98bafbc26f3db31
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m00
+v 4 c1
+v 5 m10
+v 6 c3
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 a>m20>m00
+e 0 5 b>m20>m10
+e 3 4 a>m00>c1
+e 5 6 b>m10>c3
+t # src/fileio.c$$$8b13ec1d7022b05ce71982c83f320d5272b92de7
+v 0 m20
+v 1 c0
+v 2 m00
+v 3 c1
+v 4 m02
+v 5 c1
+v 6 c2
+v 7 m10
+v 8 c3
+v 9 m12
+v 10 c3
+e 0 1 a>m20>c0
+e 0 2 a>m20>m00
+e 0 6 b>m20>c2
+e 0 7 b>m20>m10
+e 2 3 a>m00>c1
+e 2 4 a>m00>m02
+e 4 5 a>m02>c1
+e 7 8 b>m10>c3
+e 7 9 b>m10>m12
+e 9 10 b>m12>c3
+t # src/fns.c$$$b0908a0fe6dc4f878b05a8b26ed3ff0c702e26c7
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m10
+v 4 c3
+v 5 m00
+v 6 c1
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 b>m20>m10
+e 0 5 a>m20>m00
+e 3 4 b>m10>c3
+e 5 6 a>m00>c1
+t # src/sysstdio.h$$$9a34591ddd5ef481af5bad1fd0b76c39fce4e8e3
+v 0 m20
+v 1 m20
+v 2 c0
+v 3 m00
+v 4 c1
+e 0 1 ba>m20>m20
+e 1 2 a>m20>c0
+e 1 3 a>m20>m00
+e 3 4 a>m00>c1
+t # src/sysdep.c$$$a8ffbb20da67b20a85ddca38e20c609144c3bef3
+v 0 m20
+v 1 c0
+v 2 m00
+v 3 c1
+v 4 c2
+e 0 1 a>m20>c0
+e 0 2 a>m20>m00
+e 0 4 b>m20>c2
+e 2 3 a>m00>c1
+t # src/alloc.c$$$04cbdde94d256d9b3fbfcc67981374a55d339fcd
+v 0 m20
+v 1 c2
+v 2 m10
+v 3 c3
+v 4 c0
+v 5 m10
+v 6 c3
+e 0 1 b>m20>c2
+e 0 2 b>m20>m10
+e 0 4 a>m20>c0
+e 0 5 b>m20>m10
+e 2 3 b>m10>c3
+e 5 6 b>m10>c3
+t # src/lisp.h$$$04cbdde94d256d9b3fbfcc67981374a55d339fcd
+v 0 m20
+v 1 m20
+v 2 c0
+v 3 m10
+v 4 c3
+e 0 1 ba>m20>m20
+e 1 2 a>m20>c0
+e 1 3 b>m20>m10
+e 3 4 b>m10>c3
+t # src/pdumper.c$$$04cbdde94d256d9b3fbfcc67981374a55d339fcd
+v 0 m20
+v 1 m20
+v 2 m10
+v 3 c3
+v 4 c0
+e 0 1 ba>m20>m20
+e 1 2 b>m20>m10
+e 1 4 a>m20>c0
+e 2 3 b>m10>c3
+t # src/image.c$$$60fc771ac6f090e4e44339cb6d0232a852580ee2
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 m20
+v 4 c2
+v 5 c0
+v 6 c0
+v 7 m00
+v 8 c1
+v 9 m20
+v 10 m00
+v 11 c1
+e 0 1 ba>m20>m20
+e 0 9 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 ba>m20>m20
+e 1 6 a>m20>c0
+e 1 7 a>m20>m00
+e 3 4 b>m20>c2
+e 3 5 a>m20>c0
+e 7 8 a>m00>c1
+e 9 10 a>m20>m00
+e 10 11 a>m00>c1
+t # src/font.c$$$ec723406476c818ab8f1da926e70668e36206289
+v 0 m20
+v 1 c2
+v 2 m10
+v 3 c3
+v 4 c0
+e 0 1 b>m20>c2
+e 0 2 b>m20>m10
+e 0 4 a>m20>c0
+e 2 3 b>m10>c3
+t # src/lisp.h$$$8f522efe9a963cd3523ea6863f9bd44881cdf6b7
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 m10
+v 4 c3
+v 5 m12
+v 6 c3
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 b>m20>m10
+e 3 4 b>m10>c3
+e 3 5 b>m10>m12
+e 5 6 b>m12>c3
+t # src/ftfont.c$$$814b509b1ddf7863d18f7f443e8d733173904e81
+v 0 m20
+v 1 m20
+v 2 m03
+v 3 c1
+v 4 m10
+v 5 c6
+v 6 m00
+v 7 m20
+v 8 m00
+v 9 c1
+e 0 1 ba>m20>m20
+e 0 4 b>m20>m10
+e 0 6 a>m20>m00
+e 0 7 ba>m20>m20
+e 1 2 a>m20>m03
+e 2 3 a>m03>c1
+e 4 5 b>m10>c6
+e 6 5 a>m00>c6
+e 7 8 a>m20>m00
+e 8 9 a>m00>c1
+t # src/xdisp.c$$$a24d4cb27a5ef18009ce05dde83d5d6b1b67911d
+v 0 m20
+v 1 c2
+v 2 m10
+v 3 c3
+v 4 c0
+e 0 1 b>m20>c2
+e 0 2 b>m20>m10
+e 0 4 a>m20>c0
+e 2 3 b>m10>c3
+t # src/xfns.c$$$8a16bd4f2b7b282e5b1ac19717de8ec8e96b44c0
+v 0 m20
+v 1 m20
+v 2 m00
+v 3 c1
+v 4 m00
+v 5 c1
+e 0 1 ba>m20>m20
+e 1 2 a>m20>m00
+e 1 4 a>m20>m00
+e 2 3 a>m00>c1
+e 4 5 a>m00>c1
+t # src/xsmfns.c$$$231d6cfb0c65a7ece2455e7fd0a488851a634778
+v 0 m20
+v 1 m20
+v 2 c0
+v 3 c2
+v 4 m00
+v 5 c1
+v 6 m02
+v 7 c1
+e 0 1 ba>m20>m20
+e 1 2 a>m20>c0
+e 1 3 b>m20>c2
+e 1 4 a>m20>m00
+e 4 5 a>m00>c1
+e 4 6 a>m00>m02
+e 6 7 a>m02>c1
+t # src/xterm.c$$$231d6cfb0c65a7ece2455e7fd0a488851a634778
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 c0
+v 4 m20
+v 5 c2
+v 6 m00
+v 7 c1
+v 8 m10
+v 9 c3
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 a>m20>c0
+e 1 4 ba>m20>m20
+e 1 6 a>m20>m00
+e 1 8 b>m20>m10
+e 4 5 b>m20>c2
+e 6 7 a>m00>c1
+e 8 9 b>m10>c3
+t # src/m/iris4d.h$$$149f3ffd37da17d15537f7a11c0c8ef6c752d5be
+v 0 m20
+v 1 m10
+v 2 c6
+v 3 m00
+v 4 c1
+e 0 1 b>m20>m10
+e 0 3 a>m20>m00
+e 1 2 b>m10>c6
+e 3 2 a>m00>c6
+e 3 4 a>m00>c1
+t # src/term.c$$$f730033e6c12eeb6d4d12778bb9ddc3d02e99653
+v 0 m20
+v 1 m20
+v 2 m10
+v 3 c3
+v 4 m12
+v 5 c7
+v 6 c3
+v 7 m00
+v 8 c1
+v 9 c0
+e 0 1 ba>m20>m20
+e 1 2 b>m20>m10
+e 1 7 a>m20>m00
+e 1 9 a>m20>c0
+e 2 3 b>m10>c3
+e 2 4 b>m10>m12
+e 4 5 b>m12>c7
+e 4 6 b>m12>c3
+e 7 5 a>m00>c7
+e 7 8 a>m00>c1
+t # src/term.c$$$3dd3a50226507bd4a832c70c711df9f159c9ab10
+v 0 m20
+v 1 m20
+v 2 c4
+v 3 m00
+v 4 c1
+v 5 m02
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c4
+e 1 3 a>m20>m00
+e 3 4 a>m00>c1
+e 3 5 a>m00>m02
+e 5 2 a>m02>c4
+t # src/term.c$$$3a06a6d99b0c573779862bd2b8fb7e56e8b16ccb
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m20
+v 4 c2
+v 5 m22
+v 6 m10
+v 7 c3
+v 8 m12
+v 9 c3
+v 10 c2
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 ba>m20>m20
+e 3 4 b>m20>c2
+e 3 5 ba>m20>m22
+e 5 6 b>m22>m10
+e 5 10 b>m22>c2
+e 6 7 b>m10>c3
+e 6 8 b>m10>m12
+e 8 9 b>m12>c3
+t # src/xfns.c$$$d2398db319f57c116c3c8a3abaa5ea1bbf2aa12f
+v 0 m20
+v 1 m20
+v 2 m10
+v 3 c3
+v 4 m22
+v 5 m10
+v 6 c3
+v 7 c0
+v 8 m00
+v 9 c1
+e 0 1 ba>m20>m20
+e 1 2 b>m20>m10
+e 1 8 a>m20>m00
+e 2 3 b>m10>c3
+e 2 4 b>m10>m22
+e 4 5 b>m22>m10
+e 4 7 a>m22>c0
+e 5 6 b>m10>c3
+e 8 4 a>m00>m22
+e 8 9 a>m00>c1
+t # src/xfns.c$$$34e8c597f5d92195301698d9d37b6bd9ee63e07c
+v 0 m20
+v 1 m20
+v 2 m20
+v 3 c2
+v 4 c0
+v 5 m20
+v 6 c2
+v 7 m00
+v 8 c1
+v 9 m02
+v 10 m00
+v 11 c1
+e 0 1 ba>m20>m20
+e 1 2 ba>m20>m20
+e 1 5 ba>m20>m20
+e 2 3 b>m20>c2
+e 2 4 a>m20>c0
+e 5 6 b>m20>c2
+e 5 7 a>m20>m00
+e 7 8 a>m00>c1
+e 7 9 a>m00>m02
+e 9 10 a>m02>m00
+e 10 11 a>m00>c1
+t # src/alloc.c$$$19bcad1f59a3c3c02b461bac438b7c07c589580d
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m10
+v 4 c3
+v 5 m00
+v 6 c1
+v 7 m00
+v 8 c1
+v 9 m02
+v 10 c4
+v 11 m00
+v 12 c1
+v 13 m02
+v 14 c4
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 b>m20>m10
+e 0 5 a>m20>m00
+e 0 7 a>m20>m00
+e 0 10 b>m20>c4
+e 0 11 a>m20>m00
+e 0 14 b>m20>c4
+e 3 4 b>m10>c3
+e 5 6 a>m00>c1
+e 7 8 a>m00>c1
+e 7 9 a>m00>m02
+e 9 10 a>m02>c4
+e 11 12 a>m00>c1
+e 11 13 a>m00>m02
+e 13 14 a>m02>c4
+t # src/xterm.h$$$adbb56cbf0d713cf0c568ac2efff1b9aea81e085
+v 0 m20
+v 1 c0
+v 2 m00
+v 3 c1
+e 0 1 a>m20>c0
+e 0 2 a>m20>m00
+e 2 3 a>m00>c1
+t # src/xfns.c$$$993d07214775f197a274619dd4c67e89abc7cca7
+v 0 m20
+v 1 m20
+v 2 c0
+v 3 m00
+v 4 c1
+e 0 1 ba>m20>m20
+e 1 2 a>m20>c0
+e 1 3 a>m20>m00
+e 3 4 a>m00>c1
+t # src/s/netbsd.h$$$7a179ad4df5cd49f8fe3d0709fbc005a2ee6e280
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 c0
+v 4 m00
+v 5 c1
+v 6 m20
+v 7 c0
+e 0 1 ba>m20>m20
+e 0 4 a>m20>m00
+e 0 6 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 a>m20>c0
+e 4 5 a>m00>c1
+e 6 7 a>m20>c0
+t # src/s/openbsd.h$$$4a2abeb21a5870693564401ea343c0e4f1323c3e
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m00
+v 4 c1
+v 5 m02
+v 6 c1
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 a>m20>m00
+e 3 4 a>m00>c1
+e 3 5 a>m00>m02
+e 5 6 a>m02>c1
+t # src/lisp.h$$$5f6bf5fecb9eb6e8448adabad1c4e0d7b7c841e4
+v 0 m20
+v 1 c2
+v 2 m10
+v 3 c3
+v 4 c0
+v 5 m00
+v 6 c1
+e 0 1 b>m20>c2
+e 0 2 b>m20>m10
+e 0 4 a>m20>c0
+e 0 5 a>m20>m00
+e 2 3 b>m10>c3
+e 5 6 a>m00>c1
+t # src/xterm.c$$$539465b3c90f8607feb92c9242d4c15fcaa1cfea
+v 0 m20
+v 1 m20
+v 2 m00
+v 3 c4
+v 4 m02
+v 5 c1
+e 0 1 ba>m20>m20
+e 1 2 a>m20>m00
+e 1 3 b>m20>c4
+e 2 3 a>m00>c4
+e 2 4 a>m00>m02
+e 4 5 a>m02>c1
+t # src/xterm.c$$$3ff483be333281cdaf0f5e951a2deaf56576a10e
+v 0 m20
+v 1 m20
+v 2 m00
+v 3 c4
+v 4 m02
+v 5 c1
+e 0 1 ba>m20>m20
+e 1 2 a>m20>m00
+e 1 3 b>m20>c4
+e 2 3 a>m00>c4
+e 2 4 a>m00>m02
+e 4 5 a>m02>c1
+t # src/lisp.h$$$c74abe0afd969423d0be6b2477b146fbd8e27b18
+v 0 m20
+v 1 m20
+v 2 m10
+v 3 c3
+v 4 m20
+v 5 c2
+e 0 1 ba>m20>m20
+e 0 4 ba>m20>m20
+e 1 2 b>m20>m10
+e 2 3 b>m10>c3
+e 4 5 b>m20>c2
+t # src/w32fns.c$$$5c830368ec6b1027b2980c50872dc0ab83b78360
+v 0 m20
+v 1 m10
+v 2 c5
+v 3 m10
+v 4 c5
+e 0 1 b>m20>m10
+e 0 2 a>m20>c5
+e 0 3 b>m20>m10
+e 0 4 a>m20>c5
+e 1 2 b>m10>c5
+e 3 4 b>m10>c5
+t # src/alloc.c$$$ebb8d410538fd1704ecc15c18fa27f610042eed2
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m00
+v 4 c4
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 a>m20>m00
+e 0 4 b>m20>c4
+e 3 4 a>m00>c4
+t # src/xdisp.c$$$9c3521e0938e75a5f4519d7b68fdb59456971630
+v 0 m20
+v 1 m20
+v 2 m10
+v 3 c6
+v 4 m12
+v 5 c6
+v 6 m00
+v 7 m02
+e 0 1 ba>m20>m20
+e 1 2 b>m20>m10
+e 1 6 a>m20>m00
+e 2 3 b>m10>c6
+e 2 4 b>m10>m12
+e 4 5 b>m12>c6
+e 6 3 a>m00>c6
+e 6 7 a>m00>m02
+e 7 5 a>m02>c6
+t # src/xselect.c$$$e57ad4d89482d575be1ee2edae863da8c0c509f3
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m10
+v 4 c3
+v 5 m12
+v 6 c3
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 b>m20>m10
+e 3 4 b>m10>c3
+e 3 5 b>m10>m12
+e 5 6 b>m12>c3
+t # src/keyboard.c$$$9eb28007fb2735a255b57c01dcd3791ed57f628d
+v 0 m20
+v 1 m10
+v 2 c3
+v 3 m10
+v 4 c3
+v 5 m10
+v 6 c3
+v 7 m20
+v 8 m10
+v 9 c3
+v 10 m10
+v 11 c3
+v 12 m10
+v 13 c3
+v 14 c5
+e 0 1 b>m20>m10
+e 0 3 b>m20>m10
+e 0 5 b>m20>m10
+e 0 7 ba>m20>m20
+e 0 10 b>m20>m10
+e 0 12 b>m20>m10
+e 0 14 a>m20>c5
+e 1 2 b>m10>c3
+e 3 4 b>m10>c3
+e 5 6 b>m10>c3
+e 7 8 b>m20>m10
+e 8 9 b>m10>c3
+e 10 11 b>m10>c3
+e 12 13 b>m10>c3
+e 12 14 b>m10>c5
+t # src/callproc.c$$$776a24a1766c5f9d3cd9d85336ae71ae1ddd5014
+v 0 m20
+v 1 m10
+v 2 c6
+v 3 m00
+v 4 c2
+v 5 c0
+e 0 1 b>m20>m10
+e 0 3 a>m20>m00
+e 0 4 b>m20>c2
+e 0 5 a>m20>c0
+e 1 2 b>m10>c6
+e 3 2 a>m00>c6
+t # src/mem-limits.h$$$0a7d603959ec145ec3637d1a0c21079e2c54ce17
+v 0 m20
+v 1 m20
+v 2 m10
+v 3 c3
+v 4 m00
+v 5 c1
+v 6 m02
+v 7 m00
+v 8 c1
+e 0 1 ba>m20>m20
+e 1 2 b>m20>m10
+e 1 4 a>m20>m00
+e 2 3 b>m10>c3
+e 4 5 a>m00>c1
+e 4 6 a>m00>m02
+e 6 7 a>m02>m00
+e 7 8 a>m00>c1
+t # src/termhooks.h$$$3ecad19e403a7bdbb15f1af31913378192018faf
+v 0 m20
+v 1 m20
+v 2 m10
+v 3 c3
+v 4 c4
+v 5 c0
+v 6 m00
+v 7 c1
+e 0 1 ba>m20>m20
+e 1 2 b>m20>m10
+e 1 5 a>m20>c0
+e 1 6 a>m20>m00
+e 2 3 b>m10>c3
+e 2 4 b>m10>c4
+e 6 4 a>m00>c4
+e 6 7 a>m00>c1
+t # src/msdos.h$$$102f33d0f32054f293d0268f502387e681c24178
+v 0 m20
+v 1 m10
+v 2 c3
+v 3 c6
+v 4 m20
+v 5 m00
+v 6 c1
+e 0 1 b>m20>m10
+e 0 5 a>m20>m00
+e 1 2 b>m10>c3
+e 1 3 b>m10>c6
+e 1 4 b>m10>m20
+e 5 3 a>m00>c6
+e 5 4 a>m00>m20
+e 5 6 a>m00>c1
+t # src/w32inevt.h$$$c68833d2cadec9c4ff62040a9e5e2fcfb0099db5
+v 0 m20
+v 1 m10
+v 2 c3
+v 3 c6
+v 4 m00
+v 5 c1
+e 0 1 b>m20>m10
+e 0 4 a>m20>m00
+e 1 2 b>m10>c3
+e 1 3 b>m10>c6
+e 4 3 a>m00>c6
+e 4 5 a>m00>c1
+t # src/w32gui.h$$$3b15de48202c4f6b1ba16ef665cfc13e6a6ef66c
+v 0 m20
+v 1 m10
+v 2 c3
+v 3 c6
+v 4 m00
+v 5 c1
+e 0 1 b>m20>m10
+e 0 4 a>m20>m00
+e 1 2 b>m10>c3
+e 1 3 b>m10>c6
+e 4 3 a>m00>c6
+e 4 5 a>m00>c1
+t # src/w32.h$$$e588809c3fc1f98e952eb35279d9cbeb4e077818
+v 0 m20
+v 1 m10
+v 2 c3
+v 3 c6
+v 4 m00
+v 5 c1
+e 0 1 b>m20>m10
+e 0 4 a>m20>m00
+e 1 2 b>m10>c3
+e 1 3 b>m10>c6
+e 4 3 a>m00>c6
+e 4 5 a>m00>c1
+t # src/w32bdf.h$$$4cc436ed3b6e2c422e70d5a4216fa4b244d637bc
+v 0 m20
+v 1 m10
+v 2 c3
+v 3 c6
+v 4 m00
+v 5 c1
+e 0 1 b>m20>m10
+e 0 4 a>m20>m00
+e 1 2 b>m10>c3
+e 1 3 b>m10>c6
+e 4 3 a>m00>c6
+e 4 5 a>m00>c1
+t # src/xterm.c$$$3e71d8f2eb24cf7c7cea796f65963be10e9795c3
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 c0
+v 4 m00
+v 5 c1
+v 6 m20
+v 7 m00
+v 8 c1
+v 9 m20
+v 10 c2
+v 11 c0
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 a>m20>c0
+e 1 4 a>m20>m00
+e 1 6 ba>m20>m20
+e 1 7 a>m20>m00
+e 1 9 ba>m20>m20
+e 4 5 a>m00>c1
+e 7 8 a>m00>c1
+e 9 10 b>m20>c2
+e 9 11 a>m20>c0
+t # src/fontset.h$$$aef168f8bc26cea86bd0abcc19c2a943974564b4
+v 0 m20
+v 1 m10
+v 2 c3
+v 3 c6
+v 4 m00
+v 5 c1
+e 0 1 b>m20>m10
+e 0 4 a>m20>m00
+e 1 2 b>m10>c3
+e 1 3 b>m10>c6
+e 4 3 a>m00>c6
+e 4 5 a>m00>c1
+t # src/composite.h$$$15a10ef1466e73e6ee8dfad5657cec03e4f8d806
+v 0 m20
+v 1 m10
+v 2 c3
+v 3 c6
+v 4 m00
+v 5 c1
+e 0 1 b>m20>m10
+e 0 4 a>m20>m00
+e 1 2 b>m10>c3
+e 1 3 b>m10>c6
+e 4 3 a>m00>c6
+e 4 5 a>m00>c1
+t # src/coding.h$$$6f776e81c7b6469f985e58e44deaf68512ab442c
+v 0 m20
+v 1 m10
+v 2 c3
+v 3 m10
+v 4 c6
+v 5 c6
+v 6 m20
+v 7 c6
+v 8 m20
+v 9 m00
+v 10 c1
+e 0 1 b>m20>m10
+e 0 9 a>m20>m00
+e 1 2 b>m10>c3
+e 1 3 b>m10>m10
+e 1 5 b>m10>c6
+e 1 6 b>m10>m20
+e 1 7 b>m10>c6
+e 1 8 b>m10>m20
+e 3 4 b>m10>c6
+e 9 4 a>m00>c6
+e 9 5 a>m00>c6
+e 9 6 a>m00>m20
+e 9 7 a>m00>c6
+e 9 8 a>m00>m20
+e 9 10 a>m00>c1
+t # src/charset.h$$$aa01a892df38bb50c9cbe347338246a04cbf3b7e
+v 0 m20
+v 1 m10
+v 2 c3
+v 3 c6
+v 4 m20
+v 5 c6
+v 6 m20
+v 7 c6
+v 8 m00
+v 9 c1
+e 0 1 b>m20>m10
+e 0 8 a>m20>m00
+e 1 2 b>m10>c3
+e 1 3 b>m10>c6
+e 1 4 b>m10>m20
+e 1 5 b>m10>c6
+e 1 6 b>m10>m20
+e 1 7 b>m10>c6
+e 8 3 a>m00>c6
+e 8 4 a>m00>m20
+e 8 5 a>m00>c6
+e 8 6 a>m00>m20
+e 8 7 a>m00>c6
+e 8 9 a>m00>c1
+t # src/ccl.h$$$265702b7c55ae201d90e6fb0b2a0e1012f8b928f
+v 0 m20
+v 1 m10
+v 2 c3
+v 3 c6
+v 4 m00
+v 5 c1
+e 0 1 b>m20>m10
+e 0 4 a>m20>m00
+e 1 2 b>m10>c3
+e 1 3 b>m10>c6
+e 4 3 a>m00>c6
+e 4 5 a>m00>c1
+t # src/systime.h$$$fb1b041d1e02fe6a457df6c4cdd3284e1c4b8a1e
+v 0 m20
+v 1 m10
+v 2 c3
+v 3 m20
+v 4 m20
+v 5 c6
+v 6 m20
+v 7 m20
+v 8 c6
+v 9 m20
+v 10 c6
+v 11 m20
+v 12 c6
+v 13 m00
+v 14 c1
+e 0 1 b>m20>m10
+e 0 13 a>m20>m00
+e 1 2 b>m10>c3
+e 1 3 b>m10>m20
+e 1 4 b>m10>m20
+e 1 5 b>m10>c6
+e 1 6 b>m10>m20
+e 1 7 b>m10>m20
+e 1 8 b>m10>c6
+e 1 9 b>m10>m20
+e 1 10 b>m10>c6
+e 1 11 b>m10>m20
+e 1 12 b>m10>c6
+e 13 3 a>m00>m20
+e 13 4 a>m00>m20
+e 13 5 a>m00>c6
+e 13 6 a>m00>m20
+e 13 7 a>m00>m20
+e 13 8 a>m00>c6
+e 13 9 a>m00>m20
+e 13 10 a>m00>c6
+e 13 11 a>m00>m20
+e 13 12 a>m00>c6
+e 13 14 a>m00>c1
+t # src/msdos.h$$$ff96b5f4494cad2294221ea54b6003081616ecc8
+v 0 m20
+v 1 m10
+v 2 c3
+v 3 c6
+v 4 m20
+v 5 m00
+v 6 c1
+e 0 1 b>m20>m10
+e 0 5 a>m20>m00
+e 1 2 b>m10>c3
+e 1 3 b>m10>c6
+e 1 4 b>m10>m20
+e 5 3 a>m00>c6
+e 5 4 a>m00>m20
+e 5 6 a>m00>c1
+t # lwlib/xlwmenu.c$$$a57a1605523357cfea72fc15a36c51e69321e83a
+v 0 m20
+v 1 m00
+v 2 c1
+v 3 m20
+v 4 c2
+v 5 c0
+v 6 m20
+v 7 c2
+v 8 c0
+v 9 c2
+v 10 c0
+e 0 1 a>m20>m00
+e 0 3 ba>m20>m20
+e 0 6 ba>m20>m20
+e 0 9 b>m20>c2
+e 0 10 a>m20>c0
+e 1 2 a>m00>c1
+e 3 4 b>m20>c2
+e 3 5 a>m20>c0
+e 6 7 b>m20>c2
+e 6 8 a>m20>c0
+t # lwlib/lwlib.c$$$fdc4d3cdb986ac3c4d7f31e881b644f86901f033
+v 0 m20
+v 1 m10
+v 2 c5
+v 3 m22
+v 4 m00
+v 5 c2
+v 6 c0
+e 0 1 b>m20>m10
+e 0 4 a>m20>m00
+e 0 5 b>m20>c2
+e 0 6 a>m20>c0
+e 1 2 b>m10>c5
+e 1 3 b>m10>m22
+e 4 2 a>m00>c5
+e 4 3 a>m00>m22
+t # src/lisp.h$$$9d936abcd0a3252f21a141d33179f3c28b745730
+v 0 m20
+v 1 m10
+v 2 c4
+v 3 m22
+v 4 m00
+v 5 m10
+v 6 c4
+v 7 m22
+v 8 m00
+v 9 c0
+e 0 1 b>m20>m10
+e 0 4 a>m20>m00
+e 0 5 b>m20>m10
+e 0 8 a>m20>m00
+e 0 9 a>m20>c0
+e 1 2 b>m10>c4
+e 1 3 b>m10>m22
+e 4 2 a>m00>c4
+e 4 3 a>m00>m22
+e 5 6 b>m10>c4
+e 5 7 b>m10>m22
+e 8 6 a>m00>c4
+e 8 7 a>m00>m22
+t # src/systime.h$$$482fa0533f57a1f5050e0633f65cc08fa5ddbe15
+v 0 m20
+v 1 m00
+v 2 c1
+v 3 m20
+v 4 m20
+v 5 c4
+v 6 m20
+v 7 c2
+v 8 c0
+v 9 m20
+v 10 c4
+v 11 m20
+v 12 c4
+v 13 m20
+v 14 c4
+e 0 1 a>m20>m00
+e 0 3 b>m20>m20
+e 0 4 b>m20>m20
+e 0 5 b>m20>c4
+e 0 6 b>m20>m20
+e 0 9 b>m20>m20
+e 0 10 b>m20>c4
+e 0 11 b>m20>m20
+e 0 12 b>m20>c4
+e 0 13 b>m20>m20
+e 0 14 b>m20>c4
+e 1 2 a>m00>c1
+e 1 3 a>m00>m20
+e 1 4 a>m00>m20
+e 1 5 a>m00>c4
+e 1 6 a>m00>m20
+e 1 9 a>m00>m20
+e 1 10 a>m00>c4
+e 1 11 a>m00>m20
+e 1 12 a>m00>c4
+e 1 13 a>m00>m20
+e 1 14 a>m00>c4
+e 6 7 b>m20>c2
+e 6 8 a>m20>c0
+t # src/xmenu.c$$$edc8940c14ab6d35548349fc1452c2036156f8bf
+v 0 m20
+v 1 m20
+v 2 m10
+v 3 c5
+v 4 m12
+v 5 c3
+e 0 1 ba>m20>m20
+e 1 2 b>m20>m10
+e 1 3 a>m20>c5
+e 2 3 b>m10>c5
+e 2 4 b>m10>m12
+e 4 5 b>m12>c3
+t # src/frame.h$$$b975254ebb7c4270d8fe5074b11ec2f938d5cf5d
+v 0 m20
+v 1 m20
+v 2 m10
+v 3 c3
+v 4 c2
+v 5 c0
+v 6 m10
+v 7 c3
+e 0 1 ba>m20>m20
+e 1 2 b>m20>m10
+e 1 4 b>m20>c2
+e 1 5 a>m20>c0
+e 1 6 b>m20>m10
+e 2 3 b>m10>c3
+e 6 7 b>m10>c3
+t # src/sysdep.c$$$d3eb3bfac8dd59a761ebc3283a44d4dee6cd2d12
+v 0 m20
+v 1 m00
+v 2 c1
+v 3 m00
+v 4 c1
+v 5 m10
+v 6 c3
+e 0 1 a>m20>m00
+e 0 3 a>m20>m00
+e 0 5 b>m20>m10
+e 1 2 a>m00>c1
+e 3 4 a>m00>c1
+e 5 6 b>m10>c3
+t # src/dispnew.c$$$9af3e7429388d16c1f8ce1dc99688f826d6a4478
+v 0 m20
+v 1 c2
+v 2 m00
+v 3 c4
+v 4 m00
+v 5 c4
+e 0 1 b>m20>c2
+e 0 2 a>m20>m00
+e 0 3 b>m20>c4
+e 0 4 a>m20>m00
+e 0 5 b>m20>c4
+e 2 3 a>m00>c4
+e 4 5 a>m00>c4
+t # src/fileio.c$$$f73f57bd8d13c8196154f124724512f3569324fe
+v 0 m20
+v 1 m10
+v 2 c5
+v 3 c3
+v 4 c5
+v 5 m00
+v 6 c1
+e 0 1 b>m20>m10
+e 0 5 a>m20>m00
+e 1 2 b>m10>c5
+e 1 3 b>m10>c3
+e 1 4 b>m10>c5
+e 5 2 a>m00>c5
+e 5 4 a>m00>c5
+e 5 6 a>m00>c1
+t # src/coding.h$$$2dfda9629392dcbbab91366c34efaa63b5730d49
+v 0 m20
+v 1 m20
+v 2 m00
+v 3 c1
+v 4 m20
+v 5 m00
+v 6 c1
+e 0 1 ba>m20>m20
+e 1 2 a>m20>m00
+e 1 4 ba>m20>m20
+e 2 3 a>m00>c1
+e 4 5 a>m20>m00
+e 5 6 a>m00>c1
+t # src/editfns.c$$$9a599130ca12af563d1f7a64f07e1998ee1d29c8
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m00
+v 4 c4
+v 5 c1
+v 6 c4
+v 7 c1
+v 8 c4
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 a>m20>m00
+e 0 4 b>m20>c4
+e 0 6 b>m20>c4
+e 0 8 b>m20>c4
+e 3 4 a>m00>c4
+e 3 5 a>m00>c1
+e 3 6 a>m00>c4
+e 3 7 a>m00>c1
+e 3 8 a>m00>c4
+t # src/xfns.c$$$7c7ff7f5d18ebe74842db645eb6ff4b63e778f0b
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 c0
+v 4 m20
+v 5 m20
+v 6 m20
+v 7 m20
+v 8 m20
+v 9 m10
+v 10 c3
+v 11 m10
+v 12 c3
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 a>m20>c0
+e 1 4 ba>m20>m20
+e 1 5 ba>m20>m20
+e 1 6 ba>m20>m20
+e 1 7 ba>m20>m20
+e 1 8 ba>m20>m20
+e 1 9 b>m20>m10
+e 1 11 b>m20>m10
+e 9 10 b>m10>c3
+e 11 12 b>m10>c3
+t # src/s/freebsd.h$$$7e0ba6da56f6a557f135e0ca65835b473db8a0e1
+v 0 m20
+v 1 m00
+v 2 c4
+v 3 c2
+v 4 m10
+v 5 c3
+e 0 1 a>m20>m00
+e 0 2 b>m20>c4
+e 0 3 b>m20>c2
+e 0 4 b>m20>m10
+e 1 2 a>m00>c4
+e 4 5 b>m10>c3
+t # src/xdisp.c$$$f2d86d7a049796984588b7df4c7657cac18a1cee
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m00
+v 4 c1
+v 5 c4
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 a>m20>m00
+e 0 5 b>m20>c4
+e 3 4 a>m00>c1
+e 3 5 a>m00>c4
+t # src/fileio.c$$$e3e8a75a2a6f9cfad433acee32cba30bc2449a8f
+v 0 m20
+v 1 m00
+v 2 c1
+v 3 m02
+v 4 c4
+e 0 1 a>m20>m00
+e 0 4 b>m20>c4
+e 1 2 a>m00>c1
+e 1 3 a>m00>m02
+e 3 4 a>m02>c4
+t # src/m/alpha.h$$$2eca7f4d65dfc8133a4a12c2c62b9db6585ad5b7
+v 0 m20
+v 1 m00
+v 2 c1
+v 3 m10
+v 4 c4
+v 5 m00
+e 0 1 a>m20>m00
+e 0 3 b>m20>m10
+e 0 5 a>m20>m00
+e 1 2 a>m00>c1
+e 3 4 b>m10>c4
+e 5 4 a>m00>c4
+t # src/lread.c$$$5dbf89bc7d65c1871285e7461a4fdc17bf23a984
+v 0 m20
+v 1 m00
+v 2 c1
+v 3 m00
+v 4 c1
+e 0 1 a>m20>m00
+e 0 3 a>m20>m00
+e 1 2 a>m00>c1
+e 3 4 a>m00>c1
+t # src/xfns.c$$$3b4ae1ccce0adb13dbb5f263cbb0922cd586752d
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 c0
+v 4 m00
+v 5 c1
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 a>m20>c0
+e 1 4 a>m20>m00
+e 4 5 a>m00>c1
+t # src/s/freebsd.h$$$cbf5ca04c1122b944769650760d8a77c4e03fd8b
+v 0 m20
+v 1 c0
+v 2 m00
+v 3 c1
+e 0 1 a>m20>c0
+e 0 2 a>m20>m00
+e 2 3 a>m00>c1
+t # src/buffer.c$$$a8c21b482ffc1ce36f861cb8be0712bb4ffe8314
+v 0 m20
+v 1 c0
+v 2 m00
+v 3 c1
+e 0 1 a>m20>c0
+e 0 2 a>m20>m00
+e 2 3 a>m00>c1
+t # src/lisp.h$$$74e49b38a8438c25b5f96cbc16be8001c706a484
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 c0
+v 4 m00
+v 5 c1
+v 6 m02
+v 7 c4
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 a>m20>c0
+e 1 4 a>m20>m00
+e 1 7 b>m20>c4
+e 4 5 a>m00>c1
+e 4 6 a>m00>m02
+e 6 7 a>m02>c4
+t # src/dispextern.h$$$11c0b2550331df6b7f812c61cb4113c42ea99ad7
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 m12
+v 4 c3
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 b>m20>m12
+e 3 4 b>m12>c3
+t # src/nsterm.h$$$11c0b2550331df6b7f812c61cb4113c42ea99ad7
+v 0 m20
+v 1 m20
+v 2 m20
+v 3 c0
+v 4 m10
+v 5 c3
+v 6 m12
+v 7 c3
+v 8 c2
+v 9 m20
+v 10 c2
+e 0 1 ba>m20>m20
+e 1 2 ba>m20>m20
+e 1 4 b>m20>m10
+e 1 8 b>m20>c2
+e 1 9 ba>m20>m20
+e 2 3 a>m20>c0
+e 4 5 b>m10>c3
+e 4 6 b>m10>m12
+e 6 7 b>m12>c3
+e 9 10 b>m20>c2
+t # src/image.c$$$0f427befe82f88237bdccbd528baf76f6d6485b0
+v 0 m20
+v 1 m10
+v 2 c3
+v 3 c5
+v 4 c7
+v 5 m00
+v 6 m00
+v 7 c1
+e 0 1 b>m20>m10
+e 0 5 a>m20>m00
+e 0 6 a>m20>m00
+e 1 2 b>m10>c3
+e 1 3 b>m10>c5
+e 1 4 b>m10>c7
+e 5 3 a>m00>c5
+e 6 4 a>m00>c7
+e 6 7 a>m00>c1
+t # src/nsterm.h$$$0f427befe82f88237bdccbd528baf76f6d6485b0
+v 0 m20
+v 1 m20
+v 2 m20
+v 3 c0
+v 4 c2
+v 5 m10
+v 6 c3
+v 7 m12
+v 8 c3
+v 9 m00
+v 10 c1
+v 11 m02
+v 12 c1
+e 0 1 ba>m20>m20
+e 1 2 ba>m20>m20
+e 1 4 b>m20>c2
+e 1 5 b>m20>m10
+e 1 9 a>m20>m00
+e 2 3 a>m20>c0
+e 5 6 b>m10>c3
+e 5 7 b>m10>m12
+e 7 8 b>m12>c3
+e 9 10 a>m00>c1
+e 9 11 a>m00>m02
+e 11 12 a>m02>c1
+t # src/xfns.c$$$f703232b7ff3453640179c6c1e9415e9ff1af987
+v 0 m20
+v 1 c2
+v 2 m00
+v 3 c1
+v 4 c0
+e 0 1 b>m20>c2
+e 0 2 a>m20>m00
+e 0 4 a>m20>c0
+e 2 3 a>m00>c1
+t # src/xterm.c$$$f703232b7ff3453640179c6c1e9415e9ff1af987
+v 0 m20
+v 1 m00
+v 2 c1
+v 3 c1
+v 4 c2
+v 5 c0
+e 0 1 a>m20>m00
+e 0 4 b>m20>c2
+e 0 5 a>m20>c0
+e 1 2 a>m00>c1
+e 1 3 a>m00>c1
+t # src/gtkutil.c$$$264589cdf762d015c8ecd102afb7eb61dc0ad65b
+v 0 m20
+v 1 m20
+v 2 m00
+v 3 c4
+v 4 m02
+v 5 c1
+e 0 1 ba>m20>m20
+e 1 2 a>m20>m00
+e 1 3 b>m20>c4
+e 2 3 a>m00>c4
+e 2 4 a>m00>m02
+e 4 5 a>m02>c1
+t # src/xterm.c$$$e70373538328dd071a73532878492ecb2fd1ee88
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 m20
+v 4 c0
+v 5 c0
+v 6 m00
+v 7 c1
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 ba>m20>m20
+e 1 5 a>m20>c0
+e 1 6 a>m20>m00
+e 3 4 a>m20>c0
+e 6 7 a>m00>c1
+t # src/xterm.c$$$43356423a285d41ce3edc00c3ed115b184e2c720
+v 0 m20
+v 1 m20
+v 2 m20
+v 3 c2
+v 4 c0
+v 5 c4
+v 6 m00
+e 0 1 ba>m20>m20
+e 1 2 ba>m20>m20
+e 1 5 b>m20>c4
+e 1 6 a>m20>m00
+e 2 3 b>m20>c2
+e 2 4 a>m20>c0
+e 6 5 a>m00>c4
+t # src/xterm.c$$$513fe2d6ff9808d54e9a9ff6eb82ef1518d4d6ad
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 m20
+v 4 c2
+v 5 c0
+v 6 c0
+v 7 m00
+v 8 c1
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 ba>m20>m20
+e 1 6 a>m20>c0
+e 1 7 a>m20>m00
+e 3 4 b>m20>c2
+e 3 5 a>m20>c0
+e 7 8 a>m00>c1
+t # src/gtkutil.c$$$a5509a2a5e4bb356fc800c4d3a2c7e8c83710a70
+v 0 m20
+v 1 m20
+v 2 m20
+v 3 c2
+v 4 c0
+v 5 c2
+v 6 m00
+v 7 c1
+v 8 m02
+v 9 c1
+v 10 m00
+v 11 c1
+e 0 1 ba>m20>m20
+e 1 2 ba>m20>m20
+e 1 5 b>m20>c2
+e 1 6 a>m20>m00
+e 1 10 a>m20>m00
+e 2 3 b>m20>c2
+e 2 4 a>m20>c0
+e 6 7 a>m00>c1
+e 6 8 a>m00>m02
+e 8 9 a>m02>c1
+e 10 11 a>m00>c1
+t # lib/nstrftime.c$$$f05a93e8232e6f56458ac16d733b03e96a63e930
+v 0 m20
+v 1 m10
+v 2 c3
+v 3 c2
+v 4 c0
+v 5 m10
+v 6 c5
+v 7 m20
+v 8 c2
+v 9 c0
+e 0 1 b>m20>m10
+e 0 3 b>m20>c2
+e 0 4 a>m20>c0
+e 0 5 b>m20>m10
+e 0 6 a>m20>c5
+e 0 7 ba>m20>m20
+e 1 2 b>m10>c3
+e 5 6 b>m10>c5
+e 7 8 b>m20>c2
+e 7 9 a>m20>c0
+t # lib/string.in.h$$$f05a93e8232e6f56458ac16d733b03e96a63e930
+v 0 m20
+v 1 m20
+v 2 c0
+v 3 m00
+v 4 m00
+v 5 c1
+v 6 m02
+v 7 c1
+v 8 m00
+v 9 c1
+v 10 m00
+v 11 m00
+v 12 c1
+v 13 m02
+v 14 c1
+e 0 1 ba>m20>m20
+e 1 2 a>m20>c0
+e 1 3 a>m20>m00
+e 1 8 a>m20>m00
+e 1 10 a>m20>m00
+e 3 4 a>m00>m00
+e 4 5 a>m00>c1
+e 4 6 a>m00>m02
+e 6 7 a>m02>c1
+e 8 9 a>m00>c1
+e 10 11 a>m00>m00
+e 11 12 a>m00>c1
+e 11 13 a>m00>m02
+e 13 14 a>m02>c1
+t # lib/sys_random.in.h$$$f05a93e8232e6f56458ac16d733b03e96a63e930
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 m10
+v 4 c6
+v 5 c0
+v 6 m00
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 b>m20>m10
+e 1 5 a>m20>c0
+e 1 6 a>m20>m00
+e 3 4 b>m10>c6
+e 6 4 a>m00>c6
+t # src/xterm.c$$$4544651b3f62ce4a104a058e8c6aee42c23b76bc
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 c0
+v 4 m20
+v 5 m10
+v 6 c3
+v 7 m00
+v 8 c1
+e 0 1 ba>m20>m20
+e 0 4 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 a>m20>c0
+e 4 5 b>m20>m10
+e 4 7 a>m20>m00
+e 5 6 b>m10>c3
+e 7 8 a>m00>c1
+t # src/font.c$$$1b2511fa2aed460120a36765ba16c14e355eef1d
+v 0 m20
+v 1 m10
+v 2 c5
+v 3 c3
+v 4 c5
+v 5 c0
+e 0 1 b>m20>m10
+e 0 2 a>m20>c5
+e 0 4 a>m20>c5
+e 0 5 a>m20>c0
+e 1 2 b>m10>c5
+e 1 3 b>m10>c3
+e 1 4 b>m10>c5
+t # src/timefns.c$$$73d6b19024db10b65ba368bd079223157d73e737
+v 0 m20
+v 1 c2
+v 2 m10
+v 3 c3
+v 4 c0
+e 0 1 b>m20>c2
+e 0 2 b>m20>m10
+e 0 4 a>m20>c0
+e 2 3 b>m10>c3
+t # src/xterm.c$$$5181276b4362b25cd91818bc0b4e6fbd985b5882
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 m00
+v 4 c1
+v 5 c4
+v 6 c1
+v 7 c0
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 a>m20>m00
+e 1 5 b>m20>c4
+e 1 7 a>m20>c0
+e 3 4 a>m00>c1
+e 3 5 a>m00>c4
+e 3 6 a>m00>c1
+t # src/callproc.c$$$a37484992651fa6bdee9d5181fb6b096dbf41426
+v 0 m20
+v 1 m00
+v 2 c1
+v 3 m00
+v 4 c1
+v 5 m00
+v 6 c4
+v 7 m20
+v 8 c0
+e 0 1 a>m20>m00
+e 0 3 a>m20>m00
+e 0 5 a>m20>m00
+e 0 6 b>m20>c4
+e 0 7 ba>m20>m20
+e 1 2 a>m00>c1
+e 3 4 a>m00>c1
+e 5 6 a>m00>c4
+e 7 8 a>m20>c0
+t # src/sqlite.c$$$ebf59d1a28b49b391b8025d7017bacf853c01aa2
+v 0 m20
+v 1 m20
+v 2 m20
+v 3 c2
+v 4 m00
+v 5 c1
+v 6 m00
+v 7 c4
+v 8 m00
+v 9 c4
+v 10 m20
+v 11 m00
+v 12 c4
+e 0 1 ba>m20>m20
+e 0 10 ba>m20>m20
+e 1 2 ba>m20>m20
+e 1 8 a>m20>m00
+e 1 9 b>m20>c4
+e 2 3 b>m20>c2
+e 2 4 a>m20>m00
+e 2 6 a>m20>m00
+e 2 7 b>m20>c4
+e 4 5 a>m00>c1
+e 6 7 a>m00>c4
+e 8 9 a>m00>c4
+e 10 11 a>m20>m00
+e 10 12 b>m20>c4
+e 11 12 a>m00>c4
+t # src/pdumper.c$$$3d38d1d1345aa65c4018b42e6c648606e32216f8
+v 0 m20
+v 1 m20
+v 2 m10
+v 3 c6
+v 4 m00
+v 5 c0
+e 0 1 ba>m20>m20
+e 1 2 b>m20>m10
+e 1 4 a>m20>m00
+e 1 5 a>m20>c0
+e 2 3 b>m10>c6
+e 4 3 a>m00>c6
+t # src/image.c$$$2e8d1ad0f206b3e1a8bd10f9def6679be5b4c086
+v 0 m20
+v 1 m10
+v 2 m10
+v 3 c3
+v 4 m20
+v 5 m10
+v 6 c3
+e 0 1 b>m20>m10
+e 0 4 ba>m20>m20
+e 1 2 b>m10>m10
+e 2 3 b>m10>c3
+e 4 5 b>m20>m10
+e 5 6 b>m10>c3
+t # src/gtkutil.c$$$7314c12e64ef5b185e3fd52d8dc1111eb730bdad
+v 0 m20
+v 1 m20
+v 2 c4
+v 3 m00
+v 4 m02
+v 5 c1
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c4
+e 1 3 a>m20>m00
+e 3 2 a>m00>c4
+e 3 4 a>m00>m02
+e 4 5 a>m02>c1
+t # src/frame.c$$$f99745c78ec13c02817dbd10eb1c4c041add7c21
+v 0 m20
+v 1 m20
+v 2 m10
+v 3 c5
+v 4 m10
+v 5 c3
+e 0 1 ba>m20>m20
+e 1 2 b>m20>m10
+e 1 3 a>m20>c5
+e 1 4 b>m20>m10
+e 2 3 b>m10>c5
+e 4 5 b>m10>c3
+t # src/lisp.h$$$1e2bc1bbf47782df7f9b8051f33904432c55e6e4
+v 0 m20
+v 1 m20
+v 2 c0
+v 3 m00
+v 4 c1
+e 0 1 ba>m20>m20
+e 1 2 a>m20>c0
+e 1 3 a>m20>m00
+e 3 4 a>m00>c1
+t # src/alloc.c$$$9c222b9c1a7f91497a37567b4d7de3a511fff069
+v 0 m20
+v 1 c2
+v 2 m00
+v 3 c1
+v 4 c4
+v 5 c1
+v 6 c4
+v 7 c1
+v 8 c4
+v 9 c1
+v 10 c4
+v 11 m00
+v 12 c4
+v 13 c1
+v 14 c4
+e 0 1 b>m20>c2
+e 0 2 a>m20>m00
+e 0 4 b>m20>c4
+e 0 6 b>m20>c4
+e 0 8 b>m20>c4
+e 0 10 b>m20>c4
+e 0 11 a>m20>m00
+e 0 12 b>m20>c4
+e 0 14 b>m20>c4
+e 2 3 a>m00>c1
+e 2 4 a>m00>c4
+e 2 5 a>m00>c1
+e 2 6 a>m00>c4
+e 2 7 a>m00>c1
+e 2 8 a>m00>c4
+e 2 9 a>m00>c1
+e 2 10 a>m00>c4
+e 11 12 a>m00>c4
+e 11 13 a>m00>c1
+e 11 14 a>m00>c4
+t # src/comp.c$$$9c222b9c1a7f91497a37567b4d7de3a511fff069
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 m00
+v 4 c1
+v 5 c0
+v 6 m00
+v 7 c1
+v 8 m00
+v 9 c1
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 a>m20>m00
+e 1 5 a>m20>c0
+e 1 6 a>m20>m00
+e 1 8 a>m20>m00
+e 3 4 a>m00>c1
+e 6 7 a>m00>c1
+e 8 9 a>m00>c1
+t # src/comp.h$$$9c222b9c1a7f91497a37567b4d7de3a511fff069
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 m10
+v 4 c3
+v 5 m12
+v 6 c3
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 b>m20>m10
+e 3 4 b>m10>c3
+e 3 5 b>m10>m12
+e 5 6 b>m12>c3
+t # src/data.c$$$9c222b9c1a7f91497a37567b4d7de3a511fff069
+v 0 m20
+v 1 c2
+v 2 m00
+v 3 c1
+v 4 c0
+v 5 m20
+v 6 c2
+v 7 c0
+e 0 1 b>m20>c2
+e 0 2 a>m20>m00
+e 0 4 a>m20>c0
+e 0 5 ba>m20>m20
+e 2 3 a>m00>c1
+e 5 6 b>m20>c2
+e 5 7 a>m20>c0
+t # src/eval.c$$$9c222b9c1a7f91497a37567b4d7de3a511fff069
+v 0 m20
+v 1 c2
+v 2 m00
+v 3 c1
+v 4 m02
+v 5 c1
+v 6 m00
+v 7 c4
+v 8 c1
+v 9 c4
+e 0 1 b>m20>c2
+e 0 2 a>m20>m00
+e 0 6 a>m20>m00
+e 0 7 b>m20>c4
+e 0 9 b>m20>c4
+e 2 3 a>m00>c1
+e 2 4 a>m00>m02
+e 4 5 a>m02>c1
+e 6 7 a>m00>c4
+e 6 8 a>m00>c1
+e 6 9 a>m00>c4
+t # src/lisp.h$$$9c222b9c1a7f91497a37567b4d7de3a511fff069
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 m00
+v 4 c1
+v 5 m20
+v 6 c2
+v 7 c0
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 a>m20>m00
+e 1 5 ba>m20>m20
+e 3 4 a>m00>c1
+e 5 6 b>m20>c2
+e 5 7 a>m20>c0
+t # src/lread.c$$$9c222b9c1a7f91497a37567b4d7de3a511fff069
+v 0 m20
+v 1 c2
+v 2 m00
+v 3 c1
+v 4 c0
+v 5 m00
+v 6 c1
+v 7 m02
+v 8 c1
+e 0 1 b>m20>c2
+e 0 2 a>m20>m00
+e 0 4 a>m20>c0
+e 0 5 a>m20>m00
+e 2 3 a>m00>c1
+e 5 6 a>m00>c1
+e 5 7 a>m00>m02
+e 7 8 a>m02>c1
+t # src/pdumper.c$$$9c222b9c1a7f91497a37567b4d7de3a511fff069
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 m00
+v 4 c1
+v 5 m02
+v 6 c1
+v 7 c0
+v 8 m00
+v 9 c1
+v 10 c1
+v 11 m20
+v 12 m20
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 a>m20>m00
+e 1 7 a>m20>c0
+e 1 8 a>m20>m00
+e 1 11 ba>m20>m20
+e 1 12 ba>m20>m20
+e 3 4 a>m00>c1
+e 3 5 a>m00>m02
+e 5 6 a>m02>c1
+e 8 9 a>m00>c1
+e 8 10 a>m00>c1
+t # src/gtkutil.c$$$72d223a5445831d681a1fbc6f23370cef5252cd3
+v 0 m20
+v 1 m20
+v 2 m00
+v 3 c1
+v 4 m00
+v 5 c1
+e 0 1 ba>m20>m20
+e 1 2 a>m20>m00
+e 1 4 a>m20>m00
+e 2 3 a>m00>c1
+e 4 5 a>m00>c1
+t # src/pgtkterm.c$$$b3277883f35c5ac9980b4ef05dc99fa8b5ce6792
+v 0 m20
+v 1 m00
+v 2 c1
+v 3 c0
+v 4 m00
+v 5 c1
+v 6 m00
+v 7 c1
+v 8 m00
+v 9 c1
+e 0 1 a>m20>m00
+e 0 3 a>m20>c0
+e 0 4 a>m20>m00
+e 0 6 a>m20>m00
+e 0 8 a>m20>m00
+e 1 2 a>m00>c1
+e 4 5 a>m00>c1
+e 6 7 a>m00>c1
+e 8 9 a>m00>c1
+t # src/process.c$$$105205c86bc082eb73b15d6329745e3629ab9431
+v 0 m20
+v 1 m20
+v 2 m10
+v 3 c3
+v 4 m13
+v 5 c5
+v 6 m13
+v 7 c5
+v 8 c5
+v 9 m23
+v 10 m00
+v 11 m00
+e 0 1 ba>m20>m20
+e 1 2 b>m20>m10
+e 1 7 a>m20>c5
+e 1 10 a>m20>m00
+e 1 11 a>m20>m00
+e 2 3 b>m10>c3
+e 2 4 b>m10>m13
+e 4 5 b>m13>c5
+e 4 6 b>m13>m13
+e 6 7 b>m13>c5
+e 6 8 b>m13>c5
+e 6 9 b>m13>m23
+e 10 5 a>m00>c5
+e 11 8 a>m00>c5
+e 11 9 a>m00>m23
+t # src/xwidget.c$$$bd321f78eb8db839147a13a8543c0d3ca878f242
+v 0 m20
+v 1 m20
+v 2 m00
+v 3 c1
+v 4 m00
+v 5 c1
+e 0 1 ba>m20>m20
+e 1 2 a>m20>m00
+e 1 4 a>m20>m00
+e 2 3 a>m00>c1
+e 4 5 a>m00>c1
+t # src/xterm.c$$$c56e05b968d437b807a194ecdcd308b045143846
+v 0 m20
+v 1 m20
+v 2 m20
+v 3 c7
+v 4 m20
+v 5 m20
+v 6 m20
+v 7 m20
+v 8 c7
+v 9 m20
+v 10 c7
+v 11 m00
+e 0 1 ba>m20>m20
+e 0 2 a>m20>m20
+e 0 11 a>m20>m00
+e 1 2 b>m20>m20
+e 1 3 b>m20>c7
+e 1 4 b>m20>m20
+e 1 5 b>m20>m20
+e 1 6 b>m20>m20
+e 1 7 b>m20>m20
+e 1 8 b>m20>c7
+e 1 9 b>m20>m20
+e 1 10 b>m20>c7
+e 11 3 a>m00>c7
+e 11 4 a>m00>m20
+e 11 5 a>m00>m20
+e 11 6 a>m00>m20
+e 11 7 a>m00>m20
+e 11 8 a>m00>c7
+e 11 9 a>m00>m20
+e 11 10 a>m00>c7
+t # src/xdisp.c$$$a13b437c81f1f2e54555e7281480ea7e8eee8753
+v 0 m20
+v 1 c0
+v 2 m00
+v 3 c1
+v 4 c2
+e 0 1 a>m20>c0
+e 0 2 a>m20>m00
+e 0 4 b>m20>c2
+e 2 3 a>m00>c1
+t # src/gtkutil.c$$$901938109f7b5574e97e787bee10441086680de8
+v 0 m20
+v 1 m20
+v 2 m10
+v 3 c3
+v 4 c2
+v 5 m20
+v 6 c2
+e 0 1 ba>m20>m20
+e 1 2 b>m20>m10
+e 1 4 b>m20>c2
+e 1 5 ba>m20>m20
+e 2 3 b>m10>c3
+e 5 6 b>m20>c2
+t # src/pgtkfns.c$$$901938109f7b5574e97e787bee10441086680de8
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 m10
+v 4 c3
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 b>m20>m10
+e 3 4 b>m10>c3
+t # src/pgtkterm.c$$$901938109f7b5574e97e787bee10441086680de8
+v 0 m20
+v 1 c2
+v 2 m10
+v 3 c3
+v 4 m10
+v 5 c3
+v 6 m10
+v 7 c3
+e 0 1 b>m20>c2
+e 0 2 b>m20>m10
+e 0 4 b>m20>m10
+e 0 6 b>m20>m10
+e 2 3 b>m10>c3
+e 4 5 b>m10>c3
+e 6 7 b>m10>c3
+t # src/pgtkterm.h$$$901938109f7b5574e97e787bee10441086680de8
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 m10
+v 4 c3
+v 5 m12
+v 6 c3
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 b>m20>m10
+e 3 4 b>m10>c3
+e 3 5 b>m10>m12
+e 5 6 b>m12>c3
+t # src/frame.c$$$4a5aa814ba7dc25ff87a94f640b3b675265766bd
+v 0 m20
+v 1 m10
+v 2 c5
+v 3 m12
+v 4 c3
+e 0 1 b>m20>m10
+e 0 2 a>m20>c5
+e 1 2 b>m10>c5
+e 1 3 b>m10>m12
+e 3 4 b>m12>c3
+t # src/emacsgtkfixed.h$$$a68575a8146277bd08b4d09b7ca4329c0e5212e0
+v 0 m20
+v 1 m20
+v 2 m00
+v 3 c4
+v 4 m00
+v 5 c4
+e 0 1 ba>m20>m20
+e 1 2 a>m20>m00
+e 1 3 b>m20>c4
+e 1 4 a>m20>m00
+e 1 5 b>m20>c4
+e 2 3 a>m00>c4
+e 4 5 a>m00>c4
+t # src/xdisp.c$$$d791cd556d622accb935e4dd230023c485d1e07a
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m20
+v 4 c2
+v 5 m00
+v 6 c1
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 ba>m20>m20
+e 0 5 a>m20>m00
+e 3 4 b>m20>c2
+e 5 6 a>m00>c1
+t # src/xterm.c$$$8aea4721d9fadfaaabfea7843df71b62e3fb94a7
+v 0 m20
+v 1 m20
+v 2 m00
+v 3 c1
+v 4 m00
+v 5 c1
+v 6 m10
+v 7 c3
+v 8 m20
+v 9 c2
+e 0 1 ba>m20>m20
+e 1 2 a>m20>m00
+e 1 4 a>m20>m00
+e 1 6 b>m20>m10
+e 1 8 ba>m20>m20
+e 2 3 a>m00>c1
+e 4 5 a>m00>c1
+e 6 7 b>m10>c3
+e 8 9 b>m20>c2
+t # src/xterm.c$$$5fcff0d2cbe33faef8bbb753a5f02fb26b1d7e5c
+v 0 m20
+v 1 m20
+v 2 m00
+v 3 c4
+v 4 c1
+v 5 c4
+v 6 c2
+e 0 1 ba>m20>m20
+e 1 2 a>m20>m00
+e 1 3 b>m20>c4
+e 1 5 b>m20>c4
+e 1 6 b>m20>c2
+e 2 3 a>m00>c4
+e 2 4 a>m00>c1
+e 2 5 a>m00>c4
+t # src/xterm.c$$$39f3604e229ff349742dab0d6a5c7b4500530c07
+v 0 m20
+v 1 m20
+v 2 m00
+v 3 c1
+v 4 m00
+v 5 c1
+v 6 m00
+v 7 c1
+e 0 1 ba>m20>m20
+e 1 2 a>m20>m00
+e 1 4 a>m20>m00
+e 1 6 a>m20>m00
+e 2 3 a>m00>c1
+e 4 5 a>m00>c1
+e 6 7 a>m00>c1
+t # src/xwidget.c$$$39f3604e229ff349742dab0d6a5c7b4500530c07
+v 0 m20
+v 1 m20
+v 2 m00
+v 3 c1
+v 4 c0
+v 5 m20
+v 6 m00
+v 7 c4
+v 8 m02
+v 9 c1
+v 10 m00
+v 11 c1
+v 12 m20
+v 13 m00
+v 14 c1
+e 0 1 ba>m20>m20
+e 0 4 a>m20>c0
+e 0 5 ba>m20>m20
+e 0 12 ba>m20>m20
+e 1 2 a>m20>m00
+e 2 3 a>m00>c1
+e 5 6 a>m20>m00
+e 5 7 b>m20>c4
+e 5 10 a>m20>m00
+e 6 7 a>m00>c4
+e 6 8 a>m00>m02
+e 8 9 a>m02>c1
+e 10 11 a>m00>c1
+e 12 13 a>m20>m00
+e 13 14 a>m00>c1
+t # src/dispextern.h$$$85a078e7853d708e599f97a3de06aed3a1c090ea
+v 0 m20
+v 1 m20
+v 2 m00
+v 3 c1
+v 4 m20
+v 5 m10
+v 6 c5
+v 7 m00
+v 8 m00
+v 9 c1
+v 10 m20
+v 11 m10
+v 12 c5
+v 13 m00
+e 0 1 ba>m20>m20
+e 1 2 a>m20>m00
+e 1 4 ba>m20>m20
+e 1 10 ba>m20>m20
+e 2 3 a>m00>c1
+e 4 5 b>m20>m10
+e 4 7 a>m20>m00
+e 4 8 a>m20>m00
+e 5 6 b>m10>c5
+e 7 6 a>m00>c5
+e 8 9 a>m00>c1
+e 10 11 b>m20>m10
+e 10 13 a>m20>m00
+e 11 12 b>m10>c5
+e 13 12 a>m00>c5
+t # src/dispnew.c$$$85a078e7853d708e599f97a3de06aed3a1c090ea
+v 0 m20
+v 1 m10
+v 2 c5
+v 3 m00
+v 4 m00
+v 5 c1
+e 0 1 b>m20>m10
+e 0 3 a>m20>m00
+e 0 4 a>m20>m00
+e 1 2 b>m10>c5
+e 3 2 a>m00>c5
+e 4 5 a>m00>c1
+t # src/font.h$$$85a078e7853d708e599f97a3de06aed3a1c090ea
+v 0 m20
+v 1 m20
+v 2 m10
+v 3 c5
+v 4 m20
+v 5 c5
+v 6 m00
+v 7 m10
+v 8 c6
+v 9 m22
+v 10 m00
+e 0 1 ba>m20>m20
+e 1 2 b>m20>m10
+e 1 6 a>m20>m00
+e 1 7 b>m20>m10
+e 1 10 a>m20>m00
+e 2 3 b>m10>c5
+e 2 4 b>m10>m20
+e 2 5 b>m10>c5
+e 6 3 a>m00>c5
+e 6 4 a>m00>m20
+e 6 5 a>m00>c5
+e 7 8 b>m10>c6
+e 7 9 b>m10>m22
+e 10 8 a>m00>c6
+e 10 9 a>m00>m22
+t # src/frame.h$$$85a078e7853d708e599f97a3de06aed3a1c090ea
+v 0 m20
+v 1 m20
+v 2 c0
+v 3 m00
+v 4 c1
+v 5 m02
+v 6 c1
+v 7 m00
+v 8 c1
+e 0 1 ba>m20>m20
+e 1 2 a>m20>c0
+e 1 3 a>m20>m00
+e 1 7 a>m20>m00
+e 3 4 a>m00>c1
+e 3 5 a>m00>m02
+e 5 6 a>m02>c1
+e 7 8 a>m00>c1
+t # src/ftfont.h$$$85a078e7853d708e599f97a3de06aed3a1c090ea
+v 0 m20
+v 1 m20
+v 2 m00
+v 3 c1
+v 4 m10
+v 5 c5
+v 6 m22
+v 7 m00
+e 0 1 ba>m20>m20
+e 1 2 a>m20>m00
+e 1 4 b>m20>m10
+e 1 7 a>m20>m00
+e 2 3 a>m00>c1
+e 4 5 b>m10>c5
+e 4 6 b>m10>m22
+e 7 5 a>m00>c5
+e 7 6 a>m00>m22
+t # src/lisp.h$$$85a078e7853d708e599f97a3de06aed3a1c090ea
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 c0
+v 4 m00
+v 5 m20
+v 6 m02
+v 7 c1
+v 8 m10
+v 9 c5
+v 10 m00
+v 11 m10
+v 12 c5
+v 13 m00
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 a>m20>c0
+e 1 4 a>m20>m00
+e 1 5 b>m20>m20
+e 1 8 b>m20>m10
+e 1 10 a>m20>m00
+e 1 11 b>m20>m10
+e 1 13 a>m20>m00
+e 4 5 a>m00>m20
+e 4 6 a>m00>m02
+e 6 7 a>m02>c1
+e 8 9 b>m10>c5
+e 10 9 a>m00>c5
+e 11 12 b>m10>c5
+e 13 12 a>m00>c5
+t # src/menu.c$$$85a078e7853d708e599f97a3de06aed3a1c090ea
+v 0 m20
+v 1 m10
+v 2 c5
+v 3 m00
+v 4 m10
+v 5 c5
+v 6 m00
+v 7 m20
+v 8 c5
+v 9 m00
+e 0 1 b>m20>m10
+e 0 3 a>m20>m00
+e 0 4 b>m20>m10
+e 0 6 a>m20>m00
+e 0 7 ba>m20>m20
+e 0 9 a>m20>m00
+e 1 2 b>m10>c5
+e 3 2 a>m00>c5
+e 4 5 b>m10>c5
+e 6 5 a>m00>c5
+e 7 8 b>m20>c5
+e 9 8 a>m00>c5
+t # src/process.c$$$85a078e7853d708e599f97a3de06aed3a1c090ea
+v 0 m20
+v 1 m20
+v 2 m10
+v 3 c5
+v 4 m00
+v 5 m10
+v 6 c5
+v 7 c7
+v 8 m00
+v 9 m00
+v 10 m02
+v 11 c1
+v 12 m10
+v 13 c5
+v 14 m00
+e 0 1 ba>m20>m20
+e 1 2 b>m20>m10
+e 1 4 a>m20>m00
+e 1 5 b>m20>m10
+e 1 8 a>m20>m00
+e 1 12 b>m20>m10
+e 1 14 a>m20>m00
+e 2 3 b>m10>c5
+e 4 3 a>m00>c5
+e 5 6 b>m10>c5
+e 5 7 b>m10>c7
+e 8 6 a>m00>c5
+e 8 9 a>m00>m00
+e 9 7 a>m00>c7
+e 9 10 a>m00>m02
+e 10 11 a>m02>c1
+e 12 13 b>m10>c5
+e 14 13 a>m00>c5
+t # src/termhooks.h$$$85a078e7853d708e599f97a3de06aed3a1c090ea
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 c0
+v 4 m20
+v 5 m03
+v 6 c1
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 a>m20>c0
+e 1 4 ba>m20>m20
+e 4 5 a>m20>m03
+e 5 6 a>m03>c1
+t # src/xdisp.c$$$85a078e7853d708e599f97a3de06aed3a1c090ea
+v 0 m20
+v 1 m00
+v 2 c1
+v 3 m00
+v 4 c1
+v 5 m00
+v 6 c1
+e 0 1 a>m20>m00
+e 0 3 a>m20>m00
+e 0 5 a>m20>m00
+e 1 2 a>m00>c1
+e 3 4 a>m00>c1
+e 5 6 a>m00>c1
+t # src/xfaces.c$$$85a078e7853d708e599f97a3de06aed3a1c090ea
+v 0 m20
+v 1 m20
+v 2 m00
+v 3 c1
+v 4 m10
+v 5 c3
+v 6 c5
+v 7 m00
+v 8 c1
+e 0 1 ba>m20>m20
+e 0 4 b>m20>m10
+e 0 7 a>m20>m00
+e 1 2 a>m20>m00
+e 2 3 a>m00>c1
+e 4 5 b>m10>c3
+e 4 6 b>m10>c5
+e 7 6 a>m00>c5
+e 7 8 a>m00>c1
+t # src/xwidget.c$$$3b68662a8226805c397f2a9dbd427a7ce716273b
+v 0 m20
+v 1 m20
+v 2 m00
+v 3 c4
+v 4 m20
+v 5 m00
+v 6 c1
+v 7 m20
+v 8 m00
+v 9 c1
+v 10 m20
+v 11 c2
+v 12 c0
+v 13 m00
+v 14 c1
+e 0 1 ba>m20>m20
+e 0 4 ba>m20>m20
+e 0 7 ba>m20>m20
+e 0 10 ba>m20>m20
+e 0 13 a>m20>m00
+e 1 2 a>m20>m00
+e 1 3 b>m20>c4
+e 2 3 a>m00>c4
+e 4 5 a>m20>m00
+e 5 6 a>m00>c1
+e 7 8 a>m20>m00
+e 8 9 a>m00>c1
+e 10 11 b>m20>c2
+e 10 12 a>m20>c0
+e 13 14 a>m00>c1
+t # src/xfns.c$$$487ec3cf2a34496866153474507ab741d8dfea63
+v 0 m20
+v 1 m00
+v 2 c1
+v 3 m00
+v 4 c1
+v 5 m20
+v 6 m00
+v 7 c1
+v 8 m20
+v 9 m00
+v 10 c1
+v 11 m00
+v 12 c1
+e 0 1 a>m20>m00
+e 0 3 a>m20>m00
+e 0 5 ba>m20>m20
+e 0 11 a>m20>m00
+e 1 2 a>m00>c1
+e 3 4 a>m00>c1
+e 5 6 a>m20>m00
+e 5 8 ba>m20>m20
+e 6 7 a>m00>c1
+e 8 9 a>m20>m00
+e 9 10 a>m00>c1
+e 11 12 a>m00>c1
+t # src/xmenu.c$$$487ec3cf2a34496866153474507ab741d8dfea63
+v 0 m20
+v 1 m00
+v 2 c4
+v 3 m02
+v 4 c1
+e 0 1 a>m20>m00
+e 0 2 b>m20>c4
+e 1 2 a>m00>c4
+e 1 3 a>m00>m02
+e 3 4 a>m02>c1
+t # src/xterm.h$$$487ec3cf2a34496866153474507ab741d8dfea63
+v 0 m20
+v 1 m20
+v 2 m00
+v 3 c1
+v 4 m00
+v 5 c1
+v 6 m00
+v 7 c1
+v 8 m00
+v 9 c1
+v 10 m00
+v 11 c1
+e 0 1 ba>m20>m20
+e 1 2 a>m20>m00
+e 1 4 a>m20>m00
+e 1 6 a>m20>m00
+e 1 8 a>m20>m00
+e 1 10 a>m20>m00
+e 2 3 a>m00>c1
+e 4 5 a>m00>c1
+e 6 7 a>m00>c1
+e 8 9 a>m00>c1
+e 10 11 a>m00>c1
+t # src/xwidget.c$$$fbf361f593df52ff414a4483f105e2e4c1a921e2
+v 0 m20
+v 1 c0
+v 2 m00
+v 3 c1
+e 0 1 a>m20>c0
+e 0 2 a>m20>m00
+e 2 3 a>m00>c1
+t # src/xwidget.c$$$b4f0c4c694e1c00b4025fe16039b8940d97c66aa
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 c0
+v 4 c0
+v 5 m00
+v 6 c1
+e 0 1 ba>m20>m20
+e 0 4 a>m20>c0
+e 0 5 a>m20>m00
+e 1 2 b>m20>c2
+e 1 3 a>m20>c0
+e 5 6 a>m00>c1
+t # src/xwidget.c$$$9ae741750cc3e96cacb3c496f7c941e5fc3f1052
+v 0 m20
+v 1 m20
+v 2 c0
+v 3 m20
+v 4 c0
+v 5 m20
+v 6 c0
+v 7 c0
+v 8 m00
+v 9 c1
+v 10 m02
+v 11 c1
+v 12 c2
+e 0 1 ba>m20>m20
+e 0 3 ba>m20>m20
+e 0 5 ba>m20>m20
+e 0 7 a>m20>c0
+e 0 8 a>m20>m00
+e 0 12 b>m20>c2
+e 1 2 a>m20>c0
+e 3 4 a>m20>c0
+e 5 6 a>m20>c0
+e 8 9 a>m00>c1
+e 8 10 a>m00>m02
+e 10 11 a>m02>c1
+t # src/pgtkterm.c$$$6c1f0dd709a77a2fade006b5957553fc5abd7631
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m10
+v 4 c3
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 b>m20>m10
+e 3 4 b>m10>c3
+t # src/process.c$$$8e5a769965313a7a1c42b5992ed24e8b0ea71ead
+v 0 m20
+v 1 m20
+v 2 m20
+v 3 m10
+v 4 c5
+v 5 m12
+v 6 c3
+v 7 m20
+v 8 c2
+v 9 c0
+e 0 1 ba>m20>m20
+e 1 2 ba>m20>m20
+e 1 7 ba>m20>m20
+e 2 3 b>m20>m10
+e 2 4 a>m20>c5
+e 3 4 b>m10>c5
+e 3 5 b>m10>m12
+e 5 6 b>m12>c3
+e 7 8 b>m20>c2
+e 7 9 a>m20>c0
+t # src/unexelf.c$$$8e5a769965313a7a1c42b5992ed24e8b0ea71ead
+v 0 m20
+v 1 m10
+v 2 c3
+v 3 m10
+v 4 c3
+e 0 1 b>m20>m10
+e 0 3 b>m20>m10
+e 1 2 b>m10>c3
+e 3 4 b>m10>c3
+t # src/lisp.h$$$c95270ad4b48204880ae10ec730eb121ffa14abe
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 c0
+v 4 m20
+v 5 c2
+v 6 c0
+v 7 m02
+v 8 c1
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 a>m20>c0
+e 1 4 ba>m20>m20
+e 4 5 b>m20>c2
+e 4 6 a>m20>c0
+e 4 7 a>m20>m02
+e 7 8 a>m02>c1
+t # src/regex.c$$$66a5abb102ec1d6e4c327632ef235d1eb6433291
+v 0 m20
+v 1 m20
+v 2 c4
+v 3 m10
+v 4 c3
+v 5 m12
+v 6 c3
+v 7 c2
+e 0 1 ba>m20>m20
+e 0 2 b>m20>c4
+e 0 3 b>m20>m10
+e 0 7 b>m20>c2
+e 1 2 a>m20>c4
+e 3 4 b>m10>c3
+e 3 5 b>m10>m12
+e 5 6 b>m12>c3
+t # nt/cmdproxy.c$$$a486fabb41cdbaa5813c2687fd4008945297d71d
+v 0 m20
+v 1 m00
+v 2 c1
+v 3 m02
+v 4 c1
+v 5 c0
+v 6 c2
+e 0 1 a>m20>m00
+e 0 5 a>m20>c0
+e 0 6 b>m20>c2
+e 1 2 a>m00>c1
+e 1 3 a>m00>m02
+e 3 4 a>m02>c1
+t # src/ftcrfont.c$$$ebb96114d88af64cbb72f42052cb359ba8010aa2
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m00
+v 4 c1
+v 5 m00
+v 6 c1
+v 7 m00
+v 8 c1
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 a>m20>m00
+e 0 5 a>m20>m00
+e 0 7 a>m20>m00
+e 3 4 a>m00>c1
+e 5 6 a>m00>c1
+e 7 8 a>m00>c1
+t # src/ftxfont.c$$$ebb96114d88af64cbb72f42052cb359ba8010aa2
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m00
+v 4 c1
+v 5 m00
+v 6 c1
+v 7 m00
+v 8 c1
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 a>m20>m00
+e 0 5 a>m20>m00
+e 0 7 a>m20>m00
+e 3 4 a>m00>c1
+e 5 6 a>m00>c1
+e 7 8 a>m00>c1
+t # src/xftfont.c$$$ebb96114d88af64cbb72f42052cb359ba8010aa2
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m20
+v 4 m00
+v 5 c1
+v 6 m00
+v 7 c1
+v 8 m00
+v 9 c1
+v 10 m10
+v 11 c3
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 ba>m20>m20
+e 0 4 a>m20>m00
+e 0 6 a>m20>m00
+e 0 8 a>m20>m00
+e 0 10 b>m20>m10
+e 4 5 a>m00>c1
+e 6 7 a>m00>c1
+e 8 9 a>m00>c1
+e 10 11 b>m10>c3
+t # src/regex.c$$$b7f3a3055c92010afde318c1108b02e4424a3bac
+v 0 m20
+v 1 m10
+v 2 c3
+v 3 m12
+v 4 c3
+v 5 c0
+v 6 c2
+e 0 1 b>m20>m10
+e 0 5 a>m20>c0
+e 0 6 b>m20>c2
+e 1 2 b>m10>c3
+e 1 3 b>m10>m12
+e 3 4 b>m12>c3
+t # src/emacs.c$$$9de7c6752bffa99535bb42320a2a1936118a4515
+v 0 m20
+v 1 m10
+v 2 c3
+v 3 m12
+v 4 c7
+v 5 m20
+v 6 c7
+v 7 m00
+e 0 1 b>m20>m10
+e 0 7 a>m20>m00
+e 1 2 b>m10>c3
+e 1 3 b>m10>m12
+e 3 4 b>m12>c7
+e 3 5 b>m12>m20
+e 3 6 b>m12>c7
+e 7 4 a>m00>c7
+e 7 5 a>m00>m20
+e 7 6 a>m00>c7
+t # src/lisp.h$$$9de7c6752bffa99535bb42320a2a1936118a4515
+v 0 m20
+v 1 m20
+v 2 m00
+v 3 c1
+v 4 m03
+v 5 c4
+v 6 c6
+v 7 m10
+e 0 1 ba>m20>m20
+e 1 2 a>m20>m00
+e 1 5 b>m20>c4
+e 1 7 b>m20>m10
+e 2 3 a>m00>c1
+e 2 4 a>m00>m03
+e 4 5 a>m03>c4
+e 4 6 a>m03>c6
+e 7 6 b>m10>c6
+t # src/emacs.c$$$cdd056519da9ef058e28b5f198357af52228e9b6
+v 0 m20
+v 1 m10
+v 2 c6
+v 3 m00
+v 4 m20
+v 5 m00
+v 6 c4
+v 7 m10
+v 8 m20
+v 9 m10
+v 10 c6
+v 11 m00
+e 0 1 b>m20>m10
+e 0 3 a>m20>m00
+e 0 4 ba>m20>m20
+e 0 7 b>m20>m10
+e 0 8 ba>m20>m20
+e 1 2 b>m10>c6
+e 3 2 a>m00>c6
+e 4 5 a>m20>m00
+e 5 6 a>m00>c4
+e 7 6 b>m10>c4
+e 8 9 b>m20>m10
+e 8 11 a>m20>m00
+e 9 10 b>m10>c6
+e 11 10 a>m00>c6
+t # src/emacs.c$$$0b187fd2bfb797e113626df1b3740edbda8b698a
+v 0 m20
+v 1 m00
+v 2 c1
+v 3 m02
+v 4 c4
+v 5 m00
+v 6 c4
+v 7 c4
+v 8 m10
+v 9 m20
+v 10 c2
+v 11 c0
+e 0 1 a>m20>m00
+e 0 4 b>m20>c4
+e 0 7 b>m20>c4
+e 0 8 b>m20>m10
+e 0 9 ba>m20>m20
+e 1 2 a>m00>c1
+e 1 3 a>m00>m02
+e 3 4 a>m02>c4
+e 3 5 a>m02>m00
+e 3 7 a>m02>c4
+e 5 6 a>m00>c4
+e 8 6 b>m10>c4
+e 9 10 b>m20>c2
+e 9 11 a>m20>c0
+t # src/editfns.c$$$8a147fb24681cd5b89b99376c95baf785dd5126f
+v 0 m20
+v 1 c2
+v 2 m00
+v 3 c1
+e 0 1 b>m20>c2
+e 0 2 a>m20>m00
+e 2 3 a>m00>c1
+t # src/sysdep.c$$$a37c08d524db722063111329458dc8f4368c46a2
+v 0 m20
+v 1 c2
+v 2 m10
+v 3 c3
+v 4 m22
+v 5 c2
+v 6 c0
+v 7 c4
+v 8 c0
+v 9 m00
+v 10 c1
+e 0 1 b>m20>c2
+e 0 2 b>m20>m10
+e 0 7 b>m20>c4
+e 0 8 a>m20>c0
+e 0 9 a>m20>m00
+e 2 3 b>m10>c3
+e 2 4 b>m10>m22
+e 4 5 b>m22>c2
+e 4 6 a>m22>c0
+e 4 7 a>m22>c4
+e 9 4 a>m00>m22
+e 9 10 a>m00>c1
+t # src/alloc.c$$$3b5e6774ed9743fb726ac8c15341eaa09375cfbf
+v 0 m20
+v 1 m10
+v 2 c6
+v 3 m00
+v 4 m20
+v 5 m00
+v 6 c4
+v 7 m10
+v 8 c6
+v 9 m22
+v 10 m00
+e 0 1 b>m20>m10
+e 0 3 a>m20>m00
+e 0 4 ba>m20>m20
+e 0 7 b>m20>m10
+e 0 10 a>m20>m00
+e 1 2 b>m10>c6
+e 3 2 a>m00>c6
+e 4 5 a>m20>m00
+e 4 6 b>m20>c4
+e 5 6 a>m00>c4
+e 7 8 b>m10>c6
+e 7 9 b>m10>m22
+e 10 8 a>m00>c6
+e 10 9 a>m00>m22
+t # src/unexelf.c$$$3b5e6774ed9743fb726ac8c15341eaa09375cfbf
+v 0 m20
+v 1 m00
+v 2 c4
+v 3 m02
+v 4 c1
+e 0 1 a>m20>m00
+e 0 2 b>m20>c4
+e 1 2 a>m00>c4
+e 1 3 a>m00>m02
+e 3 4 a>m02>c1
+t # src/process.c$$$b6d9613df83813609ef80da45975e70954d1fb6d
+v 0 m20
+v 1 c0
+v 2 m00
+v 3 c1
+v 4 m20
+v 5 c0
+v 6 m20
+v 7 c2
+e 0 1 a>m20>c0
+e 0 2 a>m20>m00
+e 0 4 ba>m20>m20
+e 0 6 ba>m20>m20
+e 2 3 a>m00>c1
+e 4 5 a>m20>c0
+e 6 7 b>m20>c2
+t # src/search.c$$$0221b7a9b511db2ebcbe5f41c1fa20d2f3d70599
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m00
+v 4 c1
+v 5 m00
+v 6 c4
+v 7 m00
+v 8 c4
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 a>m20>m00
+e 0 5 a>m20>m00
+e 0 6 b>m20>c4
+e 0 7 a>m20>m00
+e 0 8 b>m20>c4
+e 3 4 a>m00>c1
+e 5 6 a>m00>c4
+e 7 8 a>m00>c4
+t # src/sysdep.c$$$a37eba849eddc41375ad73974f6fcb1258aa8eba
+v 0 m20
+v 1 c2
+v 2 m10
+v 3 c3
+v 4 m22
+v 5 c2
+v 6 c0
+v 7 c4
+v 8 c0
+v 9 m00
+v 10 c1
+e 0 1 b>m20>c2
+e 0 2 b>m20>m10
+e 0 7 b>m20>c4
+e 0 8 a>m20>c0
+e 0 9 a>m20>m00
+e 2 3 b>m10>c3
+e 2 4 b>m10>m22
+e 4 5 b>m22>c2
+e 4 6 a>m22>c0
+e 4 7 a>m22>c4
+e 9 4 a>m00>m22
+e 9 10 a>m00>c1
+t # src/xfns.c$$$c29071587c64efb30792bd72248d3c791abd9337
+v 0 m20
+v 1 m00
+v 2 c1
+v 3 c0
+v 4 m00
+v 5 c1
+v 6 m00
+v 7 c1
+v 8 m20
+v 9 c0
+v 10 m20
+v 11 c2
+v 12 c0
+v 13 c2
+e 0 1 a>m20>m00
+e 0 3 a>m20>c0
+e 0 4 a>m20>m00
+e 0 6 a>m20>m00
+e 0 8 ba>m20>m20
+e 0 13 b>m20>c2
+e 1 2 a>m00>c1
+e 4 5 a>m00>c1
+e 6 7 a>m00>c1
+e 8 9 a>m20>c0
+e 8 10 ba>m20>m20
+e 10 11 b>m20>c2
+e 10 12 a>m20>c0
+t # src/xterm.h$$$c29071587c64efb30792bd72248d3c791abd9337
+v 0 m20
+v 1 m20
+v 2 m00
+v 3 c1
+v 4 c0
+e 0 1 ba>m20>m20
+e 1 2 a>m20>m00
+e 1 4 a>m20>c0
+e 2 3 a>m00>c1
+t # lib/stdlib.in.h$$$63eebff30e91f4a29d2870d42cab859e7fef628b
+v 0 m20
+v 1 m20
+v 2 c0
+v 3 m03
+v 4 c1
+v 5 m00
+v 6 c1
+v 7 m20
+v 8 m00
+v 9 c1
+e 0 1 ba>m20>m20
+e 1 2 a>m20>c0
+e 1 3 a>m20>m03
+e 1 7 ba>m20>m20
+e 3 4 a>m03>c1
+e 3 5 a>m03>m00
+e 5 6 a>m00>c1
+e 7 8 a>m20>m00
+e 8 9 a>m00>c1
+t # src/regex.c$$$fee4cef7d720e98922858e19b3161358041ec141
+v 0 m20
+v 1 m10
+v 2 c3
+v 3 m12
+v 4 c3
+v 5 c2
+e 0 1 b>m20>m10
+e 0 5 b>m20>c2
+e 1 2 b>m10>c3
+e 1 3 b>m10>m12
+e 3 4 b>m12>c3
+t # src/gmalloc.c$$$7bb5c4f206bfbe46b5f4a376633437f8999d956a
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 c0
+v 4 c0
+v 5 m10
+v 6 c5
+v 7 c7
+v 8 m00
+v 9 m10
+v 10 c3
+v 11 m00
+v 12 c4
+e 0 1 ba>m20>m20
+e 0 4 a>m20>c0
+e 0 5 b>m20>m10
+e 0 6 a>m20>c5
+e 0 8 a>m20>m00
+e 0 9 b>m20>m10
+e 0 11 a>m20>m00
+e 0 12 b>m20>c4
+e 1 2 b>m20>c2
+e 1 3 a>m20>c0
+e 5 6 b>m10>c5
+e 5 7 b>m10>c7
+e 8 7 a>m00>c7
+e 9 10 b>m10>c3
+e 11 12 a>m00>c4
+t # src/xml.c$$$71ca4f6a43bad06192cbc4bb8c7a2d69c179b7b0
+v 0 m20
+v 1 m20
+v 2 m00
+v 3 c1
+v 4 m00
+v 5 c1
+e 0 1 ba>m20>m20
+e 1 2 a>m20>m00
+e 1 4 a>m20>m00
+e 2 3 a>m00>c1
+e 4 5 a>m00>c1
+t # src/regex.c$$$ad66b3fadb7ae22a4cbb82bb1507c39ceadf3897
+v 0 m20
+v 1 m20
+v 2 c0
+v 3 m00
+v 4 c1
+v 5 m02
+v 6 c1
+v 7 c0
+v 8 c2
+v 9 m20
+v 10 c2
+v 11 c0
+e 0 1 ba>m20>m20
+e 0 3 a>m20>m00
+e 0 7 a>m20>c0
+e 0 8 b>m20>c2
+e 0 9 ba>m20>m20
+e 1 2 a>m20>c0
+e 3 4 a>m00>c1
+e 3 5 a>m00>m02
+e 5 6 a>m02>c1
+e 9 10 b>m20>c2
+e 9 11 a>m20>c0
+t # src/conf_post.h$$$eb17d6f575de81dbbc113e474d28db0396c12714
+v 0 m20
+v 1 c0
+v 2 m00
+v 3 c1
+v 4 m03
+v 5 c1
+v 6 m02
+v 7 c1
+e 0 1 a>m20>c0
+e 0 2 a>m20>m00
+e 2 3 a>m00>c1
+e 2 4 a>m00>m03
+e 4 5 a>m03>c1
+e 4 6 a>m03>m02
+e 6 7 a>m02>c1
+t # src/keyboard.c$$$eb17d6f575de81dbbc113e474d28db0396c12714
+v 0 m20
+v 1 c0
+v 2 m00
+v 3 c1
+e 0 1 a>m20>c0
+e 0 2 a>m20>m00
+e 2 3 a>m00>c1
+t # src/process.c$$$eb17d6f575de81dbbc113e474d28db0396c12714
+v 0 m20
+v 1 m20
+v 2 c0
+v 3 m00
+v 4 c1
+v 5 c2
+v 6 m10
+v 7 c3
+v 8 m10
+v 9 c3
+v 10 m10
+v 11 c3
+v 12 m10
+v 13 c3
+e 0 1 ba>m20>m20
+e 1 2 a>m20>c0
+e 1 3 a>m20>m00
+e 1 5 b>m20>c2
+e 1 6 b>m20>m10
+e 1 8 b>m20>m10
+e 1 10 b>m20>m10
+e 1 12 b>m20>m10
+e 3 4 a>m00>c1
+e 6 7 b>m10>c3
+e 8 9 b>m10>c3
+e 10 11 b>m10>c3
+e 12 13 b>m10>c3
+t # src/fileio.c$$$db677f5dfedc0a665211d1113251e77a01e5d5e3
+v 0 m20
+v 1 m20
+v 2 c0
+v 3 m00
+v 4 c1
+e 0 1 ba>m20>m20
+e 1 2 a>m20>c0
+e 1 3 a>m20>m00
+e 3 4 a>m00>c1
+t # src/w32.c$$$db677f5dfedc0a665211d1113251e77a01e5d5e3
+v 0 m20
+v 1 c2
+v 2 m10
+v 3 c3
+v 4 m10
+v 5 c3
+e 0 1 b>m20>c2
+e 0 2 b>m20>m10
+e 0 4 b>m20>m10
+e 2 3 b>m10>c3
+e 4 5 b>m10>c3
+t # nt/inc/sys/stat.h$$$d48369db9c97b6f2accf702e5bbe0bda11cb92a1
+v 0 m20
+v 1 m20
+v 2 c0
+v 3 m00
+v 4 c1
+v 5 m00
+v 6 c1
+e 0 1 ba>m20>m20
+e 1 2 a>m20>c0
+e 1 3 a>m20>m00
+e 1 5 a>m20>m00
+e 3 4 a>m00>c1
+e 5 6 a>m00>c1
+t # src/image.c$$$d48369db9c97b6f2accf702e5bbe0bda11cb92a1
+v 0 m20
+v 1 m20
+v 2 c0
+v 3 m00
+v 4 m00
+v 5 c1
+v 6 m20
+v 7 c0
+v 8 m00
+v 9 c1
+v 10 m00
+v 11 c1
+e 0 1 ba>m20>m20
+e 1 2 a>m20>c0
+e 1 3 a>m20>m00
+e 1 6 ba>m20>m20
+e 3 4 a>m00>m00
+e 4 5 a>m00>c1
+e 6 7 a>m20>c0
+e 6 8 a>m20>m00
+e 8 9 a>m00>c1
+e 8 10 a>m00>m00
+e 10 11 a>m00>c1
+t # nt/inc/sys/stat.h$$$34b6df19a4dafe0227ab663c971079e68e17f393
+v 0 m20
+v 1 m20
+v 2 c0
+v 3 m00
+v 4 c1
+v 5 m00
+v 6 c1
+e 0 1 ba>m20>m20
+e 1 2 a>m20>c0
+e 1 3 a>m20>m00
+e 1 5 a>m20>m00
+e 3 4 a>m00>c1
+e 5 6 a>m00>c1
+t # src/image.c$$$34b6df19a4dafe0227ab663c971079e68e17f393
+v 0 m20
+v 1 m20
+v 2 c0
+v 3 m00
+v 4 m00
+v 5 c1
+v 6 m20
+v 7 m00
+v 8 c1
+e 0 1 ba>m20>m20
+e 1 2 a>m20>c0
+e 1 3 a>m20>m00
+e 1 6 ba>m20>m20
+e 3 4 a>m00>m00
+e 4 5 a>m00>c1
+e 6 7 a>m20>m00
+e 7 8 a>m00>c1
+t # src/conf_post.h$$$f4eb8900295d75c4afec256f75aea22494376fde
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m10
+v 4 c3
+v 5 m00
+v 6 c1
+v 7 m10
+v 8 c3
+v 9 m10
+v 10 c3
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 b>m20>m10
+e 0 5 a>m20>m00
+e 0 7 b>m20>m10
+e 3 4 b>m10>c3
+e 5 6 a>m00>c1
+e 7 8 b>m10>c3
+e 7 9 b>m10>m10
+e 9 10 b>m10>c3
+t # src/regex.c$$$f4eb8900295d75c4afec256f75aea22494376fde
+v 0 m20
+v 1 c0
+v 2 m20
+v 3 c2
+v 4 m10
+v 5 c3
+v 6 m10
+v 7 c3
+v 8 m12
+v 9 m10
+v 10 c3
+v 11 m20
+v 12 c0
+e 0 1 a>m20>c0
+e 0 2 ba>m20>m20
+e 2 3 b>m20>c2
+e 2 4 b>m20>m10
+e 2 11 ba>m20>m20
+e 4 5 b>m10>c3
+e 4 6 b>m10>m10
+e 6 7 b>m10>c3
+e 6 8 b>m10>m12
+e 8 9 b>m12>m10
+e 9 10 b>m10>c3
+e 11 12 a>m20>c0
+t # src/image.c$$$6133d656d0a62fa9b45d84d7f71862f577bf415c
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 c0
+v 4 m20
+v 5 c2
+v 6 c0
+v 7 m00
+v 8 c1
+v 9 m20
+v 10 c2
+v 11 m00
+v 12 c1
+e 0 1 ba>m20>m20
+e 0 4 ba>m20>m20
+e 0 9 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 a>m20>c0
+e 4 5 b>m20>c2
+e 4 6 a>m20>c0
+e 4 7 a>m20>m00
+e 7 8 a>m00>c1
+e 9 10 b>m20>c2
+e 9 11 a>m20>m00
+e 11 12 a>m00>c1
+t # src/conf_post.h$$$d9741b61c8e446de084cc4dc609aaa8e5702118d
+v 0 m20
+v 1 c2
+v 2 m10
+v 3 c3
+v 4 m12
+v 5 c3
+e 0 1 b>m20>c2
+e 0 2 b>m20>m10
+e 2 3 b>m10>c3
+e 2 4 b>m10>m12
+e 4 5 b>m12>c3
+t # src/unexmacosx.c$$$7cd3d85013896dc4160f70228fc198c65a42b2e2
+v 0 m20
+v 1 c2
+v 2 m10
+v 3 c5
+v 4 c0
+e 0 1 b>m20>c2
+e 0 2 b>m20>m10
+e 0 3 a>m20>c5
+e 0 4 a>m20>c0
+e 2 3 b>m10>c5
+t # src/unexmacosx.c$$$b458ac205ebfdb532ee26ed4ea04000869bb37d0
+v 0 m20
+v 1 c0
+v 2 m00
+v 3 c1
+e 0 1 a>m20>c0
+e 0 2 a>m20>m00
+e 2 3 a>m00>c1
+t # src/data.c$$$0bbf00c7f3de9c75372100afc3039d7f5c8a7587
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m10
+v 4 c3
+v 5 c6
+v 6 m22
+v 7 c2
+v 8 c0
+v 9 m00
+v 10 c1
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 b>m20>m10
+e 0 9 a>m20>m00
+e 3 4 b>m10>c3
+e 3 5 b>m10>c6
+e 3 6 b>m10>m22
+e 6 7 b>m22>c2
+e 6 8 a>m22>c0
+e 9 5 a>m00>c6
+e 9 6 a>m00>m22
+e 9 10 a>m00>c1
+t # lib/intprops.h$$$8f4b6a20bfec96086845b2f7161e121b1e41b4ad
+v 0 m20
+v 1 m20
+v 2 c0
+v 3 c2
+v 4 m00
+v 5 c1
+e 0 1 ba>m20>m20
+e 1 2 a>m20>c0
+e 1 3 b>m20>c2
+e 1 4 a>m20>m00
+e 4 5 a>m00>c1
+t # src/fileio.c$$$fc77d04659f0be28041da9f924ec3525f1c3cdeb
+v 0 m20
+v 1 m00
+v 2 c4
+v 3 m20
+v 4 c4
+e 0 1 a>m20>m00
+e 0 2 b>m20>c4
+e 0 3 b>m20>m20
+e 0 4 b>m20>c4
+e 1 2 a>m00>c4
+e 1 3 a>m00>m20
+e 1 4 a>m00>c4
+t # src/fileio.c$$$9b21d9f9110445846dce25c3505c4ee04572fade
+v 0 m20
+v 1 m00
+v 2 c1
+v 3 c0
+v 4 m00
+v 5 c1
+v 6 m20
+v 7 c2
+e 0 1 a>m20>m00
+e 0 3 a>m20>c0
+e 0 4 a>m20>m00
+e 0 6 ba>m20>m20
+e 1 2 a>m00>c1
+e 4 5 a>m00>c1
+e 6 7 b>m20>c2
+t # src/conf_post.h$$$5d2ac7435de679559aae0ede1d8b6f1750c09e68
+v 0 m20
+v 1 m10
+v 2 c3
+v 3 m10
+v 4 c3
+e 0 1 b>m20>m10
+e 0 3 b>m20>m10
+e 1 2 b>m10>c3
+e 3 4 b>m10>c3
+t # src/keyboard.c$$$5d2ac7435de679559aae0ede1d8b6f1750c09e68
+v 0 m20
+v 1 m00
+v 2 c1
+v 3 m02
+v 4 c1
+v 5 c2
+v 6 c0
+e 0 1 a>m20>m00
+e 0 5 b>m20>c2
+e 0 6 a>m20>c0
+e 1 2 a>m00>c1
+e 1 3 a>m00>m02
+e 3 4 a>m02>c1
+t # src/conf_post.h$$$cfaf18a27c262694750400005e882f1cfc7ff2b0
+v 0 m20
+v 1 m00
+v 2 c1
+v 3 m00
+v 4 c1
+e 0 1 a>m20>m00
+e 0 3 a>m20>m00
+e 1 2 a>m00>c1
+e 3 4 a>m00>c1
+t # src/term.c$$$cfaf18a27c262694750400005e882f1cfc7ff2b0
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 m12
+v 4 c3
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 b>m20>m12
+e 3 4 b>m12>c3
+t # src/process.c$$$a5509099484e0762842bc2c9e914779397b91469
+v 0 m20
+v 1 m20
+v 2 m00
+v 3 c1
+v 4 m20
+v 5 m00
+v 6 c1
+e 0 1 ba>m20>m20
+e 0 4 ba>m20>m20
+e 1 2 a>m20>m00
+e 2 3 a>m00>c1
+e 4 5 a>m20>m00
+e 5 6 a>m00>c1
+t # nt/inc/ms-w32.h$$$51b14b1f53bfb6c5c10288ab3a6c8c4a86fb70b9
+v 0 m20
+v 1 m00
+v 2 c1
+v 3 m02
+v 4 c4
+e 0 1 a>m20>m00
+e 0 4 b>m20>c4
+e 1 2 a>m00>c1
+e 1 3 a>m00>m02
+e 3 4 a>m02>c4
+t # lib/xalloc-oversized.h$$$6cf3ee3d5474a61d6615a6a21d9e7723f7ba9151
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 m10
+v 4 c3
+v 5 m23
+v 6 m00
+v 7 c1
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 b>m20>m10
+e 1 6 a>m20>m00
+e 3 4 b>m10>c3
+e 3 5 b>m10>m23
+e 6 5 a>m00>m23
+e 6 7 a>m00>c1
+t # src/nsterm.h$$$5332857670eb3977b192eba433ec470a391c4ea4
+v 0 m20
+v 1 m20
+v 2 m20
+v 3 m00
+v 4 c1
+v 5 c0
+v 6 m00
+v 7 c1
+e 0 1 ba>m20>m20
+e 1 2 ba>m20>m20
+e 1 5 a>m20>c0
+e 1 6 a>m20>m00
+e 2 3 a>m20>m00
+e 3 4 a>m00>c1
+e 6 7 a>m00>c1
+t # src/bytecode.c$$$644fc17b9ae181174a842e3876e887666d505666
+v 0 m20
+v 1 c2
+v 2 m10
+v 3 c3
+v 4 m12
+v 5 c3
+v 6 c0
+e 0 1 b>m20>c2
+e 0 2 b>m20>m10
+e 0 6 a>m20>c0
+e 2 3 b>m10>c3
+e 2 4 b>m10>m12
+e 4 5 b>m12>c3
+t # src/gnutls.c$$$f0b5d4bd3e17bc0a464b9ec69507413824568f9e
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 m10
+v 4 c5
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 b>m20>m10
+e 1 4 a>m20>c5
+e 3 4 b>m10>c5
+t # src/gnutls.c$$$744cc9fa17d20450fc3cf1ca6bb71869abeeb77b
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 c0
+v 4 m00
+v 5 c1
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 a>m20>c0
+e 1 4 a>m20>m00
+e 4 5 a>m00>c1
+t # src/gnutls.c$$$1a8d31123698ccf6f165e49fcfe16631d07a7aea
+v 0 m20
+v 1 m20
+v 2 m00
+v 3 c1
+v 4 m00
+v 5 c1
+v 6 c1
+v 7 c2
+v 8 c0
+v 9 m20
+v 10 c0
+e 0 1 ba>m20>m20
+e 1 2 a>m20>m00
+e 1 7 b>m20>c2
+e 1 8 a>m20>c0
+e 1 9 ba>m20>m20
+e 2 3 a>m00>c1
+e 2 4 a>m00>m00
+e 2 6 a>m00>c1
+e 4 5 a>m00>c1
+e 9 10 a>m20>c0
+t # src/regex.h$$$54a3c0c98f844ef6b21b011884132d5fe5ae5e1f
+v 0 m20
+v 1 m20
+v 2 m00
+v 3 c4
+v 4 m20
+v 5 c2
+v 6 c0
+e 0 1 ba>m20>m20
+e 1 2 a>m20>m00
+e 1 3 b>m20>c4
+e 1 4 ba>m20>m20
+e 2 3 a>m00>c4
+e 4 5 b>m20>c2
+e 4 6 a>m20>c0
+t # src/regex.c$$$04d96eca08ff797c0cd93c33fe8589f4623fc449
+v 0 m20
+v 1 m00
+v 2 c4
+v 3 m00
+v 4 c1
+v 5 m00
+v 6 c1
+v 7 c2
+v 8 c0
+e 0 1 a>m20>m00
+e 0 2 b>m20>c4
+e 0 3 a>m20>m00
+e 0 5 a>m20>m00
+e 0 7 b>m20>c2
+e 0 8 a>m20>c0
+e 1 2 a>m00>c4
+e 3 4 a>m00>c1
+e 5 6 a>m00>c1
+t # src/regex.h$$$04d96eca08ff797c0cd93c33fe8589f4623fc449
+v 0 m20
+v 1 m20
+v 2 m00
+v 3 c1
+v 4 m00
+v 5 c4
+v 6 m00
+v 7 c1
+e 0 1 ba>m20>m20
+e 1 2 a>m20>m00
+e 1 4 a>m20>m00
+e 1 5 b>m20>c4
+e 1 6 a>m20>m00
+e 2 3 a>m00>c1
+e 4 5 a>m00>c4
+e 6 7 a>m00>c1
+t # src/regex.c$$$4538a5e37e8dacde4b3e828d832c4c558a146912
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 c0
+v 4 m00
+v 5 c1
+v 6 m02
+v 7 c1
+v 8 m10
+v 9 c3
+v 10 m12
+v 11 c3
+v 12 m20
+v 13 c2
+v 14 c0
+e 0 1 ba>m20>m20
+e 0 4 a>m20>m00
+e 0 8 b>m20>m10
+e 0 12 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 a>m20>c0
+e 4 5 a>m00>c1
+e 4 6 a>m00>m02
+e 6 7 a>m02>c1
+e 8 9 b>m10>c3
+e 8 10 b>m10>m12
+e 10 11 b>m12>c3
+e 12 13 b>m20>c2
+e 12 14 a>m20>c0
+t # src/regex.h$$$4538a5e37e8dacde4b3e828d832c4c558a146912
+v 0 m20
+v 1 m20
+v 2 m20
+v 3 c7
+v 4 m22
+v 5 c2
+v 6 c0
+v 7 m10
+v 8 c3
+v 9 m10
+v 10 c3
+v 11 m12
+v 12 c3
+e 0 1 ba>m20>m20
+e 1 2 ba>m20>m20
+e 1 7 b>m20>m10
+e 2 3 a>m20>c7
+e 2 4 a>m20>m22
+e 4 5 b>m22>c2
+e 4 6 a>m22>c0
+e 7 3 b>m10>c7
+e 7 4 b>m10>m22
+e 7 8 b>m10>c3
+e 7 9 b>m10>m10
+e 9 10 b>m10>c3
+e 9 11 b>m10>m12
+e 11 12 b>m12>c3
+t # src/regex.c$$$6dc6b0079ed3632ed9082bc79d8cb6fc96d33f43
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m00
+v 4 c1
+v 5 m10
+v 6 c3
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 a>m20>m00
+e 0 5 b>m20>m10
+e 3 4 a>m00>c1
+e 5 6 b>m10>c3
+t # src/bytecode.c$$$29f645d5262b1dee9118c6eb29c4ed462396444f
+v 0 m20
+v 1 c0
+v 2 m00
+v 3 c1
+v 4 m00
+v 5 c1
+e 0 1 a>m20>c0
+e 0 2 a>m20>m00
+e 0 4 a>m20>m00
+e 2 3 a>m00>c1
+e 4 5 a>m00>c1
+t # src/emacs.c$$$ff3fc21e24edffccce0d42065833e852a6792bd2
+v 0 m20
+v 1 m00
+v 2 c1
+v 3 m10
+v 4 c6
+v 5 m00
+e 0 1 a>m20>m00
+e 0 3 b>m20>m10
+e 0 5 a>m20>m00
+e 1 2 a>m00>c1
+e 3 4 b>m10>c6
+e 5 4 a>m00>c6
+t # lib/_Noreturn.h$$$68a256c89270ef9e97bca6097967a9ed2b050f4a
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m20
+v 4 m13
+v 5 c6
+v 6 m23
+v 7 m03
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 ba>m20>m20
+e 3 4 b>m20>m13
+e 3 7 a>m20>m03
+e 4 5 b>m13>c6
+e 4 6 b>m13>m23
+e 7 5 a>m03>c6
+e 7 6 a>m03>m23
+t # lib/canonicalize-lgpl.c$$$68a256c89270ef9e97bca6097967a9ed2b050f4a
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m20
+v 4 c2
+v 5 m20
+v 6 c2
+v 7 m00
+v 8 c1
+v 9 m20
+v 10 c2
+v 11 c0
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 ba>m20>m20
+e 0 5 ba>m20>m20
+e 0 9 ba>m20>m20
+e 3 4 b>m20>c2
+e 5 6 b>m20>c2
+e 5 7 a>m20>m00
+e 7 8 a>m00>c1
+e 9 10 b>m20>c2
+e 9 11 a>m20>c0
+t # lib/free.c$$$68a256c89270ef9e97bca6097967a9ed2b050f4a
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m00
+v 4 c1
+v 5 c4
+v 6 c1
+v 7 c4
+v 8 m00
+v 9 c4
+v 10 m02
+v 11 c4
+v 12 c4
+v 13 m10
+v 14 m12
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 a>m20>m00
+e 0 5 b>m20>c4
+e 0 7 b>m20>c4
+e 0 12 b>m20>c4
+e 0 13 b>m20>m10
+e 3 4 a>m00>c1
+e 3 5 a>m00>c4
+e 3 6 a>m00>c1
+e 3 7 a>m00>c4
+e 3 8 a>m00>m00
+e 3 12 a>m00>c4
+e 8 9 a>m00>c4
+e 8 10 a>m00>m02
+e 10 11 a>m02>c4
+e 13 9 b>m10>c4
+e 13 14 b>m10>m12
+e 14 11 b>m12>c4
+t # lib/libc-config.h$$$68a256c89270ef9e97bca6097967a9ed2b050f4a
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m10
+v 4 c6
+v 5 m20
+v 6 c3
+v 7 m10
+v 8 c3
+v 9 c6
+v 10 c6
+v 11 m20
+v 12 m00
+v 13 c1
+v 14 c1
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 b>m20>m10
+e 0 12 a>m20>m00
+e 3 4 b>m10>c6
+e 3 5 b>m10>m20
+e 3 6 b>m10>c3
+e 3 7 b>m10>m10
+e 3 9 b>m10>c6
+e 3 10 b>m10>c6
+e 3 11 b>m10>m20
+e 7 8 b>m10>c3
+e 12 4 a>m00>c6
+e 12 5 a>m00>m20
+e 12 9 a>m00>c6
+e 12 10 a>m00>c6
+e 12 11 a>m00>m20
+e 12 13 a>m00>c1
+e 12 14 a>m00>c1
+t # lib/limits.in.h$$$68a256c89270ef9e97bca6097967a9ed2b050f4a
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m20
+v 4 c2
+v 5 m10
+v 6 c5
+v 7 m00
+v 8 m00
+v 9 c1
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 ba>m20>m20
+e 3 4 b>m20>c2
+e 3 5 b>m20>m10
+e 3 7 a>m20>m00
+e 3 8 a>m20>m00
+e 5 6 b>m10>c5
+e 7 6 a>m00>c5
+e 8 9 a>m00>c1
+t # lib/malloc/dynarray_at_failure.c$$$68a256c89270ef9e97bca6097967a9ed2b050f4a
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m00
+v 4 c1
+v 5 m20
+v 6 c0
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 a>m20>m00
+e 0 5 ba>m20>m20
+e 3 4 a>m00>c1
+e 5 6 a>m20>c0
+t # lib/malloc/dynarray_emplace_enlarge.c$$$68a256c89270ef9e97bca6097967a9ed2b050f4a
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m00
+v 4 c1
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 a>m20>m00
+e 3 4 a>m00>c1
+t # lib/malloc/dynarray_finalize.c$$$68a256c89270ef9e97bca6097967a9ed2b050f4a
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m00
+v 4 c1
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 a>m20>m00
+e 3 4 a>m00>c1
+t # lib/malloc/dynarray_resize.c$$$68a256c89270ef9e97bca6097967a9ed2b050f4a
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m00
+v 4 c1
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 a>m20>m00
+e 3 4 a>m00>c1
+t # lib/malloc/dynarray_resize_clear.c$$$68a256c89270ef9e97bca6097967a9ed2b050f4a
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m00
+v 4 c1
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 a>m20>m00
+e 3 4 a>m00>c1
+t # lib/mempcpy.c$$$68a256c89270ef9e97bca6097967a9ed2b050f4a
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m00
+v 4 c4
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 a>m20>m00
+e 0 4 b>m20>c4
+e 3 4 a>m00>c4
+t # lib/mini-gmp.h$$$68a256c89270ef9e97bca6097967a9ed2b050f4a
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m20
+v 4 m10
+v 5 c7
+v 6 m00
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 ba>m20>m20
+e 3 4 b>m20>m10
+e 3 6 a>m20>m00
+e 4 5 b>m10>c7
+e 6 5 a>m00>c7
+t # lib/regex_internal.h$$$68a256c89270ef9e97bca6097967a9ed2b050f4a
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m20
+v 4 c2
+v 5 m00
+v 6 c1
+v 7 m20
+v 8 m13
+v 9 c6
+v 10 m13
+v 11 c6
+v 12 m22
+v 13 m03
+v 14 m03
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 ba>m20>m20
+e 3 4 b>m20>c2
+e 3 5 a>m20>m00
+e 3 7 ba>m20>m20
+e 5 6 a>m00>c1
+e 7 8 b>m20>m13
+e 7 13 a>m20>m03
+e 8 9 b>m13>c6
+e 8 10 b>m13>m13
+e 10 11 b>m13>c6
+e 10 12 b>m13>m22
+e 13 9 a>m03>c6
+e 13 14 a>m03>m03
+e 14 11 a>m03>c6
+e 14 12 a>m03>m22
+t # lib/sha1.c$$$68a256c89270ef9e97bca6097967a9ed2b050f4a
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m10
+v 4 c3
+v 5 m10
+v 6 c3
+v 7 m20
+v 8 c7
+v 9 m20
+v 10 c7
+v 11 m10
+v 12 c3
+v 13 m10
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 b>m20>m10
+e 0 5 b>m20>m10
+e 0 7 ba>m20>m20
+e 0 11 b>m20>m10
+e 0 13 b>m20>m10
+e 3 4 b>m10>c3
+e 5 6 b>m10>c3
+e 7 8 a>m20>c7
+e 7 9 a>m20>m20
+e 7 10 a>m20>c7
+e 11 12 b>m10>c3
+e 13 8 b>m10>c7
+e 13 9 b>m10>m20
+e 13 10 b>m10>c7
+t # lib/sha256.c$$$68a256c89270ef9e97bca6097967a9ed2b050f4a
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m10
+v 4 c3
+v 5 m10
+v 6 c3
+v 7 m20
+v 8 c7
+v 9 m20
+v 10 c7
+v 11 m10
+v 12 c3
+v 13 m10
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 b>m20>m10
+e 0 5 b>m20>m10
+e 0 7 ba>m20>m20
+e 0 11 b>m20>m10
+e 0 13 b>m20>m10
+e 3 4 b>m10>c3
+e 5 6 b>m10>c3
+e 7 8 a>m20>c7
+e 7 9 a>m20>m20
+e 7 10 a>m20>c7
+e 11 12 b>m10>c3
+e 13 8 b>m10>c7
+e 13 9 b>m10>m20
+e 13 10 b>m10>c7
+t # lib/sha512.c$$$68a256c89270ef9e97bca6097967a9ed2b050f4a
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m10
+v 4 c3
+v 5 m10
+v 6 c3
+v 7 m20
+v 8 c7
+v 9 m20
+v 10 c7
+v 11 m10
+v 12 c3
+v 13 m10
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 b>m20>m10
+e 0 5 b>m20>m10
+e 0 7 ba>m20>m20
+e 0 11 b>m20>m10
+e 0 13 b>m20>m10
+e 3 4 b>m10>c3
+e 5 6 b>m10>c3
+e 7 8 a>m20>c7
+e 7 9 a>m20>m20
+e 7 10 a>m20>c7
+e 11 12 b>m10>c3
+e 13 8 b>m10>c7
+e 13 9 b>m10>m20
+e 13 10 b>m10>c7
+t # lib/sigdescr_np.c$$$68a256c89270ef9e97bca6097967a9ed2b050f4a
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m10
+v 4 c4
+v 5 m00
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 b>m20>m10
+e 0 5 a>m20>m00
+e 3 4 b>m10>c4
+e 5 4 a>m00>c4
+t # lib/stdalign.in.h$$$68a256c89270ef9e97bca6097967a9ed2b050f4a
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m20
+v 4 m13
+v 5 c4
+v 6 m23
+v 7 m03
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 ba>m20>m20
+e 3 4 b>m20>m13
+e 3 7 a>m20>m03
+e 4 5 b>m13>c4
+e 4 6 b>m13>m23
+e 7 5 a>m03>c4
+e 7 6 a>m03>m23
+t # lib/stdint.in.h$$$68a256c89270ef9e97bca6097967a9ed2b050f4a
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m20
+v 4 m10
+v 5 c6
+v 6 m20
+v 7 m10
+v 8 c6
+v 9 m20
+v 10 c6
+v 11 m00
+v 12 m00
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 ba>m20>m20
+e 3 4 b>m20>m10
+e 3 6 ba>m20>m20
+e 3 12 a>m20>m00
+e 4 5 b>m10>c6
+e 6 7 b>m20>m10
+e 6 11 a>m20>m00
+e 7 8 b>m10>c6
+e 7 9 b>m10>m20
+e 7 10 b>m10>c6
+e 11 8 a>m00>c6
+e 11 9 a>m00>m20
+e 11 10 a>m00>c6
+e 12 5 a>m00>c6
+t # lib/sys_select.in.h$$$68a256c89270ef9e97bca6097967a9ed2b050f4a
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m20
+v 4 m13
+v 5 c5
+v 6 m23
+v 7 m03
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 ba>m20>m20
+e 3 4 b>m20>m13
+e 3 7 a>m20>m03
+e 4 5 b>m13>c5
+e 4 6 b>m13>m23
+e 7 5 a>m03>c5
+e 7 6 a>m03>m23
+t # lib-src/emacsclient.c$$$732c70a0d9d8db6a2fd77a52185f9a76743b05a9
+v 0 m20
+v 1 m10
+v 2 c3
+v 3 m10
+v 4 c3
+v 5 m20
+v 6 c0
+v 7 m00
+v 8 c1
+e 0 1 b>m20>m10
+e 0 3 b>m20>m10
+e 0 5 ba>m20>m20
+e 1 2 b>m10>c3
+e 3 4 b>m10>c3
+e 5 6 a>m20>c0
+e 5 7 a>m20>m00
+e 7 8 a>m00>c1
+t # src/nsterm.h$$$86bf8afa45f8d8fe19c82a9351ca445bc6f0e12e
+v 0 m20
+v 1 m20
+v 2 m20
+v 3 c0
+v 4 m00
+v 5 c1
+e 0 1 ba>m20>m20
+e 1 2 ba>m20>m20
+e 1 4 a>m20>m00
+e 2 3 a>m20>c0
+e 4 5 a>m00>c1
+t # src/comp.c$$$2386b085268af9c06aebc5c4aced1aa6a0d3f702
+v 0 m20
+v 1 m20
+v 2 m00
+v 3 c1
+v 4 m00
+v 5 c4
+v 6 m02
+v 7 c1
+e 0 1 ba>m20>m20
+e 1 2 a>m20>m00
+e 1 4 a>m20>m00
+e 1 5 b>m20>c4
+e 2 3 a>m00>c1
+e 4 5 a>m00>c4
+e 4 6 a>m00>m02
+e 6 7 a>m02>c1
+t # src/comp.c$$$6b631f490adf66d94a3f566215e7efb7b068a128
+v 0 m20
+v 1 m20
+v 2 c4
+v 3 c4
+v 4 c4
+v 5 c4
+v 6 c2
+v 7 m00
+v 8 m00
+v 9 m00
+v 10 m00
+v 11 m00
+v 12 c1
+v 13 m00
+v 14 c1
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c4
+e 1 3 b>m20>c4
+e 1 4 b>m20>c4
+e 1 5 b>m20>c4
+e 1 6 b>m20>c2
+e 1 7 a>m20>m00
+e 1 8 a>m20>m00
+e 1 9 a>m20>m00
+e 1 10 a>m20>m00
+e 1 11 a>m20>m00
+e 1 13 a>m20>m00
+e 7 2 a>m00>c4
+e 8 3 a>m00>c4
+e 9 4 a>m00>c4
+e 10 5 a>m00>c4
+e 11 12 a>m00>c1
+e 13 14 a>m00>c1
+t # src/keyboard.c$$$afa82b3f7f864467ebf8807d0d3b95376383d5af
+v 0 m20
+v 1 m20
+v 2 m00
+v 3 c4
+v 4 c1
+v 5 c2
+v 6 c0
+e 0 1 ba>m20>m20
+e 1 2 a>m20>m00
+e 1 3 b>m20>c4
+e 1 5 b>m20>c2
+e 1 6 a>m20>c0
+e 2 3 a>m00>c4
+e 2 4 a>m00>c1
+t # src/keyboard.c$$$2e595b3e8b887068e47e64116d5a910c1045a229
+v 0 m20
+v 1 c0
+v 2 c2
+v 3 m00
+v 4 c1
+v 5 m20
+v 6 c0
+e 0 1 a>m20>c0
+e 0 2 b>m20>c2
+e 0 3 a>m20>m00
+e 0 5 ba>m20>m20
+e 3 4 a>m00>c1
+e 5 6 a>m20>c0
+t # src/comp.c$$$dea67939b65f39b60d8e990745504bd8f9e3be2c
+v 0 m20
+v 1 m20
+v 2 c0
+v 3 m00
+v 4 c1
+v 5 m00
+v 6 c1
+v 7 m00
+v 8 c1
+v 9 m20
+e 0 1 ba>m20>m20
+e 0 9 ba>m20>m20
+e 1 2 a>m20>c0
+e 1 3 a>m20>m00
+e 1 5 a>m20>m00
+e 1 7 a>m20>m00
+e 3 4 a>m00>c1
+e 5 6 a>m00>c1
+e 7 8 a>m00>c1
+t # src/w32font.c$$$fb3b8017ffbc5906c06f8cb164285e35faa19dcf
+v 0 m20
+v 1 c0
+v 2 c2
+v 3 m10
+v 4 c5
+v 5 c5
+v 6 c3
+v 7 c5
+v 8 c3
+v 9 c5
+e 0 1 a>m20>c0
+e 0 2 b>m20>c2
+e 0 3 b>m20>m10
+e 0 4 a>m20>c5
+e 0 5 a>m20>c5
+e 0 7 a>m20>c5
+e 0 9 a>m20>c5
+e 3 4 b>m10>c5
+e 3 5 b>m10>c5
+e 3 6 b>m10>c3
+e 3 7 b>m10>c5
+e 3 8 b>m10>c3
+e 3 9 b>m10>c5
+t # src/xfaces.c$$$8d05ec5127d5ca4958c99fb06d6874508f2f4730
+v 0 m20
+v 1 m10
+v 2 c3
+v 3 m10
+v 4 c4
+v 5 m10
+v 6 c7
+v 7 c4
+v 8 m10
+v 9 c3
+v 10 m00
+v 11 c1
+e 0 1 b>m20>m10
+e 0 3 b>m20>m10
+e 0 10 a>m20>m00
+e 1 2 b>m10>c3
+e 3 4 b>m10>c4
+e 3 5 b>m10>m10
+e 3 7 b>m10>c4
+e 3 8 b>m10>m10
+e 5 6 b>m10>c7
+e 8 9 b>m10>c3
+e 10 4 a>m00>c4
+e 10 6 a>m00>c7
+e 10 7 a>m00>c4
+e 10 11 a>m00>c1
+t # src/mac.c$$$6bfb1e350d82720d4a3f9a2ae6f69faf15198e9f
+v 0 m20
+v 1 m20
+v 2 m20
+v 3 c0
+v 4 c0
+v 5 m00
+v 6 c1
+v 7 m00
+v 8 c1
+v 9 c1
+v 10 m20
+v 11 c2
+e 0 1 ba>m20>m20
+e 1 2 ba>m20>m20
+e 1 4 a>m20>c0
+e 1 5 a>m20>m00
+e 1 10 ba>m20>m20
+e 2 3 a>m20>c0
+e 5 6 a>m00>c1
+e 5 7 a>m00>m00
+e 5 9 a>m00>c1
+e 7 8 a>m00>c1
+e 10 11 b>m20>c2
+t # src/unexmacosx.c$$$b2411edf931941ce5f2de932da8340cea330c15e
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m00
+v 4 m00
+v 5 c1
+v 6 m02
+v 7 c1
+v 8 m02
+v 9 c1
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 a>m20>m00
+e 3 4 a>m00>m00
+e 3 8 a>m00>m02
+e 4 5 a>m00>c1
+e 4 6 a>m00>m02
+e 6 7 a>m02>c1
+e 8 9 a>m02>c1
+t # src/w32font.c$$$9158328107acc9897c4e1d778b99ac4dfa069a20
+v 0 m20
+v 1 c0
+v 2 m00
+v 3 c1
+v 4 m00
+v 5 c1
+v 6 c2
+e 0 1 a>m20>c0
+e 0 2 a>m20>m00
+e 0 4 a>m20>m00
+e 0 6 b>m20>c2
+e 2 3 a>m00>c1
+e 4 5 a>m00>c1
+t # lib-src/etags.c$$$f96732e5b794b1683e79339314d341606c325d3f
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m00
+v 4 c1
+v 5 m02
+v 6 c4
+v 7 c1
+v 8 c4
+v 9 c1
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 a>m20>m00
+e 0 6 b>m20>c4
+e 0 8 b>m20>c4
+e 3 4 a>m00>c1
+e 3 5 a>m00>m02
+e 5 6 a>m02>c4
+e 5 7 a>m02>c1
+e 5 8 a>m02>c4
+e 5 9 a>m02>c1
+t # src/lread.c$$$940054308a68e18e3b8cdd28415344af9a697198
+v 0 m20
+v 1 m00
+v 2 c1
+v 3 c4
+v 4 c0
+e 0 1 a>m20>m00
+e 0 3 b>m20>c4
+e 0 4 a>m20>c0
+e 1 2 a>m00>c1
+e 1 3 a>m00>c4
+t # src/dispnew.c$$$6152361fcb6b83fe502b0dea5118c4848268f1d9
+v 0 m20
+v 1 m00
+v 2 c1
+v 3 m02
+v 4 c4
+e 0 1 a>m20>m00
+e 0 4 b>m20>c4
+e 1 2 a>m00>c1
+e 1 3 a>m00>m02
+e 3 4 a>m02>c4
+t # src/macfns.c$$$202c09a889e637eb4162db551252c80bbf46b02b
+v 0 m20
+v 1 m10
+v 2 c5
+v 3 m12
+v 4 c3
+v 5 m10
+v 6 c5
+v 7 m10
+v 8 c5
+v 9 m12
+v 10 c3
+v 11 m10
+v 12 c5
+e 0 1 b>m20>m10
+e 0 2 a>m20>c5
+e 0 5 b>m20>m10
+e 0 6 a>m20>c5
+e 0 7 b>m20>m10
+e 0 8 a>m20>c5
+e 0 11 b>m20>m10
+e 0 12 a>m20>c5
+e 1 2 b>m10>c5
+e 1 3 b>m10>m12
+e 3 4 b>m12>c3
+e 5 6 b>m10>c5
+e 7 8 b>m10>c5
+e 7 9 b>m10>m12
+e 9 10 b>m12>c3
+e 11 12 b>m10>c5
+t # src/w32term.h$$$499180d57c44fb564a7049342f90015490117f4c
+v 0 m20
+v 1 m00
+v 2 c1
+v 3 m00
+v 4 c1
+e 0 1 a>m20>m00
+e 0 3 a>m20>m00
+e 1 2 a>m00>c1
+e 3 4 a>m00>c1
+t # src/xterm.h$$$056ce1959724bce0b79983a2b88d193def718adb
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m10
+v 4 c3
+v 5 c5
+v 6 c3
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 b>m20>m10
+e 0 5 a>m20>c5
+e 3 4 b>m10>c3
+e 3 5 b>m10>c5
+e 3 6 b>m10>c3
+t # src/keyboard.c$$$ba991a0e56732e440ab4b2b509a2576b09fafef7
+v 0 m20
+v 1 m10
+v 2 c3
+v 3 m20
+v 4 c2
+v 5 c0
+v 6 m00
+v 7 c1
+v 8 m20
+v 9 m10
+v 10 c3
+e 0 1 b>m20>m10
+e 0 3 ba>m20>m20
+e 0 6 a>m20>m00
+e 0 8 ba>m20>m20
+e 1 2 b>m10>c3
+e 3 4 b>m20>c2
+e 3 5 a>m20>c0
+e 6 7 a>m00>c1
+e 8 9 b>m20>m10
+e 9 10 b>m10>c3
+t # src/termhooks.h$$$b2b25916046ec68548e0a213906dca1931fa599d
+v 0 m20
+v 1 m20
+v 2 m10
+v 3 c3
+v 4 m00
+v 5 c1
+e 0 1 ba>m20>m20
+e 1 2 b>m20>m10
+e 1 4 a>m20>m00
+e 2 3 b>m10>c3
+e 4 5 a>m00>c1
+t # mac/inc/config.h$$$449e33d766186b74b316b392f08d2827a3eee613
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 m20
+v 4 m13
+v 5 c5
+v 6 m03
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 ba>m20>m20
+e 3 4 b>m20>m13
+e 3 6 a>m20>m03
+e 4 5 b>m13>c5
+e 6 5 a>m03>c5
+t # src/xselect.c$$$ac1278c1f0467600aae57ee5e33e4ca09b742585
+v 0 m20
+v 1 m10
+v 2 c5
+v 3 m12
+v 4 c3
+e 0 1 b>m20>m10
+e 0 2 a>m20>c5
+e 1 2 b>m10>c5
+e 1 3 b>m10>m12
+e 3 4 b>m12>c3
+t # src/xterm.h$$$ac1278c1f0467600aae57ee5e33e4ca09b742585
+v 0 m20
+v 1 c2
+v 2 m10
+v 3 c3
+v 4 m13
+v 5 c3
+v 6 m13
+v 7 c3
+v 8 m10
+v 9 c3
+v 10 m10
+v 11 c3
+v 12 m10
+v 13 c3
+e 0 1 b>m20>c2
+e 0 2 b>m20>m10
+e 0 8 b>m20>m10
+e 0 12 b>m20>m10
+e 2 3 b>m10>c3
+e 2 4 b>m10>m13
+e 4 5 b>m13>c3
+e 4 6 b>m13>m13
+e 6 7 b>m13>c3
+e 8 9 b>m10>c3
+e 8 10 b>m10>m10
+e 10 11 b>m10>c3
+e 12 13 b>m10>c3
+t # src/m/sparc.h$$$07e5c0b0b70e308b4dc4ac5b3ee832894f746a81
+v 0 m20
+v 1 c2
+v 2 m10
+v 3 c3
+e 0 1 b>m20>c2
+e 0 2 b>m20>m10
+e 2 3 b>m10>c3
+t # src/m/sun2.h$$$07e5c0b0b70e308b4dc4ac5b3ee832894f746a81
+v 0 m20
+v 1 c2
+v 2 m10
+v 3 c3
+e 0 1 b>m20>c2
+e 0 2 b>m20>m10
+e 2 3 b>m10>c3
+t # src/m/sun386.h$$$07e5c0b0b70e308b4dc4ac5b3ee832894f746a81
+v 0 m20
+v 1 c2
+v 2 m10
+v 3 c3
+e 0 1 b>m20>c2
+e 0 2 b>m20>m10
+e 2 3 b>m10>c3
+t # src/frame.c$$$1bc973c2e4e89685a760187f76f4aeec9799b972
+v 0 m20
+v 1 m10
+v 2 c3
+v 3 c0
+e 0 1 b>m20>m10
+e 0 3 a>m20>c0
+e 1 2 b>m10>c3
+t # src/keyboard.c$$$1bc973c2e4e89685a760187f76f4aeec9799b972
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 c0
+v 4 c0
+v 5 c2
+v 6 m00
+v 7 c1
+e 0 1 ba>m20>m20
+e 0 4 a>m20>c0
+e 0 5 b>m20>c2
+e 0 6 a>m20>m00
+e 1 2 b>m20>c2
+e 1 3 a>m20>c0
+e 6 7 a>m00>c1
+t # src/unexmacosx.c$$$ae7c60a92ee348f6aba2149283d024471a0ea5f6
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m00
+v 4 c1
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 a>m20>m00
+e 3 4 a>m00>c1
+t # src/w32heap.c$$$30d2b1c27b6a85742c49521edf6b76d5e1fbaf95
+v 0 m20
+v 1 c0
+v 2 c2
+v 3 m10
+v 4 c3
+v 5 c5
+v 6 m12
+v 7 c3
+e 0 1 a>m20>c0
+e 0 2 b>m20>c2
+e 0 3 b>m20>m10
+e 0 5 a>m20>c5
+e 3 4 b>m10>c3
+e 3 5 b>m10>c5
+e 3 6 b>m10>m12
+e 6 7 b>m12>c3
+t # src/lastfile.c$$$cfe8de43703181df5f5b9ae0a8fa7bae4f256a00
+v 0 m20
+v 1 c0
+v 2 m20
+v 3 c2
+v 4 c4
+e 0 1 a>m20>c0
+e 0 2 ba>m20>m20
+e 0 4 b>m20>c4
+e 2 3 b>m20>c2
+e 2 4 a>m20>c4
+t # lib-src/emacsclient.c$$$a2b3f2b55c2d4c813e3feb0ddf005dfa6000b9d6
+v 0 m20
+v 1 m10
+v 2 c5
+v 3 m20
+v 4 c2
+v 5 m20
+v 6 c0
+v 7 c2
+v 8 c0
+e 0 1 b>m20>m10
+e 0 2 a>m20>c5
+e 0 3 ba>m20>m20
+e 1 2 b>m10>c5
+e 3 4 b>m20>c2
+e 3 5 ba>m20>m20
+e 3 8 a>m20>c0
+e 5 6 a>m20>c0
+e 5 7 b>m20>c2
+t # src/systty.h$$$55a2e19e03b81c0c955b409070910b866915c869
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 m10
+v 4 c6
+v 5 c0
+v 6 m00
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 b>m20>m10
+e 1 5 a>m20>c0
+e 1 6 a>m20>m00
+e 3 4 b>m10>c6
+e 6 4 a>m00>c6
+t # src/lisp.h$$$c782ad7a64166e2db58185799f3a5a9f9f625c7e
+v 0 m20
+v 1 m10
+v 2 c3
+v 3 m12
+v 4 c7
+e 0 1 b>m20>m10
+e 0 4 a>m20>c7
+e 1 2 b>m10>c3
+e 1 3 b>m10>m12
+e 3 4 b>m12>c7
+t # src/s/gnu-linux.h$$$e0a6ee5e19136304d6e5b97b42279b80ff9334ab
+v 0 m20
+v 1 c0
+v 2 m00
+v 3 c1
+e 0 1 a>m20>c0
+e 0 2 a>m20>m00
+e 2 3 a>m00>c1
+t # src/s/usg5-4.h$$$ca493964089ecf3912a3f16e9118bb4e2bddacd7
+v 0 m20
+v 1 m00
+v 2 c4
+v 3 m00
+v 4 c4
+e 0 1 a>m20>m00
+e 0 2 b>m20>c4
+e 0 3 a>m20>m00
+e 0 4 b>m20>c4
+e 1 2 a>m00>c4
+e 3 4 a>m00>c4
+t # src/m/iris4d.h$$$a6851a5bab3e197de98bbcbef15a7218b1f306c5
+v 0 m20
+v 1 m20
+v 2 c4
+v 3 m00
+v 4 m02
+v 5 c1
+v 6 m20
+v 7 c4
+v 8 m00
+v 9 m02
+v 10 c1
+e 0 1 ba>m20>m20
+e 0 6 ba>m20>m20
+e 1 2 b>m20>c4
+e 1 3 a>m20>m00
+e 3 2 a>m00>c4
+e 3 4 a>m00>m02
+e 4 5 a>m02>c1
+e 6 7 b>m20>c4
+e 6 8 a>m20>m00
+e 8 7 a>m00>c4
+e 8 9 a>m00>m02
+e 9 10 a>m02>c1
+t # src/keyboard.c$$$1161d3675c35b7017a0e6ca2bef88157e691c039
+v 0 m20
+v 1 m20
+v 2 c0
+v 3 m00
+v 4 c1
+v 5 m20
+v 6 c2
+v 7 c0
+v 8 c2
+v 9 c0
+v 10 m20
+v 11 c0
+e 0 1 ba>m20>m20
+e 0 3 a>m20>m00
+e 0 5 ba>m20>m20
+e 0 8 b>m20>c2
+e 0 9 a>m20>c0
+e 0 10 ba>m20>m20
+e 1 2 a>m20>c0
+e 3 4 a>m00>c1
+e 5 6 b>m20>c2
+e 5 7 a>m20>c0
+e 10 11 a>m20>c0
+t # src/w32fns.c$$$ccc2d29c56505a9a7fd38f7e582c16ee38f31b26
+v 0 m20
+v 1 c0
+v 2 c2
+v 3 m10
+v 4 c3
+e 0 1 a>m20>c0
+e 0 2 b>m20>c2
+e 0 3 b>m20>m10
+e 3 4 b>m10>c3
+t # src/regex.c$$$3583e969a48791902885423e6c519df329bcebc8
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 c0
+v 4 c2
+v 5 m00
+v 6 c1
+e 0 1 ba>m20>m20
+e 0 4 b>m20>c2
+e 0 5 a>m20>m00
+e 1 2 b>m20>c2
+e 1 3 a>m20>c0
+e 5 6 a>m00>c1
+t # src/w32select.c$$$93cbf229f9902f24ac85b1611a0b170654786778
+v 0 m20
+v 1 c0
+v 2 c2
+v 3 m00
+v 4 c1
+v 5 m02
+v 6 c1
+e 0 1 a>m20>c0
+e 0 2 b>m20>c2
+e 0 3 a>m20>m00
+e 3 4 a>m00>c1
+e 3 5 a>m00>m02
+e 5 6 a>m02>c1
+t # src/frame.c$$$a1dfb88a1654a505d18f0a39235378deea980133
+v 0 m20
+v 1 m10
+v 2 c3
+v 3 m00
+v 4 c1
+e 0 1 b>m20>m10
+e 0 3 a>m20>m00
+e 1 2 b>m10>c3
+e 3 4 a>m00>c1
+t # src/w32term.c$$$cabb23bc0d39f05bcd8b2174e083cb4208ccdc85
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m00
+v 4 c1
+v 5 m02
+v 6 c1
+v 7 m00
+v 8 c1
+v 9 m02
+v 10 c1
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 a>m20>m00
+e 0 7 a>m20>m00
+e 3 4 a>m00>c1
+e 3 5 a>m00>m02
+e 5 6 a>m02>c1
+e 7 8 a>m00>c1
+e 7 9 a>m00>m02
+e 9 10 a>m02>c1
+t # src/getloadavg.c$$$432eec292e7466576e54dc6be7e223bb77e706c1
+v 0 m20
+v 1 m20
+v 2 c0
+v 3 m00
+v 4 c1
+e 0 1 ba>m20>m20
+e 1 2 a>m20>c0
+e 1 3 a>m20>m00
+e 3 4 a>m00>c1
+t # lib-src/movemail.c$$$a2997b0f43237c7928f9c7ff36c4245243b42c9c
+v 0 m20
+v 1 m00
+v 2 c1
+v 3 m02
+v 4 c1
+v 5 c2
+v 6 c0
+v 7 m00
+v 8 c1
+v 9 m20
+v 10 c2
+v 11 c0
+v 12 m20
+v 13 c2
+v 14 c0
+e 0 1 a>m20>m00
+e 0 5 b>m20>c2
+e 0 6 a>m20>c0
+e 0 7 a>m20>m00
+e 0 9 ba>m20>m20
+e 0 12 ba>m20>m20
+e 1 2 a>m00>c1
+e 1 3 a>m00>m02
+e 3 4 a>m02>c1
+e 7 8 a>m00>c1
+e 9 10 b>m20>c2
+e 9 11 a>m20>c0
+e 12 13 b>m20>c2
+e 12 14 a>m20>c0
+t # src/w32heap.c$$$3c1f9d660308c972b40e19cbdfffa53694a45eee
+v 0 m20
+v 1 m10
+v 2 c7
+v 3 m22
+v 4 c0
+v 5 m00
+e 0 1 b>m20>m10
+e 0 4 a>m20>c0
+e 0 5 a>m20>m00
+e 1 2 b>m10>c7
+e 1 3 b>m10>m22
+e 5 2 a>m00>c7
+e 5 3 a>m00>m22
+t # src/w16select.c$$$9963e8593047672088e2392c75940209984be3c4
+v 0 m20
+v 1 m20
+v 2 c0
+v 3 c2
+v 4 m00
+v 5 c1
+v 6 m02
+v 7 c1
+e 0 1 ba>m20>m20
+e 1 2 a>m20>c0
+e 1 3 b>m20>c2
+e 1 4 a>m20>m00
+e 4 5 a>m00>c1
+e 4 6 a>m00>m02
+e 6 7 a>m02>c1
+t # src/xterm.c$$$71f8198a32ea19add5ed5af1f3cf882c4a6822ce
+v 0 m20
+v 1 m20
+v 2 m00
+v 3 c1
+v 4 m00
+v 5 c1
+v 6 c1
+v 7 m20
+v 8 c2
+v 9 c0
+v 10 m20
+v 11 c2
+v 12 c0
+e 0 1 ba>m20>m20
+e 1 2 a>m20>m00
+e 1 7 ba>m20>m20
+e 1 10 ba>m20>m20
+e 2 3 a>m00>c1
+e 2 4 a>m00>m00
+e 2 6 a>m00>c1
+e 4 5 a>m00>c1
+e 7 8 b>m20>c2
+e 7 9 a>m20>c0
+e 10 11 b>m20>c2
+e 10 12 a>m20>c0
+t # src/xselect.c$$$d24e26b1a9ecd3d10613b3fa78a0abe065554035
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m00
+v 4 c1
+v 5 m02
+v 6 c1
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 a>m20>m00
+e 3 4 a>m00>c1
+e 3 5 a>m00>m02
+e 5 6 a>m02>c1
+t # src/eval.c$$$d148e14dc586e5f94e158c7396588b8183e42ceb
+v 0 m20
+v 1 m10
+v 2 c6
+v 3 m00
+v 4 m20
+v 5 m10
+v 6 c6
+v 7 m00
+e 0 1 b>m20>m10
+e 0 3 a>m20>m00
+e 0 4 ba>m20>m20
+e 1 2 b>m10>c6
+e 3 2 a>m00>c6
+e 4 5 b>m20>m10
+e 4 7 a>m20>m00
+e 5 6 b>m10>c6
+e 7 6 a>m00>c6
+t # src/dired.c$$$294f1153b56701321c2dd9ef1aa2483b17dc4bf8
+v 0 m20
+v 1 m00
+v 2 c1
+v 3 m02
+v 4 c4
+e 0 1 a>m20>m00
+e 0 4 b>m20>c4
+e 1 2 a>m00>c1
+e 1 3 a>m00>m02
+e 3 4 a>m02>c4
+t # src/w32fns.c$$$f507f365a77d2a43bc1f57797bfdb945bd73ec57
+v 0 m20
+v 1 c2
+v 2 m10
+v 3 c3
+v 4 m20
+v 5 c2
+v 6 m10
+v 7 c3
+e 0 1 b>m20>c2
+e 0 2 b>m20>m10
+e 0 4 ba>m20>m20
+e 0 6 b>m20>m10
+e 2 3 b>m10>c3
+e 4 5 b>m20>c2
+e 6 7 b>m10>c3
+t # src/w32fns.c$$$64f0809df49fe27e4c9372859e5ceb1e4e643582
+v 0 m20
+v 1 c0
+v 2 m00
+v 3 c1
+v 4 m00
+v 5 c1
+v 6 m20
+v 7 c0
+v 8 c2
+v 9 m00
+v 10 c1
+e 0 1 a>m20>c0
+e 0 2 a>m20>m00
+e 0 4 a>m20>m00
+e 0 6 ba>m20>m20
+e 0 8 b>m20>c2
+e 0 9 a>m20>m00
+e 2 3 a>m00>c1
+e 4 5 a>m00>c1
+e 6 7 a>m20>c0
+e 9 10 a>m00>c1
+t # src/fileio.c$$$da5b5435a87be1409bf8c13ce781e3991c7080e0
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m20
+v 4 m10
+v 5 c5
+v 6 c0
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 ba>m20>m20
+e 3 4 b>m20>m10
+e 3 5 a>m20>c5
+e 3 6 a>m20>c0
+e 4 5 b>m10>c5
+t # src/fileio.c$$$4e5a6f83a89701b3868a37ded7882d62398120d8
+v 0 m20
+v 1 c0
+v 2 c2
+v 3 m20
+v 4 c2
+v 5 c4
+v 6 m00
+e 0 1 a>m20>c0
+e 0 2 b>m20>c2
+e 0 3 ba>m20>m20
+e 3 4 b>m20>c2
+e 3 5 b>m20>c4
+e 3 6 a>m20>m00
+e 6 5 a>m00>c4
+t # src/w32font.c$$$c69002781e3396c6faa64580706a6f1dfab85185
+v 0 m20
+v 1 m00
+v 2 c4
+v 3 m20
+v 4 m20
+v 5 c4
+e 0 1 a>m20>m00
+e 0 2 b>m20>c4
+e 0 3 b>m20>m20
+e 0 4 b>m20>m20
+e 0 5 b>m20>c4
+e 1 2 a>m00>c4
+e 1 3 a>m00>m20
+e 1 4 a>m00>m20
+e 1 5 a>m00>c4
+t # src/w32font.c$$$34fd2d28e93778b6220719d8e1780ca1304c240d
+v 0 m20
+v 1 c0
+v 2 c2
+v 3 m10
+v 4 c3
+e 0 1 a>m20>c0
+e 0 2 b>m20>c2
+e 0 3 b>m20>m10
+e 3 4 b>m10>c3
+t # src/w32font.h$$$500591f86bc07cf08e2ef7d37d6555cdeb928c76
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 c0
+v 4 m00
+v 5 c1
+v 6 m00
+v 7 c1
+v 8 m00
+v 9 c1
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 a>m20>c0
+e 1 4 a>m20>m00
+e 1 6 a>m20>m00
+e 1 8 a>m20>m00
+e 4 5 a>m00>c1
+e 6 7 a>m00>c1
+e 8 9 a>m00>c1
+t # src/xterm.c$$$7ee480ce4f5df93c16313a50e11f0afe04477d01
+v 0 m20
+v 1 m20
+v 2 m00
+v 3 c1
+v 4 m20
+v 5 m10
+v 6 c3
+v 7 m12
+v 8 c7
+v 9 m00
+v 10 c4
+e 0 1 ba>m20>m20
+e 1 2 a>m20>m00
+e 1 4 ba>m20>m20
+e 1 10 b>m20>c4
+e 2 3 a>m00>c1
+e 4 5 b>m20>m10
+e 4 9 a>m20>m00
+e 5 6 b>m10>c3
+e 5 7 b>m10>m12
+e 7 8 b>m12>c7
+e 9 8 a>m00>c7
+e 9 10 a>m00>c4
+t # src/w32fns.c$$$5dff811eea3abfce0040ae7734081ce7f66c1b3e
+v 0 m20
+v 1 m00
+v 2 c1
+v 3 c4
+e 0 1 a>m20>m00
+e 0 3 b>m20>c4
+e 1 2 a>m00>c1
+e 1 3 a>m00>c4
+t # src/filelock.c$$$9d2818d67690523a462696ccef3e1376a57dbf43
+v 0 m20
+v 1 m20
+v 2 m10
+v 3 c5
+v 4 m00
+v 5 m10
+v 6 m20
+v 7 c5
+v 8 m22
+v 9 m00
+e 0 1 ba>m20>m20
+e 1 2 b>m20>m10
+e 1 4 a>m20>m00
+e 1 5 b>m20>m10
+e 1 9 a>m20>m00
+e 2 3 b>m10>c5
+e 4 3 a>m00>c5
+e 5 6 b>m10>m20
+e 5 7 b>m10>c5
+e 5 8 b>m10>m22
+e 9 6 a>m00>m20
+e 9 7 a>m00>c5
+e 9 8 a>m00>m22
+t # src/m/hp9000s300.h$$$9d2818d67690523a462696ccef3e1376a57dbf43
+v 0 m20
+v 1 m10
+v 2 c3
+v 3 m10
+v 4 m10
+v 5 c3
+v 6 c3
+e 0 1 b>m20>m10
+e 1 2 b>m10>c3
+e 1 3 b>m10>m10
+e 3 4 b>m10>m10
+e 3 6 b>m10>c3
+e 4 5 b>m10>c3
+t # src/unexmips.c$$$9d2818d67690523a462696ccef3e1376a57dbf43
+v 0 m20
+v 1 m10
+v 2 c3
+v 3 m12
+v 4 c5
+e 0 1 b>m20>m10
+e 0 4 a>m20>c5
+e 1 2 b>m10>c3
+e 1 3 b>m10>m12
+e 3 4 b>m12>c5
+t # src/font.c$$$43a1d19b39aef461a49beb0bc684b99db61520ca
+v 0 m20
+v 1 m00
+v 2 c1
+v 3 c0
+v 4 c2
+e 0 1 a>m20>m00
+e 0 3 a>m20>c0
+e 0 4 b>m20>c2
+e 1 2 a>m00>c1
+t # src/alloc.c$$$354884c46ee708a22b0372d2092256408b485c8d
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 m10
+v 4 c3
+v 5 c2
+v 6 m10
+v 7 c3
+v 8 c0
+v 9 m00
+v 10 c1
+e 0 1 ba>m20>m20
+e 0 3 b>m20>m10
+e 0 5 b>m20>c2
+e 0 6 b>m20>m10
+e 0 8 a>m20>c0
+e 0 9 a>m20>m00
+e 1 2 b>m20>c2
+e 3 4 b>m10>c3
+e 6 7 b>m10>c3
+e 9 10 a>m00>c1
+t # src/termhooks.h$$$354884c46ee708a22b0372d2092256408b485c8d
+v 0 m20
+v 1 c2
+v 2 m10
+v 3 c3
+v 4 m00
+v 5 c1
+e 0 1 b>m20>c2
+e 0 2 b>m20>m10
+e 0 4 a>m20>m00
+e 2 3 b>m10>c3
+e 4 5 a>m00>c1
+t # lib-src/emacsclient.c$$$50f271cb5a8a9cc415efb465023724d3d73937c8
+v 0 m20
+v 1 m20
+v 2 m20
+v 3 c2
+v 4 c2
+v 5 c0
+v 6 m00
+v 7 c1
+v 8 m02
+v 9 c1
+e 0 1 ba>m20>m20
+e 1 2 ba>m20>m20
+e 1 4 b>m20>c2
+e 1 5 a>m20>c0
+e 1 6 a>m20>m00
+e 2 3 b>m20>c2
+e 6 7 a>m00>c1
+e 6 8 a>m00>m02
+e 8 9 a>m02>c1
+t # src/xdisp.c$$$c0d7caba9977215cadc057d290f3780e86ca636f
+v 0 m20
+v 1 m00
+v 2 c1
+v 3 c2
+v 4 c0
+e 0 1 a>m20>m00
+e 0 3 b>m20>c2
+e 0 4 a>m20>c0
+e 1 2 a>m00>c1
+t # src/xterm.c$$$cb515a21c74f594bba6c8b917d271b1eeeacdf36
+v 0 m20
+v 1 m20
+v 2 m10
+v 3 c4
+v 4 m12
+v 5 c4
+v 6 m00
+v 7 c1
+v 8 m03
+v 9 m02
+e 0 1 ba>m20>m20
+e 1 2 b>m20>m10
+e 1 6 a>m20>m00
+e 2 3 b>m10>c4
+e 2 4 b>m10>m12
+e 4 5 b>m12>c4
+e 6 7 a>m00>c1
+e 6 8 a>m00>m03
+e 8 3 a>m03>c4
+e 8 9 a>m03>m02
+e 9 5 a>m02>c4
+t # src/macfns.c$$$b8ab86c320e30a0b09c8a5dbe2dfbfb326db2854
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m10
+v 4 c3
+v 5 m12
+v 6 c3
+v 7 m10
+v 8 c3
+v 9 m12
+v 10 c3
+v 11 m20
+v 12 c2
+v 13 c0
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 b>m20>m10
+e 0 7 b>m20>m10
+e 0 11 ba>m20>m20
+e 3 4 b>m10>c3
+e 3 5 b>m10>m12
+e 5 6 b>m12>c3
+e 7 8 b>m10>c3
+e 7 9 b>m10>m12
+e 9 10 b>m12>c3
+e 11 12 b>m20>c2
+e 11 13 a>m20>c0
+t # lib-src/pop.c$$$ec641d50562aaa11a1c23edce1ebeaf8eca3072b
+v 0 m20
+v 1 m20
+v 2 m20
+v 3 m10
+v 4 c3
+v 5 m12
+v 6 m10
+v 7 c3
+v 8 m12
+v 9 m10
+v 10 c3
+v 11 c0
+v 12 c2
+e 0 1 ba>m20>m20
+e 1 2 ba>m20>m20
+e 1 11 a>m20>c0
+e 1 12 b>m20>c2
+e 2 3 b>m20>m10
+e 3 4 b>m10>c3
+e 3 5 b>m10>m12
+e 5 6 b>m12>m10
+e 6 7 b>m10>c3
+e 6 8 b>m10>m12
+e 8 9 b>m12>m10
+e 9 10 b>m10>c3
+t # src/xfaces.c$$$a2d7e7225ce20a6bb9a6f3c4a39e9af1d9100d8d
+v 0 m20
+v 1 m20
+v 2 c4
+v 3 m00
+v 4 c1
+v 5 m02
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c4
+e 1 3 a>m20>m00
+e 3 4 a>m00>c1
+e 3 5 a>m00>m02
+e 5 2 a>m02>c4
+t # src/window.c$$$f6b434405bb0406f43e64e46cb38af5528a5b9af
+v 0 m20
+v 1 c0
+v 2 c2
+v 3 m00
+v 4 c1
+v 5 m00
+v 6 c1
+v 7 m00
+v 8 c1
+e 0 1 a>m20>c0
+e 0 2 b>m20>c2
+e 0 3 a>m20>m00
+e 0 5 a>m20>m00
+e 0 7 a>m20>m00
+e 3 4 a>m00>c1
+e 5 6 a>m00>c1
+e 7 8 a>m00>c1
+t # src/dired.c$$$8f7f8c65392093aa5e7482ccc8bc298831fc4c37
+v 0 m20
+v 1 m10
+v 2 c5
+v 3 m22
+v 4 c0
+v 5 m00
+e 0 1 b>m20>m10
+e 0 4 a>m20>c0
+e 0 5 a>m20>m00
+e 1 2 b>m10>c5
+e 1 3 b>m10>m22
+e 5 2 a>m00>c5
+e 5 3 a>m00>m22
+t # src/frame.c$$$d00368cf268ab3e020f6e85121781ff069068057
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 c0
+v 4 m00
+v 5 c1
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 a>m20>c0
+e 1 4 a>m20>m00
+e 4 5 a>m00>c1
+t # src/regex.c$$$1cee1e272f4190ae0b48b7509099832b02ade297
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m10
+v 4 c5
+v 5 m22
+v 6 m00
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 b>m20>m10
+e 0 6 a>m20>m00
+e 3 4 b>m10>c5
+e 3 5 b>m10>m22
+e 6 4 a>m00>c5
+e 6 5 a>m00>m22
+t # src/xterm.c$$$5badc98d737395cbd96188dbbb044ab8dc4da88f
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m20
+v 4 c2
+v 5 c0
+v 6 m00
+v 7 c1
+v 8 m02
+v 9 c1
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 ba>m20>m20
+e 3 4 b>m20>c2
+e 3 5 a>m20>c0
+e 3 6 a>m20>m00
+e 6 7 a>m00>c1
+e 6 8 a>m00>m02
+e 8 9 a>m02>c1
+t # src/alloc.c$$$cfb2f32e41fd97d98129f6bc17991d1b7a906a47
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m00
+v 4 c1
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 a>m20>m00
+e 3 4 a>m00>c1
+t # src/keyboard.c$$$6bbba5a627cf59d22d9b21f8f7405e43af2e94cf
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 m20
+v 4 c2
+v 5 c0
+v 6 c4
+v 7 m20
+v 8 c4
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 ba>m20>m20
+e 1 6 b>m20>c4
+e 1 7 b>m20>m20
+e 1 8 b>m20>c4
+e 3 4 b>m20>c2
+e 3 5 a>m20>c0
+e 3 6 a>m20>c4
+e 3 7 a>m20>m20
+e 3 8 a>m20>c4
+t # src/process.c$$$6bbba5a627cf59d22d9b21f8f7405e43af2e94cf
+v 0 m20
+v 1 m20
+v 2 c4
+v 3 m00
+v 4 c1
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c4
+e 1 3 a>m20>m00
+e 3 2 a>m00>c4
+e 3 4 a>m00>c1
+t # src/sysdep.c$$$6bbba5a627cf59d22d9b21f8f7405e43af2e94cf
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 m10
+v 4 c3
+v 5 c5
+v 6 m10
+v 7 c3
+v 8 c7
+v 9 c0
+v 10 m00
+v 11 c1
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 b>m20>m10
+e 1 5 a>m20>c5
+e 1 6 b>m20>m10
+e 1 9 a>m20>c0
+e 1 10 a>m20>m00
+e 3 4 b>m10>c3
+e 3 5 b>m10>c5
+e 6 7 b>m10>c3
+e 6 8 b>m10>c7
+e 10 8 a>m00>c7
+e 10 11 a>m00>c1
+t # src/process.c$$$805b043931e12ab852c64f02a1cdf2d72c0b2a80
+v 0 m20
+v 1 m20
+v 2 c0
+v 3 m00
+v 4 m00
+v 5 c1
+e 0 1 ba>m20>m20
+e 1 2 a>m20>c0
+e 1 3 a>m20>m00
+e 3 4 a>m00>m00
+e 4 5 a>m00>c1
+t # lwlib/xlwmenu.c$$$2dfa0facd984e792dd9ac55ff7648d09b4e1855c
+v 0 m20
+v 1 c0
+v 2 m00
+v 3 c1
+v 4 m00
+v 5 c1
+e 0 1 a>m20>c0
+e 0 2 a>m20>m00
+e 0 4 a>m20>m00
+e 2 3 a>m00>c1
+e 4 5 a>m00>c1
+t # src/callproc.c$$$5990851d423fbd407f2d8cb4eb09b1fdc0b3c44e
+v 0 m20
+v 1 c0
+v 2 m20
+v 3 c2
+v 4 m00
+v 5 c1
+v 6 m02
+v 7 c1
+e 0 1 a>m20>c0
+e 0 2 ba>m20>m20
+e 2 3 b>m20>c2
+e 2 4 a>m20>m00
+e 4 5 a>m00>c1
+e 4 6 a>m00>m02
+e 6 7 a>m02>c1
+t # src/gtkutil.c$$$82bc1fd69f070cd4bf737001d6913b0011d90a52
+v 0 m20
+v 1 m20
+v 2 m10
+v 3 c3
+v 4 m12
+v 5 c3
+v 6 c2
+v 7 c0
+e 0 1 ba>m20>m20
+e 1 2 b>m20>m10
+e 1 6 b>m20>c2
+e 1 7 a>m20>c0
+e 2 3 b>m10>c3
+e 2 4 b>m10>m12
+e 4 5 b>m12>c3
+t # src/gtkutil.c$$$78c55a8031e29bd5b0552d2727558057eafc4f71
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 c0
+v 4 m00
+v 5 c1
+v 6 m02
+v 7 c1
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 a>m20>c0
+e 1 4 a>m20>m00
+e 4 5 a>m00>c1
+e 4 6 a>m00>m02
+e 6 7 a>m02>c1
+t # src/callproc.c$$$f105f403d206f95bf534226abb99f14aa2f3052e
+v 0 m20
+v 1 c0
+v 2 m20
+v 3 c2
+v 4 m00
+v 5 c1
+v 6 m02
+v 7 c1
+v 8 m20
+v 9 c2
+v 10 c0
+v 11 m22
+v 12 c2
+v 13 c0
+e 0 1 a>m20>c0
+e 0 2 ba>m20>m20
+e 2 3 b>m20>c2
+e 2 4 a>m20>m00
+e 2 8 ba>m20>m20
+e 4 5 a>m00>c1
+e 4 6 a>m00>m02
+e 6 7 a>m02>c1
+e 8 9 b>m20>c2
+e 8 10 a>m20>c0
+e 8 11 ba>m20>m22
+e 11 12 b>m22>c2
+e 11 13 a>m22>c0
+t # src/term.c$$$ed8dad6b616204b4dd4e853801f41da6f4c3b0a7
+v 0 m20
+v 1 c0
+v 2 c2
+v 3 m20
+v 4 c2
+v 5 c0
+v 6 m10
+v 7 c3
+e 0 1 a>m20>c0
+e 0 2 b>m20>c2
+e 0 3 ba>m20>m20
+e 0 6 b>m20>m10
+e 3 4 b>m20>c2
+e 3 5 a>m20>c0
+e 6 7 b>m10>c3
+t # src/m/amdx86-64.h$$$d52c26e925297a2d1663e2293d46ce95e91c4689
+v 0 m20
+v 1 m00
+v 2 c1
+v 3 m02
+v 4 c4
+v 5 c1
+v 6 c4
+e 0 1 a>m20>m00
+e 0 4 b>m20>c4
+e 0 6 b>m20>c4
+e 1 2 a>m00>c1
+e 1 3 a>m00>m02
+e 3 4 a>m02>c4
+e 3 5 a>m02>c1
+e 3 6 a>m02>c4
+t # src/image.c$$$2d22e7edf2d46b0907d88dc8332b21fd3430c6e3
+v 0 m20
+v 1 m20
+v 2 m10
+v 3 c3
+v 4 c0
+v 5 m10
+v 6 c3
+v 7 c5
+v 8 c3
+v 9 m22
+v 10 c2
+v 11 c0
+v 12 m00
+v 13 c1
+e 0 1 ba>m20>m20
+e 1 2 b>m20>m10
+e 1 4 a>m20>c0
+e 1 5 b>m20>m10
+e 1 7 a>m20>c5
+e 1 12 a>m20>m00
+e 2 3 b>m10>c3
+e 5 6 b>m10>c3
+e 5 7 b>m10>c5
+e 5 8 b>m10>c3
+e 5 9 b>m10>m22
+e 9 10 b>m22>c2
+e 9 11 a>m22>c0
+e 12 9 a>m00>m22
+e 12 13 a>m00>c1
+t # src/gtkutil.c$$$90f2e16b151bc42305f352ab3bfcb25429125179
+v 0 m20
+v 1 m20
+v 2 c0
+v 3 m00
+v 4 c1
+v 5 m02
+v 6 m00
+v 7 c1
+v 8 m02
+v 9 c1
+v 10 c2
+v 11 m20
+v 12 c2
+v 13 c0
+e 0 1 ba>m20>m20
+e 1 2 a>m20>c0
+e 1 3 a>m20>m00
+e 1 10 b>m20>c2
+e 1 11 ba>m20>m20
+e 3 4 a>m00>c1
+e 3 5 a>m00>m02
+e 5 6 a>m02>m00
+e 6 7 a>m00>c1
+e 6 8 a>m00>m02
+e 8 9 a>m02>c1
+e 11 12 b>m20>c2
+e 11 13 a>m20>c0
+t # src/xfns.c$$$90f2e16b151bc42305f352ab3bfcb25429125179
+v 0 m20
+v 1 m20
+v 2 m10
+v 3 c7
+v 4 c0
+v 5 m00
+v 6 c1
+v 7 m00
+e 0 1 ba>m20>m20
+e 1 2 b>m20>m10
+e 1 4 a>m20>c0
+e 1 5 a>m20>m00
+e 1 7 a>m20>m00
+e 2 3 b>m10>c7
+e 5 6 a>m00>c1
+e 7 3 a>m00>c7
+t # src/keyboard.c$$$4beb2d71ea5cbd7f451b8958c3cd21b3cd4d6edc
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 c0
+v 4 m00
+v 5 c1
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 a>m20>c0
+e 1 4 a>m20>m00
+e 4 5 a>m00>c1
+t # src/xterm.c$$$5f6a587f307d47878dfa44058c613fefab4ecac3
+v 0 m20
+v 1 m20
+v 2 c4
+v 3 c2
+v 4 m00
+v 5 c1
+v 6 m00
+v 7 m02
+v 8 c1
+v 9 c0
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c4
+e 1 3 b>m20>c2
+e 1 4 a>m20>m00
+e 1 6 a>m20>m00
+e 1 9 a>m20>c0
+e 4 5 a>m00>c1
+e 6 2 a>m00>c4
+e 6 7 a>m00>m02
+e 7 8 a>m02>c1
+t # src/termhooks.h$$$0f8dad4545f7ea8af33e8f82582f90fd0971dcff
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 c0
+v 4 m00
+v 5 c1
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 a>m20>c0
+e 1 4 a>m20>m00
+e 4 5 a>m00>c1
+t # src/macselect.c$$$28714a27a112b8caa209894aa0a40329e7bbd586
+v 0 m20
+v 1 c0
+v 2 m00
+v 3 c1
+v 4 m00
+v 5 c1
+v 6 m02
+v 7 c1
+v 8 m20
+v 9 c2
+e 0 1 a>m20>c0
+e 0 2 a>m20>m00
+e 0 4 a>m20>m00
+e 0 8 ba>m20>m20
+e 2 3 a>m00>c1
+e 4 5 a>m00>c1
+e 4 6 a>m00>m02
+e 6 7 a>m02>c1
+e 8 9 b>m20>c2
+t # src/keyboard.c$$$f66c49cc1cae94b545762ad789f214d5bf459c20
+v 0 m20
+v 1 m00
+v 2 c1
+v 3 m00
+v 4 c1
+v 5 m00
+v 6 c1
+e 0 1 a>m20>m00
+e 0 3 a>m20>m00
+e 0 5 a>m20>m00
+e 1 2 a>m00>c1
+e 3 4 a>m00>c1
+e 5 6 a>m00>c1
+t # src/image.c$$$dac5344bda6212378fe93780d27a00c840d87068
+v 0 m20
+v 1 m10
+v 2 c3
+v 3 m10
+v 4 c6
+v 5 m00
+v 6 m20
+v 7 c0
+e 0 1 b>m20>m10
+e 0 5 a>m20>m00
+e 0 6 ba>m20>m20
+e 1 2 b>m10>c3
+e 1 3 b>m10>m10
+e 3 4 b>m10>c6
+e 5 4 a>m00>c6
+e 6 7 a>m20>c0
+t # src/xfns.c$$$e358e052160031115249c6ec86e657932a8e053f
+v 0 m20
+v 1 m20
+v 2 m10
+v 3 c3
+v 4 c5
+e 0 1 ba>m20>m20
+e 1 2 b>m20>m10
+e 1 4 a>m20>c5
+e 2 3 b>m10>c3
+e 2 4 b>m10>c5
+t # src/w32fns.c$$$cb91d111bef1a3c69ca632c861cf2506f57c039a
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m00
+v 4 c1
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 a>m20>m00
+e 3 4 a>m00>c1
+t # src/xfns.c$$$2fda697741c0221061caab9680773922d9bb56e9
+v 0 m20
+v 1 m20
+v 2 m00
+v 3 c1
+v 4 c4
+e 0 1 ba>m20>m20
+e 1 2 a>m20>m00
+e 1 4 b>m20>c4
+e 2 3 a>m00>c1
+e 2 4 a>m00>c4
+t # src/w32term.c$$$c2baa2b65bf9492c0a23a31816a561a187039ae9
+v 0 m20
+v 1 c0
+v 2 m00
+v 3 c1
+v 4 m00
+v 5 c1
+v 6 m00
+v 7 c1
+v 8 c2
+e 0 1 a>m20>c0
+e 0 2 a>m20>m00
+e 0 4 a>m20>m00
+e 0 6 a>m20>m00
+e 0 8 b>m20>c2
+e 2 3 a>m00>c1
+e 4 5 a>m00>c1
+e 6 7 a>m00>c1
+t # src/keyboard.c$$$e589efa546443ad7a61ec3867b46cda884d22de5
+v 0 m20
+v 1 c0
+v 2 m00
+v 3 c1
+v 4 m20
+v 5 c2
+v 6 c0
+e 0 1 a>m20>c0
+e 0 2 a>m20>m00
+e 0 4 ba>m20>m20
+e 2 3 a>m00>c1
+e 4 5 b>m20>c2
+e 4 6 a>m20>c0
+t # src/frame.c$$$bedb9c0eda660f7dc516543be25db37b5f95e03b
+v 0 m20
+v 1 m10
+v 2 c3
+v 3 m10
+v 4 c3
+v 5 c0
+v 6 c2
+v 7 m20
+v 8 c2
+v 9 c0
+v 10 m20
+v 11 m10
+v 12 c3
+e 0 1 b>m20>m10
+e 0 3 b>m20>m10
+e 0 5 a>m20>c0
+e 0 6 b>m20>c2
+e 0 7 ba>m20>m20
+e 0 10 ba>m20>m20
+e 1 2 b>m10>c3
+e 3 4 b>m10>c3
+e 7 8 b>m20>c2
+e 7 9 a>m20>c0
+e 10 11 b>m20>m10
+e 11 12 b>m10>c3
+t # src/frame.h$$$bedb9c0eda660f7dc516543be25db37b5f95e03b
+v 0 m20
+v 1 m20
+v 2 m10
+v 3 c3
+v 4 m20
+v 5 c2
+v 6 c0
+e 0 1 ba>m20>m20
+e 1 2 b>m20>m10
+e 1 4 ba>m20>m20
+e 2 3 b>m10>c3
+e 4 5 b>m20>c2
+e 4 6 a>m20>c0
+t # src/term.c$$$bedb9c0eda660f7dc516543be25db37b5f95e03b
+v 0 m20
+v 1 c0
+v 2 m10
+v 3 c3
+v 4 m00
+v 5 c1
+v 6 m20
+v 7 m20
+v 8 c2
+v 9 c0
+v 10 c2
+v 11 c0
+e 0 1 a>m20>c0
+e 0 2 b>m20>m10
+e 0 4 a>m20>m00
+e 0 6 ba>m20>m20
+e 2 3 b>m10>c3
+e 4 5 a>m00>c1
+e 6 7 ba>m20>m20
+e 6 10 b>m20>c2
+e 6 11 a>m20>c0
+e 7 8 b>m20>c2
+e 7 9 a>m20>c0
+t # src/xfns.c$$$bedb9c0eda660f7dc516543be25db37b5f95e03b
+v 0 m20
+v 1 m20
+v 2 m20
+v 3 c2
+v 4 c0
+v 5 m10
+v 6 c3
+v 7 c2
+v 8 m10
+v 9 c3
+v 10 m12
+v 11 c3
+v 12 m10
+v 13 c3
+e 0 1 ba>m20>m20
+e 1 2 ba>m20>m20
+e 1 5 b>m20>m10
+e 1 7 b>m20>c2
+e 1 8 b>m20>m10
+e 1 12 b>m20>m10
+e 2 3 b>m20>c2
+e 2 4 a>m20>c0
+e 5 6 b>m10>c3
+e 8 9 b>m10>c3
+e 8 10 b>m10>m12
+e 10 11 b>m12>c3
+e 12 13 b>m10>c3
+t # src/xterm.c$$$bedb9c0eda660f7dc516543be25db37b5f95e03b
+v 0 m20
+v 1 m20
+v 2 m20
+v 3 c2
+v 4 c0
+v 5 m10
+v 6 c3
+v 7 c0
+e 0 1 ba>m20>m20
+e 1 2 ba>m20>m20
+e 1 5 b>m20>m10
+e 1 7 a>m20>c0
+e 2 3 b>m20>c2
+e 2 4 a>m20>c0
+e 5 6 b>m10>c3
+t # src/term.c$$$e7cf0fa0edcc9e39c3b192930b7d128ebc6ad6db
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m20
+v 4 c2
+v 5 m10
+v 6 c3
+v 7 m00
+v 8 c1
+v 9 c0
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 ba>m20>m20
+e 3 4 b>m20>c2
+e 3 5 b>m20>m10
+e 3 7 a>m20>m00
+e 3 9 a>m20>c0
+e 5 6 b>m10>c3
+e 7 8 a>m00>c1
+t # src/fileio.c$$$586702ceeb85856b076b7eec369791c1bb66e765
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m20
+v 4 m10
+v 5 c3
+v 6 m12
+v 7 m10
+v 8 c3
+v 9 m00
+v 10 c1
+v 11 m02
+v 12 m00
+v 13 c1
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 ba>m20>m20
+e 3 4 b>m20>m10
+e 3 9 a>m20>m00
+e 4 5 b>m10>c3
+e 4 6 b>m10>m12
+e 6 7 b>m12>m10
+e 7 8 b>m10>c3
+e 9 10 a>m00>c1
+e 9 11 a>m00>m02
+e 11 12 a>m02>m00
+e 12 13 a>m00>c1
+t # src/process.h$$$638322a4ac66df028a3cb92208a29f3ddd0438b2
+v 0 m20
+v 1 c2
+v 2 m00
+v 3 c4
+v 4 c1
+v 5 c4
+e 0 1 b>m20>c2
+e 0 2 a>m20>m00
+e 0 3 b>m20>c4
+e 0 5 b>m20>c4
+e 2 3 a>m00>c4
+e 2 4 a>m00>c1
+e 2 5 a>m00>c4
+t # src/xterm.c$$$9cfc7da4248c20530326ba688dae2db837cf1ab8
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 m00
+v 4 c1
+v 5 c0
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 a>m20>m00
+e 1 5 a>m20>c0
+e 3 4 a>m00>c1
+t # src/macmenu.c$$$f5f870c03cd5cd6805b620cccf0aff4e9951e18c
+v 0 m20
+v 1 m20
+v 2 c0
+v 3 m00
+v 4 c1
+v 5 m00
+v 6 c1
+v 7 c2
+v 8 m10
+v 9 c3
+e 0 1 ba>m20>m20
+e 1 2 a>m20>c0
+e 1 3 a>m20>m00
+e 1 5 a>m20>m00
+e 1 7 b>m20>c2
+e 1 8 b>m20>m10
+e 3 4 a>m00>c1
+e 5 6 a>m00>c1
+e 8 9 b>m10>c3
+t # src/callproc.c$$$4da256b12405664071edb7183de9e94cce8ec210
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 c0
+v 4 m00
+v 5 c4
+v 6 c1
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 a>m20>c0
+e 1 4 a>m20>m00
+e 1 5 b>m20>c4
+e 4 5 a>m00>c4
+e 4 6 a>m00>c1
+t # src/alloc.c$$$c47be1b8440883b07b6cf918235a13b65e3d7be6
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m00
+v 4 c1
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 a>m20>m00
+e 3 4 a>m00>c1
+t # src/alloc.c$$$7e2f6f8448f9d98e90e0343e2aeba22a7985480f
+v 0 m20
+v 1 c2
+v 2 m10
+v 3 c3
+v 4 c0
+e 0 1 b>m20>c2
+e 0 2 b>m20>m10
+e 0 4 a>m20>c0
+e 2 3 b>m10>c3
+t # src/fileio.c$$$0bbc84630f12e848e19c39dce01f3d14559bf70b
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 c0
+v 4 m10
+v 5 c5
+v 6 m10
+v 7 c5
+v 8 c2
+v 9 m10
+v 10 c3
+e 0 1 ba>m20>m20
+e 0 3 a>m20>c0
+e 0 4 b>m20>m10
+e 0 5 a>m20>c5
+e 0 6 b>m20>m10
+e 0 7 a>m20>c5
+e 0 8 b>m20>c2
+e 0 9 b>m20>m10
+e 1 2 b>m20>c2
+e 4 5 b>m10>c5
+e 6 7 b>m10>c5
+e 9 10 b>m10>c3
+t # src/comp.c$$$c17013ae766d7d3dd79122e1ee99d3f2ec4d9f04
+v 0 m20
+v 1 m20
+v 2 c0
+v 3 m00
+v 4 c1
+v 5 m20
+v 6 c0
+e 0 1 ba>m20>m20
+e 0 5 ba>m20>m20
+e 1 2 a>m20>c0
+e 1 3 a>m20>m00
+e 3 4 a>m00>c1
+e 5 6 a>m20>c0
+t # lib/diffseq.h$$$d494f9e81a6d11dcf6c22333cd950989b2051dff
+v 0 m20
+v 1 c0
+v 2 m00
+v 3 c1
+v 4 c2
+v 5 m10
+v 6 m10
+v 7 c3
+v 8 m12
+v 9 c3
+e 0 1 a>m20>c0
+e 0 2 a>m20>m00
+e 0 4 b>m20>c2
+e 0 5 b>m20>m10
+e 2 3 a>m00>c1
+e 5 6 b>m10>m10
+e 6 7 b>m10>c3
+e 6 8 b>m10>m12
+e 8 9 b>m12>c3
+t # lib/sig2str.c$$$42ec41251584c480ee3286ff369c18629f52a7d5
+v 0 m20
+v 1 c0
+v 2 m00
+v 3 c1
+v 4 c2
+v 5 m00
+v 6 c1
+v 7 m00
+v 8 c1
+e 0 1 a>m20>c0
+e 0 2 a>m20>m00
+e 0 4 b>m20>c2
+e 0 5 a>m20>m00
+e 0 7 a>m20>m00
+e 2 3 a>m00>c1
+e 5 6 a>m00>c1
+e 7 8 a>m00>c1
+t # lib/string.in.h$$$42ec41251584c480ee3286ff369c18629f52a7d5
+v 0 m20
+v 1 m20
+v 2 c0
+v 3 m00
+v 4 m00
+v 5 c1
+v 6 c1
+v 7 m03
+v 8 c1
+v 9 m00
+v 10 c1
+e 0 1 ba>m20>m20
+e 1 2 a>m20>c0
+e 1 3 a>m20>m00
+e 3 4 a>m00>m00
+e 3 6 a>m00>c1
+e 3 7 a>m00>m03
+e 4 5 a>m00>c1
+e 7 8 a>m03>c1
+e 7 9 a>m03>m00
+e 9 10 a>m00>c1
+t # src/image.c$$$6e2ee2a127952aaee63921a99a065693d3e8e07b
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m10
+v 4 c3
+v 5 m20
+v 6 c2
+v 7 c0
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 b>m20>m10
+e 0 5 ba>m20>m20
+e 3 4 b>m10>c3
+e 5 6 b>m20>c2
+e 5 7 a>m20>c0
+t # lib/careadlinkat.c$$$3e10174fb65f4eb601b1921271bdcf10c933b879
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m00
+v 4 c1
+v 5 m10
+v 6 c3
+v 7 m10
+v 8 c3
+v 9 m12
+v 10 c3
+v 11 c5
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 a>m20>m00
+e 0 5 b>m20>m10
+e 0 7 b>m20>m10
+e 0 11 a>m20>c5
+e 3 4 a>m00>c1
+e 5 6 b>m10>c3
+e 7 8 b>m10>c3
+e 7 9 b>m10>m12
+e 9 10 b>m12>c3
+e 9 11 b>m12>c5
+t # lib/string.in.h$$$3e10174fb65f4eb601b1921271bdcf10c933b879
+v 0 m20
+v 1 m20
+v 2 c0
+v 3 m00
+v 4 m00
+v 5 c1
+v 6 c1
+v 7 m03
+v 8 c1
+v 9 m00
+v 10 c1
+e 0 1 ba>m20>m20
+e 1 2 a>m20>c0
+e 1 3 a>m20>m00
+e 3 4 a>m00>m00
+e 3 6 a>m00>c1
+e 3 7 a>m00>m03
+e 4 5 a>m00>c1
+e 7 8 a>m03>c1
+e 7 9 a>m03>m00
+e 9 10 a>m00>c1
+t # src/thread.c$$$9c62ffb08262c82b7e38e6eb5767f2087424aa47
+v 0 m20
+v 1 m00
+v 2 c1
+v 3 m02
+v 4 c1
+v 5 c0
+e 0 1 a>m20>m00
+e 0 5 a>m20>c0
+e 1 2 a>m00>c1
+e 1 3 a>m00>m02
+e 3 4 a>m02>c1
+t # src/comp.c$$$bec2adebc6a5c4984d52ea7e66a7a3632e7dc578
+v 0 m20
+v 1 m20
+v 2 m20
+v 3 c0
+v 4 m00
+v 5 c1
+v 6 m02
+v 7 c1
+v 8 m20
+v 9 c0
+e 0 1 ba>m20>m20
+e 0 8 ba>m20>m20
+e 1 2 ba>m20>m20
+e 1 4 a>m20>m00
+e 2 3 a>m20>c0
+e 4 5 a>m00>c1
+e 4 6 a>m00>m02
+e 6 7 a>m02>c1
+e 8 9 a>m20>c0
+t # src/sysdep.c$$$b4f05274c7a8facbf2a817ec14d234605959c4de
+v 0 m20
+v 1 m00
+v 2 c1
+v 3 m20
+v 4 c2
+v 5 c0
+e 0 1 a>m20>m00
+e 0 3 ba>m20>m20
+e 1 2 a>m00>c1
+e 3 4 b>m20>c2
+e 3 5 a>m20>c0
+t # lib/verify.h$$$352b7dede0b3a28024a41a3da1c340859b110665
+v 0 m20
+v 1 m20
+v 2 m10
+v 3 c3
+v 4 m12
+v 5 c3
+v 6 c2
+v 7 c0
+v 8 m10
+v 9 c3
+v 10 m13
+v 11 c5
+v 12 m23
+v 13 m00
+e 0 1 ba>m20>m20
+e 1 2 b>m20>m10
+e 1 6 b>m20>c2
+e 1 7 a>m20>c0
+e 1 8 b>m20>m10
+e 1 13 a>m20>m00
+e 2 3 b>m10>c3
+e 2 4 b>m10>m12
+e 4 5 b>m12>c3
+e 8 9 b>m10>c3
+e 8 10 b>m10>m13
+e 10 11 b>m13>c5
+e 10 12 b>m13>m23
+e 13 11 a>m00>c5
+e 13 12 a>m00>m23
+t # src/lread.c$$$3224a443060a5f21bb910064fc06fe4432810355
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m20
+v 4 c2
+v 5 c0
+v 6 m10
+v 7 c3
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 ba>m20>m20
+e 0 6 b>m20>m10
+e 3 4 b>m20>c2
+e 3 5 a>m20>c0
+e 6 7 b>m10>c3
+t # lib/open.c$$$846657afaf021e8a796335d740ac4a34056abbeb
+v 0 m20
+v 1 m00
+v 2 c1
+v 3 m02
+v 4 c4
+e 0 1 a>m20>m00
+e 0 4 b>m20>c4
+e 1 2 a>m00>c1
+e 1 3 a>m00>m02
+e 3 4 a>m02>c4
+t # lib/string.in.h$$$846657afaf021e8a796335d740ac4a34056abbeb
+v 0 m20
+v 1 m20
+v 2 m20
+v 3 m20
+v 4 m03
+v 5 m00
+v 6 c1
+v 7 c1
+v 8 m22
+v 9 m23
+v 10 m03
+v 11 c1
+v 12 m00
+v 13 c1
+e 0 1 ba>m20>m20
+e 1 2 ba>m20>m20
+e 1 12 a>m20>m00
+e 2 3 ba>m20>m20
+e 2 9 ba>m20>m23
+e 3 4 a>m20>m03
+e 3 8 b>m20>m22
+e 4 5 a>m03>m00
+e 4 7 a>m03>c1
+e 4 8 a>m03>m22
+e 5 6 a>m00>c1
+e 9 10 a>m23>m03
+e 10 11 a>m03>c1
+e 12 13 a>m00>c1
+t # lib/sys_select.in.h$$$846657afaf021e8a796335d740ac4a34056abbeb
+v 0 m20
+v 1 m20
+v 2 m20
+v 3 m20
+v 4 m12
+v 5 c4
+v 6 m03
+v 7 m20
+v 8 m12
+v 9 c4
+v 10 m03
+v 11 m20
+v 12 m12
+v 13 c4
+v 14 m03
+e 0 1 ba>m20>m20
+e 1 2 ba>m20>m20
+e 1 11 ba>m20>m20
+e 2 3 ba>m20>m20
+e 2 7 ba>m20>m20
+e 3 4 b>m20>m12
+e 3 6 a>m20>m03
+e 4 5 b>m12>c4
+e 6 5 a>m03>c4
+e 7 8 b>m20>m12
+e 7 10 a>m20>m03
+e 8 9 b>m12>c4
+e 10 9 a>m03>c4
+e 11 12 b>m20>m12
+e 11 14 a>m20>m03
+e 12 13 b>m12>c4
+e 14 13 a>m03>c4
+t # lib/sys_stat.in.h$$$846657afaf021e8a796335d740ac4a34056abbeb
+v 0 m20
+v 1 m20
+v 2 m20
+v 3 m00
+v 4 c4
+v 5 m00
+v 6 c1
+v 7 m00
+v 8 c1
+e 0 1 ba>m20>m20
+e 1 2 ba>m20>m20
+e 1 5 a>m20>m00
+e 1 7 a>m20>m00
+e 2 3 a>m20>m00
+e 2 4 b>m20>c4
+e 3 4 a>m00>c4
+e 5 6 a>m00>c1
+e 7 8 a>m00>c1
+t # lib/time.in.h$$$846657afaf021e8a796335d740ac4a34056abbeb
+v 0 m20
+v 1 m20
+v 2 m20
+v 3 m12
+v 4 m10
+v 5 c3
+v 6 c4
+v 7 m03
+v 8 m00
+v 9 c1
+v 10 c1
+v 11 m02
+v 12 m03
+v 13 c1
+e 0 1 ba>m20>m20
+e 1 2 ba>m20>m20
+e 1 12 a>m20>m03
+e 2 3 b>m20>m12
+e 2 7 a>m20>m03
+e 3 4 b>m12>m10
+e 3 6 b>m12>c4
+e 4 5 b>m10>c3
+e 7 8 a>m03>m00
+e 7 10 a>m03>c1
+e 7 11 a>m03>m02
+e 8 9 a>m00>c1
+e 11 6 a>m02>c4
+e 12 13 a>m03>c1
+t # lib/time_rz.c$$$846657afaf021e8a796335d740ac4a34056abbeb
+v 0 m20
+v 1 m10
+v 2 c3
+v 3 c2
+v 4 m10
+v 5 c3
+v 6 c5
+v 7 c3
+v 8 c0
+v 9 m00
+v 10 c1
+e 0 1 b>m20>m10
+e 0 3 b>m20>c2
+e 0 4 b>m20>m10
+e 0 6 a>m20>c5
+e 0 8 a>m20>c0
+e 0 9 a>m20>m00
+e 1 2 b>m10>c3
+e 4 5 b>m10>c3
+e 4 6 b>m10>c5
+e 4 7 b>m10>c3
+e 9 10 a>m00>c1
+t # lib/sys_random.in.h$$$48c7caf3aca85f9878ae05bff9a0dca43b8f540b
+v 0 m20
+v 1 m20
+v 2 c0
+v 3 m00
+v 4 c1
+e 0 1 ba>m20>m20
+e 1 2 a>m20>c0
+e 1 3 a>m20>m00
+e 3 4 a>m00>c1
+t # lib/regex.h$$$e697ca152570d59f9b591fc2003292c30d4be050
+v 0 m20
+v 1 m20
+v 2 m20
+v 3 m10
+v 4 c5
+v 5 m23
+v 6 m00
+v 7 c2
+v 8 c0
+v 9 m20
+v 10 m13
+v 11 c6
+v 12 m22
+v 13 m03
+e 0 1 ba>m20>m20
+e 1 2 ba>m20>m20
+e 1 7 b>m20>c2
+e 1 8 a>m20>c0
+e 1 9 ba>m20>m20
+e 2 3 b>m20>m10
+e 2 6 a>m20>m00
+e 3 4 b>m10>c5
+e 3 5 b>m10>m23
+e 6 4 a>m00>c5
+e 6 5 a>m00>m23
+e 9 10 b>m20>m13
+e 9 13 a>m20>m03
+e 10 11 b>m13>c6
+e 10 12 b>m13>m22
+e 13 11 a>m03>c6
+e 13 12 a>m03>m22
+t # lib/stdint.in.h$$$e697ca152570d59f9b591fc2003292c30d4be050
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 m10
+v 4 c4
+v 5 m20
+v 6 c4
+v 7 c0
+v 8 m00
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 b>m20>m10
+e 1 7 a>m20>c0
+e 1 8 a>m20>m00
+e 3 4 b>m10>c4
+e 3 5 b>m10>m20
+e 3 6 b>m10>c4
+e 8 4 a>m00>c4
+e 8 5 a>m00>m20
+e 8 6 a>m00>c4
+t # src/xwidget.c$$$9e1af8251fe241fa163e721f3e796c1e8cca86cf
+v 0 m20
+v 1 c0
+v 2 m00
+v 3 c1
+v 4 m03
+v 5 c1
+v 6 m00
+v 7 c1
+v 8 m03
+v 9 c1
+v 10 m00
+v 11 c1
+v 12 m03
+v 13 c1
+e 0 1 a>m20>c0
+e 0 2 a>m20>m00
+e 0 6 a>m20>m00
+e 0 10 a>m20>m00
+e 2 3 a>m00>c1
+e 2 4 a>m00>m03
+e 4 5 a>m03>c1
+e 6 7 a>m00>c1
+e 6 8 a>m00>m03
+e 8 9 a>m03>c1
+e 10 11 a>m00>c1
+e 10 12 a>m00>m03
+e 12 13 a>m03>c1
+t # src/pdumper.c$$$4491a55ac3c4e85a64e47519c8670ba23ae8d2f6
+v 0 m20
+v 1 m20
+v 2 m20
+v 3 c2
+v 4 m12
+v 5 c3
+v 6 c0
+e 0 1 ba>m20>m20
+e 1 2 ba>m20>m20
+e 1 6 a>m20>c0
+e 2 3 b>m20>c2
+e 2 4 b>m20>m12
+e 4 5 b>m12>c3
+t # lib/ignore-value.h$$$124a7951f495b916cf38f0e1e1fe85e22bc08aba
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 m10
+v 4 c4
+v 5 m22
+v 6 c0
+v 7 m00
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 b>m20>m10
+e 1 6 a>m20>c0
+e 1 7 a>m20>m00
+e 3 4 b>m10>c4
+e 3 5 b>m10>m22
+e 7 4 a>m00>c4
+e 7 5 a>m00>m22
+t # lib/intprops.h$$$124a7951f495b916cf38f0e1e1fe85e22bc08aba
+v 0 m20
+v 1 m20
+v 2 m10
+v 3 c5
+v 4 m22
+v 5 m00
+v 6 c2
+v 7 c0
+e 0 1 ba>m20>m20
+e 1 2 b>m20>m10
+e 1 5 a>m20>m00
+e 1 6 b>m20>c2
+e 1 7 a>m20>c0
+e 2 3 b>m10>c5
+e 2 4 b>m10>m22
+e 5 3 a>m00>c5
+e 5 4 a>m00>m22
+t # lib/regex_internal.h$$$124a7951f495b916cf38f0e1e1fe85e22bc08aba
+v 0 m20
+v 1 m20
+v 2 m10
+v 3 c3
+v 4 m12
+v 5 c6
+v 6 m00
+v 7 m02
+v 8 c1
+e 0 1 ba>m20>m20
+e 1 2 b>m20>m10
+e 1 6 a>m20>m00
+e 2 3 b>m10>c3
+e 2 4 b>m10>m12
+e 4 5 b>m12>c6
+e 6 5 a>m00>c6
+e 6 7 a>m00>m02
+e 7 8 a>m02>c1
+t # lib/stdalign.in.h$$$124a7951f495b916cf38f0e1e1fe85e22bc08aba
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 c0
+v 4 m10
+v 5 m20
+v 6 m00
+v 7 m20
+v 8 m13
+v 9 c5
+v 10 m23
+v 11 m03
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 a>m20>c0
+e 1 4 b>m20>m10
+e 1 6 a>m20>m00
+e 1 7 ba>m20>m20
+e 4 5 b>m10>m20
+e 6 5 a>m00>m20
+e 7 8 b>m20>m13
+e 7 11 a>m20>m03
+e 8 9 b>m13>c5
+e 8 10 b>m13>m23
+e 11 9 a>m03>c5
+e 11 10 a>m03>m23
+t # lib/verify.h$$$124a7951f495b916cf38f0e1e1fe85e22bc08aba
+v 0 m20
+v 1 m20
+v 2 m00
+v 3 c1
+v 4 m02
+v 5 c1
+v 6 m10
+v 7 c4
+v 8 m23
+v 9 m00
+v 10 c1
+v 11 m03
+e 0 1 ba>m20>m20
+e 1 2 a>m20>m00
+e 1 6 b>m20>m10
+e 1 9 a>m20>m00
+e 2 3 a>m00>c1
+e 2 4 a>m00>m02
+e 4 5 a>m02>c1
+e 6 7 b>m10>c4
+e 6 8 b>m10>m23
+e 9 10 a>m00>c1
+e 9 11 a>m00>m03
+e 11 7 a>m03>c4
+e 11 8 a>m03>m23
+t # src/pdumper.c$$$16a16645f524c62f7906036b0e383e4247b58de7
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 m10
+v 4 m10
+v 5 c3
+v 6 m12
+v 7 c3
+v 8 c0
+v 9 c0
+e 0 1 ba>m20>m20
+e 0 9 a>m20>c0
+e 1 2 b>m20>c2
+e 1 3 b>m20>m10
+e 1 8 a>m20>c0
+e 3 4 b>m10>m10
+e 4 5 b>m10>c3
+e 4 6 b>m10>m12
+e 6 7 b>m12>c3
+t # lib/c++defs.h$$$33b293b41b2cc64aa085bad9051507922434ceda
+v 0 m20
+v 1 m20
+v 2 m20
+v 3 m10
+v 4 c5
+v 5 m23
+v 6 m00
+v 7 m20
+v 8 m10
+v 9 c5
+v 10 m22
+v 11 m00
+e 0 1 ba>m20>m20
+e 1 2 ba>m20>m20
+e 1 7 ba>m20>m20
+e 2 3 b>m20>m10
+e 2 6 a>m20>m00
+e 3 4 b>m10>c5
+e 3 5 b>m10>m23
+e 6 4 a>m00>c5
+e 6 5 a>m00>m23
+e 7 8 b>m20>m10
+e 7 11 a>m20>m00
+e 8 9 b>m10>c5
+e 8 10 b>m10>m22
+e 11 9 a>m00>c5
+e 11 10 a>m00>m22
+t # src/image.c$$$519a93e067f459ceddb57573261a52118086b73d
+v 0 m20
+v 1 m20
+v 2 c0
+v 3 m20
+v 4 m00
+v 5 c1
+v 6 m20
+v 7 c0
+v 8 m23
+v 9 c0
+v 10 m23
+v 11 c2
+v 12 c0
+e 0 1 ba>m20>m20
+e 0 3 ba>m20>m20
+e 1 2 a>m20>c0
+e 3 4 a>m20>m00
+e 3 6 ba>m20>m20
+e 4 5 a>m00>c1
+e 6 7 a>m20>c0
+e 6 8 ba>m20>m23
+e 8 9 a>m23>c0
+e 8 10 ba>m23>m23
+e 10 11 b>m23>c2
+e 10 12 a>m23>c0
+t # src/bytecode.c$$$fe2649528b0b7637e6b6851c41e696a1016d8d53
+v 0 m20
+v 1 c2
+v 2 m10
+v 3 c5
+v 4 m00
+v 5 c0
+e 0 1 b>m20>c2
+e 0 2 b>m20>m10
+e 0 4 a>m20>m00
+e 0 5 a>m20>c0
+e 2 3 b>m10>c5
+e 4 3 a>m00>c5
+t # src/buffer.c$$$a1436544ff826b8c51242f4afb7c5d485c8e2e32
+v 0 m20
+v 1 m10
+v 2 c3
+v 3 m10
+v 4 c5
+e 0 1 b>m20>m10
+e 0 3 b>m20>m10
+e 0 4 a>m20>c5
+e 1 2 b>m10>c3
+e 3 4 b>m10>c5
+t # src/data.c$$$a1436544ff826b8c51242f4afb7c5d485c8e2e32
+v 0 m20
+v 1 m10
+v 2 c3
+v 3 m10
+v 4 c5
+e 0 1 b>m20>m10
+e 0 3 b>m20>m10
+e 0 4 a>m20>c5
+e 1 2 b>m10>c3
+e 3 4 b>m10>c5
+t # src/emacs-module.c$$$a1436544ff826b8c51242f4afb7c5d485c8e2e32
+v 0 m20
+v 1 m10
+v 2 c3
+v 3 m10
+v 4 c5
+v 5 m10
+v 6 c5
+e 0 1 b>m20>m10
+e 0 3 b>m20>m10
+e 0 4 a>m20>c5
+e 0 5 b>m20>m10
+e 0 6 a>m20>c5
+e 1 2 b>m10>c3
+e 3 4 b>m10>c5
+e 5 6 b>m10>c5
+t # src/lisp.h$$$a1436544ff826b8c51242f4afb7c5d485c8e2e32
+v 0 m20
+v 1 m20
+v 2 m00
+v 3 c1
+v 4 m02
+v 5 c1
+e 0 1 ba>m20>m20
+e 1 2 a>m20>m00
+e 2 3 a>m00>c1
+e 2 4 a>m00>m02
+e 4 5 a>m02>c1
+t # src/regex-emacs.c$$$a1436544ff826b8c51242f4afb7c5d485c8e2e32
+v 0 m20
+v 1 m10
+v 2 c3
+v 3 m10
+v 4 c5
+e 0 1 b>m20>m10
+e 0 3 b>m20>m10
+e 0 4 a>m20>c5
+e 1 2 b>m10>c3
+e 3 4 b>m10>c5
+t # src/search.c$$$a1436544ff826b8c51242f4afb7c5d485c8e2e32
+v 0 m20
+v 1 m10
+v 2 c3
+v 3 m10
+v 4 c5
+e 0 1 b>m20>m10
+e 0 3 b>m20>m10
+e 0 4 a>m20>c5
+e 1 2 b>m10>c3
+e 3 4 b>m10>c5
+t # src/alloc.c$$$a4ed198e8f3754a59cabbb03ab6bae8a49597ee0
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m10
+v 4 c3
+v 5 m12
+v 6 c3
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 b>m20>m10
+e 3 4 b>m10>c3
+e 3 5 b>m10>m12
+e 5 6 b>m12>c3
+t # src/process.c$$$f921feceb8cd8c52f281447c984d0b67a738a33c
+v 0 m20
+v 1 m20
+v 2 m00
+v 3 c1
+v 4 c2
+v 5 m00
+v 6 c1
+v 7 c0
+v 8 m20
+v 9 c2
+v 10 c0
+e 0 1 ba>m20>m20
+e 1 2 a>m20>m00
+e 1 4 b>m20>c2
+e 1 5 a>m20>m00
+e 1 7 a>m20>c0
+e 1 8 ba>m20>m20
+e 2 3 a>m00>c1
+e 5 6 a>m00>c1
+e 8 9 b>m20>c2
+e 8 10 a>m20>c0
+t # src/alloc.c$$$6ec71e829a272e562c541ef5c93213d2fac3d3d7
+v 0 m20
+v 1 m00
+v 2 c1
+v 3 c4
+e 0 1 a>m20>m00
+e 0 3 b>m20>c4
+e 1 2 a>m00>c1
+e 1 3 a>m00>c4
+t # src/emacs-module.c$$$06310cf9122500faa96ad200888cfbb1dda56563
+v 0 m20
+v 1 m10
+v 2 c6
+v 3 m00
+v 4 m10
+v 5 c6
+v 6 m00
+e 0 1 b>m20>m10
+e 0 3 a>m20>m00
+e 0 4 b>m20>m10
+e 0 6 a>m20>m00
+e 1 2 b>m10>c6
+e 3 2 a>m00>c6
+e 4 5 b>m10>c6
+e 6 5 a>m00>c6
+t # src/regex-emacs.c$$$91d539b0772d4b2a6bdc3fbccf92dc1fcc7f747a
+v 0 m20
+v 1 m00
+v 2 c1
+v 3 m00
+v 4 c1
+e 0 1 a>m20>m00
+e 0 3 a>m20>m00
+e 1 2 a>m00>c1
+e 3 4 a>m00>c1
+t # src/search.c$$$91d539b0772d4b2a6bdc3fbccf92dc1fcc7f747a
+v 0 m20
+v 1 m00
+v 2 c1
+v 3 c2
+v 4 c0
+v 5 m00
+v 6 c1
+e 0 1 a>m20>m00
+e 0 3 b>m20>c2
+e 0 4 a>m20>c0
+e 0 5 a>m20>m00
+e 1 2 a>m00>c1
+e 5 6 a>m00>c1
+t # src/buffer.c$$$c3b53559965a4c6f48274c3cbcb43eb6ef23ae14
+v 0 m20
+v 1 m00
+v 2 c1
+v 3 m00
+v 4 c1
+e 0 1 a>m20>m00
+e 0 3 a>m20>m00
+e 1 2 a>m00>c1
+e 3 4 a>m00>c1
+t # src/data.c$$$c3b53559965a4c6f48274c3cbcb43eb6ef23ae14
+v 0 m20
+v 1 m00
+v 2 c1
+v 3 m00
+v 4 c1
+e 0 1 a>m20>m00
+e 0 3 a>m20>m00
+e 1 2 a>m00>c1
+e 3 4 a>m00>c1
+t # src/emacs-module.c$$$c3b53559965a4c6f48274c3cbcb43eb6ef23ae14
+v 0 m20
+v 1 m00
+v 2 c1
+v 3 c2
+v 4 c0
+v 5 m00
+v 6 c1
+e 0 1 a>m20>m00
+e 0 3 b>m20>c2
+e 0 4 a>m20>c0
+e 0 5 a>m20>m00
+e 1 2 a>m00>c1
+e 5 6 a>m00>c1
+t # lib/fsusage.c$$$5d89a9c2846d32b4726faaf5c8652f3f23dc7d73
+v 0 m20
+v 1 m20
+v 2 m10
+v 3 c3
+v 4 m12
+v 5 c5
+e 0 1 ba>m20>m20
+e 1 2 b>m20>m10
+e 1 5 a>m20>c5
+e 2 3 b>m10>c3
+e 2 4 b>m10>m12
+e 4 5 b>m12>c5
+t # lib/gettimeofday.c$$$5d89a9c2846d32b4726faaf5c8652f3f23dc7d73
+v 0 m20
+v 1 c2
+v 2 m20
+v 3 m10
+v 4 c3
+v 5 m10
+v 6 c3
+e 0 1 b>m20>c2
+e 0 2 ba>m20>m20
+e 2 3 b>m20>m10
+e 2 5 b>m20>m10
+e 3 4 b>m10>c3
+e 5 6 b>m10>c3
+t # lib/mini-gmp-gnulib.c$$$5d89a9c2846d32b4726faaf5c8652f3f23dc7d73
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m20
+v 4 c2
+v 5 m00
+v 6 c1
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 ba>m20>m20
+e 0 5 a>m20>m00
+e 3 4 b>m20>c2
+e 5 6 a>m00>c1
+t # src/alloc.c$$$88b4516cf8c3ff39803430452b8adbb86a73642a
+v 0 m20
+v 1 c2
+v 2 m10
+v 3 m10
+v 4 c3
+v 5 m10
+v 6 c3
+v 7 m12
+v 8 c3
+v 9 m12
+v 10 c3
+v 11 c0
+e 0 1 b>m20>c2
+e 0 2 b>m20>m10
+e 0 11 a>m20>c0
+e 2 3 b>m10>m10
+e 3 4 b>m10>c3
+e 3 5 b>m10>m10
+e 3 9 b>m10>m12
+e 5 6 b>m10>c3
+e 5 7 b>m10>m12
+e 7 8 b>m12>c3
+e 9 10 b>m12>c3
+t # src/lisp.h$$$88b4516cf8c3ff39803430452b8adbb86a73642a
+v 0 m20
+v 1 m20
+v 2 c0
+v 3 m00
+v 4 m00
+v 5 c1
+v 6 m00
+v 7 c1
+v 8 m02
+v 9 c1
+v 10 m02
+v 11 c1
+e 0 1 ba>m20>m20
+e 1 2 a>m20>c0
+e 1 3 a>m20>m00
+e 3 4 a>m00>m00
+e 4 5 a>m00>c1
+e 4 6 a>m00>m00
+e 4 10 a>m00>m02
+e 6 7 a>m00>c1
+e 6 8 a>m00>m02
+e 8 9 a>m02>c1
+e 10 11 a>m02>c1
+t # src/bignum.h$$$c8b6006d82196f9063581e988ea12d6c99c95536
+v 0 m20
+v 1 m20
+v 2 m10
+v 3 c3
+v 4 m12
+v 5 c3
+v 6 c0
+e 0 1 ba>m20>m20
+e 1 2 b>m20>m10
+e 1 6 a>m20>c0
+e 2 3 b>m10>c3
+e 2 4 b>m10>m12
+e 4 5 b>m12>c3
+t # test/data/emacs-module/mod-test.c$$$c8b6006d82196f9063581e988ea12d6c99c95536
+v 0 m20
+v 1 m10
+v 2 c5
+v 3 m12
+v 4 c3
+e 0 1 b>m20>m10
+e 0 2 a>m20>c5
+e 1 2 b>m10>c5
+e 1 3 b>m10>m12
+e 3 4 b>m12>c3
+t # lib/alloca.in.h$$$0fc8671d10ccab52d78afdaeb715bcc9e52c0ac0
+v 0 m20
+v 1 m20
+v 2 m20
+v 3 c0
+v 4 m00
+v 5 c1
+v 6 m20
+v 7 c2
+v 8 m10
+v 9 c3
+v 10 m00
+e 0 1 ba>m20>m20
+e 1 2 ba>m20>m20
+e 1 10 a>m20>m00
+e 2 3 a>m20>c0
+e 2 4 a>m20>m00
+e 2 6 b>m20>m20
+e 4 5 a>m00>c1
+e 6 7 b>m20>c2
+e 6 8 b>m20>m10
+e 8 9 b>m10>c3
+e 10 6 a>m00>m20
+t # lib/sys_stat.in.h$$$0fc8671d10ccab52d78afdaeb715bcc9e52c0ac0
+v 0 m20
+v 1 m20
+v 2 m00
+v 3 m00
+v 4 c1
+v 5 c1
+v 6 m00
+v 7 c1
+v 8 m03
+v 9 c1
+v 10 m00
+v 11 c1
+e 0 1 ba>m20>m20
+e 1 2 a>m20>m00
+e 2 3 a>m00>m00
+e 2 5 a>m00>c1
+e 2 6 a>m00>m00
+e 2 8 a>m00>m03
+e 3 4 a>m00>c1
+e 6 7 a>m00>c1
+e 8 9 a>m03>c1
+e 8 10 a>m03>m00
+e 10 11 a>m00>c1
+t # src/lisp.h$$$7b3a82d7e39fd42c1e1c096935758902fa48c2cb
+v 0 m20
+v 1 m20
+v 2 m10
+v 3 c3
+v 4 c0
+e 0 1 ba>m20>m20
+e 1 2 b>m20>m10
+e 1 4 a>m20>c0
+e 2 3 b>m10>c3
+t # src/lisp.h$$$d9da2f452d42a1be3b7edd0fd2f346f1ff5632c4
+v 0 m20
+v 1 m20
+v 2 m00
+v 3 c1
+v 4 m02
+v 5 c1
+v 6 c2
+v 7 c0
+e 0 1 ba>m20>m20
+e 1 2 a>m20>m00
+e 1 6 b>m20>c2
+e 1 7 a>m20>c0
+e 2 3 a>m00>c1
+e 2 4 a>m00>m02
+e 4 5 a>m02>c1
+t # src/dbusbind.c$$$eb4c6ace23a7feb9f3bea2897caddf3636b67f24
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 m10
+v 4 c3
+v 5 m12
+v 6 c3
+v 7 m10
+v 8 c6
+v 9 m22
+v 10 m00
+v 11 m10
+v 12 c6
+v 13 m22
+v 14 m00
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 b>m20>m10
+e 1 7 b>m20>m10
+e 1 10 a>m20>m00
+e 1 11 b>m20>m10
+e 1 14 a>m20>m00
+e 3 4 b>m10>c3
+e 3 5 b>m10>m12
+e 5 6 b>m12>c3
+e 7 8 b>m10>c6
+e 7 9 b>m10>m22
+e 10 8 a>m00>c6
+e 10 9 a>m00>m22
+e 11 12 b>m10>c6
+e 11 13 b>m10>m22
+e 14 12 a>m00>c6
+e 14 13 a>m00>m22
+t # src/keyboard.c$$$485db0ba8618f888187586963d73ed2e36ae585d
+v 0 m20
+v 1 m00
+v 2 c1
+v 3 m20
+v 4 c2
+v 5 c0
+e 0 1 a>m20>m00
+e 0 3 ba>m20>m20
+e 1 2 a>m00>c1
+e 3 4 b>m20>c2
+e 3 5 a>m20>c0
+t # src/process.c$$$8b9fc636617be134583554739009aba26e97cbd8
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 m00
+v 4 c1
+v 5 c0
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 a>m20>m00
+e 1 5 a>m20>c0
+e 3 4 a>m00>c1
+t # src/print.c$$$f19a0f5b11e41baf46ce11fd447744ceb97ef754
+v 0 m20
+v 1 c0
+v 2 m00
+v 3 c4
+e 0 1 a>m20>c0
+e 0 2 a>m20>m00
+e 0 3 b>m20>c4
+e 2 3 a>m00>c4
+t # src/dired.c$$$65156807134f7d430f9e32086a228e4a3ad4f386
+v 0 m20
+v 1 c0
+v 2 m00
+v 3 c1
+v 4 m00
+v 5 c1
+v 6 m00
+v 7 c1
+v 8 m00
+v 9 c1
+e 0 1 a>m20>c0
+e 0 2 a>m20>m00
+e 0 4 a>m20>m00
+e 0 6 a>m20>m00
+e 0 8 a>m20>m00
+e 2 3 a>m00>c1
+e 4 5 a>m00>c1
+e 6 7 a>m00>c1
+e 8 9 a>m00>c1
+t # src/xfns.c$$$e0ab5fcf0422af43346a6726cc445e567f820d30
+v 0 m20
+v 1 m20
+v 2 m00
+v 3 c1
+v 4 m20
+v 5 c0
+v 6 m20
+v 7 c2
+v 8 c0
+e 0 1 ba>m20>m20
+e 1 2 a>m20>m00
+e 1 4 ba>m20>m20
+e 1 6 ba>m20>m20
+e 2 3 a>m00>c1
+e 4 5 a>m20>c0
+e 6 7 b>m20>c2
+e 6 8 a>m20>c0
+t # src/fileio.c$$$0f3f018c34072e19975fdb647f7f7eb7838dabbe
+v 0 m20
+v 1 c2
+v 2 m20
+v 3 c2
+v 4 c0
+v 5 m02
+v 6 c1
+v 7 c0
+e 0 1 b>m20>c2
+e 0 2 ba>m20>m20
+e 0 7 a>m20>c0
+e 2 3 b>m20>c2
+e 2 4 a>m20>c0
+e 2 5 a>m20>m02
+e 5 6 a>m02>c1
+t # src/xterm.c$$$3f1c666608f7ca4aeacbcbe5102c2c2c63e345e9
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 c0
+v 4 m00
+v 5 c4
+v 6 m20
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 a>m20>c0
+e 1 4 a>m20>m00
+e 1 5 b>m20>c4
+e 1 6 ba>m20>m20
+e 4 5 a>m00>c4
+t # lib-src/emacsclient.c$$$ff90fbdecc6ffb1e34fe5ee9c1f080106c0739df
+v 0 m20
+v 1 m20
+v 2 c0
+v 3 m20
+v 4 m20
+v 5 c2
+v 6 c0
+v 7 m00
+v 8 c1
+e 0 1 ba>m20>m20
+e 0 3 ba>m20>m20
+e 1 2 a>m20>c0
+e 3 4 ba>m20>m20
+e 3 7 a>m20>m00
+e 4 5 b>m20>c2
+e 4 6 a>m20>c0
+e 7 8 a>m00>c1
+t # src/term.c$$$89ba96f4234f523ff40fda977fd461b2df442e13
+v 0 m20
+v 1 m00
+v 2 c4
+v 3 m02
+v 4 c1
+e 0 1 a>m20>m00
+e 0 2 b>m20>c4
+e 1 2 a>m00>c4
+e 1 3 a>m00>m02
+e 3 4 a>m02>c1
+t # src/term.c$$$4189ed40b8f6e0e1c355ca871233d8993c764a07
+v 0 m20
+v 1 c2
+v 2 c0
+v 3 m20
+v 4 m10
+v 5 c3
+e 0 1 b>m20>c2
+e 0 2 a>m20>c0
+e 0 3 ba>m20>m20
+e 3 4 b>m20>m10
+e 4 5 b>m10>c3
+t # src/emacs-icon.h$$$57ebc3fdd233f97886bab4fd513e92530d4c3dc9
+v 0 m20
+v 1 m10
+v 2 c5
+v 3 c0
+v 4 m00
+e 0 1 b>m20>m10
+e 0 3 a>m20>c0
+e 0 4 a>m20>m00
+e 1 2 b>m10>c5
+e 4 2 a>m00>c5
+t # src/xterm.c$$$ec7c992608dbbaaf0acaf6ae54c525f98cede22e
+v 0 m20
+v 1 m20
+v 2 m00
+v 3 c1
+v 4 m10
+v 5 m20
+v 6 c2
+v 7 c0
+v 8 m12
+v 9 c7
+v 10 m03
+v 11 m00
+v 12 c1
+e 0 1 ba>m20>m20
+e 1 2 a>m20>m00
+e 1 4 b>m20>m10
+e 1 5 a>m20>m20
+e 1 11 a>m20>m00
+e 2 3 a>m00>c1
+e 4 5 b>m10>m20
+e 5 6 b>m20>c2
+e 5 7 a>m20>c0
+e 5 8 b>m20>m12
+e 5 10 a>m20>m03
+e 8 9 b>m12>c7
+e 10 9 a>m03>c7
+e 11 12 a>m00>c1
+t # src/xterm.c$$$cb5ca9c5436fe6d5f121da9314e9dbff58c59874
+v 0 m20
+v 1 m20
+v 2 c2
+v 3 c0
+v 4 m00
+v 5 m20
+v 6 c4
+e 0 1 ba>m20>m20
+e 1 2 b>m20>c2
+e 1 3 a>m20>c0
+e 1 4 a>m20>m00
+e 1 5 b>m20>m20
+e 1 6 b>m20>c4
+e 4 5 a>m00>m20
+e 4 6 a>m00>c4
+t # src/xdisp.c$$$73b26103c8702823941b3ab6cda56befdac43857
+v 0 m20
+v 1 m20
+v 2 m10
+v 3 c4
+v 4 m22
+v 5 m00
+v 6 m10
+v 7 c4
+v 8 m00
+v 9 m20
+v 10 m10
+v 11 c4
+v 12 m22
+v 13 m00
+e 0 1 ba>m20>m20
+e 0 9 ba>m20>m20
+e 1 2 b>m20>m10
+e 1 5 a>m20>m00
+e 1 6 b>m20>m10
+e 1 8 a>m20>m00
+e 2 3 b>m10>c4
+e 2 4 b>m10>m22
+e 5 3 a>m00>c4
+e 5 4 a>m00>m22
+e 6 7 b>m10>c4
+e 8 7 a>m00>c4
+e 9 10 b>m20>m10
+e 9 13 a>m20>m00
+e 10 11 b>m10>c4
+e 10 12 b>m10>m22
+e 13 11 a>m00>c4
+e 13 12 a>m00>m22

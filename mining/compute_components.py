@@ -6,6 +6,7 @@ from math import ceil
 from networkx.readwrite import json_graph
 import numpy as np
 import re
+import time
 from parse_utils import export_TLV, export_aids, export_subdue_c_graph, export_subdue_python_json, load_components_networkx, convert_node_link_graph_to_parsemis_directed_graph, convert_node_link_graph_to_subdue_c_graph, convert_node_link_graph_to_subdue_python_graph, import_tlv_folder, export_node_link_graph_from_subdue_c_graph, convert_node_link_graph_to_nx_graph
 
 INPUT_FORMAT_NX = "NX"
@@ -94,8 +95,29 @@ def get_components(input_folder, formatting=INPUT_FORMAT_NX, filtered=False):
         components, nb_of_components_per_diff, filtered_total = get_graph_components(graphs, filtered=filtered, filter_config = FilterConfig())
         
     
+
+    do_statistics(components)
     return components, nb_of_components_per_diff, filtered_total
 
+def do_statistics(components): 
+    have_specialization = [component for component in components if has_node(component, 'c4')]
+    have_generalization =  [component for component in components if has_node(component, 'c5')]
+    have_refactoring =  [component for component in components if has_node(component, 'c7')]
+    have_reconfiguration =  [component for component in components if has_node(component, 'c6')]
+    have_s_g = [component for component in have_specialization if component in have_generalization]
+    have_s_ref = [component for component in have_specialization if component in have_refactoring]
+    have_s_rec =  [component for component in have_specialization if component in have_reconfiguration]
+    have_g_ref =  [component for component in have_generalization if component in have_refactoring]
+    have_g_rec = [component for component in have_generalization if component in have_reconfiguration]
+    have_ref_rec = [component for component in have_refactoring if component in have_reconfiguration]
+    total =  len(components)
+    print(f"total: {len(components)}; s: {len(have_specialization)/total}; g: {len(have_generalization)/total}; ref: {len(have_refactoring)/total}; rec: {len(have_reconfiguration)/total};")
+    print(f"s_g: {len(have_s_g) / total}; s_ref: {len(have_s_ref) / total}; s_rec: {len(have_s_rec) / total}; g_ref: {len(have_g_ref) / total}; g_rec: {len(have_g_rec) / total}; ref_rec: {len(have_ref_rec) / total}")
+    print(f"s_g: {len(have_specialization) * len(have_generalization) / (total**2)}; s_ref: {len(have_specialization) * len(have_refactoring) / (total**2)}; s_rec: {len(have_specialization) * len(have_reconfiguration) / (total**2)}; g_ref: {len(have_generalization) * len(have_refactoring) / (total ** 2)};  g_rec: {len(have_generalization) * len(have_reconfiguration) / (total**2)} ref_rec: {len(have_refactoring) * len(have_reconfiguration) / (total**2)};")
+
+def has_node(graph, label):
+
+    return label in [node[1]['label'] for node in list(graph.nodes(data=True))]
     
 def main(input_folder, output_folder, dataset_name, max_components_per_file=200, formatting=INPUT_FORMAT_NX):
     # TODO doing this with streams and yield would be a nicer solution to the chunking.
@@ -122,9 +144,13 @@ def main(input_folder, output_folder, dataset_name, max_components_per_file=200,
         f.write(dataset_name + "," + str(len(components) + filtered["too_large"] + filtered["too_many_similar"]) + "," + str(len(components)) + "," + str(filtered["too_large"])+ "," + str(filtered["too_many_similar"]))
 
 if __name__ == "__main__":
+    start_time = time.time()
     if len(sys.argv) == 5:
         main(sys.argv[1], sys.argv[2], sys.argv[3], int(sys.argv[4]))
     elif len(sys.argv) == 6:
         main(sys.argv[1], sys.argv[2], sys.argv[3], int(sys.argv[4]), formatting = sys.argv[5])	
     else:
         print("Unexpected number of arguments. At least input path, output path, dataset name, as well as batch_size has to be provided. Optionally as a fourth argument put NX or LG indicating the input graph formatting.")
+    end_time = time.time()
+    with open(sys.argv[2] + 'time.txt', 'w') as f:
+        f.write(str(end_time-start_time))

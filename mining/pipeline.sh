@@ -13,8 +13,9 @@ echo "Using python version $python_version"
 
 target_subtree_count_for_threshold_estimation=300
 threshold=10 # 0 means read threshold from files
-batch_size=200
-min_size=4
+batch_size=1000
+timeout_mining=120
+min_size=5
 max_size=15
 
 
@@ -50,7 +51,7 @@ run_dataset(){
 	#python bisect_threshold_search.py $lib_path $output_filtered $target_subtree_count_for_threshold_estimation
 
 	# Step 3 - Mining
-	python3 run_parsemis.py "$parsemis_path" "$output_filtered" "$output_mining" $threshold $min_size $max_size
+	python3 run_parsemis.py "$parsemis_path" "$output_filtered" "$output_mining" $threshold $min_size $max_size $timeout_mining
 
 	# Step 4 - Remove duplicates
 	python3 remove_duplicates.py "$output_mining" "$output_mining_no_duplicates" "$data_set_name" 
