@@ -2,10 +2,7 @@ package org.variantsync.diffdetective.mining;
 
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.tinylog.Logger;
-import org.variantsync.diffdetective.analysis.AnalysisResult;
-import org.variantsync.diffdetective.analysis.CommitHistoryAnalysisTask;
-import org.variantsync.diffdetective.analysis.CommitProcessTime;
-import org.variantsync.diffdetective.analysis.HistoryAnalysis;
+import org.variantsync.diffdetective.analysis.*;
 import org.variantsync.diffdetective.diff.CommitDiff;
 import org.variantsync.diffdetective.diff.PatchDiff;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
@@ -14,6 +11,7 @@ import org.variantsync.diffdetective.diff.difftree.serialize.LineGraphExport;
 import org.variantsync.diffdetective.diff.difftree.transform.DiffTreeTransformer;
 import org.variantsync.diffdetective.diff.result.CommitDiffResult;
 import org.variantsync.diffdetective.metadata.ExplainedFilterSummary;
+import org.variantsync.diffdetective.pattern.elementary.ElementaryPattern;
 import org.variantsync.diffdetective.pattern.elementary.proposed.ProposedElementaryPatterns;
 import org.variantsync.diffdetective.util.Clock;
 import org.variantsync.diffdetective.util.FileUtils;
@@ -34,6 +32,7 @@ public class MiningTask extends CommitHistoryAnalysisTask {
         final Clock totalTime = new Clock();
 
         final List<CommitProcessTime> commitTimes = new ArrayList<>(HistoryAnalysis.COMMITS_TO_PROCESS_PER_THREAD_DEFAULT);
+        final List<PatchStatistics> patchStatistics = new ArrayList<>(HistoryAnalysis.COMMITS_TO_PROCESS_PER_THREAD_DEFAULT);
         final Clock commitProcessTimer = new Clock();
 
         totalTime.start();
@@ -61,6 +60,8 @@ public class MiningTask extends CommitHistoryAnalysisTask {
             // Count elementary patterns
             int numDiffTrees = 0;
             for (final PatchDiff patch : commitDiff.getPatchDiffs()) {
+                final PatchStatistics thisPatchesStatistics = new PatchStatistics(patch, ProposedElementaryPatterns.Instance);
+
                 if (patch.isValid()) {
                     final DiffTree t = patch.getDiffTree();
                     DiffTreeTransformer.apply(exportOptions.treePreProcessing(), t);
@@ -72,15 +73,19 @@ public class MiningTask extends CommitHistoryAnalysisTask {
 
                     t.forAll(node -> {
                         if (node.isCode()) {
+                            final ElementaryPattern nodePattern = ProposedElementaryPatterns.Instance.match(node);
                             miningResult.elementaryPatternCounts.reportOccurrenceFor(
-                                    ProposedElementaryPatterns.Instance.match(node),
+                                    nodePattern,
                                     commitDiff
                             );
+                            thisPatchesStatistics.elementaryPatternCount().increment(nodePattern);
                         }
                     });
 
                     ++numDiffTrees;
                 }
+
+                patchStatistics.add(thisPatchesStatistics);
             }
             miningResult.exportedTrees += numDiffTrees;
             miningResult.filterHits.append(new ExplainedFilterSummary(exportOptions.treeFilter()));
@@ -106,6 +111,7 @@ public class MiningTask extends CommitHistoryAnalysisTask {
         miningResult.runtimeInSeconds = totalTime.getPassedSeconds();
         miningResult.exportTo(FileUtils.addExtension(options.outputPath(), AnalysisResult.EXTENSION));
         exportCommitTimes(commitTimes, FileUtils.addExtension(options.outputPath(), COMMIT_TIME_FILE_EXTENSION));
+        exportPatchStatistics(patchStatistics, FileUtils.addExtension(options.outputPath(), PATCH_STATISTICS_EXTENSION));
         return miningResult;
     }
 }
