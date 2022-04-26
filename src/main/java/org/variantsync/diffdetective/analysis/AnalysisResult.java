@@ -83,7 +83,15 @@ public class AnalysisResult implements Metadata<AnalysisResult> {
     }
 
     public AnalysisResult(final String repoName) {
-        this(repoName, 0, 0, 0, 0, 0, 0, 0, CommitProcessTime.Unknown(repoName, Long.MAX_VALUE), CommitProcessTime.Unknown(repoName, Long.MIN_VALUE), new DiffTreeSerializeDebugData(), new ExplainedFilterSummary());
+        this(
+                repoName,
+                0, 0, 0, 0,
+                0,
+                0, 0,
+                CommitProcessTime.Unknown(repoName, Long.MAX_VALUE),
+                CommitProcessTime.Unknown(repoName, Long.MIN_VALUE),
+                new DiffTreeSerializeDebugData(),
+                new ExplainedFilterSummary());
     }
 
     public AnalysisResult(

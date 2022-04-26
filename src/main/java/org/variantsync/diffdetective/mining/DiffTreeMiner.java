@@ -19,6 +19,7 @@ import org.variantsync.diffdetective.diff.difftree.serialize.treeformat.CommitDi
 import org.variantsync.diffdetective.diff.difftree.transform.CollapseNestedNonEditedMacros;
 import org.variantsync.diffdetective.diff.difftree.transform.CutNonEditedSubtrees;
 import org.variantsync.diffdetective.diff.difftree.transform.DiffTreeTransformer;
+import org.variantsync.diffdetective.diff.difftree.transform.Starfold;
 import org.variantsync.diffdetective.metadata.ExplainedFilterSummary;
 import org.variantsync.diffdetective.mining.formats.DirectedEdgeLabelFormat;
 import org.variantsync.diffdetective.mining.formats.MiningNodeFormat;
@@ -33,18 +34,12 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public class DiffTreeMiner {
-    public final static Path DATASETS_FILE = Path.of("docs", "datasets.md");
-//    public static final int COMMITS_TO_PROCESS_PER_THREAD = 10000;
-
+    public static final Path DATASET_FILE = DefaultDatasets.EMACS;
     public static final boolean SEARCH_FOR_GOOD_RUNNING_EXAMPLES = false;
     public static final boolean UPDATE_REPOS_BEFORE_MINING = false;
     public static final boolean PRINT_LATEX_TABLE = true;
     public static final int PRINT_LARGEST_SUBJECTS = 3;
     public static final boolean DEBUG_TEST = false;
-
-    public static List<DiffTreeTransformer> Postprocessing() {
-        return Postprocessing(null);
-    }
 
     public static List<DiffTreeTransformer> Postprocessing(final Repository repository) {
         final List<DiffTreeTransformer> processing = new ArrayList<>();
@@ -57,6 +52,7 @@ public class DiffTreeMiner {
                     ));
         }
         processing.add(new CollapseNestedNonEditedMacros());
+        processing.add(Starfold.IgnoreNodeOrder());
         return processing;
     }
 
@@ -142,7 +138,7 @@ public class DiffTreeMiner {
 //                LinuxKernel.cloneFromGithubTo(variantEvolutionDatasetsDir)
             );
         } else {
-            final List<DatasetDescription> datasets = DefaultDatasets.loadDefaultDatasets();
+            final List<DatasetDescription> datasets = DefaultDatasets.loadDatasets(DATASET_FILE);
 
             if (PRINT_LATEX_TABLE) {
                 Validation.printLaTeXTableFor(datasets);

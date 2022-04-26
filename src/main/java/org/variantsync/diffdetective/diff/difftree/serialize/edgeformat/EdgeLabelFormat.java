@@ -3,6 +3,7 @@ package org.variantsync.diffdetective.diff.difftree.serialize.edgeformat;
 import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.diff.difftree.LineGraphConstants;
 import org.variantsync.diffdetective.diff.difftree.serialize.LinegraphFormat;
+import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.util.StringUtils;
 import org.variantsync.functjonal.Pair;
 
@@ -49,14 +50,14 @@ public abstract class EdgeLabelFormat implements LinegraphFormat {
     protected void connectAccordingToLabel(final DiffNode child, final DiffNode parent, final String edgeLabel) {
         if (edgeLabel.startsWith(LineGraphConstants.BEFORE_AND_AFTER_PARENT)) {
             // Nothing has been changed. The child-parent relationship remains the same
-            parent.addAfterChild(child);
-            parent.addBeforeChild(child);
+            Assert.assertTrue(parent.addAfterChild(child));
+            Assert.assertTrue(parent.addBeforeChild(child));
         } else if (edgeLabel.startsWith(LineGraphConstants.BEFORE_PARENT)) {
             // The child DiffNode lost its parent DiffNode (an orphan DiffNode)
-            parent.addBeforeChild(child);
+            Assert.assertTrue(parent.addBeforeChild(child));
         } else if (edgeLabel.startsWith(LineGraphConstants.AFTER_PARENT)) {
             // The parent DiffNode has a new child DiffNode
-            parent.addAfterChild(child);
+            Assert.assertTrue(parent.addAfterChild(child));
         } else {
             throw new IllegalArgumentException("Syntax error. Invalid name in edge label " + edgeLabel);
         }

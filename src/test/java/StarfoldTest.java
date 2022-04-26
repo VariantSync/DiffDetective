@@ -7,34 +7,45 @@ import org.variantsync.diffdetective.util.FileUtils;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 public class StarfoldTest {
     private static final Path RESOURCE_DIR = Constants.RESOURCE_DIR.resolve("starfold");
 
-    private record TestCase(Path inputDiff, Path expectedDiff) {
-        TestCase(final String name) {
+    private record TestCase(Path inputDiff, Path expectedDiffRespectingNodeOrder, Path expectedDiffIgnoringNodeOrder) {
+        TestCase(final String filename) {
             this(
-                    RESOURCE_DIR.resolve(name + ".diff"),
-                    RESOURCE_DIR.resolve(name + ".expected.diff")
+                    RESOURCE_DIR.resolve(filename),
+                    RESOURCE_DIR.resolve("expected").resolve("respectNodeOrder").resolve(filename),
+                    RESOURCE_DIR.resolve("expected").resolve("ignoreNodeOrder").resolve(filename)
             );
         }
     }
 
     private static final List<TestCase> TEST_CASES = Stream.of(
             "2x2", "nesting1"
-    ).map(TestCase::new).toList();
+    ).map(s -> s + ".diff").map(TestCase::new).toList();
 
-    @Test
-    public void testAll() throws IOException {
+    private void test(final Starfold starfold, Function<TestCase, Path> getExpectedResultFile) throws IOException {
         for (TestCase testCase : TEST_CASES) {
             final DiffTree t = DiffTree.fromFile(testCase.inputDiff, true, true).unwrap().getSuccess();
-            Starfold.RespectNodeOrder().transform(t);
-//            System.out.println(t.toTextDiff());
+            starfold.transform(t);
+
             Assert.assertEquals(
-                    t.toTextDiff().trim(),
-                    FileUtils.readUTF8(testCase.expectedDiff).trim()
+                    FileUtils.normalizedLineEndings(t.toTextDiff().trim()),
+                    FileUtils.normalizedLineEndings(FileUtils.readUTF8(getExpectedResultFile.apply(testCase))).trim()
             );
         }
+    }
+
+    @Test
+    public void testRespectNodeOrder() throws IOException {
+        test(Starfold.RespectNodeOrder(), TestCase::expectedDiffRespectingNodeOrder);
+    }
+
+    @Test
+    public void testIgnoreNodeOrder() throws IOException {
+        test(Starfold.IgnoreNodeOrder(), TestCase::expectedDiffIgnoringNodeOrder);
     }
 }

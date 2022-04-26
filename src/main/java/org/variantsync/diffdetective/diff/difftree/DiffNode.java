@@ -335,6 +335,10 @@ public class DiffNode {
 
     public boolean addBeforeChild(final DiffNode child) {
         if (!child.isAdd()) {
+            if (child.beforeParent != null) {
+                throw new IllegalArgumentException("Given child " + child + " already has a before parent (" + child.beforeParent + ")!");
+            }
+
             addWithoutDuplicates(beforeChildren, child);
             addWithoutDuplicates(childOrder, child);
             child.setBeforeParent(this);
@@ -345,6 +349,10 @@ public class DiffNode {
 
     public boolean addAfterChild(final DiffNode child) {
         if (!child.isRem()) {
+            if (child.afterParent != null) {
+                throw new IllegalArgumentException("Given child " + child + " already has an after parent (" + child.afterParent + ")!");
+            }
+
             addWithoutDuplicates(afterChildren, child);
             addWithoutDuplicates(childOrder, child);
             child.setAfterParent(this);
