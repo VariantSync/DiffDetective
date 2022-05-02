@@ -122,7 +122,10 @@ def has_node(graph, label):
 def main(input_folder, output_folder, dataset_name, max_components_per_file=200, formatting=INPUT_FORMAT_NX):
     # TODO doing this with streams and yield would be a nicer solution to the chunking.
     components, nb_of_components_per_diff, filtered = get_components(input_folder, formatting=formatting, filtered=True)
-    
+    for component in components:
+        if not nx.is_directed_acyclic_graph(component):
+            print(f"WARN: THERE ARE NON DAG GRAPHS IN THE INPUT: {component.name}")
+   
     components_batched = [components[i*max_components_per_file:min((i+1)*max_components_per_file, len(components))] for i in range(ceil(len(components)/max_components_per_file))]
     
     # Create output folder if it doesn't exist yet
