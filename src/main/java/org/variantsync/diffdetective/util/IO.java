@@ -112,10 +112,6 @@ public class IO {
         return Optional.of(remote);
     }
 
-    public static String withoutFileExtension(final String filename) {
-        return filename.substring(0, filename.lastIndexOf("."));
-    }
-
     public static boolean tryDeleteFile(Path file) {
         if (Files.exists(file)) {
             try {
