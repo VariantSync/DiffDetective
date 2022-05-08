@@ -141,15 +141,12 @@ public class AnalysisResult implements Metadata<AnalysisResult> {
         String fileInput = IO.readAsString(p); // read in metadata file
         fileInput = fileInput.replace("\r", ""); // remove carriage returns if present
         final String[] lines = fileInput.split("\n");
-        String[] keyValuePair;
-        String key;
-        String value;
         
         // examine each line of the metadata file separately
         for (/*final*/ String line : lines) {
-            keyValuePair = line.split(": ");
-            key = keyValuePair[0];
-            value = keyValuePair[1];
+            String[] keyValuePair = line.split(": ");
+            String key = keyValuePair[0];
+            String value = keyValuePair[1];
 
             switch (key) {
                 case MetadataKeys.REPONAME -> result.repoName = value;

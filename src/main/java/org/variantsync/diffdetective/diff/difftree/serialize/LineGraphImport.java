@@ -44,9 +44,6 @@ public class LineGraphImport {
 		// <id of DiffNode, DiffNode>
 		HashMap<Integer, DiffNode> diffNodes = new HashMap<>();
 
-		// The currently read DiffTree with all its DiffNodes and edges
-		DiffTree curDiffTree = null;
-		
 		// The previously read DiffTree
 		String previousDiffTreeLine = "";
 		
@@ -57,7 +54,7 @@ public class LineGraphImport {
 				// the line represents a DiffTree
 				
 				if (!diffNodeList.isEmpty()) {
-					curDiffTree = parseDiffTree(previousDiffTreeLine, diffNodeList, options); // parse to DiffTree
+					DiffTree curDiffTree = parseDiffTree(previousDiffTreeLine, diffNodeList, options); // parse to DiffTree
 					diffTreeList.add(curDiffTree); // add newly computed DiffTree to the list of all DiffTrees
 					
 					// Remove all DiffNodes from list
@@ -100,7 +97,7 @@ public class LineGraphImport {
 		input.close();
 
 		if (!diffNodeList.isEmpty()) {
-			curDiffTree = parseDiffTree(previousDiffTreeLine, diffNodeList, options); // parse to DiffTree
+			DiffTree curDiffTree = parseDiffTree(previousDiffTreeLine, diffNodeList, options); // parse to DiffTree
 			diffTreeList.add(curDiffTree); // add newly computed DiffTree to the list of all DiffTrees
 		}
 		
