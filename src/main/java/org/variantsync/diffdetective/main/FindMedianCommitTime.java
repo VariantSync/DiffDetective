@@ -4,6 +4,7 @@ import org.tinylog.Logger;
 import org.variantsync.diffdetective.analysis.AutomationResult;
 import org.variantsync.diffdetective.analysis.CommitHistoryAnalysisTask;
 import org.variantsync.diffdetective.analysis.CommitProcessTime;
+import org.variantsync.diffdetective.util.FileUtils;
 import org.variantsync.diffdetective.util.IO;
 import org.variantsync.diffdetective.util.StringUtils;
 
@@ -45,7 +46,7 @@ public class FindMedianCommitTime {
 
         final List<Path> paths = Files.walk(directory)
                 .filter(Files::isRegularFile)
-                .filter(p -> p.toString().endsWith(CommitHistoryAnalysisTask.COMMIT_TIME_FILE_EXTENSION))
+                .filter(p -> FileUtils.hasExtension(p, CommitHistoryAnalysisTask.COMMIT_TIME_FILE_EXTENSION))
 //                .peek(path -> Logger.info("Processing file " + path))
                 .toList();
 

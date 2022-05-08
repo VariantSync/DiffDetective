@@ -55,7 +55,7 @@ public class MiningPostprocessing {
 
         final Path inputPath = Path.of(args[0]);
         final Path outputPath = Path.of(args[1]);
-        if (!Files.isDirectory(inputPath) && !FileUtils.hasExtension(inputPath, ".lg")) {
+        if (!Files.isDirectory(inputPath) && !FileUtils.isLineGraph(inputPath)) {
             throw new IllegalArgumentException("Expected path to directory of mined patterns as first argument but got a path that is not a directory, namely \"" + inputPath + "\"!");
         }
         if (Files.exists(outputPath) && !FileUtils.tryIsEmptyDirectory(outputPath)) {

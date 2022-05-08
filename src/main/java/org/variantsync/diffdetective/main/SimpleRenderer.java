@@ -80,11 +80,10 @@ public class SimpleRenderer {
             ;
 
     private static void render(final Path fileToRender) {
-        final String fileToRenderStr = fileToRender.toString();
-        if (fileToRenderStr.endsWith(".lg")) {
+        if (FileUtils.isLineGraph(fileToRender)) {
             Logger.info("Rendering " + fileToRender);
             renderer.renderFile(fileToRender, RENDER_OPTIONS_TO_USE);
-        } else if (SUPPORTED_FILE_TYPES.stream().anyMatch(fileToRenderStr::endsWith)) {
+        } else if (SUPPORTED_FILE_TYPES.stream().anyMatch(extension -> FileUtils.hasExtension(fileToRender, extension))) {
             Logger.info("Rendering " + fileToRender);
             final DiffTree t;
             try {
