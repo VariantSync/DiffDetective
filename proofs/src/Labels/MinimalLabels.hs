@@ -1,9 +1,9 @@
 ﻿{-# LANGUAGE GADTs #-}
 
-module MinimalLabels where
+module Labels.MinimalLabels where
 
 import VariationTree
-import Logic
+import Feature.Logic
 import Data.Maybe ( fromJust )
 
 data MinimalLabels f where

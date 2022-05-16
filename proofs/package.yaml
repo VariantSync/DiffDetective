@@ -28,8 +28,6 @@ dependencies:
 library:
   source-dirs:
     - src
-    - src/feature
-    - src/labels
 
 executables:
   proofs-exe:
