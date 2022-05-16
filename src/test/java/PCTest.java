@@ -70,7 +70,7 @@ public class PCTest {
                            errorAt(text, "after", pc, expectedPC.after),
                            SAT.equivalent(pc, expectedPC.after));
                } else {
-                   Logger.warn("No expected PC specified for node \"" + text + "\"!");
+                   Logger.warn("No expected PC specified for node '{}'!", text);
                }
            }
         });

@@ -146,7 +146,7 @@ public class GitDiffer {
                         }
 
                         if (c.getParentCount() == 0) {
-//                            Logger.debug("Warning: Cannot create CommitDiff for commit " + c.getId().getName() + " because it does not have parents!");
+//                            Logger.debug("Warning: Cannot create CommitDiff for commit {} because it does not have parents!", c.getId().getName());
                             continue;
                         }
 

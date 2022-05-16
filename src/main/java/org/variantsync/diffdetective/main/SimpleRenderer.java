@@ -81,15 +81,15 @@ public class SimpleRenderer {
 
     private static void render(final Path fileToRender) {
         if (FileUtils.isLineGraph(fileToRender)) {
-            Logger.info("Rendering " + fileToRender);
+            Logger.info("Rendering {}", fileToRender);
             renderer.renderFile(fileToRender, RENDER_OPTIONS_TO_USE);
         } else if (SUPPORTED_FILE_TYPES.stream().anyMatch(extension -> FileUtils.hasExtension(fileToRender, extension))) {
-            Logger.info("Rendering " + fileToRender);
+            Logger.info("Rendering {}", fileToRender);
             final DiffTree t;
             try {
                 t = DiffTree.fromFile(fileToRender, collapseMultipleCodeLines, ignoreEmptyLines, DiffNodeParser.Default).unwrap().getSuccess();
             } catch (IOException e) {
-                System.err.println("Could not read given file \"" + fileToRender + "\" because:\n" + e.getMessage());
+                Logger.error(e, "Could not read given file '{}'", fileToRender);
                 return;
             }
             renderer.renderWithTreeFormat(
@@ -100,7 +100,7 @@ public class SimpleRenderer {
                     RENDER_OPTIONS_TO_USE
             );
         } else {
-            Logger.warn("Skipping unsupported file " + fileToRender);
+            Logger.warn("Skipping unsupported file {}", fileToRender);
         }
 
     }
@@ -115,15 +115,15 @@ public class SimpleRenderer {
             final Path fileToRender = Path.of(args[0]);
 
             if (!Files.exists(fileToRender)) {
-                Logger.error("Path " + fileToRender + " does not exist!");
+                Logger.error("Path {} does not exist!", fileToRender);
                 return;
             }
 
-            Logger.info("Rendering " + (Files.isDirectory(fileToRender) ? "directory " : "file ") + fileToRender);
-
             if (Files.isDirectory(fileToRender)) {
+                Logger.info("Rendering directory {}", fileToRender);
                 FileUtils.listAllFilesRecursively(fileToRender).forEach(SimpleRenderer::render);
             } else {
+                Logger.info("Rendering file {}", fileToRender);
                 render(fileToRender);
             }
         } else if (args.length == 3) {

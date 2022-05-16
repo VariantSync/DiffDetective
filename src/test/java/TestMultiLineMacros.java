@@ -33,9 +33,9 @@ public class TestMultiLineMacros {
         final Pair<DiffTreeSerializeDebugData, String> result = LineGraphExport.toLineGraphFormat(tree, exportOptions);
         Assert.assertNotNull(result);
         final DiffTreeSerializeDebugData debugData = result.first();
-        Logger.info("Parsed " + debugData.numExportedNonNodes + " nodes of diff type NON.");
-        Logger.info("Parsed " + debugData.numExportedAddNodes + " nodes of diff type ADD.");
-        Logger.info("Parsed " + debugData.numExportedRemNodes + " nodes of diff type REM.");
+        Logger.info("Parsed {} nodes of diff type NON.", debugData.numExportedNonNodes);
+        Logger.info("Parsed {} nodes of diff type ADD.", debugData.numExportedAddNodes);
+        Logger.info("Parsed {} nodes of diff type REM.", debugData.numExportedRemNodes);
 
         final String lg = "t # 1" +
                 StringUtils.LINEBREAK +

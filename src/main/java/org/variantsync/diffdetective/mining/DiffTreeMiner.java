@@ -155,7 +155,7 @@ public class DiffTreeMiner {
         Logger.info("Mining the following repositories:");
         for (final Repository repo : repos) {
             repo.setParseOptions(repo.getParseOptions().withDiffStoragePolicy(diffStoragePolicy));
-            Logger.info("  - " + repo.getRepositoryName() + " from " + repo.getRemoteURI());
+            Logger.info("  - {} from {}", repo.getRepositoryName(), repo.getRemoteURI());
         }
 
         /* ************************ *\

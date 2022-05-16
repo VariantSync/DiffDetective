@@ -30,7 +30,7 @@ public class FindMedianCommitTime {
         final AutomationResult automationResult = getResultOfDirectory(inputPath, NUM_EXPECTED_COMMITS);
 
         final String resultsStr = automationResult.exportTo(inputPath.resolve(outputFile));
-        Logger.info("Results:\n" + resultsStr);
+        Logger.info("Results:{}", resultsStr);
 
 //        Logger.info("info");
 //        Logger.warn("warn");
@@ -47,7 +47,7 @@ public class FindMedianCommitTime {
         final List<Path> paths = Files.walk(directory)
                 .filter(Files::isRegularFile)
                 .filter(p -> FileUtils.hasExtension(p, CommitHistoryAnalysisTask.COMMIT_TIME_FILE_EXTENSION))
-//                .peek(path -> Logger.info("Processing file " + path))
+//                .peek(path -> Logger.info("Processing file {}", path))
                 .toList();
 
         final ArrayList<CommitProcessTime> alltimes = new ArrayList<>(numExpectedCommits);
@@ -82,7 +82,10 @@ public class FindMedianCommitTime {
         }
 
         if (automationResult.numMeasuredCommits() != numExpectedCommits) {
-            Logger.error("Expected " + numExpectedCommits + " commits but got " + automationResult.numMeasuredCommits() + "! " + (numExpectedCommits - automationResult.numMeasuredCommits()) + " commits are missing!");
+            Logger.error("Expected {} commits but got {}! {} commits are missing!",
+                    numExpectedCommits,
+                    automationResult.numMeasuredCommits(),
+                    (numExpectedCommits - automationResult.numMeasuredCommits()));
         }
 
         return automationResult;
@@ -99,7 +102,7 @@ public class FindMedianCommitTime {
                 sumSeconds += lineTime.milliseconds();
                 times.add(lineTime);
             } else {
-                Logger.warn("Found blank line \"" + line + "\" in " + file);
+                Logger.warn("Found blank line '{}' in {}", line, file);
             }
         }
 

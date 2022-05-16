@@ -55,7 +55,7 @@ public class GitLoader {
         }
 
         try {
-            Logger.info("Cloning " + remoteURI + " to " + localPath + ".");
+            Logger.info("Cloning {} to {}.", remoteURI, localPath);
             return Git.cloneRepository()
                     .setURI(remoteURI.toString())
                     .setDirectory(localPath.toFile())

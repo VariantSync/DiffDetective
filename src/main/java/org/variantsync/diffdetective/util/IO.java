@@ -28,7 +28,7 @@ public class IO {
         ) {
             return reader.lines().collect(Collectors.joining("\r\n"));
         } catch (final IOException e) {
-            Logger.error("Failed to read lines from file: ", e);
+            Logger.error(e, "Failed to read lines from file");
             throw e;
         }
     }
@@ -42,8 +42,8 @@ public class IO {
      */
     public static void exportCsv(String fileName, String[] headers, Object[]... objects) throws FileNotFoundException {
         if (headers.length != objects.length) {
-            Logger.warn("Header length and object[] length is not equal while exporting csv file " +
-                    "{}", fileName);
+            Logger.warn("Header length and object[] length is not equal while exporting csv file {}",
+                    fileName);
         }
 
         int len = objects[0].length;

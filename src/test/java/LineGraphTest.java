@@ -44,7 +44,7 @@ public class LineGraphTest {
 	@Test
 	public void idempotentReadWrite() {
         for (final Path testFile : TEST_FILES) {
-            Logger.info("Testing " + testFile);
+            Logger.info("Testing {}", testFile);
             final String lineGraph = FileUtils.readUTF8(testFile);
             final List<DiffTree> diffTrees = LineGraphImport.fromLineGraph(lineGraph, IMPORT_OPTIONS);
             assertConsistencyForAll(diffTrees);
