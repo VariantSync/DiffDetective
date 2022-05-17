@@ -39,6 +39,8 @@ import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static org.variantsync.diffdetective.util.StringUtils.LINEBREAK_REGEX;
+
 /**
  * This class creates a GitDiff-object from a git repository (Git-object).
  * <p>
@@ -376,8 +378,8 @@ public class GitDiffer {
      * @return A full git diff containing the complete file and all changes
      */
     public static String getFullDiff(String beforeFile, String gitDiff) {
-        String[] beforeLines = beforeFile.split("(\\r\\n|\\r|\\n)", -1);
-        String[] diffLines = gitDiff.split("(\\r\\n|\\r|\\n)");
+        String[] beforeLines = beforeFile.split(LINEBREAK_REGEX, -1);
+        String[] diffLines = gitDiff.split(LINEBREAK_REGEX);
 
         int beforeIndex = 0;
 

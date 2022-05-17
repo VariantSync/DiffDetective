@@ -24,9 +24,9 @@ import java.util.Stack;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 
-public class DiffTreeParser {
-    public static final String NEW_LINE_REGEX = "(\\r\\n|\\r|\\n)";
+import static org.variantsync.diffdetective.util.StringUtils.LINEBREAK_REGEX;
 
+public class DiffTreeParser {
     /**
      * Implementation of the diff tree algorithm.
      * This implementation has options to collapse multiple code lines into one node and to
@@ -46,7 +46,7 @@ public class DiffTreeParser {
             boolean ignoreEmptyLines,
             DiffNodeParser nodeParser)
     {
-        final String[] fullDiffLines = fullDiff.split(NEW_LINE_REGEX);
+        final String[] fullDiffLines = fullDiff.split(LINEBREAK_REGEX);
 
         final List<DiffNode> nodes = new ArrayList<>();
         final Stack<DiffNode> beforeStack = new Stack<>();
