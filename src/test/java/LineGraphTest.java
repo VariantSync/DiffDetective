@@ -88,8 +88,8 @@ public class LineGraphTest {
 	 * @param generatedLineGraph The generated line graph
 	 */
 	private static void assertEqualFileContent(final String originalLineGraph, final String generatedLineGraph) {
-        final String o = FileUtils.normalizedLineEndings(originalLineGraph).trim();
-        final String g = FileUtils.normalizedLineEndings(generatedLineGraph).trim();
+        final String o = FileUtils.normalizedLineEndings(originalLineGraph);
+        final String g = FileUtils.normalizedLineEndings(generatedLineGraph);
 //        System.out.println("ORIGINAL");
 //        System.out.println(o);
 //        System.out.println("GENERATED");
