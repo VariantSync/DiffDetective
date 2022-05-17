@@ -116,6 +116,7 @@ buildNumber.properties
 *.ser
 patches/*
 .venv/
+/linegraph/__pycache__/
 
 /input
 /error
