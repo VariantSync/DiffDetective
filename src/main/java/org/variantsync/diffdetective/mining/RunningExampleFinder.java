@@ -103,7 +103,7 @@ public class RunningExampleFinder {
     }
 
     private static int getNumberOfLinesIn(final String text) {
-        return text.trim().split(StringUtils.LINEBREAK_REGEX).length;
+        return (int)text.trim().lines().count();
     }
 
     private static boolean isComplexFormula(final Node formula) {
