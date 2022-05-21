@@ -32,8 +32,8 @@ public class StarfoldTest {
             Starfold.RespectNodeOrder().transform(t);
 //            System.out.println(t.toTextDiff());
             Assert.assertEquals(
-                    t.toTextDiff().trim(),
-                    FileUtils.readUTF8(testCase.expectedDiff).trim()
+                    FileUtils.normalizedLineEndings(t.toTextDiff().trim()),
+                    FileUtils.normalizedLineEndings(FileUtils.readUTF8(testCase.expectedDiff).trim())
             );
         }
     }
