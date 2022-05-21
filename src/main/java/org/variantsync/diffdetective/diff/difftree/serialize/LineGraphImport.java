@@ -80,18 +80,16 @@ public class LineGraphImport {
                     input.close();
                     throw e;
                 }
-			} else {
-				// ignore blank spaces
-				if (!ln.trim().equals("")) {
-					input.close();
-					String errorMessage = String.format(
-							"Line graph syntax error. Expects: \"%s\" (DiffTree), \"%s\" (DiffNode), \"%s\" (edge) or a blank space (delimiter). Faulty input: \"%s\".", 
-							LineGraphConstants.LG_TREE_HEADER, 
-							LineGraphConstants.LG_NODE, 
-							LineGraphConstants.LG_EDGE, 
-							ln);
-					throw new IllegalArgumentException(errorMessage);
-				}
+			} else if (!ln.isBlank()) {
+				// ignore blank lines and throw an exception otherwise
+				input.close();
+				String errorMessage = String.format(
+						"Line graph syntax error. Expects: \"%s\" (DiffTree), \"%s\" (DiffNode), \"%s\" (edge) or a blank space (delimiter). Faulty input: \"%s\".", 
+						LineGraphConstants.LG_TREE_HEADER,
+						LineGraphConstants.LG_NODE,
+						LineGraphConstants.LG_EDGE,
+						ln);
+				throw new IllegalArgumentException(errorMessage);
 			}
 		}
 		input.close();

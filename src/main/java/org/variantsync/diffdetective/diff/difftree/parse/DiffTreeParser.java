@@ -80,7 +80,7 @@ public class DiffTreeParser {
             // Ignore line if it is empty.
             if (ignoreEmptyLines && (currentLine.isEmpty()
                     // substring(1) here because of diff symbol ('+', '-', ' ') at the beginning of a line.
-                    || currentLine.substring(1).trim().isEmpty())) {
+                    || currentLine.substring(1).isBlank())) {
                 // discard empty lines
                 continue;
             }
