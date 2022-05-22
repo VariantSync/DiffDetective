@@ -738,7 +738,7 @@ public class DiffNode {
     }
 
     public static String toTextDiffLine(final DiffType diffType, final String text) {
-        return diffType.symbol + text.replaceAll(StringUtils.LINEBREAK_REGEX, StringUtils.LINEBREAK + diffType.symbol);
+        return diffType.symbol + StringUtils.LINEBREAK_REGEX.matcher(text).replaceAll(StringUtils.LINEBREAK + diffType.symbol);
     }
 
     public String toTextDiffLine() {

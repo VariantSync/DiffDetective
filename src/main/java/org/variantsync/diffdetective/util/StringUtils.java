@@ -1,10 +1,11 @@
 package org.variantsync.diffdetective.util;
 
 import java.util.Collection;
+import java.util.regex.Pattern;
 
 public class StringUtils {
     public final static String LINEBREAK = "\r\n";
-    public final static String LINEBREAK_REGEX = "\\r\\n|\\r|\\n";
+    public final static Pattern LINEBREAK_REGEX = Pattern.compile("\\r\\n|\\r|\\n");
 
 
     public static void clear(final StringBuilder builder) {

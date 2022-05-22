@@ -26,8 +26,6 @@ import java.util.Stack;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 
-import static org.variantsync.diffdetective.util.StringUtils.LINEBREAK_REGEX;
-
 public class DiffTreeParser {
     /**
      * Implementation of the diff tree algorithm.

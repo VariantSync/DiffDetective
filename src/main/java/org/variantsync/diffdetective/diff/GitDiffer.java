@@ -53,10 +53,10 @@ import static org.variantsync.diffdetective.util.StringUtils.LINEBREAK_REGEX;
  * @author Soeren Viegener, Paul Maximilian Bittner
  */
 public class GitDiffer {
-    public static final String BOM_REGEX = "\\x{FEFF}";
-    public static final String DIFF_HUNK_REGEX = "^@@\\s-(\\d+).*\\+(\\d+).*@@$";
-    public static final String DIFF_HEADER_REGEX = "^\\+\\+\\+.*$";
-    public static final String NO_NEW_LINE = "\\ No newline at end of file";
+    private static final Pattern BOM_PATTERN = Pattern.compile("\\x{FEFF}");
+    private static final Pattern DIFF_HUNK_PATTERN = Pattern.compile( "^@@\\s-(\\d+).*\\+(\\d+).*@@$");
+    private static final Pattern DIFF_HEADER_PATTERN = Pattern.compile( "^\\+\\+\\+.*$", Pattern.MULTILINE);
+    private static final String NO_NEW_LINE = "\\ No newline at end of file";
 
     private final Git git;
     private final DiffFilter diffFilter;
@@ -339,8 +339,7 @@ public class GitDiffer {
             final String gitDiff,
             String beforeFullFile,
             final ParseOptions parseOptions) {
-        final Pattern headerPattern = Pattern.compile(DIFF_HEADER_REGEX, Pattern.MULTILINE);
-        final Matcher matcher = headerPattern.matcher(gitDiff);
+        final Matcher matcher = DIFF_HEADER_PATTERN.matcher(gitDiff);
         final String strippedDiff;
         if (matcher.find()) {
             strippedDiff = gitDiff.substring(matcher.end() + 1);
@@ -378,16 +377,15 @@ public class GitDiffer {
      * @return A full git diff containing the complete file and all changes
      */
     public static String getFullDiff(String beforeFile, String gitDiff) {
-        String[] beforeLines = beforeFile.split(LINEBREAK_REGEX, -1);
-        String[] diffLines = gitDiff.split(LINEBREAK_REGEX);
+        String[] beforeLines = LINEBREAK_REGEX.split(beforeFile, -1);
+        String[] diffLines = LINEBREAK_REGEX.split(gitDiff);
 
         int beforeIndex = 0;
 
         List<String> fullDiffLines = new ArrayList<>();
 
         for (String diffLine : diffLines) {
-            Pattern diffHunkPattern = Pattern.compile(DIFF_HUNK_REGEX);
-            Matcher matcher = diffHunkPattern.matcher(diffLine);
+            Matcher matcher = DIFF_HUNK_PATTERN.matcher(diffLine);
 
             if (matcher.find()) {
                 // found diffHunkRegex
@@ -416,7 +414,7 @@ public class GitDiffer {
 
         // JGit seems to put BOMs in weird locations somewhere in the files
         // We need to remove those or the regex matching for the lines fails
-        fullDiff = fullDiff.replaceAll(BOM_REGEX, "");
+        fullDiff = BOM_PATTERN.matcher(fullDiff).replaceAll("");
 
         return fullDiff;
     }
