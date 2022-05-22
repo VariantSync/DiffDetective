@@ -81,14 +81,14 @@ public class IO {
      */
     public static void write(final Path p, final String text) throws IOException {
         if (p.getParent() != null) {
-            p.getParent().toFile().mkdirs();
+            Files.createDirectories(p.getParent());
         }
         Files.writeString(p, text, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
     }
 
     public static void append(final Path p, final String text) throws IOException {
         if (p.getParent() != null) {
-            p.getParent().toFile().mkdirs();
+            Files.createDirectories(p.getParent());
         }
         Files.writeString(p, text, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
     }
