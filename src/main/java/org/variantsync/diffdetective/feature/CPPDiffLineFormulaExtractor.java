@@ -48,7 +48,6 @@ public class CPPDiffLineFormulaExtractor {
         fm = COMMENT_PATTERN.matcher(fm).replaceAll("");
 
         // remove whitespace
-        fm = fm.trim();
         fm = fm.replaceAll("\\s", "");
 
         // remove defined()
