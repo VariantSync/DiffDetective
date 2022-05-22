@@ -23,13 +23,19 @@ import org.variantsync.diffdetective.diff.difftree.parse.DiffTreeParser;
 import org.variantsync.diffdetective.diff.result.CommitDiffResult;
 import org.variantsync.diffdetective.diff.result.DiffError;
 import org.variantsync.diffdetective.diff.result.DiffResult;
+import org.variantsync.diffdetective.util.StringUtils;
 import org.variantsync.functjonal.Result;
 import org.variantsync.functjonal.iteration.MappedIterator;
 import org.variantsync.functjonal.iteration.SideEffectIterator;
 import org.variantsync.functjonal.iteration.Yield;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.LineNumberReader;
+import java.io.StringReader;
+import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -38,8 +44,6 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static org.variantsync.diffdetective.util.StringUtils.LINEBREAK_REGEX;
 
 /**
  * This class creates a GitDiff-object from a git repository (Git-object).
@@ -336,8 +340,8 @@ public class GitDiffer {
     private static DiffResult<PatchDiff> createPatchDiff(
             CommitDiff commitDiff,
             DiffEntry diffEntry,
-            final String gitDiff,
-            String beforeFullFile,
+            String gitDiff,
+            BufferedReader beforeFullFile,
             final ParseOptions parseOptions) {
         final Matcher matcher = DIFF_HEADER_PATTERN.matcher(gitDiff);
         final String strippedDiff;
@@ -347,7 +351,7 @@ public class GitDiffer {
             strippedDiff = gitDiff;
         }
 
-        final String fullDiff = getFullDiff(beforeFullFile, strippedDiff);
+        final String fullDiff = getFullDiff(beforeFullFile, new BufferedReader(new StringReader(strippedDiff)));
         final DiffResult<DiffTree> diffTree = DiffTreeParser.createDiffTree(fullDiff, true, true, parseOptions.annotationParser());
 
 //        if (diffTree.isFailure()) {
@@ -376,47 +380,51 @@ public class GitDiffer {
      * @param gitDiff    The git diff containing only the changed lines
      * @return A full git diff containing the complete file and all changes
      */
-    public static String getFullDiff(String beforeFile, String gitDiff) {
-        String[] beforeLines = LINEBREAK_REGEX.split(beforeFile, -1);
-        String[] diffLines = LINEBREAK_REGEX.split(gitDiff);
+    public static String getFullDiff(BufferedReader beforeFile, BufferedReader gitDiff) {
+        try {
+            LineNumberReader before = new LineNumberReader(beforeFile);
 
-        int beforeIndex = 0;
+            List<String> fullDiffLines = new ArrayList<>();
 
-        List<String> fullDiffLines = new ArrayList<>();
+            String diffLine;
+            while ((diffLine = gitDiff.readLine()) != null) {
+                Matcher matcher = DIFF_HUNK_PATTERN.matcher(diffLine);
 
-        for (String diffLine : diffLines) {
-            Matcher matcher = DIFF_HUNK_PATTERN.matcher(diffLine);
+                if (matcher.find()) {
+                    // found diffHunkRegex
 
-            if (matcher.find()) {
-                // found diffHunkRegex
+                    // subtract 1 because line numbers start at 1
+                    int beforeDiffIndex = Integer.parseInt(matcher.group(1)) - 1;
 
-                // subtract 1 because line numbers start at 1
-                int beforeDiffIndex = Integer.parseInt(matcher.group(1)) - 1;
-
-                while (beforeIndex < beforeDiffIndex) {
-                    fullDiffLines.add(" " + beforeLines[beforeIndex]);
-                    beforeIndex++;
-                }
-            } else if (diffLine.equals(NO_NEW_LINE)) {
-                fullDiffLines.add("\n");
-            } else {
-                fullDiffLines.add(diffLine);
-                if (!diffLine.startsWith("+")) {
-                    beforeIndex++;
+                    while (before.getLineNumber() < beforeDiffIndex) {
+                        fullDiffLines.add(" " + before.readLine());
+                    }
+                } else if (diffLine.equals(NO_NEW_LINE)) {
+                    fullDiffLines.add(StringUtils.LINEBREAK);
+                } else {
+                    fullDiffLines.add(diffLine);
+                    if (!diffLine.startsWith("+")) {
+                        before.readLine();
+                    }
                 }
             }
-        }
-        while (beforeIndex < beforeLines.length) {
-            fullDiffLines.add(" " + beforeLines[beforeIndex]);
-            beforeIndex++;
-        }
-        String fullDiff = String.join("\n", fullDiffLines);
 
-        // JGit seems to put BOMs in weird locations somewhere in the files
-        // We need to remove those or the regex matching for the lines fails
-        fullDiff = BOM_PATTERN.matcher(fullDiff).replaceAll("");
+            String beforeLine;
+            while ((beforeLine = before.readLine()) != null) {
+                fullDiffLines.add(" " + beforeLine);
+            }
+            String fullDiff = String.join(StringUtils.LINEBREAK, fullDiffLines);
 
-        return fullDiff;
+            // JGit seems to put BOMs in weird locations somewhere in the files
+            // We need to remove those or the regex matching for the lines fails
+            fullDiff = BOM_PATTERN.matcher(fullDiff).replaceAll("");
+
+            return fullDiff;
+        } catch (IOException e) {
+            // Going up the call chain, at can be seen, that all callers need functions which do
+            // not throw any checked exception, so just rethrow an unchecked one.
+            throw new UncheckedIOException(e);
+        }
     }
 
     /**
@@ -426,7 +434,7 @@ public class GitDiffer {
      * @param filename The name of the file
      * @return The full content of the file before the commit
      */
-    public static DiffResult<String> getBeforeFullFile(Git git, RevCommit commit, String filename) {
+    public static DiffResult<BufferedReader> getBeforeFullFile(Git git, RevCommit commit, String filename) {
         RevTree tree = commit.getTree();
 
         try (TreeWalk treeWalk = new TreeWalk(git.getRepository())) {
@@ -441,9 +449,7 @@ public class GitDiffer {
 
             ObjectId objectId = treeWalk.getObjectId(0);
             ObjectLoader loader = git.getRepository().open(objectId);
-            ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            loader.copyTo(stream);
-            return DiffResult.Success(stream.toString(StandardCharsets.UTF_8));
+            return DiffResult.Success(new BufferedReader(new InputStreamReader(loader.openStream())));
         } catch (IOException e) {
             return DiffResult.Failure(DiffError.COULD_NOT_OBTAIN_FULLDIFF, "Could not obtain full diff of file " + filename + " before commit " + commit + "!");
         }
