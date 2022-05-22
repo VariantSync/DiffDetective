@@ -51,13 +51,13 @@ public class MultiLineMacroParser {
             final Stack<DiffNode> afterStack,
             final List<DiffNode> nodes
     ) throws IllFormedAnnotationException {
-        final CodeType codeType = CodeType.ofDiffLine(line);
         final DiffType diffType = DiffType.ofDiffLine(line);
         final boolean isAdd = diffType == DiffType.ADD;
         final boolean isRem = diffType == DiffType.REM;
 
         if (continuesMultilineDefinition(line)) {
             // If this multiline macro line is a header...
+            final CodeType codeType = CodeType.ofDiffLine(line);
             if (codeType.isConditionalMacro()) {
                 // ... create a new multi line macro to complete.
                 if (!isAdd) {
