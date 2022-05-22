@@ -79,9 +79,8 @@ public class DiffTreeParser {
         beforeStack.push(root);
         afterStack.push(root);
 
-        String line;
-        for (int i = 0; (line = fullDiff.readLine()) != null; i++) {
-            final String currentLine = line; // Has to be final, because it's used in a lambda.
+        String currentLine;
+        for (int i = 0; (currentLine = fullDiff.readLine()) != null; i++) {
             final DiffType diffType = DiffType.ofDiffLine(currentLine);
 
             // count line numbers
@@ -133,7 +132,7 @@ public class DiffTreeParser {
             // collapse multiple code lines
             if (lastCode != null) {
                 if (collapseMultipleCodeLines && newNode.isCode() && lastCode.diffType.equals(newNode.diffType)) {
-                    lastCode.setLabel(lastCode.getLabel() + StringUtils.LINEBREAK + newNode.getLabel());
+                    lastCode.addLines(newNode.getLines());
                     continue;
                 } else {
                     lastCode = endCodeBlock(lastCode, lastLineNo);
@@ -149,6 +148,7 @@ public class DiffTreeParser {
             if (newNode.isCode()) {
                 lastCode = newNode;
             } else if (newNode.isEndif()) {
+                final String currentLineFinal = currentLine;
                 diffType.matchBeforeAfter(beforeStack, afterStack,
                         stack -> {
                             // Set corresponding line of now closed annotation.
@@ -160,7 +160,7 @@ public class DiffTreeParser {
                             popIf(stack);
 
                             if (stack.isEmpty()) {
-                                errorPropagation.accept(DiffError.ENDIF_WITHOUT_IF, "ENDIF without IF at line \"" + currentLine + "\"!");
+                                errorPropagation.accept(DiffError.ENDIF_WITHOUT_IF, "ENDIF without IF at line \"" + currentLineFinal + "\"!");
                             }
                         });
                 if (error.get() != null) { return error.get(); }

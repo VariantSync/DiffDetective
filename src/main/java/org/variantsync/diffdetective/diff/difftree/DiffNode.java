@@ -9,6 +9,7 @@ import org.variantsync.diffdetective.util.StringUtils;
 import org.variantsync.diffdetective.util.fide.FixTrueFalse;
 
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.function.Function;
 
 import static org.variantsync.diffdetective.util.fide.FormulaUtils.negate;
@@ -29,7 +30,7 @@ public class DiffNode {
     private final DiffLineNumber to = DiffLineNumber.Invalid();
 
     private Node featureMapping;
-    private String label;
+    private List<String> lines;
 
     /**
      * The parent {@link DiffNode} before the edit.
@@ -59,13 +60,20 @@ public class DiffNode {
     public DiffNode(DiffType diffType, CodeType codeType,
                     DiffLineNumber fromLines, DiffLineNumber toLines,
                     Node featureMapping, String label) {
+        this(diffType, codeType, fromLines, toLines, featureMapping,
+                new ArrayList<String>(Arrays.asList(StringUtils.LINEBREAK_REGEX.split(label, -1))));
+    }
+
+    public DiffNode(DiffType diffType, CodeType codeType,
+                    DiffLineNumber fromLines, DiffLineNumber toLines,
+                    Node featureMapping, List<String> lines) {
         this();
         this.diffType = diffType;
         this.codeType = codeType;
         this.from.set(fromLines);
         this.to.set(toLines);
         this.featureMapping = featureMapping;
-        this.label = label;
+        this.lines = lines;
     }
 
     /**
@@ -79,7 +87,7 @@ public class DiffNode {
                 new DiffLineNumber(1, 1, 1),
                 DiffLineNumber.Invalid(),
                 FixTrueFalse.True,
-                ""
+                new ArrayList()
         );
     }
 
@@ -87,12 +95,25 @@ public class DiffNode {
         return new DiffNode(diffType, CodeType.CODE, fromLines, toLines, null, code);
     }
 
-    public void setLabel(final String label) {
-        this.label = label;
+    public static DiffNode createCode(DiffType diffType, DiffLineNumber fromLines, DiffLineNumber toLines, List<String> lines) {
+        return new DiffNode(diffType, CodeType.CODE, fromLines, toLines, null, lines);
+    }
+
+    public void addLines(final List<String> lines) {
+        this.lines.addAll(lines);
+    }
+
+    public List<String> getLines() {
+        return lines;
     }
 
     public String getLabel() {
-        return label;
+        return lines.stream().collect(Collectors.joining(StringUtils.LINEBREAK));
+    }
+
+    public void setLabel(String label) {
+        lines.clear();
+        Collections.addAll(lines, StringUtils.LINEBREAK_REGEX.split(label, -1));
     }
 
     /**
@@ -680,7 +701,7 @@ public class DiffNode {
         return id;
     }
     
-    public static DiffNode fromID(final int id) {
+    public static DiffNode fromID(final int id, String label) {
         // lowest 8 bits
         final int lowestBitsMask = (1 << ID_OFFSET) - 1;
 
@@ -694,7 +715,7 @@ public class DiffNode {
                 new DiffLineNumber(fromInDiff, DiffLineNumber.InvalidLineNumber, DiffLineNumber.InvalidLineNumber),
                 DiffLineNumber.Invalid(),
                 null,
-                ""
+                label
         );
     }
 
@@ -737,12 +758,12 @@ public class DiffNode {
         }
     }
 
-    public static String toTextDiffLine(final DiffType diffType, final String text) {
-        return diffType.symbol + StringUtils.LINEBREAK_REGEX.matcher(text).replaceAll(StringUtils.LINEBREAK + diffType.symbol);
+    public static String toTextDiffLine(final DiffType diffType, final List<String> lines) {
+        return lines.stream().collect(Collectors.joining(StringUtils.LINEBREAK + diffType.symbol, diffType.symbol, ""));
     }
 
     public String toTextDiffLine() {
-        return toTextDiffLine(diffType, this.getLabel());
+        return toTextDiffLine(diffType, lines);
     }
 
     public String toTextDiff() {
@@ -758,9 +779,10 @@ public class DiffNode {
             diff.append(child.toTextDiff());
         }
 
+        // Add endif after macro
         if (isMacro()) {
             diff
-                    .append(toTextDiffLine(this.diffType, CodeType.ENDIF.asMacroText()))
+                    .append(toTextDiffLine(this.diffType, List.of(CodeType.ENDIF.asMacroText())))
                     .append(StringUtils.LINEBREAK);
         }
 
@@ -786,11 +808,11 @@ public class DiffNode {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         DiffNode diffNode = (DiffNode) o;
-        return isMultilineMacro == diffNode.isMultilineMacro && diffType == diffNode.diffType && codeType == diffNode.codeType && from.equals(diffNode.from) && to.equals(diffNode.to) && Objects.equals(featureMapping, diffNode.featureMapping) && label.equals(diffNode.label);
+        return isMultilineMacro == diffNode.isMultilineMacro && diffType == diffNode.diffType && codeType == diffNode.codeType && from.equals(diffNode.from) && to.equals(diffNode.to) && Objects.equals(featureMapping, diffNode.featureMapping) && lines.equals(diffNode.lines);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(diffType, codeType, isMultilineMacro, from, to, featureMapping, label);
+        return Objects.hash(diffType, codeType, isMultilineMacro, from, to, featureMapping, lines);
     }
 }

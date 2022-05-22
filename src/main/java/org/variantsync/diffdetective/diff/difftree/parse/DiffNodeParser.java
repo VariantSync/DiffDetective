@@ -7,6 +7,8 @@ import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.diff.difftree.DiffType;
 import org.variantsync.diffdetective.feature.CPPAnnotationParser;
 
+import java.util.ArrayList;
+
 public record DiffNodeParser(CPPAnnotationParser annotationParser) {
     public static final DiffNodeParser Default = new DiffNodeParser(CPPAnnotationParser.Default);
 
@@ -28,10 +30,12 @@ public record DiffNodeParser(CPPAnnotationParser annotationParser) {
             featureMapping = annotationParser.parseDiffLine(diffLine);
         }
 
+        ArrayList lines = new ArrayList();
+        lines.add(label);
         return new DiffNode(
                 diffType, codeType,
                 DiffLineNumber.Invalid(), DiffLineNumber.Invalid(),
                 featureMapping,
-                label);
+                lines);
     }
 }
