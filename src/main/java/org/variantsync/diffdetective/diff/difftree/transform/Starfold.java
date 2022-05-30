@@ -29,13 +29,11 @@ public class Starfold implements DiffTreeTransformer {
     @Override
     public void transform(DiffTree diffTree) {
         // All non-artifact nodes are potential roots of stars.
-        final List<DiffNode> macroNodes = diffTree.computeAllNodesThat(node -> !node.isCode());
-//        System.out.println("Inspecting " + macroNodes.size() + " star root candidates.");
+        final List<DiffNode> macroNodes = diffTree.computeAllNodesThat(Starfold::isStarRoot);
+//        System.out.println("Inspecting " + macroNodes.size() + " star roots.");
         for (DiffNode macro : macroNodes) {
-            if (isStarRoot(macro)) {
-//                System.out.println("Found star root " + macro);
-                foldStar(macro);
-            }
+//            System.out.println("Found star root " + macro);
+            foldStar(macro);
         }
     }
 
