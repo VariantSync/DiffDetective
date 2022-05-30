@@ -6,14 +6,15 @@ import org.variantsync.diffdetective.metadata.ElementaryPatternCount;
 import org.variantsync.diffdetective.metadata.ExplainedFilterSummary;
 import org.variantsync.diffdetective.metadata.Metadata;
 import org.variantsync.diffdetective.pattern.elementary.proposed.ProposedElementaryPatterns;
-import org.variantsync.diffdetective.util.IO;
 import org.variantsync.functjonal.Functjonal;
 import org.variantsync.functjonal.category.InplaceMonoid;
 import org.variantsync.functjonal.category.InplaceSemigroup;
 import org.variantsync.functjonal.category.Semigroup;
 import org.variantsync.functjonal.map.MergeMap;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -137,73 +138,72 @@ public class AnalysisResult implements Metadata<AnalysisResult> {
         
         final List<String> filterHitsLines = new ArrayList<>();
         final List<String> elementaryPatternCountsLines = new ArrayList<>();
-        
-        String fileInput = IO.readAsString(p); // read in metadata file
-        fileInput = fileInput.replace("\r", ""); // remove carriage returns if present
-        final String[] lines = fileInput.split("\n");
-        
-        // examine each line of the metadata file separately
-        for (/*final*/ String line : lines) {
-            String[] keyValuePair = line.split(": ");
-            String key = keyValuePair[0];
-            String value = keyValuePair[1];
 
-            switch (key) {
-                case MetadataKeys.REPONAME -> result.repoName = value;
-                case MetadataKeys.TREES -> result.exportedTrees = Integer.parseInt(value);
-                case MetadataKeys.PROCESSED_COMMITS -> result.exportedCommits = Integer.parseInt(value);
-                case MetadataKeys.TOTAL_COMMITS -> result.totalCommits = Integer.parseInt(value);
-                case MetadataKeys.EMPTY_COMMITS -> result.emptyCommits = Integer.parseInt(value);
-                case MetadataKeys.FAILED_COMMITS -> result.failedCommits = Integer.parseInt(value);
-                case MetadataKeys.FILTERED_COMMITS -> { /* Do nothing because this value is derived. */ }
-                case MetadataKeys.NON_NODE_COUNT -> result.debugData.numExportedNonNodes = Integer.parseInt(value);
-                case MetadataKeys.ADD_NODE_COUNT -> result.debugData.numExportedAddNodes = Integer.parseInt(value);
-                case MetadataKeys.REM_NODE_COUNT -> result.debugData.numExportedRemNodes = Integer.parseInt(value);
-                case MetadataKeys.MINCOMMIT -> result.min.set(CommitProcessTime.fromString(value));
-                case MetadataKeys.MAXCOMMIT -> result.max.set(CommitProcessTime.fromString(value));
-                case MetadataKeys.RUNTIME -> {
-                    if (value.endsWith("s")) {
-                        value = value.substring(0, value.length() - 1);
-                    }
-                    result.runtimeInSeconds = Double.parseDouble(value);
-                }
-                case MetadataKeys.RUNTIME_WITH_MULTITHREADING -> {
-                    if (value.endsWith("s")) {
-                        value = value.substring(0, value.length() - 1);
-                    }
-                    result.runtimeWithMultithreadingInSeconds = Double.parseDouble(value);
-                }
-                default -> {
+        try (BufferedReader input = Files.newBufferedReader(p)) {
+            // examine each line of the metadata file separately
+            String line;
+            while ((line = input.readLine()) != null) {
+                String[] keyValuePair = line.split(": ");
+                String key = keyValuePair[0];
+                String value = keyValuePair[1];
 
-                    // temporary fix for renaming from Unchanged to Untouched
-                    final String unchanged = "Unchanged";
-                    if (key.startsWith(unchanged)) {
-                        key = ProposedElementaryPatterns.Untouched.getName();
-                        line = key + line.substring(unchanged.length());
+                switch (key) {
+                    case MetadataKeys.REPONAME -> result.repoName = value;
+                    case MetadataKeys.TREES -> result.exportedTrees = Integer.parseInt(value);
+                    case MetadataKeys.PROCESSED_COMMITS -> result.exportedCommits = Integer.parseInt(value);
+                    case MetadataKeys.TOTAL_COMMITS -> result.totalCommits = Integer.parseInt(value);
+                    case MetadataKeys.EMPTY_COMMITS -> result.emptyCommits = Integer.parseInt(value);
+                    case MetadataKeys.FAILED_COMMITS -> result.failedCommits = Integer.parseInt(value);
+                    case MetadataKeys.FILTERED_COMMITS -> { /* Do nothing because this value is derived. */ }
+                    case MetadataKeys.NON_NODE_COUNT -> result.debugData.numExportedNonNodes = Integer.parseInt(value);
+                    case MetadataKeys.ADD_NODE_COUNT -> result.debugData.numExportedAddNodes = Integer.parseInt(value);
+                    case MetadataKeys.REM_NODE_COUNT -> result.debugData.numExportedRemNodes = Integer.parseInt(value);
+                    case MetadataKeys.MINCOMMIT -> result.min.set(CommitProcessTime.fromString(value));
+                    case MetadataKeys.MAXCOMMIT -> result.max.set(CommitProcessTime.fromString(value));
+                    case MetadataKeys.RUNTIME -> {
+                        if (value.endsWith("s")) {
+                            value = value.substring(0, value.length() - 1);
+                        }
+                        result.runtimeInSeconds = Double.parseDouble(value);
                     }
+                    case MetadataKeys.RUNTIME_WITH_MULTITHREADING -> {
+                        if (value.endsWith("s")) {
+                            value = value.substring(0, value.length() - 1);
+                        }
+                        result.runtimeWithMultithreadingInSeconds = Double.parseDouble(value);
+                    }
+                    default -> {
 
-                    final String finalKey = key;
-                    if (ProposedElementaryPatterns.All.stream().anyMatch(pattern -> pattern.getName().equals(finalKey))) {
-                        elementaryPatternCountsLines.add(line);
-                    } else if (key.startsWith(ExplainedFilterSummary.FILTERED_MESSAGE_BEGIN)) {
-                        filterHitsLines.add(line);
-                    } else if (key.startsWith(ERROR_BEGIN)) {
-                        DiffError e = new DiffError(key.substring(ERROR_BEGIN.length(), key.length() - ERROR_END.length()));
-                        // add DiffError
-                        result.diffErrors.put(e, Integer.parseInt(value));
-                    } else {
-                        final BiConsumer<AnalysisResult, String> customParser = customParsers.get(key);
-                        if (customParser == null) {
-                            final String errorMessage = "Unknown entry \"" + line + "\"!";
-                            throw new IOException(errorMessage);
+                        // temporary fix for renaming from Unchanged to Untouched
+                        final String unchanged = "Unchanged";
+                        if (key.startsWith(unchanged)) {
+                            key = ProposedElementaryPatterns.Untouched.getName();
+                            line = key + line.substring(unchanged.length());
+                        }
+
+                        final String finalKey = key;
+                        if (ProposedElementaryPatterns.All.stream().anyMatch(pattern -> pattern.getName().equals(finalKey))) {
+                            elementaryPatternCountsLines.add(line);
+                        } else if (key.startsWith(ExplainedFilterSummary.FILTERED_MESSAGE_BEGIN)) {
+                            filterHitsLines.add(line);
+                        } else if (key.startsWith(ERROR_BEGIN)) {
+                            DiffError e = new DiffError(key.substring(ERROR_BEGIN.length(), key.length() - ERROR_END.length()));
+                            // add DiffError
+                            result.diffErrors.put(e, Integer.parseInt(value));
                         } else {
-                            customParser.accept(result, value);
+                            final BiConsumer<AnalysisResult, String> customParser = customParsers.get(key);
+                            if (customParser == null) {
+                                final String errorMessage = "Unknown entry \"" + line + "\"!";
+                                throw new IOException(errorMessage);
+                            } else {
+                                customParser.accept(result, value);
+                            }
                         }
                     }
                 }
             }
         }
-        
+
         result.filterHits = ExplainedFilterSummary.parse(filterHitsLines);
         result.elementaryPatternCounts = ElementaryPatternCount.parse(elementaryPatternCountsLines, p.toString());
 
