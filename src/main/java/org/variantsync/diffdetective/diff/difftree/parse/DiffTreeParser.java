@@ -17,7 +17,9 @@ import org.variantsync.diffdetective.diff.result.DiffResult;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.util.StringUtils;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
@@ -46,8 +48,19 @@ public class DiffTreeParser {
             boolean ignoreEmptyLines,
             DiffNodeParser nodeParser)
     {
-        final String[] fullDiffLines = fullDiff.split(LINEBREAK_REGEX);
+        try {
+            return createDiffTree(new BufferedReader(new StringReader(fullDiff)), collapseMultipleCodeLines, ignoreEmptyLines, nodeParser);
+        } catch (IOException e) {
+            throw new AssertionError("No actual IO should be performed, because only a StringReader is used");
+        }
+    }
 
+    public static DiffResult<DiffTree> createDiffTree(
+            BufferedReader fullDiff,
+            boolean collapseMultipleCodeLines,
+            boolean ignoreEmptyLines,
+            DiffNodeParser nodeParser) throws IOException
+    {
         final List<DiffNode> nodes = new ArrayList<>();
         final Stack<DiffNode> beforeStack = new Stack<>();
         final Stack<DiffNode> afterStack = new Stack<>();
@@ -68,8 +81,9 @@ public class DiffTreeParser {
         beforeStack.push(root);
         afterStack.push(root);
 
-        for (int i = 0; i < fullDiffLines.length; i++) {
-            final String currentLine = fullDiffLines[i];
+        String line;
+        for (int i = 0; (line = fullDiff.readLine()) != null; i++) {
+            final String currentLine = line; // Has to be final, because it's used in a lambda.
             final DiffType diffType = DiffType.ofDiffLine(currentLine);
 
             // count line numbers

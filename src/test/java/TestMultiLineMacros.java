@@ -15,20 +15,23 @@ import org.variantsync.diffdetective.util.IO;
 import org.variantsync.diffdetective.util.StringUtils;
 import org.variantsync.functjonal.Pair;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class TestMultiLineMacros {
     private static final Path resDir = Constants.RESOURCE_DIR.resolve("multilinemacros");
 
     public void diffToDiffTree(DiffTreeLineGraphExportOptions exportOptions, Path p) throws IOException {
-        final String fullDiff = IO.readAsString(p);
-
-        final DiffTree tree = DiffTreeParser.createDiffTree(
-                fullDiff,
-                true,
-                true,
-                DiffNodeParser.Default).unwrap().getSuccess();
+        DiffTree tree;
+        try (BufferedReader fullDiff = Files.newBufferedReader(p)) {
+            tree = DiffTreeParser.createDiffTree(
+                    fullDiff,
+                    true,
+                    true,
+                    DiffNodeParser.Default).unwrap().getSuccess();
+        }
 
         final Pair<DiffTreeSerializeDebugData, String> result = LineGraphExport.toLineGraphFormat(tree, exportOptions);
         Assert.assertNotNull(result);

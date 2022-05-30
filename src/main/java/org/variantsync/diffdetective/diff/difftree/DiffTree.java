@@ -8,9 +8,10 @@ import org.variantsync.diffdetective.diff.difftree.traverse.DiffTreeTraversal;
 import org.variantsync.diffdetective.diff.difftree.traverse.DiffTreeVisitor;
 import org.variantsync.diffdetective.diff.result.DiffResult;
 import org.variantsync.diffdetective.util.Assert;
-import org.variantsync.diffdetective.util.IO;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -48,10 +49,11 @@ public class DiffTree {
     }
 
     public static DiffResult<DiffTree> fromFile(final Path p, boolean collapseMultipleCodeLines, boolean ignoreEmptyLines, final DiffNodeParser annotationParser) throws IOException {
-        final String fullDiff = IO.readAsString(p);
-        final DiffResult<DiffTree> tree = DiffTreeParser.createDiffTree(fullDiff, collapseMultipleCodeLines, ignoreEmptyLines, annotationParser);
-        tree.unwrap().ifSuccess(t -> t.setSource(new PatchFile(p)));
-        return tree;
+        try (BufferedReader file = Files.newBufferedReader(p)) {
+            final DiffResult<DiffTree> tree = DiffTreeParser.createDiffTree(file, collapseMultipleCodeLines, ignoreEmptyLines, annotationParser);
+            tree.unwrap().ifSuccess(t -> t.setSource(new PatchFile(p)));
+            return tree;
+        }
     }
 
     public static DiffResult<DiffTree> fromDiff(final String diff, boolean collapseMultipleCodeLines, boolean ignoreEmptyLines, final DiffNodeParser annotationParser) {
