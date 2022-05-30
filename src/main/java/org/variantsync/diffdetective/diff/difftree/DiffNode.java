@@ -644,6 +644,18 @@ public class DiffNode {
         );
     }
 
+    public boolean isBeforeChild(DiffNode child) {
+        return beforeChildren.contains(child);
+    }
+
+    public boolean isAfterChild(DiffNode child) {
+        return afterChildren.contains(child);
+    }
+
+    public boolean isChild(DiffNode child, Time time) {
+        return time.match(isBeforeChild(child), isAfterChild(child));
+    }
+
     public boolean isLeaf() {
         return childOrder.isEmpty();
     }

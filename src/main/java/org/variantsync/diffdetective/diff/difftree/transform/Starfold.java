@@ -47,11 +47,13 @@ public class Starfold implements DiffTreeTransformer {
     public void foldStarAtTime(final DiffNode starRoot, Time time) {
 //        System.out.println("Fold " + starRoot + " at time " + time);
         final DiffType targetDiffType = DiffType.thatExistsOnlyAt(time);
-
-        final List<DiffNode> children = starRoot.getChildren(time);
         final List<DiffNode> starArms = new ArrayList<>();
 
-        for (DiffNode child : children) {
+        for (DiffNode child : starRoot.getAllChildren()) {
+            if (!starRoot.isChild(child, time)) {
+                continue;
+            }
+
             if (isStarArm(child) && child.diffType == targetDiffType) {
 //                System.out.println("  Found arm " + child);
                 starArms.add(child);
