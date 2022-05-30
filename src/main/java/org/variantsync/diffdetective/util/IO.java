@@ -11,7 +11,6 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Optional;
 import java.util.StringJoiner;
-import java.util.stream.Collectors;
 
 /**
  * Util class for exporting data.
@@ -20,18 +19,6 @@ import java.util.stream.Collectors;
  */
 public class IO {
     private static final String CSV_DELIMITER = ",";
-
-    public static String readAsString(final Path p) throws IOException {
-        try (
-                final FileReader f = new FileReader(p.toFile());
-                final BufferedReader reader = new BufferedReader(f)
-        ) {
-            return reader.lines().collect(Collectors.joining("\r\n"));
-        } catch (final IOException e) {
-            Logger.error(e, "Failed to read lines from file");
-            throw e;
-        }
-    }
 
     /**
      * Exports data to a csv-file

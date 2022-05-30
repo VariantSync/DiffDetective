@@ -5,6 +5,7 @@ import org.variantsync.diffdetective.diff.difftree.transform.Starfold;
 import org.variantsync.diffdetective.util.FileUtils;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Stream;
@@ -31,9 +32,9 @@ public class StarfoldTest {
             final DiffTree t = DiffTree.fromFile(testCase.inputDiff, true, true).unwrap().getSuccess();
             Starfold.RespectNodeOrder().transform(t);
 //            System.out.println(t.toTextDiff());
-            Assert.assertEquals(
-                    FileUtils.normalizedLineEndings(t.toTextDiff().trim()),
-                    FileUtils.normalizedLineEndings(FileUtils.readUTF8(testCase.expectedDiff).trim())
+            TestUtils.assertEqualToFile(
+                    testCase.expectedDiff,
+                    t.toTextDiff().trim()
             );
         }
     }
