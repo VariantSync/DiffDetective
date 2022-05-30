@@ -14,6 +14,7 @@ import org.variantsync.diffdetective.util.IO;
 import org.variantsync.functjonal.Pair;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -85,10 +86,23 @@ public class MiningPostprocessing {
      */
     public static List<DiffTree> parseFrequentSubgraphsIn(final Path path) throws IOException {
         if (Files.isDirectory(path)) {
-            return Files.list(path)
-                    .filter(FileUtils::isLineGraph)
-                    .flatMap(file -> LineGraphImport.fromFile(file, IMPORT_OPTIONS).stream())
-                    .collect(Collectors.toList());
+            try {
+                return Files.list(path)
+                        .filter(FileUtils::isLineGraph)
+                        .flatMap(file -> {
+                            try {
+                                return LineGraphImport.fromFile(file, IMPORT_OPTIONS).stream();
+                            } catch (IOException e) {
+                                // Checked exceptions can't be propagated because {@code flatMap}
+                                // needs a {@code Function} which does not throw any checked
+                                // exceptions.
+                                throw new UncheckedIOException(e);
+                            }
+                        })
+                        .collect(Collectors.toList());
+            } catch (UncheckedIOException e) {
+                throw e.getCause();
+            }
         } else {
             return LineGraphImport.fromFile(path, IMPORT_OPTIONS);
         }
