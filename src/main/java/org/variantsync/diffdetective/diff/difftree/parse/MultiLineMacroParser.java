@@ -64,13 +64,13 @@ public class MultiLineMacroParser {
                     if (beforeMLMacro != null) {
                         return ParseResult.ERROR(MLMACRO_WITHIN_MLMACRO, "Found definition of multiline macro within multiline macro at line " + line + "!");
                     }
-                    beforeMLMacro = new MultilineMacro(line, lineNo, beforeStack.peek(), afterStack.peek());
+                    beforeMLMacro = new MultilineMacro(line, diffType, lineNo, beforeStack.peek(), afterStack.peek());
                 }
                 if (!isRem) {
                     if (afterMLMacro != null) {
                         return ParseResult.ERROR(MLMACRO_WITHIN_MLMACRO, "Found definition of multiline macro within multiline macro at line " + line + "!");
                     }
-                    afterMLMacro = new MultilineMacro(line, lineNo, beforeStack.peek(), afterStack.peek());
+                    afterMLMacro = new MultilineMacro(line, diffType, lineNo, beforeStack.peek(), afterStack.peek());
                 }
             } else { // body
                 // ... otherwise, it is a line within a body of a multiline macro. Thus append it.
