@@ -693,10 +693,19 @@ public class DiffNode {
 
     /**
      * @return An integer that uniquely identifiers this DiffNode within its patch.
+     *
+     * From the returned id a new node with all essential attributes reconstructed can be obtained
+     * by using {@code fromID}.
+     *
+     * Note that only {@code 26} bits of the line number are encoded, so if the line number is bigger than
+     * {@code 2^26} this id will no longer be unique.
      */
     public int getID() {
+        int lineNumber = 1 + from.inDiff;
+        Assert.assertTrue((lineNumber << 2*ID_OFFSET) >> 2*ID_OFFSET == lineNumber);
+
         int id;
-        id = 1 + from.inDiff;
+        id = lineNumber;
         id <<= ID_OFFSET;
         id += diffType.ordinal();
         id <<= ID_OFFSET;
@@ -705,7 +714,6 @@ public class DiffNode {
     }
     
     public static DiffNode fromID(final int id, String label) {
-        // lowest 8 bits
         final int lowestBitsMask = (1 << ID_OFFSET) - 1;
 
         final int codeTypeOrdinal = id & lowestBitsMask;
