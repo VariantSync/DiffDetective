@@ -1,5 +1,6 @@
 package org.variantsync.diffdetective.util;
 
+import org.apache.commons.io.FilenameUtils;
 import org.tinylog.Logger;
 
 import java.io.IOException;
@@ -32,20 +33,13 @@ public class FileUtils {
                 (filePath, fileAttr) -> fileAttr.isRegularFile()).toList();
     }
 
-    public static boolean hasExtension(final Path p, final String extension) {
-        if (Files.isDirectory(p)) {
-            return false;
-        }
-
-        final boolean withDot = extension.startsWith(".");
-
-        final String filename = p.getFileName().toString();
-        final String fileextension = filename.substring(
-                filename.lastIndexOf(".")
-                        + (withDot ? 0 : 1)
-        );
-
-        return extension.equalsIgnoreCase(fileextension);
+    /**
+     * Checks if {@code p} has the file extension {@code expected}.
+     *
+     * Note that the common dot delimiter has to included in {@code expected}.
+     */
+    public static boolean hasExtension(final Path p, final String expected) {
+        return p.getFileName().toString().toLowerCase().endsWith(expected.toLowerCase());
     }
 
     public static boolean isLineGraph(final Path p) {
