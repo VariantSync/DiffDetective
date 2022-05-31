@@ -20,10 +20,10 @@ import static org.variantsync.diffdetective.util.fide.FormulaUtils.negate;
  * Includes methods for creating a node by getting its code type and diff type and for getting the feature mapping of the node.
  */
 public class DiffNode {
-	private static final short ID_OFFSET = 3;
+    private static final short ID_OFFSET = 3;
 
-    public DiffType diffType;
-    public CodeType codeType;
+    public final DiffType diffType;
+    public final CodeType codeType;
     private boolean isMultilineMacro = false;
 
     private final DiffLineNumber from = DiffLineNumber.Invalid();
@@ -34,28 +34,30 @@ public class DiffNode {
 
     /**
      * The parent {@link DiffNode} before the edit.
+     *
+     * Invariant: Iff {@code beforeParent != null} then
+     * {@code beforeParent.childOrder.contains(this)}.
      */
     private DiffNode beforeParent;
-    
+
     /**
      * The parent {@link DiffNode} after the edit.
+     *
+     * Invariant: Iff {@code afterParent != null} then
+     * {@code afterParent.childOrder.contains(this)}.
      */
     private DiffNode afterParent;
 
     /**
      * We use a list for children to maintain order.
+     *
+     * Invariant: Iff {@code childOrder.contains(child)} then
+     * {@code child.beforeParent == this || child.afterParent == this}.
+     *
+     * Note that it's explicitly allowed to have
+     * {@code child.beforeParent == this && child.afterParent == this}.
      */
     private final List<DiffNode> childOrder;
-
-    // These lists store the outgoing edges. These lists do not respect order.
-    private List<DiffNode> beforeChildren;
-    private List<DiffNode> afterChildren;
-
-    private DiffNode() {
-        this.childOrder = new ArrayList<>();
-        this.beforeChildren = new ArrayList<>();
-        this.afterChildren = new ArrayList<>();
-    }
 
     public DiffNode(DiffType diffType, CodeType codeType,
                     DiffLineNumber fromLines, DiffLineNumber toLines,
@@ -67,7 +69,8 @@ public class DiffNode {
     public DiffNode(DiffType diffType, CodeType codeType,
                     DiffLineNumber fromLines, DiffLineNumber toLines,
                     Node featureMapping, List<String> lines) {
-        this();
+        this.childOrder = new ArrayList<>();
+
         this.diffType = diffType;
         this.codeType = codeType;
         this.from.set(fromLines);
@@ -221,14 +224,6 @@ public class DiffNode {
     }
 
     /**
-     * @return The number of edges going to children.
-     *         This is the sum of the number of edges to before children and the number of edges to after children.
-     */
-    public int getCardinality() {
-        return beforeChildren.size() + afterChildren.size();
-    }
-
-    /**
      * Gets the amount of nodes with diff type REM in the path following the before parent
      * @return the amount of nodes with diff type REM in the path following the before parent
      */
@@ -275,10 +270,12 @@ public class DiffNode {
     }
 
     private void setBeforeParent(final DiffNode newBeforeParent) {
+        Assert.assertTrue(beforeParent == null);
         this.beforeParent = newBeforeParent;
     }
 
     private void setAfterParent(final DiffNode newAfterParent) {
+        Assert.assertTrue(afterParent == null);
         this.afterParent = newAfterParent;
     }
 
@@ -336,8 +333,9 @@ public class DiffNode {
 
     public boolean insertBeforeChild(final DiffNode child, int index) {
         if (!child.isAdd()) {
-            addWithoutDuplicates(beforeChildren, child);
-            insertWithoutDuplicates(childOrder, child, index);
+            if (!isChild(child)) {
+                childOrder.add(index, child);
+            }
             child.setBeforeParent(this);
             return true;
         }
@@ -346,8 +344,9 @@ public class DiffNode {
 
     public boolean insertAfterChild(final DiffNode child, int index) {
         if (!child.isRem()) {
-            addWithoutDuplicates(afterChildren, child);
-            insertWithoutDuplicates(childOrder, child, index);
+            if (!isChild(child)) {
+                childOrder.add(index, child);
+            }
             child.setAfterParent(this);
             return true;
         }
@@ -356,8 +355,9 @@ public class DiffNode {
 
     public boolean addBeforeChild(final DiffNode child) {
         if (!child.isAdd()) {
-            addWithoutDuplicates(beforeChildren, child);
-            addWithoutDuplicates(childOrder, child);
+            if (!isChild(child)) {
+                childOrder.add(child);
+            }
             child.setBeforeParent(this);
             return true;
         }
@@ -366,8 +366,9 @@ public class DiffNode {
 
     public boolean addAfterChild(final DiffNode child) {
         if (!child.isRem()) {
-            addWithoutDuplicates(afterChildren, child);
-            addWithoutDuplicates(childOrder, child);
+            if (!isChild(child)) {
+                childOrder.add(child);
+            }
             child.setAfterParent(this);
             return true;
         }
@@ -386,31 +387,19 @@ public class DiffNode {
         }
     }
 
-    private static void addWithoutDuplicates(final List<DiffNode> childrenlist, final DiffNode child) {
-        if (!childrenlist.contains(child)) {
-            childrenlist.add(child);
-        }
-    }
-
-    private static void insertWithoutDuplicates(final List<DiffNode> childrenlist, final DiffNode child, int index) {
-        if (!childrenlist.contains(child)) {
-            childrenlist.add(index, child);
-        }
-    }
-
     public boolean removeBeforeChild(final DiffNode child) {
-        if (this.beforeChildren.remove(child)) {
-            removeFromCache(this.afterChildren, this.childOrder, child);
+        if (isBeforeChild(child)) {
             dropBeforeChild(child);
+            removeFromCache(child);
             return true;
         }
         return false;
     }
 
     public boolean removeAfterChild(final DiffNode child) {
-        if (this.afterChildren.remove(child)) {
-            removeFromCache(this.beforeChildren, this.childOrder, child);
+        if (isAfterChild(child)) {
             dropAfterChild(child);
+            removeFromCache(child);
             return true;
         }
         return false;
@@ -424,34 +413,44 @@ public class DiffNode {
     }
 
     public List<DiffNode> removeBeforeChildren() {
-        for (final DiffNode child : beforeChildren) {
-            removeFromCache(this.afterChildren, this.childOrder, child);
-            dropBeforeChild(child);
-        }
+        final List<DiffNode> orphans = new ArrayList<>();
 
-        final List<DiffNode> orphans = beforeChildren;
-        beforeChildren = new ArrayList<>();
+        // Note that the following method call can't be written using a foreach loop reusing
+        // {@code removeBeforeChild} because lists can't be modified during traversal.
+        childOrder.removeIf(child -> {
+            if (!isBeforeChild(child)) {
+                return false;
+            }
+
+            orphans.add(child);
+            dropBeforeChild(child);
+            return !isAfterChild(child);
+        });
+
         return orphans;
     }
 
     public List<DiffNode> removeAfterChildren() {
-        for (final DiffNode child : afterChildren) {
-            removeFromCache(this.beforeChildren, this.childOrder, child);
-            dropAfterChild(child);
-        }
+        final List<DiffNode> orphans = new ArrayList<>();
 
-        final List<DiffNode> orphans = afterChildren;
-        afterChildren = new ArrayList<>();
+        // Note that the following method call can't be written using a foreach loop reusing
+        // {@code removeAfterChild} because lists can't be modified during traversal.
+        childOrder.removeIf(child -> {
+            if (!isAfterChild(child)) {
+                return false;
+            }
+
+            orphans.add(child);
+            dropAfterChild(child);
+            return !isBeforeChild(child);
+        });
+
         return orphans;
     }
 
-    private static void removeFromCache(
-            final List<DiffNode> childrenTypeB,
-            final List<DiffNode> allChildren,
-            final DiffNode child)
-    {
-        if (!childrenTypeB.contains(child)) {
-            allChildren.remove(child);
+    private void removeFromCache(final DiffNode child) {
+        if (!isChild(child)) {
+            childOrder.remove(child);
         }
     }
 
@@ -504,18 +503,6 @@ public class DiffNode {
 
     public List<DiffNode> getAllChildren() {
         return getChildOrder();
-    }
-
-    public List<DiffNode> getBeforeChildren() {
-        return Collections.unmodifiableList(beforeChildren);
-    }
-
-    public List<DiffNode> getAfterChildren() {
-        return Collections.unmodifiableList(afterChildren);
-    }
-
-    public List<DiffNode> getChildren(Time time) {
-        return time.match(getBeforeChildren(), getAfterChildren());
     }
 
     public void setIsMultilineMacro(boolean isMultilineMacro) {
@@ -645,11 +632,15 @@ public class DiffNode {
     }
 
     public boolean isBeforeChild(DiffNode child) {
-        return beforeChildren.contains(child);
+        return child.beforeParent == this;
     }
 
     public boolean isAfterChild(DiffNode child) {
-        return afterChildren.contains(child);
+        return child.afterParent == this;
+    }
+
+    public boolean isChild(DiffNode child) {
+        return isBeforeChild(child) || isAfterChild(child);
     }
 
     public boolean isChild(DiffNode child, Time time) {
@@ -733,16 +724,14 @@ public class DiffNode {
 
     public void assertConsistency() {
         // check consistency of children lists and edges
-        for (final DiffNode bc : beforeChildren) {
-            Assert.assertTrue(bc.beforeParent == this, () -> "Before child " + bc + " of " + this + " has another parent " + bc.beforeParent + "!");
-            Assert.assertTrue(childOrder.contains(bc), () -> "Before child " + bc + " of " + this + " is not in the list of all children!");
-        }
-        for (final DiffNode ac : afterChildren) {
-            Assert.assertTrue(ac.afterParent == this, () -> "After child " + ac + " of " + this + " has another parent " + ac.afterParent + "!");
-            Assert.assertTrue(childOrder.contains(ac), () -> "After child " + ac + " of " + this + " is not in the list of all children!");
-        }
         for (final DiffNode c : childOrder) {
-            Assert.assertTrue(beforeChildren.contains(c) || afterChildren.contains(c), () -> "Child " + c + " of " + this + " is neither a before not an after child!");
+            Assert.assertTrue(isChild(c), () -> "Child " + c + " of " + this + " is neither a before nor an after child!");
+            if (c.getBeforeParent() != null) {
+                Assert.assertTrue(c.getBeforeParent().isBeforeChild(c), () -> "The beforeParent of " + c + " doesn't contain that node as child");
+            }
+            if (c.getAfterParent() != null) {
+                Assert.assertTrue(c.getAfterParent().isAfterChild(c), () -> "The afterParent of " + c + " doesn't contain that node as child");
+            }
         }
 
         // a node with exactly one parent was edited
