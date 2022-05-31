@@ -1,20 +1,23 @@
 package org.variantsync.diffdetective.main;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.tinylog.Logger;
 import org.variantsync.diffdetective.analysis.AutomationResult;
 import org.variantsync.diffdetective.analysis.CommitHistoryAnalysisTask;
 import org.variantsync.diffdetective.analysis.CommitProcessTime;
 import org.variantsync.diffdetective.util.FileUtils;
-import org.variantsync.diffdetective.util.IO;
 import org.variantsync.diffdetective.util.StringUtils;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class FindMedianCommitTime {
     public static final int NUM_EXPECTED_COMMITS = 1_708_172;
@@ -44,68 +47,77 @@ public class FindMedianCommitTime {
             throw new IllegalArgumentException("Expected path to directory but the given path is not a directory!");
         }
 
-        final List<Path> paths = Files.walk(directory)
-                .filter(Files::isRegularFile)
+        // This stream needs {@code O(n log(n))} time (because of the sort) and {@code O(n)} space
+        // (because the list has to be captured). This can be improved to {@code O(n)} time and
+        // {@code O(1)} space by using the Median of medians algorithm and computing the minimum and
+        // maximum like {@code LongSummaryStatistics} does.
+        ImmutablePair<Long, List<CommitProcessTime>> result;
+        try (Stream<Path> paths = Files.walk(directory)) {
+            result = paths
+                .parallel()
                 .filter(p -> FileUtils.hasExtension(p, CommitHistoryAnalysisTask.COMMIT_TIME_FILE_EXTENSION))
+                .filter(Files::isRegularFile)
 //                .peek(path -> Logger.info("Processing file {}", path))
-                .toList();
-
-        final ArrayList<CommitProcessTime> alltimes = new ArrayList<>(numExpectedCommits);
-
-        long totalTimeMS = 0;
-        for (final Path p : paths) {
-            totalTimeMS += parse(p, alltimes);
+                .flatMap(FindMedianCommitTime::parse)
+                .sorted(Comparator.comparingDouble(CommitProcessTime::milliseconds))
+                .collect(Collectors.teeing(
+                            Collectors.summingLong(CommitProcessTime::milliseconds),
+                            Collectors.toList(),
+                            ImmutablePair::new)
+                );
+        } catch (UncheckedIOException e) {
+            throw e.getCause();
         }
 
-        final CommitProcessTime[] alltimesArray = alltimes.toArray(CommitProcessTime[]::new);
-        Arrays.parallelSort(alltimesArray, Comparator.comparingDouble(CommitProcessTime::milliseconds));
-        final int numTotalCommits = alltimesArray.length;
+        long totalTimeMS = result.getLeft();
+        List<CommitProcessTime> alltimes = result.getRight();
 
-        final AutomationResult automationResult;
-        if (numTotalCommits == 0) {
+        if (alltimes.size() != numExpectedCommits) {
+            Logger.error("Expected {} commits but got {}! {} commits are missing!",
+                numExpectedCommits,
+                alltimes.size(),
+                numExpectedCommits - alltimes.size());
+        }
+
+        if (alltimes.size() == 0) {
             final String repoName = directory.getFileName().toString();
-            automationResult = new AutomationResult(
-                    numTotalCommits,
+            return new AutomationResult(
+                    alltimes.size(),
                     totalTimeMS,
                     CommitProcessTime.Invalid(repoName),
                     CommitProcessTime.Invalid(repoName),
                     CommitProcessTime.Invalid(repoName)
             );
         } else {
-            automationResult = new AutomationResult(
-                    numTotalCommits,
+            return new AutomationResult(
+                    alltimes.size(),
                     totalTimeMS,
-                    alltimesArray[0],
-                    alltimesArray[alltimesArray.length - 1],
-                    alltimesArray[alltimesArray.length / 2]
+                    alltimes.get(0),
+                    alltimes.get(alltimes.size() - 1),
+                    alltimes.get(alltimes.size() / 2)
             );
         }
-
-        if (automationResult.numMeasuredCommits() != numExpectedCommits) {
-            Logger.error("Expected {} commits but got {}! {} commits are missing!",
-                    numExpectedCommits,
-                    automationResult.numMeasuredCommits(),
-                    (numExpectedCommits - automationResult.numMeasuredCommits()));
-        }
-
-        return automationResult;
     }
 
-    private static long parse(final Path file, final List<CommitProcessTime> times) throws IOException {
-        final String fileInput = IO.readAsString(file);
-        final String[] lines = fileInput.split(StringUtils.LINEBREAK_REGEX);
-        long sumSeconds = 0;
-
-        for (final String line : lines) {
-            if (!line.isBlank()) {
-                final CommitProcessTime lineTime = CommitProcessTime.fromString(line);
-                sumSeconds += lineTime.milliseconds();
-                times.add(lineTime);
-            } else {
-                Logger.warn("Found blank line '{}' in {}", line, file);
-            }
+    private static Stream<CommitProcessTime> parse(final Path file) {
+        try {
+            // This stream has to be closed by the caller of {@code parse}, because the returned
+            // stream is not consumed inside of this method.
+            return Files.lines(file)
+                .filter(
+                    line -> {
+                        if (line.isBlank()) {
+                            Logger.warn("Found blank line in {}", file);
+                            return false;
+                        } else {
+                            return true;
+                        }
+                    }
+                ).map(CommitProcessTime::fromString);
+        } catch (IOException e) {
+            // Checked exceptions can't be propagated because the caller of {@code parse} requires
+            // a method wich doesn't throw any checked exception.
+            throw new UncheckedIOException(e);
         }
-
-        return sumSeconds;
     }
 }
