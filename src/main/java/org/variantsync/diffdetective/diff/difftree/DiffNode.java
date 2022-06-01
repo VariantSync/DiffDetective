@@ -820,6 +820,14 @@ public class DiffNode {
         return isMultilineMacro == diffNode.isMultilineMacro && diffType == diffNode.diffType && codeType == diffNode.codeType && from.equals(diffNode.from) && to.equals(diffNode.to) && Objects.equals(featureMapping, diffNode.featureMapping) && lines.equals(diffNode.lines);
     }
 
+    /**
+     * Compute a hash using all available attributes.
+     *
+     * This implementation doesn't strictly adhere to the contract required by {@code Object},
+     * because some attributes (for example the line numbers) can be changed during the lifetime of
+     * a {@code DiffNode}. So when using something like a {@code HashSet} the user of {@code
+     * DiffNode} has to be careful not to change any attributes of a stored {@code DiffNode}.
+     */
     @Override
     public int hashCode() {
         return Objects.hash(diffType, codeType, isMultilineMacro, from, to, featureMapping, lines);
