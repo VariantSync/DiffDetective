@@ -3,10 +3,10 @@
 import Time
 import VariationTree
 import VariationDiff
-import PaperLabels
+import Labels.PaperLabels
 
-import Logic
-import Propositions
+import Feature.Logic
+import Feature.Propositions
 import ExampleFeatures
 import MainUtils
 

@@ -1,10 +1,10 @@
 ﻿{-# LANGUAGE GADTs #-}
 {-# LANGUAGE StandaloneDeriving #-}
 
-module PaperLabels where
+module Labels.PaperLabels where
 
 import VariationTree
-import Logic
+import Feature.Logic
 import Data.Maybe ( fromJust )
 
 data PaperLabels f where

@@ -9,7 +9,9 @@ import org.variantsync.diffdetective.diff.difftree.serialize.nodeformat.LabelOnl
 import org.variantsync.diffdetective.diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
 import org.variantsync.diffdetective.util.FileUtils;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -42,14 +44,16 @@ public class LineGraphTest {
 	 * Test the import of a line graph.
 	 */
 	@Test
-	public void idempotentReadWrite() {
+	public void idempotentReadWrite() throws IOException {
         for (final Path testFile : TEST_FILES) {
-            Logger.info("Testing " + testFile);
-            final String lineGraph = FileUtils.readUTF8(testFile);
-            final List<DiffTree> diffTrees = LineGraphImport.fromLineGraph(lineGraph, testFile, IMPORT_OPTIONS);
+            Logger.info("Testing {}", testFile);
+            List<DiffTree> diffTrees;
+            try (BufferedReader lineGraph = Files.newBufferedReader(testFile)) {
+                diffTrees = LineGraphImport.fromLineGraph(lineGraph, testFile, IMPORT_OPTIONS);
+            }
             assertConsistencyForAll(diffTrees);
             final String lineGraphResult = exportDiffTreeToLineGraph(diffTrees);
-            assertEqualFileContent(lineGraph, lineGraphResult);
+            TestUtils.assertEqualToFile(testFile, lineGraphResult);
         }
 	}
 	
@@ -80,21 +84,4 @@ public class LineGraphTest {
         }
         return lineGraphOutput.toString();
 	}
-	
-	/**
-	 * Compare two line graphs.
-	 * 
-	 * @param originalLineGraph The original line graph
-	 * @param generatedLineGraph The generated line graph
-	 */
-	private static void assertEqualFileContent(final String originalLineGraph, final String generatedLineGraph) {
-        final String o = FileUtils.normalizedLineEndings(originalLineGraph).trim();
-        final String g = FileUtils.normalizedLineEndings(generatedLineGraph).trim();
-//        System.out.println("ORIGINAL");
-//        System.out.println(o);
-//        System.out.println("GENERATED");
-//        System.out.println(g);
-        assertEquals(o, g);
-	}
-	
 }

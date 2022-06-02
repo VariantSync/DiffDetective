@@ -2,7 +2,7 @@
 
 module VariationTree where
 
-import Logic
+import Feature.Logic
 
 import Data.List
 import Data.Maybe

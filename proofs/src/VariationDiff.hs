@@ -6,7 +6,7 @@ import Data.List ( intercalate )
 
 import VariationTree
 import Time
-import Logic
+import Feature.Logic
 
 type Delta l f = Either (VTNode l f) (VTEdge l f) -> DiffType
 

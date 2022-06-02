@@ -1,10 +1,10 @@
 ﻿{-# LANGUAGE GADTs #-}
 
-module WithElif where
+module Labels.WithElif where
 
 import VariationTree
 import Data.Maybe (fromJust)
-import Logic
+import Feature.Logic
 
 data WithElif f where
     Artifact :: ArtifactReference -> WithElif f

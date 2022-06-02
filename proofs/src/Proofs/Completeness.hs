@@ -1,4 +1,4 @@
-﻿module Completeness where
+﻿module Proofs.Completeness where
 
 {-
 Definitions for fast lookup:

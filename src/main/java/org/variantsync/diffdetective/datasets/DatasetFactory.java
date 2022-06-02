@@ -81,7 +81,7 @@ public class DatasetFactory {
                 try {
                     Assert.assertTrue(repo.getGitRepo().run().pull().call().isSuccessful());
                 } catch (GitAPIException e) {
-                    Logger.error("Failed to pull repository \"" + repo.getRepositoryName() + "\"!", e);
+                    Logger.error(e, "Failed to pull repository '{}'", repo.getRepositoryName());
                 }
             }
         }

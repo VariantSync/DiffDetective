@@ -1,7 +1,7 @@
 name:                proofs
 version:             0.1.0.0
 github:              "githubuser/proofs"
-license:             BSD3
+license:             LGPL-3.0
 author:              "Author name here"
 maintainer:          "example@example.com"
 copyright:           "2021 Author name here"
@@ -28,8 +28,6 @@ dependencies:
 library:
   source-dirs:
     - src
-    - src/feature
-    - src/labels
 
 executables:
   proofs-exe:
