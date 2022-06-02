@@ -36,7 +36,7 @@ public class DiffResult<T> {
     }
 
     public static <T> DiffResult<T> Failure(DiffError error, String message) {
-        Logger.debug("[DiffResult::Failure] " + message);
+        Logger.debug("[DiffResult::Failure] {}", message);
         return new DiffResult<>(Result.Failure(error));
     }
 }

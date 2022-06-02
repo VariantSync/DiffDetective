@@ -14,6 +14,7 @@ import org.variantsync.diffdetective.util.IO;
 import org.variantsync.functjonal.Pair;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -55,7 +56,7 @@ public class MiningPostprocessing {
 
         final Path inputPath = Path.of(args[0]);
         final Path outputPath = Path.of(args[1]);
-        if (!Files.isDirectory(inputPath) && !FileUtils.hasExtension(inputPath, ".lg")) {
+        if (!Files.isDirectory(inputPath) && !FileUtils.isLineGraph(inputPath)) {
             throw new IllegalArgumentException("Expected path to directory of mined patterns as first argument but got a path that is not a directory, namely \"" + inputPath + "\"!");
         }
         if (Files.exists(outputPath) && !FileUtils.tryIsEmptyDirectory(outputPath)) {
@@ -85,10 +86,23 @@ public class MiningPostprocessing {
      */
     public static List<DiffTree> parseFrequentSubgraphsIn(final Path path) throws IOException {
         if (Files.isDirectory(path)) {
-            return Files.list(path)
-                    .filter(FileUtils::isLineGraph)
-                    .flatMap(file -> LineGraphImport.fromFile(file, IMPORT_OPTIONS).stream())
-                    .collect(Collectors.toList());
+            try {
+                return Files.list(path)
+                        .filter(FileUtils::isLineGraph)
+                        .flatMap(file -> {
+                            try {
+                                return LineGraphImport.fromFile(file, IMPORT_OPTIONS).stream();
+                            } catch (IOException e) {
+                                // Checked exceptions can't be propagated because {@code flatMap}
+                                // needs a {@code Function} which does not throw any checked
+                                // exceptions.
+                                throw new UncheckedIOException(e);
+                            }
+                        })
+                        .collect(Collectors.toList());
+            } catch (UncheckedIOException e) {
+                throw e.getCause();
+            }
         } else {
             return LineGraphImport.fromFile(path, IMPORT_OPTIONS);
         }
