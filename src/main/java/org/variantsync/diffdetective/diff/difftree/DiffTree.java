@@ -211,10 +211,6 @@ public class DiffTree {
 
                     final DiffNode b = d.getBeforeParent();
                     final DiffNode a = d.getAfterParent();
-                    if (a == null && b == null) {
-                        // We found a second root node which is invalid.
-                        yield false;
-                    }
 
                     boolean result = true;
                     if (b != null) {
@@ -222,6 +218,10 @@ public class DiffTree {
                     }
                     if (a != null) {
                         result &= hasPathToRoot(a);
+                    }
+                    if (a == null && b == null) {
+                        // We found a second root node which is invalid.
+                        result = false;
                     }
 
                     // Now we also know the result for the stranger.
