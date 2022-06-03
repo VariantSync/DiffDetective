@@ -251,7 +251,7 @@ def import_tlv(path, parse_support=True):
     
     # Some file formats give the support directly, others list all the embeddings. We support both options.
     regex_support = r"Support: (\d+).*"
-    regex_embedding = r"#=> (\d+) .*"
+    regex_embedding = r"#=> ([^\s]+) .*"
     
     # if tlv header continue parsing
     match_header = re.match(regex_header, next_line)
@@ -281,11 +281,14 @@ def import_tlv(path, parse_support=True):
             elif match_support:
                 support = int(match_support.group(1))
             elif match_embedding:
-                support_set.add(int(match_embedding.group(1)))
+                support_set.add(str(match_embedding.group(1)))
             next_line = graph_db.readline()
             if next_line:
                 match_header = re.match(regex_header, next_line)
         
+        if support_set is not None:
+            graph.graph['embeddings'] = str(support_set)
+
         if (support is None and support_set == set() and parse_support):
             print("WARN: Error parsing line graph with graph support. Check format.")
         elif not parse_support:
