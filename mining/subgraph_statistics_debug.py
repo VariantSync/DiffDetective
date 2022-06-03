@@ -195,6 +195,7 @@ class Lattice():
                     
                 for occurrence_candidate in occurrence_candidates:
                     if graph_database[occurrence_candidate].contains(node.graph):
+                        print(graph_database[occurrence_candidate].graph['embeddings'])
                         node.occurrences.append(occurrence_candidate)
       
     
@@ -343,11 +344,11 @@ def main(graph_db_path: str, subgraphs_path:str, results_dir:str):
     export_TLV(subgraphs, results_dir + 'subgraph_candidates.lg')
 
     for folder in os.listdir(graph_db_path):
-        if not os.path.isdir(graph_db_path + "/" + folder):
+        if not os.path.isdir(graph_db_path + "/" + folder + "/mining"):
             continue
         # Read db
         print(f"Parsing graph database for data set {folder}")
-        graph_db = import_tlv_folder(graph_db_path+"/"+folder+"/", parse_support=False)
+        graph_db = import_tlv_folder(graph_db_path+"/"+folder+"/mining/", parse_support=True)
         compute_statistics(graph_db, subgraphs, lattice, results_dir + "/" + folder + "/", folder)
 
 def get_url_for_project(project): 

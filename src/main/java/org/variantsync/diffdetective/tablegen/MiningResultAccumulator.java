@@ -6,8 +6,8 @@ import org.variantsync.diffdetective.analysis.AutomationResult;
 import org.variantsync.diffdetective.analysis.HistoryAnalysis;
 import org.variantsync.diffdetective.analysis.MetadataKeys;
 import org.variantsync.diffdetective.datasets.DatasetDescription;
+import org.variantsync.diffdetective.datasets.DefaultDatasets;
 import org.variantsync.diffdetective.main.FindMedianCommitTime;
-import org.variantsync.diffdetective.mining.DiffTreeMiner;
 import org.variantsync.diffdetective.tablegen.rows.ContentRow;
 import org.variantsync.diffdetective.tablegen.styles.ShortTable;
 import org.variantsync.diffdetective.tablegen.styles.VariabilityShare;
@@ -42,7 +42,7 @@ public class MiningResultAccumulator {
         final List<Path> paths = Files.walk(folderPath)
                 .filter(Files::isRegularFile)
                 .filter(p -> p.toString().endsWith(HistoryAnalysis.TOTAL_RESULTS_FILE_NAME))
-                .peek(path -> Logger.info("Processing file " + path))
+                .peek(path -> Logger.info("Processing file {}", path))
                 .toList();
 
         final Map<String, AnalysisResult> results = new HashMap<>();
@@ -79,12 +79,12 @@ public class MiningResultAccumulator {
 
         final Map<String, DatasetDescription> datasetByName;
         try {
-            datasetByName = DatasetDescription.fromMarkdown(DiffTreeMiner.DATASETS_FILE).stream().collect(Collectors.toMap(
+            datasetByName = DatasetDescription.fromMarkdown(DefaultDatasets.DEFAULT_DATASETS_FILE).stream().collect(Collectors.toMap(
                     DatasetDescription::name,
                     Function.identity()
             ));
         } catch (IOException e) {
-            Logger.error("Failed to load at least one dataset from " + DiffTreeMiner.DATASETS_FILE + " because:", e);
+            Logger.error(e, "Failed to load at least one dataset from {} because", DefaultDatasets.DEFAULT_DATASETS_FILE);
             Logger.error("Aborting execution!");
             return;
         }
@@ -102,7 +102,7 @@ public class MiningResultAccumulator {
                     try {
                          automationResult = FindMedianCommitTime.getResultOfDirectory(automationResultDir, result.exportedCommits);
                     } catch (IOException e) {
-                        Logger.error("Could not load automation results for dataset " + dataset.name() + " in " + automationResultDir);
+                        Logger.error("Could not load automation results for dataset {} in {}", dataset.name(), automationResultDir);
                         System.exit(0);
                         return null;
                     }
@@ -131,11 +131,11 @@ public class MiningResultAccumulator {
                 prefix += absolute ? "absolute_" : "relative_";
 
                 final String ultimateResultsTable = new TableGenerator(tableDefFactory.get()).generateTable(datasetsWithResults, ultimateRow);
-                Logger.info("Results Table:\n" + ultimateResultsTable);
+                Logger.info("Results Table:\n{}", ultimateResultsTable);
                 IO.write(latexTableDir.resolve(prefix + "ultimateresults.tex"), ultimateResultsTable);
 
                 final String variabilityTable = new TableGenerator(new VariabilityShare(tableDefFactory)).generateTable(datasetsWithResults, ultimateRow);
-                Logger.info("Results Table:\n" + variabilityTable);
+                Logger.info("Results Table:\n{}", variabilityTable);
                 IO.write(latexTableDir.resolve(prefix + "variability.tex"), variabilityTable);
             }
         }

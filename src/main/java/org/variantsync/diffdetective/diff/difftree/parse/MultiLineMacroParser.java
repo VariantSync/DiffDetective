@@ -51,26 +51,26 @@ public class MultiLineMacroParser {
             final Stack<DiffNode> afterStack,
             final List<DiffNode> nodes
     ) throws IllFormedAnnotationException {
-        final CodeType codeType = CodeType.ofDiffLine(line);
         final DiffType diffType = DiffType.ofDiffLine(line);
         final boolean isAdd = diffType == DiffType.ADD;
         final boolean isRem = diffType == DiffType.REM;
 
         if (continuesMultilineDefinition(line)) {
             // If this multiline macro line is a header...
+            final CodeType codeType = CodeType.ofDiffLine(line);
             if (codeType.isConditionalMacro()) {
                 // ... create a new multi line macro to complete.
                 if (!isAdd) {
                     if (beforeMLMacro != null) {
                         return ParseResult.ERROR(MLMACRO_WITHIN_MLMACRO, "Found definition of multiline macro within multiline macro at line " + line + "!");
                     }
-                    beforeMLMacro = new MultilineMacro(line, lineNo, beforeStack.peek(), afterStack.peek());
+                    beforeMLMacro = new MultilineMacro(line, diffType, lineNo, beforeStack.peek(), afterStack.peek());
                 }
                 if (!isRem) {
                     if (afterMLMacro != null) {
                         return ParseResult.ERROR(MLMACRO_WITHIN_MLMACRO, "Found definition of multiline macro within multiline macro at line " + line + "!");
                     }
-                    afterMLMacro = new MultilineMacro(line, lineNo, beforeStack.peek(), afterStack.peek());
+                    afterMLMacro = new MultilineMacro(line, diffType, lineNo, beforeStack.peek(), afterStack.peek());
                 }
             } else { // body
                 // ... otherwise, it is a line within a body of a multiline macro. Thus append it.
@@ -100,6 +100,7 @@ public class MultiLineMacroParser {
 
             return ParseResult.SUCCESS;
         } else {
+            // We either found the ending line of a multiline macro or just a plain line outside of a macro.
             final boolean inBeforeMLMacro = beforeMLMacro != null;
             final boolean inAfterMLMacro = afterMLMacro != null;
 
@@ -110,7 +111,7 @@ public class MultiLineMacroParser {
                         && inAfterMLMacro
                         && diffType == DiffType.NON
                         && beforeMLMacro.equals(afterMLMacro)) {
-                    // We have one single end line for to equal multi line macros -> Merge the nodes.
+                    // We have one single end line for two equal multi line macros -> Merge the nodes.
                     final DiffNode mlNode = finalizeMLMacro(
                             lineNo,
                             line,

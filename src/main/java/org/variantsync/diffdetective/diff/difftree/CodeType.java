@@ -1,5 +1,8 @@
 package org.variantsync.diffdetective.diff.difftree;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public enum CodeType {
     IF("if"),
     ENDIF("endif"),
@@ -20,23 +23,24 @@ public enum CodeType {
         return this != ROOT && this != CODE;
     }
 
-    final static String ifRegex = "^[+-]?\\s*#\\s*if.*$";
-    final static String endifRegex = "^[+-]?\\s*#\\s*endif.*$";
-    final static String elseRegex = "^[+-]?\\s*#\\s*else.*$";
-    final static String elifRegex = "^[+-]?\\s*#\\s*elif.*$";
+    final static Pattern regex = Pattern.compile("^[+-]?\\s*#\\s*(if|endif|else|elif)");
 
     public static CodeType ofDiffLine(String line) {
-        if (line.matches(ifRegex)) {
-            return IF;
-        } else if (line.matches(endifRegex)) {
-            return ENDIF;
-        } else if (line.matches(elseRegex)) {
-            return ELSE;
-        } else if (line.matches(elifRegex)) {
-            return ELIF;
-        } else {
-            return CODE;
+        Matcher matcher = regex.matcher(line);
+        if (matcher.find()) {
+            String id = matcher.group(1);
+            if (id.equals(IF.name)) {
+                return IF;
+            } else if (id.equals(ENDIF.name)) {
+                return ENDIF;
+            } else if (id.equals(ELSE.name)) {
+                return ELSE;
+            } else if (id.equals(ELIF.name)) {
+                return ELIF;
+            }
         }
+
+        return CODE;
     }
 
     public static CodeType fromName(final String name) {

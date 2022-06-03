@@ -19,9 +19,7 @@ public interface DiffNodeLabelFormat extends LinegraphFormat {
 	 * @return The corresponding {@link DiffNode}
 	 */
 	default DiffNode fromLabelAndId(final String lineGraphNodeLabel, final int nodeId) {
-	    final DiffNode diffNode = DiffNode.fromID(nodeId);
-	    diffNode.setLabel(lineGraphNodeLabel);
-	    return diffNode;
+	    return DiffNode.fromID(nodeId, lineGraphNodeLabel);
 	}
 	
 	/**

@@ -113,11 +113,13 @@ public class CollapseNestedNonEditedMacros implements DiffTreeTransformer {
         final DiffNode beforeParent = head.getBeforeParent();
         final DiffNode afterParent = head.getAfterParent();
 
+        ArrayList lines = new ArrayList();
+        lines.add("$Collapsed Nested Annotations$");
         final DiffNode merged = new DiffNode(
                 DiffType.NON, CodeType.IF,
                 head.getFromLine(), head.getToLine(),
                 new And(featureMappings.toArray()),
-                "$Collapsed Nested Annotations$");
+                lines);
 
         head.drop();
         merged.stealChildrenOf(end);

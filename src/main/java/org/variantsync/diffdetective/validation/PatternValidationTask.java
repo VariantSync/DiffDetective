@@ -42,7 +42,7 @@ public class PatternValidationTask extends CommitHistoryAnalysisTask {
 
                 miningResult.reportDiffErrors(commitDiffResult.errors());
                 if (commitDiffResult.diff().isEmpty()) {
-                    Logger.debug("[MiningTask::call] found commit that failed entirely and was not filtered because:\n" + commitDiffResult.errors());
+                    Logger.debug("[MiningTask::call] found commit that failed entirely and was not filtered because:\n{}", commitDiffResult.errors());
                     ++miningResult.failedCommits;
                     continue;
                 }
@@ -62,14 +62,14 @@ public class PatternValidationTask extends CommitHistoryAnalysisTask {
                             continue;
                         }
 
-                            t.forAll(node -> {
-                                if (node.isCode()) {
-                                    miningResult.elementaryPatternCounts.reportOccurrenceFor(
-                                            ProposedElementaryPatterns.Instance.match(node),
-                                            commitDiff
-                                    );
-                                }
-                            });
+                        t.forAll(node -> {
+                            if (node.isCode()) {
+                                miningResult.elementaryPatternCounts.reportOccurrenceFor(
+                                        ProposedElementaryPatterns.Instance.match(node),
+                                        commitDiff
+                                );
+                            }
+                        });
 
                         ++numDiffTrees;
                     }
@@ -94,8 +94,7 @@ public class PatternValidationTask extends CommitHistoryAnalysisTask {
                 }
 
             } catch (Exception e) {
-                Logger.error(e);
-                Logger.error("An unexpected error occurred at " + commit.getId().getName() + " in " + getOptions().repository().getRepositoryName() + "!");
+                Logger.error(e, "An unexpected error occurred at {} in {}", commit.getId().getName(), getOptions().repository().getRepositoryName());
                 throw e;
             }
         }

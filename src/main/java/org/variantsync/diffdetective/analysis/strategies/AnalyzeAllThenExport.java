@@ -24,7 +24,7 @@ public class AnalyzeAllThenExport extends AnalysisStrategy {
     @Override
     public void end() {
         final String lineGraph = waitForAll.toString();
-//        Logger.info("Writing file " + outputPath);
+//        Logger.info("Writing file {}", outputPath);
         IO.tryWrite(outputPath, lineGraph);
     }
 }

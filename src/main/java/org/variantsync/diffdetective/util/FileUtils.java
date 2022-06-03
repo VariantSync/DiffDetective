@@ -1,16 +1,16 @@
 package org.variantsync.diffdetective.util;
 
+import org.apache.commons.io.FilenameUtils;
 import org.tinylog.Logger;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
 public class FileUtils {
-    public static String normalizedLineEndings(final String text) {
-        return text.replaceAll(StringUtils.LINEBREAK_REGEX, StringUtils.LINEBREAK);
+    public static String replaceLineEndings(final String text, final String replacee) {
+        return StringUtils.LINEBREAK_REGEX.matcher(text).replaceAll(replacee);
     }
 
     public static boolean isEmptyDirectory(final Path p) throws IOException {
@@ -32,40 +32,17 @@ public class FileUtils {
                 (filePath, fileAttr) -> fileAttr.isRegularFile()).toList();
     }
 
-    public static boolean hasExtension(final Path p, final String extension) {
-        if (Files.isDirectory(p)) {
-            return false;
-        }
-
-        final boolean withDot = extension.startsWith(".");
-
-        final String filename = p.getFileName().toString();
-        final String fileextension = filename.substring(
-                filename.lastIndexOf(".")
-                        + (withDot ? 0 : 1)
-        );
-
-        return extension.equalsIgnoreCase(fileextension);
+    /**
+     * Checks if {@code p} has the file extension {@code expected}.
+     *
+     * Note that the common dot delimiter has to included in {@code expected}.
+     */
+    public static boolean hasExtension(final Path p, final String expected) {
+        return p.getFileName().toString().toLowerCase().endsWith(expected.toLowerCase());
     }
 
     public static boolean isLineGraph(final Path p) {
         return hasExtension(p, ".lg");
-    }
-
-    /**
-     * Read a text file.
-     *
-     * @param path Path to the file to read.
-     * @return The content of the file as a utf8 encoded string.
-     */
-    public static String readUTF8(final Path path) {
-        try {
-            byte[] encoded = Files.readAllBytes(path);
-            return new String(encoded, StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return "";
-        }
     }
 
     public static Path addExtension(final Path p, final String extension) {

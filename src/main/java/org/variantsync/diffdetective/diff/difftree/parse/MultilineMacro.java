@@ -16,17 +16,6 @@ public class MultilineMacro {
     DiffType diffType;
 
     public MultilineMacro(
-            final String header,
-            final DiffLineNumber startLine,
-            final DiffNode beforeParent,
-            final DiffNode afterParent) {
-        this(
-                header, DiffType.ofDiffLine(header),
-                startLine,
-                beforeParent, afterParent);
-    }
-
-    private MultilineMacro(
             final String line,
             final DiffType diffType,
             final DiffLineNumber startLine,
@@ -72,11 +61,22 @@ public class MultilineMacro {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         MultilineMacro that = (MultilineMacro) o;
-        return startLine == that.startLine && lines.equals(that.lines) && diffType == that.diffType;
+        return startLine.equals(that.startLine) && lines.equals(that.lines) && diffType == that.diffType;
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(lines, diffType, startLine);
+    }
+
+    @Override
+    public String toString() {
+        return "MultilineMacro{" +
+                "lines=" + lines +
+                ", beforeParent=" + beforeParent +
+                ", afterParent=" + afterParent +
+                ", startLine=" + startLine +
+                ", diffType=" + diffType +
+                '}';
     }
 }

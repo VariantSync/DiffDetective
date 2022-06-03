@@ -72,7 +72,7 @@ public class Validation {
         Logger.info("Its dangerous outside. Take this!");
         System.out.println(DatasetDescription.asLaTeXTable(datasets));
 
-        Logger.info("The " + PRINT_LARGEST_SUBJECTS + " largest systems are:");
+        Logger.info("The {} largest systems are:", PRINT_LARGEST_SUBJECTS);
         final Comparator<DatasetDescription> larger = (a, b) -> {
             final int ai = Integer.parseInt(a.commits().replaceAll(",", ""));
             final int bi = Integer.parseInt(b.commits().replaceAll(",", ""));
@@ -114,7 +114,7 @@ public class Validation {
         Logger.info("Performing validation on the following repositories:");
         for (final Repository repo : repos) {
             repo.setParseOptions(repo.getParseOptions().withDiffStoragePolicy(diffStoragePolicy));
-            Logger.info("  - " + repo.getRepositoryName() + " from " + repo.getRemoteURI());
+            Logger.info("  - {} from {}", repo.getRepositoryName(), repo.getRemoteURI());
         }
 
         Logger.info("Preloading repositories:");
@@ -128,7 +128,7 @@ public class Validation {
                 try {
                     Assert.assertTrue(repo.getGitRepo().run().pull().call().isSuccessful());
                 } catch (GitAPIException e) {
-                    Logger.error("Failed to pull repository \"" + repo.getRepositoryName() + "\"!", e);
+                    Logger.error(e, "Failed to pull repository '{}'", repo.getRepositoryName());
                 }
             }
         }

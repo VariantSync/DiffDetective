@@ -1,10 +1,13 @@
 package org.variantsync.diffdetective.diff.difftree.serialize;
 
 import org.variantsync.diffdetective.diff.difftree.*;
+import org.variantsync.diffdetective.diff.difftree.source.LineGraphFileSource;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.util.FileUtils;
 import org.variantsync.functjonal.Pair;
 
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -20,10 +23,17 @@ import java.util.List;
 public class LineGraphImport {
     //    public static Map<CodeType, Integer> countRootTypes = new HashMap<>();
 
-    public static List<DiffTree> fromFile(final Path path, final DiffTreeLineGraphImportOptions options) {
+    /**
+     * Transforms a line graph stored in a file into a list of {@link DiffTree DiffTrees}.
+     *
+     * @return All {@link DiffTree DiffTrees} contained in the line graph
+     */
+    public static List<DiffTree> fromFile(final Path path, final DiffTreeLineGraphImportOptions options) throws IOException {
         Assert.assertTrue(Files.isRegularFile(path));
         Assert.assertTrue(FileUtils.isLineGraph(path));
-        return fromLineGraph(FileUtils.readUTF8(path), options);
+        try (BufferedReader input = Files.newBufferedReader(path)) {
+            return fromLineGraph(input, path, options);
+        }
     }
 	
 	/**
@@ -31,9 +41,7 @@ public class LineGraphImport {
 	 * 
 	 * @return All {@link DiffTree DiffTrees} contained in the line graph
 	 */
-	public static List<DiffTree> fromLineGraph(final String lineGraph, final DiffTreeLineGraphImportOptions options) {
-		java.util.Scanner input = new java.util.Scanner(lineGraph);
-		
+	public static List<DiffTree> fromLineGraph(final BufferedReader lineGraph, final Path originalFile, final DiffTreeLineGraphImportOptions options) throws IOException {
 		// All DiffTrees read from the line graph
 		List<DiffTree> diffTreeList = new ArrayList<>();
 		
@@ -44,20 +52,17 @@ public class LineGraphImport {
 		// <id of DiffNode, DiffNode>
 		HashMap<Integer, DiffNode> diffNodes = new HashMap<>();
 
-		// The currently read DiffTree with all its DiffNodes and edges
-		DiffTree curDiffTree = null;
-		
 		// The previously read DiffTree
 		String previousDiffTreeLine = "";
 		
 		// Read the entire line graph 
-		while (input.hasNext()) {
-			String ln = input.nextLine();
+		String ln;
+		while ((ln = lineGraph.readLine()) != null) {
 			if (ln.startsWith(LineGraphConstants.LG_TREE_HEADER)) {
 				// the line represents a DiffTree
 				
 				if (!diffNodeList.isEmpty()) {
-					curDiffTree = parseDiffTree(previousDiffTreeLine, diffNodeList, options); // parse to DiffTree
+					DiffTree curDiffTree = parseDiffTree(previousDiffTreeLine, originalFile, diffNodeList, options); // parse to DiffTree
 					diffTreeList.add(curDiffTree); // add newly computed DiffTree to the list of all DiffTrees
 					
 					// Remove all DiffNodes from list
@@ -77,30 +82,21 @@ public class LineGraphImport {
 				
 			} else if (ln.startsWith(LineGraphConstants.LG_EDGE)) {
 				// the line represent a connection with two DiffNodes
-                try {
-                    options.edgeFormat().connect(ln, diffNodes);
-                } catch (IllegalArgumentException e) {
-                    input.close();
-                    throw e;
-                }
-			} else {
-				// ignore blank spaces
-				if (!ln.trim().equals("")) {
-					input.close();
-					String errorMessage = String.format(
-							"Line graph syntax error. Expects: \"%s\" (DiffTree), \"%s\" (DiffNode), \"%s\" (edge) or a blank space (delimiter). Faulty input: \"%s\".", 
-							LineGraphConstants.LG_TREE_HEADER, 
-							LineGraphConstants.LG_NODE, 
-							LineGraphConstants.LG_EDGE, 
-							ln);
-					throw new IllegalArgumentException(errorMessage);
-				}
+				options.edgeFormat().connect(ln, diffNodes);
+			} else if (!ln.isBlank()) {
+				// ignore blank lines and throw an exception otherwise
+				String errorMessage = String.format(
+						"Line graph syntax error. Expects: \"%s\" (DiffTree), \"%s\" (DiffNode), \"%s\" (edge) or a blank space (delimiter). Faulty input: \"%s\".", 
+						LineGraphConstants.LG_TREE_HEADER,
+						LineGraphConstants.LG_NODE,
+						LineGraphConstants.LG_EDGE,
+						ln);
+				throw new IllegalArgumentException(errorMessage);
 			}
 		}
-		input.close();
 
 		if (!diffNodeList.isEmpty()) {
-			curDiffTree = parseDiffTree(previousDiffTreeLine, diffNodeList, options); // parse to DiffTree
+			DiffTree curDiffTree = parseDiffTree(previousDiffTreeLine, originalFile, diffNodeList, options); // parse to DiffTree
 			diffTreeList.add(curDiffTree); // add newly computed DiffTree to the list of all DiffTrees
 		}
 		
@@ -116,8 +112,16 @@ public class LineGraphImport {
 	 * @param options {@link DiffTreeLineGraphImportOptions}
 	 * @return {@link DiffTree}
 	 */
-	private static DiffTree parseDiffTree(final String lineGraph, final List<DiffNode> diffNodeList, final DiffTreeLineGraphImportOptions options) {
-		final DiffTreeSource diffTreeSource = options.treeFormat().fromLineGraphLine(lineGraph);
+	private static DiffTree parseDiffTree(final String lineGraph, final Path inFile, final List<DiffNode> diffNodeList, final DiffTreeLineGraphImportOptions options) {
+		DiffTreeSource diffTreeSource = options.treeFormat().fromLineGraphLine(lineGraph);
+
+		if (diffTreeSource == null || DiffTreeSource.Unknown.equals(diffTreeSource)) {
+			diffTreeSource = new LineGraphFileSource(
+					lineGraph,
+					inFile
+			);
+		}
+
 		// Handle trees and graphs differently
 		if (options.graphFormat() == GraphFormat.DIFFGRAPH) {
 			// If you should interpret the input data as DiffTrees, always expect a root to be present. Parse all nodes (v) to a list of nodes. Search for the root. Assert that there is exactly one root.
