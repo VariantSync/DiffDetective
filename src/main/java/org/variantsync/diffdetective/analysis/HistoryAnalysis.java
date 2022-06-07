@@ -90,7 +90,10 @@ public record HistoryAnalysis(
         final InvocationCounter<RevCommit, RevCommit> numberOfTotalCommits = InvocationCounter.justCount();
         final Iterator<CommitHistoryAnalysisTask> tasks = new MappedIterator<>(
                 /// 1.) Retrieve COMMITS_TO_PROCESS_PER_THREAD commits from the differ and cluster them into one list.
-                new ClusteredIterator<>(differ.yieldRevCommitsAfter(numberOfTotalCommits), commitsToProcessPerThread),
+                new ClusteredIterator<>(
+                        differ.yieldRevCommitsAfter(numberOfTotalCommits),
+                        commitsToProcessPerThread
+                ),
                 /// 2.) Create a MiningTask for the list of commits. This task will then be processed by one
                 ///     particular thread.
                 commitList -> taskFactory.create(

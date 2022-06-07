@@ -9,8 +9,8 @@ import org.variantsync.diffdetective.util.StringUtils;
 import org.variantsync.diffdetective.util.fide.FixTrueFalse;
 
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static org.variantsync.diffdetective.util.fide.FormulaUtils.negate;
 
@@ -528,7 +528,7 @@ public class DiffNode {
             List<Node> and = new ArrayList<>();
 
             if (isElif()) {
-                and.add(featureMapping);
+                and.add(getDirectFeatureMapping());
             }
 
             // Negate all previous cases
@@ -537,7 +537,8 @@ public class DiffNode {
                 if (ancestor.isElif()) {
                     and.add(negate(ancestor.getDirectFeatureMapping()));
                 } else {
-                    Assert.assertTrue(ancestor.isCode());
+                    throw new RuntimeException("Expected If or Elif above Else or Elif but got " + ancestor.codeType + " from " + ancestor);
+                    // Assert.assertTrue(ancestor.isCode());
                 }
                 ancestor = parentOf.apply(ancestor);
             }
@@ -545,10 +546,10 @@ public class DiffNode {
 
             return and;
         } else if (isCode()) {
-            return List.of(parent.getFeatureMapping(parentOf));
+            return parent.getFeatureMappingClauses(parentOf);
         }
 
-        return List.of(featureMapping);
+        return List.of(getDirectFeatureMapping());
     }
 
     private Node getFeatureMapping(Function<DiffNode, DiffNode> parentOf) {

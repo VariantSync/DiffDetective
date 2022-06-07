@@ -99,7 +99,7 @@ public class Validation {
         final ParseOptions.DiffStoragePolicy diffStoragePolicy = ParseOptions.DiffStoragePolicy.DO_NOT_REMEMBER;
 
         final Path inputDir = Paths.get("..", "DiffDetectiveMining");
-        final Path outputDir = Paths.get("results", "difftrees");
+        final Path outputDir = Paths.get("results", "validation", "current");
 
         final List<Repository> repos;
         final List<DatasetDescription> datasets = DefaultDatasets.loadDefaultDatasets();
