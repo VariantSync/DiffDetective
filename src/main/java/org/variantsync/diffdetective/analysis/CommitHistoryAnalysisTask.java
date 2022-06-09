@@ -6,6 +6,7 @@ import org.variantsync.diffdetective.analysis.strategies.AnalysisStrategy;
 import org.variantsync.diffdetective.datasets.Repository;
 import org.variantsync.diffdetective.diff.GitDiffer;
 import org.variantsync.diffdetective.diff.difftree.serialize.DiffTreeLineGraphExportOptions;
+import org.variantsync.diffdetective.util.CSV;
 import org.variantsync.diffdetective.util.IO;
 import org.variantsync.diffdetective.util.StringUtils;
 
@@ -16,6 +17,7 @@ import java.util.concurrent.Callable;
 
 public abstract class CommitHistoryAnalysisTask implements Callable<AnalysisResult> {
     public static final String COMMIT_TIME_FILE_EXTENSION = ".committimes.txt";
+    public static final String PATCH_STATISTICS_EXTENSION = ".patchStatistics.csv";
 
     public record Options(
         Repository repository,
@@ -60,6 +62,17 @@ public abstract class CommitHistoryAnalysisTask implements Callable<AnalysisResu
 
         try {
             IO.write(pathToOutputFile, times.toString());
+        } catch (IOException e) {
+            Logger.error(e);
+            System.exit(0);
+        }
+    }
+
+    public static void exportPatchStatistics(final List<PatchStatistics> commitTimes, final Path pathToOutputFile) {
+        final String csv = CSV.toCSV(commitTimes);
+
+        try {
+            IO.write(pathToOutputFile, csv);
         } catch (IOException e) {
             Logger.error(e);
             System.exit(0);

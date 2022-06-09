@@ -100,6 +100,7 @@ public class MultiLineMacroParser {
 
             return ParseResult.SUCCESS;
         } else {
+            // We either found the ending line of a multiline macro or just a plain line outside of a macro.
             final boolean inBeforeMLMacro = beforeMLMacro != null;
             final boolean inAfterMLMacro = afterMLMacro != null;
 
@@ -110,7 +111,7 @@ public class MultiLineMacroParser {
                         && inAfterMLMacro
                         && diffType == DiffType.NON
                         && beforeMLMacro.equals(afterMLMacro)) {
-                    // We have one single end line for to equal multi line macros -> Merge the nodes.
+                    // We have one single end line for two equal multi line macros -> Merge the nodes.
                     final DiffNode mlNode = finalizeMLMacro(
                             lineNo,
                             line,

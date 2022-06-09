@@ -49,7 +49,7 @@ public class LineGraphTest {
             Logger.info("Testing {}", testFile);
             List<DiffTree> diffTrees;
             try (BufferedReader lineGraph = Files.newBufferedReader(testFile)) {
-                diffTrees = LineGraphImport.fromLineGraph(lineGraph, IMPORT_OPTIONS);
+                diffTrees = LineGraphImport.fromLineGraph(lineGraph, testFile, IMPORT_OPTIONS);
             }
             assertConsistencyForAll(diffTrees);
             final String lineGraphResult = exportDiffTreeToLineGraph(diffTrees);

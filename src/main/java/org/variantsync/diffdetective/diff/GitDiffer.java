@@ -29,13 +29,7 @@ import org.variantsync.functjonal.iteration.MappedIterator;
 import org.variantsync.functjonal.iteration.SideEffectIterator;
 import org.variantsync.functjonal.iteration.Yield;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.LineNumberReader;
-import java.io.StringReader;
-import java.io.UncheckedIOException;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -145,6 +139,8 @@ public class GitDiffer {
                     while (commitsIterator.hasNext()) {
                         final RevCommit c = commitsIterator.next();
                         // If this commit is filtered, go to the next one.
+                        // filter returns true if we want to include the commit
+                        // so if we do not want to filter it, we do not want to have it. Thus skip.
                         if (!diffFilter.filter(c)) {
                             continue;
                         }

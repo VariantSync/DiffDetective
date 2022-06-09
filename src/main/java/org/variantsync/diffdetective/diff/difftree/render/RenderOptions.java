@@ -1,5 +1,6 @@
 package org.variantsync.diffdetective.diff.difftree.render;
 
+import org.variantsync.diffdetective.diff.difftree.serialize.DiffTreeLineGraphExportOptions;
 import org.variantsync.diffdetective.diff.difftree.serialize.GraphFormat;
 import org.variantsync.diffdetective.diff.difftree.serialize.edgeformat.DefaultEdgeLabelFormat;
 import org.variantsync.diffdetective.diff.difftree.serialize.edgeformat.EdgeLabelFormat;
@@ -155,4 +156,7 @@ public record RenderOptions(
 
 	}
 
+	public DiffTreeLineGraphExportOptions toLineGraphOptions() {
+		return new DiffTreeLineGraphExportOptions(format(), treeFormat(), nodeFormat(), edgeFormat());
+	}
 }

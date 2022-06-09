@@ -5,8 +5,6 @@ import org.variantsync.diffdetective.diff.difftree.DiffTree;
 import org.variantsync.diffdetective.diff.difftree.render.DiffTreeRenderer;
 import org.variantsync.diffdetective.diff.difftree.render.RenderOptions;
 import org.variantsync.diffdetective.diff.difftree.serialize.*;
-import org.variantsync.diffdetective.diff.difftree.serialize.edgeformat.DefaultEdgeLabelFormat;
-import org.variantsync.diffdetective.diff.difftree.serialize.edgeformat.EdgeLabelFormat;
 import org.variantsync.diffdetective.diff.difftree.serialize.treeformat.IndexedTreeFormat;
 import org.variantsync.diffdetective.mining.DiffTreeMiner;
 import org.variantsync.diffdetective.util.FileUtils;
@@ -38,9 +36,9 @@ public class MiningPostprocessing {
             GraphFormat.DIFFTREE,
             IMPORT_OPTIONS.treeFormat(),
             DiffTreeMiner.NodeFormat(),
-            new DefaultEdgeLabelFormat(EdgeLabelFormat.Direction.ParentToChild)
+            DiffTreeMiner.EdgeFormat()
     );
-    private static final RenderOptions DefaultRenderOptions = new RenderOptions.Builder()
+    public static final RenderOptions DefaultRenderOptions = new RenderOptions.Builder()
             .setGraphFormat(EXPORT_OPTIONS.graphFormat())
             .setTreeFormat(EXPORT_OPTIONS.treeFormat())
             .setNodeFormat(EXPORT_OPTIONS.nodeFormat())

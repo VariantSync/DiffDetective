@@ -25,8 +25,9 @@ def run_parsemis(lib_path, in_folder, output_folder, threshold, min_size, max_si
     memory = str(get_available_memory()) + 'G'
     nb_threads = os.cpu_count()
     # Template for shell command shell command
-    parsemis_cmd_template = "java -Xmx{memory} -jar  '{parsemis_path}' --graphFile='{in_file}' --outputFile='{out_file}' --minimumFrequency={threshold} --maximumNodeCount={max_size} --minimumNodeCount={min_size} --algorithm=dagma --singleRooted=true --closeGraph=true --zaretsky=true --subdue=true --storeEmbeddings=true --distribution=threads --threads={nb_threads} --swapFile='{swap_file}'" 
-    
+    parsemis_cmd_template = "java -Xmx{memory} -jar  '{parsemis_path}' --graphFile='{in_file}' --outputFile='{out_file}' --minimumFrequency={threshold} --maximumNodeCount={max_size} --minimumNodeCount={min_size} --algorithm=dagma --storeEmbeddings=true --distribution=threads --threads={nb_threads} --swapFile='{swap_file}'" 
+    #--closeGraph=true --zaretsky=true --subdue=true --singleRooted=true
+
     print(f'Running Frequent Subgraph Mining for input folder: {in_folder}')
     # Currently only support for line graph
     for idx, in_file in enumerate([file_name for file_name in os.listdir(in_folder) if file_name.endswith('.lg')]):

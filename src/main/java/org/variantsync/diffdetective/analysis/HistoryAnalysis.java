@@ -33,7 +33,7 @@ public record HistoryAnalysis(
     public static final int COMMITS_TO_PROCESS_PER_THREAD_DEFAULT = 1000;
 
     @Deprecated
-    public static void mine(
+    public static void analyze(
             final Repository repo,
             final Path outputDir,
             final DiffTreeLineGraphExportOptions exportOptions,
@@ -73,7 +73,7 @@ public record HistoryAnalysis(
         exportMetadata(outputDir, totalResult);
     }
 
-    public static void mineAsync(
+    public static void analyzeAsync(
             final Repository repo,
             final Path outputDir,
             final CommitHistoryAnalysisTaskFactory taskFactory,
@@ -85,12 +85,15 @@ public record HistoryAnalysis(
 
         // prepare tasks
         final int nThreads = Diagnostics.INSTANCE.run().getNumberOfAvailableProcessors();
-        Logger.info(">>> Scheduling asynchronous mining on {} threads.", nThreads);
+        Logger.info(">>> Scheduling asynchronous analysis on {} threads.", nThreads);
         clock.start();
         final InvocationCounter<RevCommit, RevCommit> numberOfTotalCommits = InvocationCounter.justCount();
         final Iterator<CommitHistoryAnalysisTask> tasks = new MappedIterator<>(
                 /// 1.) Retrieve COMMITS_TO_PROCESS_PER_THREAD commits from the differ and cluster them into one list.
-                new ClusteredIterator<>(differ.yieldRevCommitsAfter(numberOfTotalCommits), commitsToProcessPerThread),
+                new ClusteredIterator<>(
+                        differ.yieldRevCommitsAfter(numberOfTotalCommits),
+                        commitsToProcessPerThread
+                ),
                 /// 2.) Create a MiningTask for the list of commits. This task will then be processed by one
                 ///     particular thread.
                 commitList -> taskFactory.create(
@@ -102,7 +105,7 @@ public record HistoryAnalysis(
         Logger.info("<<< done in {}", clock.printPassedSeconds());
 
         final TaskCompletionMonitor commitSpeedMonitor = new TaskCompletionMonitor(0, TaskCompletionMonitor.LogProgress("commits"));
-        Logger.info(">>> Run mining");
+        Logger.info(">>> Run Analysis");
         clock.start();
         commitSpeedMonitor.start();
         try (final ScheduledTasksIterator<AnalysisResult> threads = new ScheduledTasksIterator<>(tasks, nThreads)) {
@@ -143,7 +146,7 @@ public record HistoryAnalysis(
             final Path repoOutputDir = outputDir.resolve(repo.getRepositoryName());
             /// Don't repeat work we already did:
             if (!Files.exists(repoOutputDir.resolve(TOTAL_RESULTS_FILE_NAME))) {
-                mineAsync(repo, repoOutputDir, whatToDo, commitsToProcessPerThread);
+                analyzeAsync(repo, repoOutputDir, whatToDo, commitsToProcessPerThread);
 //                mine(repo, repoOutputDir, ExportOptions(repo), MiningStrategy());
 
                 postProcessingOnRepositoryOutputDir.accept(repoOutputDir);

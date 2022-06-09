@@ -9,6 +9,7 @@ import java.util.List;
 
 public class DefaultDatasets {
     public final static Path DEFAULT_DATASETS_FILE = Path.of("docs", "datasets.md");
+    public final static Path EMACS = Path.of("docs", "datasets", "emacs.md");
 
     public static List<DatasetDescription> loadDefaultDatasets() {
         return loadDatasets(DEFAULT_DATASETS_FILE);

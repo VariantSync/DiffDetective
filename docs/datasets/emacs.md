@@ -1,0 +1,3 @@
+Project name | Domain                  | Source code available (**y**es/**n**o)? | Is it a git repository (**y**es/**n**o)? | Repository URL                                               | Clone URL                                                        | Estimated number of commits
+---|-------------------------|-----------------------------------------|-----------------------------------|--------------------------------------------------------------|------------------------------------------------------------------|---
+emacs | text editor             | y                                       | y                                 | https://github.com/emacs-mirror/emacs                        | https://github.com/emacs-mirror/emacs.git                        | 153,926

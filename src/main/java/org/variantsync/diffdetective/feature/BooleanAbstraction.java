@@ -2,6 +2,7 @@ package org.variantsync.diffdetective.feature;
 
 import org.variantsync.functjonal.Functjonal;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.regex.Pattern;
@@ -28,9 +29,9 @@ public class BooleanAbstraction {
                 "<=", LEQ,
                 ">", GT,
                 "<", LT,
-                "\\+", ADD,
+                Pattern.quote("+"), ADD,
                 "-", SUB,
-                "\\*", MUL,
+                Pattern.quote("*"), MUL,
                 "/", DIV,
                 "%", MOD
         ));
@@ -44,7 +45,9 @@ public class BooleanAbstraction {
         return Functjonal.bimap(
                 regex_replace,
                 Pattern::compile,
-                Function.identity()
+                Function.identity(),
+                // Use a linked hashmap here to ensure that regexes are always replaced in the same order.
+                LinkedHashMap::new
         );
     }
 

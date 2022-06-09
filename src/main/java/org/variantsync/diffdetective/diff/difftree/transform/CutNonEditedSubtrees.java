@@ -22,7 +22,7 @@ public class CutNonEditedSubtrees implements DiffTreeTransformer, DiffTreeVisito
             /*
              * Collapse all children c for which
              *   1. all children of c could be collapsed or c never had children
-             *   2. that was not relocated due to an edit.
+             *   2. that was not relocated due to an edit (beforeparent and afterparent are the same).
              *
              * Note: c satisfies 2 => c.isNon() and subtree.isNon()
              *       We thus only cut subtrees that (a) were not edited themselves and (b) were not relocated.

@@ -9,6 +9,10 @@ import java.nio.file.Path;
 import java.util.List;
 
 public class FileUtils {
+    public static String replaceLineEndings(final String text, final String replacee) {
+        return StringUtils.LINEBREAK_REGEX.matcher(text).replaceAll(replacee);
+    }
+
     public static boolean isEmptyDirectory(final Path p) throws IOException {
         return !Files.exists(p) || (Files.isDirectory(p) && Files.list(p).findAny().isEmpty());
     }

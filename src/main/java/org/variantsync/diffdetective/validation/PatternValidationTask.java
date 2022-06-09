@@ -62,14 +62,14 @@ public class PatternValidationTask extends CommitHistoryAnalysisTask {
                             continue;
                         }
 
-                            t.forAll(node -> {
-                                if (node.isCode()) {
-                                    miningResult.elementaryPatternCounts.reportOccurrenceFor(
-                                            ProposedElementaryPatterns.Instance.match(node),
-                                            commitDiff
-                                    );
-                                }
-                            });
+                        t.forAll(node -> {
+                            if (node.isCode()) {
+                                miningResult.elementaryPatternCounts.reportOccurrenceFor(
+                                        ProposedElementaryPatterns.Instance.match(node),
+                                        commitDiff
+                                );
+                            }
+                        });
 
                         ++numDiffTrees;
                     }

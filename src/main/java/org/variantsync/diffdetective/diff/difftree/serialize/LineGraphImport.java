@@ -1,6 +1,7 @@
 package org.variantsync.diffdetective.diff.difftree.serialize;
 
 import org.variantsync.diffdetective.diff.difftree.*;
+import org.variantsync.diffdetective.diff.difftree.source.LineGraphFileSource;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.util.FileUtils;
 import org.variantsync.functjonal.Pair;
@@ -31,7 +32,7 @@ public class LineGraphImport {
         Assert.assertTrue(Files.isRegularFile(path));
         Assert.assertTrue(FileUtils.isLineGraph(path));
         try (BufferedReader input = Files.newBufferedReader(path)) {
-            return fromLineGraph(input, options);
+            return fromLineGraph(input, path, options);
         }
     }
 	
@@ -40,7 +41,7 @@ public class LineGraphImport {
 	 * 
 	 * @return All {@link DiffTree DiffTrees} contained in the line graph
 	 */
-	public static List<DiffTree> fromLineGraph(final BufferedReader lineGraph, final DiffTreeLineGraphImportOptions options) throws IOException {
+	public static List<DiffTree> fromLineGraph(final BufferedReader lineGraph, final Path originalFile, final DiffTreeLineGraphImportOptions options) throws IOException {
 		// All DiffTrees read from the line graph
 		List<DiffTree> diffTreeList = new ArrayList<>();
 		
@@ -61,7 +62,7 @@ public class LineGraphImport {
 				// the line represents a DiffTree
 				
 				if (!diffNodeList.isEmpty()) {
-					DiffTree curDiffTree = parseDiffTree(previousDiffTreeLine, diffNodeList, options); // parse to DiffTree
+					DiffTree curDiffTree = parseDiffTree(previousDiffTreeLine, originalFile, diffNodeList, options); // parse to DiffTree
 					diffTreeList.add(curDiffTree); // add newly computed DiffTree to the list of all DiffTrees
 					
 					// Remove all DiffNodes from list
@@ -95,7 +96,7 @@ public class LineGraphImport {
 		}
 
 		if (!diffNodeList.isEmpty()) {
-			DiffTree curDiffTree = parseDiffTree(previousDiffTreeLine, diffNodeList, options); // parse to DiffTree
+			DiffTree curDiffTree = parseDiffTree(previousDiffTreeLine, originalFile, diffNodeList, options); // parse to DiffTree
 			diffTreeList.add(curDiffTree); // add newly computed DiffTree to the list of all DiffTrees
 		}
 		
@@ -111,8 +112,16 @@ public class LineGraphImport {
 	 * @param options {@link DiffTreeLineGraphImportOptions}
 	 * @return {@link DiffTree}
 	 */
-	private static DiffTree parseDiffTree(final String lineGraph, final List<DiffNode> diffNodeList, final DiffTreeLineGraphImportOptions options) {
-		final DiffTreeSource diffTreeSource = options.treeFormat().fromLineGraphLine(lineGraph);
+	private static DiffTree parseDiffTree(final String lineGraph, final Path inFile, final List<DiffNode> diffNodeList, final DiffTreeLineGraphImportOptions options) {
+		DiffTreeSource diffTreeSource = options.treeFormat().fromLineGraphLine(lineGraph);
+
+		if (diffTreeSource == null || DiffTreeSource.Unknown.equals(diffTreeSource)) {
+			diffTreeSource = new LineGraphFileSource(
+					lineGraph,
+					inFile
+			);
+		}
+
 		// Handle trees and graphs differently
 		if (options.graphFormat() == GraphFormat.DIFFGRAPH) {
 			// If you should interpret the input data as DiffTrees, always expect a root to be present. Parse all nodes (v) to a list of nodes. Search for the root. Assert that there is exactly one root.
