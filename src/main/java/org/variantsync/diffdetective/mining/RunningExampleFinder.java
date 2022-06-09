@@ -15,6 +15,7 @@ import org.variantsync.diffdetective.diff.difftree.render.DiffTreeRenderer;
 import org.variantsync.diffdetective.diff.difftree.transform.ExampleFinder;
 import org.variantsync.diffdetective.diff.result.DiffResult;
 import org.variantsync.diffdetective.util.Assert;
+import org.variantsync.diffdetective.util.StringUtils;
 
 import java.nio.file.Path;
 import java.util.Optional;
@@ -102,7 +103,7 @@ public class RunningExampleFinder {
     }
 
     private static int getNumberOfLinesIn(final String text) {
-        return text.trim().split("\\r?\\n").length;
+        return (int)text.trim().lines().count();
     }
 
     private static boolean isComplexFormula(final Node formula) {

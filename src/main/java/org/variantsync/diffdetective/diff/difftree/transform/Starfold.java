@@ -29,13 +29,11 @@ public class Starfold implements DiffTreeTransformer {
     @Override
     public void transform(DiffTree diffTree) {
         // All non-artifact nodes are potential roots of stars.
-        final List<DiffNode> macroNodes = diffTree.computeAllNodesThat(node -> !node.isCode());
-//        System.out.println("Inspecting " + macroNodes.size() + " star root candidates.");
+        final List<DiffNode> macroNodes = diffTree.computeAllNodesThat(Starfold::isStarRoot);
+//        System.out.println("Inspecting " + macroNodes.size() + " star roots.");
         for (DiffNode macro : macroNodes) {
-            if (isStarRoot(macro)) {
-//                System.out.println("Found star root " + macro);
-                foldStar(macro);
-            }
+//            System.out.println("Found star root " + macro);
+            foldStar(macro);
         }
     }
 
@@ -47,11 +45,13 @@ public class Starfold implements DiffTreeTransformer {
     public void foldStarAtTime(final DiffNode starRoot, Time time) {
 //        System.out.println("Fold " + starRoot + " at time " + time);
         final DiffType targetDiffType = DiffType.thatExistsOnlyAt(time);
-
-        final List<DiffNode> children = starRoot.getChildren(time);
         final List<DiffNode> starArms = new ArrayList<>();
 
-        for (DiffNode child : children) {
+        for (DiffNode child : starRoot.getAllChildren()) {
+            if (!starRoot.isChild(child, time)) {
+                continue;
+            }
+
             if (isStarArm(child) && child.diffType == targetDiffType) {
 //                System.out.println("  Found arm " + child);
                 starArms.add(child);
@@ -77,7 +77,7 @@ public class Starfold implements DiffTreeTransformer {
                             targetDiffType,
                             DiffLineNumber.Invalid(),
                             DiffLineNumber.Invalid(),
-                            starArms.stream().map(DiffNode::getLabel).collect(Collectors.joining(StringUtils.LINEBREAK))
+                            starArms.stream().flatMap(node -> node.getLines().stream()).toList()
                     ),
                     targetIndex,
                     time

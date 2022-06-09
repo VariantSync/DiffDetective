@@ -1,10 +1,12 @@
 package org.variantsync.diffdetective.util;
 
 import java.util.Collection;
+import java.util.regex.Pattern;
 
 public class StringUtils {
     public final static String LINEBREAK = "\r\n";
-    public final static String LINEBREAK_REGEX = "\\r?\\n";
+    public final static Pattern LINEBREAK_REGEX = Pattern.compile("\\r\\n|\\r|\\n");
+
 
     public static void clear(final StringBuilder builder) {
         // According to https://stackoverflow.com/questions/5192512/how-can-i-clear-or-empty-a-stringbuilder

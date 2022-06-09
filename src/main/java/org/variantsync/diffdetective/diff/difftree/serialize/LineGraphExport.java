@@ -67,7 +67,7 @@ public class LineGraphExport {
         final String hash = commitDiff.getCommitHash();
         for (final PatchDiff patchDiff : commitDiff.getPatchDiffs()) {
             if (patchDiff.isValid()) {
-                //Logger.info("  Exporting DiffTree #" + treeCounter);
+                //Logger.info("  Exporting DiffTree #{}", treeCounter);
                 final Pair<DiffTreeSerializeDebugData, String> patchDiffLg;
                 try {
                     patchDiffLg = toLineGraphFormat(patchDiff.getDiffTree(), options);
@@ -82,7 +82,7 @@ public class LineGraphExport {
                     ++result.exportedTrees;
                 }
             } else {
-                Logger.debug("  Skipping invalid patch for file " + patchDiff.getFileName() + " at commit " + hash);
+                Logger.debug("  Skipping invalid patch for file {} at commit {}", patchDiff.getFileName(), hash);
             }
         }
 

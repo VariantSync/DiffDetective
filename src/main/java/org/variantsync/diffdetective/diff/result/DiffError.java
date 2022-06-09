@@ -14,19 +14,6 @@ public record DiffError(String id) {
     public final static DiffError IF_WITHOUT_CONDITION = new DiffError("conditional macro without expression");
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        DiffError diffError = (DiffError) o;
-        return Objects.equals(id, diffError.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return id != null ? id.hashCode() : 0;
-    }
-
-    @Override
     public String toString() {
         return id;
     }

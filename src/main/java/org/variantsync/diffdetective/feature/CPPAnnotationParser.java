@@ -24,7 +24,7 @@ public class CPPAnnotationParser {
         Node formula = formulaParser.parse(formulaStr);
 
         if (formula == null) {
-//            Logger.warn("Could not parse expression \"{}\" to feature mapping. Using it as literal.", fmString);
+//            Logger.warn("Could not parse expression '{}' to feature mapping. Using it as literal.", fmString);
             formula = new Literal(line);
         }
 

@@ -17,7 +17,9 @@ import org.variantsync.diffdetective.diff.result.DiffResult;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.util.StringUtils;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
@@ -25,8 +27,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 
 public class DiffTreeParser {
-    public static final String NEW_LINE_REGEX = "(\\r\\n|\\r|\\n)";
-
     /**
      * Implementation of the diff tree algorithm.
      * This implementation has options to collapse multiple code lines into one node and to
@@ -46,8 +46,19 @@ public class DiffTreeParser {
             boolean ignoreEmptyLines,
             DiffNodeParser nodeParser)
     {
-        final String[] fullDiffLines = fullDiff.split(NEW_LINE_REGEX);
+        try {
+            return createDiffTree(new BufferedReader(new StringReader(fullDiff)), collapseMultipleCodeLines, ignoreEmptyLines, nodeParser);
+        } catch (IOException e) {
+            throw new AssertionError("No actual IO should be performed, because only a StringReader is used");
+        }
+    }
 
+    public static DiffResult<DiffTree> createDiffTree(
+            BufferedReader fullDiff,
+            boolean collapseMultipleCodeLines,
+            boolean ignoreEmptyLines,
+            DiffNodeParser nodeParser) throws IOException
+    {
         final List<DiffNode> nodes = new ArrayList<>();
         final Stack<DiffNode> beforeStack = new Stack<>();
         final Stack<DiffNode> afterStack = new Stack<>();
@@ -68,8 +79,8 @@ public class DiffTreeParser {
         beforeStack.push(root);
         afterStack.push(root);
 
-        for (int i = 0; i < fullDiffLines.length; i++) {
-            final String currentLine = fullDiffLines[i];
+        String currentLine;
+        for (int i = 0; (currentLine = fullDiff.readLine()) != null; i++) {
             final DiffType diffType = DiffType.ofDiffLine(currentLine);
 
             // count line numbers
@@ -80,7 +91,7 @@ public class DiffTreeParser {
             // Ignore line if it is empty.
             if (ignoreEmptyLines && (currentLine.isEmpty()
                     // substring(1) here because of diff symbol ('+', '-', ' ') at the beginning of a line.
-                    || currentLine.substring(1).trim().isEmpty())) {
+                    || currentLine.substring(1).isBlank())) {
                 // discard empty lines
                 continue;
             }
@@ -121,7 +132,7 @@ public class DiffTreeParser {
             // collapse multiple code lines
             if (lastCode != null) {
                 if (collapseMultipleCodeLines && newNode.isCode() && lastCode.diffType.equals(newNode.diffType)) {
-                    lastCode.setLabel(lastCode.getLabel() + StringUtils.LINEBREAK + newNode.getLabel());
+                    lastCode.addLines(newNode.getLines());
                     continue;
                 } else {
                     lastCode = endCodeBlock(lastCode, lastLineNo);
@@ -137,6 +148,7 @@ public class DiffTreeParser {
             if (newNode.isCode()) {
                 lastCode = newNode;
             } else if (newNode.isEndif()) {
+                final String currentLineFinal = currentLine;
                 diffType.matchBeforeAfter(beforeStack, afterStack,
                         stack -> {
                             // Set corresponding line of now closed annotation.
@@ -148,7 +160,7 @@ public class DiffTreeParser {
                             popIf(stack);
 
                             if (stack.isEmpty()) {
-                                errorPropagation.accept(DiffError.ENDIF_WITHOUT_IF, "ENDIF without IF at line \"" + currentLine + "\"!");
+                                errorPropagation.accept(DiffError.ENDIF_WITHOUT_IF, "ENDIF without IF at line \"" + currentLineFinal + "\"!");
                             }
                         });
                 if (error.get() != null) { return error.get(); }

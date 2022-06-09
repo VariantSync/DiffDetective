@@ -45,8 +45,11 @@ public class TaskCompletionMonitor {
     }
 
     public static Consumer<TimeInfo> LogProgress(final String tasksName) {
-        return time -> Logger.info("Processed " + time.completedTasks + " " + tasksName
-                        + " after " + String.format("%.2f", time.passedSeconds) + "s"
-                        + " at about " + String.format("%.2f", time.tasksPerSecond) + tasksName + "/s.");
+        return time -> Logger.info("Processed {} {} after {}s at about {}{}/s.",
+                        time.completedTasks,
+                        tasksName,
+                        String.format("%.2f", time.passedSeconds),
+                        String.format("%.2f", time.tasksPerSecond),
+                        tasksName);
     }
 }

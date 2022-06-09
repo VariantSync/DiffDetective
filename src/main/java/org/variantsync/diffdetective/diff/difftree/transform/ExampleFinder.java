@@ -54,7 +54,7 @@ public class ExampleFinder implements DiffTreeTransformer {
         final GitPatch patch = (GitPatch) example.getSource();
         final Path treeDir = outputDir.resolve(Path.of(patch.getCommitHash()));
 
-        Logger.info("Exporting example candidate: " + patch);
+        Logger.info("Exporting example candidate: {}", patch);
         exampleExport.render(example, patch, treeDir);
 
         String metadata = "";
