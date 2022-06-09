@@ -48,7 +48,7 @@ public class ShellExecutor {
         if (executionDir != null) {
             builder.directory(executionDir.toFile());
         }
-        Logger.debug("Executing '" + command + "' in directory " + builder.directory());
+        Logger.debug("Executing '{}' in directory {}", command, builder.directory());
         builder.command(command.parts());
 
         Process process;
@@ -70,7 +70,7 @@ public class ShellExecutor {
             errorFutureService = Executors.newSingleThreadExecutor();
             errorFuture = errorFutureService.submit(collectOutput(process.getErrorStream(), errorReader));
         } catch (IOException e) {
-            Logger.error("Was not able to execute " + command, e);
+            Logger.error(e, "Was not able to execute {}", command);
             throw new ShellException(e);
         }
 
@@ -82,7 +82,7 @@ public class ShellExecutor {
             outputFutureService.shutdown();
             errorFutureService.shutdown();
         } catch (InterruptedException | ExecutionException e) {
-            Logger.error("Interrupted while waiting for process to end.", e);
+            Logger.error(e, "Interrupted while waiting for process to end.");
             throw new ShellException(e);
         }
 
@@ -94,7 +94,7 @@ public class ShellExecutor {
             try (inputStream; BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
                 reader.lines().forEach(consumer);
             } catch (IOException e) {
-                Logger.error("Exception thrown while reading stream of Shell command.", e);
+                Logger.error(e, "Exception thrown while reading stream of Shell command.");
             }
         };
     }

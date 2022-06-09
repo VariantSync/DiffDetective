@@ -84,21 +84,21 @@ public class MarlinDebug {
     }
 
     public static void testCommit(final RepoInspection repoInspection, final String commitHash) throws IOException {
-        Logger.info(">>> Testing commit " + commitHash + " of " + repoInspection.repo.getRepositoryName());
+        Logger.info(">>> Testing commit {} of {}", commitHash, repoInspection.repo.getRepositoryName());
         Logger.info("  Begin parsing");
         Clock clock = new Clock();
         final CommitDiff commitDiff = DiffTreeParser.parseCommit(repoInspection.repo, commitHash);
-        Logger.info("  Done after " + clock.printPassedSeconds());
+        Logger.info("  Done after {}", clock.printPassedSeconds());
         final List<DiffTreeTransformer> transform = DiffTreeMiner.Postprocessing(repoInspection.repo);
 
         for (final PatchDiff patch : commitDiff.getPatchDiffs()) {
             if (patch.isValid()) {
-                Logger.info("  Begin processing " + patch);
+                Logger.info("  Begin processing {}", patch);
                 final DiffTree t = patch.getDiffTree();
                 Logger.info("    Begin transform");
                 clock.start();
                 DiffTreeTransformer.apply(transform, t);
-                Logger.info("    Done after " + clock.printPassedSeconds());
+                Logger.info("    Done after {}", clock.printPassedSeconds());
                 Logger.info("    Begin elementary pattern matching");
                 clock.start();
                 t.forAll(node -> {
@@ -108,20 +108,20 @@ public class MarlinDebug {
                         } catch (Exception e) {
                             //DiffTreeLineGraphExportOptions.RenderError().accept(patch, e);
                             Logger.error(e);
-                            Logger.info("Died at node " + node.toString());
-                            Logger.info("  before parent: " + node.getBeforeParent());
-                            Logger.info("   after parent: " + node.getBeforeParent());
-                            Logger.info("isAdd: " + node.isAdd());
-                            Logger.info("isRem: " + node.isRem());
-                            Logger.info("isNon: " + node.isNon());
-                            Logger.info("isCode: " + node.isCode());
+                            Logger.info("Died at node {}", node.toString());
+                            Logger.info("  before parent: {}", node.getBeforeParent());
+                            Logger.info("   after parent: {}", node.getBeforeParent());
+                            Logger.info("isAdd: {}", node.isAdd());
+                            Logger.info("isRem: {}", node.isRem());
+                            Logger.info("isNon: {}", node.isNon());
+                            Logger.info("isCode: {}", node.isCode());
 //                            throw e;
                             System.exit(0);
                         }
                     }
                 });
-                Logger.info("    Done after " + clock.printPassedSeconds());
-                Logger.info("  End processing " + patch);
+                Logger.info("    Done after {}", clock.printPassedSeconds());
+                Logger.info("  End processing {}", patch);
             }
         }
 

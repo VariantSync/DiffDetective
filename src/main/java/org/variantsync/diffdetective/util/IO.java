@@ -11,7 +11,6 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Optional;
 import java.util.StringJoiner;
-import java.util.stream.Collectors;
 
 /**
  * Util class for exporting data.
@@ -20,18 +19,6 @@ import java.util.stream.Collectors;
  */
 public class IO {
     private static final String CSV_DELIMITER = ",";
-
-    public static String readAsString(final Path p) throws IOException {
-        try (
-                final FileReader f = new FileReader(p.toFile());
-                final BufferedReader reader = new BufferedReader(f)
-        ) {
-            return reader.lines().collect(Collectors.joining("\r\n"));
-        } catch (final IOException e) {
-            Logger.error("Failed to read lines from file: ", e);
-            throw e;
-        }
-    }
 
     /**
      * Exports data to a csv-file
@@ -42,8 +29,8 @@ public class IO {
      */
     public static void exportCsv(String fileName, String[] headers, Object[]... objects) throws FileNotFoundException {
         if (headers.length != objects.length) {
-            Logger.warn("Header length and object[] length is not equal while exporting csv file " +
-                    "{}", fileName);
+            Logger.warn("Header length and object[] length is not equal while exporting csv file {}",
+                    fileName);
         }
 
         int len = objects[0].length;
@@ -81,14 +68,14 @@ public class IO {
      */
     public static void write(final Path p, final String text) throws IOException {
         if (p.getParent() != null) {
-            p.getParent().toFile().mkdirs();
+            Files.createDirectories(p.getParent());
         }
         Files.writeString(p, text, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
     }
 
     public static void append(final Path p, final String text) throws IOException {
         if (p.getParent() != null) {
-            p.getParent().toFile().mkdirs();
+            Files.createDirectories(p.getParent());
         }
         Files.writeString(p, text, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
     }
@@ -110,10 +97,6 @@ public class IO {
             return Optional.empty();
         }
         return Optional.of(remote);
-    }
-
-    public static String withoutFileExtension(final String filename) {
-        return filename.substring(0, filename.lastIndexOf("."));
     }
 
     public static boolean tryDeleteFile(Path file) {

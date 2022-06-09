@@ -8,7 +8,6 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.tinylog.Logger;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.util.FileUtils;
-import org.variantsync.diffdetective.util.IO;
 
 import java.io.IOException;
 import java.net.URI;
@@ -56,7 +55,7 @@ public class GitLoader {
         }
 
         try {
-            Logger.info("Cloning " + remoteURI + " to " + localPath + ".");
+            Logger.info("Cloning {} to {}.", remoteURI, localPath);
             return Git.cloneRepository()
                     .setURI(remoteURI.toString())
                     .setDirectory(localPath.toFile())
@@ -91,6 +90,6 @@ public class GitLoader {
             return null;
         }
 
-        return fromDirectory(targetDir.resolve(IO.withoutFileExtension(pathToZip.getFileName().toString())));
+        return fromDirectory(unzippedRepoName);
     }
 }
