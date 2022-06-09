@@ -43,7 +43,7 @@ public class MiningTask extends CommitHistoryAnalysisTask {
 
             miningResult.reportDiffErrors(commitDiffResult.errors());
             if (commitDiffResult.diff().isEmpty()) {
-                Logger.debug("found commit that failed entirely and was not filtered because:\n" + commitDiffResult.errors());
+                Logger.debug("found commit that failed entirely and was not filtered because:\n{}", commitDiffResult.errors());
                 continue;
             }
 

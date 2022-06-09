@@ -1,13 +1,14 @@
 package org.variantsync.diffdetective.datasets;
 
-import org.variantsync.diffdetective.util.FileUtils;
 import org.variantsync.diffdetective.util.LaTeX;
 import org.variantsync.diffdetective.util.StringUtils;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public record DatasetDescription(
         String name,
@@ -16,28 +17,20 @@ public record DatasetDescription(
         String commits
 ) {
     public static List<DatasetDescription> fromMarkdown(final Path markdownFile) throws IOException {
-        final String markdown = FileUtils.readUTF8(markdownFile);
-        final String[] lines = markdown.split(StringUtils.LINEBREAK_REGEX);
-
-        final List<DatasetDescription> datasets = new ArrayList<>(lines.length - 2);
-        // Start at 2 to skip header and separator line of table
-        for (int i = 2; i < lines.length; ++i) {
-            final String[] cells = lines[i].split("\\|");
-
-            final String hasCode = cells[2];
-            final String isGitRepo = cells[3];
-
-            if (isYes(hasCode) && isYes(isGitRepo)) {
-                datasets.add(new DatasetDescription(
-                        cells[0].trim(), // name
-                        cells[5].trim(), // clone URL,
-                        cells[1].trim(), // domain
-                        cells[6].trim()  // #commits
-                ));
-            }
+        try (Stream<String> lines = Files.lines(markdownFile)) {
+            return lines
+                .skip(2) // Skip header
+                .map(line -> line.split("\\|"))
+                .filter(cells ->
+                    isYes(cells[2]) && // hasCode
+                    isYes(cells[3]) // isGitRepo
+                ).map(cells -> new DatasetDescription(
+                    cells[0].trim(), // name
+                    cells[5].trim(), // clone URL
+                    cells[1].trim(), // domain
+                    cells[6].trim()) // #commits
+                ).collect(Collectors.toList());
         }
-
-        return datasets;
     }
 
     public static String asLaTeXTable(final List<DatasetDescription> datasets) {

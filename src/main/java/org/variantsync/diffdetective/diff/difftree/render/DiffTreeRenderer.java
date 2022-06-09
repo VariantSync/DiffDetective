@@ -123,7 +123,7 @@ public class DiffTreeRenderer {
         try {
             IO.write(tempFile, lg);
         } catch (IOException e) {
-            Logger.error("Could not render difftree " + treeAndFileName + " because:", e);
+            Logger.error(e, "Could not render difftree {} because", treeAndFileName);
             return false;
         }
 
@@ -131,7 +131,7 @@ public class DiffTreeRenderer {
             try {
                 Files.delete(tempFile);
             } catch (IOException e) {
-                Logger.error("Could not remove generated temp file " + tempFile + " because:", e);
+                Logger.error(e, "Could not remove generated temp file {} because", tempFile);
             }
         }
 
@@ -164,10 +164,10 @@ public class DiffTreeRenderer {
         );
 
         try {
-            Logger.debug("Running command " + cmd + (workDir != null ? "in " + workDir : ""));
+            Logger.debug("Running command {}{}", cmd, (workDir != null ? "in " + workDir : ""));
             runner.execute(cmd, workDir);
         } catch (ShellException e) {
-            Logger.error("Could not render linegraph file " + lineGraphFile + " because:", e);
+            Logger.error(e, "Could not render linegraph file {} because", lineGraphFile);
             return false;
         }
 

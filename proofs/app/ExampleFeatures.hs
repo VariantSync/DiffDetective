@@ -1,6 +1,6 @@
 ﻿module ExampleFeatures where
 
-import Propositions
+import Feature.Propositions
 
 fFire  = PVariable "Fire"
 fGrass = PVariable "Grass"

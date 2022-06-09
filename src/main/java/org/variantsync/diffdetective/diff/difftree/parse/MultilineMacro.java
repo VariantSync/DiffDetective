@@ -16,17 +16,6 @@ public class MultilineMacro {
     DiffType diffType;
 
     public MultilineMacro(
-            final String header,
-            final DiffLineNumber startLine,
-            final DiffNode beforeParent,
-            final DiffNode afterParent) {
-        this(
-                header, DiffType.ofDiffLine(header),
-                startLine,
-                beforeParent, afterParent);
-    }
-
-    private MultilineMacro(
             final String line,
             final DiffType diffType,
             final DiffLineNumber startLine,

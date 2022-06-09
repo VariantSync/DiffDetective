@@ -19,7 +19,7 @@ public class DefaultDatasets {
         try {
             return DatasetDescription.fromMarkdown(datasetsFile);
         } catch (IOException e) {
-            Logger.error("Failed to load at least one dataset from " + datasetsFile + " because:", e);
+            Logger.error(e, "Failed to load at least one dataset from {} because", datasetsFile);
             Logger.error("Aborting execution!");
             return new ArrayList<>();
         }

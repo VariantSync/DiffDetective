@@ -4,9 +4,9 @@ License: GNU LGPLv3
 Maintainer: paul.bittner@uni-ulm.de
 Definition and operations of propositional logic.
 -}
-module Propositions where
+module Feature.Propositions where
 
-import Logic
+import Feature.Logic
 import Data.List ( intercalate )
 
 -- | Sum type similar to a grammar for building propositional formulas.

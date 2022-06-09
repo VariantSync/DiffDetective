@@ -10,6 +10,7 @@ import org.variantsync.diffdetective.util.fide.FixTrueFalse;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static org.variantsync.diffdetective.util.fide.FormulaUtils.negate;
 
@@ -19,53 +20,63 @@ import static org.variantsync.diffdetective.util.fide.FormulaUtils.negate;
  * Includes methods for creating a node by getting its code type and diff type and for getting the feature mapping of the node.
  */
 public class DiffNode {
-	private static final short ID_OFFSET = 3;
+    private static final short ID_OFFSET = 3;
 
-    public DiffType diffType;
-    public CodeType codeType;
+    public final DiffType diffType;
+    public final CodeType codeType;
     private boolean isMultilineMacro = false;
 
     private final DiffLineNumber from = DiffLineNumber.Invalid();
     private final DiffLineNumber to = DiffLineNumber.Invalid();
 
     private Node featureMapping;
-    private String label;
+    private List<String> lines;
 
     /**
      * The parent {@link DiffNode} before the edit.
+     *
+     * Invariant: Iff {@code beforeParent != null} then
+     * {@code beforeParent.childOrder.contains(this)}.
      */
     private DiffNode beforeParent;
-    
+
     /**
      * The parent {@link DiffNode} after the edit.
+     *
+     * Invariant: Iff {@code afterParent != null} then
+     * {@code afterParent.childOrder.contains(this)}.
      */
     private DiffNode afterParent;
 
     /**
      * We use a list for children to maintain order.
+     *
+     * Invariant: Iff {@code childOrder.contains(child)} then
+     * {@code child.beforeParent == this || child.afterParent == this}.
+     *
+     * Note that it's explicitly allowed to have
+     * {@code child.beforeParent == this && child.afterParent == this}.
      */
     private final List<DiffNode> childOrder;
-
-    // These lists store the outgoing edges. These lists do not respect order.
-    private List<DiffNode> beforeChildren;
-    private List<DiffNode> afterChildren;
-
-    private DiffNode() {
-        this.childOrder = new ArrayList<>();
-        this.beforeChildren = new ArrayList<>();
-        this.afterChildren = new ArrayList<>();
-    }
 
     public DiffNode(DiffType diffType, CodeType codeType,
                     DiffLineNumber fromLines, DiffLineNumber toLines,
                     Node featureMapping, String label) {
-        this();
+        this(diffType, codeType, fromLines, toLines, featureMapping,
+                new ArrayList<String>(Arrays.asList(StringUtils.LINEBREAK_REGEX.split(label, -1))));
+    }
+
+    public DiffNode(DiffType diffType, CodeType codeType,
+                    DiffLineNumber fromLines, DiffLineNumber toLines,
+                    Node featureMapping, List<String> lines) {
+        this.childOrder = new ArrayList<>();
+
         this.diffType = diffType;
         this.codeType = codeType;
         this.from.set(fromLines);
         this.to.set(toLines);
         this.featureMapping = featureMapping;
-        this.label = label;
+        this.lines = lines;
     }
 
     /**
@@ -79,7 +90,7 @@ public class DiffNode {
                 new DiffLineNumber(1, 1, 1),
                 DiffLineNumber.Invalid(),
                 FixTrueFalse.True,
-                ""
+                new ArrayList()
         );
     }
 
@@ -87,12 +98,25 @@ public class DiffNode {
         return new DiffNode(diffType, CodeType.CODE, fromLines, toLines, null, code);
     }
 
-    public void setLabel(final String label) {
-        this.label = label;
+    public static DiffNode createCode(DiffType diffType, DiffLineNumber fromLines, DiffLineNumber toLines, List<String> lines) {
+        return new DiffNode(diffType, CodeType.CODE, fromLines, toLines, null, lines);
+    }
+
+    public void addLines(final List<String> lines) {
+        this.lines.addAll(lines);
+    }
+
+    public List<String> getLines() {
+        return lines;
     }
 
     public String getLabel() {
-        return label;
+        return lines.stream().collect(Collectors.joining(StringUtils.LINEBREAK));
+    }
+
+    public void setLabel(String label) {
+        lines.clear();
+        Collections.addAll(lines, StringUtils.LINEBREAK_REGEX.split(label, -1));
     }
 
     /**
@@ -200,14 +224,6 @@ public class DiffNode {
     }
 
     /**
-     * @return The number of edges going to children.
-     *         This is the sum of the number of edges to before children and the number of edges to after children.
-     */
-    public int getCardinality() {
-        return beforeChildren.size() + afterChildren.size();
-    }
-
-    /**
      * Gets the amount of nodes with diff type REM in the path following the before parent
      * @return the amount of nodes with diff type REM in the path following the before parent
      */
@@ -254,10 +270,12 @@ public class DiffNode {
     }
 
     private void setBeforeParent(final DiffNode newBeforeParent) {
+        Assert.assertTrue(beforeParent == null);
         this.beforeParent = newBeforeParent;
     }
 
     private void setAfterParent(final DiffNode newAfterParent) {
+        Assert.assertTrue(afterParent == null);
         this.afterParent = newAfterParent;
     }
 
@@ -315,8 +333,9 @@ public class DiffNode {
 
     public boolean insertBeforeChild(final DiffNode child, int index) {
         if (!child.isAdd()) {
-            addWithoutDuplicates(beforeChildren, child);
-            insertWithoutDuplicates(childOrder, child, index);
+            if (!isChild(child)) {
+                childOrder.add(index, child);
+            }
             child.setBeforeParent(this);
             return true;
         }
@@ -325,8 +344,9 @@ public class DiffNode {
 
     public boolean insertAfterChild(final DiffNode child, int index) {
         if (!child.isRem()) {
-            addWithoutDuplicates(afterChildren, child);
-            insertWithoutDuplicates(childOrder, child, index);
+            if (!isChild(child)) {
+                childOrder.add(index, child);
+            }
             child.setAfterParent(this);
             return true;
         }
@@ -339,8 +359,9 @@ public class DiffNode {
                 throw new IllegalArgumentException("Given child " + child + " already has a before parent (" + child.beforeParent + ")!");
             }
 
-            addWithoutDuplicates(beforeChildren, child);
-            addWithoutDuplicates(childOrder, child);
+            if (!isChild(child)) {
+                childOrder.add(child);
+            }
             child.setBeforeParent(this);
             return true;
         }
@@ -353,8 +374,9 @@ public class DiffNode {
                 throw new IllegalArgumentException("Given child " + child + " already has an after parent (" + child.afterParent + ")!");
             }
 
-            addWithoutDuplicates(afterChildren, child);
-            addWithoutDuplicates(childOrder, child);
+            if (!isChild(child)) {
+                childOrder.add(child);
+            }
             child.setAfterParent(this);
             return true;
         }
@@ -373,31 +395,19 @@ public class DiffNode {
         }
     }
 
-    private static void addWithoutDuplicates(final List<DiffNode> childrenlist, final DiffNode child) {
-        if (!childrenlist.contains(child)) {
-            childrenlist.add(child);
-        }
-    }
-
-    private static void insertWithoutDuplicates(final List<DiffNode> childrenlist, final DiffNode child, int index) {
-        if (!childrenlist.contains(child)) {
-            childrenlist.add(index, child);
-        }
-    }
-
     public boolean removeBeforeChild(final DiffNode child) {
-        if (this.beforeChildren.remove(child)) {
-            removeFromCache(this.afterChildren, this.childOrder, child);
+        if (isBeforeChild(child)) {
             dropBeforeChild(child);
+            removeFromCache(child);
             return true;
         }
         return false;
     }
 
     public boolean removeAfterChild(final DiffNode child) {
-        if (this.afterChildren.remove(child)) {
-            removeFromCache(this.beforeChildren, this.childOrder, child);
+        if (isAfterChild(child)) {
             dropAfterChild(child);
+            removeFromCache(child);
             return true;
         }
         return false;
@@ -411,34 +421,44 @@ public class DiffNode {
     }
 
     public List<DiffNode> removeBeforeChildren() {
-        for (final DiffNode child : beforeChildren) {
-            removeFromCache(this.afterChildren, this.childOrder, child);
-            dropBeforeChild(child);
-        }
+        final List<DiffNode> orphans = new ArrayList<>();
 
-        final List<DiffNode> orphans = beforeChildren;
-        beforeChildren = new ArrayList<>();
+        // Note that the following method call can't be written using a foreach loop reusing
+        // {@code removeBeforeChild} because lists can't be modified during traversal.
+        childOrder.removeIf(child -> {
+            if (!isBeforeChild(child)) {
+                return false;
+            }
+
+            orphans.add(child);
+            dropBeforeChild(child);
+            return !isAfterChild(child);
+        });
+
         return orphans;
     }
 
     public List<DiffNode> removeAfterChildren() {
-        for (final DiffNode child : afterChildren) {
-            removeFromCache(this.beforeChildren, this.childOrder, child);
-            dropAfterChild(child);
-        }
+        final List<DiffNode> orphans = new ArrayList<>();
 
-        final List<DiffNode> orphans = afterChildren;
-        afterChildren = new ArrayList<>();
+        // Note that the following method call can't be written using a foreach loop reusing
+        // {@code removeAfterChild} because lists can't be modified during traversal.
+        childOrder.removeIf(child -> {
+            if (!isAfterChild(child)) {
+                return false;
+            }
+
+            orphans.add(child);
+            dropAfterChild(child);
+            return !isBeforeChild(child);
+        });
+
         return orphans;
     }
 
-    private static void removeFromCache(
-            final List<DiffNode> childrenTypeB,
-            final List<DiffNode> allChildren,
-            final DiffNode child)
-    {
-        if (!childrenTypeB.contains(child)) {
-            allChildren.remove(child);
+    private void removeFromCache(final DiffNode child) {
+        if (!isChild(child)) {
+            childOrder.remove(child);
         }
     }
 
@@ -493,18 +513,6 @@ public class DiffNode {
         return getChildOrder();
     }
 
-    public List<DiffNode> getBeforeChildren() {
-        return Collections.unmodifiableList(beforeChildren);
-    }
-
-    public List<DiffNode> getAfterChildren() {
-        return Collections.unmodifiableList(afterChildren);
-    }
-
-    public List<DiffNode> getChildren(Time time) {
-        return time.match(getBeforeChildren(), getAfterChildren());
-    }
-
     public void setIsMultilineMacro(boolean isMultilineMacro) {
         this.isMultilineMacro = isMultilineMacro;
     }
@@ -520,7 +528,7 @@ public class DiffNode {
             List<Node> and = new ArrayList<>();
 
             if (isElif()) {
-                and.add(featureMapping);
+                and.add(getDirectFeatureMapping());
             }
 
             // Negate all previous cases
@@ -529,7 +537,8 @@ public class DiffNode {
                 if (ancestor.isElif()) {
                     and.add(negate(ancestor.getDirectFeatureMapping()));
                 } else {
-                    Assert.assertTrue(ancestor.isCode());
+                    throw new RuntimeException("Expected If or Elif above Else or Elif but got " + ancestor.codeType + " from " + ancestor);
+                    // Assert.assertTrue(ancestor.isCode());
                 }
                 ancestor = parentOf.apply(ancestor);
             }
@@ -537,10 +546,10 @@ public class DiffNode {
 
             return and;
         } else if (isCode()) {
-            return List.of(parent.getFeatureMapping(parentOf));
+            return parent.getFeatureMappingClauses(parentOf);
         }
 
-        return List.of(featureMapping);
+        return List.of(getDirectFeatureMapping());
     }
 
     private Node getFeatureMapping(Function<DiffNode, DiffNode> parentOf) {
@@ -631,6 +640,22 @@ public class DiffNode {
         );
     }
 
+    public boolean isBeforeChild(DiffNode child) {
+        return child.beforeParent == this;
+    }
+
+    public boolean isAfterChild(DiffNode child) {
+        return child.afterParent == this;
+    }
+
+    public boolean isChild(DiffNode child) {
+        return isBeforeChild(child) || isAfterChild(child);
+    }
+
+    public boolean isChild(DiffNode child, Time time) {
+        return time.match(isBeforeChild(child), isAfterChild(child));
+    }
+
     public boolean isLeaf() {
         return childOrder.isEmpty();
     }
@@ -677,10 +702,19 @@ public class DiffNode {
 
     /**
      * @return An integer that uniquely identifiers this DiffNode within its patch.
+     *
+     * From the returned id a new node with all essential attributes reconstructed can be obtained
+     * by using {@code fromID}.
+     *
+     * Note that only {@code 26} bits of the line number are encoded, so if the line number is bigger than
+     * {@code 2^26} this id will no longer be unique.
      */
     public int getID() {
+        int lineNumber = 1 + from.inDiff;
+        Assert.assertTrue((lineNumber << 2*ID_OFFSET) >> 2*ID_OFFSET == lineNumber);
+
         int id;
-        id = 1 + from.inDiff;
+        id = lineNumber;
         id <<= ID_OFFSET;
         id += diffType.ordinal();
         id <<= ID_OFFSET;
@@ -688,8 +722,7 @@ public class DiffNode {
         return id;
     }
     
-    public static DiffNode fromID(final int id) {
-        // lowest 8 bits
+    public static DiffNode fromID(final int id, String label) {
         final int lowestBitsMask = (1 << ID_OFFSET) - 1;
 
         final int codeTypeOrdinal = id & lowestBitsMask;
@@ -702,22 +735,20 @@ public class DiffNode {
                 new DiffLineNumber(fromInDiff, DiffLineNumber.InvalidLineNumber, DiffLineNumber.InvalidLineNumber),
                 DiffLineNumber.Invalid(),
                 null,
-                ""
+                label
         );
     }
 
     public void assertConsistency() {
         // check consistency of children lists and edges
-        for (final DiffNode bc : beforeChildren) {
-            Assert.assertTrue(bc.beforeParent == this, () -> "Before child " + bc + " of " + this + " has another parent " + bc.beforeParent + "!");
-            Assert.assertTrue(childOrder.contains(bc), () -> "Before child " + bc + " of " + this + " is not in the list of all children!");
-        }
-        for (final DiffNode ac : afterChildren) {
-            Assert.assertTrue(ac.afterParent == this, () -> "After child " + ac + " of " + this + " has another parent " + ac.afterParent + "!");
-            Assert.assertTrue(childOrder.contains(ac), () -> "After child " + ac + " of " + this + " is not in the list of all children!");
-        }
         for (final DiffNode c : childOrder) {
-            Assert.assertTrue(beforeChildren.contains(c) || afterChildren.contains(c), () -> "Child " + c + " of " + this + " is neither a before not an after child!");
+            Assert.assertTrue(isChild(c), () -> "Child " + c + " of " + this + " is neither a before nor an after child!");
+            if (c.getBeforeParent() != null) {
+                Assert.assertTrue(c.getBeforeParent().isBeforeChild(c), () -> "The beforeParent of " + c + " doesn't contain that node as child");
+            }
+            if (c.getAfterParent() != null) {
+                Assert.assertTrue(c.getAfterParent().isAfterChild(c), () -> "The afterParent of " + c + " doesn't contain that node as child");
+            }
         }
 
         // a node with exactly one parent was edited
@@ -745,12 +776,12 @@ public class DiffNode {
         }
     }
 
-    public static String toTextDiffLine(final DiffType diffType, final String text) {
-        return diffType.symbol + text.replaceAll(StringUtils.LINEBREAK_REGEX, StringUtils.LINEBREAK + diffType.symbol);
+    public static String toTextDiffLine(final DiffType diffType, final List<String> lines) {
+        return lines.stream().collect(Collectors.joining(StringUtils.LINEBREAK + diffType.symbol, diffType.symbol, ""));
     }
 
     public String toTextDiffLine() {
-        return toTextDiffLine(diffType, this.getLabel());
+        return toTextDiffLine(diffType, lines);
     }
 
     public String toTextDiff() {
@@ -766,9 +797,10 @@ public class DiffNode {
             diff.append(child.toTextDiff());
         }
 
+        // Add endif after macro
         if (isMacro()) {
             diff
-                    .append(toTextDiffLine(this.diffType, CodeType.ENDIF.asMacroText()))
+                    .append(toTextDiffLine(this.diffType, List.of(CodeType.ENDIF.asMacroText())))
                     .append(StringUtils.LINEBREAK);
         }
 
@@ -794,11 +826,19 @@ public class DiffNode {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         DiffNode diffNode = (DiffNode) o;
-        return isMultilineMacro == diffNode.isMultilineMacro && diffType == diffNode.diffType && codeType == diffNode.codeType && from.equals(diffNode.from) && to.equals(diffNode.to) && Objects.equals(featureMapping, diffNode.featureMapping) && label.equals(diffNode.label);
+        return isMultilineMacro == diffNode.isMultilineMacro && diffType == diffNode.diffType && codeType == diffNode.codeType && from.equals(diffNode.from) && to.equals(diffNode.to) && Objects.equals(featureMapping, diffNode.featureMapping) && lines.equals(diffNode.lines);
     }
 
+    /**
+     * Compute a hash using all available attributes.
+     *
+     * This implementation doesn't strictly adhere to the contract required by {@code Object},
+     * because some attributes (for example the line numbers) can be changed during the lifetime of
+     * a {@code DiffNode}. So when using something like a {@code HashSet} the user of {@code
+     * DiffNode} has to be careful not to change any attributes of a stored {@code DiffNode}.
+     */
     @Override
     public int hashCode() {
-        return Objects.hash(diffType, codeType, isMultilineMacro, from, to, featureMapping, label);
+        return Objects.hash(diffType, codeType, isMultilineMacro, from, to, featureMapping, lines);
     }
 }

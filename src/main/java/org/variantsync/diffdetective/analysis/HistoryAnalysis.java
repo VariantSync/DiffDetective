@@ -55,9 +55,9 @@ public record HistoryAnalysis(
                 strategy,
                 commitsToProcess
         ));
-        Logger.info("Scheduled " + commitsToProcess.size() + " commits.");
+        Logger.info("Scheduled {} commits.", commitsToProcess.size());
         commitsToProcess = null; // free reference to enable garbage collection
-        Logger.info("<<< done after " + clock.printPassedSeconds());
+        Logger.info("<<< done after {}", clock.printPassedSeconds());
 
         Logger.info(">>> Run mining");
         clock.start();
@@ -65,10 +65,10 @@ public record HistoryAnalysis(
             totalResult = task.call();
         } catch (Exception e) {
             Logger.error(e);
-            Logger.info("<<< aborted after " + clock.printPassedSeconds());
+            Logger.info("<<< aborted after {}", clock.printPassedSeconds());
             return;
         }
-        Logger.info("<<< done after " + clock.printPassedSeconds());
+        Logger.info("<<< done after {}", clock.printPassedSeconds());
 
         exportMetadata(outputDir, totalResult);
     }
@@ -85,12 +85,15 @@ public record HistoryAnalysis(
 
         // prepare tasks
         final int nThreads = Diagnostics.INSTANCE.run().getNumberOfAvailableProcessors();
-        Logger.info(">>> Scheduling asynchronous analysis on " + nThreads + " threads.");
+        Logger.info(">>> Scheduling asynchronous analysis on {} threads.", nThreads);
         clock.start();
         final InvocationCounter<RevCommit, RevCommit> numberOfTotalCommits = InvocationCounter.justCount();
         final Iterator<CommitHistoryAnalysisTask> tasks = new MappedIterator<>(
                 /// 1.) Retrieve COMMITS_TO_PROCESS_PER_THREAD commits from the differ and cluster them into one list.
-                new ClusteredIterator<>(differ.yieldRevCommitsAfter(numberOfTotalCommits), commitsToProcessPerThread),
+                new ClusteredIterator<>(
+                        differ.yieldRevCommitsAfter(numberOfTotalCommits),
+                        commitsToProcessPerThread
+                ),
                 /// 2.) Create a MiningTask for the list of commits. This task will then be processed by one
                 ///     particular thread.
                 commitList -> taskFactory.create(
@@ -99,7 +102,7 @@ public record HistoryAnalysis(
                         outputDir.resolve(commitList.get(0).getId().getName() + ".lg"),
                         commitList)
         );
-        Logger.info("<<< done in " + clock.printPassedSeconds());
+        Logger.info("<<< done in {}", clock.printPassedSeconds());
 
         final TaskCompletionMonitor commitSpeedMonitor = new TaskCompletionMonitor(0, TaskCompletionMonitor.LogProgress("commits"));
         Logger.info(">>> Run Analysis");
@@ -112,13 +115,12 @@ public record HistoryAnalysis(
                 commitSpeedMonitor.addFinishedTasks(threadsResult.exportedCommits);
             }
         } catch (Exception e) {
-            Logger.error("Failed to run all mining task!");
-            Logger.error(e);
+            Logger.error(e, "Failed to run all mining task");
             System.exit(0);
         }
 
         final double runtime = clock.getPassedSeconds();
-        Logger.info("<<< done in " + Clock.printPassedSeconds(runtime));
+        Logger.info("<<< done in {}", Clock.printPassedSeconds(runtime));
 
         totalResult.runtimeWithMultithreadingInSeconds = runtime;
         totalResult.totalCommits = numberOfTotalCommits.invocationCount().get();
@@ -132,12 +134,12 @@ public record HistoryAnalysis(
 
     public static <T> void exportMetadataToFile(final Path outputFile, final Metadata<T> totalResult) {
         final String prettyMetadata = totalResult.exportTo(outputFile);
-        Logger.info("Metadata:\n" + prettyMetadata);
+        Logger.info("Metadata:\n{}", prettyMetadata);
     }
 
     public void runAsync() {
         for (final Repository repo : repositoriesToAnalyze) {
-            Logger.info(" === Begin Processing " + repo.getRepositoryName() + " ===");
+            Logger.info(" === Begin Processing {} ===", repo.getRepositoryName());
             final Clock clock = new Clock();
             clock.start();
 
@@ -149,10 +151,10 @@ public record HistoryAnalysis(
 
                 postProcessingOnRepositoryOutputDir.accept(repoOutputDir);
             } else {
-                Logger.info("  Skipping repository " + repo.getRepositoryName() + " because it has already been processed.");
+                Logger.info("  Skipping repository {} because it has already been processed.", repo.getRepositoryName());
             }
 
-            Logger.info(" === End Processing " + repo.getRepositoryName() + " after " + clock.printPassedSeconds() + " ===");
+            Logger.info(" === End Processing {} after {} ===", repo.getRepositoryName(), clock.printPassedSeconds());
         }
     }
 }

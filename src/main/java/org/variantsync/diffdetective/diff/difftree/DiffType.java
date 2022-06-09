@@ -13,9 +13,6 @@ public enum DiffType {
         this.symbol = symbol;
     }
 
-    final static String addCharacter = "+";
-    final static String remCharacter = "-";
-
     public static DiffType thatExistsOnlyAt(Time time) {
         return switch (time) {
             case BEFORE -> REM;
@@ -75,9 +72,9 @@ public enum DiffType {
      * @return The type of edit of <code>line</code>
      */
     public static DiffType ofDiffLine(String line) {
-        if (line.startsWith(addCharacter)) {
+        if (line.startsWith(ADD.symbol)) {
             return ADD;
-        } else if (line.startsWith(remCharacter)) {
+        } else if (line.startsWith(REM.symbol)) {
             return REM;
         } else {
             return NON;

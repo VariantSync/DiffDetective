@@ -9,6 +9,8 @@
     <version>1.0.0</version>
 
     <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <maven.compiler.source>16</maven.compiler.source>
         <maven.compiler.target>16</maven.compiler.target>
     </properties>
@@ -57,16 +59,16 @@
             <groupId>org.sat4j</groupId>
             <artifactId>core</artifactId>
             <version>2.3.5</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/org.sat4j.core.jar</systemPath>
+<!--            <scope>system</scope>-->
+<!--            <systemPath>${project.basedir}/lib/org.sat4j.core.jar</systemPath>-->
         </dependency>
 
         <dependency>
             <groupId>de.ovgu</groupId>
             <artifactId>featureide.lib.fm</artifactId>
             <version>3.8.1</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/de.ovgu.featureide.lib.fm-v3.8.1.jar</systemPath>
+<!--            <scope>system</scope>-->
+<!--            <systemPath>${project.basedir}/lib/de.ovgu.featureide.lib.fm-v3.8.1.jar</systemPath>-->
         </dependency>
 
         <dependency>

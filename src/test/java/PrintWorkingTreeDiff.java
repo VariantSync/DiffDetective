@@ -45,28 +45,9 @@ public class PrintWorkingTreeDiff {
 			diffOutput += patchDiff.getDiff();
 		}
 		
-		// Load diff to verfiy computed output
-		String fileForVerification = "src/test/resources/" + repoName + ".txt";
-		String result = read(Paths.get(fileForVerification));
-
-		// Remove all white spaces to simplify comparison 
-		diffOutput = diffOutput.replaceAll("\\s", "");
-		result = result.replaceAll("\\s", "");
-	
 		// Check whether diffs match
-		Assert.assertTrue(diffOutput.equals(result));
+		Path fileForVerification = Path.of("src", "test", "resources", repoName + ".txt");
+		TestUtils.assertEqualToFile(fileForVerification, diffOutput);
 		
 	}
-	
-	/**
-	 * Read in diff from external file.
-	 * 
-	 * @param filePath Path to the file
-	 * @return The diff
-	 * @throws IOException 
-	 */
-	private static String read(Path filePath) throws IOException {
-        return IO.readAsString(filePath);
-	}
-	
 }

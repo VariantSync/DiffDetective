@@ -49,8 +49,7 @@ public record DiffTreeLineGraphExportOptions(
     public static BiConsumer<PatchDiff, Exception> RenderError() {
         final PatchDiffRenderer errorRenderer = PatchDiffRenderer.ErrorRendering(DiffTreeRenderer.WithinDiffDetective());
         return (p, e) -> {
-            Logger.error(e);
-            Logger.error("Rendering patch");
+            Logger.error(e, "Rendering patch");
             errorRenderer.render(p, Path.of("error"));
         };
     }
