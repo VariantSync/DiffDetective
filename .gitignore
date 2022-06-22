@@ -121,12 +121,11 @@ patches/*
 /input
 /error
 examples/
-results/
 
 /log.txt
-/local-maven-repo
 
 ### Eclipse ###
 .settings/
 .classpath
 .project
+plotting/__pycache__
