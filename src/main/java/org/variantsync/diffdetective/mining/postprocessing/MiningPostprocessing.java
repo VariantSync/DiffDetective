@@ -80,7 +80,7 @@ public class MiningPostprocessing {
      * non-recursive
      * @param path A path to a linegraph file or a directory containing linegraph files.
      * @return The list of all diffgraphs parsed from linegraph files in the given directory.
-     * @throws IOException If the directory could not be accessed ({@link Files::list}).
+     * @throws IOException If the directory could not be accessed ({@link Files#list}).
      */
     public static List<DiffTree> parseFrequentSubgraphsIn(final Path path) throws IOException {
         if (Files.isDirectory(path)) {

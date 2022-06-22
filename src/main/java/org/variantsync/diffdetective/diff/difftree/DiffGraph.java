@@ -12,7 +12,7 @@ public final class DiffGraph {
     }
 
     /**
-     * Invokes {@link DiffGraph::fromNodes(Collection<DiffNode>)} with an unknown DiffTreeSource.
+     * Invokes {@link DiffGraph#fromNodes(Collection<DiffNode>)} with an unknown DiffTreeSource.
      */
     public static DiffTree fromNodes(final Collection<DiffNode> nodes) {
         return fromNodes(nodes, DiffTreeSource.Unknown);
@@ -24,7 +24,7 @@ public final class DiffGraph {
      * @param nodes a DiffGraph
      * @param source the source where the DiffGraph came from.
      * @return A DiffTree representing the DiffGraph with a synthetic root node.
-     * see DiffGraph.fromNodes(Collection<DiffNode>)
+     * @see DiffGraph#fromNodes(Collection<DiffNode>)
      */
     public static DiffTree fromNodes(final Collection<DiffNode> nodes, final DiffTreeSource source) {
         final DiffNode newRoot = DiffNode.createRoot();
