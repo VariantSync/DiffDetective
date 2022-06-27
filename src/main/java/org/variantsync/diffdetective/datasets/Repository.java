@@ -92,7 +92,7 @@ public class Repository {
 	/**
 	 * Creates a repository from an existing directory.
 	 * 
-	 * @param dirPath The path to the repo directory relative to <WORKING_DIRECTORY>/repositories
+	 * @param dirPath The path to the repo directory relative to {@code <WORKING_DIRECTORY>/repositories}
 	 * @param repoName A name for the repository (currently not used)
 	 * @return A repository from an existing directory
 	 */
@@ -107,7 +107,7 @@ public class Repository {
 	/**
 	 * Creates a repository from a local zip file.
 	 * 
-	 * @param filePath The path to the zip file (absolute or relative to <WORKING_DIRECTORY>).
+	 * @param filePath The path to the zip file (absolute or relative to {@code <WORKING_DIRECTORY>}).
 	 * @param repoName A name for the repository (currently not used)
 	 * @return A repository from a local zip file
 	 */

@@ -238,8 +238,7 @@ public class GitDiffer {
      *
      * @param git The git repo which the commit stems from
      * @param commit The commit which the working tree is compared with
-     * @param keepFullDiffs  If true, the PatchDiff will contain the full diff as a string. Set to false if you want to
-     *                       reduce memory consumption
+     * @param parseOptions {@link ParseOptions}
      * @return The CommitDiff of the given commit
      */
     public static CommitDiffResult createWorkingTreeDiff(
