@@ -28,7 +28,7 @@ public class FixTrueFalse {
 
     /**
      * @return True iff the given formula is a true literal.
-     * @see FixTrueFalse::isTrueLiteral
+     * @see FixTrueFalse#isTrueLiteral
      */
     public static boolean isTrue(final Node n) {
         return n instanceof Literal l && isTrueLiteral(l);
@@ -36,7 +36,7 @@ public class FixTrueFalse {
 
     /**
      * @return True iff the given formula is a false literal.
-     * @see FixTrueFalse::isFalseLiteral
+     * @see FixTrueFalse#isFalseLiteral
      */
     public static boolean isFalse(final Node n) {
         return n instanceof Literal l && isFalseLiteral(l);
@@ -77,7 +77,7 @@ public class FixTrueFalse {
 
     /**
      * Replaces all literals in the given `formula` with the literals True and False that
-     * represent the respective atomic values w.r.t. FixTrueFalse::isTrueLiteral and FixTrueFalse::isFalseLiteral.
+     * represent the respective atomic values w.r.t. FixTrueFalse.isTrueLiteral and FixTrueFalse.isFalseLiteral.
      * This e.g. includes replacing literals representing variables with name "1" or "true" with the respective constants.
      * Returns a formula in which the values True and False are eliminated.
      * So you either get True, False, or a formula that does not contain any True or False value.
