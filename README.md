@@ -1,5 +1,24 @@
 # Classifying Edits to Variability in Source Code
 
+---
+TODOS for artifact submission
+- move top-level docker files to `docker` dir
+- create a top level `replication` dir
+  - put `docker` dir in there
+  - put `docs/replication` in there
+  - put `openScreen.sh` and `quitScreen.sh` there
+  - upload `runValidation.sh` and put it there
+- `docs/validation` has an unfortunate name because it clashes with the paper. The directoy seems to contain files to validate the correctness of the docker image and not files relevant for replicating the validation of our paper
+- create a top level "python" dir
+  - put `mining` there
+  - put `linegraph` there. Maybe rename `linegraph` to `rendering`
+  - put `plotting` there
+- Write Javadoc
+- Remove deprecated classes
+- Test and repair docker setup
+  - main path is broken
+---
+
 This is the replication package our submission _Classifying Edits to Variability in Source Code_ submitted to the 30th ACM Joint European Software Engineering Conference and Symposium on the Foundations of Software Engineering (ESEC/FSE) in March 2022.
 
 This replication package consists of four parts:
