@@ -22,6 +22,19 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.function.Consumer;
 
+/**
+ * An analyses that is performed for the entire commit histories of each given git repositoy.
+ * @param repositoriesToAnalyze The repositories whose commit history should be analyzed.
+ * @param outputDir The directory to which any produced results should be written.
+ * @param commitsToProcessPerThread Number of commits that should be processed by each single thread if multithreading is used.
+ *                                  Each thread will be given this number of commits to process.
+ *                                  A larger number means fewer threads and less scheduling.
+ *                                  A smaller number means more threads but also more scheduling.
+ * @param whatToDo A factory for tasks that should be executed for the commits of a certain repository.
+ * @param postProcessingOnRepositoryOutputDir A callback that is invoked after all analyses are completed.
+ *                                            The argument is the output directory on which postprocessing might occur.
+ * @author Paul Bittner
+ */
 public record HistoryAnalysis(
         List<Repository> repositoriesToAnalyze,
         Path outputDir,
@@ -29,7 +42,14 @@ public record HistoryAnalysis(
         CommitHistoryAnalysisTaskFactory whatToDo,
         Consumer<Path> postProcessingOnRepositoryOutputDir
 ) {
+    /**
+     * File name that is used to store the analysis results for each repository.
+     */
     public static final String TOTAL_RESULTS_FILE_NAME = "totalresult" + AnalysisResult.EXTENSION;
+    /**
+     * Default value for <code>commitsToProcessPerThread</code>
+     * @see org.variantsync.diffdetective.analysis.HistoryAnalysis#HistoryAnalysis(List, Path, int, CommitHistoryAnalysisTaskFactory, Consumer) 
+     */
     public static final int COMMITS_TO_PROCESS_PER_THREAD_DEFAULT = 1000;
 
     @Deprecated
@@ -73,6 +93,14 @@ public record HistoryAnalysis(
         exportMetadata(outputDir, totalResult);
     }
 
+    /**
+     * Static analysis method that can be used without creating an HistoryAnalysis object first.
+     * Analyzes the history of the given repository with the given parameters.
+     * @param repo The repository to analyze.
+     * @param outputDir The directory to which any produced results should be written.
+     * @param taskFactory A factory for tasks that should be executed for the commits of a certain repository.
+     * @param commitsToProcessPerThread Number of commits that should be processed by each single thread if multithreading is used.
+     */
     public static void analyzeAsync(
             final Repository repo,
             final Path outputDir,
@@ -128,15 +156,34 @@ public record HistoryAnalysis(
         exportMetadata(outputDir, totalResult);
     }
 
-    public static <T> void exportMetadata(final Path outputDir, final Metadata<T> totalResult) {
-        exportMetadataToFile(outputDir.resolve(TOTAL_RESULTS_FILE_NAME), totalResult);
+    /**
+     * Exports the given metadata object to a file named according
+     * {@link org.variantsync.diffdetective.analysis.HistoryAnalysis#TOTAL_RESULTS_FILE_NAME} in the given directory.
+     * @param outputDir The directory into which the metadata object file should be written.
+     * @param metadata The metadata to serialize 
+     * @param <T> Type of the metadata.
+     */
+    public static <T> void exportMetadata(final Path outputDir, final Metadata<T> metadata) {
+        exportMetadataToFile(outputDir.resolve(TOTAL_RESULTS_FILE_NAME), metadata);
     }
 
-    public static <T> void exportMetadataToFile(final Path outputFile, final Metadata<T> totalResult) {
-        final String prettyMetadata = totalResult.exportTo(outputFile);
+    /**
+     * Exports the given metadata object to the given file. Overwrites existing files.
+     * @param outputFile The file to write.
+     * @param metadata The metadata to serialize 
+     * @param <T> Type of the metadata.
+     */
+    public static <T> void exportMetadataToFile(final Path outputFile, final Metadata<T> metadata) {
+        final String prettyMetadata = metadata.exportTo(outputFile);
         Logger.info("Metadata:\n{}", prettyMetadata);
     }
 
+    /**
+     * Runs this analysis asynchronously.
+     * Processes each repository sequentially and runs
+     * {@link org.variantsync.diffdetective.analysis.HistoryAnalysis#analyzeAsync(Repository, Path, CommitHistoryAnalysisTaskFactory, int)}
+     * on each of them.
+     */
     public void runAsync() {
         for (final Repository repo : repositoriesToAnalyze) {
             Logger.info(" === Begin Processing {} ===", repo.getRepositoryName());
@@ -147,8 +194,6 @@ public record HistoryAnalysis(
             /// Don't repeat work we already did:
             if (!Files.exists(repoOutputDir.resolve(TOTAL_RESULTS_FILE_NAME))) {
                 analyzeAsync(repo, repoOutputDir, whatToDo, commitsToProcessPerThread);
-//                mine(repo, repoOutputDir, ExportOptions(repo), MiningStrategy());
-
                 postProcessingOnRepositoryOutputDir.accept(repoOutputDir);
             } else {
                 Logger.info("  Skipping repository {} because it has already been processed.", repo.getRepositoryName());

@@ -15,16 +15,30 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.Callable;
 
+/**
+ * Abstract base class for tasks to run during a {@link HistoryAnalysis}.
+ * A <code>CommitHistoryAnalysisTask</code>s purpose is to process a given set of commits with a specific analysis.
+ * @author Paul Bittner
+ */
 public abstract class CommitHistoryAnalysisTask implements Callable<AnalysisResult> {
     public static final String COMMIT_TIME_FILE_EXTENSION = ".committimes.txt";
     public static final String PATCH_STATISTICS_EXTENSION = ".patchStatistics.csv";
 
+    /**
+     * Options that may be specified for processing a set of commits.
+     * @param repository The repository that is analyzed.
+     * @param differ The differ that should be used to obtain diffs.
+     * @param outputDir The path to which any output should be written on disk.
+     * @param exportOptions Options for exporting DiffTrees.
+     * @param analysisStrategy A callback that is invoked for each commit.
+     * @param commits The set of commits to process in this task.
+     */
     public record Options(
         Repository repository,
         GitDiffer differ,
-        Path outputPath,
+        Path outputDir,
         DiffTreeLineGraphExportOptions exportOptions,
-        AnalysisStrategy miningStrategy,
+        AnalysisStrategy analysisStrategy,
         Iterable<RevCommit> commits
     ) {}
 
@@ -34,13 +48,17 @@ public abstract class CommitHistoryAnalysisTask implements Callable<AnalysisResu
         this.options = options;
     }
 
+    /**
+     * Returns the options for this task.
+     * @return the options for this task.
+     */
     public CommitHistoryAnalysisTask.Options getOptions() {
         return options;
     }
 
     @Override
     public AnalysisResult call() throws Exception {
-        options.miningStrategy().start(options.repository(), options.outputPath(), options.exportOptions());
+        options.analysisStrategy().start(options.repository(), options.outputDir(), options.exportOptions());
 
         final AnalysisResult miningResult = new AnalysisResult(options.repository.getRepositoryName());
         final DiffTreeLineGraphExportOptions exportOptions = options.exportOptions();
@@ -53,6 +71,11 @@ public abstract class CommitHistoryAnalysisTask implements Callable<AnalysisResu
         return miningResult;
     }
 
+    /**
+     * Exports the given commit times to the given file. Overwrites existing files.
+     * @param commitTimes List of all CommitProcessTimes to write into a single file.
+     * @param pathToOutputFile Output file to write.
+     */
     public static void exportCommitTimes(final List<CommitProcessTime> commitTimes, final Path pathToOutputFile) {
         final StringBuilder times = new StringBuilder();
 
@@ -68,6 +91,11 @@ public abstract class CommitHistoryAnalysisTask implements Callable<AnalysisResu
         }
     }
 
+    /**
+     * Exports the given patch statistics to the given file. Overwrites existing files.
+     * @param commitTimes List of all PatchStatistics to write into a single file.
+     * @param pathToOutputFile Output file to write.
+     */
     public static void exportPatchStatistics(final List<PatchStatistics> commitTimes, final Path pathToOutputFile) {
         final String csv = CSV.toCSV(commitTimes);
 

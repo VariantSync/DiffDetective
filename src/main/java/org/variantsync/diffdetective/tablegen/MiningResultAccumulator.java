@@ -34,7 +34,8 @@ public class MiningResultAccumulator {
             AnalysisResult.storeAsCustomInfo(MetadataKeys.TREEFORMAT),
             AnalysisResult.storeAsCustomInfo(MetadataKeys.NODEFORMAT),
             AnalysisResult.storeAsCustomInfo(MetadataKeys.EDGEFORMAT),
-            AnalysisResult.storeAsCustomInfo(MetadataKeys.TASKNAME)
+            AnalysisResult.storeAsCustomInfo(MetadataKeys.TASKNAME),
+            Map.entry("org/variantsync/diffdetective/analysis", (r, val) -> r.putCustomInfo(MetadataKeys.TASKNAME, val))
     );
 
     public static Map<String, AnalysisResult> getAllTotalResultsIn(final Path folderPath) throws IOException {

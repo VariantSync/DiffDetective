@@ -48,7 +48,7 @@ public class PatternValidationTask extends CommitHistoryAnalysisTask {
                 }
 
                 final CommitDiff commitDiff = commitDiffResult.diff().get();
-                options.miningStrategy().onCommit(commitDiff, "");
+                options.analysisStrategy().onCommit(commitDiff, "");
 
                 // Count elementary patterns
                 int numDiffTrees = 0;
@@ -99,10 +99,10 @@ public class PatternValidationTask extends CommitHistoryAnalysisTask {
             }
         }
 
-        options.miningStrategy().end();
+        options.analysisStrategy().end();
         miningResult.runtimeInSeconds = totalTime.getPassedSeconds();
-        miningResult.exportTo(FileUtils.addExtension(options.outputPath(), AnalysisResult.EXTENSION));
-        exportCommitTimes(commitTimes, FileUtils.addExtension(options.outputPath(), COMMIT_TIME_FILE_EXTENSION));
+        miningResult.exportTo(FileUtils.addExtension(options.outputDir(), AnalysisResult.EXTENSION));
+        exportCommitTimes(commitTimes, FileUtils.addExtension(options.outputDir(), COMMIT_TIME_FILE_EXTENSION));
         return miningResult;
     }
 }
