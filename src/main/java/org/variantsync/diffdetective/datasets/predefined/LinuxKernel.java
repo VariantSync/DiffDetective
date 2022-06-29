@@ -12,7 +12,9 @@ import java.nio.file.Path;
  *
  * @author Kevin Jedelhauser, Paul Maximilian Bittner
  */
+@Deprecated
 public class LinuxKernel {
+    @Deprecated
     public static final DiffFilter DIFF_FILTER = new DiffFilter.Builder()
             .allowMerge(false)
 //            .blockedPaths(DiffEntry.DEV_NULL) // <- I'm with stupid.
@@ -21,7 +23,7 @@ public class LinuxKernel {
             .build();
 
     /**
-     * This can cause bugs.
+     * This may cause bugs.
      */
     @Deprecated
     public static boolean isFeature(DiffNode node) {
@@ -33,6 +35,7 @@ public class LinuxKernel {
      * @param localDir Directory to clone the repository to.
      * @return Linux repository
      */
+    @Deprecated
     public static Repository cloneFromGithubTo(Path localDir) {
         return Repository
                 .tryFromRemote(localDir, "https://github.com/torvalds/linux", "Linux")

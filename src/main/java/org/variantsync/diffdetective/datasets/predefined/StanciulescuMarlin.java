@@ -16,6 +16,10 @@ import java.nio.file.Path;
  * @author Kevin Jedelhauser, Paul Maximilian Bittner
  */
 public class StanciulescuMarlin {
+    /**
+     * The diff filter that was applied by Stanciulescu et al. in their study.
+     * We reproduced their description to the best of our knowledge.
+     */
     public static final DiffFilter DIFF_FILTER = new DiffFilter.Builder()
             .allowMerge(false)
             .allowedPaths("Marlin.*")

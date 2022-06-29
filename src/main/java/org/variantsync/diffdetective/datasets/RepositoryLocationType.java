@@ -5,8 +5,7 @@ package org.variantsync.diffdetective.datasets;
  * 
  * @author Kevin Jedelhauser
  */
-public enum LoadingParameter {
-	
+public enum RepositoryLocationType {
 	/**
 	 * Load repository from a local directory.
 	 */
