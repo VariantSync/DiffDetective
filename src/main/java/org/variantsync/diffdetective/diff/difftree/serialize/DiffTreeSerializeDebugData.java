@@ -7,7 +7,6 @@ import org.variantsync.functjonal.category.InplaceSemigroup;
 import java.util.LinkedHashMap;
 
 public class DiffTreeSerializeDebugData implements Metadata<DiffTreeSerializeDebugData> {
-
     public static final InplaceSemigroup<DiffTreeSerializeDebugData> ISEMIGROUP = (a, b) -> {
         a.numExportedNonNodes += b.numExportedNonNodes;
         a.numExportedAddNodes += b.numExportedAddNodes;

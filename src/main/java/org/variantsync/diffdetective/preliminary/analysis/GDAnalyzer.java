@@ -1,9 +1,9 @@
 package org.variantsync.diffdetective.preliminary.analysis;
 
 import org.variantsync.diffdetective.diff.CommitDiff;
-import org.variantsync.diffdetective.diff.GitDiff;
 import org.variantsync.diffdetective.diff.PatchDiff;
 import org.variantsync.diffdetective.pattern.EditPattern;
+import org.variantsync.diffdetective.preliminary.GitDiff;
 import org.variantsync.diffdetective.preliminary.analysis.data.CommitDiffAnalysisResult;
 import org.variantsync.diffdetective.preliminary.analysis.data.GDAnalysisResult;
 import org.variantsync.diffdetective.preliminary.analysis.data.PatchDiffAnalysisResult;

@@ -1,4 +1,7 @@
-package org.variantsync.diffdetective.diff;
+package org.variantsync.diffdetective.preliminary;
+
+import org.variantsync.diffdetective.diff.CommitDiff;
+import org.variantsync.diffdetective.diff.PatchDiff;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,10 +11,11 @@ import java.util.List;
  *
  * @author Sören Viegener
  */
+@Deprecated
 public class GitDiff {
 
 	/**
-	 * A list of all {@link DiffCommit DiffCommits}.
+	 * A list of all {@link CommitDiff CommitDiffs}.
 	 */
     private final List<CommitDiff> commitDiffs;
     
