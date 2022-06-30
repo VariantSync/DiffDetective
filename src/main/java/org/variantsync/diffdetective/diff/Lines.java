@@ -34,7 +34,7 @@ public class Lines {
     }
 
     public int getToExclusive() {
-        return toExclusive - 1;
+        return toExclusive;
     }
 
 //    public int getToInclusive() {
