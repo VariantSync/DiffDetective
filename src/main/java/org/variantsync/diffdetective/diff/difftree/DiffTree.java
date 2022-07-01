@@ -26,28 +26,61 @@ import static org.variantsync.functjonal.Functjonal.when;
 
 /**
  * Implementation of the diff tree.
+ * @author Paul Bittner, Sören Viegener
  */
 public class DiffTree {
     private final DiffNode root;
     private DiffTreeSource source;
 
+    /**
+     * Creates a DiffTree that only consists of the single given root node.
+     * @param root The root of this tree.
+     */
     public DiffTree(DiffNode root) {
         this(root, DiffTreeSource.Unknown);
     }
 
+    /**
+     * Creates a DiffTree that only consists of the single given root node.
+     * Remembers the given source as the tree's source of creation.
+     * @param root The root of this tree.
+     * @param source The data from which the DiffTree was created.
+     */
     public DiffTree(DiffNode root, DiffTreeSource source) {
         this.root = root;
         this.source = source;
     }
 
+    /**
+     * Same as {@link DiffTree#fromFile(Path, boolean, boolean, DiffNodeParser)} but with
+     * the {@link DiffNodeParser#Default default parser} for the lines in the diff.
+     */
     public static DiffResult<DiffTree> fromFile(final Path p, boolean collapseMultipleCodeLines, boolean ignoreEmptyLines) throws IOException {
         return fromFile(p, collapseMultipleCodeLines, ignoreEmptyLines, DiffNodeParser.Default);
     }
 
+    /**
+     * Same as {@link DiffTree#fromDiff(String, boolean, boolean, DiffNodeParser)} but with
+     * the {@link DiffNodeParser#Default default parser} for the lines in the diff.
+     */
     public static DiffResult<DiffTree> fromDiff(final String diff, boolean collapseMultipleCodeLines, boolean ignoreEmptyLines) {
         return fromDiff(diff, collapseMultipleCodeLines, ignoreEmptyLines, DiffNodeParser.Default);
     }
 
+    /**
+     * Parses a DiffTree from the given file.
+     * The file should contain a text-based diff without any meta information.
+     * So just lines preceded by "+", "-", or " " are expected.
+     * @param p Path to a diff file.
+     * @param collapseMultipleCodeLines Set to true if subsequent lines of source code with
+     *                                  the same {@link CodeType type of change} should be
+     *                                  collapsed into a single source code node representing
+     *                                  all lines at once.
+     * @param ignoreEmptyLines Set to true if empty lines should not be included in the DiffTree.
+     * @param annotationParser The parser that is used to parse lines in the diff to {@link DiffNode}s.
+     * @return A result either containing the parsed DiffTree or an error message in case of failure.
+     * @throws IOException when the given file could not be read for some reason.
+     */
     public static DiffResult<DiffTree> fromFile(final Path p, boolean collapseMultipleCodeLines, boolean ignoreEmptyLines, final DiffNodeParser annotationParser) throws IOException {
         try (BufferedReader file = Files.newBufferedReader(p)) {
             final DiffResult<DiffTree> tree = DiffTreeParser.createDiffTree(file, collapseMultipleCodeLines, ignoreEmptyLines, annotationParser);
@@ -56,22 +89,53 @@ public class DiffTree {
         }
     }
 
+    /**
+     * Parses a DiffTree from the given unix diff.
+     * The file should contain a text-based diff without any meta information.
+     * So just lines preceded by "+", "-", or " " are expected.
+     * @param diff The diff as text. Lines should be separated by a newline character. Each line should be preceded by either "+", "-", or " ".
+     * @param collapseMultipleCodeLines Set to true if subsequent lines of source code with
+     *                                  the same {@link CodeType type of change} should be
+     *                                  collapsed into a single source code node representing
+     *                                  all lines at once.
+     * @param ignoreEmptyLines Set to true if empty lines should not be included in the DiffTree.
+     * @param annotationParser The parser that is used to parse lines in the diff to {@link DiffNode}s.
+     * @return A result either containing the parsed DiffTree or an error message in case of failure.
+     */
     public static DiffResult<DiffTree> fromDiff(final String diff, boolean collapseMultipleCodeLines, boolean ignoreEmptyLines, final DiffNodeParser annotationParser) {
         final DiffResult<DiffTree> tree = DiffTreeParser.createDiffTree(diff, collapseMultipleCodeLines, ignoreEmptyLines, annotationParser);
         tree.unwrap().ifSuccess(t -> t.setSource(new PatchString(diff)));
         return tree;
     }
 
+    /**
+     * Invokes the given callback for each node in this DiffTree.
+     * @param procedure callback
+     * @return this
+     */
     public DiffTree forAll(final Consumer<DiffNode> procedure) {
         DiffTreeTraversal.forAll(procedure).visit(this);
         return this;
     }
 
+
+    /**
+     * Traverse this DiffTree with the given visitor.
+     * When visiting a node, the visitor decides how to proceed.
+     * @param visitor visitor that is invoked on the root first and then decides how to proceed the traversal.
+     * @return this
+     */
     public DiffTree traverse(final DiffTreeVisitor visitor) {
         DiffTreeTraversal.with(visitor).visit(this);
         return this;
     }
 
+    /**
+     * Checks whether all nodes in this tree satisfy the given condition.
+     * The condition might not be invoked on every node in case it is not necessary.
+     * @param condition A condition to check on each node.
+     * @return True iff the given condition returns true for all nodes in this tree.
+     */
     public boolean allMatch(final Predicate<DiffNode> condition) {
         final AtomicBoolean all = new AtomicBoolean(true);
         DiffTreeTraversal.with((traversal, subtree) -> {
@@ -87,6 +151,12 @@ public class DiffTree {
         return all.get();
     }
 
+    /**
+     * Checks whether any node in this tree satisfies the given condition.
+     * The condition might not be invoked on every node in case a node is found.
+     * @param condition A condition to check on each node.
+     * @return True iff the given condition returns true for at least one node in this tree.
+     */
     public boolean anyMatch(final Predicate<DiffNode> condition) {
         final AtomicBoolean matchFound = new AtomicBoolean(false);
         DiffTreeTraversal.with((traversal, subtree) -> {
@@ -102,28 +172,55 @@ public class DiffTree {
         return matchFound.get();
     }
 
+    /**
+     * Checks whether no node in this tree satisfies the given condition.
+     * The condition might not be invoked on every node.
+     * @param condition A condition to check on each node.
+     * @return True iff the given condition returns false for every node in this tree.
+     */
     public boolean noneMatch(final Predicate<DiffNode> condition) {
         return !anyMatch(condition);
     }
 
+    /**
+     * Returns the root node of this tree.
+     */
     public DiffNode getRoot() {
         return root;
     }
 
+    /**
+     * Returns all nodes that satisfy the given predicate.
+     * Traverses the DiffTree once.
+     * @param property Filter for nodes. Should return true if a node should be included.
+     * @return A List of all nodes satisfying the given predicate.
+     */
     public List<DiffNode> computeAllNodesThat(final Predicate<DiffNode> property) {
         final List<DiffNode> nodes = new ArrayList<>();
         forAll(when(property, (Consumer<? super DiffNode>) nodes::add));
         return nodes;
     }
 
+    /**
+     * Returns all artifact nodes of this DiffTree.
+     * @see DiffTree#computeAllNodesThat
+     */
     public List<DiffNode> computeCodeNodes() {
         return computeAllNodesThat(DiffNode::isCode);
     }
 
+    /**
+     * Returns all mapping nodes of this DiffTree.
+     * @see DiffTree#computeAllNodesThat
+     */
     public List<DiffNode> computeAnnotationNodes() {
         return computeAllNodesThat(DiffNode::isMacro);
     }
 
+    /**
+     * Returns all nodes in this DiffTree.
+     * Traverses the DiffTree once.
+     */
     public List<DiffNode> computeAllNodes() {
         final List<DiffNode> allnodes = new ArrayList<>();
         forAll(allnodes::add);
@@ -131,6 +228,7 @@ public class DiffTree {
     }
 
     /**
+     * Returns the number of nodes in this tree that satisfy the given condition.
      * @param nodesToCount A condition that returns true for each node that should be counted.
      * @return The number of nodes in this tree that satisfy the given condition.
      */
@@ -144,27 +242,44 @@ public class DiffTree {
         return count.get();
     }
 
+    /**
+     * Sets the source of this DiffTree.
+     * @see DiffTreeSource
+     */
     public void setSource(final DiffTreeSource source) {
         this.source = source;
     }
 
+    /**
+     * Returns the source of this DiffTree (i.e., the data this DiffTree was created from).
+     * @see DiffTreeSource
+     */
     public DiffTreeSource getSource() {
         return source;
     }
 
+    /**
+     * Returns the number of nodes in this DiffTree.
+     */
     public int computeSize() {
         AtomicInteger size = new AtomicInteger();
         forAll(n -> size.incrementAndGet());
         return size.get();
     }
 
+    /**
+     * Returns true iff this tree is empty.
+     * The tree is considered empty if it only has a root or if it has no nodes at all.
+     */
     public boolean isEmpty() {
         return root == null || root.getTotalNumberOfChildren() == 0;
     }
 
     /**
      * Removes the given node from the DiffTree but keeps its children.
-     * @param node The node to remove.
+     * The children are moved up, meaning that they are located below the parent of the given
+     * node afterwards.
+     * @param node The node to remove. Cannot be the root.
      */
     public void removeNode(DiffNode node) {
         Assert.assertTrue(node != root);
@@ -182,11 +297,21 @@ public class DiffTree {
         }
     }
 
+    /**
+     * Unparses this DiffTree into a text-based diff.
+     * @return A text-based diff.
+     */
     public String toTextDiff() {
         return root.toTextDiff();
     }
 
-    private static class AllPathsEndAtRoot {
+    /**
+     * Helper class to check for cycles in DiffTrees.
+     * When traversing the tree, an object of this class remembers visited nodes to see
+     * if it walks in cycles.
+     * Function programmers might think of this as a state monad.
+     */
+    private static class AllPathsEndAtRoot implements Predicate<DiffNode> {
         private enum VisitStatus {
             STRANGER,
             VISITED,
@@ -200,7 +325,11 @@ public class DiffTree {
             this.root = root;
         }
 
-        public boolean hasPathToRoot(final DiffNode d) {
+        /**
+         * Returns true if all paths (in parent direction) starting at the given node end at the root.
+         */
+        @Override
+        public boolean test(final DiffNode d) {
             if (d == root) {
                 return true;
             }
@@ -220,10 +349,10 @@ public class DiffTree {
 
                     boolean result = true;
                     if (b != null) {
-                        result &= hasPathToRoot(b);
+                        result &= test(b);
                     }
                     if (a != null) {
-                        result &= hasPathToRoot(a);
+                        result &= test(a);
                     }
 
                     // Now we also know the result for the stranger.
@@ -239,14 +368,24 @@ public class DiffTree {
         }
     }
 
+    /**
+     * Checks whether this DiffTree is consistent.
+     * Throws an error when this DiffTree is inconsistent (e.g., if it has cycles or an invalid internal state).
+     * Has no side-effects otherwise.
+     * @see DiffTree#isConsistent
+     */
     public void assertConsistency() {
         final AllPathsEndAtRoot c = new AllPathsEndAtRoot(root);
         forAll(n -> {
             n.assertConsistency();
-            Assert.assertTrue(c.hasPathToRoot(n), () -> "Not all ancestors of " + n + " are descendants of the root!");
+            Assert.assertTrue(c.test(n), () -> "Not all ancestors of " + n + " are descendants of the root!");
         });
     }
 
+    /**
+     * Checks whether this DiffTree is consistent.
+     * @return A result that indicates either consistency or inconsistency.
+     */
     public ConsistencyResult isConsistent() {
         try {
             assertConsistency();

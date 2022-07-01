@@ -9,14 +9,21 @@ import org.variantsync.diffdetective.feature.CPPAnnotationParser;
 
 import java.util.ArrayList;
 
+/**
+ * A parser that parses a {@link DiffNode}s from a line in a text-based diff.
+ * @param annotationParser The parser to use for parsing feature annotations.
+ */
 public record DiffNodeParser(CPPAnnotationParser annotationParser) {
+    /**
+     * The default node parser that uses {@link CPPAnnotationParser#Default}.
+     */
     public static final DiffNodeParser Default = new DiffNodeParser(CPPAnnotationParser.Default);
 
     /**
-     * Creates a DiffNode from a line and two parents
+     * Parses the given line from a text-based diff to a DiffNode.
      *
-     * @param diffLine The line which the new node corresponds to.
-     * @return A DiffNode with a code type, diff type, and feature mapping.
+     * @param diffLine The line which the new node represents.
+     * @return A DiffNode with a code type, diff type, label, and feature mapping.
      */
     public DiffNode fromDiffLine(String diffLine) throws IllFormedAnnotationException {
         DiffType diffType = DiffType.ofDiffLine(diffLine);
@@ -30,7 +37,7 @@ public record DiffNodeParser(CPPAnnotationParser annotationParser) {
             featureMapping = annotationParser.parseDiffLine(diffLine);
         }
 
-        ArrayList lines = new ArrayList();
+        ArrayList<String> lines = new ArrayList<>();
         lines.add(label);
         return new DiffNode(
                 diffType, codeType,
