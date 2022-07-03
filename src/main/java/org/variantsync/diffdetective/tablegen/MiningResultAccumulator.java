@@ -7,11 +7,11 @@ import org.variantsync.diffdetective.analysis.HistoryAnalysis;
 import org.variantsync.diffdetective.analysis.MetadataKeys;
 import org.variantsync.diffdetective.datasets.DatasetDescription;
 import org.variantsync.diffdetective.datasets.DefaultDatasets;
-import org.variantsync.diffdetective.main.FindMedianCommitTime;
 import org.variantsync.diffdetective.tablegen.rows.ContentRow;
 import org.variantsync.diffdetective.tablegen.styles.ShortTable;
 import org.variantsync.diffdetective.tablegen.styles.VariabilityShare;
 import org.variantsync.diffdetective.util.IO;
+import org.variantsync.diffdetective.validation.FindMedianCommitTime;
 
 import java.io.IOException;
 import java.nio.file.Files;
