@@ -101,7 +101,7 @@ public class MiningResultAccumulator {
                     final AutomationResult automationResult;
                     final Path automationResultDir = inputPath.resolve(dataset.name());
                     try {
-                         automationResult = FindMedianCommitTime.getResultOfDirectory(automationResultDir, result.exportedCommits);
+                         automationResult = FindMedianCommitTime.getResultOfDirectory(automationResultDir);
                     } catch (IOException e) {
                         Logger.error("Could not load automation results for dataset {} in {}", dataset.name(), automationResultDir);
                         System.exit(0);
@@ -120,7 +120,7 @@ public class MiningResultAccumulator {
                         ultimateResult.totalCommits + ""
                 ),
                 ultimateResult,
-                FindMedianCommitTime.getResultOfDirectory(inputPath, FindMedianCommitTime.NUM_EXPECTED_COMMITS)
+                FindMedianCommitTime.getResultOfDirectory(inputPath)
         );
 
         for (boolean filtered : List.of(true, false)) {
