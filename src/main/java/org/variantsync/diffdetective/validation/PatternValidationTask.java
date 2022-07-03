@@ -20,6 +20,10 @@ import org.variantsync.diffdetective.util.FileUtils;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Task for performing the ESEC/FSE'22 validation on a set of commits from a given repository.
+ * @author Paul Bittner
+ */
 public class PatternValidationTask extends CommitHistoryAnalysisTask {
     public PatternValidationTask(Options options) {
         super(options);
@@ -27,19 +31,25 @@ public class PatternValidationTask extends CommitHistoryAnalysisTask {
 
     @Override
     public AnalysisResult call() throws Exception {
+        // Setup. Obtain the result from the initial setup in the super class.
         final AnalysisResult miningResult = super.call();
         final DiffTreeLineGraphExportOptions exportOptions = options.exportOptions();
+        // List to store the process time of each commit.
         final List<CommitProcessTime> commitTimes = new ArrayList<>(HistoryAnalysis.COMMITS_TO_PROCESS_PER_THREAD_DEFAULT);
+        // Clock for runtime measurement.
         final Clock totalTime = new Clock();
         totalTime.start();
         final Clock commitProcessTimer = new Clock();
 
+        // For each commit:
         for (final RevCommit commit : options.commits()) {
             try {
                 commitProcessTimer.start();
 
+                // parse the commit
                 final CommitDiffResult commitDiffResult = options.differ().createCommitDiff(commit);
 
+                // report any errors that occurred and exit in case no DiffTree could be parsed.
                 miningResult.reportDiffErrors(commitDiffResult.errors());
                 if (commitDiffResult.diff().isEmpty()) {
                     Logger.debug("[MiningTask::call] found commit that failed entirely and was not filtered because:\n{}", commitDiffResult.errors());
@@ -47,10 +57,11 @@ public class PatternValidationTask extends CommitHistoryAnalysisTask {
                     continue;
                 }
 
+                // extract the produced commit diff and inform the strategy
                 final CommitDiff commitDiff = commitDiffResult.diff().get();
                 options.analysisStrategy().onCommit(commitDiff, "");
 
-                // Count elementary patterns
+                // Count elementary edit pattern matches
                 int numDiffTrees = 0;
                 for (final PatchDiff patch : commitDiff.getPatchDiffs()) {
                     if (patch.isValid()) {
@@ -78,15 +89,18 @@ public class PatternValidationTask extends CommitHistoryAnalysisTask {
                 miningResult.filterHits.append(new ExplainedFilterSummary(exportOptions.treeFilter()));
                 exportOptions.treeFilter().resetExplanations();
 
-                // Only consider non-empty commits
+                // Report the commit process time if the commit is not empty.
                 if (numDiffTrees > 0) {
                     final long commitTimeMS = commitProcessTimer.getPassedMilliseconds();
+                    // find max commit time
                     if (commitTimeMS > miningResult.max.milliseconds()) {
                         miningResult.max.set(commitDiff.getCommitHash(), commitTimeMS);
                     }
+                    // find min commit time
                     if (commitTimeMS < miningResult.min.milliseconds()) {
                         miningResult.min.set(commitDiff.getCommitHash(), commitTimeMS);
                     }
+                    // report time
                     commitTimes.add(new CommitProcessTime(commitDiff.getCommitHash(), options.repository().getRepositoryName(), commitTimeMS));
                     ++miningResult.exportedCommits;
                 } else {
@@ -99,6 +113,7 @@ public class PatternValidationTask extends CommitHistoryAnalysisTask {
             }
         }
 
+        // shutdown; report total time; export results
         options.analysisStrategy().end();
         miningResult.runtimeInSeconds = totalTime.getPassedSeconds();
         miningResult.exportTo(FileUtils.addExtension(options.outputDir(), AnalysisResult.EXTENSION));
