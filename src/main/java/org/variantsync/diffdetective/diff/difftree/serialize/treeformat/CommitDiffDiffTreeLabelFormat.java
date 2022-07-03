@@ -11,10 +11,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 /**
- * A {@link DiffTreeLabelFormat} for {@link CommitDiff}.
+ * A {@link DiffTreeLabelFormat} for {@link CommitDiff}s and {@link PatchDiff}s.
+ * This format labels trees with the patch they originated from.
+ * Produced labels will be of the form <code>filename$$$commitHash</code>.
  */
 public class CommitDiffDiffTreeLabelFormat implements DiffTreeLabelFormat {
-
     @Override
     public DiffTreeSource fromLabel(final String label) {
         String[] commit = label.split(LineGraphConstants.TREE_NAME_SEPARATOR_REGEX);

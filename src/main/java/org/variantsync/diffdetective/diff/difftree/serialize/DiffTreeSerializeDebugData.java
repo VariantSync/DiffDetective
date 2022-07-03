@@ -6,15 +6,33 @@ import org.variantsync.functjonal.category.InplaceSemigroup;
 
 import java.util.LinkedHashMap;
 
+/**
+ * Debug data that keeps track of the number of exported nodes and their diffTypes.
+ * @author Paul Bittner
+ */
 public class DiffTreeSerializeDebugData implements Metadata<DiffTreeSerializeDebugData> {
+    /**
+     * Inplace semigroup that sums all counts and writes them to the first given debug data.
+     */
     public static final InplaceSemigroup<DiffTreeSerializeDebugData> ISEMIGROUP = (a, b) -> {
         a.numExportedNonNodes += b.numExportedNonNodes;
         a.numExportedAddNodes += b.numExportedAddNodes;
         a.numExportedRemNodes += b.numExportedRemNodes;
     };
 
+    /**
+     * Number of exported nodes with {@link org.variantsync.diffdetective.diff.difftree.DiffType#NON}.
+     */
     public int numExportedNonNodes = 0;
+
+    /**
+     * Number of exported nodes with {@link org.variantsync.diffdetective.diff.difftree.DiffType#ADD}.
+     */
     public int numExportedAddNodes = 0;
+
+    /**
+     * Number of exported nodes with {@link org.variantsync.diffdetective.diff.difftree.DiffType#REM}.
+     */
     public int numExportedRemNodes = 0;
 
     @Override
