@@ -15,7 +15,7 @@ public class DefaultDatasets {
     /**
      * Path to the markdown file with the links and metadata for each default dataset.
      */
-    public final static Path DEFAULT_DATASETS_FILE = Path.of("docs", "datasets.md");
+    public final static Path DEFAULT_DATASETS_FILE = Path.of("docs", "replication", "datasets.md");
 
     /**
      * Path to the markdown file with the links and metadata for Emacs only.
