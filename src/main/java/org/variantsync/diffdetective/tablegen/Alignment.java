@@ -1,5 +1,6 @@
 package org.variantsync.diffdetective.tablegen;
 
+/** Horizontal column alignments of a LaTex table. */
 public enum Alignment {
     LEFT("l"),
     LEFT_DASH("l |"),
@@ -14,6 +15,7 @@ public enum Alignment {
         this.val = val;
     }
 
+    /** Returns the string used in LaTex table specifications. */
     @Override
     public String toString() {
         return val;
