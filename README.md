@@ -45,7 +45,7 @@ To execute the replication you can run the _execute_ script corresponding to you
 
 > ! The replication will at least require an hour and might require up to a day depending on your system.
 > Therefore, we offer a short validation (5-10 minutes) which runs _DiffDetective_ on only four of the datasets.
-> You can run it by providing "validation" as argument instead of "replication" (i.e., ./execute.sh validation).
+> You can run it by providing "validation" as argument instead of "replication" (i.e., `./execute.sh verification`).
 > If you want to stop the replication, you can call the provided script for stopping the container. Note that you will have to restart the entire replication, if you stop it at any point.
 > #### Windows:
 > `.\stop-execution.bat`
