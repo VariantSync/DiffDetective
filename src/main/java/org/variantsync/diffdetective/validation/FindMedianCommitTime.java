@@ -61,7 +61,7 @@ public class FindMedianCommitTime {
      */
     public static AutomationResult getResultOfDirectory(final Path directory) throws IOException {
         if (!Files.isDirectory(directory)) {
-            throw new IllegalArgumentException("Expected path to directory but the given path is not a directory!");
+            throw new IllegalArgumentException("Expected path to directory but "+ directory +" is not a directory!");
         }
 
         // This stream needs {@code O(n log(n))} time (because of the sort) and {@code O(n)} space
