@@ -127,13 +127,27 @@ public class Validation {
 //        setupLogger(Level.INFO);
 //        setupLogger(Level.DEBUG);
 
+        final Path datasetsFile;
+        if (args.length < 1) {
+            datasetsFile = DefaultDatasets.DEFAULT_DATASETS_FILE;
+        } else if (args.length > 1) {
+            System.err.println("Error: Expected exactly one argument but got " + args.length + "! Expected a path to a datasets markdown file.");
+            return;
+        } else {
+            datasetsFile = Path.of(args[0]);
+        }
+
         final ParseOptions.DiffStoragePolicy diffStoragePolicy = ParseOptions.DiffStoragePolicy.DO_NOT_REMEMBER;
 
         final Path inputDir = Paths.get("..", "DiffDetectiveMining");
-        final Path outputDir = Paths.get("results", "validation", "current");
+        Logger.info("Reading and cloning git repositories from/to: " + inputDir);
 
+        final Path outputDir = Paths.get("results", "validation", "current");
+        Logger.info("Writing output to: " + outputDir);
+
+        Logger.info("Loading datasets file: " + datasetsFile);
         final List<Repository> repos;
-        final List<DatasetDescription> datasets = DefaultDatasets.loadDefaultDatasets();
+        final List<DatasetDescription> datasets = DefaultDatasets.loadDatasets(datasetsFile);
 
 //        if (PRINT_LATEX_TABLE) {
 //            printLaTeXTableFor(datasets);
