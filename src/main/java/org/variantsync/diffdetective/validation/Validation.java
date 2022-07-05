@@ -21,6 +21,7 @@ import org.variantsync.diffdetective.mining.formats.ReleaseMiningDiffNodeFormat;
 import org.variantsync.diffdetective.util.Assert;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -131,10 +132,14 @@ public class Validation {
         if (args.length < 1) {
             datasetsFile = DefaultDatasets.DEFAULT_DATASETS_FILE;
         } else if (args.length > 1) {
-            System.err.println("Error: Expected exactly one argument but got " + args.length + "! Expected a path to a datasets markdown file.");
+            Logger.error("Error: Expected exactly one argument but got " + args.length + "! Expected a path to a datasets markdown file.");
             return;
         } else {
             datasetsFile = Path.of(args[0]);
+
+            if (!Files.exists(datasetsFile)) {
+                Logger.error("The given datasets file \"" + datasetsFile + "\" does not exist.");
+            }
         }
 
         final ParseOptions.DiffStoragePolicy diffStoragePolicy = ParseOptions.DiffStoragePolicy.DO_NOT_REMEMBER;

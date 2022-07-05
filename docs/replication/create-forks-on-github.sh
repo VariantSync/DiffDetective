@@ -54,8 +54,16 @@ while IFS= read -d '' -r repository
 do
   echo
   run cd "$repository"
-  run gh repo fork --remote
-  run git push -f origin
+  url="$(git remote get-url origin)"
+  if [[ "$url" ~= github.com ]]
+  then
+    echo "$repository is a github repo"
+    run gh repo fork --remote
+    run git push -f origin
+  else
+    echo "$repository is not a github repo"
+    run gh repo create "$repository" -d "Fork of $url" --push --public --source .
+  fi
 done
 
 if [ "$was_logged_in" = "1" ]
