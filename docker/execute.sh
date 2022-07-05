@@ -1,10 +1,13 @@
 #! /bin/bash
 
 if [ "$1" == '' ]; then
-  echo "Either fully run DiffDetective as presented in the paper (replication) or a do quick setup verification (verification)."
+  echo "Either fully run DiffDetective as presented in the paper (replication), do quick setup verification (verification),
+  or run DiffDetective on a custom dataset by providing the path to the dataset file."
   echo "-- Examples --"
   echo "Run replication: './execute.sh replication'"
   echo "Validate the setup: './execute.sh verification'"
+  echo "# See ./docs/verification/datasets.md for format details"
+  echo "Custom dataset: './execute.sh my_dataset.md'"
   exit
 fi
 cd /home/sherlock || exit
