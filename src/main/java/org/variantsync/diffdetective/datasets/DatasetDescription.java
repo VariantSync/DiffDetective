@@ -1,5 +1,6 @@
 package org.variantsync.diffdetective.datasets;
 
+import org.tinylog.Logger;
 import org.variantsync.diffdetective.util.LaTeX;
 import org.variantsync.diffdetective.util.StringUtils;
 
@@ -47,6 +48,17 @@ public record DatasetDescription(
             return lines
                 .skip(2) // Skip header
                 .map(line -> line.split("\\|"))
+                .filter(cells -> {
+                    if (cells.length != 7) {
+                        Logger.error("Skipping ill-formed line "
+                                + String.join("|", cells)
+                                + "! Expected 7 entries in a table (separated by |) but got "
+                                + cells.length
+                                + "!");
+                        return false;
+                    }
+                    return true;
+                })
                 .filter(cells ->
                     isYes(cells[2]) && // hasCode
                     isYes(cells[3]) // isGitRepo
