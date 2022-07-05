@@ -6,11 +6,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Extracts the expression from a C pre processor statement.
+ * Extracts the expression from a C preprocessor statement.
  * For example, given the annotation "#if defined(A) || B()", the extractor would extract
  * "A || B". The extractor detects if, ifdef, ifndef and elif annotations.
  * (Other annotations do not have expressions.)
  * The given pre processor statement might also a line in a diff (i.e., preceeded by a - or +).
+ * @author Paul Bittner, Sören Viegener, Benjamin Moosherr
  */
 public class CPPDiffLineFormulaExtractor {
     // ^[+-]?\s*#\s*(if|ifdef|ifndef|elif)(\s+(.*)|\((.*)\))$
@@ -19,6 +20,14 @@ public class CPPDiffLineFormulaExtractor {
     private static final Pattern COMMENT_PATTERN = Pattern.compile("/\\*.*\\*/");
     private static final Pattern DEFINED_PATTERN = Pattern.compile("defined\\(([^)]*)\\)");
 
+    /**
+     * Resolves any macros in the given formula that are relevant for feature annotations.
+     * For example, in {@link org.variantsync.diffdetective.datasets.predefined.MarlinCPPDiffLineFormulaExtractor Marlin},
+     * feature annotations are given by the custom <code>ENABLED</code> and <code>DISABLED</code> macros,
+     * which have to be unwrapped.
+     * @param formula The formula whose feature macros to resolve.
+     * @return The parseable formula as string. The default implementation returns the input string.
+     */
     protected String resolveFeatureMacroFunctions(String formula) {
         return formula;
     }

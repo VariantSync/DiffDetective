@@ -23,20 +23,12 @@ This is the replication package our submission _Classifying Edits to Variability
 
 This replication package consists of four parts:
 
-1. **Appendix**: The appendix of our paper is given in PDF format in the file [appendix.pdf](appendix.pdf).
-2. **DiffDetective**: For our validation, we built DiffDetective, a java library and command-line tool to classify edits to variability in git histories of preprocessor-based software product lines.
+1. **DiffDetective**: For our validation, we built DiffDetective, a java library and command-line tool to classify edits to variability in git histories of preprocessor-based software product lines.
+2. **Appendix**: The appendix of our paper is given in PDF format in the file [appendix.pdf](appendix.pdf).
 3. **Haskell Formalization**: We provide an extended formalization in the Haskell programming language as described in our appendix. Its implementation can be found in the Haskell project in the [proofs](proofs) directory.
-4. **Dataset Overview**: We provide an overview of the 44 inspected datasets with updated links to their repositories in the file [docs/datasets.md](docs/datasets.md).
+4. **Dataset Overview**: We provide an overview of the 44 inspected datasets with updated links to their repositories in the file [docs/datasets.md][dataset].
 
-## Appendix
-
-Our appendix consists of:
-1. An extended formalization of our concepts in the [Haskell][haskell] programming language. The corresponding source code is also part of this replication package (see below).
-2. The proofs for (a) the completeness of variation tree diffs to represent edits to variation trees, and (b) the completeness and unambiguity of our elementary edit patterns.
-3. An inspection of edit patterns from related work to show that existing patterns are either composite patterns built from our elementary patterns or similar to our elementary patterns.
-4. The complete results of our validation for all 44 datasets.
-
-## DiffDetective
+## 1. DiffDetective
 We offer a [Docker](https://www.docker.com/) setup to easily __replicate__ our validation with _DiffDetective_. 
 You can find detailed information on how to install Docker and build the container in the [INSTALL](INSTALL.md) file.
 In the following, we provide instructions for running the replication.
@@ -51,7 +43,7 @@ To build the Docker container you can run the _build_ script corresponding to yo
 ### 2. Start the replication
 To execute the replication you can run the _execute_ script corresponding to your OS with `replication` as first argument.
 
-> ! The replication will at least require several hours and might require up to a few days depending on your system.
+> ! The replication will at least require an hour and might require up to a day depending on your system.
 > Therefore, we offer a short validation (5-10 minutes) which runs _DiffDetective_ on only four of the datasets.
 > You can run it by providing "validation" as argument instead of "replication" (i.e., ./execute.sh validation).
 > If you want to stop the replication, you can call the provided script for stopping the container. Note that you will have to restart the entire replication, if you stop it at any point.
@@ -65,8 +57,6 @@ To execute the replication you can run the _execute_ script corresponding to you
 #### Linux/Mac (bash): 
 `./execute.sh replication`
 
-
-
 ### 3. View the results in the [results](results) directory
 All raw results are stored in the [results](results) directory. The aggregated results can be found in the following files:
 - [speed statistics](results/difftrees/speedstatistics.txt): contains information about the total runtime, median runtime, mean runtime, and more.
@@ -76,10 +66,27 @@ All raw results are stored in the [results](results) directory. The aggregated r
 
 Moreover, the results comprise the (LaTeX) tables that are part of our paper and appendix.
 
-## Haskell Formalization
-The extended formalization in Haskell is a library using the _Stack_ build system.
+## 2. Appendix
 
+Our appendix consists of:
+1. An extended formalization of our concepts in the [Haskell][haskell] programming language. The corresponding source code is also part of this replication package (see below).
+2. The proofs for (a) the completeness of variation tree diffs to represent edits to variation trees, and (b) the completeness and unambiguity of our elementary edit patterns.
+3. An inspection of edit patterns from related work to show that existing patterns are either composite patterns built from our elementary patterns or similar to our elementary patterns.
+4. The complete results of our validation for all 44 datasets.
+
+## 3. Haskell Formalization
+The extended formalization is a [Haskell][haskell] library in the [`proofs`](proofs) subdirectory.
+Since the `proofs` library is its own software project, we provide a separate documentation of requirements and installation instructions within the projects subdirectory.
 Instructions for manually installing Stack are given in [proofs/REQUIREMENTS.md](proofs/REQUIREMENTS.md).
 How to build our library and how to run the example is described in the [proofs/INSTALL.md](proofs/INSTALL.md).
 
+
+## 4. Dataset Overview
+
+We provide an overview of the used 44 open-source preprocessor-based software product lines in the [docs/datasets.md][dataset] file.
+As described in our paper in Section 5.1 this list contains all systems that were studied by Liebig et al., extended by four new subject systems.
+We provide updated links for each system's repository.
+
+
 [haskell]: https://www.haskell.org/
+[dataset]: docs/datasets.md

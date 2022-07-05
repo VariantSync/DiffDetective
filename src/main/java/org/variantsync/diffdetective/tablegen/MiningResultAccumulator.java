@@ -7,11 +7,11 @@ import org.variantsync.diffdetective.analysis.HistoryAnalysis;
 import org.variantsync.diffdetective.analysis.MetadataKeys;
 import org.variantsync.diffdetective.datasets.DatasetDescription;
 import org.variantsync.diffdetective.datasets.DefaultDatasets;
-import org.variantsync.diffdetective.main.FindMedianCommitTime;
 import org.variantsync.diffdetective.tablegen.rows.ContentRow;
 import org.variantsync.diffdetective.tablegen.styles.ShortTable;
 import org.variantsync.diffdetective.tablegen.styles.VariabilityShare;
 import org.variantsync.diffdetective.util.IO;
+import org.variantsync.diffdetective.validation.FindMedianCommitTime;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -33,7 +33,8 @@ public class MiningResultAccumulator {
             AnalysisResult.storeAsCustomInfo(MetadataKeys.TREEFORMAT),
             AnalysisResult.storeAsCustomInfo(MetadataKeys.NODEFORMAT),
             AnalysisResult.storeAsCustomInfo(MetadataKeys.EDGEFORMAT),
-            AnalysisResult.storeAsCustomInfo(MetadataKeys.TASKNAME)
+            AnalysisResult.storeAsCustomInfo(MetadataKeys.TASKNAME),
+            Map.entry("org/variantsync/diffdetective/analysis", (r, val) -> r.putCustomInfo(MetadataKeys.TASKNAME, val))
     );
 
     /**
@@ -139,7 +140,7 @@ public class MiningResultAccumulator {
                     final AutomationResult automationResult;
                     final Path automationResultDir = inputPath.resolve(dataset.name());
                     try {
-                         automationResult = FindMedianCommitTime.getResultOfDirectory(automationResultDir, result.exportedCommits);
+                         automationResult = FindMedianCommitTime.getResultOfDirectory(automationResultDir);
                     } catch (IOException e) {
                         Logger.error("Could not load automation results for dataset {} in {}", dataset.name(), automationResultDir);
                         System.exit(0);
@@ -158,7 +159,7 @@ public class MiningResultAccumulator {
                         ultimateResult.totalCommits + ""
                 ),
                 ultimateResult,
-                FindMedianCommitTime.getResultOfDirectory(inputPath, FindMedianCommitTime.NUM_EXPECTED_COMMITS)
+                FindMedianCommitTime.getResultOfDirectory(inputPath)
         );
 
         for (boolean filtered : List.of(true, false)) {

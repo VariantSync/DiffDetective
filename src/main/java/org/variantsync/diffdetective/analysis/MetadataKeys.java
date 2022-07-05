@@ -1,7 +1,11 @@
 package org.variantsync.diffdetective.analysis;
 
+/**
+ * Collection of constants for keys used in metadata files
+ * @author Paul Bittner
+ */
 public final class MetadataKeys {
-    public static final String TASKNAME = "org/variantsync/diffdetective/analysis";
+    public static final String TASKNAME = "analysis";
     public static final String REPONAME = "repository";
 
     public final static String TREEFORMAT = "treeformat";
@@ -23,5 +27,4 @@ public final class MetadataKeys {
     public static final String MINCOMMIT = "fastestCommit";
     public static final String MAXCOMMIT = "slowestCommit";
     public final static String TREES = "tree diffs";
-
 }

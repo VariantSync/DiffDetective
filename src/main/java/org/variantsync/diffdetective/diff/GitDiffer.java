@@ -23,6 +23,7 @@ import org.variantsync.diffdetective.diff.difftree.parse.DiffTreeParser;
 import org.variantsync.diffdetective.diff.result.CommitDiffResult;
 import org.variantsync.diffdetective.diff.result.DiffError;
 import org.variantsync.diffdetective.diff.result.DiffResult;
+import org.variantsync.diffdetective.preliminary.GitDiff;
 import org.variantsync.diffdetective.util.StringUtils;
 import org.variantsync.functjonal.Result;
 import org.variantsync.functjonal.iteration.MappedIterator;
@@ -43,10 +44,10 @@ import java.util.regex.Pattern;
  * This class creates a GitDiff-object from a git repository (Git-object).
  * <p>
  * The commits from the repository are first filtered using the given DiffFilter.
- * Then a CommitDiff is created from each commit.
- * File changes in each commit are then filtered using the given DiffFilter.
+ * Then a CommitDiff is created for each commit.
+ * File changes in each commit are filtered using the given DiffFilter.
  * Then a PatchDiff is created from each file change.
- * Each PatchDiff contains the DiffTree of its patch.
+ * Finally, each patch is parsed to a DiffTree.
  *
  * @author Soeren Viegener, Paul Maximilian Bittner
  */
@@ -60,6 +61,10 @@ public class GitDiffer {
     private final DiffFilter diffFilter;
     private final ParseOptions parseOptions;
 
+    /**
+     * Create a differ operating on the given repository.
+     * @param repository The repository for whose history to obtain diffs.
+     */
     public GitDiffer(final Repository repository) {
         this.git = repository.getGitRepo().run();
         this.diffFilter = repository.getDiffFilter();
@@ -72,6 +77,7 @@ public class GitDiffer {
      *
      * @return The GitDiff object created from the Git object of this GitDiffer
      */
+    @Deprecated
     public GitDiff createGitDiff() {
         final GitDiff gitDiff = new GitDiff();
 
@@ -89,7 +95,7 @@ public class GitDiffer {
         final Iterator<RevCommit> commitIterator = new SideEffectIterator<>(
                 commitsIterable.iterator(),
                 r -> ++commitAmount[0]);
-        for (CommitDiffResult commitDiff : loadAllValidIn(commitIterator)) {
+        for (CommitDiffResult commitDiff : yieldAllValidIn(commitIterator).map(this::createCommitDiff)) {
             commitDiff.diff().ifPresent(gitDiff::addCommitDiff);
         }
         gitDiff.setCommitAmount(commitAmount[0]);
@@ -97,6 +103,9 @@ public class GitDiffer {
         return gitDiff;
     }
 
+    /**
+     * Returns all commits in the repository's history.
+     */
     public Yield<RevCommit> yieldRevCommits() {
         final Iterable<RevCommit> commitsIterable;
         try {
@@ -109,6 +118,13 @@ public class GitDiffer {
         return yieldAllValidIn(commitsIterable.iterator());
     }
 
+    /**
+     * The same as {@link GitDiffer#yieldRevCommits()} but applies the given function f to each commit
+     * before returning it.
+     * @param f A function to map over all commits before they can be accessed.
+     *          Each returned commit was processed by f exactly once.
+     * @return All commits in the repository's history after applying the given function to each commit.
+     */
     public Yield<RevCommit> yieldRevCommitsAfter(final Function<RevCommit, RevCommit> f) {
         Iterable<RevCommit> commitsIterable;
         try {
@@ -121,18 +137,13 @@ public class GitDiffer {
         return yieldAllValidIn(new MappedIterator<>(commitsIterable.iterator(), f));
     }
 
-    public Yield<CommitDiffResult> yieldCommitDiffs() {
-        final Iterable<RevCommit> commitsIterable;
-        try {
-            commitsIterable = git.log().call();
-        } catch (GitAPIException e) {
-            Logger.warn("Could not get log for git repository {}", git.toString());
-            return null;
-        }
-
-        return loadAllValidIn(commitsIterable.iterator());
-    }
-
+    /**
+     * Filters all undesired commits from the given set of commits using the {@link DiffFilter} of
+     * this differs repository.
+     * @see GitDiffer#GitDiffer(Repository)
+     * @param commitsIterator Commits to filter.
+     * @return All commits from the given set that should not be filtered.
+     */
     private Yield<RevCommit> yieldAllValidIn(final Iterator<RevCommit> commitsIterator) {
         return new Yield<>(
                 () -> {
@@ -156,10 +167,6 @@ public class GitDiffer {
                     return null;
                 }
         );
-    }
-
-    private Yield<CommitDiffResult> loadAllValidIn(final Iterator<RevCommit> commitsIterator) {
-        return yieldAllValidIn(commitsIterator).map(this::createCommitDiff);
     }
 
     public CommitDiffResult createCommitDiff(final RevCommit revCommit) {
@@ -196,12 +203,11 @@ public class GitDiffer {
     }
 
     /**
-     * Creates a CommitDiff from a given commit.
-     * For this, the git diff is retrieved using JGit.
-     * For each file in the diff, a PatchDiff is created.
+     * Creates a CommitDiff that describes all changes made by the
+     * given childCommit to the given parentCommit.
      *
-     * @param git The git repo which the commit stems from.
-     * @return The CommitDiff of the given commit
+     * @param git The git repo which the commits stem from.
+     * @return The CommitDiff describing all changes between the two commits.
      */
     public static CommitDiffResult createCommitDiff(
             Git git,
@@ -232,9 +238,8 @@ public class GitDiffer {
     }
 
     /**
-     * Creates a CommitDiff from a given commit that compares the given commit with the current working tree.
-     * For this, the git diff is retrieved using JGit.
-     * For each file in the diff, a PatchDiff is created.
+     * The same as {@link GitDiffer#createCommitDiff(Git, DiffFilter, RevCommit, RevCommit, ParseOptions)}
+     * but diffs the given commit against the current working tree.
      *
      * @param git The git repo which the commit stems from
      * @param commit The commit which the working tree is compared with
@@ -265,7 +270,8 @@ public class GitDiffer {
     }
     
     /**
-     * 
+     * Obtains the CommitDiff between two commit's trees.
+     *
      * @param git The git repo which the commit stems from
      * @param diffFilter {@link DiffFilter}
      * @param parseOptions {@link ParseOptions}
@@ -324,7 +330,7 @@ public class GitDiffer {
     }
     
     /**
-     * Creates a PatchDiff from a given DiffEntry of a commit
+     * Creates a PatchDiff from a given DiffEntry of a commit.
      *
      * @param commitDiff     The CommitDiff the created PatchDiff belongs to
      * @param diffEntry      The DiffEntry of the file that was changed in the commit
@@ -369,7 +375,7 @@ public class GitDiffer {
 
     /**
      * Creates a full git diff from a file before the change and the git diff containing only the
-     * changed lines
+     * changed lines.
      *
      * @param beforeFile The full file before the change
      * @param gitDiff    The git diff containing only the changed lines
@@ -423,7 +429,7 @@ public class GitDiffer {
     }
 
     /**
-     * Gets the full content of a file before a commit
+     * Gets the full content of a file before a commit.
      *
      * @param commit   The commit in which the file was changed
      * @param filename The name of the file
@@ -449,9 +455,11 @@ public class GitDiffer {
             return DiffResult.Failure(DiffError.COULD_NOT_OBTAIN_FULLDIFF, "Could not obtain full diff of file " + filename + " before commit " + commit + "!");
         }
     }
-    
+
+    /**
+     * Returns the internal representation of this differs repository.
+     */
     public Git getJGitRepo() {
     	return git;
     }
-    
 }

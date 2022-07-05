@@ -8,10 +8,11 @@ import java.util.regex.Pattern;
  * Extracts formulas from preprocessor annotations in the marlin firmware.
  * In particular, it resolves the 'ENABLED' and 'DISABLED' macros that are used in Marlin
  * to check for features being (de-)selected.
+ * @author Paul Bittner
  */
 public class MarlinCPPDiffLineFormulaExtractor extends CPPDiffLineFormulaExtractor {
-    private static Pattern ENABLED_PATTERN = Pattern.compile("ENABLED\\s*\\(([^)]*)\\)");
-    private static Pattern DISABLED_PATTERN = Pattern.compile("DISABLED\\s*\\(([^)]*)\\)");
+    private static final Pattern ENABLED_PATTERN = Pattern.compile("ENABLED\\s*\\(([^)]*)\\)");
+    private static final Pattern DISABLED_PATTERN = Pattern.compile("DISABLED\\s*\\(([^)]*)\\)");
 
     @Override
     protected String resolveFeatureMacroFunctions(String formula) {

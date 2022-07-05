@@ -1,4 +1,4 @@
-package org.variantsync.diffdetective.main;
+package org.variantsync.diffdetective.internal;
 
 import org.tinylog.Logger;
 import org.variantsync.diffdetective.datasets.ParseOptions;
@@ -22,6 +22,15 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.function.Function;
 
+/**
+ * NOT INTENDED FOR API USE.
+ * Renderer that may be invoked directly on a directory containing diff
+ * and linegraph files. The renderer will render all valid files in the given
+ * directory.
+ * This class is mostly used for debuggin purposes within DiffDetective and
+ * contains mostly quick-and-dirty hardcoded configuration options.
+ * @author Paul Bittner
+ */
 public class SimpleRenderer {
     private static final DiffTreeRenderer renderer = DiffTreeRenderer.WithinDiffDetective();
     private static final RenderOptions renderOptions = new RenderOptions.Builder()
@@ -105,6 +114,16 @@ public class SimpleRenderer {
 
     }
 
+    /**
+     * Expects one of the following argument configurations.
+     * 1.) For rendering files: Exactly one argument pointing to a file or directory to render.
+     * 2.) For rendering patches: Exactly three arguments.
+     *     The first argument is the path to a local directory from which a patch should be analyzed.
+     *     The second argument is a commit hash.
+     *     The third argument is the file name of the patched file in the given commit.
+     * @param args See above
+     * @throws IOException when reading a file fails.
+     */
     public static void main(String[] args) throws IOException {
         if (args.length < 1) {
             System.err.println("Expected either a path to diff or lg file as argument, or a path to a git repository and a commit hash.");

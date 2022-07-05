@@ -7,6 +7,14 @@ import org.variantsync.diffdetective.diff.difftree.traverse.DiffTreeVisitor;
 
 import java.util.ArrayList;
 
+/**
+ * This transformer removes all subtrees from a DiffTree that are non-edited.
+ * A subtree is unedited, if all nodes in it are unchanged and all nodes have the same
+ * before and after parent.
+ * Such subtrees just model state but not an edit and thus are removed from the validation
+ * of our elementary edit patterns in our ESEC/FSE'22 paper.
+ * @author Paul Bittner
+ */
 public class CutNonEditedSubtrees implements DiffTreeTransformer, DiffTreeVisitor {
     @Override
     public void transform(final DiffTree diffTree) {

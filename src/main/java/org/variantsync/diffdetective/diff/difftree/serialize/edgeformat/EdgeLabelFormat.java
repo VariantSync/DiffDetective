@@ -15,19 +15,46 @@ import java.util.Map;
  * @author Kevin Jedelhauser, Paul Maximilian Bittner
  */
 public abstract class EdgeLabelFormat implements LinegraphFormat {
+    /**
+     * Creates a new format with the {@link Direction#Default default direction}.
+     */
     public EdgeLabelFormat() {
         this(Direction.Default);
     }
 
+    /**
+     * Creates a new format that uses the given direction for edge export and import.
+     * @param direction The direction in which edges are written and in which read edges
+     *                  are interpreted.
+     */
     public EdgeLabelFormat(Direction direction) {
         setEdgeDirection(direction);
     }
 
+    /**
+     * Directions of edges.
+     * Describes if a linegraph edge describes an edge from a parent to a child node
+     * or vice versa.
+     */
     public enum Direction {
         ChildToParent, ParentToChild;
 
+        /**
+         * Default direction is child to parent as described in our paper.
+         */
         public static final Direction Default = ChildToParent;
 
+        /**
+         * Sort two values according to this direction.
+         * The first argument belongs to a child node,
+         * the second argument belongs to a parent node.
+         * Both arguments will be ordered such that they
+         * comply to this direction.
+         * @param child A value related to a child node.
+         * @param parent A value related to a parent node.
+         * @return Both values sorted according to this direction.
+         * @param <A> Value type.
+         */
         <A> Pair<A, A> sort(A child, A parent) {
             if (this == ChildToParent) {
                 return new Pair<>(child, parent);
@@ -39,14 +66,31 @@ public abstract class EdgeLabelFormat implements LinegraphFormat {
 
     private Direction edgeDirection = Direction.Default;
 
+    /**
+     * Set the direction for edge IO.
+     */
     public void setEdgeDirection(final Direction direction) {
         this.edgeDirection = direction;
     }
 
+    /**
+     * Returns the direction, edges in linegraph files are interpreted to have.
+     */
     public Direction getEdgeDirection() {
         return edgeDirection;
     }
 
+    /**
+     * Adds the given child node as the child of the given parent node for all times described by the given label
+     * (via {@link DiffNode#addBeforeChild(DiffNode)} and {@link DiffNode#addAfterChild(DiffNode)})
+     * In particular, this method checks if the given edge label starts with
+     * {@link LineGraphConstants#BEFORE_PARENT}, {@link LineGraphConstants#AFTER_PARENT}, or
+     * {@link LineGraphConstants#BEFORE_AND_AFTER_PARENT} and connects both nodes accordingly.
+     * @param child The node that should be the child of the given parent at the times described by the label.
+     * @param parent The node that should be the parent of the given child at the times described by the label.
+     * @param edgeLabel The label that describes the time, the edge exists at, by being prefixed with one of the
+     *                  LineGraphConstants described above.
+     */
     protected void connectAccordingToLabel(final DiffNode child, final DiffNode parent, final String edgeLabel) {
         if (edgeLabel.startsWith(LineGraphConstants.BEFORE_AND_AFTER_PARENT)) {
             // Nothing has been changed. The child-parent relationship remains the same
@@ -70,6 +114,7 @@ public abstract class EdgeLabelFormat implements LinegraphFormat {
      *
      * @param lineGraphLine A line from a line graph file describing an edge.
      * @param nodes All nodes that have been parsed so far, indexed by their id.
+     * @throws IllegalArgumentException when a node referenced in the lineGraphLine does not exist in the given map.
      */
     public void connect(final String lineGraphLine, final Map<Integer, DiffNode> nodes) throws IllegalArgumentException {
         if (!lineGraphLine.startsWith(LineGraphConstants.LG_EDGE)) throw new IllegalArgumentException("Failed to parse DiffNode: Expected \"v ...\" but got \"" + lineGraphLine + "\"!"); // check if encoded DiffNode
@@ -134,5 +179,13 @@ public abstract class EdgeLabelFormat implements LinegraphFormat {
         return edgeToLineGraph(sorted.first(), sorted.second(), labelPrefix);
     }
 
+    /**
+     * Creates a linegraph edge in the direction from -> to.
+     * The edge's label should be prefixed by the given prefix.
+     * @param from Node the edge begins at.
+     * @param to Node the edge ends at.
+     * @param labelPrefix Prefix for the produced edge's label.
+     * @return A line for a linegraph file that describes the given edge.
+     */
     protected abstract String edgeToLineGraph(DiffNode from, DiffNode to, final String labelPrefix);
 }

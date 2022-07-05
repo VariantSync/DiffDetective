@@ -1,7 +1,7 @@
 package org.variantsync.diffdetective.diff.difftree;
 
 /**
- * Constants that are related to line graph.
+ * Constants that are related to line graph IO.
  */
 public class LineGraphConstants {
 	
@@ -45,5 +45,4 @@ public class LineGraphConstants {
 	 * An edge between two {@link DiffNode DiffNodes} that existed before the edit only.
 	 */
 	public final static String BEFORE_PARENT = "b";
-
 }

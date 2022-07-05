@@ -16,17 +16,18 @@ import java.util.List;
 
 
 /**
- * Import patches from line graphs.
+ * Import DiffTrees from line graph files.
  *
  * @author Kevin Jedelhauser, Paul Maximilian Bittner
  */
 public class LineGraphImport {
-    //    public static Map<CodeType, Integer> countRootTypes = new HashMap<>();
-
     /**
-     * Transforms a line graph stored in a file into a list of {@link DiffTree DiffTrees}.
+     * Import all DiffTrees from the given linegraph file.
      *
-     * @return All {@link DiffTree DiffTrees} contained in the line graph
+	 * @param path Path to a linegraph file in which only DiffTrees are stored.
+	 * @param options Options for the import, such as hints for the used formats for node and edge labels.
+     * @return All {@link DiffTree DiffTrees} contained in the linegraph file.
+	 * @throws IOException when {@link LineGraphImport#fromLineGraph(BufferedReader, Path, DiffTreeLineGraphImportOptions)} throws.
      */
     public static List<DiffTree> fromFile(final Path path, final DiffTreeLineGraphImportOptions options) throws IOException {
         Assert.assertTrue(Files.isRegularFile(path));
@@ -37,9 +38,12 @@ public class LineGraphImport {
     }
 	
 	/**
-	 * Transforms a line graph into a list of {@link DiffTree DiffTrees}.
-	 * 
-	 * @return All {@link DiffTree DiffTrees} contained in the line graph
+	 * Import all DiffTrees from the given linegraph file.
+	 *
+	 * @param lineGraph Reader that reads the linegraph file.
+	 * @param originalFile Path to the file from which the lineGraph reader is reading.
+	 * @param options Options for the import, such as hints for the used formats for node and edge labels.
+	 * @return All {@link DiffTree DiffTrees} contained in the linegraph text.
 	 */
 	public static List<DiffTree> fromLineGraph(final BufferedReader lineGraph, final Path originalFile, final DiffTreeLineGraphImportOptions options) throws IOException {
 		// All DiffTrees read from the line graph
@@ -105,12 +109,13 @@ public class LineGraphImport {
 	}
 	
 	/**
-	 * Generates a {@link DiffTree} from given parameters.
+	 * Generates a {@link DiffTree} from the given, already parsed parameters.
 	 * 
-	 * @param lineGraph The line graph line to be parsed
-	 * @param diffNodeList The list of {@link DiffNode DiffNodes}
+	 * @param lineGraph The header line in the linegraph that describes the DiffTree (starting with <code>t #</code>).
+	 * @param inFile Path to the linegraph file that is currently parsed.
+	 * @param diffNodeList All nodes of the DiffTree that is to be created. The nodes can be assumed to be complete and already connected.
 	 * @param options {@link DiffTreeLineGraphImportOptions}
-	 * @return {@link DiffTree}
+	 * @return {@link DiffTree} generated from the given, already parsed parameters.
 	 */
 	private static DiffTree parseDiffTree(final String lineGraph, final Path inFile, final List<DiffNode> diffNodeList, final DiffTreeLineGraphImportOptions options) {
 		DiffTreeSource diffTreeSource = options.treeFormat().fromLineGraphLine(lineGraph);

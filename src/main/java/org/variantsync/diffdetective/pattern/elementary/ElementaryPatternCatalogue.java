@@ -6,6 +6,10 @@ import org.variantsync.diffdetective.diff.difftree.DiffType;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Interface for custom catalogs of elementary edit patterns.
+ * @author Paul Bittner
+ */
 public interface ElementaryPatternCatalogue {
     /**
      * Gives a list of all elementary patterns in this catalogue.
