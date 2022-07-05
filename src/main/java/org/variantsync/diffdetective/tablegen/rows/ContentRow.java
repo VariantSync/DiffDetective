@@ -9,6 +9,13 @@ import org.variantsync.diffdetective.tablegen.TableGenerator;
 
 import java.util.List;
 
+/**
+ * A row in a LaTex table containing the analysis data of a single dataset.
+ *
+ * @param dataset the dataset this row belongs to
+ * @param results the results of the analysis
+ * @param automationResult metadata about the analysis
+ */
 public record ContentRow(
         DatasetDescription dataset,
         AnalysisResult results,

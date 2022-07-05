@@ -1,8 +1,13 @@
 package org.variantsync.diffdetective.load;
 
+import org.eclipse.jgit.lib.ProgressMonitor;
 import org.tinylog.Logger;
 
-public class LoggingProgressMonitor extends CancellableProgressMonitor {
+/**
+ * Logs the start of all tasks as {@code INFO} to the tinylog API.
+ * This class will never cancel the monitored computation.
+ */
+public class LoggingProgressMonitor implements ProgressMonitor {
     @Override
     public void start(int totalTasks) {
 
@@ -21,5 +26,10 @@ public class LoggingProgressMonitor extends CancellableProgressMonitor {
     @Override
     public void endTask() {
 
+    }
+
+    @Override
+    public boolean isCancelled() {
+        return false;
     }
 }

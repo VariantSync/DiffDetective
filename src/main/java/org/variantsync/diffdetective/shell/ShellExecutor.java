@@ -16,6 +16,9 @@ import java.util.concurrent.Future;
 import java.util.function.Consumer;
 
 /**
+ * This class can execute {@link ShellCommand}s in a specific working directory and redirect their
+ * output to a Java function.
+ *
  * @author Alexander Schultheiß
  */
 public class ShellExecutor {
@@ -23,22 +26,60 @@ public class ShellExecutor {
     private final Consumer<String> errorReader;
     private final Path workDir;
 
+    /**
+     * Constructs an executor of {@code ShellCommand}s in the current working directory.
+     *
+     * The current working directory is the project/Git root by default when started through maven
+     * but this can be configured and is part of the contract between the caller of this function
+     * and the caller of DiffDetective.
+     *
+     * @param outputReader will be provided the {@code stdout} of the executed command
+     * @param errorReader will be provided the {@code stderr} of the executed command
+     */
     public ShellExecutor(Consumer<String> outputReader, Consumer<String> errorReader) {
         this.workDir = null;
         this.outputReader = outputReader;
         this.errorReader = errorReader;
     }
 
+    /**
+     * Constructs an executor of {@code ShellCommand}s in the current working directory.
+     *
+     * @param outputReader will be provided the {@code stdout} of the executed command
+     * @param errorReader will be provided the {@code stderr} of the executed command
+     * @param workDir the default working directory for the executed commands
+     */
     public ShellExecutor(Consumer<String> outputReader, Consumer<String> errorReader, Path workDir) {
         this.workDir = workDir;
         this.outputReader = outputReader;
         this.errorReader = errorReader;
     }
 
+    /**
+     * Execute {@code command} in the default working directory.
+     *
+     * the default working directory is the directory given in the
+     * {@link ShellExecutor constructor} or the current working directory of this process of not
+     * given.
+     *
+     * @param command the command to execute
+     * @throws ShellException if the executable in command can't be executed or it exits with an
+     * error exit code
+     */
     public List<String> execute(ShellCommand command) throws ShellException {
         return execute(command, this.workDir);
     }
 
+    /**
+     * Execute {@code command} in the given working directory.
+     *
+     * The default working directory (given in the {@link ShellExecutor constructor}) isn't used.
+     *
+     * @param command the command to execute
+     * @param executionDir the directory in which {@code command} is executed (working directory)
+     * @throws ShellException if the executable in {@code command} can't be executed or it exits
+     * with an error exit code
+     */
     public List<String> execute(ShellCommand command, Path executionDir) throws ShellException {
         if (System.getProperty("os.name").toLowerCase().startsWith("windows")) {
             throw new SetupError("The synchronization study can only be executed under Linux!");
@@ -89,6 +130,7 @@ public class ShellExecutor {
         return command.interpretResult(exitCode, output);
     }
 
+    /** Feed the lines read from {@code inputStream} to {@code consumer}. */
     private Runnable collectOutput(final InputStream inputStream, final Consumer<String> consumer) {
         return () -> {
             try (inputStream; BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {

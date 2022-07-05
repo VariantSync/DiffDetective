@@ -5,7 +5,11 @@ import org.variantsync.functjonal.Lazy;
 import java.text.NumberFormat;
 
 /**
- * Adapted from https://stackoverflow.com/a/8973770/5410757
+ * Human readable diagnostic information bundle.
+ *
+ * <p>This is a {@link INSTANCE singleton}.
+ *
+ * <p>Adapted from https://stackoverflow.com/a/8973770/5410757
  */
 public class Diagnostics {
     public final static Lazy<Diagnostics> INSTANCE = Lazy.of(Diagnostics::new);
@@ -13,6 +17,7 @@ public class Diagnostics {
 
     private Diagnostics() {}
 
+    /** Human readable information about current memory usage and the running machine. */
     public String info() {
         StringBuilder sb = new StringBuilder();
         sb.append(this.osInfo());
@@ -28,6 +33,7 @@ public class Diagnostics {
         return System.getProperty("os.version");
     }
 
+    /** Returns the architecture of the running system. */
     public String osArch() {
         return System.getProperty("os.arch");
     }
@@ -36,10 +42,12 @@ public class Diagnostics {
         return runtime.availableProcessors();
     }
 
+    /** Convert Bytes into Gigabytes. */
     private static double B2GB(long bytes) {
         return bytes / 1048576.0; // = (1024.0 * 1024.0);
     }
 
+    /** Human readable information about the current memory usage. */
     public String memInfo() {
         NumberFormat format = NumberFormat.getInstance();
         StringBuilder sb = new StringBuilder();
@@ -61,6 +69,7 @@ public class Diagnostics {
         return sb.toString();
     }
 
+    /** Human readable information about the running machine. */
     public String osInfo() {
         StringBuilder sb = new StringBuilder();
         sb.append("OS: ");

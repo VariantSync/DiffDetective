@@ -15,15 +15,15 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
- * Class for loading Gits from several sources.
+ * Class for loading Git repositories from several sources.
  *
  * @author Soeren Viegener, Paul Maximilian Bittner
  */
 public class GitLoader {
     /**
-     * Loads a Git from a directory
+     * Loads a Git repository from a directory
      * @param pathToRepo the name of the directory where the git repository is located
-     * @return A Git object of the repository
+     * @return a Git object of the repository
      */
     public static Git fromDirectory(Path pathToRepo){
         Assert.assertTrue(Files.isDirectory(pathToRepo), "Given path " + pathToRepo + " is not a directory!");
@@ -37,10 +37,10 @@ public class GitLoader {
     }
 
     /**
-     * Loads a Git from a remote repository
-     * @param localPath Directory where the remote repository is cloned to.
+     * Loads a Git repository from a remote repository
+     * @param localPath directory where the remote repository is cloned to
      * @param remoteURI URI of the remote git repository
-     * @return A Git object of the repository
+     * @return a Git object of the repository
      */
     public static Git fromRemote(Path localPath, URI remoteURI) {
         if (!Files.exists(localPath)) {
@@ -68,9 +68,12 @@ public class GitLoader {
     }
 
     /**
-     * Loads a Git from a zipped repository
-     * @param pathToZip Name of the zip file located in the default repositories directory
-     * @return A Git object of the repository
+     * Loads a Git repository from a zipped repository.
+     * The zip is extracted to a directory put beside the zip and named after the zip without the
+     * zip extension.
+     *
+     * @param pathToZip name of the zip file containing a git repository
+     * @return a Git object of the repository
      */
     public static Git fromZip(Path pathToZip) {
         Assert.assertTrue(Files.isRegularFile(pathToZip), "Given path " + pathToZip + " is not a file!");
