@@ -27,7 +27,7 @@ public class CPPAnnotationParser {
 
     /**
      * Creates a new preprocessor annotation parser.
-     * @param formulaParser Parser that is used to parse propositional formulas in conditional annotations (e.g., the <code>A & B</code> in <code>#if A & B</code>).
+     * @param formulaParser Parser that is used to parse propositional formulas in conditional annotations (e.g., the formula <code>f</code> in <code>#if f</code>).
      * @param extractor An extractor that extracts the formula part of a preprocessor annotation that is then given to the formulaParser.
      */
     public CPPAnnotationParser(final PropositionalFormulaParser formulaParser, CPPDiffLineFormulaExtractor extractor) {
