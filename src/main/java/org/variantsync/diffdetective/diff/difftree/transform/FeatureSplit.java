@@ -14,13 +14,13 @@ public class FeatureSplit {
 
     public FeatureSplit(DiffTree diffTree) {
         inputDiff = diffTree;
-        subtrees = Set.of(
-                inputDiff.forAll(node -> {
-                    if (node.isAdd() || node.isRem()) {
-                        return generateSubtree(node, inputDiff);
-                    }
-                })
-        );
+       //subtrees = Set.of(
+       //        inputDiff.forAll(node -> {
+       //            if (node.isAdd() || node.isRem()) {
+       //                return generateSubtree(node, inputDiff);
+       //            }
+       //        })
+       //);
     }
 
     public DiffTree generateSubtree(DiffNode node, DiffTree initDiffTree) {

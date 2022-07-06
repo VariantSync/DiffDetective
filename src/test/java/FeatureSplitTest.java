@@ -1,11 +1,14 @@
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.prop4j.And;
 import org.tinylog.Logger;
+import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
 import org.variantsync.diffdetective.diff.difftree.render.RenderOptions;
 import org.variantsync.diffdetective.diff.difftree.serialize.LineGraphImport;
 import org.variantsync.diffdetective.diff.difftree.serialize.nodeformat.MappingsDiffNodeFormat;
+import org.variantsync.diffdetective.diff.difftree.transform.Duplication;
 import org.variantsync.diffdetective.main.SimpleRenderer;
 
 import java.io.BufferedReader;
@@ -22,12 +25,12 @@ import static org.variantsync.diffdetective.util.fide.FormulaUtils.negate;
 public class FeatureSplitTest {
 
     private static List<Path> TEST_FILES;
-    private static List<DiffTree> DIFF_TREES;
+    private static List<DiffTree> DIFF_TREES = new ArrayList<DiffTree>();
 
     @BeforeClass
     public static void init() throws IOException {
         // Generate DiffTrees based on the TEST_FILES
-        TEST_FILES = Files.list(Paths.get("src/test/resources/feature_split")).toList();
+        TEST_FILES = Files.list(Paths.get("src/test/resources/feature_split/")).toList();
         for (final Path testFile : TEST_FILES) {
             Logger.info("Testing {}", testFile);
             // create variation tree diff
@@ -53,6 +56,16 @@ public class FeatureSplitTest {
     public void generateSubtreeTest() throws IOException {
         //TODO render ever diff
     }
+
+    @Test
+    public void duplicateNodeTest() throws IOException {
+        DiffNode node = DIFF_TREES.get(0).getRoot().getAllChildren().get(0);
+        Logger.info(node.toString());
+        DiffNode duplication = new Duplication().duplicateNode(node);
+        Logger.info(duplication.toString());
+        Assert.assertEquals(node, duplication);
+    }
+
 
     //var treeDiff = DiffTree.fromDiff("", false, false);
     // Display Diff
