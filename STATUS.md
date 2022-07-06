@@ -33,7 +33,7 @@ We claim the _Artifacts Available_ badge as we made our artefacts publicly avail
 We claim the _Artifacts Evaluated Reusable_ badge as we implemented DiffDetective as a reusable library (see above).
 Furthermore, both DiffDetective and our Haskell formalization serve as reference implementations if researchers or practitioners want to reimplement our theory in other programming languages.
 
-[ddgithub]: https://github.com/VariantSync/DiffDetective/tree/esecfse
+[ddgithub]: https://github.com/VariantSync/DiffDetective/tree/esecfse22
 [ddzenodo]: UNDEFINED
-[ddappendix]: https://github.com/VariantSync/DiffDetective/raw/esecfse/appendix.pdf
-[ddproofs]: https://github.com/VariantSync/DiffDetective/tree/esecfse/proofs
+[ddappendix]: https://github.com/VariantSync/DiffDetective/raw/esecfse22/appendix.pdf
+[ddproofs]: https://github.com/VariantSync/DiffDetective/tree/esecfse22/proofs
