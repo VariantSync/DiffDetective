@@ -1,13 +1,5 @@
 # Classifying Edits to Variability in Source Code
 
----
-TODOS for artifact submission
-- create a top level "python" dir
-  - put `mining` there
-  - put `linegraph` there. Maybe rename `linegraph` to `rendering`
-  - put `plotting` there
----
-
 This is the replication package for our paper _Classifying Edits to Variability in Source Code_ accepted at the 30th ACM Joint European Software Engineering Conference and Symposium on the Foundations of Software Engineering (ESEC/FSE 2022).
 
 This replication package consists of four parts:

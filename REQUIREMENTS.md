@@ -5,7 +5,7 @@ None
 ## Software Requirements
 
 We do not require a certain operating system or prepared environment.
-We tested our replication on Windows 10, WSL2, and Linux.
+We tested our setup on Windows 10, WSL2, and Linux.
 
 To run DiffDetective, JDK16 and Maven are required.
 Dependencies to other packages are documented in the maven build file ([pom.xml](pom.xml)) and are handled automatically by Maven.
