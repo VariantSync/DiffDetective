@@ -1,5 +1,6 @@
 # Classifying Edits to Variability in Source Code
 
+![Maven](https://github.com/VariantSync/DiffDetective/actions/workflows/maven.yml/badge.svg)
 [![Documentation](https://img.shields.io/badge/Documentation-Read-purple)][documentation]
 [![Install](https://img.shields.io/badge/Install-Instructions-blue)](INSTALL.md)
 [![GitHubPages](https://img.shields.io/badge/GitHub%20Pages-online-blue.svg?style=flat)][website]
