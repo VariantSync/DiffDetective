@@ -25,7 +25,7 @@ The `proofs` Haskell project provides an extended formal specification of our th
   Its main purpose is to document the theory and its extensions to serve as a reference for the proofs in our appendix.
   Yet, the project can also be used as a library to reason on variation trees and diffs in Haskell projects.
   
-The library is accompanied with a small demo application that shows an example test case for our proof for completeness, by creating a variation tree diff from two variation trees and re-projecting them.
+The library is accompanied by a small demo application that shows an example test case for our proof for completeness, by creating a variation tree diff from two variation trees and re-projecting them.
 
 ## Claims
 We claim the _Artifacts Available_ badge as we made our artefacts publicly available on [Github][ddgithub] and [Zenodo][ddzenodo].

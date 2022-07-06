@@ -1,5 +1,10 @@
 # Classifying Edits to Variability in Source Code
 
+[![Documentation](https://img.shields.io/badge/Documentation-Read-purple)][documentation]
+[![Install](https://img.shields.io/badge/Install-Instructions-blue)](INSTALL.md)
+[![GitHubPages](https://img.shields.io/badge/GitHub%20Pages-online-blue.svg?style=flat)][website]
+[![License](https://img.shields.io/badge/License-GNU%20LGPLv3-blue)](LICENSE.LGPL3)
+
 This is the replication package for our paper _Classifying Edits to Variability in Source Code_ accepted at the 30th ACM Joint European Software Engineering Conference and Symposium on the Foundations of Software Engineering (ESEC/FSE 2022).
 
 This replication package consists of four parts:
@@ -94,6 +99,9 @@ The input file must have the same format as the other dataset files (i.e., repos
 [difftree_class]: src/main/java/org/variantsync/diffdetective/diff/difftree/DiffTree.java
 [haskell]: https://www.haskell.org/
 [dataset]: docs/datasets.md
+
+[documentation]: https://variantsync.github.io/DiffDetective/docs/javadoc/
+[website]: https://variantsync.github.io/DiffDetective/
 
 [resultsdir]: results/validation/current
 [resultsdir_classification_results]: results/validation/current/ultimateresult.metadata.txt
