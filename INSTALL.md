@@ -51,7 +51,7 @@ The results of the verification will be stored in the [results](results) directo
 ### Expected Output of the Verification
 The aggregated results of the verification can be found in the following files.
 
-- The [speed statistics](results/difftrees/speedstatistics.txt) contain information about the total runtime, median runtime, mean runtime, and more:
+- The [speed statistics](results/validation/speedstatistics.txt) contain information about the total runtime, median runtime, mean runtime, and more:
   ```
   #Commits: 14527
   Total   commit process time is: 12.427866666666667min
@@ -60,7 +60,7 @@ The aggregated results of the verification can be found in the following files.
   Median  commit process time is: 6dc71f6b2c7ff49adb504426b4cd206e4745e1e3___xorg-server___19ms
   Average commit process time is: 51.330075032697735ms
   ```
-- The [classification results](results/difftrees/ultimateresult.metadata.txt) contain information about how often each pattern was found, and more.
+- The [classification results](results/validation/ultimateresult.metadata.txt) contain information about how often each pattern was found, and more.
   ```
   repository: <NONE>
   total commits: 18046
