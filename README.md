@@ -61,6 +61,16 @@ The aggregated results can be found in the following files.
 
 Moreover, the results comprise the (LaTeX) tables that are part of our paper and appendix.
 
+### Documentation
+
+DiffDetective's code base is documented with javadoc and can be accessed on this [website][documentation]. Interesting classes of our library are:
+- [DiffTree](https://variantsync.github.io/DiffDetective/docs/javadoc/org/variantsync/diffdetective/diff/difftree/DiffTree.html) and [DiffNode](https://variantsync.github.io/DiffDetective/docs/javadoc/org/variantsync/diffdetective/diff/difftree/DiffNode.html) implement variation tree diffs from our paper. A variation tree diff is represented by an instance of the `DiffTree` class. It stores the root node of the diff and offers various methods to parse, traverse, and analyze variation tree diffs. `DiffNode`s represent individual nodes within a variation tree diff.
+- [Validation](https://variantsync.github.io/DiffDetective/docs/javadoc/org/variantsync/diffdetective/validation/Validation.html) contains the main method for our validation.
+- [ProposedElementaryPatterns](https://variantsync.github.io/DiffDetective/docs/javadoc/org/variantsync/diffdetective/pattern/elementary/proposed/ProposedElementaryPatterns.html) holds the catalog of nine edit patterns we proposed in our paper. It implements the interface [ElementaryPatternCatalogue](https://variantsync.github.io/DiffDetective/docs/javadoc/org/variantsync/diffdetective/pattern/elementary/ElementaryPatternCatalogue.html), which allows to define custom pattern catalogs.
+- [BooleanAbstraction](https://variantsync.github.io/DiffDetective/docs/javadoc/org/variantsync/diffdetective/feature/BooleanAbstraction.html) contains data and methods for boolean abstraction of higher-order logic formulas. We use this for macro parsing.
+- [GitDiffer](https://variantsync.github.io/DiffDetective/docs/javadoc/org/variantsync/diffdetective/diff/GitDiffer.html) may parse the history of a git repository to variation tree diffs.
+- The [datasets](https://variantsync.github.io/DiffDetective/docs/javadoc/org/variantsync/diffdetective/datasets/package-summary.html) package contains various classes for describing and loading datasets.
+
 ## 2. Appendix
 
 Our appendix consists of:
