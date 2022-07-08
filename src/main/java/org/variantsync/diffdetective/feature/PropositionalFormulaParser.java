@@ -4,6 +4,10 @@ import org.prop4j.Node;
 import org.prop4j.NodeReader;
 import org.variantsync.diffdetective.util.fide.FixTrueFalse;
 
+/**
+ * A parser that parses propositional formula's from text to {@link Node}s.
+ * @author Paul Bittner
+ */
 @FunctionalInterface
 public interface PropositionalFormulaParser {
     /*
@@ -13,6 +17,11 @@ public interface PropositionalFormulaParser {
      */
     Node parse(String text);
 
+    /**
+     * Default parser that uses the {@link NodeReader} from FeatureIDE
+     * and uses its {@link NodeReader#activateJavaSymbols() java symbols} to
+     * match operators.
+     */
     PropositionalFormulaParser Default = text -> {
         final NodeReader nodeReader = new NodeReader();
         nodeReader.activateJavaSymbols();

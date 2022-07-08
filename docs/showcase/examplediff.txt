@@ -1,8 +1,0 @@
-  #if A
-    x = 0;
--   #if DEBUG
-      print(x);
--   #endif
-+ #else
-+   x = 1;
-  #endif

@@ -13,7 +13,17 @@ import java.util.List;
 import java.util.Stack;
 
 /**
- * https://scryfall.com/card/2xm/308/wurmcoil-engine
+ * Collapses chains of nested non-edited macros.
+ * Imagine a macro node that is unchanged and has the same parent before and after the edit that
+ * is again an unchanged macro node that has the same parent before and after the edit, and so on.
+ * Such chains <code>NON_IF -> NON_IF -> NON_IF -> ... -> NON_IF</code> can be collapsed
+ * into a single unchanged macro node with the formulas of all nodes combined (by AND).
+ * This collapse is realized by this transformer.
+ *
+ * Fun fact: We implemented this transformation because of the
+ * <a href="https://scryfall.com/card/2xm/308/wurmcoil-engine">wurmcoil edit in Marlin</a>.
+ *
+ * @author Paul Bittner
  */
 public class CollapseNestedNonEditedMacros implements DiffTreeTransformer {
     private final List<Stack<DiffNode>> chainCandidates = new ArrayList<>();

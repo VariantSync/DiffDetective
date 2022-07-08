@@ -6,6 +6,10 @@ import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.diff.difftree.DiffType;
 import org.variantsync.diffdetective.pattern.elementary.ElementaryPattern;
 
+/**
+ * Our Generalization pattern from the ESEC/FSE'22 paper.
+ * @author Paul Bittner, Sören Viegener
+ */
 final class Generalization extends ElementaryPattern {
     Generalization() {
         super("Generalization", DiffType.NON);

@@ -36,22 +36,22 @@ To build the Docker container you can run the build script corresponding to your
   ./build.sh
 ```
 
-## Validation & Expected Output
+## Verification & Expected Output
 
-### Running the Validation
-To run the validation you can run the script corresponding to your OS with `validation` as first argument. The validation should take about 10-20 minutes depending on your hardware.
+### Running the Verification
+To run the verification you can run the script corresponding to your OS with `verification` as first argument. The verification should take about 10-20 minutes depending on your hardware.
 ```
 # Windows: 
-  .\execute.bat validation
+  .\execute.bat verification
 # Linux/Mac (bash): 
-  ./execute.sh validation
+  ./execute.sh verification
 ```
-The results of the validation will be stored in the [results](results) directory.
+The results of the verification will be stored in the [results](results) directory.
 
-### Expected Output of the Validation
-The aggregated results of the validation can be found in the following files.
+### Expected Output of the Verification
+The aggregated results of the verification can be found in the following files.
 
-- The [speed statistics](results/difftrees/speedstatistics.txt) contain information about the total runtime, median runtime, mean runtime, and more:
+- The [speed statistics](results/validation/speedstatistics.txt) contain information about the total runtime, median runtime, mean runtime, and more:
   ```
   #Commits: 14527
   Total   commit process time is: 12.427866666666667min
@@ -60,7 +60,7 @@ The aggregated results of the validation can be found in the following files.
   Median  commit process time is: 6dc71f6b2c7ff49adb504426b4cd206e4745e1e3___xorg-server___19ms
   Average commit process time is: 51.330075032697735ms
   ```
-- The [classification results](results/difftrees/ultimateresult.metadata.txt) contain information about how often each pattern was found, and more.
+- The [classification results](results/validation/ultimateresult.metadata.txt) contain information about how often each pattern was found, and more.
   ```
   repository: <NONE>
   total commits: 18046
@@ -96,7 +96,7 @@ The aggregated results of the validation can be found in the following files.
   #Error[not all annotations closed]: 6
   ```
   
-(Note that the above links only have a target after running the validation.)
+(Note that the above links only have a target after running the verification.)
 The processing times might deviate.
 
 ## Troubleshooting
@@ -111,7 +111,7 @@ The processing times might deviate.
 
 `Fix:` Follow the instructions described above in the section `Build the Docker Container`.
 
-### No results after validation, or 'cannot create directory '../results/difftrees': Permission denied'
+### No results after verification, or 'cannot create directory '../results/difftrees': Permission denied'
 `Problem:` This problem can occur due to how permissions are managed inside the Docker container. More specifically, it will appear, if Docker is executed with elevated permissions (i.e., `sudo`) and if there is no [results](results) directory because it was deleted manually. In this case, Docker will create the directory with elevated permissions, and the Docker user has no permissions to access the directory.
 
 `Fix:` If there is a _results_ directory delete it with elevated permission (e.g., `sudo rm -r results`). 

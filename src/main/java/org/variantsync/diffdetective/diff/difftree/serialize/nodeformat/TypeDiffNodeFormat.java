@@ -3,14 +3,12 @@ package org.variantsync.diffdetective.diff.difftree.serialize.nodeformat;
 import org.variantsync.diffdetective.diff.difftree.DiffNode;
 
 /**
- * A concrete implementation for Type of a node label.
- * Print CodeType and DiffType.
+ * Labels are of the form <code>CodeType_DiffType</code>.
+ * @author Paul Bittner, Kevin Jedelhauser
  */
 public class TypeDiffNodeFormat implements DiffNodeLabelFormat {
-
 	@Override
 	public String toLabel(final DiffNode node) {
 		return node.diffType + "_" + node.codeType;
 	}
-
 }

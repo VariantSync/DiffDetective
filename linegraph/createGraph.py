@@ -16,7 +16,7 @@ import graphGeneration as g
 #                         how the node labels in the patterns file should be interpreted
 ####################################################################
 
-d = graphviz.Digraph(filename="../lattice/createGraph.gv", engine='fdp')
+d = graphviz.Digraph(filename="lattice/createGraph.gv", engine='fdp')
 
 # set border colour of the nodes
 def nodeBorderColour(codetype):

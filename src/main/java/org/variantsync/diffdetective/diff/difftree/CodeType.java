@@ -3,12 +3,21 @@ package org.variantsync.diffdetective.diff.difftree;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * The type of nodes in a {@link DiffTree}.
+ * Corresponds to the tau function from our paper.
+ */
 public enum CodeType {
+    // Mapping types
     IF("if"),
     ENDIF("endif"),
     ELSE("else"),
     ELIF("elif"),
+
+    // Code types
     CODE("code"),
+
+    // Extra type for the root
     ROOT("ROOT");
 
     public final String name;
@@ -16,17 +25,29 @@ public enum CodeType {
         this.name = name;
     }
 
+    /**
+     * Returns true iff this code type represents a conditional feature annotation (i.e., if or elif).
+     */
     public boolean isConditionalMacro() {
         return this == IF || this == ELIF;
     }
+
+    /**
+     * Returns true iff this code type represents a feature mapping.
+     */
     public boolean isMacro() {
         return this != ROOT && this != CODE;
     }
 
-    final static Pattern regex = Pattern.compile("^[+-]?\\s*#\\s*(if|endif|else|elif)");
+    final static Pattern annotationRegex = Pattern.compile("^[+-]?\\s*#\\s*(if|endif|else|elif)");
 
+    /**
+     * Parses the code type from a line taken from a text-based diff.
+     * @param line A line in a patch.
+     * @return The type of edit of <code>line</code>.
+     */
     public static CodeType ofDiffLine(String line) {
-        Matcher matcher = regex.matcher(line);
+        Matcher matcher = annotationRegex.matcher(line);
         if (matcher.find()) {
             String id = matcher.group(1);
             if (id.equals(IF.name)) {
@@ -43,6 +64,12 @@ public enum CodeType {
         return CODE;
     }
 
+    /**
+     * Creates a CodeType from its value names.
+     * @see Enum#name()
+     * @param name a string that equals the name of one value of this enum (ignoring case)
+     * @return The CodeType that has the given name
+     */
     public static CodeType fromName(final String name) {
         for (CodeType candidate : values()) {
             if (candidate.toString().equalsIgnoreCase(name)) {
@@ -53,6 +80,9 @@ public enum CodeType {
         throw new IllegalArgumentException("Given string \"" + name + "\" is not the name of a CodeType.");
     }
 
+    /**
+     * Prints this value as a macro annotation (i.e., starting with #).
+     */
     public String asMacroText() {
         return "#" + this.name;
     }

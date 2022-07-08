@@ -24,7 +24,6 @@ import org.variantsync.diffdetective.metadata.ExplainedFilterSummary;
 import org.variantsync.diffdetective.mining.formats.DirectedEdgeLabelFormat;
 import org.variantsync.diffdetective.mining.formats.MiningNodeFormat;
 import org.variantsync.diffdetective.mining.formats.ReleaseMiningDiffNodeFormat;
-import org.variantsync.diffdetective.validation.Validation;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -37,8 +36,8 @@ public class DiffTreeMiner {
     public static final Path DATASET_FILE = DefaultDatasets.EMACS;
     public static final boolean SEARCH_FOR_GOOD_RUNNING_EXAMPLES = false;
     public static final boolean UPDATE_REPOS_BEFORE_MINING = false;
-    public static final boolean PRINT_LATEX_TABLE = true;
-    public static final int PRINT_LARGEST_SUBJECTS = 3;
+//    public static final boolean PRINT_LATEX_TABLE = true;
+//    public static final int PRINT_LARGEST_SUBJECTS = 3;
     public static final boolean DEBUG_TEST = false;
 
     public static List<DiffTreeTransformer> Postprocessing(final Repository repository) {
@@ -140,9 +139,9 @@ public class DiffTreeMiner {
         } else {
             final List<DatasetDescription> datasets = DefaultDatasets.loadDatasets(DATASET_FILE);
 
-            if (PRINT_LATEX_TABLE) {
-                Validation.printLaTeXTableFor(datasets);
-            }
+//            if (PRINT_LATEX_TABLE) {
+//                Validation.printLaTeXTableFor(datasets);
+//            }
 
             final DatasetFactory miningDatasetFactory = new DatasetFactory(inputDir);
             repos = miningDatasetFactory.createAll(datasets, true, UPDATE_REPOS_BEFORE_MINING);

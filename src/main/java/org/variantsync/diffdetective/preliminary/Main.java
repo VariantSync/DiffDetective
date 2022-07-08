@@ -4,7 +4,6 @@ import org.tinylog.Level;
 import org.tinylog.Logger;
 import org.variantsync.diffdetective.datasets.Repository;
 import org.variantsync.diffdetective.datasets.predefined.StanciulescuMarlin;
-import org.variantsync.diffdetective.diff.GitDiff;
 import org.variantsync.diffdetective.diff.GitDiffer;
 import org.variantsync.diffdetective.preliminary.analysis.GDAnalysisUtils;
 import org.variantsync.diffdetective.preliminary.analysis.GDAnalyzer;

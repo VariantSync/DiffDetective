@@ -60,11 +60,13 @@ public class IO {
 
     /**
      * Writes the given text to the given file.
-     * Creates a new file and assumes there exists no file yet at the given path.
-     * @param p File to create and fill with text.
-     * @param text Text to write to file.
-     * @throws IOException if an I/O error occurs writing to or creating the file, or the text cannot be encoded using the specified charset.
-     *                     Also throws if the given file already exists.
+     * Creates a new file and its parent directories if necessary. It assumes that no file exists
+     * yet at the given path.
+     *
+     * @param p file to create and fill with {@code text}
+     * @param text text to write to the file
+     * @throws IOException if {@code p} already exists, an I/O error occurs writing to or creating
+     * the file, or the text cannot be encoded using UTF-8
      */
     public static void write(final Path p, final String text) throws IOException {
         if (p.getParent() != null) {
@@ -73,6 +75,16 @@ public class IO {
         Files.writeString(p, text, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
     }
 
+    /**
+     * Appends the given text to the given file.
+     * Creates a new file and its parent directories if necessary. It the file already exists
+     * {@code text} is appended to the file.
+     *
+     * @param p file to create and fill with {@code text}
+     * @param text text to write to the file
+     * @throws IOException if an I/O error occurs appending to or creating the file, or the text
+     * cannot be encoded using UTF-8
+     */
     public static void append(final Path p, final String text) throws IOException {
         if (p.getParent() != null) {
             Files.createDirectories(p.getParent());
@@ -80,6 +92,11 @@ public class IO {
         Files.writeString(p, text, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
     }
 
+    /**
+     * Writes {@code data} to the file {@code outputPath}.
+     * {@code outputPath} and its parent directories will be created if necessary. If
+     * {@code outputPath} already exists, no data is written.
+     */
     public static void tryWrite(final Path outputPath, final String data) {
         try {
             IO.write(outputPath, data);
@@ -88,6 +105,15 @@ public class IO {
         }
     }
 
+    /**
+     * Parses the string {@code uri} into an {@code URI} object.
+     *
+     * <p>The purpose of this function is to handle parse failures in a functional way (using
+     * {@link Optional} instead of with exceptions.
+     *
+     * @param uri the {@code String} to be parsed as an {@code URI}
+     * @return the parsed URI if {@code uri} is valid or an empty optional on parse failures
+     */
     public static Optional<URI> tryParseURI(final String uri) {
         URI remote;
         try {
@@ -99,6 +125,11 @@ public class IO {
         return Optional.of(remote);
     }
 
+    /**
+     * Deletes {@code file} if it exists.
+     *
+     * @return {@code false} if the file system signals an error
+     */
     public static boolean tryDeleteFile(Path file) {
         if (Files.exists(file)) {
             try {

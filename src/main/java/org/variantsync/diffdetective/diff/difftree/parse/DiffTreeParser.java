@@ -15,7 +15,6 @@ import org.variantsync.diffdetective.diff.difftree.DiffType;
 import org.variantsync.diffdetective.diff.result.DiffError;
 import org.variantsync.diffdetective.diff.result.DiffResult;
 import org.variantsync.diffdetective.util.Assert;
-import org.variantsync.diffdetective.util.StringUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -26,19 +25,14 @@ import java.util.Stack;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 
+/**
+ * Parser that parses {@link DiffTree}s from text-based diffs.
+ */
 public class DiffTreeParser {
     /**
-     * Implementation of the diff tree algorithm.
-     * This implementation has options to collapse multiple code lines into one node and to
-     * discard empty lines.
-     * The implementation also checks for faulty git diffs.
-     *
-     * @param fullDiff                  The full diff of a patch
-     * @param collapseMultipleCodeLines Whether multiple consecutive code lines should be
-     *                                  collapsed into a single code node
-     * @param ignoreEmptyLines          Whether empty lines (no matter if they are added removed
-     *                                  or remained unchanged) should be ignored
-     * @return The DiffTree created from the given git diff
+     * The same as {@link DiffTreeParser#createDiffTree(BufferedReader, boolean, boolean, DiffNodeParser)}
+     * but with the diff given as a single string with linebreaks instead of a BufferedReader.
+     * Rethrows IOExceptions as Assertion errors (that do not have to be catched).
      */
     public static DiffResult<DiffTree> createDiffTree(
             String fullDiff,
@@ -53,6 +47,21 @@ public class DiffTreeParser {
         }
     }
 
+    /**
+     * Default parsing method for DiffTrees from diffs.
+     * This implementation has options to collapse multiple code lines into one node and to
+     * discard empty lines.
+     * This parsing algorithm is described in detail in Sören Viegener's bachelor's thesis.
+     *
+     * @param fullDiff                  The full diff of a patch obtained from a buffered reader.
+     * @param collapseMultipleCodeLines Whether multiple consecutive code lines with the same diff type
+     *                                  should be collapsed into a single code node.
+     * @param ignoreEmptyLines          Whether empty lines (no matter if they are added removed
+     *                                  or remained unchanged) should be ignored.
+     * @param nodeParser                The parser to parse individual lines in the diff to DiffNodes.
+     * @return A parsed DiffTree upon success or an error indicating why parsing failed.
+     * @throws IOException when reading the given BufferedReader fails.
+     */
     public static DiffResult<DiffTree> createDiffTree(
             BufferedReader fullDiff,
             boolean collapseMultipleCodeLines,
@@ -194,6 +203,15 @@ public class DiffTreeParser {
         return DiffResult.Success(new DiffTree(root));
     }
 
+    /**
+     * Push the given node to the given stack including some sanity checks.
+     * This method also ensures that annotation blocks are closed correctly,
+     * by setting ending line numbers.
+     * @param newNode The node to push to the given parsing stack.
+     * @param stack Describes current the nesting depth of feature annotations.
+     * @param lastLineNo The current line number from which's line the given node was parsed.
+     * @return Either success or an error in case a sanity check failed.
+     */
     static ParseResult pushNodeToStack(
             final DiffNode newNode,
             final Stack<DiffNode> stack,
@@ -215,11 +233,26 @@ public class DiffTreeParser {
         return ParseResult.SUCCESS;
     }
 
+    /**
+     * Ends a given code block by setting its ending line number correctly.
+     * @param block The code block to end.
+     * @param lastLineNo The line number of the last parsed line.
+     *                   This should be the line number of the last line in the diff
+     *                   that is part of the given block.
+     * @return null
+     */
     private static DiffNode endCodeBlock(final DiffNode block, final DiffLineNumber lastLineNo) {
         block.getToLine().set(lastLineNo).add(1);
         return null;
     }
 
+    /**
+     * Ends a given macro block by setting its ending line number correctly.
+     * @param block The macro block to end.
+     * @param lastLineNo The last line number in the diff that is part of the given block.
+     * @param diffTypeOfNewBlock The diff type of the upcoming block. This type determines
+     *                           at which times the given block ends.
+     */
     private static void endMacroBlock(final DiffNode block, final DiffLineNumber lastLineNo, final DiffType diffTypeOfNewBlock) {
         // Add 1 because the end line is exclusive, so we have to point one behind the last line we found.
         final DiffLineNumber to = block.getToLine();
@@ -230,6 +263,12 @@ public class DiffTreeParser {
         to.inDiff = Math.max(to.inDiff, lastLineNo.inDiff + 1);
     }
 
+    /**
+     * Pop nodes from the given annotation nesting stack until an If or the root was popped.
+     * Used to exist if-elif-else chains.
+     * @param stack The stack representing the current nesting of annotations.
+     * @return The last popped node. This is either an IF node or the root.
+     */
     public static DiffNode popIf(final Stack<DiffNode> stack) {
         DiffNode popped;
         do {
@@ -239,6 +278,13 @@ public class DiffTreeParser {
         return popped;
     }
 
+    /**
+     * Parses the given commit of the given repository.
+     * @param repo The repository from which a commit should be parsed.
+     * @param commitHash Hash of the commit to parse.
+     * @return A CommitDiff describing edits to variability introduced by the given commit relative to its first parent commit.
+     * @throws IOException when an error occurred.
+     */
     public static CommitDiff parseCommit(Repository repo, String commitHash) throws IOException {
         final Git git = repo.getGitRepo().run();
         Assert.assertNotNull(git);
@@ -259,6 +305,15 @@ public class DiffTreeParser {
         return commitDiff;
     }
 
+    /**
+     * Parses the given patch of the given repository.
+     * @param repo The repository from which a patch should be parsed.
+     * @param file The file that was edited by the patch.
+     * @param commitHash The hash of the commit in which the patch was made.
+     * @return A PatchDiff describing edits to variability introduced by the given patch relative to the corresponding commit's first parent commit.
+     * @throws IOException when an error occurred.
+     * @throws AssertionError when no such patch exists.
+     */
     public static PatchDiff parsePatch(Repository repo, String file, String commitHash) throws IOException {
         final CommitDiff commitDiff = parseCommit(repo, commitHash);
 

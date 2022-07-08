@@ -6,6 +6,10 @@ import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.diff.difftree.DiffType;
 import org.variantsync.diffdetective.pattern.elementary.ElementaryPattern;
 
+/**
+ * Our Reconfiguration pattern from the ESEC/FSE'22 paper.
+ * @author Paul Bittner, Sören Viegener
+ */
 final class Reconfiguration extends ElementaryPattern {
     Reconfiguration() {
         super("Reconfiguration", DiffType.NON);

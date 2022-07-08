@@ -10,10 +10,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Finds code nodes whose text is exactly equal. If one of those nodes was added and the other one was removed,
+ * Finds code nodes whose label is exactly equal. If one of those nodes was added and the other one was removed,
  * MovedCodeDetection merges them and interprets this edit as a move instead of separate insertion and deletion.
  * A possible future extension would be to account for multiline code nodes to not only check for exact equality of text
  * but for each line in the nodes individually.
+ * @author Paul Bittner
  */
 public class NaiveMovedCodeDetection implements DiffTreeTransformer {
     @Override

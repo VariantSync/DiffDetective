@@ -21,18 +21,36 @@ import org.variantsync.diffdetective.mining.formats.ReleaseMiningDiffNodeFormat;
 import org.variantsync.diffdetective.util.Assert;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Comparator;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+/**
+ * This is the validation from our ESEC/FSE'22 paper.
+ * It provides all configuration settings and facilities to setup the validation by
+ * creating a {@link HistoryAnalysis} and run it.
+ * @author Paul Bittner
+ */
 public class Validation {
+    /**
+     * Hardcoded configuration option that determines of all analyzed repositories should be updated
+     * (i.e., <code>git pull</code>) before the validation.
+     * This should be false and is false by default to make results comparable.
+     */
     public static final boolean UPDATE_REPOS_BEFORE_VALIDATION = false;
-    public static final boolean PRINT_LATEX_TABLE = true;
-    public static final int PRINT_LARGEST_SUBJECTS = 3;
+//    /**
+//     * Hardcoded configuration option that determines if
+//     */
+//    public static final boolean PRINT_LATEX_TABLE = true;
+//    public static final int PRINT_LARGEST_SUBJECTS = 3;
 
+    /**
+     * The {@link CommitHistoryAnalysisTaskFactory} for the {@link HistoryAnalysis} that will run our validation.
+     * This factory creates {@link PatternValidationTask}s with the respective settings.
+     */
     public static final CommitHistoryAnalysisTaskFactory VALIDATION_TASK_FACTORY =
             (repo, differ, outputPath, commits) -> new PatternValidationTask(new CommitHistoryAnalysisTask.Options(
                     repo,
@@ -43,15 +61,24 @@ public class Validation {
                     commits
             ));
 
+    /**
+     * Returns the node format that should be used for DiffNode IO.
+     */
     public static MiningNodeFormat NodeFormat() {
         return new ReleaseMiningDiffNodeFormat();
     }
 
+    /**
+     * Returns the edge format that should be used for IO of edges in DiffTrees.
+     */
     private static EdgeLabelFormat EdgeFormat(final MiningNodeFormat nodeFormat) {
         final EdgeLabelFormat.Direction direction = EdgeLabelFormat.Direction.ParentToChild;
         return new DirectedEdgeLabelFormat(nodeFormat, false, direction);
     }
 
+    /**
+     * Creates new export options for running the validation on the given repository.
+     */
     public static DiffTreeLineGraphExportOptions ValidationExportOptions(final Repository repository) {
         final MiningNodeFormat nodeFormat = NodeFormat();
         return new DiffTreeLineGraphExportOptions(
@@ -68,45 +95,68 @@ public class Validation {
         );
     }
 
-    public static void printLaTeXTableFor(final List<DatasetDescription> datasets) {
-        Logger.info("Its dangerous outside. Take this!");
-        System.out.println(DatasetDescription.asLaTeXTable(datasets));
+//    public static void printLaTeXTableFor(final List<DatasetDescription> datasets) {
+//        Logger.info("Its dangerous outside. Take this!");
+//        System.out.println(DatasetDescription.asLaTeXTable(datasets));
+//
+//        Logger.info("The {} largest systems are:", PRINT_LARGEST_SUBJECTS);
+//        final Comparator<DatasetDescription> larger = (a, b) -> {
+//            final int ai = Integer.parseInt(a.commits().replaceAll(",", ""));
+//            final int bi = Integer.parseInt(b.commits().replaceAll(",", ""));
+//            return -Integer.compare(ai, bi);
+//        };
+//        final List<DatasetDescription> largestDatasets = datasets.stream()
+//                .sorted(larger)
+//                .limit(PRINT_LARGEST_SUBJECTS)
+//                .collect(Collectors.toList());
+//        datasets.stream()
+//                .filter(m -> m.name().equalsIgnoreCase("Marlin")
+//                        || m.name().equalsIgnoreCase("libssh")
+//                        || m.name().equalsIgnoreCase("Busybox")
+//                        || m.name().equalsIgnoreCase("Godot"))
+//                .forEach(largestDatasets::add);
+//        largestDatasets.sort(larger);
+//        System.out.println(DatasetDescription.asLaTeXTable(largestDatasets));
+//    }
 
-        Logger.info("The {} largest systems are:", PRINT_LARGEST_SUBJECTS);
-        final Comparator<DatasetDescription> larger = (a, b) -> {
-            final int ai = Integer.parseInt(a.commits().replaceAll(",", ""));
-            final int bi = Integer.parseInt(b.commits().replaceAll(",", ""));
-            return -Integer.compare(ai, bi);
-        };
-        final List<DatasetDescription> largestDatasets = datasets.stream()
-                .sorted(larger)
-                .limit(PRINT_LARGEST_SUBJECTS)
-                .collect(Collectors.toList());
-        datasets.stream()
-                .filter(m -> m.name().equalsIgnoreCase("Marlin")
-                        || m.name().equalsIgnoreCase("libssh")
-                        || m.name().equalsIgnoreCase("Busybox")
-                        || m.name().equalsIgnoreCase("Godot"))
-                .forEach(largestDatasets::add);
-        largestDatasets.sort(larger);
-        System.out.println(DatasetDescription.asLaTeXTable(largestDatasets));
-    }
-
+    /**
+     * Main method to start the validation.
+     * @param args Command-line options. Currently ignored.
+     * @throws IOException When copying the log file fails.
+     */
     public static void main(String[] args) throws IOException {
 //        setupLogger(Level.INFO);
 //        setupLogger(Level.DEBUG);
 
+        final Path datasetsFile;
+        if (args.length < 1) {
+            datasetsFile = DefaultDatasets.DEFAULT_DATASETS_FILE;
+        } else if (args.length > 1) {
+            Logger.error("Error: Expected exactly one argument but got " + args.length + "! Expected a path to a datasets markdown file.");
+            return;
+        } else {
+            datasetsFile = Path.of(args[0]);
+
+            if (!Files.exists(datasetsFile)) {
+                Logger.error("The given datasets file \"" + datasetsFile + "\" does not exist.");
+            }
+        }
+
         final ParseOptions.DiffStoragePolicy diffStoragePolicy = ParseOptions.DiffStoragePolicy.DO_NOT_REMEMBER;
 
         final Path inputDir = Paths.get("..", "DiffDetectiveMining");
+        Logger.info("Reading and cloning git repositories from/to: " + inputDir);
+
         final Path outputDir = Paths.get("results", "validation", "current");
+        Logger.info("Writing output to: " + outputDir);
 
+        Logger.info("Loading datasets file: " + datasetsFile);
         final List<Repository> repos;
-        final List<DatasetDescription> datasets = DefaultDatasets.loadDefaultDatasets();
+        final List<DatasetDescription> datasets = DefaultDatasets.loadDatasets(datasetsFile);
 
-        if (PRINT_LATEX_TABLE) {
-            printLaTeXTableFor(datasets);
-        }
+//        if (PRINT_LATEX_TABLE) {
+//            printLaTeXTableFor(datasets);
+//        }
 
         final DatasetFactory miningDatasetFactory = new DatasetFactory(inputDir);
         repos = datasets.stream().map(miningDatasetFactory::create).collect(Collectors.toList());

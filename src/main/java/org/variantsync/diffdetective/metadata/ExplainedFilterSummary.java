@@ -9,20 +9,45 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Metadata that stores the reasons why an {@link ExplainedFilter} filtered data.
+ * @author Paul Bittner
+ */
 public class ExplainedFilterSummary implements Metadata<ExplainedFilterSummary> {
-
+    /**
+     * Prefix for exported filter reasons.
+     */
     public static final String FILTERED_MESSAGE_BEGIN = "filtered because not (";
+    /**
+     * Suffix for exported filter reasons.
+     */
     public static final String FILTERED_MESSAGE_END = ")";
 
+    /**
+     * Inplace Semigroup to compose to summaries.
+     * The individual {@link ExplainedFilter.Explanation}s will be composed by their {@link ExplainedFilter.Explanation#ISEMIGROUP}.
+     */
     public static final InplaceSemigroup<ExplainedFilterSummary> ISEMIGROUP =
-            (a, b) -> MergeMap.putAllValues(a.explanations, b.explanations, ExplainedFilter.Explanation.ISEMIGROUP);
+            (a, b) -> MergeMap.putAllValues(
+                    a.explanations,
+                    b.explanations,
+                    ExplainedFilter.Explanation.ISEMIGROUP
+            );
 
     private final LinkedHashMap<String, ExplainedFilter.Explanation> explanations;
 
+    /**
+     * Creates a new empty summary.
+     */
     public ExplainedFilterSummary() {
         this.explanations = new LinkedHashMap<>();
     }
 
+    /**
+     * Creates a new summary that summarizes the current state of a given explained filter.
+     * @param filter Filter whose hits should be memorized.
+     * @param <T> The type of filtered values.
+     */
     public <T> ExplainedFilterSummary(final ExplainedFilter<T> filter) {
         this.explanations = filter.getExplanations().collect(
                 Collectors.toMap(

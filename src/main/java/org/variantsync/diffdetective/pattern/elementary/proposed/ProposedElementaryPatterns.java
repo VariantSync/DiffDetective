@@ -10,6 +10,10 @@ import org.variantsync.diffdetective.util.Assert;
 
 import java.util.*;
 
+/**
+ * The catalog of elementary edit patterns proposed in our ESEC/FSE'22 paper.
+ * @author Paul Bittner
+ */
 public class ProposedElementaryPatterns implements ElementaryPatternCatalogue {
     public static final ElementaryPattern AddToPC = new AddToPC();
     public static final ElementaryPattern AddWithMapping = new AddWithMapping();
@@ -21,14 +25,23 @@ public class ProposedElementaryPatterns implements ElementaryPatternCatalogue {
     public static final ElementaryPattern Refactoring = new Refactoring();
     public static final ElementaryPattern Untouched = new Untouched();
 
+    /**
+     * A list of all nine patterns in their order of appearance in the paper.
+     */
     public static final List<ElementaryPattern> All = List.of(
             AddToPC, AddWithMapping,
             RemFromPC, RemWithMapping,
             Specialization, Generalization, Reconfiguration, Refactoring, Untouched
     );
 
+    /**
+     * A map of all nine edit patterns, indexed by their DiffType.
+     */
     public static final Map<DiffType, List<ElementaryPattern>> PatternsByType;
 
+    /**
+     * Singleton instance of this catalog.
+     */
     public static final ProposedElementaryPatterns Instance = new ProposedElementaryPatterns();
 
     static {
@@ -119,6 +132,10 @@ public class ProposedElementaryPatterns implements ElementaryPatternCatalogue {
         }
     }
 
+    /**
+     * Returns the elementary edit pattern that has the given name.
+     * Returns empty of no pattern has the given name.
+     */
     public Optional<ElementaryPattern> fromName(String label) {
         for (final ElementaryPattern p : All) {
             if (p.getName().equals(label)) {

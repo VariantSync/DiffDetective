@@ -1,7 +1,0 @@
-+#if m1
-+  c1
-+#elif m2
-+  c2
-+#else
-+  c3
-+#endif
