@@ -1,8 +1,10 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="GenAutomationResults" type="Application" factoryName="Application">
+    <option name="ALTERNATIVE_JRE_PATH" value="openjdk-16" />
+    <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
     <option name="MAIN_CLASS_NAME" value="org.variantsync.diffdetective.validation.FindMedianCommitTime" />
-    <module name="DiffDetective" />
-    <option name="PROGRAM_PARAMETERS" value="results/difftrees" />
+    <module name="diffdetective" />
+    <option name="PROGRAM_PARAMETERS" value="results/validation/current" />
     <extension name="coverage">
       <pattern>
         <option name="PATTERN" value="mining.*" />
