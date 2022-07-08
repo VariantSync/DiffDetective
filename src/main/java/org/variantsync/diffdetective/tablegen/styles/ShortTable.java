@@ -96,8 +96,8 @@ public class ShortTable extends TableDefinition {
         }
 
         cols.add(col("runtime", DASH_RIGHT, row -> t.makeReadable(row.results().runtimeInSeconds) + "s"));
-        cols.add(col("avg. runtime per\\\\ processed commit", RIGHT, row -> t.makeReadable(row.automationResult().avgTimeMS()) + "ms"));
-        cols.add(col("median runtime per\\\\ processed commit", RIGHT, row -> t.makeReadable(row.automationResult().median().milliseconds()) + "ms"));
+        cols.add(col("avg. runtime~/\\\\ processed commit", RIGHT, row -> t.makeReadable(row.automationResult().avgTimeMS()) + "ms"));
+        cols.add(col("median runtime~/\\\\ processed commit", RIGHT, row -> t.makeReadable(row.automationResult().median().milliseconds()) + "ms"));
 
         return cols;
     }
