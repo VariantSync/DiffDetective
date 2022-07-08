@@ -7,6 +7,7 @@ import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
 import org.variantsync.diffdetective.diff.difftree.DiffType;
 import org.variantsync.diffdetective.diff.difftree.traverse.DiffTreeTraversal;
+import org.variantsync.diffdetective.util.Assert;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,7 +46,7 @@ public class CollapseNestedNonEditedMacros implements DiffTreeTransformer {
 
         // All found chains should at least have size 2.
         for (final Stack<DiffNode> chain : chains) {
-            assert chain.size() >= 2;
+            Assert.assertTrue(chain.size() >= 2);
         }
 
 //        System.out.println(StringUtils.prettyPrintNestedCollections(chains));
@@ -97,7 +98,7 @@ public class CollapseNestedNonEditedMacros implements DiffTreeTransformer {
         final ArrayList<Node> featureMappings = new ArrayList<>(chain.size());
 
         DiffNode lastPopped = null;
-        assert !chain.isEmpty();
+        Assert.assertTrue(!chain.isEmpty());
         while (!chain.isEmpty()) {
             lastPopped = chain.pop();
 
@@ -118,7 +119,7 @@ public class CollapseNestedNonEditedMacros implements DiffTreeTransformer {
             }
         }
 
-        assert head == lastPopped;
+        Assert.assertTrue(head == lastPopped);
 
         final DiffNode beforeParent = head.getBeforeParent();
         final DiffNode afterParent = head.getAfterParent();

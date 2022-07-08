@@ -363,12 +363,12 @@ public class DiffNode {
     }
 
     private void dropBeforeChild(final DiffNode child) {
-        assert child.beforeParent == this;
+        Assert.assertTrue(child.beforeParent == this);
         child.beforeParent = null;
     }
 
     private void dropAfterChild(final DiffNode child) {
-        assert child.afterParent == this;
+        Assert.assertTrue(child.afterParent == this);
         child.afterParent = null;
     }
 
