@@ -11,7 +11,7 @@ This is the replication package for our paper _Classifying Edits to Variability 
 This replication package consists of four parts:
 
 1. **DiffDetective**: For our validation, we built _DiffDetective_, a java library and command-line tool to classify edits to variability in git histories of preprocessor-based software product lines.
-2. **Appendix**: The appendix of our paper is given in PDF format in the file [appendix.pdf](appendix.pdf).
+2. **Appendix**: The appendix of our paper is given in PDF format in the file [appendix.pdf][appendix].
 3. **Haskell Formalization**: We provide an extended formalization in the Haskell programming language as described in our appendix. Its implementation can be found in the Haskell project in the [proofs](proofs) directory.
 4. **Dataset Overview**: We provide an overview of the 44 inspected datasets with updated links to their repositories in the file [docs/datasets.md][dataset].
 
@@ -73,7 +73,7 @@ DiffDetective's code base is documented with javadoc and can be accessed on this
 
 ## 2. Appendix
 
-Our appendix consists of:
+Our [appendix][appendix] consists of:
 1. An extended formalization of our concepts in the [Haskell][haskell] programming language. The corresponding source code is also part of this replication package (see below).
 2. The proofs for (a) the completeness of variation tree diffs to represent edits to variation trees, and (b) the completeness and unambiguity of our elementary edit patterns.
 3. An inspection of edit patterns from related work to show that existing patterns are either composite patterns built from our elementary patterns or similar to our elementary patterns.
@@ -110,6 +110,7 @@ The input file must have the same format as the other dataset files (i.e., repos
 [difftree_class]: src/main/java/org/variantsync/diffdetective/diff/difftree/DiffTree.java
 [haskell]: https://www.haskell.org/
 [dataset]: docs/datasets.md
+[appendix]: appendix.pdf
 
 [documentation]: https://variantsync.github.io/DiffDetective/docs/javadoc/
 [website]: https://variantsync.github.io/DiffDetective/
