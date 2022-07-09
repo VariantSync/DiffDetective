@@ -3,10 +3,7 @@ package org.variantsync.diffdetective.diff.difftree.transform;
 import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
 
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class FeatureSplit {
     private DiffTree inputDiff;
@@ -24,6 +21,7 @@ public class FeatureSplit {
     }
 
     public DiffTree generateSubtree(DiffNode node, DiffTree initDiffTree) {
+        DiffTree copy = new Duplication().deepClone(initDiffTree);
         node.getAllChildren().forEach(
                 child -> child.isRem()
         );

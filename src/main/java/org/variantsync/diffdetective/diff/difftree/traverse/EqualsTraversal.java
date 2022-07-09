@@ -1,44 +1,32 @@
-package org.variantsync.diffdetective.diff.difftree.transform;
+package org.variantsync.diffdetective.diff.difftree.traverse;
 
 import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
-import org.variantsync.diffdetective.diff.difftree.traverse.DiffTreeTraversal;
-import org.variantsync.diffdetective.diff.difftree.traverse.DiffTreeVisitor;
+import org.variantsync.diffdetective.diff.difftree.transform.Duplication;
 
 import java.util.HashMap;
 
-public class Duplication implements DiffTreeVisitor {
+public class EqualsTraversal implements DiffTreeVisitor {
 
     private HashMap<Integer, DiffNode> duplicatedNodes;
     private boolean hasAllNodes;
 
-    /**
-     * Duplicates a given node
-     *
-     * @return A duplication of the input node without parent and child notes
-     */
-    static public DiffNode shallowClone(DiffNode node) {
-        //diffNode.isMultilineMacro
-        // diffNode.diffType
-        // diffNode.codeType
-        // from.equals(diffNode.from)
-        // to.equals(diffNode.to)
-        // Objects.equals(featureMapping, diffNode.featureMapping)
-        // lines.equals(diffNode.lines);
-        return new DiffNode(node.diffType, node.codeType, node.getFromLine(), node.getToLine(), node.getDirectFeatureMapping(), node.getLines());
+
+    public boolean compareTrees(DiffTree aTree, DiffTree bTree) {
+        return compareTrees(aTree.getRoot(), bTree.getRoot());
     }
 
-    /**
-     * Tree duplication
-     */
-    public DiffTree deepClone(DiffTree diffTree) {
-        return new DiffTree(deepClone(diffTree.getRoot()), diffTree.getSource());
+    public boolean compareTrees(DiffNode aTree, DiffNode bTree) {
+        HashMap<Integer, DiffNode> aMap = generateHashmap(aTree);
+        HashMap<Integer, DiffNode> bMap = generateHashmap(bTree);
+        return aMap.equals(bMap);
     }
 
-    /**
-     * Subtree duplication
-     */
-    public DiffNode deepClone(DiffNode subtree) {
+    public HashMap<Integer, DiffNode> generateHashmap(DiffTree diffTree) {
+        return generateHashmap(diffTree.getRoot());
+    }
+
+    public HashMap<Integer, DiffNode> generateHashmap(DiffNode subtree) {
         this.duplicatedNodes = new HashMap<>();
         this.hasAllNodes = false;
         // fill hashmap
@@ -46,11 +34,11 @@ public class Duplication implements DiffTreeVisitor {
         this.hasAllNodes = true;
         // Add connections
         DiffTreeTraversal.with(this).visit(subtree);
-        return this.duplicatedNodes.get(subtree.getID());
+        return this.duplicatedNodes;
     }
 
     /**
-     * Create a shallow clone of every node
+     * Compare
      *
      * @param traversal
      * @param subtree
@@ -59,9 +47,9 @@ public class Duplication implements DiffTreeVisitor {
     public void visit(DiffTreeTraversal traversal, DiffNode subtree) {
         // Generate nodes
         if (!this.hasAllNodes) {
-            this.duplicatedNodes.put(subtree.getID(), shallowClone(subtree));
+            this.duplicatedNodes.put(subtree.getID(), Duplication.shallowClone(subtree));
             for (final DiffNode child : subtree.getAllChildren()) {
-                this.duplicatedNodes.put(child.getID(), shallowClone(child));
+                this.duplicatedNodes.put(child.getID(), Duplication.shallowClone(child));
                 traversal.visit(child);
             }
             // create connections
@@ -77,15 +65,10 @@ public class Duplication implements DiffTreeVisitor {
                 this.duplicatedNodes.get(child.getID()).addBelow(
                         this.duplicatedNodes.get(beforeParentId),
                         this.duplicatedNodes.get(afterParentId));
-
                 traversal.visit(child);
             }
 
         }
 
-    }
-
-    public String toString() {
-        return "DiffTreeDuplication";
     }
 }

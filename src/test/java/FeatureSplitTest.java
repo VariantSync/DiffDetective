@@ -5,6 +5,7 @@ import org.tinylog.Logger;
 import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
 import org.variantsync.diffdetective.diff.difftree.transform.Duplication;
+import org.variantsync.diffdetective.diff.difftree.traverse.EqualsTraversal;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -51,18 +52,17 @@ public class FeatureSplitTest {
     public void shallowCloneTest() {
         DiffNode node = DIFF_TREES.get(0).getRoot().getAllChildren().get(0);
         Logger.info(node.toString());
-        DiffNode duplication = new Duplication().shallowClone(node);
+        DiffNode duplication = Duplication.shallowClone(node);
         Logger.info(duplication.toString());
         Assert.assertEquals(node, duplication);
     }
 
     @Test
-    public void deepCloneTest() {
-        DiffNode node = DIFF_TREES.get(0).getRoot().getAllChildren().get(0);
-        Logger.info(node.toString());
-        DiffTree duplication = new Duplication().deepClone(node);
-        Logger.info(duplication.toString());
-        Assert.assertEquals(node, duplication);
+    public void deepCloneSubtreeTest() {
+        DiffNode node = DIFF_TREES.get(0).getRoot();
+        DiffNode duplication = new Duplication().deepClone(node);
+        Assert.assertTrue(new EqualsTraversal().compareTrees(node, duplication));
     }
 
 }
+
