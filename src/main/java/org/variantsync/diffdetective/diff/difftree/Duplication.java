@@ -1,7 +1,5 @@
 package org.variantsync.diffdetective.diff.difftree;
 
-import org.variantsync.diffdetective.diff.difftree.DiffNode;
-import org.variantsync.diffdetective.diff.difftree.DiffTree;
 import org.variantsync.diffdetective.diff.difftree.traverse.DiffTreeTraversal;
 import org.variantsync.diffdetective.diff.difftree.traverse.DiffTreeVisitor;
 

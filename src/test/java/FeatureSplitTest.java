@@ -49,10 +49,14 @@ public class FeatureSplitTest {
     public void generateSubtreeTest() {
         DiffNode node = DIFF_TREES.get(0).getRoot().getAllChildren().get(1);
         DiffTree initDiffTree = DIFF_TREES.get(0);
-        FeatureSplit featureSplit = new FeatureSplit();
+        DiffTree tree = new Duplication().deepClone(initDiffTree);
+        DiffTree subtree = FeatureSplit.generateSubtree(node, initDiffTree);
 
-        DiffTree subtree = featureSplit.generateSubtree(node, initDiffTree);
-        //TODO render ever diff
+        List<Integer> toRemove = new ArrayList<>(DIFF_TREES.get(0).getRoot().getAllChildren().get(0).getAllChildren().stream().map(DiffNode::getID).toList());
+        toRemove.remove(2);
+        toRemove.forEach(elem -> tree.computeAllNodesThat(treeElem -> treeElem.getID() == elem).forEach(DiffNode::drop));
+
+        Assert.assertEquals(initDiffTree, subtree);
     }
 
     @Test
