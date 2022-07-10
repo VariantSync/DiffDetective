@@ -4,8 +4,10 @@ import org.junit.Test;
 import org.tinylog.Logger;
 import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
-import org.variantsync.diffdetective.diff.difftree.transform.Duplication;
+import org.variantsync.diffdetective.diff.difftree.Duplication;
+import org.variantsync.diffdetective.diff.difftree.transform.FeatureSplit;
 
+import java.awt.*;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -45,6 +47,11 @@ public class FeatureSplitTest {
      */
     @Test
     public void generateSubtreeTest() {
+        DiffNode node = DIFF_TREES.get(0).getRoot().getAllChildren().get(1);
+        DiffTree initDiffTree = DIFF_TREES.get(0);
+        FeatureSplit featureSplit = new FeatureSplit();
+
+        DiffTree subtree = featureSplit.generateSubtree(node, initDiffTree);
         //TODO render ever diff
     }
 

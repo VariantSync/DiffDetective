@@ -1,4 +1,4 @@
-package org.variantsync.diffdetective.diff.difftree.transform;
+package org.variantsync.diffdetective.diff.difftree;
 
 import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
@@ -47,6 +47,13 @@ public class Duplication implements DiffTreeVisitor {
         // Add connections
         DiffTreeTraversal.with(this).visit(subtree);
         return this.duplicatedNodes.get(subtree.getID());
+    }
+
+    /**
+     * Tree duplication which is returned as a hashmap for easier manipulation
+     */
+    public HashMap<Integer, DiffNode> deepCloneAsHashmap(DiffTree tree) {
+        return deepCloneAsHashmap(tree.getRoot());
     }
 
     /**
