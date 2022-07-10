@@ -5,13 +5,13 @@ import org.tinylog.Logger;
 import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
 import org.variantsync.diffdetective.diff.difftree.transform.Duplication;
-import org.variantsync.diffdetective.diff.difftree.traverse.EqualsTraversal;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class FeatureSplitTest {
@@ -59,9 +59,11 @@ public class FeatureSplitTest {
 
     @Test
     public void deepCloneSubtreeTest() {
-        DiffNode node = DIFF_TREES.get(0).getRoot();
-        DiffNode duplication = new Duplication().deepClone(node);
-        Assert.assertTrue(new EqualsTraversal().compareTrees(node, duplication));
+        DiffTree tree = DIFF_TREES.get(0);
+        HashMap<Integer, DiffNode> originalHashmap = new HashMap<>();
+        tree.forAll(node -> originalHashmap.put(node.getID(), node));
+        HashMap<Integer, DiffNode> duplication = new Duplication().deepCloneAsHashmap(tree.getRoot());
+        Assert.assertEquals(originalHashmap, duplication);
     }
 
 }
