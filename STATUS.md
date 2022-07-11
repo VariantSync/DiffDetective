@@ -39,7 +39,7 @@ We claim the _Artifacts Evaluated Reusable_ badge as we implemented DiffDetectiv
 Furthermore, both DiffDetective and our Haskell formalization serve as reference implementations if researchers or practitioners want to reimplement our theory in other programming languages.
 
 [ddgithub]: https://github.com/VariantSync/DiffDetective/tree/esecfse22
-[ddzenodo]: UNDEFINED
+[ddzenodo]: https://doi.org/10.5281/zenodo.6818140
 [ddreadme]: https://github.com/VariantSync/DiffDetective/tree/esecfse22/README.md
 [ddappendix]: https://github.com/VariantSync/DiffDetective/raw/esecfse22/appendix.pdf
 [ddproofs]: https://github.com/VariantSync/DiffDetective/tree/esecfse22/proofs
