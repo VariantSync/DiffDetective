@@ -23,6 +23,7 @@ Researchers and practitioners can use our DiffDetective library to build on our 
 
 DiffDetective offers various features, including but not limited to:
 parsing variation tree diffs from unix diffs, obtaining variation tree diffs for certain patches and commits, matching elementary edit patterns on variation tree diffs, defining custom classifications, rendering, traversing, and transforming variation tree diffs, various de-/serialization methods, and running analyses for the git histories of C preprocessor-based software product lines. We documented each part of the library and provide a [javadoc website][dddocumentation] within the repository.
+Moreover, our validation (see _replicability_ above) may also be run on any custom dataset as described in our [README.md][ddreadme].
 
 ### **Extended Formal Specification**
 The [`proofs`][ddproofs] Haskell project provides an extended formal specification of our theory.
@@ -39,6 +40,7 @@ Furthermore, both DiffDetective and our Haskell formalization serve as reference
 
 [ddgithub]: https://github.com/VariantSync/DiffDetective/tree/esecfse22
 [ddzenodo]: UNDEFINED
+[ddreadme]: https://github.com/VariantSync/DiffDetective/tree/esecfse22/README.md
 [ddappendix]: https://github.com/VariantSync/DiffDetective/raw/esecfse22/appendix.pdf
 [ddproofs]: https://github.com/VariantSync/DiffDetective/tree/esecfse22/proofs
 [ddlicense]: https://github.com/VariantSync/DiffDetective/blob/main/LICENSE.LGPL3
