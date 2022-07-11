@@ -1,18 +1,18 @@
 # Installation
 ## Installation Instructions
-In the following, we describe how to build the Docker image and run the experiments in Docker containers.
+In the following, we describe how to replicate the validation from our paper (Section 5) step-by-step.
+The instructions explain how to build the Docker image and run the validation in a Docker container.
 
-### Install Docker (if required)
+### 1. Install Docker (if required)
 How to install Docker depends on your operating system.
 
-#### Windows or Mac
-You can find download and installation instructions [here](https://www.docker.com/get-started).
-
-#### Linux Distributions
-How to install Docker on your system, depends on your distribution. However, the chances are high that Docker is part of your distributions package database.
+- Windows or Mac: You can find download and installation instructions [here](https://www.docker.com/get-started).
+- Linux Distributions: How to install Docker on your system, depends on your distribution. However, the chances are high that Docker is part of your distributions package database.
 Docker's [documentation](https://docs.docker.com/engine/install/) contains instructions for common distributions.
 
-### Open a Suitable Terminal
+Then, start the docker deamon.
+
+### 2. Open a Suitable Terminal
 ```
 # Windows Command Prompt: 
  - Press 'Windows Key + R' on your keyboard
@@ -27,8 +27,17 @@ Docker's [documentation](https://docs.docker.com/engine/install/) contains instr
  - Press 'ctrl + alt + T' on your keyboard
 ```
 
-### Build the Docker Container
-To build the Docker container you can run the build script corresponding to your OS
+Clone this repository to a directory of your choice using git:
+```shell
+git clone https://github.com/VariantSync/DiffDetective.git
+```
+Then, navigate to the root of your local clone of this repository.
+```shell
+cd DiffDetective
+```
+
+### 3. Build the Docker Container
+To build the Docker container you can run the `build` script corresponding to your operating system:
 ```
 # Windows: 
   .\build.bat
@@ -36,22 +45,35 @@ To build the Docker container you can run the build script corresponding to your
   ./build.sh
 ```
 
-## Verification & Expected Output
+## 4. Verification & Replication
 
-### Running the Verification
-To run the verification you can run the script corresponding to your OS with `verification` as first argument. The verification should take about 10-20 minutes depending on your hardware.
-```
-# Windows: 
-  .\execute.bat verification
-# Linux/Mac (bash): 
-  ./execute.sh verification
-```
+### Running the Replication or Verification
+To execute the replication you can run the `execute` script corresponding to your operating system with `replication` as first argument.
+
+#### Windows:
+`.\execute.bat replication`
+#### Linux/Mac (bash):
+`./execute.sh replication`
+
+> WARNING!
+> The replication will at least require an hour and might require up to a day depending on your system.
+> Therefore, we offer a short verification (5-10 minutes) which runs DiffDetective on only four of the datasets.
+> You can run it by providing "verification" as argument instead of "replication" (i.e., `.\execute.bat verification`,  `./execute.sh verification`).
+> If you want to stop the execution, you can call the provided script for stopping the container in a separate terminal.
+> When restarted, the replication will continue processing by restarting at the last unfinished repository.
+> #### Windows:
+> `.\stop-execution.bat`
+> #### Linux/Mac (bash):
+> `./stop-execution.sh`
+
 The results of the verification will be stored in the [results](results) directory.
 
 ### Expected Output of the Verification
-The aggregated results of the verification can be found in the following files.
+The aggregated results of the verification/replication can be found in the following files.
+The example file content shown below should match your results when running the _verification_.
+(Note that the links below only have a target _after_ running the replication or verification.)
 
-- The [speed statistics](results/validation/speedstatistics.txt) contain information about the total runtime, median runtime, mean runtime, and more:
+- The [speed statistics](results/validation/current/speedstatistics.txt) contain information about the total runtime, median runtime, mean runtime, and more:
   ```
   #Commits: 14527
   Total   commit process time is: 12.427866666666667min
@@ -60,7 +82,7 @@ The aggregated results of the verification can be found in the following files.
   Median  commit process time is: 6dc71f6b2c7ff49adb504426b4cd206e4745e1e3___xorg-server___19ms
   Average commit process time is: 51.330075032697735ms
   ```
-- The [classification results](results/validation/ultimateresult.metadata.txt) contain information about how often each pattern was found, and more.
+- The [classification results](results/validation/current/ultimateresult.metadata.txt) contain information about how often each pattern was matched, and more.
   ```
   repository: <NONE>
   total commits: 18046
@@ -95,9 +117,19 @@ The aggregated results of the verification can be found in the following files.
   #Error[#else or #elif without #if]: 9
   #Error[not all annotations closed]: 6
   ```
-  
-(Note that the above links only have a target after running the verification.)
-The processing times might deviate.
+
+Moreover, the results comprise the (LaTeX) tables that are part of our paper and appendix.
+The processing times might deviate because performance depends on your hardware.
+
+### (Optional) Running DiffDetective on Custom Datasets
+You can also run DiffDetective on other datasets by providing the path to the dataset file as first argument to the execution script:
+
+#### Windows:
+`.\execute.bat path\to\custom\dataset.md`
+#### Linux/Mac (bash):
+`./execute.sh path/to/custom/dataset.md`
+
+The input file must have the same format as the other dataset files (i.e., repositories are listed in a Markdown table). You can find [dataset files](docs/datasets.md) in the [docs](docs) folder.
 
 ## Troubleshooting
 
@@ -111,7 +143,7 @@ The processing times might deviate.
 
 `Fix:` Follow the instructions described above in the section `Build the Docker Container`.
 
-### No results after verification, or 'cannot create directory '../results/difftrees': Permission denied'
+### No results after verification, or 'cannot create directory '../results/validation/current': Permission denied'
 `Problem:` This problem can occur due to how permissions are managed inside the Docker container. More specifically, it will appear, if Docker is executed with elevated permissions (i.e., `sudo`) and if there is no [results](results) directory because it was deleted manually. In this case, Docker will create the directory with elevated permissions, and the Docker user has no permissions to access the directory.
 
 `Fix:` If there is a _results_ directory delete it with elevated permission (e.g., `sudo rm -r results`). 

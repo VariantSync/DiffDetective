@@ -16,7 +16,7 @@ This replication package consists of four parts:
 4. **Dataset Overview**: We provide an overview of the 44 inspected datasets with updated links to their repositories in the file [docs/datasets.md][dataset].
 
 ## 1. DiffDetective
-_DiffDetective_ is a java library and command-line tool to parse and classify edits to variability in git histories of preprocessor-based software product lines by creating [variation tree diffs][difftree_class] and operating on them.
+DiffDetective is a java library and command-line tool to parse and classify edits to variability in git histories of preprocessor-based software product lines by creating [variation tree diffs][difftree_class] and operating on them.
 
 We offer a [Docker](https://www.docker.com/) setup to easily __replicate__ the validation performed in our paper. 
 In the following, we provide a quickstart guide for running the replication.
@@ -26,14 +26,14 @@ You can find detailed information on how to install Docker and build the contain
 Start the docker deamon.
 Clone this repository.
 Open a terminal and navigate to the root directory of this repository.
-To build the Docker container you can run the _build_ script corresponding to your OS.
+To build the Docker container you can run the `build` script corresponding to your operating system.
 #### Windows: 
 `.\build.bat`
 #### Linux/Mac (bash): 
 `./build.sh`
 
 ### 1.2 Start the replication
-To execute the replication you can run the _execute_ script corresponding to your OS with `replication` as first argument.
+To execute the replication you can run the `execute` script corresponding to your operating system with `replication` as first argument.
 
 #### Windows:
 `.\execute.bat replication`
@@ -42,9 +42,9 @@ To execute the replication you can run the _execute_ script corresponding to you
 
 > WARNING!
 > The replication will at least require an hour and might require up to a day depending on your system.
-> Therefore, we offer a short verification (5-10 minutes) which runs _DiffDetective_ on only four of the datasets.
+> Therefore, we offer a short verification (5-10 minutes) which runs DiffDetective on only four of the datasets.
 > You can run it by providing "verification" as argument instead of "replication" (i.e., `.\execute.bat verification`,  `./execute.sh verification`).
-> If you want to stop the replication, you can call the provided script for stopping the container in a separate terminal.
+> If you want to stop the execution, you can call the provided script for stopping the container in a separate terminal.
 > When restarted, the replication will continue processing by restarting at the last unfinished repository.
 > #### Windows:
 > `.\stop-execution.bat`
@@ -98,7 +98,7 @@ The forked repositories are listed in the [replication datasets](docs/replicatio
 These repositories are used when running the replication as described under `1.2`.
 
 ## 5. Running DiffDetective on Custom Datasets
-You can also run _DiffDetective_ on other datasets by providing the path to the dataset file as first argument to the execution script:
+You can also run DiffDetective on other datasets by providing the path to the dataset file as first argument to the execution script:
 
 #### Windows:
 `.\execute.bat path\to\custom\dataset.md`
