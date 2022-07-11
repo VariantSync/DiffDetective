@@ -101,9 +101,9 @@ These repositories are used when running the replication as described under `1.2
 You can also run _DiffDetective_ on other datasets by providing the path to the dataset file as first argument to the execution script:
 
 #### Windows:
-`.\execute.bat path\to\custon\dataset.md`
+`.\execute.bat path\to\custom\dataset.md`
 #### Linux/Mac (bash):
-`./execute.sh path/to/custon/dataset.md`
+`./execute.sh path/to/custom/dataset.md`
 
 The input file must have the same format as the other dataset files (i.e., repositories are listed in a Markdown table). You can find [dataset files](docs/datasets.md) in the [docs](docs) folder.
 
