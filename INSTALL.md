@@ -4,10 +4,10 @@ In the following, we describe how to replicate the validation from our paper (Se
 The instructions explain how to build the Docker image and run the validation in a Docker container.
 
 ### 1. Install Docker (if required)
-How to install Docker depends on your operating system.
+How to install Docker depends on your operating system:
 
-- Windows or Mac: You can find download and installation instructions [here](https://www.docker.com/get-started).
-- Linux Distributions: How to install Docker on your system, depends on your distribution. However, the chances are high that Docker is part of your distributions package database.
+- _Windows or Mac_: You can find download and installation instructions [here](https://www.docker.com/get-started).
+- _Linux Distributions_: How to install Docker on your system, depends on your distribution. The chances are high that Docker is part of your distributions package database.
 Docker's [documentation](https://docs.docker.com/engine/install/) contains instructions for common distributions.
 
 Then, start the docker deamon.
@@ -31,7 +31,7 @@ Clone this repository to a directory of your choice using git:
 ```shell
 git clone https://github.com/VariantSync/DiffDetective.git
 ```
-Then, navigate to the root of your local clone of this repository.
+Then, navigate to the root of your local clone of this repository:
 ```shell
 cd DiffDetective
 ```
@@ -60,7 +60,7 @@ To execute the replication you can run the `execute` script corresponding to you
 > Therefore, we offer a short verification (5-10 minutes) which runs DiffDetective on only four of the datasets.
 > You can run it by providing "verification" as argument instead of "replication" (i.e., `.\execute.bat verification`,  `./execute.sh verification`).
 > If you want to stop the execution, you can call the provided script for stopping the container in a separate terminal.
-> When restarted, the replication will continue processing by restarting at the last unfinished repository.
+> When restarted, the execution will continue processing by restarting at the last unfinished repository.
 > #### Windows:
 > `.\stop-execution.bat`
 > #### Linux/Mac (bash):
@@ -137,7 +137,7 @@ The input file must have the same format as the other dataset files (i.e., repos
 ### 'Got permission denied while trying to connect to the Docker daemon socket'
 `Problem:` This is a common problem under Linux, if the user trying to execute Docker commands does not have the permissions to do so. 
 
-`Fix:` You can fix this problem by either following the [post-installation instructions](https://docs.docker.com/engine/install/linux-postinstall/), or by executing the scripts in the replication package with elevated permissions (i.e., `sudo`)
+`Fix:` You can fix this problem by either following the [post-installation instructions](https://docs.docker.com/engine/install/linux-postinstall/), or by executing the scripts in the replication package with elevated permissions (i.e., `sudo`).
 
 ### 'Unable to find image 'replication-package:latest' locally'
 `Problem:` The Docker container could not be found. This either means that the name of the container that was built does not fit the name of the container that is being executed (this only happens if you changed the provided scripts), or that the Docker container was not built yet. 
@@ -147,5 +147,5 @@ The input file must have the same format as the other dataset files (i.e., repos
 ### No results after verification, or 'cannot create directory '../results/validation/current': Permission denied'
 `Problem:` This problem can occur due to how permissions are managed inside the Docker container. More specifically, it will appear, if Docker is executed with elevated permissions (i.e., `sudo`) and if there is no [results](results) directory because it was deleted manually. In this case, Docker will create the directory with elevated permissions, and the Docker user has no permissions to access the directory.
 
-`Fix:` If there is a _results_ directory delete it with elevated permission (e.g., `sudo rm -r results`). 
+`Fix:` If there is a _results_ directory, delete it with elevated permission (e.g., `sudo rm -r results`). 
 Then, create a new _results_ directory without elevated permissions, or execute `git restore .` to restore the deleted directory.

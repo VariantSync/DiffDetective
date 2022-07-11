@@ -33,7 +33,7 @@ The library is accompanied by a small demo application that shows an example tes
 The `proofs` project is described in detail in our appendix.
 
 ## Claims
-We claim the _Artifacts Available_ badge as we made our artefacts publicly available on [Github][ddgithub] and [Zenodo][ddzenodo] with an [open-source license][ddlicense].
+We claim the _Artifacts Available_ badge as we made our artefacts publicly available on [Github][ddgithub] and [Zenodo][ddzenodo] with an [open-source license][ddlicense]. All [44 input datasets][ddforks] are open-source projects and publicly available.
 
 We claim the _Artifacts Evaluated Reusable_ badge as we implemented DiffDetective as a reusable library (see above).
 Furthermore, both DiffDetective and our Haskell formalization serve as reference implementations if researchers or practitioners want to reimplement our theory in other programming languages.

@@ -45,7 +45,7 @@ To execute the replication you can run the `execute` script corresponding to you
 > Therefore, we offer a short verification (5-10 minutes) which runs DiffDetective on only four of the datasets.
 > You can run it by providing "verification" as argument instead of "replication" (i.e., `.\execute.bat verification`,  `./execute.sh verification`).
 > If you want to stop the execution, you can call the provided script for stopping the container in a separate terminal.
-> When restarted, the replication will continue processing by restarting at the last unfinished repository.
+> When restarted, the execution will continue processing by restarting at the last unfinished repository.
 > #### Windows:
 > `.\stop-execution.bat`
 > #### Linux/Mac (bash):

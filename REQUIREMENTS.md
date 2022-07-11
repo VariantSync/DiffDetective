@@ -7,7 +7,7 @@ None
 We do not require a certain operating system or prepared environment.
 We tested our setup on Windows 10, WSL2, and Manjaro.
 
-To run DiffDetective, JDK16 and Maven are required.
+To run DiffDetective, JDK16, and Maven are required.
 Dependencies to other packages are documented in the maven build file ([pom.xml](pom.xml)) and are handled automatically by Maven.
 Alternatively, the docker container can be used on any system supporting docker.
 Docker will take care of all requirements and dependencies to replicate our validation.
