@@ -63,7 +63,7 @@ Moreover, the results comprise the (LaTeX) tables that are part of our paper and
 
 ### Documentation
 
-DiffDetective's code base is documented with javadoc and can be accessed on this [website][documentation]. Interesting classes of our library are:
+DiffDetective is documented with javadoc. The documentation can be accessed on this [website][documentation]. Notable classes of our library are:
 - [DiffTree](https://variantsync.github.io/DiffDetective/docs/javadoc/org/variantsync/diffdetective/diff/difftree/DiffTree.html) and [DiffNode](https://variantsync.github.io/DiffDetective/docs/javadoc/org/variantsync/diffdetective/diff/difftree/DiffNode.html) implement variation tree diffs from our paper. A variation tree diff is represented by an instance of the `DiffTree` class. It stores the root node of the diff and offers various methods to parse, traverse, and analyze variation tree diffs. `DiffNode`s represent individual nodes within a variation tree diff.
 - [Validation](https://variantsync.github.io/DiffDetective/docs/javadoc/org/variantsync/diffdetective/validation/Validation.html) contains the main method for our validation.
 - [ProposedElementaryPatterns](https://variantsync.github.io/DiffDetective/docs/javadoc/org/variantsync/diffdetective/pattern/elementary/proposed/ProposedElementaryPatterns.html) holds the catalog of nine edit patterns we proposed in our paper. It implements the interface [ElementaryPatternCatalogue](https://variantsync.github.io/DiffDetective/docs/javadoc/org/variantsync/diffdetective/pattern/elementary/ElementaryPatternCatalogue.html), which allows to define custom pattern catalogs.
@@ -76,7 +76,7 @@ DiffDetective's code base is documented with javadoc and can be accessed on this
 Our [appendix][appendix] consists of:
 1. An extended formalization of our concepts in the [Haskell][haskell] programming language. The corresponding source code is also part of this replication package (see below).
 2. The proofs for (a) the completeness of variation tree diffs to represent edits to variation trees, and (b) the completeness and unambiguity of our elementary edit patterns.
-3. An inspection of edit patterns from related work to show that existing patterns are either composite patterns built from our elementary patterns or similar to our elementary patterns.
+3. An inspection of edit patterns from related work to show that existing patterns are either composite patterns built from our elementary patterns or similar to our elementary patterns. The used diffs of these patterns can also be found in [docs/compositepatterns](docs/compositepatterns).
 4. The complete results of our validation for all 44 datasets.
 
 ## 3. Haskell Formalization
@@ -95,7 +95,7 @@ We provide updated links for each system's repository.
 ### 4.2 Forked Repositories for Replication
 To guarantee the exact replication of our validation, we created forks of all 44 open-source repositories at the state we performed the validation for our paper.
 The forked repositories are listed in the [replication datasets](docs/replication/datasets.md) and are located at the Github user profile [DiffDetective](https://github.com/DiffDetective?tab=repositories).
-These repositories are used when running the replication as described under `1.2`.
+These repositories are used when running the replication as described under `1.2` and in the [INSTALL](INSTALL.md).
 
 ## 5. Running DiffDetective on Custom Datasets
 You can also run DiffDetective on other datasets by providing the path to the dataset file as first argument to the execution script:
@@ -107,7 +107,7 @@ You can also run DiffDetective on other datasets by providing the path to the da
 
 The input file must have the same format as the other dataset files (i.e., repositories are listed in a Markdown table). You can find [dataset files](docs/datasets.md) in the [docs](docs) folder.
 
-[difftree_class]: src/main/java/org/variantsync/diffdetective/diff/difftree/DiffTree.java
+[difftree_class]: https://variantsync.github.io/DiffDetective/docs/javadoc/org/variantsync/diffdetective/diff/difftree/DiffTree.html
 [haskell]: https://www.haskell.org/
 [dataset]: docs/datasets.md
 [appendix]: appendix.pdf
@@ -115,6 +115,6 @@ The input file must have the same format as the other dataset files (i.e., repos
 [documentation]: https://variantsync.github.io/DiffDetective/docs/javadoc/
 [website]: https://variantsync.github.io/DiffDetective/
 
-[resultsdir]: results/validation/current
+[resultsdir]: results
 [resultsdir_classification_results]: results/validation/current/ultimateresult.metadata.txt
 [resultsdir_speed_statistics]: results/validation/current/speedstatistics.txt
