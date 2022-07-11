@@ -75,47 +75,48 @@ The example file content shown below should match your results when running the 
 
 - The [speed statistics](results/validation/current/speedstatistics.txt) contain information about the total runtime, median runtime, mean runtime, and more:
   ```
-  #Commits: 14527
-  Total   commit process time is: 12.427866666666667min
-  Fastest commit process time is: df4a1fa9c5cc5d54a9347a2bf4843cae87a942f1___xorg-server___0ms
-  Slowest commit process time is: 9838b7032ea9792bec21af424c53c07078636d21___xorg-server___14578ms
-  Median  commit process time is: 6dc71f6b2c7ff49adb504426b4cd206e4745e1e3___xorg-server___19ms
-  Average commit process time is: 51.330075032697735ms
+  #Commits: 24701
+  Total   commit process time is: 14.065916666666668min
+  Fastest commit process time is: d86e352859e797f6792d6013054435ae0538ef6d___xfig___0ms
+  Slowest commit process time is: 9838b7032ea9792bec21af424c53c07078636d21___xorg-server___7996ms
+  Median  commit process time is: f77ffeb9b26f49ef66f77929848f2ac9486f1081___tcl___13ms
+  Average commit process time is: 34.166835350795516ms
   ```
 - The [classification results](results/validation/current/ultimateresult.metadata.txt) contain information about how often each pattern was matched, and more.
   ```
   repository: <NONE>
-  total commits: 18046
-  filtered commits: 593
+  total commits: 42323
+  filtered commits: 7425
   failed commits: 0
-  empty commits: 2926
-  processed commits: 14527
-  tree diffs: 55008
-  fastestCommit: df4a1fa9c5cc5d54a9347a2bf4843cae87a942f1___xorg-server___0ms
-  slowestCommit: 9838b7032ea9792bec21af424c53c07078636d21___xorg-server___14578ms
-  runtime in seconds: 747.5400000000001
-  runtime with multithreading in seconds: 137.22
-  treeformat: diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat
-  nodeformat: mining.formats.ReleaseMiningDiffNodeFormat
-  edgeformat: mining.formats.DirectedEdgeLabelFormat with mining.formats.ReleaseMiningDiffNodeFormat
-  analysis: mining.strategies.PatternValidation
+  empty commits: 10197
+  processed commits: 24701
+  tree diffs: 80751
+  fastestCommit: 518e205b06d0dc7a0cd35fbc2c6a4376f2959020___xorg-server___0ms
+  slowestCommit: 9838b7032ea9792bec21af424c53c07078636d21___xorg-server___7996ms
+  runtime in seconds: 853.9739999999999
+  runtime with multithreading in seconds: 144.549
+  treeformat: org.variantsync.diffdetective.diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat
+  nodeformat: org.variantsync.diffdetective.mining.formats.ReleaseMiningDiffNodeFormat
+  edgeformat: org.variantsync.diffdetective.mining.formats.DirectedEdgeLabelFormat with org.variantsync.diffdetective.mining.formats.ReleaseMiningDiffNodeFormat
+  analysis: org.variantsync.diffdetective.validation.PatternValidationTask
   #NON nodes: 0
   #ADD nodes: 0
   #REM nodes: 0
-  filtered because not (is not empty): 132
-  AddToPC: { total = 260536; commits = 12703 }
-  AddWithMapping: { total = 27720; commits = 1447 }
-  RemFromPC: { total = 235017; commits = 11830 }
-  RemWithMapping: { total = 15381; commits = 1361 }
-  Specialization: { total = 4662; commits = 624 }
-  Generalization: { total = 7397; commits = 564 }
-  Reconfiguration: { total = 2231; commits = 258 }
-  Refactoring: { total = 5769; commits = 921 }
+  filtered because not (is not empty): 212
+  AddToPC: { total = 443451; commits = 22470 }
+  AddWithMapping: { total = 51036; commits = 2971 }
+  RemFromPC: { total = 406809; commits = 21384 }
+  RemWithMapping: { total = 36622; commits = 2373 }
+  Specialization: { total = 7949; commits = 1251 }
+  Generalization: { total = 11057; commits = 955 }
+  Reconfiguration: { total = 3186; commits = 381 }
+  Refactoring: { total = 4862; commits = 504 }
   Untouched: { total = 0; commits = 0 }
+  #Error[conditional macro without expression]: 2
   #Error[#else after #else]: 2
-  #Error[#endif without #if]: 8
-  #Error[#else or #elif without #if]: 9
-  #Error[not all annotations closed]: 6
+  #Error[#else or #elif without #if]: 11
+  #Error[#endif without #if]: 12
+  #Error[not all annotations closed]: 8
   ```
 
 Moreover, the results comprise the (LaTeX) tables that are part of our paper and appendix.
