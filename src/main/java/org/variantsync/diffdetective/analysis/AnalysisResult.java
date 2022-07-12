@@ -49,6 +49,7 @@ public class AnalysisResult implements Metadata<AnalysisResult> {
         a.emptyCommits += b.emptyCommits;
         a.failedCommits += b.failedCommits;
         a.exportedTrees += b.exportedTrees;
+        a.relationshipEdges += b.relationshipEdges;
         a.runtimeInSeconds += b.runtimeInSeconds;
         a.runtimeWithMultithreadingInSeconds += b.runtimeWithMultithreadingInSeconds;
         a.min.set(CommitProcessTime.min(a.min, b.min));
@@ -75,6 +76,7 @@ public class AnalysisResult implements Metadata<AnalysisResult> {
     public int emptyCommits;
     public int failedCommits;
     public int exportedTrees;
+    public int relationshipEdges;
     public double runtimeInSeconds;
     public double runtimeWithMultithreadingInSeconds;
     public final CommitProcessTime min, max;
@@ -155,6 +157,7 @@ public class AnalysisResult implements Metadata<AnalysisResult> {
         this.elementaryPatternCounts = new ElementaryPatternCount();
         this.min = min;
         this.max = max;
+        this.relationshipEdges = 0; //TODO
     }
 
     /**
@@ -202,6 +205,7 @@ public class AnalysisResult implements Metadata<AnalysisResult> {
                 switch (key) {
                     case MetadataKeys.REPONAME -> result.repoName = value;
                     case MetadataKeys.TREES -> result.exportedTrees = Integer.parseInt(value);
+                    case MetadataKeys.RELATIONSHIP_EDGES -> result.relationshipEdges = Integer.parseInt(value);
                     case MetadataKeys.PROCESSED_COMMITS -> result.exportedCommits = Integer.parseInt(value);
                     case MetadataKeys.TOTAL_COMMITS -> result.totalCommits = Integer.parseInt(value);
                     case MetadataKeys.EMPTY_COMMITS -> result.emptyCommits = Integer.parseInt(value);
@@ -282,6 +286,7 @@ public class AnalysisResult implements Metadata<AnalysisResult> {
         snap.put(MetadataKeys.EMPTY_COMMITS, emptyCommits);
         snap.put(MetadataKeys.PROCESSED_COMMITS, exportedCommits);
         snap.put(MetadataKeys.TREES, exportedTrees);
+        snap.put(MetadataKeys.RELATIONSHIP_EDGES, relationshipEdges);
         snap.put(MetadataKeys.MINCOMMIT, min.toString());
         snap.put(MetadataKeys.MAXCOMMIT, max.toString());
         snap.put(MetadataKeys.RUNTIME, runtimeInSeconds);
