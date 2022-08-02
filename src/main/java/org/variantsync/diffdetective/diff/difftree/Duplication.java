@@ -80,7 +80,6 @@ public class Duplication implements DiffTreeVisitor {
         if (!this.hasAllNodes) {
             this.duplicatedNodes.put(subtree.getID(), shallowClone(subtree));
             for (final DiffNode child : subtree.getAllChildren()) {
-                this.duplicatedNodes.put(child.getID(), shallowClone(child));
                 traversal.visit(child);
             }
             // create connections

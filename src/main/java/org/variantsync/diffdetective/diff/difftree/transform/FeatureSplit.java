@@ -4,15 +4,17 @@ import org.prop4j.Node;
 import org.variantsync.diffdetective.analysis.logic.SAT;
 import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
+import org.variantsync.diffdetective.diff.difftree.DiffTreeComparison;
 import org.variantsync.diffdetective.diff.difftree.Duplication;
 import org.variantsync.diffdetective.feature.PropositionalFormulaParser;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class FeatureSplit {
 
     public List<DiffTree> featureSplit(DiffTree initDiffTree, List<String> queries){
-        HashSet<DiffTree> subtrees = generateAllSubtrees(initDiffTree);
+        List<DiffTree> subtrees = generateAllSubtrees(initDiffTree);
         HashMap<String, List<DiffTree>> clusters = generateClusters(subtrees, queries);
         return generateFeatureAwareDiffTrees(clusters);
     }
@@ -31,10 +33,10 @@ public class FeatureSplit {
 
     /**
      * Generates a cluster for each given query and a "remaining" cluster for all non-selected subtrees
-     * @param query: feature mapping which represents a query.
+     * @param queries: feature mapping which represents a query.
      * @return true if query is implied in the presence condition
      */
-    public HashMap<String, List<DiffTree>> generateClusters(HashSet<DiffTree> subtrees, List<String> queries){
+    public HashMap<String, List<DiffTree>> generateClusters(List<DiffTree> subtrees, List<String> queries){
         HashMap<String, List<DiffTree>> clusters = new HashMap<>();
         clusters.put("remains", new ArrayList<>());
 
@@ -42,7 +44,7 @@ public class FeatureSplit {
             boolean hasFound = false;
             for (String query: queries){
                 if (evaluate(subtree, query)){
-                    if(clusters.containsKey(query)) clusters.put(query, new ArrayList<>());
+                    if(!clusters.containsKey(query)) clusters.put(query, new ArrayList<>());
                     clusters.get(query).add(subtree); // call by reference
                     hasFound = true;
                     break;
@@ -58,7 +60,10 @@ public class FeatureSplit {
      * @return true if query is implied in a presence condition of a node
      */
     private Boolean evaluate(DiffTree subtree, String query){
-        return subtree.anyMatch(node -> node.isCode() && (satSolver(node.getAfterPresenceCondition(), query) || satSolver(node.getAfterPresenceCondition(), query)));
+        return subtree.anyMatch(node -> {
+            if(!node.isCode()) return false;
+            return (node.getBeforeParent() != null && satSolver(node.getBeforePresenceCondition(), query)) || node.getAfterParent() != null && satSolver(node.getAfterPresenceCondition(), query);
+        });
     }
 
     /**
@@ -75,9 +80,20 @@ public class FeatureSplit {
      * @param initDiffTree is transformed into subtrees
      * @return a set of subtrees
      */
-    public HashSet<DiffTree> generateAllSubtrees(DiffTree initDiffTree){
-        List<DiffTree> subtreeList= initDiffTree.computeAllNodesThat(elem -> !elem.isNon()).stream().map(elem -> generateSubtree(elem, initDiffTree)).toList();
-        return new HashSet<>(subtreeList);
+    public List<DiffTree> generateAllSubtrees(DiffTree initDiffTree) {
+        List<DiffTree> allTrees = initDiffTree.computeAllNodesThat(elem -> !elem.isNon()).stream().map(elem -> generateSubtree(elem, initDiffTree)).toList();
+        List<DiffTree> treeSet = new ArrayList<>();
+        // check for duplicates
+        for (DiffTree tree : allTrees) {
+            boolean detected = false;
+            for (DiffTree setTree : treeSet) {
+                DiffTreeComparison comparison = new DiffTreeComparison();
+                if (comparison.equals(tree, setTree)) detected = true;
+            }
+            if (!detected) treeSet.add(tree);
+        }
+
+        return treeSet;
     }
 
     /**

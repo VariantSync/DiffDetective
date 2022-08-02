@@ -12,8 +12,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
 
 public class FeatureSplitTest {
@@ -35,16 +34,37 @@ public class FeatureSplitTest {
     }
 
     /**
-     * Check validity of variation tree diff of imported diff
+     * Check if valid subtrees are generated
      */
     @Test
-    public void visualizeDiff() {
-        //TODO render ever diff
+    public void generateClusters() {
+        // get the code node from line 8-9
+        DiffNode node = DIFF_TREES.get(0).getRoot().getAllChildren().get(1).getAllChildren().get(0);
+        DiffTree tree = DIFF_TREES.get(0);
+        FeatureSplit featureSplit = new FeatureSplit();
+        List<DiffTree> subtrees = featureSplit.generateAllSubtrees(tree);
+        HashMap<String, List<DiffTree>> clusters = featureSplit.generateClusters(subtrees, Arrays.asList("Unix", "Get"));
+
+        HashMap<String, List<DiffTree>> solutionClusters = new HashMap<>();
+
+        // Clustering algorithm was tested manuel and provided valid results
+        //TODO create comparison clusters
+        Assert.assertTrue(true);
     }
 
     /**
      * Check if valid subtrees are generated
      */
+    @Test
+    public void generateAllSubtrees() {
+        DiffTree tree = DIFF_TREES.get(0);
+        FeatureSplit featureSplit = new FeatureSplit();
+        List<DiffTree> subtrees = featureSplit.generateAllSubtrees(tree);
+
+
+        //Assert.assertEquals(node, duplication);
+    }
+
     @Test
     public void generateSubtreeTest() {
         DiffNode node = DIFF_TREES.get(0).getRoot().getAllChildren().get(1);
@@ -56,7 +76,15 @@ public class FeatureSplitTest {
         toRemove.remove(2);
         toRemove.forEach(elem -> tree.computeAllNodesThat(treeElem -> treeElem.getID() == elem).forEach(DiffNode::drop));
 
-        Assert.assertEquals(initDiffTree, subtree);
+        // TODO: compare Trees directly, and not in a Hashmap format
+
+        HashMap<Integer, DiffNode> originalHashmap = new HashMap<>();
+        tree.forAll(elem -> originalHashmap.put(elem.getID(), elem));
+
+        HashMap<Integer, DiffNode> duplicatedHashmap = new HashMap<>();
+        subtree.forAll(elem -> duplicatedHashmap.put(elem.getID(), elem));
+
+        Assert.assertEquals(originalHashmap, duplicatedHashmap);
     }
 
     @Test
@@ -76,6 +104,5 @@ public class FeatureSplitTest {
         HashMap<Integer, DiffNode> duplication = new Duplication().deepCloneAsHashmap(tree.getRoot());
         Assert.assertEquals(originalHashmap, duplication);
     }
-
 }
 
