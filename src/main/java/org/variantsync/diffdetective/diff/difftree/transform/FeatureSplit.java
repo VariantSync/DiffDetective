@@ -10,10 +10,11 @@ import org.variantsync.diffdetective.feature.PropositionalFormulaParser;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class FeatureSplit {
 
-    public List<DiffTree> featureSplit(DiffTree initDiffTree, List<String> queries){
+    public HashMap<String, DiffTree> featureSplit(DiffTree initDiffTree, List<String> queries){
         List<DiffTree> subtrees = generateAllSubtrees(initDiffTree);
         HashMap<String, List<DiffTree>> clusters = generateClusters(subtrees, queries);
         return generateFeatureAwareDiffTrees(clusters);
@@ -25,11 +26,70 @@ public class FeatureSplit {
      * @param clusters contains the grouped subtrees
      * @return a List of subtrees that represent changes to one feature or one composite feature
      */
-    public List<DiffTree> generateFeatureAwareDiffTrees(HashMap<String, List<DiffTree>> clusters){
-        //TODO: Add methods to combine subtrees to feature-aware commits
-
-        return null;
+    public HashMap<String, DiffTree> generateFeatureAwareDiffTrees(HashMap<String, List<DiffTree>> clusters){
+        HashMap<String, DiffTree> featureAwareTreeDiffs = new HashMap<>();
+        for (Map.Entry<String, List<DiffTree>> entry : clusters.entrySet()) {
+            featureAwareTreeDiffs.put(entry.getKey(),
+                    generateFeatureAwareDiffTree(entry.getValue()));
+        }
+        return featureAwareTreeDiffs;
     }
+
+    /**
+     * Composes all subtrees into one feature-aware DiffTrees
+     *
+     * @param cluster contains subtrees of a cluster
+     * @return a feature-aware DiffTrees
+     */
+    public DiffTree generateFeatureAwareDiffTree(List<DiffTree> cluster){
+        if (cluster.size() == 0) return null;
+        if (cluster.size() == 1) return cluster.get(0);
+        return generateFeatureAwareDiffTree(
+                Stream.concat(
+                    cluster.subList(2, cluster.size()).stream(),
+                    Stream.of(composeDiffTrees(cluster.get(0),cluster.get(1)))
+                ).collect(Collectors.toList())
+        );
+    }
+
+    /**
+     * Composes two DiffTrees into one feature-aware TreeDiff
+     */
+    public DiffTree composeDiffTrees(DiffTree first, DiffTree second){
+        // Get Leaf of subtree
+        List<DiffNode> leafNodes = first.computeAllNodesThat(diffNode -> diffNode.getAllChildren().size() == 0);
+        // Inspect each leaf
+        leafNodes.forEach(leaf -> {
+                    // Traverse leafNodes Upwards
+                    HashSet<Integer> parentNodes =  findParent(leaf);
+                    for (int parent : parentNodes){
+                        DiffNode parentNode = first.computeAllNodesThat(node -> node.getID() == parent).get(0);
+
+                        if(parentNode.isRoot()) continue;
+                        // find node, where both DiffTrees start dividing, where only one can exist
+                        List<DiffNode> split = second.computeAllNodesThat(node -> node.getID() == parent);
+                        List<DiffNode> parentSplit = second.computeAllNodesThat(node ->
+                                parentNode.getAfterParent() != null && node.getID() == parentNode.getAfterParent().getID() ||
+                                parentNode.getBeforeIfNode() != null && node.getID() == parentNode.getBeforeParent().getID());
+
+                        if(split.size() == 0 && parentSplit.size() != 0){
+                            // add subtree to new parent
+                            DiffNode newNode = Duplication.shallowClone(parentNode);
+                            newNode.stealChildrenOf(parentNode);
+                            if(parentNode.getBeforeParent() == null ){
+                                newNode.addBelow(null, parentSplit.get(0));
+                            } else if (parentNode.getAfterParent() == null) {
+                                newNode.addBelow(parentSplit.get(0), null);
+                            } else {
+                                newNode.addBelow(parentSplit.get(0), parentSplit.get(1));
+                            }
+                            parentNode.drop();
+                        }
+                    }
+                });
+        return second;
+    }
+
 
     /**
      * Generates a cluster for each given query and a "remaining" cluster for all non-selected subtrees
@@ -106,7 +166,7 @@ public class FeatureSplit {
     static public DiffTree generateSubtree(DiffNode node, DiffTree initDiffTree) {
         DiffTree subtree = new DiffTree(node, initDiffTree.getSource());
         List<Integer> includedNodes = subtree.computeAllNodes().stream().map(DiffNode::getID).toList();
-        List<List<Integer>> parentNodes = includedNodes.stream()
+        List<HashSet<Integer>> parentNodes = includedNodes.stream()
                 .map(elem -> findParent(
                         initDiffTree.computeAllNodesThat(inspectedNode -> inspectedNode.getID() == elem).get(0)
                         )
@@ -114,8 +174,7 @@ public class FeatureSplit {
                 .toList();
 
         Set<Integer> allNodes = new HashSet<>();
-        allNodes.addAll(includedNodes);
-        allNodes.addAll(parentNodes.stream().flatMap(List::stream).toList());
+        allNodes.addAll(parentNodes.stream().flatMap(Set::stream).toList());
 
         DiffTree copy = new Duplication().deepClone(initDiffTree);
         List<DiffNode> toDelete = copy.computeAllNodesThat(elem -> !allNodes.contains(elem.getID()));
@@ -129,15 +188,11 @@ public class FeatureSplit {
      * @param node a child node of a DiffTree
      * @return a list of parent ids
      */
-    static public List<Integer> findParent(DiffNode node) {
-        ArrayList<Integer> parentNodes = new ArrayList<>();
+    static public HashSet<Integer> findParent(DiffNode node) {
+        HashSet<Integer> parentNodes = new HashSet<>();
         parentNodes.add(node.getID());
-        if (node.getBeforeParent() != null) {
-            parentNodes.addAll(findParent(node.getBeforeParent()));
-        }
-        if (node.getAfterParent() != null) {
-            parentNodes.addAll(findParent(node.getAfterParent()));
-        }
+        if (node.getBeforeParent() != null) parentNodes.addAll(findParent(node.getBeforeParent()));
+        if (node.getAfterParent() != null) parentNodes.addAll(findParent(node.getAfterParent()));
         return parentNodes;
     }
 

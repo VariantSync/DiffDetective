@@ -29,7 +29,8 @@ public class DiffTreeComparison implements DiffTreeVisitor {
         DiffTreeTraversal.with(this).visit(second);
 
         // compare elements
-        return !this.comparisonHashMap.values().stream().map(diffNodes -> diffNodes.size() != 2
+        return !this.comparisonHashMap.values().stream().map(diffNodes ->
+                        diffNodes.size() != 2
                         || !diffNodes.get(0).equals(diffNodes.get(1))
                         || !diffNodes.get(0).getAllChildren().equals(diffNodes.get(1).getAllChildren()))
                 .collect(Collectors.toSet()).contains(true);

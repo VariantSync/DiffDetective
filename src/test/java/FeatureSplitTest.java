@@ -34,12 +34,23 @@ public class FeatureSplitTest {
     }
 
     /**
+     * test the operator featureSplit
+     */
+    @Test
+    public void featureSplitTest() {
+        DiffTree tree = DIFF_TREES.get(0);
+        FeatureSplit featureSplit = new FeatureSplit();
+        HashMap<String, DiffTree> featureAwareTrees = featureSplit.featureSplit(tree, Arrays.asList("Unix", "Get"));
+
+        //TODO create solution
+        Assert.assertTrue(true);
+    }
+
+    /**
      * Check if valid subtrees are generated
      */
     @Test
-    public void generateClusters() {
-        // get the code node from line 8-9
-        DiffNode node = DIFF_TREES.get(0).getRoot().getAllChildren().get(1).getAllChildren().get(0);
+    public void generateClustersTest() {
         DiffTree tree = DIFF_TREES.get(0);
         FeatureSplit featureSplit = new FeatureSplit();
         List<DiffTree> subtrees = featureSplit.generateAllSubtrees(tree);
@@ -56,11 +67,11 @@ public class FeatureSplitTest {
      * Check if valid subtrees are generated
      */
     @Test
-    public void generateAllSubtrees() {
+    public void generateAllSubtreesTest() {
         DiffTree tree = DIFF_TREES.get(0);
         FeatureSplit featureSplit = new FeatureSplit();
         List<DiffTree> subtrees = featureSplit.generateAllSubtrees(tree);
-
+        //TODO create comparison clusters
 
         //Assert.assertEquals(node, duplication);
     }
