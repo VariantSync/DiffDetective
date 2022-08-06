@@ -42,8 +42,8 @@ public class FeatureSplitTest {
         FeatureSplit featureSplit = new FeatureSplit();
         HashMap<String, DiffTree> featureAwareTrees = featureSplit.featureSplit(tree, Arrays.asList("Unix", "Get"));
 
-        //TODO create solution
-        Assert.assertTrue(true);
+        Assert.assertEquals(featureAwareTrees.get("Get").getRoot().getAllChildren().get(0).getAllChildren().size(), 2);
+        Assert.assertEquals(featureAwareTrees.get("Unix").getRoot().getAllChildren().get(0).getAllChildren().size(), 1);
     }
 
     /**
@@ -56,11 +56,9 @@ public class FeatureSplitTest {
         List<DiffTree> subtrees = featureSplit.generateAllSubtrees(tree);
         HashMap<String, List<DiffTree>> clusters = featureSplit.generateClusters(subtrees, Arrays.asList("Unix", "Get"));
 
-        HashMap<String, List<DiffTree>> solutionClusters = new HashMap<>();
-
-        // Clustering algorithm was tested manuel and provided valid results
-        //TODO create comparison clusters
-        Assert.assertTrue(true);
+        Assert.assertEquals(clusters.get("Unix").size(), 1);
+        Assert.assertEquals(clusters.get("Get").size(), 2);
+        Assert.assertEquals(clusters.get("remains").size(), 0);
     }
 
     /**
@@ -71,9 +69,8 @@ public class FeatureSplitTest {
         DiffTree tree = DIFF_TREES.get(0);
         FeatureSplit featureSplit = new FeatureSplit();
         List<DiffTree> subtrees = featureSplit.generateAllSubtrees(tree);
-        //TODO create comparison clusters
 
-        //Assert.assertEquals(node, duplication);
+        Assert.assertEquals(subtrees.size(), 3);
     }
 
     @Test
