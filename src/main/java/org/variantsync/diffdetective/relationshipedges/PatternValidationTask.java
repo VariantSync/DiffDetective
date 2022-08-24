@@ -25,9 +25,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Task for performing the ESEC/FSE'22 validation on a set of commits from a given repository.
+ * Task for performing the mining for Lukas Güthing's thesis.
  *
- * @author Paul Bittner
+ * @author Paul Bittner, Lukas Güthing
  */
 public class PatternValidationTask extends CommitHistoryAnalysisTask {
     public PatternValidationTask(Options options) {
@@ -79,39 +79,29 @@ public class PatternValidationTask extends CommitHistoryAnalysisTask {
                             continue;
                         }
 
-                        t.forAll(node -> {
-                            if (node.isCode()) {
-                                miningResult.elementaryPatternCounts.reportOccurrenceFor(
-                                        ProposedElementaryPatterns.Instance.match(node),
-                                        commitDiff
-                                );
-                            }
-                        });
-
                         ++numDiffTrees;
 
-                        boolean relationshipEdges = true; // TODO: replace this later with some sort of options parameter
+                        boolean RELATIONSHIP_EDGES = true; // TODO: replace this later with some sort of options parameter
 
-                        if (relationshipEdges) {
+                        if (RELATIONSHIP_EDGES) {
                         /*
                         extend the @DiffTree t with relationship edges
                         */
-                            ArrayList<Pair<DiffNode, DiffNode>> edges = new ArrayList<>();
+                            ArrayList<RelationshipEdge<Implication>> edges = new ArrayList<>();
                             List<DiffNode> annotationNodes = t.computeAnnotationNodes();
                             List<DiffNode> ifNodes = t.computeAllNodesThat(DiffNode::isIf);
                             for (int i = 0; i < ifNodes.size(); i++) {
                                 for (int j = i + 1; j < ifNodes.size(); j++) {
-                                    Node featureMappingA = ifNodes.get(i).getDirectFeatureMapping();
-                                    Node featureMappingB = ifNodes.get(j).getDirectFeatureMapping();
-                                    if (SAT.implies(featureMappingA, featureMappingB)) {
-                                        edges.add(new Pair<>(ifNodes.get(i), ifNodes.get(j)));
+                                    if (Implication.areInRelation(ifNodes.get(i), ifNodes.get(j))) {
+                                        edges.add(new RelationshipEdge<>(ifNodes.get(i), ifNodes.get(j)));
                                     }
-                                    if (SAT.implies(featureMappingB, featureMappingA)) {
-                                        edges.add(new Pair<>(ifNodes.get(j), ifNodes.get(i)));
+                                    if (Implication.areInRelation(ifNodes.get(j), ifNodes.get(i))) {
+                                        edges.add(new RelationshipEdge<>(ifNodes.get(j), ifNodes.get(i)));
                                     }
                                 }
                             }
                             numRelEdges += edges.size();
+                            EdgeTypedTreeDiff<Implication> edgeTypedTreeDiff = new EdgeTypedTreeDiff<>(t, edges);
                         }
                     }
                 }
