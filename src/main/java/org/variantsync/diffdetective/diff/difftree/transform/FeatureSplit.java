@@ -1,6 +1,8 @@
 package org.variantsync.diffdetective.diff.difftree.transform;
 
+import org.prop4j.Literal;
 import org.prop4j.Node;
+import org.variantsync.diffdetective.analysis.FeatureQueryGenerator;
 import org.variantsync.diffdetective.analysis.logic.SAT;
 import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
@@ -13,6 +15,11 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class FeatureSplit {
+
+    public HashMap<String, DiffTree> featureSplit(DiffTree initDiffTree){
+        Literal example = FeatureQueryGenerator.featureQueryGenerator(initDiffTree).stream().toList().get(0);
+        return featureSplit(initDiffTree, List.of(example.toString()));
+    }
 
     public HashMap<String, DiffTree> featureSplit(DiffTree initDiffTree, List<String> queries){
         List<DiffTree> subtrees = generateAllSubtrees(initDiffTree);
