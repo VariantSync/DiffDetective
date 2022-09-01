@@ -15,13 +15,21 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class FeatureSplit {
-
-    public HashMap<String, DiffTree> featureSplit(DiffTree initDiffTree){
-        Literal example = FeatureQueryGenerator.featureQueryGenerator(initDiffTree).stream().toList().get(0);
-        return featureSplit(initDiffTree, List.of(example.toString()));
+    /**
+     * Extracts exactly one feature or feature query from a given difftree
+     *
+     * @return a Hashmap of features and its corresponding feature-aware DiffTrees
+     */
+    public static HashMap<String, DiffTree> featureSplit(DiffTree initDiffTree, String query){
+        return featureSplit(initDiffTree, query);
     }
 
-    public HashMap<String, DiffTree> featureSplit(DiffTree initDiffTree, List<String> queries){
+    /**
+     * Allows for extraction of multiple features sequentially
+     *
+     * @return a Hashmap of features and its corresponding feature-aware DiffTrees
+     */
+    public static HashMap<String, DiffTree> featureSplit(DiffTree initDiffTree, List<String> queries){
         List<DiffTree> subtrees = generateAllSubtrees(initDiffTree);
         HashMap<String, List<DiffTree>> clusters = generateClusters(subtrees, queries);
         return generateFeatureAwareDiffTrees(clusters);
@@ -33,7 +41,7 @@ public class FeatureSplit {
      * @param clusters contains the grouped subtrees
      * @return a List of subtrees that represent changes to one feature or one composite feature
      */
-    public HashMap<String, DiffTree> generateFeatureAwareDiffTrees(HashMap<String, List<DiffTree>> clusters){
+    public static HashMap<String, DiffTree> generateFeatureAwareDiffTrees(HashMap<String, List<DiffTree>> clusters){
         HashMap<String, DiffTree> featureAwareTreeDiffs = new HashMap<>();
         for (Map.Entry<String, List<DiffTree>> entry : clusters.entrySet()) {
             featureAwareTreeDiffs.put(entry.getKey(),
@@ -48,7 +56,7 @@ public class FeatureSplit {
      * @param cluster contains subtrees of a cluster
      * @return a feature-aware DiffTrees
      */
-    public DiffTree generateFeatureAwareDiffTree(List<DiffTree> cluster){
+    public static DiffTree generateFeatureAwareDiffTree(List<DiffTree> cluster){
         if (cluster.size() == 0) return null;
         if (cluster.size() == 1) return cluster.get(0);
         return generateFeatureAwareDiffTree(
@@ -62,7 +70,7 @@ public class FeatureSplit {
     /**
      * Composes two DiffTrees into one feature-aware TreeDiff
      */
-    public DiffTree composeDiffTrees(DiffTree first, DiffTree second){
+    public static DiffTree composeDiffTrees(DiffTree first, DiffTree second){
         // Get Leaf of subtree
         List<DiffNode> leafNodes = first.computeAllNodesThat(diffNode -> diffNode.getAllChildren().size() == 0);
         // Inspect each leaf
@@ -103,7 +111,7 @@ public class FeatureSplit {
      * @param queries: feature mapping which represents a query.
      * @return true if query is implied in the presence condition
      */
-    public HashMap<String, List<DiffTree>> generateClusters(List<DiffTree> subtrees, List<String> queries){
+    public static HashMap<String, List<DiffTree>> generateClusters(List<DiffTree> subtrees, List<String> queries){
         HashMap<String, List<DiffTree>> clusters = new HashMap<>();
         clusters.put("remains", new ArrayList<>());
 
@@ -126,7 +134,7 @@ public class FeatureSplit {
      * compares every node in the subtree with the query
      * @return true if query is implied in a presence condition of a node
      */
-    private Boolean evaluate(DiffTree subtree, String query){
+    private static Boolean evaluate(DiffTree subtree, String query){
         return subtree.anyMatch(node -> {
             if(!node.isCode()) return false;
             return (node.getBeforeParent() != null && satSolver(node.getBeforePresenceCondition(), query)) || node.getAfterParent() != null && satSolver(node.getAfterPresenceCondition(), query);
@@ -138,7 +146,7 @@ public class FeatureSplit {
      * @param query: feature mapping which represents a query.
      * @return true if query is implied in the presence condition
      */
-    private boolean satSolver(Node presenceCondition, String query) {
+    private static boolean satSolver(Node presenceCondition, String query) {
         return SAT.implies(presenceCondition, PropositionalFormulaParser.Default.parse(query));
     }
 
@@ -147,7 +155,7 @@ public class FeatureSplit {
      * @param initDiffTree is transformed into subtrees
      * @return a set of subtrees
      */
-    public List<DiffTree> generateAllSubtrees(DiffTree initDiffTree) {
+    public static List<DiffTree> generateAllSubtrees(DiffTree initDiffTree) {
         List<DiffTree> allTrees = initDiffTree.computeAllNodesThat(elem -> !elem.isNon()).stream().map(elem -> generateSubtree(elem, initDiffTree)).toList();
         List<DiffTree> treeSet = new ArrayList<>();
         // check for duplicates

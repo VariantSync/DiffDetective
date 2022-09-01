@@ -16,13 +16,6 @@ public class Duplication implements DiffTreeVisitor {
      * @return A duplication of the input node without parent and child notes
      */
     static public DiffNode shallowClone(DiffNode node) {
-        //diffNode.isMultilineMacro
-        // diffNode.diffType
-        // diffNode.codeType
-        // from.equals(diffNode.from)
-        // to.equals(diffNode.to)
-        // Objects.equals(featureMapping, diffNode.featureMapping)
-        // lines.equals(diffNode.lines);
         return new DiffNode(node.diffType, node.codeType, node.getFromLine(), node.getToLine(), node.getDirectFeatureMapping(), node.getLines());
     }
 
