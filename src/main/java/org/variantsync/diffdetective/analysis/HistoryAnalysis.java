@@ -79,7 +79,7 @@ public record HistoryAnalysis(
             final CommitHistoryAnalysisTaskFactory taskFactory,
             int commitsToProcessPerThread)
     {
-        final AnalysisResult totalResult = new AnalysisResult(repo.getRepositoryName());
+        final AnalysisResult totalResult = new AnalysisResult(repo.getRepositoryName()); // todo change to featureSplitResult
         final GitDiffer differ = new GitDiffer(repo);
         final Clock clock = new Clock();
 

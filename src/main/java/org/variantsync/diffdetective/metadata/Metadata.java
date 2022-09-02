@@ -22,7 +22,7 @@ public interface Metadata<T> {
      * Metadata should be composable.
      * Composition should be inplace to optimize performance.
      */
-    InplaceSemigroup<T> semigroup();
+    InplaceSemigroup<T> semigroup(); //TODO  T = featureSplitResult
 
     default void append(T other) {
         semigroup().appendToFirst(Cast.unchecked(this), other);

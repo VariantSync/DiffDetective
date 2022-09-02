@@ -19,17 +19,20 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.function.BiConsumer;
 
-public class AnalysisResult implements Metadata<AnalysisResult> { //TODO was eigenes was Metadata erbt
+public class FeatureSplitResult implements Metadata<FeatureSplitResult> {
     public final static String NO_REPO = "<NONE>";
     public final static String EXTENSION = ".metadata.txt";
     public final static String ERROR_BEGIN = "#Error[";
     public final static String ERROR_END = "]";
 
-    public static Map.Entry<String, BiConsumer<AnalysisResult, String>> storeAsCustomInfo(String key) {
+    public static Map.Entry<String, BiConsumer<FeatureSplitResult, String>> storeAsCustomInfo(String key) {
         return Map.entry(key, (r, val) -> r.putCustomInfo(key, val));
     }
-    
-    public final static InplaceSemigroup<AnalysisResult> ISEMIGROUP = (a, b) -> {
+
+    /**
+     * The stored function adds all results form object b to object a
+     */
+    public final static InplaceSemigroup<FeatureSplitResult> ISEMIGROUP = (a, b) -> {
         a.totalCommits += b.totalCommits;
         a.exportedCommits += b.exportedCommits;
         a.emptyCommits += b.emptyCommits;
@@ -46,8 +49,11 @@ public class AnalysisResult implements Metadata<AnalysisResult> { //TODO was eig
         a.diffErrors.append(b.diffErrors);
     };
 
-    public static InplaceMonoid<AnalysisResult> IMONOID= InplaceMonoid.From(
-            AnalysisResult::new,
+    /**
+     * Used in initialization, which requires an empty semigroup
+     */
+    public static InplaceMonoid<FeatureSplitResult> IMONOID= InplaceMonoid.From(
+            FeatureSplitResult::new,
             ISEMIGROUP
     );
 
@@ -69,21 +75,23 @@ public class AnalysisResult implements Metadata<AnalysisResult> { //TODO was eig
      * totalCommits - exportedCommits - emptyCommits - failedCommits
      */
     public int failedCommits;
-    public int exportedTrees;
+    public int exportedTrees; // number of extracted DiffTrees in the observed history.
     public double runtimeInSeconds;
     public double runtimeWithMultithreadingInSeconds;
     public final CommitProcessTime min, max;
     public final DiffTreeSerializeDebugData debugData;
+
+    // FeatureSplit specific information
     public ExplainedFilterSummary filterHits;
     public ElementaryPatternCount elementaryPatternCounts;
     private final LinkedHashMap<String, String> customInfo = new LinkedHashMap<>();
     private final MergeMap<DiffError, Integer> diffErrors = new MergeMap<>(new HashMap<>(), Integer::sum);
 
-    public AnalysisResult() {
+    public FeatureSplitResult() {
         this(NO_REPO);
     }
 
-    public AnalysisResult(final String repoName) {
+    public FeatureSplitResult(final String repoName) {
         this(
                 repoName,
                 0, 0, 0, 0,
@@ -95,7 +103,7 @@ public class AnalysisResult implements Metadata<AnalysisResult> { //TODO was eig
                 new ExplainedFilterSummary());
     }
 
-    public AnalysisResult(
+    public FeatureSplitResult(
             final String repoName,
             int totalCommits,
             int exportedCommits,
@@ -133,94 +141,15 @@ public class AnalysisResult implements Metadata<AnalysisResult> { //TODO was eig
             diffErrors.put(e, 1);
         }
     }
-    
+
     /**
-     * Imports a metadata file, which is an output of a {@link AnalysisResult}, and saves back to {@link AnalysisResult}.
-     * 
-     * @param p {@link Path} to the metadata file
-     * @return The reconstructed {@link AnalysisResult}
-     * @throws IOException
+     * Creates a key-value store of metadata generated FeatureSplit
+     * @return A LinkedHashMap that stores all relevant properties to export.
      */
-    public static AnalysisResult importFrom(final Path p, final Map<String, BiConsumer<AnalysisResult, String>> customParsers) throws IOException {
-        AnalysisResult result = new AnalysisResult();
-        
-        final List<String> filterHitsLines = new ArrayList<>();
-        final List<String> elementaryPatternCountsLines = new ArrayList<>();
-
-        try (BufferedReader input = Files.newBufferedReader(p)) {
-            // examine each line of the metadata file separately
-            String line;
-            while ((line = input.readLine()) != null) {
-                String[] keyValuePair = line.split(": ");
-                String key = keyValuePair[0];
-                String value = keyValuePair[1];
-
-                switch (key) {
-                    case MetadataKeys.REPONAME -> result.repoName = value;
-                    case MetadataKeys.TREES -> result.exportedTrees = Integer.parseInt(value);
-                    case MetadataKeys.PROCESSED_COMMITS -> result.exportedCommits = Integer.parseInt(value);
-                    case MetadataKeys.TOTAL_COMMITS -> result.totalCommits = Integer.parseInt(value);
-                    case MetadataKeys.EMPTY_COMMITS -> result.emptyCommits = Integer.parseInt(value);
-                    case MetadataKeys.FAILED_COMMITS -> result.failedCommits = Integer.parseInt(value);
-                    case MetadataKeys.FILTERED_COMMITS -> { /* Do nothing because this value is derived. */ }
-                    case MetadataKeys.NON_NODE_COUNT -> result.debugData.numExportedNonNodes = Integer.parseInt(value);
-                    case MetadataKeys.ADD_NODE_COUNT -> result.debugData.numExportedAddNodes = Integer.parseInt(value);
-                    case MetadataKeys.REM_NODE_COUNT -> result.debugData.numExportedRemNodes = Integer.parseInt(value);
-                    case MetadataKeys.MINCOMMIT -> result.min.set(CommitProcessTime.fromString(value));
-                    case MetadataKeys.MAXCOMMIT -> result.max.set(CommitProcessTime.fromString(value));
-                    case MetadataKeys.RUNTIME -> {
-                        if (value.endsWith("s")) {
-                            value = value.substring(0, value.length() - 1);
-                        }
-                        result.runtimeInSeconds = Double.parseDouble(value);
-                    }
-                    case MetadataKeys.RUNTIME_WITH_MULTITHREADING -> {
-                        if (value.endsWith("s")) {
-                            value = value.substring(0, value.length() - 1);
-                        }
-                        result.runtimeWithMultithreadingInSeconds = Double.parseDouble(value);
-                    }
-                    default -> {
-
-                        // temporary fix for renaming from Unchanged to Untouched
-                        final String unchanged = "Unchanged";
-                        if (key.startsWith(unchanged)) {
-                            key = ProposedElementaryPatterns.Untouched.getName();
-                            line = key + line.substring(unchanged.length());
-                        }
-
-                        final String finalKey = key;
-                        if (ProposedElementaryPatterns.All.stream().anyMatch(pattern -> pattern.getName().equals(finalKey))) {
-                            elementaryPatternCountsLines.add(line);
-                        } else if (key.startsWith(ExplainedFilterSummary.FILTERED_MESSAGE_BEGIN)) {
-                            filterHitsLines.add(line);
-                        } else if (key.startsWith(ERROR_BEGIN)) {
-                            DiffError e = new DiffError(key.substring(ERROR_BEGIN.length(), key.length() - ERROR_END.length()));
-                            // add DiffError
-                            result.diffErrors.put(e, Integer.parseInt(value));
-                        } else {
-                            final BiConsumer<AnalysisResult, String> customParser = customParsers.get(key);
-                            if (customParser == null) {
-                                final String errorMessage = "Unknown entry \"" + line + "\"!";
-                                throw new IOException(errorMessage);
-                            } else {
-                                customParser.accept(result, value);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        result.filterHits = ExplainedFilterSummary.parse(filterHitsLines);
-        result.elementaryPatternCounts = ElementaryPatternCount.parse(elementaryPatternCountsLines, p.toString());
-
-        return result;
-    }
-
     @Override
     public LinkedHashMap<String, Object> snapshot() {
         LinkedHashMap<String, Object> snap = new LinkedHashMap<>();
+        // TODO change objects in snapshot
         snap.put(MetadataKeys.REPONAME, repoName);
         snap.put(MetadataKeys.TOTAL_COMMITS, totalCommits);
         snap.put(MetadataKeys.FILTERED_COMMITS, totalCommits - exportedCommits - emptyCommits - failedCommits);
@@ -241,7 +170,7 @@ public class AnalysisResult implements Metadata<AnalysisResult> { //TODO was eig
     }
 
     @Override
-    public InplaceSemigroup<AnalysisResult> semigroup() {
+    public InplaceSemigroup<FeatureSplitResult> semigroup() {
         return ISEMIGROUP;
     }
 }

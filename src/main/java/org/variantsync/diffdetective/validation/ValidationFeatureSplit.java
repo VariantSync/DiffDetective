@@ -3,9 +3,7 @@ package org.variantsync.diffdetective.validation;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.tinylog.Logger;
-import org.variantsync.diffdetective.analysis.CommitHistoryAnalysisTask;
-import org.variantsync.diffdetective.analysis.CommitHistoryAnalysisTaskFactory;
-import org.variantsync.diffdetective.analysis.HistoryAnalysis;
+import org.variantsync.diffdetective.analysis.*;
 import org.variantsync.diffdetective.analysis.strategies.NullStrategy;
 import org.variantsync.diffdetective.datasets.*;
 import org.variantsync.diffdetective.diff.difftree.filter.DiffTreeFilter;
@@ -34,8 +32,8 @@ public class ValidationFeatureSplit {
     public static final int PRINT_LARGEST_SUBJECTS = 3;
 
     // TODO change VALIDATION_TASK_FACTORY to include featureSplit
-    public static final CommitHistoryAnalysisTaskFactory VALIDATION_TASK_FACTORY =
-            (repo, differ, outputPath, commits) -> new PatternValidationTask(new CommitHistoryAnalysisTask.Options(
+    public static final FeatureSplitAnalysisTaskFactory VALIDATION_TASK_FACTORY =
+            (repo, differ, outputPath, commits) -> new FeatureSplitValidationTask(new FeatureSplitAnalysisTask.Options(
                     repo,
                     differ,
                     outputPath,
@@ -61,7 +59,7 @@ public class ValidationFeatureSplit {
                 , new CommitDiffDiffTreeLabelFormat()
                 , nodeFormat
                 , EdgeFormat(nodeFormat)
-                , new ExplainedFilter<>(DiffTreeFilter.notEmpty())
+                , new ExplainedFilter<>(DiffTreeFilter.notEmpty()) // filters unwanted trees
                 , List.of(new CutNonEditedSubtrees())
                 , DiffTreeLineGraphExportOptions.LogError()
                 .andThen(DiffTreeLineGraphExportOptions.RenderError())

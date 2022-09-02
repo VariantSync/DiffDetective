@@ -15,7 +15,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-public abstract class FeatureSplitTask implements Callable<AnalysisResult> {
+public abstract class FeatureSplitAnalysisTask implements Callable<FeatureSplitResult> {
     public static final String COMMIT_TIME_FILE_EXTENSION = ".committimes.txt";
     public static final String PATCH_STATISTICS_EXTENSION = ".patchStatistics.csv";
 
@@ -30,19 +30,19 @@ public abstract class FeatureSplitTask implements Callable<AnalysisResult> {
 
     protected final Options options;
 
-    protected FeatureSplitTask(final Options options) {
+    protected FeatureSplitAnalysisTask(final Options options) {
         this.options = options;
     }
 
-    public FeatureSplitTask.Options getOptions() {
+    public FeatureSplitAnalysisTask.Options getOptions() {
         return options;
     }
 
     @Override
-    public AnalysisResult call() throws Exception {
+    public FeatureSplitResult call() throws Exception {
         options.miningStrategy().start(options.repository(), options.outputPath(), options.exportOptions());
 
-        final AnalysisResult miningResult = new AnalysisResult(options.repository.getRepositoryName());
+        final FeatureSplitResult miningResult = new FeatureSplitResult(options.repository.getRepositoryName());
         final DiffTreeLineGraphExportOptions exportOptions = options.exportOptions();
 
         miningResult.putCustomInfo(MetadataKeys.TREEFORMAT, exportOptions.treeFormat().getName());
