@@ -85,7 +85,7 @@ public class DiffTreeTraversal {
      * @return True if the node was unvisited and is now marked visited.
      *         False if the node was already marked visited.
      */
-    public boolean markAsVisited(final DiffNode node) {
+    private boolean markAsVisited(final DiffNode node) {
         return visited.add(node.getID());
     }
 }
