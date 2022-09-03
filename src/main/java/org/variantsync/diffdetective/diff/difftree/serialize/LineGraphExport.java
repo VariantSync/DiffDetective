@@ -73,8 +73,8 @@ public final class LineGraphExport {
     }
 
     /**
-     * Same as {@link LineGraphExport#toLineGraphFormat(String, Iterable, DiffTreeLineGraphExportOptions)} but with an
-     * {@link AnalysisResult#NO_REPO unkown repository}.
+     * Same as {@link LineGraphExport#toLineGraphFormat(String, CommitDiff, StringBuilder, DiffTreeLineGraphExportOptions)}
+     * but with an {@link AnalysisResult#NO_REPO unkown repository}.
      */
     public static AnalysisResult toLineGraphFormat(final CommitDiff commitDiff, final StringBuilder lineGraph, final DiffTreeLineGraphExportOptions options) {
         return toLineGraphFormat(AnalysisResult.NO_REPO, commitDiff, lineGraph, options);
