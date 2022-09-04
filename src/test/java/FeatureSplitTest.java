@@ -46,6 +46,16 @@ public class FeatureSplitTest {
         Assert.assertEquals(featureAwareTrees.get("Unix").getRoot().getAllChildren().get(0).getAllChildren().size(), 1);
     }
 
+    @Test
+    public void featureSplitTest2() {
+        DiffTree tree = DIFF_TREES.get(0);
+        FeatureSplit featureSplit = new FeatureSplit();
+        HashMap<String, DiffTree> featureAwareTrees = featureSplit.featureSplit(tree, "Get");
+
+        Assert.assertEquals(featureAwareTrees.get("Get").getRoot().getAllChildren().get(0).getAllChildren().size(), 3);
+    }
+
+
     /**
      * Check if valid subtrees are generated
      */
