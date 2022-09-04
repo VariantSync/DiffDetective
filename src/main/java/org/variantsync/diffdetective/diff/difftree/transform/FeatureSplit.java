@@ -72,34 +72,48 @@ public class FeatureSplit {
      * Composes two DiffTrees into one feature-aware TreeDiff
      */
     public static DiffTree composeDiffTrees(DiffTree first, DiffTree second){
+        if (second == null && first == null) return null;
+        if (first == null || first.isEmpty()) return second;
+        if (second == null || second.isEmpty()) return first;
+
         // Get Leaf of subtree
-        List<DiffNode> leafNodes = first.computeAllNodesThat(diffNode -> diffNode.getAllChildren().size() == 0);
+        List<DiffNode> leafNodesFirst = first.computeAllNodesThat(diffNode -> diffNode.getAllChildren().size() == 0);
         // Inspect each leaf
-        leafNodes.forEach(leaf -> {
+        leafNodesFirst.forEach(leafFirst -> {
                     // Traverse leafNodes Upwards
-                    HashSet<Integer> parentNodes =  findParent(leaf);
-                    for (int parent : parentNodes){
-                        DiffNode parentNode = first.computeAllNodesThat(node -> node.getID() == parent).get(0);
+                    HashSet<Integer> ancestorsFirst = findParent(leafFirst);
+                    for (int ancestorFirst : ancestorsFirst){
+                        List<DiffNode> ancestorList = first.computeAllNodesThat(node -> node.getID() == ancestorFirst);
+                        // do nothing if only root node
+                        if(ancestorList.size() == 0) continue;
 
-                        if(parentNode.isRoot()) continue;
+                        DiffNode ancestorNodeFirst = ancestorList.get(0);
+
                         // find node, where both DiffTrees start dividing, where only one can exist
-                        List<DiffNode> split = second.computeAllNodesThat(node -> node.getID() == parent);
-                        List<DiffNode> parentSplit = second.computeAllNodesThat(node ->
-                                parentNode.getAfterParent() != null && node.getID() == parentNode.getAfterParent().getID() ||
-                                parentNode.getBeforeParent() != null && node.getID() == parentNode.getBeforeParent().getID());
+                        List<DiffNode> splitSecond = second.computeAllNodesThat(node -> node.getID() == ancestorFirst);
+                        List<DiffNode> parentSplitSecond = second.computeAllNodesThat(node ->
+                                ancestorNodeFirst.getAfterParent() != null && node.getID() == ancestorNodeFirst.getAfterParent().getID() ||
+                                ancestorNodeFirst.getBeforeParent() != null && node.getID() == ancestorNodeFirst.getBeforeParent().getID());
 
-                        if(split.size() == 0 && parentSplit.size() != 0){
+                        if(splitSecond.size() == 0 && parentSplitSecond.size() != 0){
                             // add subtree to new parent
-                            DiffNode newNode = Duplication.shallowClone(parentNode);
-                            newNode.stealChildrenOf(parentNode);
-                            if(parentNode.getBeforeParent() == null ){
-                                newNode.addBelow(null, parentSplit.get(0));
-                            } else if (parentNode.getAfterParent() == null) {
-                                newNode.addBelow(parentSplit.get(0), null);
+                            DiffNode clonedNode = Duplication.shallowClone(ancestorNodeFirst);
+                            clonedNode.stealChildrenOf(ancestorNodeFirst);
+
+                            // first value in parentSplitSecond is beforeParent and second is afterParent
+                            if(ancestorNodeFirst.getBeforeParent() == null ){
+                                clonedNode.addBelow(null, parentSplitSecond.get(0));
+                            } else if (ancestorNodeFirst.getAfterParent() == null) {
+                                clonedNode.addBelow(parentSplitSecond.get(0), null);
                             } else {
-                                newNode.addBelow(parentSplit.get(0), parentSplit.get(1));
+                                // both parents still can be identical
+                                if (parentSplitSecond.size() == 1) {
+                                    clonedNode.addBelow(parentSplitSecond.get(0), parentSplitSecond.get(0));
+                                } else {
+                                    clonedNode.addBelow(parentSplitSecond.get(0), parentSplitSecond.get(1));
+                                }
                             }
-                            parentNode.drop();
+                            ancestorNodeFirst.drop();
                         }
                     }
                 });
