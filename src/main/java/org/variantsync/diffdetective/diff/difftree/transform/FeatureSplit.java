@@ -1,8 +1,6 @@
 package org.variantsync.diffdetective.diff.difftree.transform;
 
-import org.prop4j.Literal;
 import org.prop4j.Node;
-import org.variantsync.diffdetective.analysis.FeatureQueryGenerator;
 import org.variantsync.diffdetective.analysis.logic.SAT;
 import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
@@ -10,6 +8,7 @@ import org.variantsync.diffdetective.diff.difftree.DiffTreeComparison;
 import org.variantsync.diffdetective.diff.difftree.Duplication;
 import org.variantsync.diffdetective.feature.PropositionalFormulaParser;
 
+import java.lang.reflect.Array;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -21,7 +20,9 @@ public class FeatureSplit {
      * @return a Hashmap of features and its corresponding feature-aware DiffTrees
      */
     public static HashMap<String, DiffTree> featureSplit(DiffTree initDiffTree, String query){
-        return featureSplit(initDiffTree, query);
+        ArrayList<String> queries = new ArrayList<>();
+        queries.add(query);
+        return featureSplit(initDiffTree, queries);
     }
 
     /**
@@ -85,7 +86,7 @@ public class FeatureSplit {
                         List<DiffNode> split = second.computeAllNodesThat(node -> node.getID() == parent);
                         List<DiffNode> parentSplit = second.computeAllNodesThat(node ->
                                 parentNode.getAfterParent() != null && node.getID() == parentNode.getAfterParent().getID() ||
-                                parentNode.getBeforeIfNode() != null && node.getID() == parentNode.getBeforeParent().getID());
+                                parentNode.getBeforeParent() != null && node.getID() == parentNode.getBeforeParent().getID());
 
                         if(split.size() == 0 && parentSplit.size() != 0){
                             // add subtree to new parent
@@ -136,7 +137,6 @@ public class FeatureSplit {
      */
     private static Boolean evaluate(DiffTree subtree, String query){
         return subtree.anyMatch(node -> {
-            if(!node.isCode()) return false;
             return (node.getBeforeParent() != null && satSolver(node.getBeforePresenceCondition(), query)) || node.getAfterParent() != null && satSolver(node.getAfterPresenceCondition(), query);
         });
     }
