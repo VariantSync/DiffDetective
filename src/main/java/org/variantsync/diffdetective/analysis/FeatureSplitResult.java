@@ -1,5 +1,6 @@
 package org.variantsync.diffdetective.analysis;
 
+import org.variantsync.diffdetective.diff.difftree.DiffTree;
 import org.variantsync.diffdetective.diff.difftree.serialize.DiffTreeSerializeDebugData;
 import org.variantsync.diffdetective.diff.result.DiffError;
 import org.variantsync.diffdetective.metadata.ElementaryPatternCount;
@@ -21,7 +22,7 @@ import java.util.function.BiConsumer;
 
 public class FeatureSplitResult implements Metadata<FeatureSplitResult> {
     public final static String NO_REPO = "<NONE>";
-    public final static String EXTENSION = ".metadata.txt";
+    public final static String EXTENSION = ".metadata.txt"; // exported file extension
     public final static String ERROR_BEGIN = "#Error[";
     public final static String ERROR_END = "]";
 
@@ -43,8 +44,7 @@ public class FeatureSplitResult implements Metadata<FeatureSplitResult> {
         a.min.set(CommitProcessTime.min(a.min, b.min));
         a.max.set(CommitProcessTime.max(a.max, b.max));
         a.debugData.append(b.debugData);
-        a.filterHits.append(b.filterHits);
-        a.elementaryPatternCounts.append(b.elementaryPatternCounts);
+        a.patchStats.addAll(b.patchStats);
         MergeMap.putAllValues(a.customInfo, b.customInfo, Semigroup.assertEquals());
         a.diffErrors.append(b.diffErrors);
     };
@@ -75,17 +75,18 @@ public class FeatureSplitResult implements Metadata<FeatureSplitResult> {
      * totalCommits - exportedCommits - emptyCommits - failedCommits
      */
     public int failedCommits;
-    public int exportedTrees; // number of extracted DiffTrees in the observed history.
+    public int exportedTrees;
     public double runtimeInSeconds;
     public double runtimeWithMultithreadingInSeconds;
-    public final CommitProcessTime min, max;
+    public final CommitProcessTime min, max; // TODO change to list
     public final DiffTreeSerializeDebugData debugData;
-
-    // FeatureSplit specific information
-    public ExplainedFilterSummary filterHits;
-    public ElementaryPatternCount elementaryPatternCounts;
     private final LinkedHashMap<String, String> customInfo = new LinkedHashMap<>();
     private final MergeMap<DiffError, Integer> diffErrors = new MergeMap<>(new HashMap<>(), Integer::sum);
+
+    // TODO FeatureSplit specific information
+    public DiffTree tempTree;
+    public HashMap<String, DiffTree> tempFeatureAware;
+    private final List<LinkedHashMap<String, String>> patchStats = new LinkedList<>();
 
     public FeatureSplitResult() {
         this(NO_REPO);
@@ -99,8 +100,7 @@ public class FeatureSplitResult implements Metadata<FeatureSplitResult> {
                 0, 0,
                 CommitProcessTime.Unknown(repoName, Long.MAX_VALUE),
                 CommitProcessTime.Unknown(repoName, Long.MIN_VALUE),
-                new DiffTreeSerializeDebugData(),
-                new ExplainedFilterSummary());
+                new DiffTreeSerializeDebugData());
     }
 
     public FeatureSplitResult(
@@ -114,8 +114,7 @@ public class FeatureSplitResult implements Metadata<FeatureSplitResult> {
             double runtimeWithMultithreadingInSeconds,
             final CommitProcessTime min,
             final CommitProcessTime max,
-            final DiffTreeSerializeDebugData debugData,
-            final ExplainedFilterSummary filterHits)
+            final DiffTreeSerializeDebugData debugData)
     {
         this.repoName = repoName;
         this.totalCommits = totalCommits;
@@ -126,14 +125,22 @@ public class FeatureSplitResult implements Metadata<FeatureSplitResult> {
         this.runtimeInSeconds = runtimeInSeconds;
         this.runtimeWithMultithreadingInSeconds = runtimeWithMultithreadingInSeconds;
         this.debugData = debugData;
-        this.filterHits = filterHits;
-        this.elementaryPatternCounts = new ElementaryPatternCount();
         this.min = min;
         this.max = max;
     }
 
+    /**
+     * Stores custom data
+     */
     public void putCustomInfo(final String key, final String value) {
         customInfo.put(key, value);
+    }
+    /**
+     * Put patch data
+     *
+     */
+    public void putPatchStats(LinkedHashMap<String, String> elem) {
+        patchStats.add(elem);
     }
 
     public void reportDiffErrors(final List<DiffError> errors) {
@@ -152,7 +159,6 @@ public class FeatureSplitResult implements Metadata<FeatureSplitResult> {
         // TODO change objects in snapshot
         snap.put(MetadataKeys.REPONAME, repoName);
         snap.put(MetadataKeys.TOTAL_COMMITS, totalCommits);
-        snap.put(MetadataKeys.FILTERED_COMMITS, totalCommits - exportedCommits - emptyCommits - failedCommits);
         snap.put(MetadataKeys.FAILED_COMMITS, failedCommits);
         snap.put(MetadataKeys.EMPTY_COMMITS, emptyCommits);
         snap.put(MetadataKeys.PROCESSED_COMMITS, exportedCommits);
@@ -161,10 +167,9 @@ public class FeatureSplitResult implements Metadata<FeatureSplitResult> {
         snap.put(MetadataKeys.MAXCOMMIT, max.toString());
         snap.put(MetadataKeys.RUNTIME, runtimeInSeconds);
         snap.put(MetadataKeys.RUNTIME_WITH_MULTITHREADING, runtimeWithMultithreadingInSeconds);
+        snap.put(FeatureSplitMetadataKeys.PATCH_STATS, patchStats);
         snap.putAll(customInfo);
         snap.putAll(debugData.snapshot());
-        snap.putAll(filterHits.snapshot());
-        snap.putAll(elementaryPatternCounts.snapshot());
         snap.putAll(Functjonal.bimap(diffErrors, error -> ERROR_BEGIN + error + ERROR_END, Object::toString));
         return snap;
     }

@@ -5,10 +5,9 @@ import org.variantsync.diffdetective.datasets.Repository;
 import org.variantsync.diffdetective.diff.GitDiffer;
 
 import java.nio.file.Path;
+@FunctionalInterface
+public interface FeatureSplitAnalysisTaskFactory {
 
-public class FeatureSplitAnalysisTaskFactory implements CommitHistoryAnalysisTaskFactory{
-
-    @Override
     FeatureSplitAnalysisTask create(
             final Repository repository,
             final GitDiffer differ,

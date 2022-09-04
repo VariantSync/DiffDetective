@@ -31,7 +31,6 @@ public class ValidationFeatureSplit {
     public static final boolean PRINT_LATEX_TABLE = true;
     public static final int PRINT_LARGEST_SUBJECTS = 3;
 
-    // TODO change VALIDATION_TASK_FACTORY to include featureSplit
     public static final FeatureSplitAnalysisTaskFactory VALIDATION_TASK_FACTORY =
             (repo, differ, outputPath, commits) -> new FeatureSplitValidationTask(new FeatureSplitAnalysisTask.Options(
                     repo,
@@ -92,9 +91,6 @@ public class ValidationFeatureSplit {
     }
 
     public static void main(String[] args) throws IOException {
-//        setupLogger(Level.INFO);
-//        setupLogger(Level.DEBUG);
-
         final ParseOptions.DiffStoragePolicy diffStoragePolicy = ParseOptions.DiffStoragePolicy.DO_NOT_REMEMBER;
 
         final Path inputDir = Paths.get("..", "DiffDetectiveMining");
@@ -137,10 +133,10 @@ public class ValidationFeatureSplit {
         \* ************************ */
 
         final Consumer<Path> repoPostProcessing = p -> {};
-        final HistoryAnalysis analysis = new HistoryAnalysis(
+        final FeatureSplitHistoryAnalysis analysis = new FeatureSplitHistoryAnalysis(
                 repos,
                 outputDir,
-                HistoryAnalysis.COMMITS_TO_PROCESS_PER_THREAD_DEFAULT,
+                FeatureSplitHistoryAnalysis.COMMITS_TO_PROCESS_PER_THREAD_DEFAULT,
                 VALIDATION_TASK_FACTORY,
                 repoPostProcessing);
         analysis.runAsync();

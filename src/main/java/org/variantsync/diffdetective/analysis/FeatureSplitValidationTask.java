@@ -4,6 +4,7 @@ import org.eclipse.jgit.revwalk.RevCommit;
 import org.tinylog.Logger;
 import org.variantsync.diffdetective.diff.CommitDiff;
 import org.variantsync.diffdetective.diff.PatchDiff;
+import org.variantsync.diffdetective.diff.difftree.ConsistencyResult;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
 import org.variantsync.diffdetective.diff.difftree.serialize.DiffTreeLineGraphExportOptions;
 import org.variantsync.diffdetective.diff.difftree.transform.DiffTreeTransformer;
@@ -12,9 +13,7 @@ import org.variantsync.diffdetective.diff.result.CommitDiffResult;
 import org.variantsync.diffdetective.metadata.ExplainedFilterSummary;
 import org.variantsync.diffdetective.util.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public class FeatureSplitValidationTask extends FeatureSplitAnalysisTask {
     public FeatureSplitValidationTask(FeatureSplitAnalysisTask.Options options) {
@@ -23,12 +22,13 @@ public class FeatureSplitValidationTask extends FeatureSplitAnalysisTask {
 
     @Override
     public FeatureSplitResult call() throws Exception {
-        final FeatureSplitResult miningResult = super.call(); // TODO Change Result, maybe only CommitHistoryAnalysis
+        final FeatureSplitResult miningResult = super.call();
         final DiffTreeLineGraphExportOptions exportOptions = options.exportOptions();
         final List<CommitProcessTime> commitTimes = new ArrayList<>(HistoryAnalysis.COMMITS_TO_PROCESS_PER_THREAD_DEFAULT);
         final Clock totalTime = new Clock();
         totalTime.start();
         final Clock commitProcessTimer = new Clock();
+        final Clock patchProcessTimer = new Clock();
 
         for (final RevCommit commit : options.commits()) {
             try {
@@ -50,39 +50,59 @@ public class FeatureSplitValidationTask extends FeatureSplitAnalysisTask {
                 int numDiffTrees = 0;
                 for (final PatchDiff patch : commitDiff.getPatchDiffs()) {
                     if (patch.isValid()) {
+                        patchProcessTimer.start();
+
+                        // generate TreeDiffs
                         final DiffTree t = patch.getDiffTree();
+                        miningResult.tempTree = t;
                         DiffTreeTransformer.apply(exportOptions.treePreProcessing(), t);
-                        t.assertConsistency(); // Todo usefull to check validity of DiffTree
+                        t.assertConsistency();
 
                         if (!exportOptions.treeFilter().test(t)) {
                             continue;
                         }
+
+                        // validate FeatureSplit
                         FeatureQueryGenerator.featureQueryGenerator(t).forEach(feature -> {
-                                HashMap<String, DiffTree> featureAware = FeatureSplit.featureSplit(t, feature);
-                                //Todo add featureAware to the mining result
+                            LinkedHashMap<String, String> patchStats = new LinkedHashMap<>();
 
-                                }
-                        );
+                            HashMap<String, DiffTree> featureAware = FeatureSplit.featureSplit(t, feature);
+                            miningResult.tempFeatureAware = featureAware;
+                            // 1. get number of feature-aware patches for a patch
+                            int numOfFeaturesPatches = featureAware.size();
+                            patchStats.put(FeatureSplitMetadataKeys.NUM_OF_FEATURE_AWARE_PATCHES, Integer.toString(numOfFeaturesPatches));
+
+                            featureAware.forEach((key, value) -> {
+                                if (value == null) return;
+                                // 2. get calculation time for a patch
+                                final long patchTimeMS = patchProcessTimer.getPassedMilliseconds();
+                                patchStats.put(FeatureSplitMetadataKeys.PATCH_TIME_MS, Long.toString(patchTimeMS));
+
+                                // 3. get memory allocation for a patch
+
+                                // 4. check if patch is valid
+                                boolean isConsistent = value.isConsistent().isSuccess();
+                                patchStats.put(FeatureSplitMetadataKeys.IS_CONSISTENT, Boolean.toString(isConsistent));
+
+                                // 5. check how many feature formulas exists and number of initial features
+                                Set<String> features = FeatureQueryGenerator.featureQueryGenerator(value);
+                                int numOfFeatures = features.size();
+                                patchStats.put(FeatureSplitMetadataKeys.NUM_OF_FEATURES, Integer.toString(numOfFeatures));
+
+                                // 6. calculate size of feature-aware difftree and size of initial difftree
+                                int featureDiffSize = value.computeSize();
+                                patchStats.put(FeatureSplitMetadataKeys.FEATURE_AWARE_DIFF_SIZE, Integer.toString(featureDiffSize));
 
 
-
-                        /*
-                        t.forAll(node -> {
-                            if (node.isCode()) {
-                                miningResult.elementaryPatternCounts.reportOccurrenceFor(
-                                        ProposedElementaryPatterns.Instance.match(node),
-                                        commitDiff
-                                );
-                            }
+                            });
+                            miningResult.putPatchStats(patchStats);
                         });
-                        */
+
                         ++numDiffTrees;
                     }
                 }
                 // TODO Not necessary, create own mining result
                 miningResult.exportedTrees += numDiffTrees;
-                miningResult.filterHits.append(new ExplainedFilterSummary(exportOptions.treeFilter()));
-
 
                 exportOptions.treeFilter().resetExplanations();
 
