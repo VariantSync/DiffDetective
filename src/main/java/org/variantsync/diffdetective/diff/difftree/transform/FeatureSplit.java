@@ -91,30 +91,29 @@ public class FeatureSplit {
 
                         // find node, where both DiffTrees start dividing, where only one can exist
                         List<DiffNode> splitSecond = second.computeAllNodesThat(node -> node.getID() == ancestorFirst);
-                        List<DiffNode> parentSplitSecond = second.computeAllNodesThat(node ->
-                                ancestorNodeFirst.getAfterParent() != null && node.getID() == ancestorNodeFirst.getAfterParent().getID() ||
-                                ancestorNodeFirst.getBeforeParent() != null && node.getID() == ancestorNodeFirst.getBeforeParent().getID());
+                        List<DiffNode> parentSplitBeforeSecond = second.computeAllNodesThat(
+                                node -> ancestorNodeFirst.getBeforeParent() != null
+                                        && node.getID() == ancestorNodeFirst.getBeforeParent().getID()
+                        );
+                        List<DiffNode> parentSplitAfterSecond = second.computeAllNodesThat(
+                                node -> ancestorNodeFirst.getAfterParent() != null
+                                        && node.getID() == ancestorNodeFirst.getAfterParent().getID()
+                        );
+                        if(!(splitSecond.size() == 0 && (parentSplitBeforeSecond.size() != 0 || parentSplitAfterSecond.size() != 0))) continue;
 
-                        if(splitSecond.size() == 0 && parentSplitSecond.size() != 0){
-                            // add subtree to new parent
-                            DiffNode clonedNode = Duplication.shallowClone(ancestorNodeFirst);
-                            clonedNode.stealChildrenOf(ancestorNodeFirst);
+                        // add subtree to new parent
+                        DiffNode clonedNode = Duplication.shallowClone(ancestorNodeFirst);
+                        clonedNode.stealChildrenOf(ancestorNodeFirst);
 
-                            // first value in parentSplitSecond is beforeParent and second is afterParent
-                            if(ancestorNodeFirst.getBeforeParent() == null ){
-                                clonedNode.addBelow(null, parentSplitSecond.get(0));
-                            } else if (ancestorNodeFirst.getAfterParent() == null) {
-                                clonedNode.addBelow(parentSplitSecond.get(0), null);
-                            } else {
-                                // both parents still can be identical
-                                if (parentSplitSecond.size() == 1) {
-                                    clonedNode.addBelow(parentSplitSecond.get(0), parentSplitSecond.get(0));
-                                } else {
-                                    clonedNode.addBelow(parentSplitSecond.get(0), parentSplitSecond.get(1));
-                                }
-                            }
-                            ancestorNodeFirst.drop();
+                        // first value in parentSplitSecond is beforeParent and second is afterParent
+                        if(parentSplitBeforeSecond.size() == 0 ){
+                            clonedNode.addBelow(null, parentSplitAfterSecond.get(0));
+                        } else if (parentSplitAfterSecond.size() == 0) {
+                            clonedNode.addBelow(parentSplitBeforeSecond.get(0), null);
+                        } else {
+                            clonedNode.addBelow(parentSplitBeforeSecond.get(0), parentSplitAfterSecond.get(0));
                         }
+                        ancestorNodeFirst.drop();
                     }
                 });
         return second;
