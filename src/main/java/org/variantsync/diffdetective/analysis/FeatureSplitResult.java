@@ -44,6 +44,9 @@ public class FeatureSplitResult implements Metadata<FeatureSplitResult> {
         a.min.set(CommitProcessTime.min(a.min, b.min));
         a.max.set(CommitProcessTime.max(a.max, b.max));
         a.debugData.append(b.debugData);
+        a.totalPatches += b.totalPatches;
+        a.totalFeatureAwarePatches += b.totalFeatureAwarePatches;
+        a.totalFeatures.addAll(b.totalFeatures);
         a.patchStats.addAll(b.patchStats);
         MergeMap.putAllValues(a.customInfo, b.customInfo, Semigroup.assertEquals());
         a.diffErrors.append(b.diffErrors);
@@ -78,15 +81,17 @@ public class FeatureSplitResult implements Metadata<FeatureSplitResult> {
     public int exportedTrees;
     public double runtimeInSeconds;
     public double runtimeWithMultithreadingInSeconds;
-    public final CommitProcessTime min, max; // TODO change to list
+    public final CommitProcessTime min, max;
     public final DiffTreeSerializeDebugData debugData;
     private final LinkedHashMap<String, String> customInfo = new LinkedHashMap<>();
     private final MergeMap<DiffError, Integer> diffErrors = new MergeMap<>(new HashMap<>(), Integer::sum);
 
-    // TODO FeatureSplit specific information
-    public DiffTree tempTree;
-    public HashMap<String, DiffTree> tempFeatureAware;
+    // FeatureSplit specific information
     private final List<LinkedHashMap<String, String>> patchStats = new LinkedList<>();
+
+    public int totalPatches;
+    public Set<String> totalFeatures;
+    public int totalFeatureAwarePatches;
 
     public FeatureSplitResult() {
         this(NO_REPO);
@@ -100,6 +105,7 @@ public class FeatureSplitResult implements Metadata<FeatureSplitResult> {
                 0, 0,
                 CommitProcessTime.Unknown(repoName, Long.MAX_VALUE),
                 CommitProcessTime.Unknown(repoName, Long.MIN_VALUE),
+                0,0, new HashSet<>(),
                 new DiffTreeSerializeDebugData());
     }
 
@@ -114,6 +120,9 @@ public class FeatureSplitResult implements Metadata<FeatureSplitResult> {
             double runtimeWithMultithreadingInSeconds,
             final CommitProcessTime min,
             final CommitProcessTime max,
+            int totalPatches,
+            int totalFeatureAwarePatches,
+            Set<String> totalFeatures,
             final DiffTreeSerializeDebugData debugData)
     {
         this.repoName = repoName;
@@ -127,6 +136,9 @@ public class FeatureSplitResult implements Metadata<FeatureSplitResult> {
         this.debugData = debugData;
         this.min = min;
         this.max = max;
+        this.totalPatches = totalPatches;
+        this.totalFeatureAwarePatches = totalFeatureAwarePatches;
+        this.totalFeatures = totalFeatures;
     }
 
     /**
@@ -161,6 +173,9 @@ public class FeatureSplitResult implements Metadata<FeatureSplitResult> {
         snap.put(MetadataKeys.TOTAL_COMMITS, totalCommits);
         snap.put(MetadataKeys.FAILED_COMMITS, failedCommits);
         snap.put(MetadataKeys.EMPTY_COMMITS, emptyCommits);
+        snap.put(FeatureSplitMetadataKeys.TOTAL_PATCHES, totalPatches);
+        snap.put(FeatureSplitMetadataKeys.TOTAL_FEATURES, totalFeatures.size());
+        snap.put(FeatureSplitMetadataKeys.TOTAL_FEATURE_AWARE_PATCHES, totalFeatureAwarePatches);
         snap.put(MetadataKeys.PROCESSED_COMMITS, exportedCommits);
         snap.put(MetadataKeys.TREES, exportedTrees);
         snap.put(MetadataKeys.MINCOMMIT, min.toString());

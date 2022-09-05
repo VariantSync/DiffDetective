@@ -46,6 +46,8 @@ public class FeatureSplitValidationTask extends FeatureSplitAnalysisTask {
                 final CommitDiff commitDiff = commitDiffResult.diff().get();
                 options.miningStrategy().onCommit(commitDiff, "");
 
+
+                miningResult.totalPatches += commitDiff.getPatchDiffs().size();
                 // Count elementary patterns
                 int numDiffTrees = 0;
                 for (final PatchDiff patch : commitDiff.getPatchDiffs()) {
@@ -54,7 +56,6 @@ public class FeatureSplitValidationTask extends FeatureSplitAnalysisTask {
 
                         // generate TreeDiffs
                         final DiffTree t = patch.getDiffTree();
-                        miningResult.tempTree = t;
                         DiffTreeTransformer.apply(exportOptions.treePreProcessing(), t);
                         t.assertConsistency();
 
@@ -63,13 +64,18 @@ public class FeatureSplitValidationTask extends FeatureSplitAnalysisTask {
                         }
 
                         // validate FeatureSplit
-                        FeatureQueryGenerator.featureQueryGenerator(t).forEach(feature -> {
+                        Set<String> allFeatures = FeatureQueryGenerator.featureQueryGenerator(t);
+                        miningResult.totalFeatures.addAll(allFeatures);
+                        allFeatures.forEach(feature -> {
+                            // root is contained in any tree and would ignore the feature extraction
+                            if(feature == "True") return;
                             LinkedHashMap<String, String> patchStats = new LinkedHashMap<>();
 
+                            patchStats.put(FeatureSplitMetadataKeys.FEATURE, feature);
                             HashMap<String, DiffTree> featureAware = FeatureSplit.featureSplit(t, feature);
-                            miningResult.tempFeatureAware = featureAware;
                             // 1. get number of feature-aware patches for a patch
                             int numOfFeaturesPatches = featureAware.size();
+                            miningResult.totalFeatureAwarePatches += numOfFeaturesPatches;
                             patchStats.put(FeatureSplitMetadataKeys.NUM_OF_FEATURE_AWARE_PATCHES, Integer.toString(numOfFeaturesPatches));
 
                             featureAware.forEach((key, value) -> {
