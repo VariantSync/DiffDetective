@@ -2,6 +2,7 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.tinylog.Logger;
+import org.variantsync.diffdetective.analysis.FeatureQueryGenerator;
 import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
 import org.variantsync.diffdetective.diff.difftree.Duplication;
@@ -32,6 +33,17 @@ public class FeatureSplitTest {
             DIFF_TREES.add(diffTree);
         }
     }
+
+    /**
+     * test feature Query Generator
+     */
+    @Test
+    public void featureQueryGenerator() {
+        DiffTree tree = DIFF_TREES.get(1);
+        Set<String> queries = FeatureQueryGenerator.featureQueryGenerator(tree);
+        //Assert.assertEquals(queries, "");
+    }
+
 
     /**
      * test the operator featureSplit
