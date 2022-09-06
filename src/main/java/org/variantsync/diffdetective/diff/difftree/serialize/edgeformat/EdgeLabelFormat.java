@@ -2,11 +2,13 @@ package org.variantsync.diffdetective.diff.difftree.serialize.edgeformat;
 
 import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.diff.difftree.LineGraphConstants;
+import org.variantsync.diffdetective.diff.difftree.serialize.StyledEdge;
 import org.variantsync.diffdetective.diff.difftree.serialize.LinegraphFormat;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.util.StringUtils;
 import org.variantsync.functjonal.Pair;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -55,7 +57,7 @@ public abstract class EdgeLabelFormat implements LinegraphFormat {
          * @return Both values sorted according to this direction.
          * @param <A> Value type.
          */
-        <A> Pair<A, A> sort(A child, A parent) {
+        public <A> Pair<A, A> sort(A child, A parent) {
             if (this == ChildToParent) {
                 return new Pair<>(child, parent);
             } else {
@@ -188,4 +190,25 @@ public abstract class EdgeLabelFormat implements LinegraphFormat {
      * @return A line for a linegraph file that describes the given edge.
      */
     protected abstract String edgeToLineGraph(DiffNode from, DiffNode to, final String labelPrefix);
+
+    /**
+     * Converts a {@link StyledEdge} into a label suitable for exporting.
+     * This may be human readable text or machine parseable metadata.
+     *
+     * @param edge The {@link StyledEdge} to be labeled
+     * @return a label for {@code edge}
+     */
+    public abstract String labelOf(StyledEdge edge);
+
+    /**
+     * Converts a {@link StyledEdge} into a multi line label suitable for exporting.
+     * This should be human readable text. Use a single line for machine parseable metadata
+     * ({@link labelOf}).
+     *
+     * @param edge The {@link StyledEdge} to be labeled
+     * @return a list of lines of the label for {@code edge}
+     */
+    public List<String> multilineLabelOf(StyledEdge edge) {
+        return List.of(labelOf(edge));
+    }
 }
