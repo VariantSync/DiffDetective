@@ -11,7 +11,7 @@ Detailed installation instructions for many operating systems are given on the r
 - Windows 64-bit: Go to the [stack installation page][stackinstall]. Download and run the _Windows 64-bit Installer_.
 - MacOS: Please follow the instructions on the [installation webpage][stackinstall].
 
-Second, please open a terminal and navigate to the repository's directory (the directory containing this `INSTALL.md`).
+Second, please open a terminal and navigate to the proofs directory of this repository (the directory containing this `INSTALL.md`).
 ```shell
 cd <path/to/this/repository/proofs>
 ```
@@ -27,7 +27,7 @@ stack run
 
 ## What Is There to See
 
-Our example executes a simple test. It:
+Our example executes a simple test. It 
 1. constructs two variation trees (called `Kanto Starters` and `Johto Starters`) and prints them to terminal;
 2. diffs both trees to a variation tree diff using our [`naiveDiff`](src/VariationDiff.hs) function, which is described in our appendix, and prints the diff to terminal;
 3. creates both projections of the variation tree diff (before and after the edit) and prints both to terminal;
