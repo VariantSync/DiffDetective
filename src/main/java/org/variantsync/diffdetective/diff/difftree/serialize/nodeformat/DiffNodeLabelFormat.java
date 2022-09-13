@@ -68,14 +68,4 @@ public interface DiffNodeLabelFormat extends LinegraphFormat {
         final String label = lineGraphLine.substring(idEnd + 1);
         return new Pair<>(nodeId, fromLabelAndId(label, nodeId));
     }
-
-    /**
-     * Serializes the given node to a line in linegraph format.
-     *
-     * @param node The {@link DiffNode} to be converted
-     * @return The entire line graph line of a {@link DiffNode}.
-     */
-    default String toLineGraphLine(final DiffNode node) {
-        return LineGraphConstants.LG_NODE + " " + node.getID() + " " + toLabel(node);
-    }
 }

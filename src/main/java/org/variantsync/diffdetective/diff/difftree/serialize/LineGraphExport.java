@@ -1,5 +1,7 @@
 package org.variantsync.diffdetective.diff.difftree.serialize;
 
+import java.io.ByteArrayOutputStream;
+
 import org.tinylog.Logger;
 import org.variantsync.diffdetective.analysis.AnalysisResult;
 import org.variantsync.diffdetective.diff.CommitDiff;
@@ -29,9 +31,10 @@ public final class LineGraphExport {
         diffTree.assertConsistency();
 
         if (options.treeFilter().test(diffTree)) {
-            final DiffTreeLineGraphExporter exporter = new DiffTreeLineGraphExporter(diffTree);
-            final String result = exporter.export(options);
-            return new Pair<>(exporter.getDebugData(), result);
+            final var exporter = new DiffTreeLineGraphExporter(options);
+            var output = new ByteArrayOutputStream();
+            exporter.exportDiffTree(diffTree, output);
+            return new Pair<>(exporter.getDebugData(), output.toString());
         }
 
         return null;

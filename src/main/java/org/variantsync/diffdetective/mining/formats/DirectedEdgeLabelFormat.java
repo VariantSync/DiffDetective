@@ -1,7 +1,6 @@
 package org.variantsync.diffdetective.mining.formats;
 
 import org.variantsync.diffdetective.diff.difftree.DiffNode;
-import org.variantsync.diffdetective.diff.difftree.LineGraphConstants;
 import org.variantsync.diffdetective.diff.difftree.serialize.StyledEdge;
 import org.variantsync.diffdetective.diff.difftree.serialize.edgeformat.EdgeLabelFormat;
 import org.variantsync.functjonal.Functjonal;
@@ -50,20 +49,6 @@ public final class DirectedEdgeLabelFormat extends EdgeLabelFormat {
         }
 
         super.connectAccordingToLabel(child, parent, edgeLabel);
-    }
-
-    protected String edgeToLineGraph(DiffNode from, DiffNode to, final String label) {
-        return Functjonal.unwords(
-                LineGraphConstants.LG_EDGE,
-                from.getID(),
-                to.getID(),
-                Functjonal.intercalate(
-                        LABEL_SEPARATOR,
-                        label,
-                        nodeFormatter.toLabel(from),
-                        nodeFormatter.toLabel(to)
-                )
-        );
     }
 
     @Override

@@ -5,7 +5,6 @@ import org.variantsync.diffdetective.diff.difftree.LineGraphConstants;
 import org.variantsync.diffdetective.diff.difftree.serialize.StyledEdge;
 import org.variantsync.diffdetective.diff.difftree.serialize.LinegraphFormat;
 import org.variantsync.diffdetective.util.Assert;
-import org.variantsync.diffdetective.util.StringUtils;
 import org.variantsync.functjonal.Pair;
 
 import java.util.List;
@@ -141,55 +140,6 @@ public abstract class EdgeLabelFormat implements LinegraphFormat {
 
         connectAccordingToLabel(childNode, parentNode, name);
     }
-
-    /**
-     * Serializes the edges from given node to its parent
-     * to a string of lines, where each edge is placed on one line.
-     *
-     * @param node The {@link DiffNode} whose edges to parents to export.
-     * @return Linegraph lines for each edge from the given node to its parents. All lines are put into the same string and separated by a line break ("\n").
-     */
-    public String getParentEdgeLines(final DiffNode node) {
-        final DiffNode beforeParent = node.getBeforeParent();
-        final DiffNode afterParent = node.getAfterParent();
-        final boolean hasBeforeParent = beforeParent != null;
-        final boolean hasAfterParent = afterParent != null;
-
-        StringBuilder edgesString = new StringBuilder();
-        // If the node has exactly one parent
-        if (hasBeforeParent && hasAfterParent && beforeParent == afterParent) {
-            edgesString
-                    .append(edgeToLineGraphSorted(node, beforeParent, LineGraphConstants.BEFORE_AND_AFTER_PARENT))
-                    .append(StringUtils.LINEBREAK);
-        } else {
-            if (hasBeforeParent) {
-                edgesString
-                        .append(edgeToLineGraphSorted(node, beforeParent, LineGraphConstants.BEFORE_PARENT))
-                        .append(StringUtils.LINEBREAK);
-            }
-            if (hasAfterParent) {
-                edgesString
-                        .append(edgeToLineGraphSorted(node, afterParent, LineGraphConstants.AFTER_PARENT))
-                        .append(StringUtils.LINEBREAK);
-            }
-        }
-        return edgesString.toString();
-    }
-
-    private String edgeToLineGraphSorted(DiffNode desiredFrom, DiffNode desiredTo, final String labelPrefix) {
-        final Pair<DiffNode, DiffNode> sorted = edgeDirection.sort(desiredFrom, desiredTo);
-        return edgeToLineGraph(sorted.first(), sorted.second(), labelPrefix);
-    }
-
-    /**
-     * Creates a linegraph edge in the direction from -> to.
-     * The edge's label should be prefixed by the given prefix.
-     * @param from Node the edge begins at.
-     * @param to Node the edge ends at.
-     * @param labelPrefix Prefix for the produced edge's label.
-     * @return A line for a linegraph file that describes the given edge.
-     */
-    protected abstract String edgeToLineGraph(DiffNode from, DiffNode to, final String labelPrefix);
 
     /**
      * Converts a {@link StyledEdge} into a label suitable for exporting.
