@@ -5,8 +5,15 @@ import org.variantsync.diffdetective.diff.difftree.DiffNode;
 public class RelationshipEdge<T extends RelationshipType>{
     DiffNode from, to;
 
-    public RelationshipEdge(DiffNode from, DiffNode to) {
+    private final Class<T> relationshipType;
+
+    public RelationshipEdge(Class<T> type, DiffNode from, DiffNode to) {
         this.from = from;
         this.to = to;
+        this.relationshipType = type;
+    }
+
+    public Class<T> getType(){
+        return this.relationshipType;
     }
 }

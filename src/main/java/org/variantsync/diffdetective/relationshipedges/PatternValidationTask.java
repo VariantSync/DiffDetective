@@ -66,7 +66,7 @@ public class PatternValidationTask extends CommitHistoryAnalysisTask {
                 final CommitDiff commitDiff = commitDiffResult.diff().get();
                 options.analysisStrategy().onCommit(commitDiff, "");
 
-                // Count elementary edit pattern matches
+
                 int numDiffTrees = 0;
                 int numRelEdges = 0;
                 for (final PatchDiff patch : commitDiff.getPatchDiffs()) {
@@ -87,21 +87,29 @@ public class PatternValidationTask extends CommitHistoryAnalysisTask {
                         /*
                         extend the @DiffTree t with relationship edges
                         */
-                            ArrayList<RelationshipEdge<Implication>> edges = new ArrayList<>();
+                            EdgeTypedTreeDiff edgeTypedTreeDiff = new EdgeTypedTreeDiff(t);
+                            ArrayList<RelationshipEdge> implicationEdges = new ArrayList<>();
+                            ArrayList<RelationshipEdge> alternativeEdges = new ArrayList<>();
                             List<DiffNode> annotationNodes = t.computeAnnotationNodes();
                             List<DiffNode> ifNodes = t.computeAllNodesThat(DiffNode::isIf);
                             for (int i = 0; i < ifNodes.size(); i++) {
                                 for (int j = i + 1; j < ifNodes.size(); j++) {
                                     if (Implication.areInRelation(ifNodes.get(i), ifNodes.get(j))) {
-                                        edges.add(new RelationshipEdge<>(ifNodes.get(i), ifNodes.get(j)));
+                                        implicationEdges.add(new RelationshipEdge<Implication>(Implication.class, ifNodes.get(i), ifNodes.get(j)));
                                     }
                                     if (Implication.areInRelation(ifNodes.get(j), ifNodes.get(i))) {
-                                        edges.add(new RelationshipEdge<>(ifNodes.get(j), ifNodes.get(i)));
+                                        implicationEdges.add(new RelationshipEdge<Implication>(Implication.class, ifNodes.get(j), ifNodes.get(i)));
+                                    }
+                                    if (Alternative.areInRelation(ifNodes.get(j), ifNodes.get(i))) {
+                                        alternativeEdges.add(new RelationshipEdge<Alternative>(Alternative.class, ifNodes.get(i), ifNodes.get(j)));
+                                        alternativeEdges.add(new RelationshipEdge<Alternative>(Alternative.class, ifNodes.get(j), ifNodes.get(i)));
                                     }
                                 }
                             }
-                            numRelEdges += edges.size();
-                            EdgeTypedTreeDiff<Implication> edgeTypedTreeDiff = new EdgeTypedTreeDiff<>(t, edges);
+                            numRelEdges += implicationEdges.size();
+                            numRelEdges += alternativeEdges.size();
+                            edgeTypedTreeDiff.addEdgesWithType(Implication.class, implicationEdges);
+                            edgeTypedTreeDiff.addEdgesWithType(Alternative.class, alternativeEdges);
                         }
                     }
                 }
