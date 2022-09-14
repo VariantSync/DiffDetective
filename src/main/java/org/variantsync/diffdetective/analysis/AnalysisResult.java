@@ -157,7 +157,7 @@ public class AnalysisResult implements Metadata<AnalysisResult> {
         this.elementaryPatternCounts = new ElementaryPatternCount();
         this.min = min;
         this.max = max;
-        this.relationshipEdges = 0; //TODO
+        this.relationshipEdges = 0;
     }
 
     /**
