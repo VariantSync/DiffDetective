@@ -2,8 +2,8 @@ package org.variantsync.diffdetective.tablegen.styles;
 
 import org.apache.commons.lang3.function.TriFunction;
 import org.variantsync.diffdetective.metadata.ElementaryPatternCount;
-import org.variantsync.diffdetective.pattern.elementary.ElementaryPattern;
-import org.variantsync.diffdetective.pattern.elementary.proposed.ProposedElementaryPatterns;
+import org.variantsync.diffdetective.pattern.ElementaryPattern;
+import org.variantsync.diffdetective.pattern.proposed.ProposedElementaryPatterns;
 import org.variantsync.diffdetective.tablegen.ColumnDefinition;
 import org.variantsync.diffdetective.tablegen.Row;
 import org.variantsync.diffdetective.tablegen.TableDefinition;

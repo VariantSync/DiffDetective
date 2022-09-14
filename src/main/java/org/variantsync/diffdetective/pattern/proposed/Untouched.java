@@ -1,10 +1,10 @@
-package org.variantsync.diffdetective.pattern.elementary.proposed;
+package org.variantsync.diffdetective.pattern.proposed;
 
 import org.prop4j.Node;
 import org.variantsync.diffdetective.analysis.logic.SAT;
 import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.diff.difftree.DiffType;
-import org.variantsync.diffdetective.pattern.elementary.ElementaryPattern;
+import org.variantsync.diffdetective.pattern.ElementaryPattern;
 
 /**
  * Our Untouched pattern from the ESEC/FSE'22 paper.

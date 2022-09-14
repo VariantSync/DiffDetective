@@ -1,9 +1,9 @@
 package org.variantsync.diffdetective.metadata;
 
 import org.variantsync.diffdetective.diff.CommitDiff;
-import org.variantsync.diffdetective.pattern.elementary.ElementaryPattern;
-import org.variantsync.diffdetective.pattern.elementary.ElementaryPatternCatalogue;
-import org.variantsync.diffdetective.pattern.elementary.proposed.ProposedElementaryPatterns;
+import org.variantsync.diffdetective.pattern.ElementaryPattern;
+import org.variantsync.diffdetective.pattern.ElementaryPatternCatalogue;
+import org.variantsync.diffdetective.pattern.proposed.ProposedElementaryPatterns;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.functjonal.Functjonal;
 import org.variantsync.functjonal.category.InplaceSemigroup;

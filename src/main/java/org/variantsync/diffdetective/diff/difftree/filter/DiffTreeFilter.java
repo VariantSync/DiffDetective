@@ -3,7 +3,7 @@ package org.variantsync.diffdetective.diff.difftree.filter;
 import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
 
-import static org.variantsync.diffdetective.pattern.elementary.proposed.ProposedElementaryPatterns.*;
+import static org.variantsync.diffdetective.pattern.proposed.ProposedElementaryPatterns.*;
 
 /**
  * A filter on DiffTrees that is equipped with some metadata T (e.g., for debugging or logging).
@@ -66,9 +66,9 @@ public final class DiffTreeFilter {
      * Returns a tagged predicate that returns true iff
      * the DiffTree has at least one artifact node ({@link DiffNode#isArtifact()})
      * that does not match any pattern of
-     * {@link org.variantsync.diffdetective.pattern.elementary.proposed.ProposedElementaryPatterns#AddToPC},
-     * {@link org.variantsync.diffdetective.pattern.elementary.proposed.ProposedElementaryPatterns#RemFromPC},
-     * {@link org.variantsync.diffdetective.pattern.elementary.proposed.ProposedElementaryPatterns#Untouched}.
+     * {@link org.variantsync.diffdetective.pattern.proposed.ProposedElementaryPatterns#AddToPC},
+     * {@link org.variantsync.diffdetective.pattern.proposed.ProposedElementaryPatterns#RemFromPC},
+     * {@link org.variantsync.diffdetective.pattern.proposed.ProposedElementaryPatterns#Untouched}.
      * The predicate is tagged with a String description of the predicate.
      */
     public static TaggedPredicate<String, DiffTree> hasAtLeastOneEditToVariability() {

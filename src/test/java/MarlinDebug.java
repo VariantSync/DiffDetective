@@ -23,7 +23,7 @@ import org.variantsync.diffdetective.diff.difftree.transform.DiffTreeTransformer
 import org.variantsync.diffdetective.feature.CPPAnnotationParser;
 import org.variantsync.diffdetective.mining.DiffTreeMiner;
 import org.variantsync.diffdetective.mining.MiningTask;
-import org.variantsync.diffdetective.pattern.elementary.proposed.ProposedElementaryPatterns;
+import org.variantsync.diffdetective.pattern.proposed.ProposedElementaryPatterns;
 import org.variantsync.diffdetective.util.Clock;
 import org.variantsync.diffdetective.validation.Validation;
 

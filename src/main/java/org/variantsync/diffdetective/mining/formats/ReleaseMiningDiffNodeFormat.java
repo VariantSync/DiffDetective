@@ -3,8 +3,8 @@ package org.variantsync.diffdetective.mining.formats;
 import org.variantsync.diffdetective.diff.difftree.NodeType;
 import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.diff.difftree.DiffType;
-import org.variantsync.diffdetective.pattern.elementary.ElementaryPattern;
-import org.variantsync.diffdetective.pattern.elementary.proposed.ProposedElementaryPatterns;
+import org.variantsync.diffdetective.pattern.ElementaryPattern;
+import org.variantsync.diffdetective.pattern.proposed.ProposedElementaryPatterns;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.functjonal.Pair;
 

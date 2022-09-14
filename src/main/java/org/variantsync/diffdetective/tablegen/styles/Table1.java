@@ -1,7 +1,7 @@
 package org.variantsync.diffdetective.tablegen.styles;
 
-import org.variantsync.diffdetective.pattern.elementary.ElementaryPattern;
-import org.variantsync.diffdetective.pattern.elementary.proposed.ProposedElementaryPatterns;
+import org.variantsync.diffdetective.pattern.ElementaryPattern;
+import org.variantsync.diffdetective.pattern.proposed.ProposedElementaryPatterns;
 import org.variantsync.diffdetective.tablegen.Row;
 import org.variantsync.diffdetective.tablegen.TableDefinition;
 import org.variantsync.diffdetective.tablegen.TableGenerator;

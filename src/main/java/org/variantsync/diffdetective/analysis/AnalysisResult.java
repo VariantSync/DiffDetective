@@ -5,7 +5,7 @@ import org.variantsync.diffdetective.diff.result.DiffError;
 import org.variantsync.diffdetective.metadata.ElementaryPatternCount;
 import org.variantsync.diffdetective.metadata.ExplainedFilterSummary;
 import org.variantsync.diffdetective.metadata.Metadata;
-import org.variantsync.diffdetective.pattern.elementary.proposed.ProposedElementaryPatterns;
+import org.variantsync.diffdetective.pattern.proposed.ProposedElementaryPatterns;
 import org.variantsync.functjonal.Functjonal;
 import org.variantsync.functjonal.category.InplaceMonoid;
 import org.variantsync.functjonal.category.InplaceSemigroup;

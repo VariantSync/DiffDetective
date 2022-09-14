@@ -3,7 +3,7 @@ package org.variantsync.diffdetective.preliminary.analysis;
 import org.variantsync.diffdetective.diff.PatchDiff;
 import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
-import org.variantsync.diffdetective.pattern.elementary.ElementaryPattern;
+import org.variantsync.diffdetective.pattern.ElementaryPattern;
 import org.variantsync.diffdetective.preliminary.GitDiff;
 import org.variantsync.diffdetective.preliminary.analysis.data.PatchDiffAnalysisResult;
 import org.variantsync.diffdetective.preliminary.analysis.data.PatternMatch;

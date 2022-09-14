@@ -2,8 +2,8 @@ package org.variantsync.diffdetective.preliminary.pattern.elementary;
 
 import org.variantsync.diffdetective.diff.Lines;
 import org.variantsync.diffdetective.diff.difftree.DiffNode;
-import org.variantsync.diffdetective.pattern.EditPattern;
-import org.variantsync.diffdetective.pattern.elementary.proposed.ProposedElementaryPatterns;
+import org.variantsync.diffdetective.preliminary.pattern.Pattern;
+import org.variantsync.diffdetective.pattern.proposed.ProposedElementaryPatterns;
 import org.variantsync.diffdetective.preliminary.analysis.data.PatternMatch;
 import org.variantsync.diffdetective.preliminary.evaluation.FeatureContext;
 import org.variantsync.diffdetective.preliminary.pattern.FeatureContextReverseEngineering;
@@ -11,7 +11,7 @@ import org.variantsync.diffdetective.preliminary.pattern.FeatureContextReverseEn
 @Deprecated
 public final class FeatureContextOfReconfiguration implements FeatureContextReverseEngineering<DiffNode> {
     @Override
-    public EditPattern<DiffNode> getPattern() {
+    public Pattern<DiffNode> getPattern() {
         return ProposedElementaryPatterns.Reconfiguration;
     }
 

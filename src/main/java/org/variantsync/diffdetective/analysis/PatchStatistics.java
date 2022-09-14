@@ -1,7 +1,7 @@
 package org.variantsync.diffdetective.analysis;
 
 import org.variantsync.diffdetective.diff.PatchDiff;
-import org.variantsync.diffdetective.pattern.elementary.ElementaryPatternCatalogue;
+import org.variantsync.diffdetective.pattern.ElementaryPatternCatalogue;
 import org.variantsync.diffdetective.util.CSV;
 
 /**

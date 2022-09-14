@@ -11,8 +11,8 @@ import org.variantsync.diffdetective.diff.difftree.serialize.LineGraphExport;
 import org.variantsync.diffdetective.diff.difftree.transform.DiffTreeTransformer;
 import org.variantsync.diffdetective.diff.result.CommitDiffResult;
 import org.variantsync.diffdetective.metadata.ExplainedFilterSummary;
-import org.variantsync.diffdetective.pattern.elementary.ElementaryPattern;
-import org.variantsync.diffdetective.pattern.elementary.proposed.ProposedElementaryPatterns;
+import org.variantsync.diffdetective.pattern.ElementaryPattern;
+import org.variantsync.diffdetective.pattern.proposed.ProposedElementaryPatterns;
 import org.variantsync.diffdetective.util.Clock;
 import org.variantsync.diffdetective.util.FileUtils;
 

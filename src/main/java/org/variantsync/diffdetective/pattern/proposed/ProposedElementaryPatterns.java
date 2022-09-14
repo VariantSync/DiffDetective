@@ -1,11 +1,11 @@
-package org.variantsync.diffdetective.pattern.elementary.proposed;
+package org.variantsync.diffdetective.pattern.proposed;
 
 import org.prop4j.Node;
 import org.variantsync.diffdetective.analysis.logic.SAT;
 import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.diff.difftree.DiffType;
-import org.variantsync.diffdetective.pattern.elementary.ElementaryPattern;
-import org.variantsync.diffdetective.pattern.elementary.ElementaryPatternCatalogue;
+import org.variantsync.diffdetective.pattern.ElementaryPattern;
+import org.variantsync.diffdetective.pattern.ElementaryPatternCatalogue;
 import org.variantsync.diffdetective.util.Assert;
 
 import java.util.*;

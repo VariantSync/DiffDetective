@@ -1,4 +1,4 @@
-package org.variantsync.diffdetective.pattern.elementary;
+package org.variantsync.diffdetective.pattern;
 
 import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.diff.difftree.DiffType;

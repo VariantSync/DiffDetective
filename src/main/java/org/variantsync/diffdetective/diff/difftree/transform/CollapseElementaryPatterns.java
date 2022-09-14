@@ -2,7 +2,7 @@ package org.variantsync.diffdetective.diff.difftree.transform;
 
 import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
-import org.variantsync.diffdetective.pattern.elementary.ElementaryPatternCatalogue;
+import org.variantsync.diffdetective.pattern.ElementaryPatternCatalogue;
 
 import java.util.List;
 

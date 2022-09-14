@@ -1,20 +1,20 @@
-package org.variantsync.diffdetective.pattern.elementary;
+package org.variantsync.diffdetective.pattern;
 
 import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
 import org.variantsync.diffdetective.diff.difftree.DiffType;
-import org.variantsync.diffdetective.pattern.EditPattern;
+import org.variantsync.diffdetective.preliminary.pattern.Pattern;
 
 /**
  * Abstract class for elementary edit pattern according to our ESEC/FSE'22 paper.
  * @author Paul Bittner, Sören Viegener
  */
-public abstract class ElementaryPattern extends EditPattern<DiffNode> {
+public abstract class ElementaryPattern extends Pattern<DiffNode> {
     private final DiffType diffType;
 
     /**
      * Each elementary pattern handles exactly one DiffType.
-     * @param name unique identifier (see {@link EditPattern}).
+     * @param name unique identifier (see {@link Pattern}).
      * @param diffType This pattern matches only {@link DiffNode}s of the given {@link DiffType}.
      */
     public ElementaryPattern(final String name, final DiffType diffType) {

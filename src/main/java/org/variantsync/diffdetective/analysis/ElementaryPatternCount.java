@@ -1,7 +1,7 @@
 package org.variantsync.diffdetective.analysis;
 
-import org.variantsync.diffdetective.pattern.elementary.ElementaryPattern;
-import org.variantsync.diffdetective.pattern.elementary.ElementaryPatternCatalogue;
+import org.variantsync.diffdetective.pattern.ElementaryPattern;
+import org.variantsync.diffdetective.pattern.ElementaryPatternCatalogue;
 import org.variantsync.diffdetective.util.CSV;
 
 import java.util.HashMap;
