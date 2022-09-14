@@ -1,14 +1,14 @@
-package org.variantsync.diffdetective.pattern.proposed;
+package org.variantsync.diffdetective.editclass.proposed;
 
 import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.diff.difftree.DiffType;
-import org.variantsync.diffdetective.pattern.ElementaryPattern;
+import org.variantsync.diffdetective.editclass.EditClass;
 
 /**
- * Our RemWithMapping pattern from the ESEC/FSE'22 paper.
+ * Our RemWithMapping edit class from the ESEC/FSE'22 paper.
  * @author Paul Bittner, Sören Viegener
  */
-final class RemWithMapping extends ElementaryPattern {
+final class RemWithMapping extends EditClass {
     RemWithMapping() {
         super("RemWithMapping", DiffType.REM);
     }

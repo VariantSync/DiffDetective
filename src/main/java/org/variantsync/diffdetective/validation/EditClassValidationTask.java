@@ -13,7 +13,7 @@ import org.variantsync.diffdetective.diff.difftree.serialize.DiffTreeLineGraphEx
 import org.variantsync.diffdetective.diff.difftree.transform.DiffTreeTransformer;
 import org.variantsync.diffdetective.diff.result.CommitDiffResult;
 import org.variantsync.diffdetective.metadata.ExplainedFilterSummary;
-import org.variantsync.diffdetective.pattern.proposed.ProposedElementaryPatterns;
+import org.variantsync.diffdetective.editclass.proposed.ProposedEditClasses;
 import org.variantsync.diffdetective.util.Clock;
 import org.variantsync.diffdetective.util.FileUtils;
 
@@ -24,8 +24,8 @@ import java.util.List;
  * Task for performing the ESEC/FSE'22 validation on a set of commits from a given repository.
  * @author Paul Bittner
  */
-public class PatternValidationTask extends CommitHistoryAnalysisTask {
-    public PatternValidationTask(Options options) {
+public class EditClassValidationTask extends CommitHistoryAnalysisTask {
+    public EditClassValidationTask(Options options) {
         super(options);
     }
 
@@ -61,7 +61,7 @@ public class PatternValidationTask extends CommitHistoryAnalysisTask {
                 final CommitDiff commitDiff = commitDiffResult.diff().get();
                 options.analysisStrategy().onCommit(commitDiff, "");
 
-                // Count elementary edit pattern matches
+                // Count edit class matches
                 int numDiffTrees = 0;
                 for (final PatchDiff patch : commitDiff.getPatchDiffs()) {
                     if (patch.isValid()) {
@@ -75,8 +75,8 @@ public class PatternValidationTask extends CommitHistoryAnalysisTask {
 
                         t.forAll(node -> {
                             if (node.isArtifact()) {
-                                miningResult.elementaryPatternCounts.reportOccurrenceFor(
-                                        ProposedElementaryPatterns.Instance.match(node),
+                                miningResult.editClassCounts.reportOccurrenceFor(
+                                        ProposedEditClasses.Instance.match(node),
                                         commitDiff
                                 );
                             }

@@ -21,7 +21,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
- * Performs a postprocessing on mined frequent subgraphs in edits to find semantic edit patterns.
+ * Performs a postprocessing on mined frequent subgraphs in edits to find edit classes.
  */
 public class MiningPostprocessing {
     private static final DiffTreeRenderer DefaultRenderer = DiffTreeRenderer.WithinDiffDetective();

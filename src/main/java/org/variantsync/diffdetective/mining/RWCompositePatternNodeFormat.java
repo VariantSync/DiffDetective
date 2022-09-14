@@ -2,13 +2,13 @@ package org.variantsync.diffdetective.mining;
 
 import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.mining.formats.DebugMiningDiffNodeFormat;
-import org.variantsync.diffdetective.pattern.proposed.ProposedElementaryPatterns;
+import org.variantsync.diffdetective.editclass.proposed.ProposedEditClasses;
 
 public class RWCompositePatternNodeFormat extends DebugMiningDiffNodeFormat {
     @Override
     public String toLabel(final DiffNode node) {
         if (node.isArtifact()) {
-            return ProposedElementaryPatterns.Instance.match(node).getName() + "<br>" + node.getLabel();
+            return ProposedEditClasses.Instance.match(node).getName() + "<br>" + node.getLabel();
         } else {
             return node.diffType + "_" + switch (node.nodeType) {
                 case ROOT -> "r";

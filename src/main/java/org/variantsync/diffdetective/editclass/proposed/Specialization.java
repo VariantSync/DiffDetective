@@ -1,24 +1,24 @@
-package org.variantsync.diffdetective.pattern.proposed;
+package org.variantsync.diffdetective.editclass.proposed;
 
 import org.prop4j.Node;
 import org.variantsync.diffdetective.analysis.logic.SAT;
 import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.diff.difftree.DiffType;
-import org.variantsync.diffdetective.pattern.ElementaryPattern;
+import org.variantsync.diffdetective.editclass.EditClass;
 
 /**
- * Our Untouched pattern from the ESEC/FSE'22 paper.
+ * Our Specialization edit class from the ESEC/FSE'22 paper.
  * @author Paul Bittner, Sören Viegener
  */
-public class Untouched extends ElementaryPattern {
-    Untouched() {
-        super("Untouched", DiffType.NON);
+final class Specialization extends EditClass {
+    Specialization() {
+        super("Specialization", DiffType.NON);
     }
 
     @Override
     protected boolean matchesArtifactNode(DiffNode artifactNode) {
         final Node pcb = artifactNode.getBeforeFeatureMapping();
         final Node pca = artifactNode.getAfterFeatureMapping();
-        return SAT.equivalent(pcb, pca) && artifactNode.beforePathEqualsAfterPath();
+        return !SAT.implies(pcb, pca) && SAT.implies(pca, pcb);
     }
 }

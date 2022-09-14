@@ -1,14 +1,14 @@
-package org.variantsync.diffdetective.pattern.proposed;
+package org.variantsync.diffdetective.editclass.proposed;
 
 import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.diff.difftree.DiffType;
-import org.variantsync.diffdetective.pattern.ElementaryPattern;
+import org.variantsync.diffdetective.editclass.EditClass;
 
 /**
- * Our AddToPC pattern from the ESEC/FSE'22 paper.
+ * Our AddToPC edit class from the ESEC/FSE'22 paper.
  * @author Paul Bittner, Sören Viegener
  */
-final class AddToPC extends ElementaryPattern {
+final class AddToPC extends EditClass {
     AddToPC() {
         super("AddToPC", DiffType.ADD);
     }

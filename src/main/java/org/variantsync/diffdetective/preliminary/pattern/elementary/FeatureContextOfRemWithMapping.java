@@ -4,7 +4,7 @@ import org.prop4j.Node;
 import org.variantsync.diffdetective.diff.Lines;
 import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.preliminary.pattern.Pattern;
-import org.variantsync.diffdetective.pattern.proposed.ProposedElementaryPatterns;
+import org.variantsync.diffdetective.editclass.proposed.ProposedEditClasses;
 import org.variantsync.diffdetective.preliminary.analysis.data.PatternMatch;
 import org.variantsync.diffdetective.preliminary.evaluation.FeatureContext;
 import org.variantsync.diffdetective.preliminary.pattern.FeatureContextReverseEngineering;
@@ -13,7 +13,7 @@ import org.variantsync.diffdetective.preliminary.pattern.FeatureContextReverseEn
 public final class FeatureContextOfRemWithMapping implements FeatureContextReverseEngineering<DiffNode> {
     @Override
     public Pattern<DiffNode> getPattern() {
-        return ProposedElementaryPatterns.RemWithMapping;
+        return ProposedEditClasses.RemWithMapping;
     }
 
     @Override

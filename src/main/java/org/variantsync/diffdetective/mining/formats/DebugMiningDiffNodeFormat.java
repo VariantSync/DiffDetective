@@ -3,22 +3,22 @@ package org.variantsync.diffdetective.mining.formats;
 import org.variantsync.diffdetective.diff.difftree.NodeType;
 import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.diff.difftree.DiffType;
-import org.variantsync.diffdetective.pattern.ElementaryPattern;
-import org.variantsync.diffdetective.pattern.proposed.ProposedElementaryPatterns;
+import org.variantsync.diffdetective.editclass.EditClass;
+import org.variantsync.diffdetective.editclass.proposed.ProposedEditClasses;
 import org.variantsync.functjonal.Pair;
 
 import java.util.Arrays;
 
 /**
  * Analogous to {@link ReleaseMiningDiffNodeFormat} but produces human readable labels instead of using integers.
- * Artifact nodes are labeled with the name of their matched elementary pattern.
+ * Artifact nodes are labeled with the name of their matched edit class.
  * Annotation nodes are labeled with DIFFTYPE_NODETYPE (e.g., an added IF node gets the label ADD_IF).
  */
 public class DebugMiningDiffNodeFormat implements MiningNodeFormat {
 	@Override
 	public String toLabel(final DiffNode node) {
         if (node.isArtifact()) {
-            return ProposedElementaryPatterns.Instance.match(node).getName();
+            return ProposedEditClasses.Instance.match(node).getName();
         } else if (node.isRoot()) {
             return node.diffType + "_" + NodeType.IF;
         } else {
@@ -35,15 +35,15 @@ public class DebugMiningDiffNodeFormat implements MiningNodeFormat {
             final int nodeTypeBegin = tag.indexOf("_") + 1;
             final NodeType nt = NodeType.fromName(tag.substring(nodeTypeBegin));
             if (nt == NodeType.ROOT) {
-                throw new IllegalArgumentException("There should be no roots in mined patterns!");
+                throw new IllegalArgumentException("There should be no roots in mined edit classes!");
             }
             return new Pair<>(dt, nt);
         } else {
-            final ElementaryPattern pattern = ProposedElementaryPatterns.Instance.fromName(tag).orElseThrow(
-                    () -> new IllegalStateException("Label \"" + tag + "\" is neither an annotation label, nor an elementary pattern!")
+            final EditClass editClass = ProposedEditClasses.Instance.fromName(tag).orElseThrow(
+                    () -> new IllegalStateException("Label \"" + tag + "\" is neither an annotation label, nor an edit class!")
             );
 
-            return new Pair<>(pattern.getDiffType(), NodeType.ARTIFACT);
+            return new Pair<>(editClass.getDiffType(), NodeType.ARTIFACT);
         }
     }
 }

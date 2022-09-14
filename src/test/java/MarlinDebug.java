@@ -23,7 +23,7 @@ import org.variantsync.diffdetective.diff.difftree.transform.DiffTreeTransformer
 import org.variantsync.diffdetective.feature.CPPAnnotationParser;
 import org.variantsync.diffdetective.mining.DiffTreeMiner;
 import org.variantsync.diffdetective.mining.MiningTask;
-import org.variantsync.diffdetective.pattern.proposed.ProposedElementaryPatterns;
+import org.variantsync.diffdetective.editclass.proposed.ProposedEditClasses;
 import org.variantsync.diffdetective.util.Clock;
 import org.variantsync.diffdetective.validation.Validation;
 
@@ -104,7 +104,7 @@ public class MarlinDebug {
                 t.forAll(node -> {
                     if (node.isArtifact()) {
                         try {
-                            Logger.info(ProposedElementaryPatterns.Instance.match(node));
+                            Logger.info(ProposedEditClasses.Instance.match(node));
                         } catch (Exception e) {
                             //DiffTreeLineGraphExportOptions.RenderError().accept(patch, e);
                             Logger.error(e);

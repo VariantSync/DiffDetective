@@ -1,12 +1,12 @@
 import org.junit.Assert;
 import org.junit.Test;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
-import org.variantsync.diffdetective.pattern.proposed.ProposedElementaryPatterns;
+import org.variantsync.diffdetective.editclass.proposed.ProposedEditClasses;
 
 import java.io.IOException;
 import java.nio.file.Path;
 
-public class ElementaryPatternsTest {
+public class EditClassesTest {
     private final static Path testDir = Constants.RESOURCE_DIR.resolve("patterns");
 
     @Test
@@ -17,7 +17,7 @@ public class ElementaryPatternsTest {
             if (node.isArtifact()) {
                 Assert.assertEquals(
                         node.getLabel(),
-                        ProposedElementaryPatterns.Instance.match(node).getName()
+                        ProposedEditClasses.Instance.match(node).getName()
                 );
             }
         });
