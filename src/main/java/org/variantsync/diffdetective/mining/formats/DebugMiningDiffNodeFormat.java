@@ -11,13 +11,13 @@ import java.util.Arrays;
 
 /**
  * Analogous to {@link ReleaseMiningDiffNodeFormat} but produces human readable labels instead of using integers.
- * Code nodes are labeled with the name of their matched elementary pattern.
+ * Artifact nodes are labeled with the name of their matched elementary pattern.
  * Annotation nodes are labeled with DIFFTYPE_NODETYPE (e.g., an added IF node gets the label ADD_IF).
  */
 public class DebugMiningDiffNodeFormat implements MiningNodeFormat {
 	@Override
 	public String toLabel(final DiffNode node) {
-        if (node.isCode()) {
+        if (node.isArtifact()) {
             return ProposedElementaryPatterns.Instance.match(node).getName();
         } else if (node.isRoot()) {
             return node.diffType + "_" + NodeType.IF;
@@ -43,7 +43,7 @@ public class DebugMiningDiffNodeFormat implements MiningNodeFormat {
                     () -> new IllegalStateException("Label \"" + tag + "\" is neither an annotation label, nor an elementary pattern!")
             );
 
-            return new Pair<>(pattern.getDiffType(), NodeType.CODE);
+            return new Pair<>(pattern.getDiffType(), NodeType.ARTIFACT);
         }
     }
 }

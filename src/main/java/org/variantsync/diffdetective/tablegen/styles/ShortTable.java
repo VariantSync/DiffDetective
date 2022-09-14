@@ -24,7 +24,7 @@ import static org.variantsync.diffdetective.tablegen.Alignment.*;
  *   <li>a dataset description
  *   <li>commit counts
  *   <li>diff counts
- *   <li>the number of artefact nodes
+ *   <li>the number of artifact nodes
  *   <li>elementary pattern counts, either absolute or relative to the total count of all patterns
  *   <li>processing time
  * </ul>

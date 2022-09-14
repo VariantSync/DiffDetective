@@ -28,7 +28,7 @@ The `proofs` Haskell project provides an extended formal specification of our th
 The library is accompanied by a small demo application that shows an example test case for our proof for completeness, by creating a variation tree diff from two variation trees and re-projecting them.
 
 ## Claims
-We claim the _Artifacts Available_ badge as we made our artefacts publicly available on [Github][ddgithub] and [Zenodo][ddzenodo].
+We claim the _Artifacts Available_ badge as we made our artifacts publicly available on [Github][ddgithub] and [Zenodo][ddzenodo].
 
 We claim the _Artifacts Evaluated Reusable_ badge as we implemented DiffDetective as a reusable library (see above).
 Furthermore, both DiffDetective and our Haskell formalization serve as reference implementations if researchers or practitioners want to reimplement our theory in other programming languages.

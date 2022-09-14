@@ -7,7 +7,7 @@ import org.variantsync.diffdetective.pattern.elementary.proposed.ProposedElement
 public class RWCompositePatternNodeFormat extends DebugMiningDiffNodeFormat {
     @Override
     public String toLabel(final DiffNode node) {
-        if (node.isCode()) {
+        if (node.isArtifact()) {
             return ProposedElementaryPatterns.Instance.match(node).getName() + "<br>" + node.getLabel();
         } else {
             return node.diffType + "_" + switch (node.nodeType) {

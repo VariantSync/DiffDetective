@@ -67,7 +67,7 @@ public class TreeGDAnalyzer extends GDAnalyzer<DiffNode> {
         DiffTree diffTree = patchDiff.getDiffTree();
         if(diffTree != null) {
             // match atomic patterns
-            for (DiffNode diffNode : diffTree.computeCodeNodes()) {
+            for (DiffNode diffNode : diffTree.computeArtifactNodes()) {
                 for (FeatureContextReverseEngineering<DiffNode> pattern : patterns) {
                     if (pattern.getPattern() instanceof ElementaryPattern) {
                         results.add(pattern.createMatch(diffNode));

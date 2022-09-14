@@ -10,16 +10,16 @@ import org.variantsync.functjonal.Pair;
 
 /**
  * Formats for DiffNodes for mining.
- * The label of a node starts with c if it is a code node and with m (for macro) otherwise.
- * The label of code nodes is followed by the index of its matched elementary pattern.
+ * The label of a node starts with c (for code) if it is an artifact node and with m (for macro) otherwise.
+ * The label of artifact nodes is followed by the index of its matched elementary pattern.
  * The label of diff nodes is followed by the ordinal of its diff type and the ordinal of its node type.
  *
  * Examples:
- * DiffNode with nodeType=CODE and elementary pattern AddWithMapping gets the label "c1" because AddWithMapping has index 1.
+ * DiffNode with nodeType=ARTIFACT and elementary pattern AddWithMapping gets the label "c1" because AddWithMapping has index 1.
  * DiffNode with nodeType=ELSE and difftype=REM gets the label "m23" because the ordinal or REM is 2 and the ordinal of ELSE is 3.
  */
 public class ReleaseMiningDiffNodeFormat implements MiningNodeFormat {
-    public final static String CODE_PREFIX = "c";
+    public final static String ARTIFACT_PREFIX = "c";
     public final static String ANNOTATION_PREFIX = "m";
 
     private static int toId(final ElementaryPattern p) {
@@ -38,8 +38,8 @@ public class ReleaseMiningDiffNodeFormat implements MiningNodeFormat {
 
     @Override
     public String toLabel(DiffNode node) {
-        if (node.isCode()) {
-            return CODE_PREFIX + toId(ProposedElementaryPatterns.Instance.match(node));
+        if (node.isArtifact()) {
+            return ARTIFACT_PREFIX + toId(ProposedElementaryPatterns.Instance.match(node));
         } else {
             final NodeType nodeType = node.isRoot() ? NodeType.IF : node.nodeType;
             return ANNOTATION_PREFIX + node.diffType.ordinal() + nodeType.ordinal();
@@ -48,9 +48,9 @@ public class ReleaseMiningDiffNodeFormat implements MiningNodeFormat {
 
     @Override
     public Pair<DiffType, NodeType> fromEncodedTypes(String tag) {
-        if (tag.startsWith(CODE_PREFIX)) {
-            final ElementaryPattern pattern = fromId(Integer.parseInt(tag.substring(CODE_PREFIX.length())));
-            return new Pair<>(pattern.getDiffType(), NodeType.CODE);
+        if (tag.startsWith(ARTIFACT_PREFIX)) {
+            final ElementaryPattern pattern = fromId(Integer.parseInt(tag.substring(ARTIFACT_PREFIX.length())));
+            return new Pair<>(pattern.getDiffType(), NodeType.ARTIFACT);
         } else {
             Assert.assertTrue(tag.startsWith(ANNOTATION_PREFIX));
             final int diffTypeBegin = ANNOTATION_PREFIX.length();

@@ -14,7 +14,7 @@ final class AddToPC extends ElementaryPattern {
     }
 
     @Override
-    protected boolean matchesCodeNode(DiffNode node) {
+    protected boolean matchesArtifactNode(DiffNode node) {
         return !node.getAfterParent().isAdd();
     }
 }

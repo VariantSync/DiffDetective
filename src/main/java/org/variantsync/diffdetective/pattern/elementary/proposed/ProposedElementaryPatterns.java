@@ -71,8 +71,8 @@ public class ProposedElementaryPatterns implements ElementaryPatternCatalogue {
         // Because this compiles, we know that each branch terminates and returns a value.
         // Each returned value is not null but an actual pattern object.
         // Since the given node may be any node, we have proven that every node is classified by at least one pattern.
-        if (!node.isCode()) {
-            throw new IllegalArgumentException("Expected a code node but got " + node.nodeType + "!");
+        if (!node.isArtifact()) {
+            throw new IllegalArgumentException("Expected an artifact node but got " + node.nodeType + "!");
         }
 
         if (node.isAdd()) {

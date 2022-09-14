@@ -14,7 +14,7 @@ public class ElementaryPatternsTest {
         final Path path = testDir.resolve("elementary.diff");
         final DiffTree t = DiffTree.fromFile(path, false, true).unwrap().getSuccess();
         t.forAll(node -> {
-            if (node.isCode()) {
+            if (node.isArtifact()) {
                 Assert.assertEquals(
                         node.getLabel(),
                         ProposedElementaryPatterns.Instance.match(node).getName()

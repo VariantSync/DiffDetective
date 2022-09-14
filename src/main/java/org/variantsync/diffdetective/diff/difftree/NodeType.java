@@ -14,8 +14,8 @@ public enum NodeType {
     ELSE("else"),
     ELIF("elif"),
 
-    // Code types
-    CODE("code"),
+    // Artifact types
+    ARTIFACT("artifact"),
 
     // Extra type for the root
     ROOT("ROOT");
@@ -36,7 +36,7 @@ public enum NodeType {
      * Returns true iff this node type represents a feature mapping.
      */
     public boolean isAnnotation() {
-        return this != ROOT && this != CODE;
+        return this != ROOT && this != ARTIFACT;
     }
 
     final static Pattern annotationRegex = Pattern.compile("^[+-]?\\s*#\\s*(if|endif|else|elif)");
@@ -61,7 +61,7 @@ public enum NodeType {
             }
         }
 
-        return CODE;
+        return ARTIFACT;
     }
 
     /**

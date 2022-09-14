@@ -82,10 +82,10 @@ public class DiffTreeMiner {
                 , EdgeFormat(nodeFormat)
                 , new ExplainedFilter<>(
                         DiffTreeFilter.notEmpty(),
-                        DiffTreeFilter.moreThanOneCodeNode(),
+                        DiffTreeFilter.moreThanOneArtifactNode(),
                         /// We want to exclude patches that do not edit variability.
-                        /// In particular, we noticed that most edits just insert or delete code (or replace it).
-                        /// This is reasonable and was also observed in previous studies: Edits to code are more frequent than edits to variability.
+                        /// In particular, we noticed that most edits just insert or delete artifacts (or replace it).
+                        /// This is reasonable and was also observed in previous studies: Edits to artifacts are more frequent than edits to variability.
                         /// Yet, such edits cannot reveal compositions of more complex edits to variability.
                         /// We thus filter them.
                         DiffTreeFilter.hasAtLeastOneEditToVariability()

@@ -31,16 +31,17 @@ public abstract class ElementaryPattern extends EditPattern<DiffNode> {
 
     /**
      * Returns true iff given node matches this pattern.
-     * @param codeNode Node which has node type CODE and whose DiffType is the same as this patterns DiffType.
+     * @param artifactNode Node which has node type ARTIFACT and whose DiffType is the same as this
+     * patterns DiffType.
      */
-    protected abstract boolean matchesCodeNode(DiffNode codeNode);
+    protected abstract boolean matchesArtifactNode(DiffNode artifactNode);
 
     /**
-     * Returns true if this pattern matches the given node and node is code.
+     * Returns true if this pattern matches the given node and is an artifact.
      */
     @Override
     public final boolean matches(DiffNode node) {
-        return node.isCode() && node.diffType == diffType && matchesCodeNode(node);
+        return node.isArtifact() && node.diffType == diffType && matchesArtifactNode(node);
     }
 
     /**

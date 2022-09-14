@@ -102,7 +102,7 @@ public class MarlinDebug {
                 Logger.info("    Begin elementary pattern matching");
                 clock.start();
                 t.forAll(node -> {
-                    if (node.isCode()) {
+                    if (node.isArtifact()) {
                         try {
                             Logger.info(ProposedElementaryPatterns.Instance.match(node));
                         } catch (Exception e) {
@@ -114,7 +114,7 @@ public class MarlinDebug {
                             Logger.info("isAdd: {}", node.isAdd());
                             Logger.info("isRem: {}", node.isRem());
                             Logger.info("isNon: {}", node.isNon());
-                            Logger.info("isCode: {}", node.isCode());
+                            Logger.info("isArtifact: {}", node.isArtifact());
 //                            throw e;
                             System.exit(0);
                         }

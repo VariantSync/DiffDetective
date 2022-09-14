@@ -21,8 +21,8 @@ public interface MiningNodeFormat extends DiffNodeLabelFormat {
         final Pair<DiffType, NodeType> types = fromEncodedTypes(lineGraphNodeLabel);
         lineFrom.as(types.first());
         lineTo.as(types.first());
-        if (types.second() == NodeType.CODE) {
-            return DiffNode.createCode(types.first(),
+        if (types.second() == NodeType.ARTIFACT) {
+            return DiffNode.createArtifact(types.first(),
                     lineFrom, lineTo, resultLabel);
         } else {
             return new DiffNode(types.first(), types.second(), lineFrom, lineTo, FixTrueFalse.True, resultLabel);

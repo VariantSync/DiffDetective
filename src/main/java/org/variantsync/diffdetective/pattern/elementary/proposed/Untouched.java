@@ -16,9 +16,9 @@ public class Untouched extends ElementaryPattern {
     }
 
     @Override
-    protected boolean matchesCodeNode(DiffNode codeNode) {
-        final Node pcb = codeNode.getBeforeFeatureMapping();
-        final Node pca = codeNode.getAfterFeatureMapping();
-        return SAT.equivalent(pcb, pca) && codeNode.beforePathEqualsAfterPath();
+    protected boolean matchesArtifactNode(DiffNode artifactNode) {
+        final Node pcb = artifactNode.getBeforeFeatureMapping();
+        final Node pca = artifactNode.getAfterFeatureMapping();
+        return SAT.equivalent(pcb, pca) && artifactNode.beforePathEqualsAfterPath();
     }
 }

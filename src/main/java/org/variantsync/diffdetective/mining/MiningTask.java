@@ -72,7 +72,7 @@ public class MiningTask extends CommitHistoryAnalysisTask {
                     }
 
                     t.forAll(node -> {
-                        if (node.isCode()) {
+                        if (node.isArtifact()) {
                             final ElementaryPattern nodePattern = ProposedElementaryPatterns.Instance.match(node);
                             miningResult.elementaryPatternCounts.reportOccurrenceFor(
                                     nodePattern,

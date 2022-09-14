@@ -4,7 +4,7 @@ import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.util.FileUtils;
 
 /**
- * Print NodeType, DiffType and Mappings for Annotations and Text for Code.
+ * Print NodeType, DiffType and Mappings for Annotations and Text for Artifacts.
  * @author Paul Bittner, Kevin Jedelhauser
  */
 public class DebugDiffNodeFormat implements DiffNodeLabelFormat {

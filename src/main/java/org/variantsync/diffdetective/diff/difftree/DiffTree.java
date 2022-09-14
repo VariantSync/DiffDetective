@@ -205,8 +205,8 @@ public class DiffTree {
      * Returns all artifact nodes of this DiffTree.
      * @see DiffTree#computeAllNodesThat
      */
-    public List<DiffNode> computeCodeNodes() {
-        return computeAllNodesThat(DiffNode::isCode);
+    public List<DiffNode> computeArtifactNodes() {
+        return computeAllNodesThat(DiffNode::isArtifact);
     }
 
     /**

@@ -26,9 +26,9 @@ public class RunningExampleFinder {
             new TaggedPredicate<>("diff length <= " + DefaultMaxDiffLineCount, t -> diffIsNotLongerThan(t, DefaultMaxDiffLineCount)),
             new TaggedPredicate<>("has nesting before the edit", RunningExampleFinder::hasNestingBeforeEdit),
             new TaggedPredicate<>("has additions", t -> t.anyMatch(DiffNode::isAdd)),
-            new TaggedPredicate<>("code was edited", t -> t.anyMatch(n -> n.isCode() && !n.isNon())),
+            new TaggedPredicate<>("an artifact was edited", t -> t.anyMatch(n -> n.isArtifact() && !n.isNon())),
             DiffTreeFilter.hasAtLeastOneEditToVariability(),
-            DiffTreeFilter.moreThanOneCodeNode(),
+            DiffTreeFilter.moreThanOneArtifactNode(),
             new TaggedPredicate<>("has no annotated macros", t -> !RunningExampleFinder.hasAnnotatedMacros(t)),
             new TaggedPredicate<>("has a complex formula", RunningExampleFinder::hasAtLeastOneComplexFormulaBeforeTheEdit)
     );
@@ -72,7 +72,7 @@ public class RunningExampleFinder {
     }
 
     private static boolean hasAnnotatedMacros(final DiffTree diffTree) {
-        return diffTree.anyMatch(n -> n.isCode() && n.getLabel().trim().startsWith("#"));
+        return diffTree.anyMatch(n -> n.isArtifact() && n.getLabel().trim().startsWith("#"));
     }
 
     private static boolean hasNestingBeforeEdit(final DiffTree diffTree) {

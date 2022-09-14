@@ -74,7 +74,7 @@ public class PatternValidationTask extends CommitHistoryAnalysisTask {
                         }
 
                         t.forAll(node -> {
-                            if (node.isCode()) {
+                            if (node.isArtifact()) {
                                 miningResult.elementaryPatternCounts.reportOccurrenceFor(
                                         ProposedElementaryPatterns.Instance.match(node),
                                         commitDiff

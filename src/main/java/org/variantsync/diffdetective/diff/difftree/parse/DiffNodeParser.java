@@ -31,7 +31,7 @@ public record DiffNodeParser(CPPAnnotationParser annotationParser) {
         String label = diffLine.isEmpty() ? diffLine : diffLine.substring(1);
         Node featureMapping;
 
-        if (nodeType == NodeType.CODE || nodeType == NodeType.ENDIF || nodeType == NodeType.ELSE) {
+        if (nodeType == NodeType.ARTIFACT || nodeType == NodeType.ENDIF || nodeType == NodeType.ELSE) {
             featureMapping = null;
         } else {
             featureMapping = annotationParser.parseDiffLine(diffLine);

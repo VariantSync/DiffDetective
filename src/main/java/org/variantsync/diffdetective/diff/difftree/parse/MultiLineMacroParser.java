@@ -103,7 +103,7 @@ public class MultiLineMacroParser {
                         /* If this happens (at least) one of this happened
                          * 1. Found line of a multiline macro without header at line " + line + "!
                          * 2. Backslash in a comment.
-                         * 3. It is the head of a multiline #define macro that we classify as code.
+                         * 3. It is the head of a multiline #define macro that we classify as artifact.
                          *
                          * As 2 and 3 are most likely we just assume those.
                          */

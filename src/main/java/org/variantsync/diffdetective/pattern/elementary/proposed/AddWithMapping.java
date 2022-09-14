@@ -14,7 +14,7 @@ final class AddWithMapping extends ElementaryPattern {
     }
 
     @Override
-    protected boolean matchesCodeNode(DiffNode codeNode) {
-        return codeNode.getAfterParent().isAdd();
+    protected boolean matchesArtifactNode(DiffNode artifactNode) {
+        return artifactNode.getAfterParent().isAdd();
     }
 }

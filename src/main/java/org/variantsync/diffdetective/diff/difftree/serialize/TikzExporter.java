@@ -98,7 +98,7 @@ public final class TikzExporter implements Exporter {
                     .joining(" \\\\ "));
 
             output.format("%n\t\\node[%s, %s] (node_%s) at (%s) {};%n",
-                node.isCode() ? "artefact" : "annotation",
+                node.isArtifact() ? "artifact" : "annotation",
                 node.getDiffType().toString().toLowerCase(Locale.ROOT),
                 node.getID(),
                 node.getID());

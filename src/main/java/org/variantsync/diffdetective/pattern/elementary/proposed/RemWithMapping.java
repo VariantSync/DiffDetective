@@ -14,7 +14,7 @@ final class RemWithMapping extends ElementaryPattern {
     }
 
     @Override
-    protected boolean matchesCodeNode(DiffNode codeNode) {
-        return codeNode.getBeforeParent().isRem();
+    protected boolean matchesArtifactNode(DiffNode artifactNode) {
+        return artifactNode.getBeforeParent().isRem();
     }
 }

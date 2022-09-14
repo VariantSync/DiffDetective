@@ -16,9 +16,9 @@ final class Specialization extends ElementaryPattern {
     }
 
     @Override
-    protected boolean matchesCodeNode(DiffNode codeNode) {
-        final Node pcb = codeNode.getBeforeFeatureMapping();
-        final Node pca = codeNode.getAfterFeatureMapping();
+    protected boolean matchesArtifactNode(DiffNode artifactNode) {
+        final Node pcb = artifactNode.getBeforeFeatureMapping();
+        final Node pca = artifactNode.getAfterFeatureMapping();
         return !SAT.implies(pcb, pca) && SAT.implies(pca, pcb);
     }
 }
