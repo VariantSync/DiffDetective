@@ -147,7 +147,7 @@ public class Validation {
         final Path inputDir = Paths.get("..", "DiffDetectiveMining");
         Logger.info("Reading and cloning git repositories from/to: " + inputDir);
 
-        final Path outputDir = Paths.get("results", "validation", "current");
+        final Path outputDir = Paths.get("results", "relationShipEdges", "current");
         Logger.info("Writing output to: " + outputDir);
 
         Logger.info("Loading datasets file: " + datasetsFile);
