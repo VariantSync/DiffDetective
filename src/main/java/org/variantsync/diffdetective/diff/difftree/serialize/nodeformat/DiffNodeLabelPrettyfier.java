@@ -9,7 +9,7 @@ import org.variantsync.diffdetective.diff.difftree.DiffNode;
  */
 public abstract class DiffNodeLabelPrettyfier {
 	/**
-	 * Auxiliary method for {@link DiffNodeLabelPrettyfier#prettyPrintIfMacroOr(DiffNode, String)}.
+	 * Auxiliary method for {@link DiffNodeLabelPrettyfier#prettyPrintIfAnnotationOr(DiffNode, String)}.
 	 * Returns a string starting with the nodes {@link DiffNode#nodeType}, and its {@link DiffNode#getDirectFeatureMapping()}
      * if it has a formula.
 	 * @param node The {@link DiffNode} to print.
@@ -26,14 +26,14 @@ public abstract class DiffNodeLabelPrettyfier {
 
     /**
      * Invokes {@link #prettyPrintTypeAndMapping(DiffNode)} if the given
-     * node {@link NodeType#isMacro() is a macro}, and returns the elseValue otherwise.
+     * node {@link NodeType#isAnnotation() is an annotation}, and returns the elseValue otherwise.
      * @param node The {@link DiffNode} to prettyprint.
-     * @param elseValue The value to return in case the given node is not a macro.
+     * @param elseValue The value to return in case the given node is not an annotation.
      * @return The generated label.
      */
-    public static String prettyPrintIfMacroOr(final DiffNode node, final String elseValue) {
+    public static String prettyPrintIfAnnotationOr(final DiffNode node, final String elseValue) {
         String result = "";
-        if (node.nodeType.isMacro()) {
+        if (node.nodeType.isAnnotation()) {
             result += prettyPrintTypeAndMapping(node);
         } else {
             result += elseValue;

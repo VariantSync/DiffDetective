@@ -653,7 +653,7 @@ public class DiffNode {
      * Returns the formula that is stored in this node.
      * The formula is null for artifact nodes (i.e., {@link NodeType#CODE}).
      * The formula is not null for mapping nodes
-     * @see NodeType#isMacro
+     * @see NodeType#isAnnotation
      */
     public Node getDirectFeatureMapping() {
         return featureMapping;
@@ -927,7 +927,7 @@ public class DiffNode {
     }
 
     /**
-     * Returns true if this node represents an ELIF macro.
+     * Returns true if this node represents an ELIF annotation.
      * @see NodeType#ELIF
      */
     public boolean isElif() {
@@ -960,7 +960,7 @@ public class DiffNode {
     }
 
     /**
-     * Returns true if this node represents an ELSE macro.
+     * Returns true if this node represents an ELSE annotation.
      * @see NodeType#ELSE
      */
     public boolean isElse() {
@@ -975,10 +975,10 @@ public class DiffNode {
     }
 
     /**
-     * Returns {@link NodeType#isMacro()} for this node's {@link DiffNode#nodeType}.
+     * Returns {@link NodeType#isAnnotation()} for this node's {@link DiffNode#nodeType}.
      */
-    public boolean isMacro() {
-        return this.nodeType.isMacro();
+    public boolean isAnnotation() {
+        return this.nodeType.isAnnotation();
     }
 
     /**
@@ -1115,7 +1115,7 @@ public class DiffNode {
         }
 
         // Add endif after macro
-        if (isMacro()) {
+        if (isAnnotation()) {
             diff
                     .append(toTextDiffLine(this.diffType, List.of(NodeType.ENDIF.asMacroText())))
                     .append(StringUtils.LINEBREAK);

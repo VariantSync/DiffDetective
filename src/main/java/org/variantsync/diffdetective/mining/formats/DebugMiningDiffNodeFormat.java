@@ -12,7 +12,7 @@ import java.util.Arrays;
 /**
  * Analogous to {@link ReleaseMiningDiffNodeFormat} but produces human readable labels instead of using integers.
  * Code nodes are labeled with the name of their matched elementary pattern.
- * Macro nodes are labeled with DIFFTYPE_NODETYPE (e.g., an added IF node gets the label ADD_IF).
+ * Annotation nodes are labeled with DIFFTYPE_NODETYPE (e.g., an added IF node gets the label ADD_IF).
  */
 public class DebugMiningDiffNodeFormat implements MiningNodeFormat {
 	@Override
@@ -30,7 +30,7 @@ public class DebugMiningDiffNodeFormat implements MiningNodeFormat {
     public Pair<DiffType, NodeType> fromEncodedTypes(String tag) {
         // If the label starts with ADD, REM, or NON
         if (Arrays.stream(DiffType.values()).anyMatch(diffType -> tag.startsWith(diffType.toString()))) {
-            // then it is a macro node
+            // then it is an annotation node
             final DiffType dt = DiffType.fromName(tag);
             final int nodeTypeBegin = tag.indexOf("_") + 1;
             final NodeType nt = NodeType.fromName(tag.substring(nodeTypeBegin));
@@ -40,7 +40,7 @@ public class DebugMiningDiffNodeFormat implements MiningNodeFormat {
             return new Pair<>(dt, nt);
         } else {
             final ElementaryPattern pattern = ProposedElementaryPatterns.Instance.fromName(tag).orElseThrow(
-                    () -> new IllegalStateException("Label \"" + tag + "\" is neither a macro label, nor an elementary pattern!")
+                    () -> new IllegalStateException("Label \"" + tag + "\" is neither an annotation label, nor an elementary pattern!")
             );
 
             return new Pair<>(pattern.getDiffType(), NodeType.CODE);

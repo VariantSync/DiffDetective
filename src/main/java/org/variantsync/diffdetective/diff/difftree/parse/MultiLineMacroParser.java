@@ -82,7 +82,7 @@ public class MultiLineMacroParser {
         if (continuesMultilineDefinition(line)) {
             // If this multiline macro line is a header...
             final NodeType nodeType = NodeType.ofDiffLine(line);
-            if (nodeType.isConditionalMacro()) {
+            if (nodeType.isConditionalAnnotation()) {
                 // ... create a new multi line macro to complete.
                 if (!isAdd) {
                     if (beforeMLMacro != null) {

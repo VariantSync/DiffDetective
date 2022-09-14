@@ -4,14 +4,14 @@ import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.util.FileUtils;
 
 /**
- * Print NodeType and DiffType and Mappings if Macro and Text if Code.
+ * Print NodeType, DiffType and Mappings for Annotations and Text for Code.
  * @author Paul Bittner, Kevin Jedelhauser
  */
 public class DebugDiffNodeFormat implements DiffNodeLabelFormat {
 	@Override
 	public String toLabel(final DiffNode node) {
 		return node.diffType + "_" + node.nodeType + "_\"" +
-				DiffNodeLabelPrettyfier.prettyPrintIfMacroOr(
+				DiffNodeLabelPrettyfier.prettyPrintIfAnnotationOr(
 						node,
 						FileUtils.replaceLineEndings(node.getLabel().trim().replaceAll("\t", "  "), "<br>"))
 				+ "\"";

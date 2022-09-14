@@ -20,7 +20,7 @@ import org.variantsync.functjonal.Pair;
  */
 public class ReleaseMiningDiffNodeFormat implements MiningNodeFormat {
     public final static String CODE_PREFIX = "c";
-    public final static String MACRO_PREFIX = "m";
+    public final static String ANNOTATION_PREFIX = "m";
 
     private static int toId(final ElementaryPattern p) {
         for (int i = 0; i < ProposedElementaryPatterns.All.size(); ++i) {
@@ -42,7 +42,7 @@ public class ReleaseMiningDiffNodeFormat implements MiningNodeFormat {
             return CODE_PREFIX + toId(ProposedElementaryPatterns.Instance.match(node));
         } else {
             final NodeType nodeType = node.isRoot() ? NodeType.IF : node.nodeType;
-            return MACRO_PREFIX + node.diffType.ordinal() + nodeType.ordinal();
+            return ANNOTATION_PREFIX + node.diffType.ordinal() + nodeType.ordinal();
         }
     }
 
@@ -52,8 +52,8 @@ public class ReleaseMiningDiffNodeFormat implements MiningNodeFormat {
             final ElementaryPattern pattern = fromId(Integer.parseInt(tag.substring(CODE_PREFIX.length())));
             return new Pair<>(pattern.getDiffType(), NodeType.CODE);
         } else {
-            Assert.assertTrue(tag.startsWith(MACRO_PREFIX));
-            final int diffTypeBegin = MACRO_PREFIX.length();
+            Assert.assertTrue(tag.startsWith(ANNOTATION_PREFIX));
+            final int diffTypeBegin = ANNOTATION_PREFIX.length();
             final int nodeTypeBegin = diffTypeBegin + 1;
             final DiffType diffType = DiffType.values()[Integer.parseInt(
                     tag.substring(diffTypeBegin, nodeTypeBegin)

@@ -214,7 +214,7 @@ public class DiffTree {
      * @see DiffTree#computeAllNodesThat
      */
     public List<DiffNode> computeAnnotationNodes() {
-        return computeAllNodesThat(DiffNode::isMacro);
+        return computeAllNodesThat(DiffNode::isAnnotation);
     }
 
     /**

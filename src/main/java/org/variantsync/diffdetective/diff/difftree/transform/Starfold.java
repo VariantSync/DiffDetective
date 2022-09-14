@@ -12,7 +12,7 @@ import java.util.List;
 /**
  * Starfold reduces redundancy in edited leaves.
  * It identifies stars and simplifies its arms.
- * A star is a non-edited macro node together with all its children
+ * A star is a non-edited annotation node together with all its children
  * that are code nodes and leaves.
  * The Starfold collapses all these children to a single child for each time.
  * This means, all inserted star-children will be merged into a single child, and for deletions respectively.
@@ -46,11 +46,11 @@ public class Starfold implements DiffTreeTransformer {
     @Override
     public void transform(DiffTree diffTree) {
         // All non-artifact nodes are potential roots of stars.
-        final List<DiffNode> macroNodes = diffTree.computeAllNodesThat(Starfold::isStarRoot);
-//        System.out.println("Inspecting " + macroNodes.size() + " star roots.");
-        for (DiffNode macro : macroNodes) {
-//            System.out.println("Found star root " + macro);
-            foldStar(macro);
+        final List<DiffNode> annotations = diffTree.computeAllNodesThat(Starfold::isStarRoot);
+//        System.out.println("Inspecting " + annotations.size() + " star roots.");
+        for (DiffNode annotation : annotations) {
+//            System.out.println("Found star root " + annotation);
+            foldStar(annotation);
         }
     }
 

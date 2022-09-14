@@ -28,7 +28,7 @@ public enum NodeType {
     /**
      * Returns true iff this node type represents a conditional feature annotation (i.e., if or elif).
      */
-    public boolean isConditionalMacro() {
+    public boolean isConditionalAnnotation() {
         return this == IF || this == ELIF;
     }
 

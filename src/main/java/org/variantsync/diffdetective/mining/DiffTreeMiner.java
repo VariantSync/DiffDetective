@@ -16,7 +16,7 @@ import org.variantsync.diffdetective.diff.difftree.serialize.DiffTreeLineGraphEx
 import org.variantsync.diffdetective.diff.difftree.serialize.GraphFormat;
 import org.variantsync.diffdetective.diff.difftree.serialize.edgeformat.EdgeLabelFormat;
 import org.variantsync.diffdetective.diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
-import org.variantsync.diffdetective.diff.difftree.transform.CollapseNestedNonEditedMacros;
+import org.variantsync.diffdetective.diff.difftree.transform.CollapseNestedNonEditedAnnotations;
 import org.variantsync.diffdetective.diff.difftree.transform.CutNonEditedSubtrees;
 import org.variantsync.diffdetective.diff.difftree.transform.DiffTreeTransformer;
 import org.variantsync.diffdetective.diff.difftree.transform.Starfold;
@@ -50,7 +50,7 @@ public class DiffTreeMiner {
                             RunningExampleFinder.DefaultExamplesDirectory.resolve(repository == null ? "unknown" : repository.getRepositoryName())
                     ));
         }
-        processing.add(new CollapseNestedNonEditedMacros());
+        processing.add(new CollapseNestedNonEditedAnnotations());
         processing.add(Starfold.IgnoreNodeOrder());
         return processing;
     }
