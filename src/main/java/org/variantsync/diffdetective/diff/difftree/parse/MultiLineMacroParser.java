@@ -1,7 +1,7 @@
 package org.variantsync.diffdetective.diff.difftree.parse;
 
 import org.variantsync.diffdetective.diff.DiffLineNumber;
-import org.variantsync.diffdetective.diff.difftree.CodeType;
+import org.variantsync.diffdetective.diff.difftree.NodeType;
 import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.diff.difftree.DiffType;
 
@@ -81,8 +81,8 @@ public class MultiLineMacroParser {
 
         if (continuesMultilineDefinition(line)) {
             // If this multiline macro line is a header...
-            final CodeType codeType = CodeType.ofDiffLine(line);
-            if (codeType.isConditionalMacro()) {
+            final NodeType nodeType = NodeType.ofDiffLine(line);
+            if (nodeType.isConditionalMacro()) {
                 // ... create a new multi line macro to complete.
                 if (!isAdd) {
                     if (beforeMLMacro != null) {

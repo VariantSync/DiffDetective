@@ -7,7 +7,7 @@ import java.util.regex.Pattern;
  * The type of nodes in a {@link DiffTree}.
  * Corresponds to the tau function from our paper.
  */
-public enum CodeType {
+public enum NodeType {
     // Mapping types
     IF("if"),
     ENDIF("endif"),
@@ -21,32 +21,32 @@ public enum CodeType {
     ROOT("ROOT");
 
     public final String name;
-    CodeType(String name) {
+    NodeType(String name) {
         this.name = name;
     }
 
     /**
-     * Returns true iff this code type represents a conditional feature annotation (i.e., if or elif).
+     * Returns true iff this node type represents a conditional feature annotation (i.e., if or elif).
      */
     public boolean isConditionalMacro() {
         return this == IF || this == ELIF;
     }
 
     /**
-     * Returns true iff this code type represents a feature mapping.
+     * Returns true iff this node type represents a feature mapping.
      */
-    public boolean isMacro() {
+    public boolean isAnnotation() {
         return this != ROOT && this != CODE;
     }
 
     final static Pattern annotationRegex = Pattern.compile("^[+-]?\\s*#\\s*(if|endif|else|elif)");
 
     /**
-     * Parses the code type from a line taken from a text-based diff.
+     * Parses the node type from a line taken from a text-based diff.
      * @param line A line in a patch.
      * @return The type of edit of <code>line</code>.
      */
-    public static CodeType ofDiffLine(String line) {
+    public static NodeType ofDiffLine(String line) {
         Matcher matcher = annotationRegex.matcher(line);
         if (matcher.find()) {
             String id = matcher.group(1);
@@ -65,19 +65,19 @@ public enum CodeType {
     }
 
     /**
-     * Creates a CodeType from its value names.
+     * Creates a NodeType from its value names.
      * @see Enum#name()
      * @param name a string that equals the name of one value of this enum (ignoring case)
-     * @return The CodeType that has the given name
+     * @return The NodeType that has the given name
      */
-    public static CodeType fromName(final String name) {
-        for (CodeType candidate : values()) {
+    public static NodeType fromName(final String name) {
+        for (NodeType candidate : values()) {
             if (candidate.toString().equalsIgnoreCase(name)) {
                 return candidate;
             }
         }
 
-        throw new IllegalArgumentException("Given string \"" + name + "\" is not the name of a CodeType.");
+        throw new IllegalArgumentException("Given string \"" + name + "\" is not the name of a NodeType.");
     }
 
     /**

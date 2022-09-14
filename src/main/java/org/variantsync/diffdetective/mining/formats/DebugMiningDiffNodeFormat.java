@@ -1,6 +1,6 @@
 package org.variantsync.diffdetective.mining.formats;
 
-import org.variantsync.diffdetective.diff.difftree.CodeType;
+import org.variantsync.diffdetective.diff.difftree.NodeType;
 import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.diff.difftree.DiffType;
 import org.variantsync.diffdetective.pattern.elementary.ElementaryPattern;
@@ -12,7 +12,7 @@ import java.util.Arrays;
 /**
  * Analogous to {@link ReleaseMiningDiffNodeFormat} but produces human readable labels instead of using integers.
  * Code nodes are labeled with the name of their matched elementary pattern.
- * Macro nodes are labeled with DIFFTYPE_CODETYPE (e.g., an added IF node gets the label ADD_IF).
+ * Macro nodes are labeled with DIFFTYPE_NODETYPE (e.g., an added IF node gets the label ADD_IF).
  */
 public class DebugMiningDiffNodeFormat implements MiningNodeFormat {
 	@Override
@@ -20,30 +20,30 @@ public class DebugMiningDiffNodeFormat implements MiningNodeFormat {
         if (node.isCode()) {
             return ProposedElementaryPatterns.Instance.match(node).getName();
         } else if (node.isRoot()) {
-            return node.diffType + "_" + CodeType.IF;
+            return node.diffType + "_" + NodeType.IF;
         } else {
-            return node.diffType + "_" + node.codeType;
+            return node.diffType + "_" + node.nodeType;
         }
 	}
 
     @Override
-    public Pair<DiffType, CodeType> fromEncodedTypes(String tag) {
+    public Pair<DiffType, NodeType> fromEncodedTypes(String tag) {
         // If the label starts with ADD, REM, or NON
         if (Arrays.stream(DiffType.values()).anyMatch(diffType -> tag.startsWith(diffType.toString()))) {
             // then it is a macro node
             final DiffType dt = DiffType.fromName(tag);
-            final int codeTypeBegin = tag.indexOf("_") + 1;
-            final CodeType ct = CodeType.fromName(tag.substring(codeTypeBegin));
-            if (ct == CodeType.ROOT) {
+            final int nodeTypeBegin = tag.indexOf("_") + 1;
+            final NodeType nt = NodeType.fromName(tag.substring(nodeTypeBegin));
+            if (nt == NodeType.ROOT) {
                 throw new IllegalArgumentException("There should be no roots in mined patterns!");
             }
-            return new Pair<>(dt, ct);
+            return new Pair<>(dt, nt);
         } else {
             final ElementaryPattern pattern = ProposedElementaryPatterns.Instance.fromName(tag).orElseThrow(
                     () -> new IllegalStateException("Label \"" + tag + "\" is neither a macro label, nor an elementary pattern!")
             );
 
-            return new Pair<>(pattern.getDiffType(), CodeType.CODE);
+            return new Pair<>(pattern.getDiffType(), NodeType.CODE);
         }
     }
 }

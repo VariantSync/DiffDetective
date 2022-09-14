@@ -31,7 +31,7 @@ public abstract class ElementaryPattern extends EditPattern<DiffNode> {
 
     /**
      * Returns true iff given node matches this pattern.
-     * @param codeNode Node which has code type CODE and whose DiffType is the same as this patterns DiffType.
+     * @param codeNode Node which has node type CODE and whose DiffType is the same as this patterns DiffType.
      */
     protected abstract boolean matchesCodeNode(DiffNode codeNode);
 

@@ -129,7 +129,7 @@ public class DiffTreeParser {
                 case NotMyDuty: break;
             }
 
-            // This gets the code type and diff type of the current line and creates a node
+            // This gets the node type and diff type of the current line and creates a node
             // Note that the node is not yet added to the diff tree.
             final DiffNode newNode;
             try {

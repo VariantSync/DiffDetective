@@ -141,7 +141,7 @@ public class LineGraphImport {
                     if (root != null) {
                         throw new RuntimeException("Not a DiffTree but a DiffGraph: Got more than one root! Got \"" + root + "\" and \"" + v + "\"!");
                     }
-                    if (v.codeType == CodeType.IF || v.codeType == CodeType.ROOT) {
+                    if (v.nodeType == NodeType.IF || v.nodeType == NodeType.ROOT) {
                         root = v;
                     } else {
                         throw new RuntimeException("Not a DiffTree but a DiffGraph: The node \"" + v + "\" is not labeled as ROOT or IF but has no parents!");
@@ -153,7 +153,7 @@ public class LineGraphImport {
                 throw new RuntimeException("Not a DiffTree but a DiffGraph: No root found!");
             }
 
-//            countRootTypes.merge(root.codeType, 1, Integer::sum);
+//            countRootTypes.merge(root.nodeType, 1, Integer::sum);
 
 			return new DiffTree(root, diffTreeSource);
 		} else {

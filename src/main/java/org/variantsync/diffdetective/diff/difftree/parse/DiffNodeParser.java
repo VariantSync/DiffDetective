@@ -2,7 +2,7 @@ package org.variantsync.diffdetective.diff.difftree.parse;
 
 import org.prop4j.Node;
 import org.variantsync.diffdetective.diff.DiffLineNumber;
-import org.variantsync.diffdetective.diff.difftree.CodeType;
+import org.variantsync.diffdetective.diff.difftree.NodeType;
 import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.diff.difftree.DiffType;
 import org.variantsync.diffdetective.feature.CPPAnnotationParser;
@@ -23,15 +23,15 @@ public record DiffNodeParser(CPPAnnotationParser annotationParser) {
      * Parses the given line from a text-based diff to a DiffNode.
      *
      * @param diffLine The line which the new node represents.
-     * @return A DiffNode with a code type, diff type, label, and feature mapping.
+     * @return A DiffNode with a node type, diff type, label, and feature mapping.
      */
     public DiffNode fromDiffLine(String diffLine) throws IllFormedAnnotationException {
         DiffType diffType = DiffType.ofDiffLine(diffLine);
-        CodeType codeType = CodeType.ofDiffLine(diffLine);
+        NodeType nodeType = NodeType.ofDiffLine(diffLine);
         String label = diffLine.isEmpty() ? diffLine : diffLine.substring(1);
         Node featureMapping;
 
-        if (codeType == CodeType.CODE || codeType == CodeType.ENDIF || codeType == CodeType.ELSE) {
+        if (nodeType == NodeType.CODE || nodeType == NodeType.ENDIF || nodeType == NodeType.ELSE) {
             featureMapping = null;
         } else {
             featureMapping = annotationParser.parseDiffLine(diffLine);
@@ -40,7 +40,7 @@ public record DiffNodeParser(CPPAnnotationParser annotationParser) {
         ArrayList<String> lines = new ArrayList<>();
         lines.add(label);
         return new DiffNode(
-                diffType, codeType,
+                diffType, nodeType,
                 DiffLineNumber.Invalid(), DiffLineNumber.Invalid(),
                 featureMapping,
                 lines);

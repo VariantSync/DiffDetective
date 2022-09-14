@@ -72,7 +72,7 @@ public class ProposedElementaryPatterns implements ElementaryPatternCatalogue {
         // Each returned value is not null but an actual pattern object.
         // Since the given node may be any node, we have proven that every node is classified by at least one pattern.
         if (!node.isCode()) {
-            throw new IllegalArgumentException("Expected a code node but got " + node.codeType + "!");
+            throw new IllegalArgumentException("Expected a code node but got " + node.nodeType + "!");
         }
 
         if (node.isAdd()) {

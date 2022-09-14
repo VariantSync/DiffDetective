@@ -66,7 +66,7 @@ public class TestLineNumbers {
     private static void printLineNumbers(final DiffTree diffTree) {
         diffTree.forAll(node ->
                 System.out.println(node.diffType.symbol
-                    + " " + node.codeType
+                    + " " + node.nodeType
                     + " \"" + node.getLabel().trim()
                     + " with ID " + node.getID()
                     + "\" old: " + node.getLinesBeforeEdit()

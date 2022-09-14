@@ -73,7 +73,7 @@ public class DiffTree {
      * So just lines preceded by "+", "-", or " " are expected.
      * @param p Path to a diff file.
      * @param collapseMultipleCodeLines Set to true if subsequent lines of source code with
-     *                                  the same {@link CodeType type of change} should be
+     *                                  the same {@link NodeType type of change} should be
      *                                  collapsed into a single source code node representing
      *                                  all lines at once.
      * @param ignoreEmptyLines Set to true if empty lines should not be included in the DiffTree.
@@ -95,7 +95,7 @@ public class DiffTree {
      * So just lines preceded by "+", "-", or " " are expected.
      * @param diff The diff as text. Lines should be separated by a newline character. Each line should be preceded by either "+", "-", or " ".
      * @param collapseMultipleCodeLines Set to true if subsequent lines of source code with
-     *                                  the same {@link CodeType type of change} should be
+     *                                  the same {@link NodeType type of change} should be
      *                                  collapsed into a single source code node representing
      *                                  all lines at once.
      * @param ignoreEmptyLines Set to true if empty lines should not be included in the DiffTree.

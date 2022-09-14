@@ -2,7 +2,7 @@ package org.variantsync.diffdetective.diff.difftree.transform;
 
 import org.prop4j.And;
 import org.prop4j.Node;
-import org.variantsync.diffdetective.diff.difftree.CodeType;
+import org.variantsync.diffdetective.diff.difftree.NodeType;
 import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
 import org.variantsync.diffdetective.diff.difftree.DiffType;
@@ -102,7 +102,7 @@ public class CollapseNestedNonEditedMacros implements DiffTreeTransformer {
         while (!chain.isEmpty()) {
             lastPopped = chain.pop();
 
-            switch (lastPopped.codeType) {
+            switch (lastPopped.nodeType) {
                 case IF ->
                     featureMappings.add(lastPopped.getAfterFeatureMapping());
                 case ELSE, ELIF -> {
@@ -114,7 +114,7 @@ public class CollapseNestedNonEditedMacros implements DiffTreeTransformer {
                     }
                 }
                 case ROOT, CODE ->
-                    throw new RuntimeException("Unexpected code type " + lastPopped.codeType + " within macro chain!");
+                    throw new RuntimeException("Unexpected node type " + lastPopped.nodeType + " within macro chain!");
                 case ENDIF -> {}
             }
         }
@@ -127,7 +127,7 @@ public class CollapseNestedNonEditedMacros implements DiffTreeTransformer {
         ArrayList lines = new ArrayList();
         lines.add("$Collapsed Nested Annotations$");
         final DiffNode merged = new DiffNode(
-                DiffType.NON, CodeType.IF,
+                DiffType.NON, NodeType.IF,
                 head.getFromLine(), head.getToLine(),
                 new And(featureMappings.toArray()),
                 lines);

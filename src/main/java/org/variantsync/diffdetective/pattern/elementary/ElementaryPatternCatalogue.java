@@ -35,7 +35,7 @@ public interface ElementaryPatternCatalogue {
     default ElementaryPattern match(DiffNode node)
     {
         if (!node.isCode()) {
-            throw new IllegalArgumentException("Expected a code node but got " + node.codeType + "!");
+            throw new IllegalArgumentException("Expected a code node but got " + node.nodeType + "!");
         }
 
         final List<ElementaryPattern> patternsToCheck = byType().get(node.diffType);

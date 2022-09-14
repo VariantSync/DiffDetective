@@ -11,7 +11,7 @@ import java.util.List;
  * Contrary to its name, this transformation leaves a DiffTree's graph structure unchanged.
  * This transformation uses the {@link RelabelNodes} transformer to relabel all nodes.
  * All {@link DiffNode#isCode() artifact} nodes will be labeled by their respective elementary pattern.
- * All other nodes will be labeled by the {@link org.variantsync.diffdetective.diff.difftree.CodeType#name name of their code type}.
+ * All other nodes will be labeled by the {@link org.variantsync.diffdetective.diff.difftree.NodeType#name name of their node type}.
  * @author Paul Bittner
  */
 public class CollapseElementaryPatterns implements DiffTreeTransformer {
@@ -27,7 +27,7 @@ public class CollapseElementaryPatterns implements DiffTreeTransformer {
             if (d.isCode()) {
                 return patterns.match(d).getName();
             } else {
-                return d.codeType.name;
+                return d.nodeType.name;
             }
         });
     }

@@ -1,7 +1,7 @@
 package org.variantsync.diffdetective.mining.formats;
 
 import org.variantsync.diffdetective.diff.DiffLineNumber;
-import org.variantsync.diffdetective.diff.difftree.CodeType;
+import org.variantsync.diffdetective.diff.difftree.NodeType;
 import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.diff.difftree.DiffType;
 import org.variantsync.diffdetective.diff.difftree.serialize.nodeformat.DiffNodeLabelFormat;
@@ -9,7 +9,7 @@ import org.variantsync.diffdetective.util.fide.FixTrueFalse;
 import org.variantsync.functjonal.Pair;
 
 public interface MiningNodeFormat extends DiffNodeLabelFormat {
-    Pair<DiffType, CodeType> fromEncodedTypes(final String tag);
+    Pair<DiffType, NodeType> fromEncodedTypes(final String tag);
 
     @Override
     default DiffNode fromLabelAndId(String lineGraphNodeLabel, int nodeId) {
@@ -18,10 +18,10 @@ public interface MiningNodeFormat extends DiffNodeLabelFormat {
         final DiffLineNumber lineTo = new DiffLineNumber(nodeId, nodeId, nodeId);
         final String resultLabel = "";
 
-        final Pair<DiffType, CodeType> types = fromEncodedTypes(lineGraphNodeLabel);
+        final Pair<DiffType, NodeType> types = fromEncodedTypes(lineGraphNodeLabel);
         lineFrom.as(types.first());
         lineTo.as(types.first());
-        if (types.second() == CodeType.CODE) {
+        if (types.second() == NodeType.CODE) {
             return DiffNode.createCode(types.first(),
                     lineFrom, lineTo, resultLabel);
         } else {
