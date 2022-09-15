@@ -89,6 +89,8 @@ public class FeatureSplitResult implements Metadata<FeatureSplitResult> {
     // FeatureSplit specific information
     private final List<LinkedHashMap<String, String>> patchStats = new LinkedList<>();
 
+    public int invalidFADiff;
+
     public int totalPatches;
     public Set<String> totalFeatures;
     public int totalFeatureAwarePatches;
@@ -105,7 +107,7 @@ public class FeatureSplitResult implements Metadata<FeatureSplitResult> {
                 0, 0,
                 CommitProcessTime.Unknown(repoName, Long.MAX_VALUE),
                 CommitProcessTime.Unknown(repoName, Long.MIN_VALUE),
-                0,0, new HashSet<>(),
+                0,0, 0, new HashSet<>(),
                 new DiffTreeSerializeDebugData());
     }
 
@@ -120,6 +122,7 @@ public class FeatureSplitResult implements Metadata<FeatureSplitResult> {
             double runtimeWithMultithreadingInSeconds,
             final CommitProcessTime min,
             final CommitProcessTime max,
+            int invalidFADiff,
             int totalPatches,
             int totalFeatureAwarePatches,
             Set<String> totalFeatures,
@@ -176,12 +179,14 @@ public class FeatureSplitResult implements Metadata<FeatureSplitResult> {
         snap.put(FeatureSplitMetadataKeys.TOTAL_PATCHES, totalPatches);
         snap.put(FeatureSplitMetadataKeys.TOTAL_FEATURES, totalFeatures.size());
         snap.put(FeatureSplitMetadataKeys.TOTAL_FEATURE_AWARE_PATCHES, totalFeatureAwarePatches);
+        snap.put(FeatureSplitMetadataKeys.RATIO_OF_FA_DIFFS, totalFeatureAwarePatches / totalPatches);
         snap.put(MetadataKeys.PROCESSED_COMMITS, exportedCommits);
         snap.put(MetadataKeys.TREES, exportedTrees);
         snap.put(MetadataKeys.MINCOMMIT, min.toString());
         snap.put(MetadataKeys.MAXCOMMIT, max.toString());
         snap.put(MetadataKeys.RUNTIME, runtimeInSeconds);
         snap.put(MetadataKeys.RUNTIME_WITH_MULTITHREADING, runtimeWithMultithreadingInSeconds);
+        snap.put(FeatureSplitMetadataKeys.INVALID_FA_DIFFS, invalidFADiff);
         snap.put(FeatureSplitMetadataKeys.PATCH_STATS, patchStats);
         snap.putAll(customInfo);
         snap.putAll(debugData.snapshot());

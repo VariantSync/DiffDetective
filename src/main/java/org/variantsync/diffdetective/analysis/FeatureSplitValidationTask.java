@@ -36,6 +36,7 @@ public class FeatureSplitValidationTask extends FeatureSplitAnalysisTask {
 
                 final CommitDiffResult commitDiffResult = options.differ().createCommitDiff(commit);
 
+                // Tracking failed commits
                 miningResult.reportDiffErrors(commitDiffResult.errors());
                 if (commitDiffResult.diff().isEmpty()) {
                     Logger.debug("[MiningTask::call] found commit that failed entirely and was not filtered because:\n{}", commitDiffResult.errors());
@@ -45,7 +46,6 @@ public class FeatureSplitValidationTask extends FeatureSplitAnalysisTask {
 
                 final CommitDiff commitDiff = commitDiffResult.diff().get();
                 options.miningStrategy().onCommit(commitDiff, "");
-
 
                 miningResult.totalPatches += commitDiff.getPatchDiffs().size();
                 // Count elementary patterns
@@ -65,14 +65,13 @@ public class FeatureSplitValidationTask extends FeatureSplitAnalysisTask {
 
                         // validate FeatureSplit
                         Set<String> allFeatures = FeatureQueryGenerator.featureQueryGenerator(t);
-                        miningResult.totalFeatures.addAll(allFeatures);
+                        miningResult.totalFeatures.addAll(allFeatures); // TODO required to calculate run time and feature-aware diffs per feature
                         allFeatures.forEach(feature -> {
-                            // root is contained in any tree and would ignore the feature extraction
-                            if(feature == "True") return;
+                            // "True" would result in an unchanged diff
+                            if(feature.equals("True")) return;
                             LinkedHashMap<String, String> patchStats = new LinkedHashMap<>();
-
-                            patchStats.put(FeatureSplitMetadataKeys.FEATURE, feature);
                             HashMap<String, DiffTree> featureAware = FeatureSplit.featureSplit(t, feature);
+
                             // 1. get number of feature-aware patches for a patch
                             int numOfFeaturesPatches = featureAware.size();
                             miningResult.totalFeatureAwarePatches += numOfFeaturesPatches;
@@ -84,21 +83,21 @@ public class FeatureSplitValidationTask extends FeatureSplitAnalysisTask {
                                 final long patchTimeMS = patchProcessTimer.getPassedMilliseconds();
                                 patchStats.put(FeatureSplitMetadataKeys.PATCH_TIME_MS, Long.toString(patchTimeMS));
 
-                                // 3. get memory allocation for a patch
+                                // 3. check if patch is valid
+                                if(!value.isConsistent().isSuccess())  {
+                                    Logger.error("incorrectly extracted tree");
+                                    ++miningResult.invalidFADiff;
+                                }
 
-                                // 4. check if patch is valid
-                                boolean isConsistent = value.isConsistent().isSuccess();
-                                patchStats.put(FeatureSplitMetadataKeys.IS_CONSISTENT, Boolean.toString(isConsistent));
-
-                                // 5. check how many feature formulas exists and number of initial features
+                                // 4. check how many feature formulas exists and number of initial features
                                 Set<String> features = FeatureQueryGenerator.featureQueryGenerator(value);
                                 int numOfFeatures = features.size();
                                 patchStats.put(FeatureSplitMetadataKeys.NUM_OF_FEATURES, Integer.toString(numOfFeatures));
 
-                                // 6. calculate size of feature-aware difftree and size of initial difftree
+                                // 5. calculate size of feature-aware difftree and size of initial difftree
                                 int featureDiffSize = value.computeSize();
-                                patchStats.put(FeatureSplitMetadataKeys.FEATURE_AWARE_DIFF_SIZE, Integer.toString(featureDiffSize));
-
+                                //patchStats.put(FeatureSplitMetadataKeys.FEATURE_AWARE_DIFF_SIZE, Integer.toString(featureDiffSize));
+                                patchStats.put(FeatureSplitMetadataKeys.RATIO_OF_NODES, Integer.toString(featureDiffSize / t.computeSize()));
 
                             });
                             miningResult.putPatchStats(patchStats);

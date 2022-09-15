@@ -97,7 +97,7 @@ public class ValidationFeatureSplit {
         final Path outputDir = Paths.get("results", "validation", "current");
 
         final List<Repository> repos;
-        final List<DatasetDescription> datasets = DefaultDatasets.loadDefaultDatasets(); //TODO reduce to only one repo
+        final List<DatasetDescription> datasets = DefaultDatasets.loadDefaultDatasets();
 
         if (PRINT_LATEX_TABLE) {
             printLaTeXTableFor(datasets);
