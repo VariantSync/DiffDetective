@@ -28,7 +28,7 @@ public class FeatureSplitTest {
             Logger.info("Testing {}", testFile);
             // create variation tree diff
             final DiffTree diffTree = DiffTree.fromFile(testFile, false, true).unwrap().getSuccess();
-            Logger.info("Gathered diff \n {}", diffTree.toTextDiff());
+            Logger.info("Gathered diff \n {}", diffTree.toString());
 
             DIFF_TREES.add(diffTree);
         }
@@ -51,8 +51,7 @@ public class FeatureSplitTest {
     @Test
     public void featureSplitTest() {
         DiffTree tree = DIFF_TREES.get(0);
-        FeatureSplit featureSplit = new FeatureSplit();
-        HashMap<String, DiffTree> featureAwareTrees = featureSplit.featureSplit(tree, Arrays.asList("Unix", "Get"));
+        HashMap<String, DiffTree> featureAwareTrees = FeatureSplit.featureSplit(tree, Arrays.asList("Unix", "Get"));
 
         Assert.assertEquals(featureAwareTrees.get("Get").getRoot().getAllChildren().get(0).getAllChildren().size(), 2);
         Assert.assertEquals(featureAwareTrees.get("Unix").getRoot().getAllChildren().get(0).getAllChildren().size(), 1);
@@ -61,12 +60,18 @@ public class FeatureSplitTest {
     @Test
     public void featureSplitTest2() {
         DiffTree tree = DIFF_TREES.get(0);
-        FeatureSplit featureSplit = new FeatureSplit();
-        HashMap<String, DiffTree> featureAwareTrees = featureSplit.featureSplit(tree, "Get");
+        HashMap<String, DiffTree> featureAwareTrees = FeatureSplit.featureSplit(tree, "Get");
 
-        Assert.assertEquals(featureAwareTrees.get("Get").getRoot().getAllChildren().get(0).getAllChildren().size(), 3);
+        featureAwareTrees.get("Get").getRoot().getAllChildren().get(0).getAllChildren().forEach(diffNode -> System.out.println(diffNode.toString()));
+        Assert.assertEquals(featureAwareTrees.get("Get").getRoot().getAllChildren().get(1).getAllChildren().size(), 3);
     }
 
+    @Test
+    public void featureSplitTest3() {
+        DiffTree tree = DIFF_TREES.get(2);
+        HashMap<String, DiffTree> featureAwareTrees = FeatureSplit.featureSplit(tree, "OPENSSL_NO_TLSEXT");
+        featureAwareTrees.forEach((key, value) -> value.assertConsistency());
+    }
 
     /**
      * Check if valid subtrees are generated
@@ -74,9 +79,8 @@ public class FeatureSplitTest {
     @Test
     public void generateClustersTest() {
         DiffTree tree = DIFF_TREES.get(0);
-        FeatureSplit featureSplit = new FeatureSplit();
-        List<DiffTree> subtrees = featureSplit.generateAllSubtrees(tree);
-        HashMap<String, List<DiffTree>> clusters = featureSplit.generateClusters(subtrees, Arrays.asList("Unix", "Get"));
+        List<DiffTree> subtrees = FeatureSplit.generateAllSubtrees(tree);
+        HashMap<String, List<DiffTree>> clusters = FeatureSplit.generateClusters(subtrees, Arrays.asList("Unix", "Get"));
 
         Assert.assertEquals(clusters.get("Unix").size(), 1);
         Assert.assertEquals(clusters.get("Get").size(), 2);
@@ -89,8 +93,7 @@ public class FeatureSplitTest {
     @Test
     public void generateAllSubtreesTest() {
         DiffTree tree = DIFF_TREES.get(0);
-        FeatureSplit featureSplit = new FeatureSplit();
-        List<DiffTree> subtrees = featureSplit.generateAllSubtrees(tree);
+        List<DiffTree> subtrees = FeatureSplit.generateAllSubtrees(tree);
 
         Assert.assertEquals(subtrees.size(), 3);
     }

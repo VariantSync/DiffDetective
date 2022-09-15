@@ -1,14 +1,11 @@
 package org.variantsync.diffdetective.diff.difftree.transform;
 
 import org.prop4j.Node;
+import org.tinylog.Logger;
 import org.variantsync.diffdetective.analysis.logic.SAT;
-import org.variantsync.diffdetective.diff.difftree.DiffNode;
-import org.variantsync.diffdetective.diff.difftree.DiffTree;
-import org.variantsync.diffdetective.diff.difftree.DiffTreeComparison;
-import org.variantsync.diffdetective.diff.difftree.Duplication;
+import org.variantsync.diffdetective.diff.difftree.*;
 import org.variantsync.diffdetective.feature.PropositionalFormulaParser;
 
-import java.lang.reflect.Array;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -62,8 +59,8 @@ public class FeatureSplit {
         if (cluster.size() == 1) return cluster.get(0);
         return generateFeatureAwareDiffTree(
                 Stream.concat(
-                    cluster.subList(2, cluster.size()).stream(),
-                    Stream.of(composeDiffTrees(cluster.get(0),cluster.get(1)))
+                    Stream.of(composeDiffTrees(cluster.get(0),cluster.get(1))),
+                    cluster.subList(2, cluster.size()).stream()
                 ).collect(Collectors.toList())
         );
     }
@@ -71,52 +68,47 @@ public class FeatureSplit {
     /**
      * Composes two DiffTrees into one feature-aware TreeDiff
      */
-    public static DiffTree composeDiffTrees(DiffTree first, DiffTree second){
+    public static DiffTree composeDiffTrees(DiffTree first, DiffTree second) {
         if (second == null && first == null) return null;
         if (first == null || first.isEmpty()) return second;
         if (second == null || second.isEmpty()) return first;
 
-        // Get Leaf of subtree
-        List<DiffNode> leafNodesFirst = first.computeAllNodesThat(diffNode -> diffNode.getAllChildren().size() == 0);
-        // Inspect each leaf
-        leafNodesFirst.forEach(leafFirst -> {
-                    // Traverse leafNodes Upwards
-                    HashSet<Integer> ancestorsFirst = findParent(leafFirst);
-                    for (int ancestorFirst : ancestorsFirst){
-                        List<DiffNode> ancestorList = first.computeAllNodesThat(node -> node.getID() == ancestorFirst);
-                        // do nothing if only root node
-                        if(ancestorList.size() == 0) continue;
+        HashSet<DiffNode> allFirstNodes = new HashSet<>(first.computeAllNodes());
+        HashSet<DiffNode> allSecondNodes = new HashSet<>(second.computeAllNodes());
+        ArrayList<DiffNode> allNodes = new ArrayList<>();
+        allNodes.addAll(allFirstNodes);
+        allNodes.addAll(allSecondNodes);
 
-                        DiffNode ancestorNodeFirst = ancestorList.get(0);
+        HashSet<DiffEdge> allEdges = allNodes.stream().map(
+                node -> node.getAllChildren().stream().map(
+                        child -> new DiffEdge(node, child)
+                ).collect(Collectors.toSet())).collect(HashSet::new, Set::addAll, Set::addAll);
 
-                        // find node, where both DiffTrees start dividing, where only one can exist
-                        List<DiffNode> splitSecond = second.computeAllNodesThat(node -> node.getID() == ancestorFirst);
-                        List<DiffNode> parentSplitBeforeSecond = second.computeAllNodesThat(
-                                node -> ancestorNodeFirst.getBeforeParent() != null
-                                        && node.getID() == ancestorNodeFirst.getBeforeParent().getID()
-                        );
-                        List<DiffNode> parentSplitAfterSecond = second.computeAllNodesThat(
-                                node -> ancestorNodeFirst.getAfterParent() != null
-                                        && node.getID() == ancestorNodeFirst.getAfterParent().getID()
-                        );
-                        if(!(splitSecond.size() == 0 && (parentSplitBeforeSecond.size() != 0 || parentSplitAfterSecond.size() != 0))) continue;
+        HashSet<DiffNode> composedTree = new HashSet<>();
 
-                        // add subtree to new parent
-                        DiffNode clonedNode = Duplication.shallowClone(ancestorNodeFirst);
-                        clonedNode.stealChildrenOf(ancestorNodeFirst);
+        allEdges.forEach(edge -> {
+            if(!composedTree.contains(edge.parent)) composedTree.add(Duplication.shallowClone(edge.parent));
+            if(!composedTree.contains(edge.child)) composedTree.add(Duplication.shallowClone(edge.child));
 
-                        // first value in parentSplitSecond is beforeParent and second is afterParent
-                        if(parentSplitBeforeSecond.size() == 0 ){
-                            clonedNode.addBelow(null, parentSplitAfterSecond.get(0));
-                        } else if (parentSplitAfterSecond.size() == 0) {
-                            clonedNode.addBelow(parentSplitBeforeSecond.get(0), null);
-                        } else {
-                            clonedNode.addBelow(parentSplitBeforeSecond.get(0), parentSplitAfterSecond.get(0));
-                        }
-                        ancestorNodeFirst.drop();
-                    }
-                });
-        return second;
+            DiffNode cpParent = composedTree.stream().filter(node -> node.equals(edge.parent)).findFirst().orElseThrow();
+            DiffNode cpChild = composedTree.stream().filter(node -> node.equals(edge.child)).findFirst().orElseThrow();
+
+            if(cpChild.isAdd() || cpChild.isNon() && cpParent.isAdd()) cpParent.addAfterChild(cpChild);
+            if(cpChild.isRem() || cpChild.isNon() && cpParent.isRem()) cpParent.addBeforeChild(cpChild);
+        });
+
+        DiffNode composeRoot = composedTree.stream().filter(DiffNode::isRoot).findFirst().orElseThrow();
+        DiffTree composeTree = new DiffTree(composeRoot, first.getSource());
+
+        composedTree.stream().filter(DiffNode::isNon).forEach(node -> {
+            if(node.getBeforeParent() == null && node.getAfterParent() != null) node.getAfterParent().addBeforeChild(node);
+            if(node.getAfterParent() == null && node.getBeforeParent() != null) node.getBeforeParent().addAfterChild(node);
+            if(!node.isRoot() && node.getAfterParent() == null && node.getBeforeParent() == null) node.addBelow(composeRoot, composeRoot);
+        });
+
+        // TODO update the source
+        composeTree.assertConsistency();
+        return composeTree;
     }
 
 
@@ -195,7 +187,7 @@ public class FeatureSplit {
         DiffTree subtree = new DiffTree(node, initDiffTree.getSource());
         List<Integer> includedNodes = subtree.computeAllNodes().stream().map(DiffNode::getID).toList();
         List<HashSet<Integer>> parentNodes = includedNodes.stream()
-                .map(elem -> findParent(
+                .map(elem -> findAncestors(
                         initDiffTree.computeAllNodesThat(inspectedNode -> inspectedNode.getID() == elem).get(0)
                         )
                     )
@@ -207,6 +199,8 @@ public class FeatureSplit {
         DiffTree copy = new Duplication().deepClone(initDiffTree);
         List<DiffNode> toDelete = copy.computeAllNodesThat(elem -> !allNodes.contains(elem.getID()));
         toDelete.forEach(DiffNode::drop);
+
+        copy.assertConsistency();
         return copy;
     }
 
@@ -216,15 +210,16 @@ public class FeatureSplit {
      * @param node a child node of a DiffTree
      * @return a list of parent ids
      */
-    static public HashSet<Integer> findParent(DiffNode node) {
-        HashSet<Integer> parentNodes = new HashSet<>();
-        parentNodes.add(node.getID());
-        if (node.getBeforeParent() != null) parentNodes.addAll(findParent(node.getBeforeParent()));
-        if (node.getAfterParent() != null) parentNodes.addAll(findParent(node.getAfterParent()));
-        return parentNodes;
+    static public HashSet<Integer> findAncestors(DiffNode node) {
+        HashSet<Integer> ancestorNodes = new HashSet<>();
+        ancestorNodes.add(node.getID());
+        if (node.getBeforeParent() != null) ancestorNodes.addAll(findAncestors(node.getBeforeParent()));
+        if (node.getAfterParent() != null) ancestorNodes.addAll(findAncestors(node.getAfterParent()));
+        return ancestorNodes;
     }
 
     public String toString() {
         return "FeatureSplit";
     }
 }
+
