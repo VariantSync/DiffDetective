@@ -171,7 +171,6 @@ public class FeatureSplitResult implements Metadata<FeatureSplitResult> {
     @Override
     public LinkedHashMap<String, Object> snapshot() {
         LinkedHashMap<String, Object> snap = new LinkedHashMap<>();
-        // TODO change objects in snapshot
         snap.put(MetadataKeys.REPONAME, repoName);
         snap.put(MetadataKeys.TOTAL_COMMITS, totalCommits);
         snap.put(MetadataKeys.FAILED_COMMITS, failedCommits);
