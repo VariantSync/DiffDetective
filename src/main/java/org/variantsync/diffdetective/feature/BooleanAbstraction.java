@@ -38,6 +38,10 @@ public class BooleanAbstraction {
     public static final String DIV = "__DIV__";
     /** Abstraction value for modulo <code>%</code>. */
     public static final String MOD = "__MOD__";
+    /** Abstraction value for opening brackets <code>(</code>. */
+    public static final String BRACKET_L = "__LB__";
+    /** Abstraction value for clsong brackets <code>)</code>. */
+    public static final String BRACKET_R = "__RB__";
 
     private static final Map<Pattern, String> ARITHMETICS;
     static {
@@ -56,6 +60,10 @@ public class BooleanAbstraction {
     }
     private static final Pattern COMMA = Pattern.compile(",");
     private static final String COMMA_REPLACEMENT = "__";
+
+    private static final Pattern BRACKETS = Pattern.compile("\\((\\w*)\\)");
+    private static final String BRACKETS_REPLACEMENT = BRACKET_L + "$1" + BRACKET_R;
+
     private static final Pattern CALL = Pattern.compile("(\\w+)\\((\\w*)\\)");
     private static final String CALL_REPLACEMENT = "$1__$2";
 
@@ -84,7 +92,10 @@ public class BooleanAbstraction {
      * @return A copy of the formula with abstracted arithmetics.
      */
     public static String arithmetics(final String formula) {
-        return abstractAll(formula, ARITHMETICS);
+        // TODO: The extra call for BRACKETS could be avoided by adding it to the ARITHMETICS map.
+        //       This requires a sorted map (e.g., LinkedHashMap) though which is not yet supported by the smart
+        //       constructor Map.of.
+        return BRACKETS.matcher(abstractAll(formula, ARITHMETICS)).replaceAll(BRACKETS_REPLACEMENT);
     }
 
     /**
