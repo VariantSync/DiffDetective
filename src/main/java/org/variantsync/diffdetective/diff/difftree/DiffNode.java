@@ -15,15 +15,29 @@ import java.util.stream.Collectors;
 import static org.variantsync.diffdetective.util.fide.FormulaUtils.negate;
 
 /**
- * Implementation of a node of the diff tree.
- *
- * Includes methods for creating a node by getting its code type and diff type and for getting the feature mapping of the node.
+ * Implementation of a node in a {@link DiffTree}.
+ * A DiffNode represents a single node within a variation tree diff (according to our ESEC/FSE'22 paper), but is specialized
+ * to the target domain of preprocessor-based software product lines.
+ * Thus, opposed to the generic mathematical model of variation tree diffs, a DiffNode always stores lines of text, line numbers, and child ordering information as its label.
+ * Each DiffNode may be edited according to its {@link DiffType} and represents a source code element according to its {@link CodeType}.
+ * DiffNode's store parent and child information to build a graph.
+ * @author Paul Bittner, Sören Viegener, Benjamin Moosherr
  */
 public class DiffNode {
     private static final short ID_OFFSET = 3;
 
+    /**
+     * The diff type of this node, which determines if this node represents
+     * an inserted, removed, or unchanged element in a diff.
+     */
     public final DiffType diffType;
+
+    /**
+     * The code type of this node, which determines the type of the represented
+     * element in the diff (e.g., mapping or artifact).
+     */
     public final CodeType codeType;
+
     private boolean isMultilineMacro = false;
 
     private final DiffLineNumber from = DiffLineNumber.Invalid();
@@ -59,6 +73,15 @@ public class DiffNode {
      */
     private final List<DiffNode> childOrder;
 
+    /**
+     * Creates a DiffNode with the given parameters.
+     * @param diffType The type of change made to this node.
+     * @param codeType The type of this node (i.e., mapping or artifact).
+     * @param fromLines The starting line number of the corresponding text.
+     * @param toLines The ending line number of the corresponding text.
+     * @param featureMapping The formula stored in this node. Should be null for code (/artifact) nodes.
+     * @param label A text label containing information to identify the node (such as the corresponding source code).
+     */
     public DiffNode(DiffType diffType, CodeType codeType,
                     DiffLineNumber fromLines, DiffLineNumber toLines,
                     Node featureMapping, String label) {
@@ -66,6 +89,10 @@ public class DiffNode {
                 new ArrayList<String>(Arrays.asList(StringUtils.LINEBREAK_REGEX.split(label, -1))));
     }
 
+    /**
+     * The same as {@link DiffNode#DiffNode(DiffType, CodeType, DiffLineNumber, DiffLineNumber, Node, String)}
+     * but with the label separated into different lines of text instead of as a single String with newlines.
+     */
     public DiffNode(DiffType diffType, CodeType codeType,
                     DiffLineNumber fromLines, DiffLineNumber toLines,
                     Node featureMapping, List<String> lines) {
@@ -80,8 +107,8 @@ public class DiffNode {
     }
 
     /**
-     * Creates a (new) root node
-     * @return A (new) root node
+     * Creates a new root node.
+     * The root is a neutral annotation (i.e., its feature mapping is "true").
      */
     public static DiffNode createRoot() {
         return new DiffNode(
@@ -90,30 +117,54 @@ public class DiffNode {
                 new DiffLineNumber(1, 1, 1),
                 DiffLineNumber.Invalid(),
                 FixTrueFalse.True,
-                new ArrayList()
+                new ArrayList<>()
         );
     }
 
+    /**
+     * Creates an artifact node with the given parameters.
+     * For parameter descriptions, see {@link DiffNode#DiffNode(DiffType, CodeType, DiffLineNumber, DiffLineNumber, Node, String)}.
+     * The <code>code</code> parameter will be set as the node's label.
+     */
     public static DiffNode createCode(DiffType diffType, DiffLineNumber fromLines, DiffLineNumber toLines, String code) {
         return new DiffNode(diffType, CodeType.CODE, fromLines, toLines, null, code);
     }
 
+    /**
+     * The same as {@link DiffNode#createCode(DiffType, DiffLineNumber, DiffLineNumber, String)} but with the code for the label
+     * given as a list of individual lines instead of a single String with linebreaks to identify newlines.
+     */
     public static DiffNode createCode(DiffType diffType, DiffLineNumber fromLines, DiffLineNumber toLines, List<String> lines) {
         return new DiffNode(diffType, CodeType.CODE, fromLines, toLines, null, lines);
     }
 
+    /**
+     * Adds the given lines to the source code lines of this node.
+     * @param lines Lines to add.
+     */
     public void addLines(final List<String> lines) {
         this.lines.addAll(lines);
     }
 
+    /**
+     * Returns the lines in the diff that are represented by this DiffNode.
+     */
     public List<String> getLines() {
         return lines;
     }
 
+    /**
+     * Returns the lines in the diff that are represented by this DiffNode as a single text.
+     * @see DiffNode#getLines
+     */
     public String getLabel() {
-        return lines.stream().collect(Collectors.joining(StringUtils.LINEBREAK));
+        return String.join(StringUtils.LINEBREAK, lines);
     }
 
+    /**
+     * Sets the the lines in the diff that are represented by this DiffNode to the given code.
+     * Lines are identified by linebreak characters.
+     */
     public void setLabel(String label) {
         lines.clear();
         Collections.addAll(lines, StringUtils.LINEBREAK_REGEX.split(label, -1));
@@ -203,6 +254,10 @@ public class DiffNode {
         return afterParent.getAfterDepth() + 1;
     }
 
+    /**
+     * Returns true iff the path's in parent direction following the before parent and after parent
+     * are the very same.
+     */
     public boolean beforePathEqualsAfterPath() {
         if (beforeParent == afterParent) {
             if (beforeParent == null) {
@@ -217,7 +272,7 @@ public class DiffNode {
     }
 
     /**
-     * @return The number of unique child nodes.
+     * Returns the number of unique child nodes.
      */
     public int getTotalNumberOfChildren() {
         return childOrder.size();
@@ -320,10 +375,24 @@ public class DiffNode {
         child.afterParent = null;
     }
 
+    /**
+     * Returns the index of the given child in the list of children of thus node.
+     * Returns -1 if the given node is not a child of this node.
+     */
     public int indexOfChild(final DiffNode child) {
         return childOrder.indexOf(child);
     }
 
+    /**
+     * Adds the given node for the given time at the given index as the child.
+     * @param child The new child to add. This node should not be a child of another node for the given time.
+     * @param index The index at which the node should be inserted into the children list.
+     * @param time The time at which this node should be the parent of this node.
+     *             For example, if the time is BEFORE, then this node will become the before parent of the given node.
+     * @return True iff the insertion was successful. False iff the child could not be added.
+     * @see DiffNode#insertBeforeChild
+     * @see DiffNode#insertAfterChild
+     */
     public boolean insertChildAt(final DiffNode child, int index, Time time) {
         return switch (time) {
             case BEFORE -> insertBeforeChild(child, index);
@@ -331,6 +400,9 @@ public class DiffNode {
         };
     }
 
+    /**
+     * The same as {@link DiffNode#insertChildAt} but the time fixed to BEFORE.
+     */
     public boolean insertBeforeChild(final DiffNode child, int index) {
         if (!child.isAdd()) {
             if (!isChild(child)) {
@@ -342,6 +414,9 @@ public class DiffNode {
         return false;
     }
 
+    /**
+     * The same as {@link DiffNode#insertChildAt} but the time fixed to AFTER.
+     */
     public boolean insertAfterChild(final DiffNode child, int index) {
         if (!child.isRem()) {
             if (!isChild(child)) {
@@ -353,6 +428,10 @@ public class DiffNode {
         return false;
     }
 
+    /**
+     * The same as {@link DiffNode#insertBeforeChild} but puts the node at the end of the children
+     * list instead of inserting it at a specific index.
+     */
     public boolean addBeforeChild(final DiffNode child) {
         if (!child.isAdd()) {
             if (child.beforeParent != null) {
@@ -368,6 +447,10 @@ public class DiffNode {
         return false;
     }
 
+    /**
+     * The same as {@link DiffNode#insertAfterChild} but puts the node at the end of the children
+     * list instead of inserting it at a specific index.
+     */
     public boolean addAfterChild(final DiffNode child) {
         if (!child.isRem()) {
             if (child.afterParent != null) {
@@ -383,18 +466,32 @@ public class DiffNode {
         return false;
     }
 
+    /**
+     * Adds all given nodes as before children using {@link DiffNode#addBeforeChild}.
+     * @param beforeChildren Nodes to add as children before the edit.
+     */
     public void addBeforeChildren(final Collection<DiffNode> beforeChildren) {
         for (final DiffNode beforeChild : beforeChildren) {
             addBeforeChild(beforeChild);
         }
     }
 
+    /**
+     * Adds all given nodes as after children using {@link DiffNode#addAfterChild}.
+     * @param afterChildren Nodes to add as children after the edit.
+     */
     public void addAfterChildren(final Collection<DiffNode> afterChildren) {
         for (final DiffNode afterChild : afterChildren) {
             addAfterChild(afterChild);
         }
     }
 
+    /**
+     * Removes the given node from this node's children before the edit.
+     * The node might still remain a child after the edit.
+     * @param child The child to remove before the edit.
+     * @return True iff the child was removed, false iff it was no before child.
+     */
     public boolean removeBeforeChild(final DiffNode child) {
         if (isBeforeChild(child)) {
             dropBeforeChild(child);
@@ -403,7 +500,13 @@ public class DiffNode {
         }
         return false;
     }
-
+    
+    /**
+     * Removes the given node from this node's children after the edit.
+     * The node might still remain a child before the edit.
+     * @param child The child to remove after the edit.
+     * @return True iff the child was removed, false iff it was no after child.
+     */
     public boolean removeAfterChild(final DiffNode child) {
         if (isAfterChild(child)) {
             dropAfterChild(child);
@@ -413,6 +516,11 @@ public class DiffNode {
         return false;
     }
 
+    /**
+     * Removes all given children for all times.
+     * None of the given nodes will be a child, neither before nor after the edit, afterwards.
+     * @param childrenToRemove Nodes that should not be children of this node anymore.
+     */
     public void removeChildren(final Collection<DiffNode> childrenToRemove) {
         for (final DiffNode childToRemove : childrenToRemove) {
             removeBeforeChild(childToRemove);
@@ -420,6 +528,11 @@ public class DiffNode {
         }
     }
 
+    /**
+     * Removes all children before the edit.
+     * Afterwards, this node will have no before children.
+     * @return All removed before children.
+     */
     public List<DiffNode> removeBeforeChildren() {
         final List<DiffNode> orphans = new ArrayList<>();
 
@@ -438,6 +551,12 @@ public class DiffNode {
         return orphans;
     }
 
+
+    /**
+     * Removes all children after the edit.
+     * Afterwards, this node will have no after children.
+     * @return All removed after children.
+     */
     public List<DiffNode> removeAfterChildren() {
         final List<DiffNode> orphans = new ArrayList<>();
 
@@ -456,72 +575,136 @@ public class DiffNode {
         return orphans;
     }
 
+    /**
+     * If the given node is neither a before nor after child, it will be removed
+     * from the internal cache that stores the order of children.
+     * This method does nothing the given node is (still) a child.
+     * @param child The node to remove from the order cache if it is no child.
+     * @see DiffNode#isChild(DiffNode)
+     */
     private void removeFromCache(final DiffNode child) {
         if (!isChild(child)) {
             childOrder.remove(child);
         }
     }
 
+    /**
+     * Removes all children from the given node and adds them as children to this node at the respective times.
+     * The order of children is not stable because first all before children are transferred and then all after children.
+     * The given node will have no children afterwards.
+     * @param other The node whose children should be stolen.
+     */
     public void stealChildrenOf(final DiffNode other) {
         addBeforeChildren(other.removeBeforeChildren());
         addAfterChildren(other.removeAfterChildren());
     }
 
     /**
-     * @return {@link #beforeParent}
+     * Returns the parent of this node before the edit.
      */
     public DiffNode getBeforeParent() {
         return beforeParent;
     }
 
     /**
-     * @return {@link #afterParent}
+     * Returns the parent of this node after the edit.
      */
     public DiffNode getAfterParent() {
         return afterParent;
     }
 
+    /**
+     * Returns the starting line number of this node's corresponding text block.
+     */
     public DiffLineNumber getFromLine() {
         return from;
     }
 
+    /**
+     * Returns the end line number of this node's corresponding text block.
+     * The line number is exclusive (i.e., it points 1 behind the last included line).
+     */
     public DiffLineNumber getToLine() {
         return to;
     }
 
+    /**
+     * Returns the range of line numbers of this node's corresponding source code in the text-based diff.
+     * @see DiffLineNumber#rangeInDiff
+     */
     public Lines getLinesInDiff() {
         return DiffLineNumber.rangeInDiff(from, to);
     }
 
+    /**
+     * Returns the range of line numbers of this node's corresponding source code before the edit.
+     * @see DiffLineNumber#rangeBeforeEdit
+     */
     public Lines getLinesBeforeEdit() {
         return DiffLineNumber.rangeBeforeEdit(from, to);
     }
 
+    /**
+     * Returns the range of line numbers of this node's corresponding source code after the edit.
+     * @see DiffLineNumber#rangeAfterEdit
+     */
     public Lines getLinesAfterEdit() {
         return DiffLineNumber.rangeAfterEdit(from, to);
     }
 
+    /**
+     * Returns the formula that is stored in this node.
+     * The formula is null for artifact nodes (i.e., {@link CodeType#CODE}).
+     * The formula is not null for mapping nodes
+     * @see CodeType#isMacro
+     */
     public Node getDirectFeatureMapping() {
         return featureMapping;
     }
 
+    /**
+     * Returns the list representing the order of the children.
+     * Any child occurs exactly once, even if this node is it's before and after parent.
+     */
     public List<DiffNode> getChildOrder() {
         return Collections.unmodifiableList(childOrder);
     }
 
+    /**
+     * Legacy alias for {@link DiffNode#getChildOrder()}.
+     */
     public List<DiffNode> getAllChildren() {
         return getChildOrder();
     }
 
+    /**
+     * Determines if this node represents a multi-line macro.
+     * @param isMultilineMacro True iff this node represents a multi-line macro.
+     */
     public void setIsMultilineMacro(boolean isMultilineMacro) {
         this.isMultilineMacro = isMultilineMacro;
     }
 
+    /**
+     * Returns true if this node represents a multi-line macro.
+     */
     public boolean isMultilineMacro() {
         return isMultilineMacro;
     }
 
-    private List<Node> getFeatureMappingClauses(Function<DiffNode, DiffNode> parentOf) {
+    /**
+     * Returns the full feature mapping formula of this node.
+     * The feature mapping of an {@link CodeType#IF} node is its {@link DiffNode#getDirectFeatureMapping direct feature mapping}.
+     * The feature mapping of {@link CodeType#ELSE} and {@link CodeType#ELIF} nodes is determined by all formulas in the respective if-elif-else chain.
+     * The feature mapping of an {@link CodeType#CODE artifact} node is the feature mapping of its parent.
+     * See Equation (1) in our paper (+ its extension to time for variation tree diffs described in Section 3.1).
+     * @param parentOf Function that returns the parent of a node.
+     *                 This function decides whether the before or after parent should be visited.
+     *                 It thus decides whether to compute the feature mapping before or after the edit.
+     * @return The feature mapping of this node for the given parent edges.
+     *         The returned list represents a conjunction (i.e., all clauses should be combined with boolean AND).
+     */
+    private List<Node> getFeatureMappingClauses(final Function<DiffNode, DiffNode> parentOf) {
         final DiffNode parent = parentOf.apply(this);
 
         if (isElse() || isElif()) {
@@ -552,6 +735,9 @@ public class DiffNode {
         return List.of(getDirectFeatureMapping());
     }
 
+    /**
+     * Same as {@link DiffNode#getFeatureMappingClauses} but conjuncts the returned clauses to a single formula.
+     */
     private Node getFeatureMapping(Function<DiffNode, DiffNode> parentOf) {
         final List<Node> fmClauses = getFeatureMappingClauses(parentOf);
         if (fmClauses.size() == 1) {
@@ -561,21 +747,34 @@ public class DiffNode {
     }
 
     /**
-     * Gets the feature mapping of the node before the patch
-     * @return the feature mapping of the node before the patch
+     * Returns the full feature mapping formula of this node before the edit.
+     * The feature mapping of an {@link CodeType#IF} node is its {@link DiffNode#getDirectFeatureMapping direct feature mapping}.
+     * The feature mapping of {@link CodeType#ELSE} and {@link CodeType#ELIF} nodes is determined by all formulas in the respective if-elif-else chain.
+     * The feature mapping of an {@link CodeType#CODE artifact} node is the feature mapping of its parent.
+     * See Equation (1) in our paper (+ its extension to time for variation tree diffs described in Section 3.1).
+     * @return The feature mapping of this node for the given parent edges.
      */
     public Node getBeforeFeatureMapping() {
         return getFeatureMapping(DiffNode::getBeforeParent);
     }
 
     /**
-     * Gets the feature mapping of the node after the patch
-     * @return the feature mapping of the node after the patch
+     * Returns the full feature mapping formula of this node after the edit.
+     * The feature mapping of an {@link CodeType#IF} node is its {@link DiffNode#getDirectFeatureMapping direct feature mapping}.
+     * The feature mapping of {@link CodeType#ELSE} and {@link CodeType#ELIF} nodes is determined by all formulas in the respective if-elif-else chain.
+     * The feature mapping of an {@link CodeType#CODE artifact} node is the feature mapping of its parent.
+     * See Equation (1) in our paper (+ its extension to time for variation tree diffs described in Section 3.1).
+     * @return The feature mapping of this node for the given parent edges.
      */
     public Node getAfterFeatureMapping() {
         return getFeatureMapping(DiffNode::getAfterParent);
     }
 
+    /**
+     * Depending on the given time, returns either the
+     * {@link DiffNode#getBeforeFeatureMapping() before feature mapping} or
+     * {@link DiffNode#getAfterFeatureMapping() after feature mapping}.
+     */
     public Node getFeatureMapping(Time time) {
         return time.match(
                 this::getBeforeFeatureMapping,
@@ -583,6 +782,15 @@ public class DiffNode {
         );
     }
 
+    /**
+     * Returns the presence condition of this node for the respective time.
+     * See Equation (2) in our paper (+ its extension to time for variation tree diffs described in Section 3.1).
+     * @param parentOf Function that returns the parent of a node.
+     *                 This function decides whether the before or after parent should be visited.
+     *                 It thus decides whether to compute the feature mapping before or after the edit.
+     * @return The presence condition of this node for the given parent edges.
+     *         The returned list represents a conjunction (i.e., all clauses should be combined with boolean AND).
+     */
     private List<Node> getPresenceCondition(Function<DiffNode, DiffNode> parentOf) {
         final DiffNode parent = parentOf.apply(this);
 
@@ -617,6 +825,11 @@ public class DiffNode {
         return clauses;
     }
 
+    /**
+     * Returns the presence condition of this node before the edit.
+     * See Equation (2) in our paper (+ its extension to time for variation tree diffs described in Section 3.1).
+     * @return The presence condition of this node for the given parent edges.
+     */
     public Node getBeforePresenceCondition() {
         if (diffType.existsBefore()) {
             return new And(getPresenceCondition(DiffNode::getBeforeParent));
@@ -625,6 +838,11 @@ public class DiffNode {
         }
     }
 
+    /**
+     * Returns the presence condition of this node after the edit.
+     * See Equation (2) in our paper (+ its extension to time for variation tree diffs described in Section 3.1).
+     * @return The presence condition of this node for the given parent edges.
+     */
     public Node getAfterPresenceCondition() {
         if (diffType.existsAfter()) {
             return new And(getPresenceCondition(DiffNode::getAfterParent));
@@ -633,6 +851,11 @@ public class DiffNode {
         }
     }
 
+    /**
+     * Depending on the given time, returns either the
+     * {@link DiffNode#getBeforePresenceCondition() before presence condition} or
+     * {@link DiffNode#getAfterPresenceCondition() after presence condition}.
+     */
     public Node getPresenceCondition(Time time) {
         return time.match(
                 this::getBeforePresenceCondition,
@@ -640,62 +863,116 @@ public class DiffNode {
         );
     }
 
+    /**
+     * Returns true iff this node is the before parent of the given node.
+     */
     public boolean isBeforeChild(DiffNode child) {
         return child.beforeParent == this;
     }
 
+    /**
+     * Returns true iff this node is the after parent of the given node.
+     */
     public boolean isAfterChild(DiffNode child) {
         return child.afterParent == this;
     }
 
+    /**
+     * Returns true iff this node is the before or after parent of the given node.
+     */
     public boolean isChild(DiffNode child) {
         return isBeforeChild(child) || isAfterChild(child);
     }
 
+    /**
+     * Returns true iff this node is the parent of the given node at the given time.
+     */
     public boolean isChild(DiffNode child, Time time) {
         return time.match(isBeforeChild(child), isAfterChild(child));
     }
 
+    /**
+     * Returns true iff this node has no children.
+     */
     public boolean isLeaf() {
         return childOrder.isEmpty();
     }
 
+    /**
+     * Returns true iff this node represents a removed element.
+     * @see DiffType#REM
+     */
     public boolean isRem() {
         return this.diffType.equals(DiffType.REM);
     }
 
+    /**
+     * Returns true iff this node represents an unchanged element.
+     * @see DiffType#NON
+     */
     public boolean isNon() {
         return this.diffType.equals(DiffType.NON);
     }
 
+    /**
+     * Returns true iff this node represents an inserted element.
+     * @see DiffType#ADD
+     */
     public boolean isAdd() {
         return this.diffType.equals(DiffType.ADD);
     }
 
+    /**
+     * Returns true if this node represents an ELIF macro.
+     * @see CodeType#ELIF
+     */
     public boolean isElif() {
         return this.codeType.equals(CodeType.ELIF);
     }
 
+    /**
+     * Returns true if this node represents a conditional annotation.
+     * @see CodeType#IF
+     */
     public boolean isIf() {
         return this.codeType.equals(CodeType.IF);
     }
 
+    /**
+     * Returns true if this node is an artifact node.
+     * @see CodeType#CODE
+     */
     public boolean isCode() {
         return this.codeType.equals(CodeType.CODE);
     }
 
+    /**
+     * Returns true if this node represents the end of an annotation block.
+     * Such a node should not be part of any {@link DiffTree}.
+     * @see CodeType#ENDIF
+     */
     public boolean isEndif() {
         return this.codeType.equals(CodeType.ENDIF);
     }
 
+    /**
+     * Returns true if this node represents an ELSE macro.
+     * @see CodeType#ELSE
+     */
     public boolean isElse() {
         return this.codeType.equals(CodeType.ELSE);
     }
 
+    /**
+     * Returns true if this node is a root node (i.e., it has {@link CodeType#ROOT}.
+     */
     public boolean isRoot() {
         return this.codeType.equals(CodeType.ROOT);
     }
 
+    /**
+     * Returns {@link CodeType#isMacro()} for this node's {@link DiffNode#codeType}.
+     */
     public boolean isMacro() {
         return this.codeType.isMacro();
     }
@@ -704,10 +981,10 @@ public class DiffNode {
      * @return An integer that uniquely identifiers this DiffNode within its patch.
      *
      * From the returned id a new node with all essential attributes reconstructed can be obtained
-     * by using {@code fromID}.
+     * by using {@link DiffNode#fromID}.
      *
      * Note that only {@code 26} bits of the line number are encoded, so if the line number is bigger than
-     * {@code 2^26} this id will no longer be unique.
+     * {@code 2^26}, this id will no longer be unique.
      */
     public int getID() {
         int lineNumber = 1 + from.inDiff;
@@ -721,7 +998,15 @@ public class DiffNode {
         id += codeType.ordinal();
         return id;
     }
-    
+
+    /**
+     * Reconstructs a node from the given id and sets the given label.
+     * An id uniquely determines a node's {@link DiffNode#codeType}, {@link DiffNode#diffType}, and {@link DiffLineNumber#inDiff line number in the diff}.
+     * The almost-inverse function is {@link DiffNode#getID()} but the conversion is not lossless.
+     * @param id The id from which to reconstruct the node.
+     * @param label The label the node should have.
+     * @return The reconstructed DiffNode.
+     */
     public static DiffNode fromID(final int id, String label) {
         final int lowestBitsMask = (1 << ID_OFFSET) - 1;
 
@@ -739,6 +1024,13 @@ public class DiffNode {
         );
     }
 
+    /**
+     * Checks that the DiffTree is in a valid state.
+     * In particular, this method checks that all edges are well-formed (e.g., edges can be inconsistent because edges are double-linked).
+     * This method also checks that a node with exactly one parent was edited, and that a node with exactly two parents was not edited.
+     * @see Assert#assertTrue
+     * @throws AssertionError when an inconsistency is detected.
+     */
     public void assertConsistency() {
         // check consistency of children lists and edges
         for (final DiffNode c : childOrder) {
@@ -764,6 +1056,10 @@ public class DiffNode {
         }
     }
 
+    /**
+     * Checks that Else and Elif nodes have an If or Elif as parent.
+     * @throws AssertionError when an inconsistency is detected.
+     */
     public void assertSemanticConsistency() {
         // Else and Elif nodes have an If or Elif as parent.
         if (this.isElse() || this.isElif()) {
@@ -776,14 +1072,31 @@ public class DiffNode {
         }
     }
 
+    /**
+     * Prepends the {@link DiffType#symbol} of the given diffType to all given lines and
+     * joins all lines with {@link StringUtils#LINEBREAK linebreaks} to a single text.
+     * @param diffType The change type of the given diff hunk.
+     * @param lines The lines to turn into a text-based diff.
+     * @return A diff in which all given lines have the given diff type.
+     */
     public static String toTextDiffLine(final DiffType diffType, final List<String> lines) {
         return lines.stream().collect(Collectors.joining(StringUtils.LINEBREAK + diffType.symbol, diffType.symbol, ""));
     }
 
+    /**
+     * Unparses this node's lines into its original text-based diff.
+     * @return The diff from which this node was parsed, reconstructed as accurately as possible.
+     */
     public String toTextDiffLine() {
         return toTextDiffLine(diffType, lines);
     }
 
+    /**
+     * Unparses this subgraph into its original text-based diff.
+     * This will return the diff of the entire subgraph starting with this node as root.
+     * Recursively invokes {@link DiffNode#toTextDiffLine()} on this node and all its descendants.
+     * @return The diff from which this subgraph was parsed, reconstructed as accurately as possible.
+     */
     public String toTextDiff() {
         final StringBuilder diff = new StringBuilder();
 

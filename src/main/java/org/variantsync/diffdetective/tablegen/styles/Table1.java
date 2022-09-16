@@ -13,6 +13,18 @@ import java.util.List;
 
 import static org.variantsync.diffdetective.tablegen.Alignment.*;
 
+/**
+ * A template of a LaTex table containing basic information for each dataset.
+ *
+ * <p>Each row represents one dataset and contains the following data:
+ * <ul>
+ *   <li>a dataset description
+ *   <li>commit counts
+ *   <li>diff counts
+ *   <li>elementary pattern counts
+ *   <li>processing time
+ * </ul>
+ */
 public class Table1 extends TableDefinition {
     public Table1() {
         super(new ArrayList<>());
@@ -32,6 +44,7 @@ public class Table1 extends TableDefinition {
         this.columnDefinitions.add(col("runtime (s)", RIGHT, row -> makeReadable(row.results().runtimeInSeconds)));
     }
 
+    /** Sorts {@code rows} alphabetically and appends {@code ultimateResult} to the result. */
     @Override
     public List<? extends Row> sortAndFilter(final List<ContentRow> rows, final ContentRow ultimateResult) {
         final List<Row> res = new ArrayList<>(TableGenerator.alphabeticallySorted(rows));

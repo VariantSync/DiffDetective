@@ -8,6 +8,10 @@ import org.variantsync.diffdetective.diff.difftree.serialize.treeformat.DiffTree
 /**
  * Options necessary for importing a line graph.
  * This records contains information for importing a {@link DiffTree} from a line graph, such as the graph format and tree and node layouts.
+ * @param graphFormat {@link GraphFormat}
+ * @param treeFormat {@link DiffTreeLabelFormat}
+ * @param nodeFormat {@link DiffNodeLabelFormat}
+ * @param edgeFormat {@link EdgeLabelFormat}
  */
 public record DiffTreeLineGraphImportOptions(
         GraphFormat graphFormat,

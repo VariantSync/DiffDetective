@@ -5,12 +5,19 @@ import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
 import org.variantsync.diffdetective.diff.difftree.DiffType;
 import org.variantsync.diffdetective.diff.difftree.Time;
-import org.variantsync.diffdetective.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
+/**
+ * Starfold reduces redundancy in edited leaves.
+ * It identifies stars and simplifies its arms.
+ * A star is a non-edited macro node together with all its children
+ * that are code nodes and leaves.
+ * The Starfold collapses all these children to a single child for each time.
+ * This means, all inserted star-children will be merged into a single child, and for deletions respectively.
+ * @author Paul Bittner, Benjamin Moosherr
+ */
 public class Starfold implements DiffTreeTransformer {
     private final boolean respectNodeOrder;
 
@@ -18,10 +25,20 @@ public class Starfold implements DiffTreeTransformer {
         this.respectNodeOrder = respectNodeOrder;
     }
 
+    /**
+     * Create a new Starfold that respects node order.
+     * It will not fold a star such that the order of children is mixed up after the fold.
+     * @return A new order-respecting Starfold.
+     */
     public static Starfold RespectNodeOrder() {
         return new Starfold(true);
     }
 
+    /**
+     * Create a new Starfold that ignores node order.
+     * It will fold stars aggressively and might shuffle the order of children below a star-root.
+     * @return A new order-ignoring Starfold.
+     */
     public static Starfold IgnoreNodeOrder() {
         return new Starfold(false);
     }
@@ -37,12 +54,12 @@ public class Starfold implements DiffTreeTransformer {
         }
     }
 
-    public void foldStar(final DiffNode starRoot) {
+    private void foldStar(final DiffNode starRoot) {
         // We fold the stars for each time respectively.
         Time.forall(t -> foldStarAtTime(starRoot, t));
     }
 
-    public void foldStarAtTime(final DiffNode starRoot, Time time) {
+    private void foldStarAtTime(final DiffNode starRoot, Time time) {
 //        System.out.println("Fold " + starRoot + " at time " + time);
         final DiffType targetDiffType = DiffType.thatExistsOnlyAt(time);
         final List<DiffNode> starArms = new ArrayList<>();
@@ -67,7 +84,7 @@ public class Starfold implements DiffTreeTransformer {
         mergeArms(starRoot, time, targetDiffType, starArms);
     }
 
-    public void mergeArms(final DiffNode starRoot, Time time, final DiffType targetDiffType, final List<DiffNode> starArms) {
+    private void mergeArms(final DiffNode starRoot, Time time, final DiffType targetDiffType, final List<DiffNode> starArms) {
         // If there is more than one arm, merge.
         if (starArms.size() > 1) {
             final int targetIndex = starRoot.indexOfChild(starArms.get(0));
@@ -85,11 +102,11 @@ public class Starfold implements DiffTreeTransformer {
         }
     }
 
-    public static boolean isStarRoot(final DiffNode node) {
+    private static boolean isStarRoot(final DiffNode node) {
         return !node.isCode() && node.isNon();
     }
 
-    public static boolean isStarArm(final DiffNode node) {
+    private static boolean isStarArm(final DiffNode node) {
         return node.isLeaf() && node.isCode();
     }
 }

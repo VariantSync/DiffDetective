@@ -19,16 +19,30 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.function.BiConsumer;
 
-public class AnalysisResult implements Metadata<AnalysisResult> { //TODO was eigenes was Metadata erbt
+/**
+ * The result of a {@link HistoryAnalysis}.
+ * This result stores various metadata and statistics that we use for the validation of our ESEC/FSE paper.
+ * An AnalysisResult also allows to store any custom metadata or information.
+ * @author Paul Bittner
+ */
+public class AnalysisResult implements Metadata<AnalysisResult> {
+    /**
+     * Placeholder name for data that is not associated to a repository or where the repository is unknown.
+     */
     public final static String NO_REPO = "<NONE>";
-    public final static String EXTENSION = ".metadata.txt";
-    public final static String ERROR_BEGIN = "#Error[";
-    public final static String ERROR_END = "]";
 
-    public static Map.Entry<String, BiConsumer<AnalysisResult, String>> storeAsCustomInfo(String key) {
-        return Map.entry(key, (r, val) -> r.putCustomInfo(key, val));
-    }
-    
+    /**
+     * File extension that is used when writing AnalysisResults to disk.
+     */
+    public final static String EXTENSION = ".metadata.txt";
+
+    private final static String ERROR_BEGIN = "#Error[";
+    private final static String ERROR_END = "]";
+
+    /**
+     * Inplace semigroup for AnalysisResult.
+     * Merges the second results values into the first result.
+     */
     public final static InplaceSemigroup<AnalysisResult> ISEMIGROUP = (a, b) -> {
         a.totalCommits += b.totalCommits;
         a.exportedCommits += b.exportedCommits;
@@ -46,28 +60,19 @@ public class AnalysisResult implements Metadata<AnalysisResult> { //TODO was eig
         a.diffErrors.append(b.diffErrors);
     };
 
+    /**
+     * Inplace monoid for AnalysisResult.
+     * @see AnalysisResult#ISEMIGROUP
+     */
     public static InplaceMonoid<AnalysisResult> IMONOID= InplaceMonoid.From(
             AnalysisResult::new,
             ISEMIGROUP
     );
 
     public String repoName;
-    public int totalCommits; // total number of commits in the observed history
-    public int exportedCommits; // number of processed commits in the observed history. exportedCommits <= totalCommits
-    /**
-     * Number of commits that were not processed because they had no DiffTrees.
-     * A commit is empty iff at least of one of the following conditions is met for every of its patches:
-     * - the patch did not edit a C file,
-     * - the DiffTree became empty after transformations (this can happen if there are only whitespace changes),
-     * - or the patch had syntax errors in its annotations, so the DiffTree could not be parsed.
-     */
+    public int totalCommits;
+    public int exportedCommits;
     public int emptyCommits;
-    /**
-     * Number of commits that could not be parsed at all because of exceptions when operating JGit.
-     *
-     * The number of commits that were filtered because they are a merge commit is thus given as
-     * totalCommits - exportedCommits - emptyCommits - failedCommits
-     */
     public int failedCommits;
     public int exportedTrees;
     public double runtimeInSeconds;
@@ -79,10 +84,17 @@ public class AnalysisResult implements Metadata<AnalysisResult> { //TODO was eig
     private final LinkedHashMap<String, String> customInfo = new LinkedHashMap<>();
     private final MergeMap<DiffError, Integer> diffErrors = new MergeMap<>(new HashMap<>(), Integer::sum);
 
+    /**
+     * Creates an empty analysis result.
+     */
     public AnalysisResult() {
         this(NO_REPO);
     }
 
+    /**
+     * Creates an empty analysis result for the given repo.
+     * @param repoName The repo for which to collect results.
+     */
     public AnalysisResult(final String repoName) {
         this(
                 repoName,
@@ -95,6 +107,27 @@ public class AnalysisResult implements Metadata<AnalysisResult> { //TODO was eig
                 new ExplainedFilterSummary());
     }
 
+    /**
+     * Creates am analysis result with the given inital values.
+     * @param repoName The repo from which the results where collected.
+     * @param totalCommits The total number of commits in the observed history of the given repository.
+     * @param exportedCommits The number of commits that were processed. exportedCommits &lt;= totalCommits
+     * @param emptyCommits Number of commits that were not processed because they had no DiffTrees.
+     *                     A commit is empty iff at least of one of the following conditions is met for every of its patches:
+     *                       - the patch did not edit a C file,
+     *                       - the DiffTree became empty after transformations (this can happen if there are only whitespace changes),
+     *                       - or the patch had syntax errors in its annotations, so the DiffTree could not be parsed.
+     * @param failedCommits Number of commits that could not be parsed at all because of exceptions when operating JGit.
+     *                      The number of commits that were filtered because they are a merge commit is thus given as
+     *                      totalCommits - exportedCommits - emptyCommits - failedCommits
+     * @param exportedTrees Number of DiffTrees that were processed.
+     * @param runtimeInSeconds The total runtime in seconds (irrespective of multithreading).
+     * @param runtimeWithMultithreadingInSeconds The effective runtime in seconds that we have when using multithreading.
+     * @param min The commit that was processed the fastest.
+     * @param max The commit that was processed the slowest.
+     * @param debugData Debug data for DiffTree serialization.
+     * @param filterHits Explanations for filter hits, when filtering DiffTrees (e.g., because a diff was empty).
+     */
     public AnalysisResult(
             final String repoName,
             int totalCommits,
@@ -124,10 +157,19 @@ public class AnalysisResult implements Metadata<AnalysisResult> { //TODO was eig
         this.max = max;
     }
 
+    /**
+     * Stores the given custom key value information in this analysis result.
+     * @param key The name of the given value that is used to associate the value.
+     * @param value The value to store.
+     */
     public void putCustomInfo(final String key, final String value) {
         customInfo.put(key, value);
     }
 
+    /**
+     * Report errors (that for example occurred when parsing DiffTrees).
+     * @param errors A list of errors to report.
+     */
     public void reportDiffErrors(final List<DiffError> errors) {
         for (final DiffError e : errors) {
             diffErrors.put(e, 1);
@@ -138,8 +180,10 @@ public class AnalysisResult implements Metadata<AnalysisResult> { //TODO was eig
      * Imports a metadata file, which is an output of a {@link AnalysisResult}, and saves back to {@link AnalysisResult}.
      * 
      * @param p {@link Path} to the metadata file
+     * @param customParsers A list of parsers to handle custom values that were stored with {@link AnalysisResult#putCustomInfo(String, String)}.
+     *                      Each parser parses the value (second argument) of a given key (first entry in the map) and stores it in the given AnalysisResult (first argument).
      * @return The reconstructed {@link AnalysisResult}
-     * @throws IOException
+     * @throws IOException when the file could not be read.
      */
     public static AnalysisResult importFrom(final Path p, final Map<String, BiConsumer<AnalysisResult, String>> customParsers) throws IOException {
         AnalysisResult result = new AnalysisResult();
@@ -216,6 +260,16 @@ public class AnalysisResult implements Metadata<AnalysisResult> { //TODO was eig
         result.elementaryPatternCounts = ElementaryPatternCount.parse(elementaryPatternCountsLines, p.toString());
 
         return result;
+    }
+
+    /**
+     * Helper method to construct custom parsers for {@link AnalysisResult#importFrom(Path, Map)}.
+     * This method creates a parser for custom values that just stores the parsed values as string values for the given key.
+     * @param key The key whose values should be stored as unparsed strings.
+     * @return A custom parser for {@link AnalysisResult#importFrom(Path, Map)}.
+     */
+    public static Map.Entry<String, BiConsumer<AnalysisResult, String>> storeAsCustomInfo(String key) {
+        return Map.entry(key, (r, val) -> r.putCustomInfo(key, val));
     }
 
     @Override

@@ -22,6 +22,21 @@ can be removed and the actual path can be set.
 To execute the printed commands uncomment the last line of the second paragraph
 which disables `DRY_RUN`.
 
+---
+Warning: This script doesn't properly replicate the repositories `libxml2` and
+`gcc`. To manually finish the replication process for these repositories, run
+the following in the `DiffDetectiveMining` directory (sibling of the
+`DiffDetective` repository manually:
+```
+for repo in libxml2 gcc
+do
+  pushd "$repo"
+  git remote add origin "git@github.com:DiffDetective/$repo.git"
+  git push -f origin
+  popd
+done
+```
+
 ## Login
 You can either login beforehand with `gh auth login` or just run the script
 which will run this command for you. This script will *not* log you out once

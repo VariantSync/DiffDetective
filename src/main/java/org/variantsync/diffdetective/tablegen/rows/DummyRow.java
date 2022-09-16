@@ -6,6 +6,7 @@ import org.variantsync.diffdetective.util.LaTeX;
 
 import java.util.List;
 
+/** A LaTex row containing ellipsis representing missing lines in the table.  */
 public class DummyRow implements Row {
     @Override
     public String toLaTeXRow(List<ColumnDefinition> columns) {

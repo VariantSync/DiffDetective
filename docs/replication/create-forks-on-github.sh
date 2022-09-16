@@ -2,7 +2,7 @@
 
 # Default settings
 PATH_TO_REPOSITORIES="$(dirname "${BASH_SOURCE[0]}")/../../../DiffDetectiveMining"
-DRY_RUN=y
+DRY_RUN=n
 
 # Override settings
 #PATH_TO_REPOSITORIES="absolute/path/to/directory/containing/the/respositories"
@@ -16,6 +16,7 @@ continue-with() {
 }
 
 run() {
+  echo
   echo "\$ $*"
   if [ "$DRY_RUN" = "n" ]
   then
@@ -54,8 +55,18 @@ while IFS= read -d '' -r repository
 do
   echo
   run cd "$repository"
-  run gh repo fork --remote
-  run git push -f origin
+  url="$(git remote get-url origin)"
+  if [[ "$url" =~ github.com ]]
+  then
+    echo "$repository is a github repo"
+    run gh repo fork --remote || echo "already forked"
+    run git push -f origin
+  else
+    echo "$repository is not a github repo"
+    run git remote rename origin upstream &>/dev/null
+    run gh repo create "DiffDetective/$(basename "$repository")" -d "Fork of $url" --push --public --source .
+  fi
+  echo "repo succesful"
 done
 
 if [ "$was_logged_in" = "1" ]

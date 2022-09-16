@@ -5,17 +5,26 @@ import org.variantsync.diffdetective.diff.difftree.CodeType;
 import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.diff.difftree.DiffType;
 
+import java.io.BufferedReader;
 import java.util.List;
 import java.util.Stack;
 
 import static org.variantsync.diffdetective.diff.result.DiffError.MLMACRO_WITHIN_MLMACRO;
 
+/**
+ * A parser for definitions of multiline macros in text-based diffs.
+ * @author Paul Bittner
+ */
 public class MultiLineMacroParser {
     private final DiffNodeParser nodeParser;
 
     private MultilineMacro beforeMLMacro = null;
     private MultilineMacro afterMLMacro = null;
 
+    /**
+     * Create a new parser that uses the given DiffNodeParser to construct DiffNodes.
+     * @param nodeParser Parser to build DiffNodes.
+     */
     public MultiLineMacroParser(DiffNodeParser nodeParser) {
         this.nodeParser = nodeParser;
     }
@@ -44,6 +53,21 @@ public class MultiLineMacroParser {
         return node;
     }
 
+    /**
+     * Consumes the next line a text-based diff and determines if that line
+     * is part of a multi-line macro definition or not.
+     * @param lineNo The line number of the currently parsed line.
+     * @param line The line to parse.
+     * @param beforeStack The current before stack as defined by Sören's algorithm.
+     * @param afterStack The current after stack as defined by Sören's algorithm.
+     * @param nodes The list of all DiffNodes that where already parsed.
+     * @return {@link ParseResult#SUCCESS} if the line was consumed and is part of a multiline macro definition.
+     *         {@link ParseResult#NOT_MY_DUTY} if the line is not part of a multiline macro definition and was not parsed.
+     *         The line remains unparsed and should be parsed in another way.
+     *         {@link ParseResult#ERROR} if an error occurred (e.g., because of a syntax error).
+     * @throws IllFormedAnnotationException when {@link MultiLineMacroParser#finalizeMLMacro} fails.
+     * @see DiffTreeParser#createDiffTree(BufferedReader, boolean, boolean, DiffNodeParser)
+     */
     ParseResult consume(
             final DiffLineNumber lineNo,
             final String line,
@@ -168,6 +192,11 @@ public class MultiLineMacroParser {
         return ParseResult.NOT_MY_DUTY;
     }
 
+    /**
+     * Checks whether the given line continues the definition of a multiline macro (possibly within a text-based diff).
+     * @param line The line to check for continuing a multiline macro definition.
+     * @return True iff the line ends with a backslash.
+     */
     public static boolean continuesMultilineDefinition(String line) {
         return line.trim().endsWith("\\");
     }

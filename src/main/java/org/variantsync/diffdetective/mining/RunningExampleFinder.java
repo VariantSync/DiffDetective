@@ -2,8 +2,8 @@ package org.variantsync.diffdetective.mining;
 
 import org.prop4j.Literal;
 import org.prop4j.Node;
-import org.variantsync.diffdetective.diff.Diff;
 import org.variantsync.diffdetective.diff.GitPatch;
+import org.variantsync.diffdetective.diff.TextBasedDiff;
 import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
 import org.variantsync.diffdetective.diff.difftree.DiffTreeSource;
@@ -15,7 +15,6 @@ import org.variantsync.diffdetective.diff.difftree.render.DiffTreeRenderer;
 import org.variantsync.diffdetective.diff.difftree.transform.ExampleFinder;
 import org.variantsync.diffdetective.diff.result.DiffResult;
 import org.variantsync.diffdetective.util.Assert;
-import org.variantsync.diffdetective.util.StringUtils;
 
 import java.nio.file.Path;
 import java.util.Optional;
@@ -98,8 +97,8 @@ public class RunningExampleFinder {
 
     private static String getDiff(final DiffTree tree) {
         final DiffTreeSource source = tree.getSource();
-        Assert.assertTrue(source instanceof Diff);
-        return ((Diff) source).getDiff();
+        Assert.assertTrue(source instanceof TextBasedDiff);
+        return ((TextBasedDiff) source).getDiff();
     }
 
     private static int getNumberOfLinesIn(final String text) {

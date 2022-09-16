@@ -7,9 +7,18 @@ import org.variantsync.diffdetective.diff.difftree.serialize.DiffTreeLineGraphEx
 
 import java.nio.file.Path;
 
+/**
+ * Analysis strategy that monitors the completion level of a task.
+ * This is an adapter for {@link TaskCompletionMonitor}.
+ * @author Paul Bittner
+ */
 public class AnalysisMonitor extends AnalysisStrategy {
     private final TaskCompletionMonitor monitor;
 
+    /**
+     * Creates a new AnalysisMonitor that prints the current status every <code>seconds</code> seconds.
+     * @param seconds The amount of seconds to wait between reporting speed statistics.
+     */
     public AnalysisMonitor(int seconds) {
         monitor = new TaskCompletionMonitor(seconds, TaskCompletionMonitor.LogProgress("commits"));
     }

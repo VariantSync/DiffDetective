@@ -1,2 +1,2 @@
-docker build -t replication-package .
+docker build -t diff-detective .
 @pause

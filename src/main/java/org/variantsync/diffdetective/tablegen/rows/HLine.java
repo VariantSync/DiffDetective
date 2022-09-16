@@ -6,6 +6,7 @@ import org.variantsync.diffdetective.tablegen.TableGenerator;
 
 import java.util.List;
 
+/** A horizontal line separating two rows in a LaTex table. */
 public class HLine implements Row {
     @Override
     public String toLaTeXRow(List<ColumnDefinition> columns) {

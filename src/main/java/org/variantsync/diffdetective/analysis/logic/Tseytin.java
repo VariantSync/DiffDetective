@@ -7,9 +7,20 @@ import java.util.List;
 import java.util.function.BiFunction;
 
 /**
+ * Class with methods for Tseytin conversion.
+ * The Tseytin conversion produces an equisatisfiable CNF for a propositional formula.
+ * The produced CNF is usually small at the cost of introducing new variables.
+ *
  * @author Chico Sundermann, Paul Bittner
  */
-public class Tseytin {
+public final class Tseytin {
+    private Tseytin() {}
+
+    /**
+     * Helper class for Tseytin conversion that remembers generated formulas.
+     * This helper class basically models the conversion function equipped with some useful state.
+     * (Function programmers might see this as a function within a state monad.)
+     */
     private static class Convert {
         private final List<Node> newSubFormulas;
         private int currentIndex = 0;
@@ -17,6 +28,12 @@ public class Tseytin {
 
         private final BiFunction<Node, Node, Node> eq;
 
+        /**
+         * Convertes the given formula with the given equivalence function.
+         * @param formula Formula to tseytin convert.
+         * @param eq Function that models the equivelency relationship between two given nodes. Typically, this
+         *           function produces a propositional "iff" (&lt;=&gt;).
+         */
         private Convert(final Node formula, final BiFunction<Node, Node, Node> eq) {
             this.eq = eq;
             formula.simplifyTree();
@@ -27,6 +44,11 @@ public class Tseytin {
             ));
         }
 
+        /**
+         * Performs tseyting conversion on the given formula.
+         * @param formula Formula to convert.
+         * @return The tseyting variable representing the input formula.
+         */
         private Node tseytin(Node formula
 //                , boolean isRoot
         ) {

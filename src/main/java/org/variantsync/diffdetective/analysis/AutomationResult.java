@@ -5,6 +5,15 @@ import org.variantsync.functjonal.category.InplaceSemigroup;
 
 import java.util.LinkedHashMap;
 
+/**
+ * Statistics on runtimes for commit processing.
+ * @param numMeasuredCommits Number of measured commits.
+ * @param totalTimeMS Total time in milliseconds that it took to process the commits.
+ * @param fastest The commit that was processed that fastest.
+ * @param slowest The commit that was processed that slowest.
+ * @param median The median time it took to process a commit.
+ * @author Paul Bittner
+ */
 public record AutomationResult(
         long numMeasuredCommits,
         long totalTimeMS,
@@ -12,10 +21,16 @@ public record AutomationResult(
         CommitProcessTime slowest,
         CommitProcessTime median
 ) implements Metadata<AutomationResult> {
+    /**
+     * @return The average time it took to process a commit in milliseconds.
+     */
     public double avgTimeMS() {
         return ((double) totalTimeMS) / ((double) numMeasuredCommits);
     }
 
+    /**
+     * @return Total time in minutes that it took to process the commits.
+     */
     public double totalTimeMinutes() {
         return ((double) totalTimeMS / 1000.0) / 60.0;
     }

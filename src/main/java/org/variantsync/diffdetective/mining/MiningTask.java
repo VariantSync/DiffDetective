@@ -54,7 +54,7 @@ public class MiningTask extends CommitHistoryAnalysisTask {
             final CommitDiff commitDiff = commitDiffResult.diff().get();
             final StringBuilder lineGraph = new StringBuilder();
             miningResult.append(LineGraphExport.toLineGraphFormat(commitDiff, lineGraph, options.exportOptions()));
-            options.miningStrategy().onCommit(commitDiff, lineGraph.toString());
+            options.analysisStrategy().onCommit(commitDiff, lineGraph.toString());
             options.exportOptions().treeFilter().resetExplanations();
 
             // Count elementary patterns
@@ -107,11 +107,11 @@ public class MiningTask extends CommitHistoryAnalysisTask {
             }
         }
 
-        options.miningStrategy().end();
+        options.analysisStrategy().end();
         miningResult.runtimeInSeconds = totalTime.getPassedSeconds();
-        miningResult.exportTo(FileUtils.addExtension(options.outputPath(), AnalysisResult.EXTENSION));
-        exportCommitTimes(commitTimes, FileUtils.addExtension(options.outputPath(), COMMIT_TIME_FILE_EXTENSION));
-        exportPatchStatistics(patchStatistics, FileUtils.addExtension(options.outputPath(), PATCH_STATISTICS_EXTENSION));
+        miningResult.exportTo(FileUtils.addExtension(options.outputDir(), AnalysisResult.EXTENSION));
+        exportCommitTimes(commitTimes, FileUtils.addExtension(options.outputDir(), COMMIT_TIME_FILE_EXTENSION));
+        exportPatchStatistics(patchStatistics, FileUtils.addExtension(options.outputDir(), PATCH_STATISTICS_EXTENSION));
         return miningResult;
     }
 }

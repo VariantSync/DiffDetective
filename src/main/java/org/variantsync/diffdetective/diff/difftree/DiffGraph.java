@@ -2,17 +2,25 @@ package org.variantsync.diffdetective.diff.difftree;
 
 import java.util.Collection;
 
+/**
+ * Generalisation of DiffTrees to arbitrary change graphs with variability information.
+ * The DiffGraph class currently does not model a graph itself but rather
+ * turns a given graph into a DiffTree by equipping it with a synthetic root.
+ */
 public final class DiffGraph {
     private static final String DIFFGRAPH_LABEL = "DiffGraph";
 
     private DiffGraph() {}
 
+    /**
+     * Returns true iff the given node has no parents (i.e., is a root candidate).
+     */
     public static boolean hasNoParents(final DiffNode node) {
         return node.getBeforeParent() == null && node.getAfterParent() == null;
     }
 
     /**
-     * Invokes {@link DiffGraph#fromNodes(Collection<DiffNode>)} with an unknown DiffTreeSource.
+     * Invokes {@link DiffGraph#fromNodes(Collection, DiffTreeSource)} )} with an unknown DiffTreeSource.
      */
     public static DiffTree fromNodes(final Collection<DiffNode> nodes) {
         return fromNodes(nodes, DiffTreeSource.Unknown);
@@ -24,7 +32,6 @@ public final class DiffGraph {
      * @param nodes a DiffGraph
      * @param source the source where the DiffGraph came from.
      * @return A DiffTree representing the DiffGraph with a synthetic root node.
-     * @see DiffGraph#fromNodes(Collection<DiffNode>)
      */
     public static DiffTree fromNodes(final Collection<DiffNode> nodes, final DiffTreeSource source) {
         final DiffNode newRoot = DiffNode.createRoot();

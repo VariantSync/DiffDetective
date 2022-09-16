@@ -6,7 +6,11 @@ import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.diff.difftree.DiffType;
 import org.variantsync.diffdetective.pattern.elementary.ElementaryPattern;
 
-public class Untouched extends ElementaryPattern {
+/**
+ * Our Untouched pattern from the ESEC/FSE'22 paper.
+ * @author Paul Bittner, Sören Viegener
+ */
+final class Untouched extends ElementaryPattern {
     Untouched() {
         super("Untouched", DiffType.NON);
     }

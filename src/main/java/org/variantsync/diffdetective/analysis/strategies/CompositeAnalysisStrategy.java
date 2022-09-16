@@ -8,9 +8,19 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collection;
 
+/**
+ * Composite pattern for AnalysisStrategy.
+ * Composes multiple AnalysisStrategies as one.
+ * @author Paul Bittner
+ */
 public class CompositeAnalysisStrategy extends AnalysisStrategy {
     private final Collection<AnalysisStrategy> strategies;
 
+    /**
+     * Creates a composite strategy for all given strategies.
+     * The resulting strategy will forward any callbacks to the given strategies in the order they are given.
+     * @param strategies Strategies to compose.
+     */
     public CompositeAnalysisStrategy(final AnalysisStrategy... strategies) {
         this.strategies = Arrays.asList(strategies);
     }

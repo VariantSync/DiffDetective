@@ -6,6 +6,7 @@ import org.variantsync.diffdetective.diff.difftree.serialize.LinegraphFormat;
 
 /**
  * Reads and writes {@link DiffTreeSource} from and to line graph.
+ * @author Paul Bittner, Kevin Jedelhauser
  */
 public interface DiffTreeLabelFormat extends LinegraphFormat {
 	/**
@@ -43,5 +44,4 @@ public interface DiffTreeLabelFormat extends LinegraphFormat {
     default String toLineGraphLine(final DiffTreeSource diffTreeSource) {
 		return LineGraphConstants.LG_TREE_HEADER + " " + toLabel(diffTreeSource);
 	}
-	
 }
