@@ -110,7 +110,7 @@ public class DiffNode {
     public static DiffNode createRoot() {
         return new DiffNode(
                 DiffType.NON,
-                NodeType.ROOT,
+                NodeType.IF,
                 new DiffLineNumber(1, 1, 1),
                 DiffLineNumber.Invalid(),
                 FixTrueFalse.True,
@@ -968,17 +968,17 @@ public class DiffNode {
     }
 
     /**
-     * Returns true if this node is a root node (i.e., it has {@link NodeType#ROOT}.
+     * Returns true if this node is a root node (has no parents).
      */
     public boolean isRoot() {
-        return this.nodeType.equals(NodeType.ROOT);
+        return getBeforeParent() == null && getAfterParent() == null;
     }
 
     /**
      * Returns {@link NodeType#isAnnotation()} for this node's {@link DiffNode#nodeType}.
      */
     public boolean isAnnotation() {
-        return this.nodeType.isAnnotation();
+        return this.nodeType.isAnnotation() && !this.isRoot();
     }
 
     /**

@@ -129,22 +129,20 @@ public class LineGraphImport {
 
 		// Handle trees and graphs differently
 		if (options.graphFormat() == GraphFormat.DIFFGRAPH) {
-			// If you should interpret the input data as DiffTrees, always expect a root to be present. Parse all nodes (v) to a list of nodes. Search for the root. Assert that there is exactly one root.
-			Assert.assertTrue(diffNodeList.stream().noneMatch(DiffNode::isRoot)); // test if it’s not a tree
 			return DiffGraph.fromNodes(diffNodeList, diffTreeSource);
 		} else if (options.graphFormat() == GraphFormat.DIFFTREE) {
 			// If you should interpret the input data as DiffTrees, always expect a root to be present. Parse all nodes (v) to a list of nodes. Search for the root. Assert that there is exactly one root.
             DiffNode root = null;
             for (final DiffNode v : diffNodeList) {
-                if (DiffGraph.hasNoParents(v)) {
+                if (v.isRoot()) {
                     // v is root candidate
                     if (root != null) {
-                        throw new RuntimeException("Not a DiffTree but a DiffGraph: Got more than one root! Got \"" + root + "\" and \"" + v + "\"!");
+                        throw new RuntimeException("Not a DiffTree: Got more than one root! Got \"" + root + "\" and \"" + v + "\"!");
                     }
-                    if (v.nodeType == NodeType.IF || v.nodeType == NodeType.ROOT) {
+                    if (v.nodeType == NodeType.IF) {
                         root = v;
                     } else {
-                        throw new RuntimeException("Not a DiffTree but a DiffGraph: The node \"" + v + "\" is not labeled as ROOT or IF but has no parents!");
+                        throw new RuntimeException("Not a DiffTree but a DiffGraph: The node \"" + v + "\" is not labeled as IF but has no parents!");
                     }
                 }
             }

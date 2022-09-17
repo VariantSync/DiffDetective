@@ -41,8 +41,7 @@ public class ReleaseMiningDiffNodeFormat implements MiningNodeFormat {
         if (node.isArtifact()) {
             return ARTIFACT_PREFIX + toId(ProposedEditClasses.Instance.match(node));
         } else {
-            final NodeType nodeType = node.isRoot() ? NodeType.IF : node.nodeType;
-            return ANNOTATION_PREFIX + node.diffType.ordinal() + nodeType.ordinal();
+            return ANNOTATION_PREFIX + node.diffType.ordinal() + node.nodeType.ordinal();
         }
     }
 
@@ -61,9 +60,6 @@ public class ReleaseMiningDiffNodeFormat implements MiningNodeFormat {
             final NodeType nodeType = NodeType.values()[Integer.parseInt(
                     tag.substring(nodeTypeBegin, nodeTypeBegin + 1)
             )];
-            if (nodeType == NodeType.ROOT) {
-                throw new IllegalArgumentException("There should be no roots in mined edit classes!");
-            }
             return new Pair<>(diffType, nodeType);
         }
     }

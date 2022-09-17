@@ -274,7 +274,7 @@ public class DiffTreeParser {
         do {
             // Don't update line numbers of popped nodes here as this already happened.
             popped = stack.pop();
-        } while (!popped.isIf() && !popped.isRoot());
+        } while (!popped.isIf());
         return popped;
     }
 

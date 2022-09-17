@@ -15,10 +15,7 @@ public enum NodeType {
     ELIF("elif"),
 
     // Artifact types
-    ARTIFACT("artifact"),
-
-    // Extra type for the root
-    ROOT("ROOT");
+    ARTIFACT("artifact");
 
     public final String name;
     NodeType(String name) {
@@ -36,7 +33,7 @@ public enum NodeType {
      * Returns true iff this node type represents a feature mapping.
      */
     public boolean isAnnotation() {
-        return this != ROOT && this != ARTIFACT;
+        return this != ARTIFACT;
     }
 
     final static Pattern annotationRegex = Pattern.compile("^[+-]?\\s*#\\s*(if|endif|else|elif)");

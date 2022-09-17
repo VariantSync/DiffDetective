@@ -13,13 +13,6 @@ public final class DiffGraph {
     private DiffGraph() {}
 
     /**
-     * Returns true iff the given node has no parents (i.e., is a root candidate).
-     */
-    public static boolean hasNoParents(final DiffNode node) {
-        return node.getBeforeParent() == null && node.getAfterParent() == null;
-    }
-
-    /**
      * Invokes {@link DiffGraph#fromNodes(Collection, DiffTreeSource)} )} with an unknown DiffTreeSource.
      */
     public static DiffTree fromNodes(final Collection<DiffNode> nodes) {
@@ -37,7 +30,7 @@ public final class DiffGraph {
         final DiffNode newRoot = DiffNode.createRoot();
         newRoot.setLabel(DIFFGRAPH_LABEL);
         nodes.stream()
-                .filter(DiffGraph::hasNoParents)
+                .filter(DiffNode::isRoot)
                 .forEach(n ->
                         n.diffType.matchBeforeAfter(
                                 () -> newRoot.addBeforeChild(n),

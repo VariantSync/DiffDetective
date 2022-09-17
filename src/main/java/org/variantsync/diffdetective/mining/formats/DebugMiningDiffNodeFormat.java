@@ -19,8 +19,6 @@ public class DebugMiningDiffNodeFormat implements MiningNodeFormat {
 	public String toLabel(final DiffNode node) {
         if (node.isArtifact()) {
             return ProposedEditClasses.Instance.match(node).getName();
-        } else if (node.isRoot()) {
-            return node.diffType + "_" + NodeType.IF;
         } else {
             return node.diffType + "_" + node.nodeType;
         }
@@ -34,9 +32,6 @@ public class DebugMiningDiffNodeFormat implements MiningNodeFormat {
             final DiffType dt = DiffType.fromName(tag);
             final int nodeTypeBegin = tag.indexOf("_") + 1;
             final NodeType nt = NodeType.fromName(tag.substring(nodeTypeBegin));
-            if (nt == NodeType.ROOT) {
-                throw new IllegalArgumentException("There should be no roots in mined edit classes!");
-            }
             return new Pair<>(dt, nt);
         } else {
             final EditClass editClass = ProposedEditClasses.Instance.fromName(tag).orElseThrow(

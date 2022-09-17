@@ -33,7 +33,7 @@ public abstract class DiffNodeLabelPrettyfier {
      */
     public static String prettyPrintIfAnnotationOr(final DiffNode node, final String elseValue) {
         String result = "";
-        if (node.nodeType.isAnnotation()) {
+        if (node.isAnnotation()) {
             result += prettyPrintTypeAndMapping(node);
         } else {
             result += elseValue;
