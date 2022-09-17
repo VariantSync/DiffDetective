@@ -7,14 +7,13 @@ import org.variantsync.diffdetective.editclass.EditClassCatalogue;
 import java.util.List;
 
 /**
- * Collapses edit classes in a DiffTree.
- * Contrary to its name, this transformation leaves a DiffTree's graph structure unchanged.
- * This transformation uses the {@link RelabelNodes} transformer to relabel all nodes.
+ * Label all nodes with their edit class.
+ * This transformation leaves the graph structure of the {@link DiffTree} unchanged.
  * All {@link DiffNode#isArtifact() artifact} nodes will be labeled by their respective edit class.
  * All other nodes will be labeled by the {@link org.variantsync.diffdetective.diff.difftree.NodeType#name name of their node type}.
  * @author Paul Bittner
  */
-public class CollapseEditClasses implements DiffTreeTransformer {
+public class LabelWithEditClass implements DiffTreeTransformer {
     private final DiffTreeTransformer relabelNodes;
 
     /**
@@ -22,7 +21,7 @@ public class CollapseEditClasses implements DiffTreeTransformer {
      * to relabel {@link DiffNode#isArtifact() artifact} nodes.
      * @param editClasses Catalog of edit classes to match on artifact nodes.
      */
-    public CollapseEditClasses(final EditClassCatalogue editClasses) {
+    public LabelWithEditClass(final EditClassCatalogue editClasses) {
         relabelNodes = new RelabelNodes(d -> {
             if (d.isArtifact()) {
                 return editClasses.match(d).getName();
