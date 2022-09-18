@@ -28,7 +28,6 @@ public class FeatureSplitValidationTask extends FeatureSplitAnalysisTask {
         final Clock totalTime = new Clock();
         totalTime.start();
         final Clock commitProcessTimer = new Clock();
-        final Clock patchProcessTimer = new Clock();
 
         for (final RevCommit commit : options.commits()) {
             try {
@@ -48,44 +47,46 @@ public class FeatureSplitValidationTask extends FeatureSplitAnalysisTask {
 
                 final CommitDiff commitDiff = commitDiffResult.diff().get();
                 options.miningStrategy().onCommit(commitDiff, "");
-
                 miningResult.totalPatches += commitDiff.getPatchAmount();
-                // Count elementary patterns
+
+                // inspect every patch
                 int numDiffTrees = 0;
                 for (final PatchDiff patch : commitDiff.getPatchDiffs()) {
                     if (patch.isValid()) {
-                        patchProcessTimer.start();
 
-                        // generate TreeDiffs
+                        // generate TreeDiff
                         final DiffTree t = patch.getDiffTree();
                         DiffTreeTransformer.apply(exportOptions.treePreProcessing(), t);
                         t.assertConsistency();
+                        miningResult.maxDiffSize = miningResult.maxDiffSize >= t.computeSize() ? miningResult.maxDiffSize : t.computeSize();
 
                         if (!exportOptions.treeFilter().test(t)) {
                             continue;
                         }
 
+                        // Store all occurring features, which are then used to extract feature aware patches and remaining patches
+                        miningResult.totalFeatures.addAll(FeatureQueryGenerator.featureQueryGenerator(t));
+                        
                         // validate FeatureSplit
-                        Set<String> allFeatures = FeatureQueryGenerator.featureQueryGenerator(t);
-                        miningResult.totalFeatures.addAll(allFeatures); // TODO required to calculate run time and feature-aware diffs per feature
-                        allFeatures.forEach(feature -> {
-                            // "True" would result in an unchanged diff
-                            // if(feature.equals("True")) return;
-                            LinkedHashMap<String, String> patchStats = new LinkedHashMap<>();
+                        miningResult.totalFeatures.forEach(feature -> {
+
+                            // generate feature-aware and remaining patches
                             HashMap<String, DiffTree> featureAware = FeatureSplit.featureSplit(t, feature);
 
                             // 1. get number of feature-aware patches for a patch
-                            int numOfFeaturesPatches = featureAware.size();
-                            if (miningResult.totalFeatureAwarePatches.get(feature) == null) miningResult.totalFeatureAwarePatches.put(feature, 0);
-                            miningResult.totalFeatureAwarePatches.replace(feature, miningResult.totalFeatureAwarePatches.get(feature) + numOfFeaturesPatches);
+                            // If a feature wasn't yet included, feature split would return just a remainder patch.
+                            if (miningResult.totalFeatureAwarePatches.get(feature) == null) {
+                                miningResult.totalFeatureAwarePatches.put(feature, 0);
+                                miningResult.totalRemainderPatches.put(feature, miningResult.totalFeatureAwarePatches.get("True"));
+                            }
                             
-                            patchStats.put(FeatureSplitMetadataKeys.NUM_OF_FEATURE_AWARE_PATCHES, Integer.toString(numOfFeaturesPatches));
+                            if(featureAware.get(feature) != null ) miningResult.totalFeatureAwarePatches.replace(feature, miningResult.totalFeatureAwarePatches.get(feature) + 1);
+                            if(featureAware.get("remains") != null) miningResult.totalRemainderPatches.replace(feature, miningResult.totalRemainderPatches.get(feature) + 1);
+                            
 
                             featureAware.forEach((key, value) -> {
                                 if (value == null) return;
-                                // 2. get calculation time for a patch
-                                final long patchTimeMS = patchProcessTimer.getPassedMilliseconds();
-                                patchStats.put(FeatureSplitMetadataKeys.PATCH_TIME_MS, Long.toString(patchTimeMS));
+                                // 2. get calculation time for a patch with committimes.txt!!
 
                                 // 3. check if patch is valid
                                 if(!value.isConsistent().isSuccess())  {
@@ -93,30 +94,18 @@ public class FeatureSplitValidationTask extends FeatureSplitAnalysisTask {
                                     ++miningResult.invalidFADiff;
                                 }
 
-                                // 4. check how many feature formulas exists and number of initial features
-                                Set<String> features = FeatureQueryGenerator.featureQueryGenerator(value);
-                                int numOfFeatures = features.size();
-                                patchStats.put(FeatureSplitMetadataKeys.NUM_OF_FEATURES, Integer.toString(numOfFeatures));
-
-                                // 5. calculate size of feature-aware difftree and size of initial difftree
-                                int featureDiffSize = value.computeSize();
-                                //patchStats.put(FeatureSplitMetadataKeys.FEATURE_AWARE_DIFF_SIZE, Integer.toString(featureDiffSize));
-                                patchStats.put(FeatureSplitMetadataKeys.RATIO_OF_NODES, Integer.toString(featureDiffSize / t.computeSize()));
-
+                                // 4. calculate size of feature-aware difftree and size of initial difftree
+                                int featureDiffSizeRatio = value.computeSize() / t.computeSize();
+                                miningResult.ratioNodes = (miningResult.ratioNodes + featureDiffSizeRatio) / 2;
                             });
-                            miningResult.putPatchStats(patchStats);
                         });
 
                         ++numDiffTrees;
                     }
                 }
-                // TODO Not necessary, create own mining result
-                miningResult.exportedTrees += numDiffTrees;
-
                 exportOptions.treeFilter().resetExplanations();
 
                 // Only consider non-empty commits
-                // TODO used to generate calc times
                 if (numDiffTrees > 0) {
                     final long commitTimeMS = commitProcessTimer.getPassedMilliseconds();
                     if (commitTimeMS > miningResult.max.milliseconds()) {
