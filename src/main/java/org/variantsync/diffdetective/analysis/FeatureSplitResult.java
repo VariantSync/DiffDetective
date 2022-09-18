@@ -45,7 +45,7 @@ public class FeatureSplitResult implements Metadata<FeatureSplitResult> {
         a.max.set(CommitProcessTime.max(a.max, b.max));
         a.debugData.append(b.debugData);
         a.totalPatches += b.totalPatches;
-        a.totalFeatureAwarePatches += b.totalFeatureAwarePatches;
+        a.totalFeatureAwarePatches.putAll(b.totalFeatureAwarePatches);
         a.totalFeatures.addAll(b.totalFeatures);
         a.patchStats.addAll(b.patchStats);
         MergeMap.putAllValues(a.customInfo, b.customInfo, Semigroup.assertEquals());
@@ -93,7 +93,7 @@ public class FeatureSplitResult implements Metadata<FeatureSplitResult> {
 
     public int totalPatches;
     public Set<String> totalFeatures;
-    public int totalFeatureAwarePatches;
+    public HashMap<String, Integer> totalFeatureAwarePatches;
 
     public FeatureSplitResult() {
         this(NO_REPO);
@@ -107,7 +107,7 @@ public class FeatureSplitResult implements Metadata<FeatureSplitResult> {
                 0, 0,
                 CommitProcessTime.Unknown(repoName, Long.MAX_VALUE),
                 CommitProcessTime.Unknown(repoName, Long.MIN_VALUE),
-                0,0, 0, new HashSet<>(),
+                0,0, new HashMap<>(), new HashSet<>(),
                 new DiffTreeSerializeDebugData());
     }
 
@@ -124,7 +124,7 @@ public class FeatureSplitResult implements Metadata<FeatureSplitResult> {
             final CommitProcessTime max,
             int invalidFADiff,
             int totalPatches,
-            int totalFeatureAwarePatches,
+            HashMap<String, Integer> totalFeatureAwarePatches,
             Set<String> totalFeatures,
             final DiffTreeSerializeDebugData debugData)
     {
@@ -176,11 +176,13 @@ public class FeatureSplitResult implements Metadata<FeatureSplitResult> {
         snap.put(MetadataKeys.FAILED_COMMITS, failedCommits);
         snap.put(MetadataKeys.EMPTY_COMMITS, emptyCommits);
         snap.put(FeatureSplitMetadataKeys.TOTAL_PATCHES, totalPatches);
+        snap.put(MetadataKeys.TREES, exportedTrees);
         snap.put(FeatureSplitMetadataKeys.TOTAL_FEATURES, totalFeatures.size());
         snap.put(FeatureSplitMetadataKeys.TOTAL_FEATURE_AWARE_PATCHES, totalFeatureAwarePatches);
-        snap.put(FeatureSplitMetadataKeys.RATIO_OF_FA_DIFFS, totalFeatureAwarePatches / totalPatches);
+        double averageNumFAPatches = totalFeatureAwarePatches.values().stream().reduce(0, Integer::sum) / totalFeatureAwarePatches.size(); // todo
+        snap.put(FeatureSplitMetadataKeys.AVERAGE_NUM_FA_PATCHES, averageNumFAPatches); // todo
+        snap.put(FeatureSplitMetadataKeys.RATIO_OF_FA_PATCHES, averageNumFAPatches / totalPatches); //todo
         snap.put(MetadataKeys.PROCESSED_COMMITS, exportedCommits);
-        snap.put(MetadataKeys.TREES, exportedTrees);
         snap.put(MetadataKeys.MINCOMMIT, min.toString());
         snap.put(MetadataKeys.MAXCOMMIT, max.toString());
         snap.put(MetadataKeys.RUNTIME, runtimeInSeconds);

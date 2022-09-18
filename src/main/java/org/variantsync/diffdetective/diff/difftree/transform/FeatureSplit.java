@@ -106,7 +106,6 @@ public class FeatureSplit {
             if(!node.isRoot() && node.getAfterParent() == null && node.getBeforeParent() == null) node.addBelow(composeRoot, composeRoot);
         });
 
-        // TODO update the source
         composeTree.assertConsistency();
         return composeTree;
     }
