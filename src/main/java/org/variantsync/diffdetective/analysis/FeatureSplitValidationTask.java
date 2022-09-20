@@ -16,8 +16,10 @@ import org.variantsync.diffdetective.util.*;
 import java.util.*;
 
 public class FeatureSplitValidationTask extends FeatureSplitAnalysisTask {
-    public FeatureSplitValidationTask(FeatureSplitAnalysisTask.Options options) {
+    Set<String> randomFeatures;
+    public FeatureSplitValidationTask(FeatureSplitAnalysisTask.Options options, Set<String> randomFeatures) {
         super(options);
+        this.randomFeatures = randomFeatures;
     }
 
     @Override
@@ -63,12 +65,9 @@ public class FeatureSplitValidationTask extends FeatureSplitAnalysisTask {
                         if (!exportOptions.treeFilter().test(t)) {
                             continue;
                         }
-
-                        // Store all occurring features, which are then used to extract feature aware patches and remaining patches
-                        miningResult.totalFeatures.addAll(FeatureQueryGenerator.featureQueryGenerator(t));
                         
                         // validate FeatureSplit
-                        miningResult.totalFeatures.forEach(feature -> {
+                        randomFeatures.forEach(feature -> {
 
                             // generate feature-aware and remaining patches
                             HashMap<String, DiffTree> featureAware = FeatureSplit.featureSplit(t, feature);
@@ -77,7 +76,7 @@ public class FeatureSplitValidationTask extends FeatureSplitAnalysisTask {
                             // If a feature wasn't yet included, feature split would return just a remainder patch.
                             if (miningResult.totalFeatureAwarePatches.get(feature) == null) {
                                 miningResult.totalFeatureAwarePatches.put(feature, 0);
-                                miningResult.totalRemainderPatches.put(feature, miningResult.totalFeatureAwarePatches.get("True"));
+                                miningResult.totalRemainderPatches.put(feature, 0);
                             }
                             
                             if(featureAware.get(feature) != null ) miningResult.totalFeatureAwarePatches.replace(feature, miningResult.totalFeatureAwarePatches.get(feature) + 1);

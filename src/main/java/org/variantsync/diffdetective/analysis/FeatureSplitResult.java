@@ -40,6 +40,7 @@ public class FeatureSplitResult implements Metadata<FeatureSplitResult> {
         a.failedCommits += b.failedCommits;
         a.runtimeInSeconds += b.runtimeInSeconds;
         a.runtimeWithMultithreadingInSeconds += b.runtimeWithMultithreadingInSeconds;
+        a.featureExtractTime += b.featureExtractTime;
         a.min.set(CommitProcessTime.min(a.min, b.min));
         a.max.set(CommitProcessTime.max(a.max, b.max));
         a.debugData.append(b.debugData);
@@ -81,6 +82,7 @@ public class FeatureSplitResult implements Metadata<FeatureSplitResult> {
     public int failedCommits;
     public double runtimeInSeconds;
     public double runtimeWithMultithreadingInSeconds;
+    public double featureExtractTime;
     public final CommitProcessTime min, max;
     public final DiffTreeSerializeDebugData debugData;
     private final LinkedHashMap<String, String> customInfo = new LinkedHashMap<>();
@@ -102,7 +104,7 @@ public class FeatureSplitResult implements Metadata<FeatureSplitResult> {
     public FeatureSplitResult(final String repoName) {
         this(
                 repoName,
-                0, 0, 0, 0,
+                0, 0, 0, 0, 0,
                 0,
                 0, 
                 CommitProcessTime.Unknown(repoName, Long.MAX_VALUE),
@@ -119,6 +121,7 @@ public class FeatureSplitResult implements Metadata<FeatureSplitResult> {
             int failedCommits,
             double runtimeInSeconds,
             double runtimeWithMultithreadingInSeconds,
+            double featureExtractTime,
             final CommitProcessTime min,
             final CommitProcessTime max,
             int invalidFADiff,
@@ -137,6 +140,7 @@ public class FeatureSplitResult implements Metadata<FeatureSplitResult> {
         this.failedCommits = failedCommits;
         this.runtimeInSeconds = runtimeInSeconds;
         this.runtimeWithMultithreadingInSeconds = runtimeWithMultithreadingInSeconds;
+        this.featureExtractTime = featureExtractTime;
         this.debugData = debugData;
         this.min = min;
         this.max = max;
@@ -177,9 +181,8 @@ public class FeatureSplitResult implements Metadata<FeatureSplitResult> {
         int totalNumOfPatches = totalFeatureAwarePatches.values().stream().reduce(0, Integer::sum) + totalRemainderPatches.values().stream().reduce(0, Integer::sum);
         snap.put(FeatureSplitMetadataKeys.RESULTING_NUM_OF_PATCHES, totalNumOfPatches);
         snap.put(FeatureSplitMetadataKeys.TOTAL_FEATURE_AWARE_PATCHES, totalFeatureAwarePatches);
-        snap.put("TESTING REMAINDER", totalRemainderPatches); //todo remove
         snap.put(FeatureSplitMetadataKeys.TOTAL_REMAINDER_PATCHES, totalRemainderPatches);
-        double averageNumFAPatches = totalNumOfPatches / totalFeatures.size();
+        double averageNumFAPatches = totalNumOfPatches / (totalFeatures.size() == 0 ? 1 : totalFeatures.size());
         snap.put(FeatureSplitMetadataKeys.AVERAGE_NUM_FA_PATCHES, averageNumFAPatches);
         snap.put(FeatureSplitMetadataKeys.RATIO_OF_FA_PATCHES, averageNumFAPatches / totalPatches);
         snap.put(FeatureSplitMetadataKeys.MAX_DIFF_SIZE, maxDiffSize);
@@ -190,6 +193,7 @@ public class FeatureSplitResult implements Metadata<FeatureSplitResult> {
         snap.put(MetadataKeys.MAXCOMMIT, max.toString());
         snap.put(MetadataKeys.RUNTIME, runtimeInSeconds);
         snap.put(MetadataKeys.RUNTIME_WITH_MULTITHREADING, runtimeWithMultithreadingInSeconds);
+        snap.put(FeatureSplitMetadataKeys.FEATURE_EXTRACTION_TIME, featureExtractTime);
         snap.put(FeatureSplitMetadataKeys.INVALID_FA_DIFFS, invalidFADiff);
         snap.putAll(customInfo);
         snap.putAll(debugData.snapshot());

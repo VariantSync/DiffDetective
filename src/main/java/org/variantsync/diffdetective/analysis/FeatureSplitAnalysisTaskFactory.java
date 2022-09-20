@@ -5,6 +5,7 @@ import org.variantsync.diffdetective.datasets.Repository;
 import org.variantsync.diffdetective.diff.GitDiffer;
 
 import java.nio.file.Path;
+import java.util.Set;
 @FunctionalInterface
 public interface FeatureSplitAnalysisTaskFactory {
 
@@ -12,6 +13,7 @@ public interface FeatureSplitAnalysisTaskFactory {
             final Repository repository,
             final GitDiffer differ,
             final Path outputPath,
-            Iterable<RevCommit> commits
+            Iterable<RevCommit> commits,
+            Set<String> randomFeatures
             );
 }

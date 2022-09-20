@@ -1,7 +1,8 @@
 package org.variantsync.diffdetective.analysis;
 
 public final class FeatureSplitMetadataKeys {
-    public static final String PATCH_STATS = "patch stats";
+
+    public static final String FEATURE_EXTRACTION_TIME = "Feature extraction time";
 
     public static final String TOTAL_PATCHES = "total patches";
     public static final String TOTAL_FEATURES = "total features";
@@ -14,6 +15,8 @@ public final class FeatureSplitMetadataKeys {
     public static final String INVALID_FA_DIFFS = "invalid feature aware diffs";
 
     public static final String MAX_DIFF_SIZE = "Diff size of biggest variation diff";
+
+    public static final String PATCH_STATS = "patch stats";
 
     public static final String RATIO_OF_NODES = "ratio of nodes between initial and feature-split";
     public static final String FEATURE = "current feature";
