@@ -129,34 +129,11 @@ public class DiffTreeParser {
                 case NotMyDuty: break;
             }
 
-            // This gets the node type and diff type of the current line and creates a node
-            // Note that the node is not yet added to the diff tree.
-            final DiffNode newNode;
-            try {
-                newNode = nodeParser.fromDiffLine(currentLine);
-            } catch (IllFormedAnnotationException e) {
-                return DiffResult.Failure(e);
-            }
-
-            // collapse multiple code lines
-            if (lastArtifact != null) {
-                if (collapseMultipleCodeLines && newNode.isArtifact() && lastArtifact.diffType.equals(newNode.diffType)) {
-                    lastArtifact.addLines(newNode.getLines());
-                    continue;
-                } else {
+            if ("endif".equals(MultiLineMacroParser.conditionalMacroName(currentLine))) {
+                if (lastArtifact != null) {
                     lastArtifact = endCodeBlock(lastArtifact, lastLineNo);
                 }
-            }
 
-            newNode.getFromLine().set(lineNo);
-            if (!newNode.isEndif()) {
-                newNode.addBelow(beforeStack.peek(), afterStack.peek());
-                nodes.add(newNode);
-            }
-
-            if (newNode.isArtifact()) {
-                lastArtifact = newNode;
-            } else if (newNode.isEndif()) {
                 final String currentLineFinal = currentLine;
                 diffType.matchBeforeAfter(beforeStack, afterStack,
                         stack -> {
@@ -174,12 +151,39 @@ public class DiffTreeParser {
                         });
                 if (error.get() != null) { return error.get(); }
             } else {
-                // newNode is if, elif or else
-                // push the node to the relevant stacks
-                diffType.matchBeforeAfter(beforeStack, afterStack, stack ->
-                        pushNodeToStack(newNode, stack, lastLineNo).onError(errorPropagation)
-                );
-                if (error.get() != null) { return error.get(); }
+                // This gets the node type and diff type of the current line and creates a node
+                // Note that the node is not yet added to the diff tree.
+                final DiffNode newNode;
+                try {
+                    newNode = nodeParser.fromDiffLine(currentLine);
+                } catch (IllFormedAnnotationException e) {
+                    return DiffResult.Failure(e);
+                }
+
+                // collapse multiple code lines
+                if (lastArtifact != null) {
+                    if (collapseMultipleCodeLines && newNode.isArtifact() && lastArtifact.diffType.equals(newNode.diffType)) {
+                        lastArtifact.addLines(newNode.getLines());
+                        continue;
+                    } else {
+                        lastArtifact = endCodeBlock(lastArtifact, lastLineNo);
+                    }
+                }
+
+                newNode.getFromLine().set(lineNo);
+                newNode.addBelow(beforeStack.peek(), afterStack.peek());
+                nodes.add(newNode);
+
+                if (newNode.isArtifact()) {
+                    lastArtifact = newNode;
+                } else {
+                    // newNode is if, elif or else
+                    // push the node to the relevant stacks
+                    diffType.matchBeforeAfter(beforeStack, afterStack, stack ->
+                            pushNodeToStack(newNode, stack, lastLineNo).onError(errorPropagation)
+                    );
+                    if (error.get() != null) { return error.get(); }
+                }
             }
         }
 

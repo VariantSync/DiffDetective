@@ -1,7 +1,6 @@
 package org.variantsync.diffdetective.diff.difftree;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import org.variantsync.diffdetective.diff.difftree.parse.MultiLineMacroParser;
 
 /**
  * The type of nodes in a {@link DiffTree}.
@@ -10,7 +9,6 @@ import java.util.regex.Pattern;
 public enum NodeType {
     // Mapping types
     IF("if"),
-    ENDIF("endif"),
     ELSE("else"),
     ELIF("elif"),
 
@@ -36,24 +34,19 @@ public enum NodeType {
         return this != ARTIFACT;
     }
 
-    final static Pattern annotationRegex = Pattern.compile("^[+-]?\\s*#\\s*(if|endif|else|elif)");
-
     /**
      * Parses the node type from a line taken from a text-based diff.
      * @param line A line in a patch.
      * @return The type of edit of <code>line</code>.
      */
     public static NodeType ofDiffLine(String line) {
-        Matcher matcher = annotationRegex.matcher(line);
-        if (matcher.find()) {
-            String id = matcher.group(1);
-            if (id.equals(IF.name)) {
+        String macro = MultiLineMacroParser.conditionalMacroName(line);
+        if (macro != null) {
+            if (macro.equals(IF.name)) {
                 return IF;
-            } else if (id.equals(ENDIF.name)) {
-                return ENDIF;
-            } else if (id.equals(ELSE.name)) {
+            } else if (macro.equals(ELSE.name)) {
                 return ELSE;
-            } else if (id.equals(ELIF.name)) {
+            } else if (macro.equals(ELIF.name)) {
                 return ELIF;
             }
         }
@@ -75,12 +68,5 @@ public enum NodeType {
         }
 
         throw new IllegalArgumentException("Given string \"" + name + "\" is not the name of a NodeType.");
-    }
-
-    /**
-     * Prints this value as a macro annotation (i.e., starting with #).
-     */
-    public String asMacroText() {
-        return "#" + this.name;
     }
 }

@@ -115,7 +115,6 @@ public class CollapseNestedNonEditedAnnotations implements DiffTreeTransformer {
                 }
                 case ARTIFACT ->
                     throw new RuntimeException("Unexpected node type " + lastPopped.nodeType + " within annotation chain!");
-                case ENDIF -> {}
             }
         }
 

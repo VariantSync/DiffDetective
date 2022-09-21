@@ -1,13 +1,13 @@
 package org.variantsync.diffdetective.diff.difftree.parse;
 
 import org.variantsync.diffdetective.diff.DiffLineNumber;
-import org.variantsync.diffdetective.diff.difftree.NodeType;
 import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.diff.difftree.DiffType;
 
 import java.io.BufferedReader;
 import java.util.List;
 import java.util.Stack;
+import java.util.regex.Pattern;
 
 import static org.variantsync.diffdetective.diff.result.DiffError.MLMACRO_WITHIN_MLMACRO;
 
@@ -16,6 +16,11 @@ import static org.variantsync.diffdetective.diff.result.DiffError.MLMACRO_WITHIN
  * @author Paul Bittner
  */
 public class MultiLineMacroParser {
+    /** Matches conditional macros. Note that it doesn't match the whole line or even the whole
+     * macro name. For example {@code #ifdef} is also matched, but only {@code "if"} is captured.
+     */
+    private final static Pattern macroPattern = Pattern.compile("^[+-]?\\s*#\\s*(if|elif|else|endif)");
+
     private final DiffNodeParser nodeParser;
 
     private MultilineMacro beforeMLMacro = null;
@@ -81,8 +86,7 @@ public class MultiLineMacroParser {
 
         if (continuesMultilineDefinition(line)) {
             // If this multiline macro line is a header...
-            final NodeType nodeType = NodeType.ofDiffLine(line);
-            if (nodeType.isConditionalAnnotation()) {
+            if (conditionalMacroName(line) != null) {
                 // ... create a new multi line macro to complete.
                 if (!isAdd) {
                     if (beforeMLMacro != null) {
@@ -199,5 +203,24 @@ public class MultiLineMacroParser {
      */
     public static boolean continuesMultilineDefinition(String line) {
         return line.trim().endsWith("\\");
+    }
+
+    /**
+     * Returns the shortened name of a conditional macro.
+     *
+     * Shortened means it's one of {@code if}, {@code elif}, {@code else} or {@code endif},
+     * although the actual macro name may be longer (for example {@code ifdef}).
+     *
+     * @param line the first line of the macro
+     * @return the shortened name of a conditional macro in {@code line} or {@code null} if there
+     * is no conditional macro on {@code line}
+     */
+    public static String conditionalMacroName(String line) {
+        var matcher = macroPattern.matcher(line);
+        if (matcher.find()) {
+            return matcher.group(1);
+        } else {
+            return null;
+        }
     }
 }

@@ -951,15 +951,6 @@ public class DiffNode {
     }
 
     /**
-     * Returns true if this node represents the end of an annotation block.
-     * Such a node should not be part of any {@link DiffTree}.
-     * @see NodeType#ENDIF
-     */
-    public boolean isEndif() {
-        return this.nodeType.equals(NodeType.ENDIF);
-    }
-
-    /**
      * Returns true if this node represents an ELSE annotation.
      * @see NodeType#ELSE
      */
@@ -1117,7 +1108,7 @@ public class DiffNode {
         // Add endif after macro
         if (isAnnotation() && !isRoot()) {
             diff
-                    .append(toTextDiffLine(this.diffType, List.of(NodeType.ENDIF.asMacroText())))
+                    .append(toTextDiffLine(this.diffType, List.of("#endif")))
                     .append(StringUtils.LINEBREAK);
         }
 
