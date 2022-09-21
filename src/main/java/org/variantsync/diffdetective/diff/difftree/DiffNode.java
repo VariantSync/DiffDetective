@@ -978,7 +978,7 @@ public class DiffNode {
      * Returns {@link NodeType#isAnnotation()} for this node's {@link DiffNode#nodeType}.
      */
     public boolean isAnnotation() {
-        return this.nodeType.isAnnotation() && !this.isRoot();
+        return this.nodeType.isAnnotation();
     }
 
     /**
@@ -1115,7 +1115,7 @@ public class DiffNode {
         }
 
         // Add endif after macro
-        if (isAnnotation()) {
+        if (isAnnotation() && !isRoot()) {
             diff
                     .append(toTextDiffLine(this.diffType, List.of(NodeType.ENDIF.asMacroText())))
                     .append(StringUtils.LINEBREAK);
