@@ -3,9 +3,19 @@ import glob
 
 class RuntimeResult:
     def __init__(self, dataset: str, commit_id: str, runtime: int):
-        self.dataset = dataset,
-        self.commit_id = commit_id,
+        self.dataset = dataset
+        self.commit_id = commit_id
         self.runtime = runtime
+
+    def __str__(self):
+        return str(self.dataset) + " " + str(self.commit_id) + ": " + str(self.runtime) + "ms"
+
+    def linkToGithub(self):
+        if self.dataset == "Godot":
+            repo_url = "godotengine/godot"
+        else:
+            repo_url = self.dataset + "/" + self.dataset
+        return "https://github.com/" + repo_url + "/commit/" + self.commit_id
 
 
 def load_runtime_results(result_dir):
