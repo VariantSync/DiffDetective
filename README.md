@@ -53,6 +53,7 @@ To execute the replication you can run the `execute` script corresponding to you
 > #### Linux/Mac (bash):
 > `./stop-execution.sh`
 
+You might see warnings or errors reported from SLF4J like `Failed to load class "org.slf4j.impl.StaticLoggerBinder` which you can safely ignore.
 
 ### 1.3 View the results in the [results][resultsdir] directory
 All raw results are stored in the [results][resultsdir] directory.
