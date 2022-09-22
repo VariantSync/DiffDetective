@@ -20,7 +20,7 @@ This replication package consists of four parts:
 4. **Dataset Overview**: We provide an overview of the 44 inspected datasets with updated links to their repositories in the file [docs/datasets.md][dataset].
 
 ## 1. DiffDetective
-DiffDetective is a java library and command-line tool to parse and classify edits to variability in git histories of preprocessor-based software product lines by creating [variation tree diffs][difftree_class] and operating on them.
+DiffDetective is a java library and command-line tool to parse and classify edits to variability in git histories of preprocessor-based software product lines by creating [variation diffs][difftree_class] and operating on them.
 
 We offer a [Docker](https://www.docker.com/) setup to easily __replicate__ the validation performed in our paper. 
 In the following, we provide a quickstart guide for running the replication.
@@ -63,32 +63,32 @@ All raw results are stored in the [results][resultsdir] directory.
 The aggregated results can be found in the following files.
 (Note that the links below only have a target _after_ running the replication or verification.)
 - [speed statistics][resultsdir_speed_statistics]: contains information about the total runtime, median runtime, mean runtime, and more.
-- [classification results][resultsdir_classification_results]: contains information about how often each pattern was found, and more.
+- [classification results][resultsdir_classification_results]: contains information about how often each class was found, and more.
 
 Moreover, the results comprise the (LaTeX) tables that are part of our paper and appendix.
 
 ### Documentation
 
 DiffDetective is documented with javadoc. The documentation can be accessed on this [website][documentation]. Notable classes of our library are:
-- [DiffTree](https://variantsync.github.io/DiffDetective/docs/javadoc/org/variantsync/diffdetective/diff/difftree/DiffTree.html) and [DiffNode](https://variantsync.github.io/DiffDetective/docs/javadoc/org/variantsync/diffdetective/diff/difftree/DiffNode.html) implement variation tree diffs from our paper. A variation tree diff is represented by an instance of the `DiffTree` class. It stores the root node of the diff and offers various methods to parse, traverse, and analyze variation tree diffs. `DiffNode`s represent individual nodes within a variation tree diff.
+- [DiffTree](https://variantsync.github.io/DiffDetective/docs/javadoc/org/variantsync/diffdetective/diff/difftree/DiffTree.html) and [DiffNode](https://variantsync.github.io/DiffDetective/docs/javadoc/org/variantsync/diffdetective/diff/difftree/DiffNode.html) implement variation diffs from our paper. A variation diff is represented by an instance of the `DiffTree` class. It stores the root node of the diff and offers various methods to parse, traverse, and analyze variation diffs. `DiffNode`s represent individual nodes within a variation diff.
 - [Validation](https://variantsync.github.io/DiffDetective/docs/javadoc/org/variantsync/diffdetective/validation/Validation.html) contains the main method for our validation.
-- [ProposedElementaryPatterns](https://variantsync.github.io/DiffDetective/docs/javadoc/org/variantsync/diffdetective/pattern/elementary/proposed/ProposedElementaryPatterns.html) holds the catalog of nine edit patterns we proposed in our paper. It implements the interface [ElementaryPatternCatalogue](https://variantsync.github.io/DiffDetective/docs/javadoc/org/variantsync/diffdetective/pattern/elementary/ElementaryPatternCatalogue.html), which allows to define custom pattern catalogs.
+- [ProposedElementaryPatterns](https://variantsync.github.io/DiffDetective/docs/javadoc/org/variantsync/diffdetective/pattern/elementary/proposed/ProposedElementaryPatterns.html) holds the catalog of the nine edit classes we proposed in our paper. It implements the interface [ElementaryPatternCatalogue](https://variantsync.github.io/DiffDetective/docs/javadoc/org/variantsync/diffdetective/pattern/elementary/ElementaryPatternCatalogue.html), which allows to define custom edit classifications.
 - [BooleanAbstraction](https://variantsync.github.io/DiffDetective/docs/javadoc/org/variantsync/diffdetective/feature/BooleanAbstraction.html) contains data and methods for boolean abstraction of higher-order logic formulas. We use this for macro parsing.
-- [GitDiffer](https://variantsync.github.io/DiffDetective/docs/javadoc/org/variantsync/diffdetective/diff/GitDiffer.html) may parse the history of a git repository to variation tree diffs.
+- [GitDiffer](https://variantsync.github.io/DiffDetective/docs/javadoc/org/variantsync/diffdetective/diff/GitDiffer.html) may parse the history of a git repository to variation diffs.
 - The [datasets](https://variantsync.github.io/DiffDetective/docs/javadoc/org/variantsync/diffdetective/datasets/package-summary.html) package contains various classes for describing and loading datasets.
 
 ## 2. Appendix
 
 Our [appendix][appendix] consists of:
 1. An extended formalization of our concepts in the [Haskell][haskell] programming language. The corresponding source code is also part of this replication package (see below).
-2. The proofs for (a) the completeness of variation tree diffs to represent edits to variation trees, and (b) the completeness and unambiguity of our elementary edit patterns.
-3. An inspection of edit patterns from related work to show that existing patterns are either composite patterns built from our elementary patterns or similar to our elementary patterns. The used diffs of these patterns can also be found in [docs/compositepatterns](docs/compositepatterns).
+2. The proofs for (a) the completeness of variation diffs to represent edits to variation trees, and (b) the completeness and unambiguity of our edit classes.
+3. An inspection of edit patterns from related work to show that existing patterns are either composite patterns built from our edit classes or similar to one of our edit classes. The used diffs of these patterns can also be found in [docs/compositepatterns](docs/compositepatterns).
 4. The complete results of our validation for all 44 datasets.
 
 ## 3. Haskell Formalization
 The extended formalization is a [Haskell][haskell] library in the [`proofs`](proofs) subdirectory.
 Since the `proofs` library is its own software project, we provide a separate documentation of requirements and installation instructions within the projects subdirectory.
-Instructions for manually installing Stack are given in [proofs/REQUIREMENTS.md](proofs/REQUIREMENTS.md).
+Requirements and instructions for setting up the build environment (Stack) are given in [proofs/REQUIREMENTS.md](proofs/REQUIREMENTS.md).
 How to build our library and how to run the example is described in the [proofs/INSTALL.md](proofs/INSTALL.md).
 
 
