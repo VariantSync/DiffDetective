@@ -61,7 +61,7 @@ public class FACommitExtractionValidationTask extends FeatureSplitAnalysisTask {
                         final DiffTree t = patch.getDiffTree();
                         DiffTreeTransformer.apply(exportOptions.treePreProcessing(), t);
                         t.assertConsistency();
-                        miningResult.maxDiffSize = miningResult.maxDiffSize >= t.computeSize() ? miningResult.maxDiffSize : t.computeSize();
+                        //miningResult.treeDiffSizes = miningResult.treeDiffSizes >= t.computeSize() ? miningResult.treeDiffSizes : t.computeSize();
 
                         if (!exportOptions.treeFilter().test(t)) {
                             continue;

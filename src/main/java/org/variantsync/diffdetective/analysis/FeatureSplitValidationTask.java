@@ -4,13 +4,11 @@ import org.eclipse.jgit.revwalk.RevCommit;
 import org.tinylog.Logger;
 import org.variantsync.diffdetective.diff.CommitDiff;
 import org.variantsync.diffdetective.diff.PatchDiff;
-import org.variantsync.diffdetective.diff.difftree.ConsistencyResult;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
 import org.variantsync.diffdetective.diff.difftree.serialize.DiffTreeLineGraphExportOptions;
 import org.variantsync.diffdetective.diff.difftree.transform.DiffTreeTransformer;
 import org.variantsync.diffdetective.diff.difftree.transform.FeatureSplit;
 import org.variantsync.diffdetective.diff.result.CommitDiffResult;
-import org.variantsync.diffdetective.metadata.ExplainedFilterSummary;
 import org.variantsync.diffdetective.util.*;
 
 import java.util.*;
@@ -58,22 +56,17 @@ public class FeatureSplitValidationTask extends FeatureSplitAnalysisTask {
                         final DiffTree t = patch.getDiffTree();
                         DiffTreeTransformer.apply(exportOptions.treePreProcessing(), t);
                         t.assertConsistency();
-                        miningResult.maxDiffSize = miningResult.maxDiffSize >= t.computeSize() ? miningResult.maxDiffSize : t.computeSize();
 
                         if (!exportOptions.treeFilter().test(t)) {
                             continue;
                         }
+
+                        // calculate sizes of each patch
+                        miningResult.initialTreeDiffSizes.put(patch.toString(), t.computeSize());
                         
                         // Add features to results
                         Set<String> allFeatures = FeatureQueryGenerator.featureQueryGenerator(t);
                         miningResult.totalFeatures.addAll(allFeatures);
-
-                        allFeatures.forEach(feature -> {
-                            if (miningResult.totalFeatureAwarePatches.get(feature) == null) {
-                                miningResult.totalFeatureAwarePatches.put(feature, 0);
-                                miningResult.totalRemainderPatches.put(feature, 0);
-                            }
-                        });
                         
                         // validate FeatureSplit
                         allFeatures.forEach(feature -> {
@@ -88,13 +81,17 @@ public class FeatureSplitValidationTask extends FeatureSplitAnalysisTask {
 
                             // 1. get number of feature-aware patches for a patch
                             miningResult.ratioOfFAPatches = (miningResult.ratioOfFAPatches + featureAware.size()) / 2;
-                            if(featureAware.get(feature) != null) miningResult.totalFeatureAwarePatches.replace(feature, miningResult.totalFeatureAwarePatches.get(feature) + 1);
-                            if(featureAware.get("remains") != null) miningResult.totalRemainderPatches.replace(feature, miningResult.totalRemainderPatches.get(feature) + 1);
-                            
+
+                            // TODO ERROR test/xa/src4/server.c@ commit from e2ca594d70de7cbd1f2e7bc6cdb9542de0305318 (parent) to 5b7b02ae052442626af54c176335b67ecc613a30 (child)=[3, 7, 32, 5]
+                            if(featureAware.get(feature) != null) {
+                                List<Integer> nodes = miningResult.FAtreeDiffSizes.get(patch.toString());
+                                if(nodes == null) nodes = new LinkedList<>();
+                                nodes.add(featureAware.get(feature).computeSize());
+                                miningResult.FAtreeDiffSizes.put(patch.toString(), nodes);
+                            }
 
                             featureAware.forEach((key, value) -> {
                                 if (value == null) return;
-                                // 2. get calculation time for a patch with committimes.txt!!
 
                                 // 3. check if patch is valid
                                 if(!value.isConsistent().isSuccess())  {
