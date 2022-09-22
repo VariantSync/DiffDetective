@@ -49,6 +49,7 @@ public class FeatureSplitResult implements Metadata<FeatureSplitResult> {
         a.totalRemainderPatches.putAll(b.totalRemainderPatches);
         a.totalFeatures.addAll(b.totalFeatures);
         a.maxDiffSize = a.maxDiffSize >= b.maxDiffSize ? a.maxDiffSize : b.maxDiffSize;
+        a.ratioOfFAPatches = (a.ratioOfFAPatches + b.ratioOfFAPatches) / 2;
         a.ratioNodes = (a.ratioNodes + b.ratioNodes) / 2;
         MergeMap.putAllValues(a.customInfo, b.customInfo, Semigroup.assertEquals());
         a.diffErrors.append(b.diffErrors);
@@ -96,6 +97,7 @@ public class FeatureSplitResult implements Metadata<FeatureSplitResult> {
     public HashMap<String, Integer> totalRemainderPatches;
     public int maxDiffSize;
     public double ratioNodes;
+    public double ratioOfFAPatches;
 
     public FeatureSplitResult() {
         this(NO_REPO);
@@ -110,7 +112,7 @@ public class FeatureSplitResult implements Metadata<FeatureSplitResult> {
                 CommitProcessTime.Unknown(repoName, Long.MAX_VALUE),
                 CommitProcessTime.Unknown(repoName, Long.MIN_VALUE),
                 0,0, new HashMap<>(), new HashMap<>(), new HashSet<>(),
-                0, 0.0, new DiffTreeSerializeDebugData());
+                0, 0.0, 1.0, new DiffTreeSerializeDebugData());
     }
 
     public FeatureSplitResult(
@@ -131,6 +133,7 @@ public class FeatureSplitResult implements Metadata<FeatureSplitResult> {
             Set<String> totalFeatures,
             int maxDiffSize,
             double ratioNodes,
+            double ratioOfFAPatches,
             final DiffTreeSerializeDebugData debugData)
     {
         this.repoName = repoName;
@@ -150,6 +153,7 @@ public class FeatureSplitResult implements Metadata<FeatureSplitResult> {
         this.totalFeatures = totalFeatures;
         this.maxDiffSize = maxDiffSize;
         this.ratioNodes = ratioNodes;
+        this.ratioOfFAPatches = ratioOfFAPatches;
     }
 
     /**
@@ -176,19 +180,23 @@ public class FeatureSplitResult implements Metadata<FeatureSplitResult> {
         snap.put(MetadataKeys.TOTAL_COMMITS, totalCommits);
         snap.put(MetadataKeys.FAILED_COMMITS, failedCommits);
         snap.put(MetadataKeys.EMPTY_COMMITS, emptyCommits);
+        snap.put(MetadataKeys.PROCESSED_COMMITS, exportedCommits);
         snap.put(FeatureSplitMetadataKeys.TOTAL_PATCHES, totalPatches);
         snap.put(FeatureSplitMetadataKeys.TOTAL_FEATURES, totalFeatures.size());
-        int totalNumOfPatches = totalFeatureAwarePatches.values().stream().reduce(0, Integer::sum) + totalRemainderPatches.values().stream().reduce(0, Integer::sum);
-        snap.put(FeatureSplitMetadataKeys.RESULTING_NUM_OF_PATCHES, totalNumOfPatches);
+        snap.put(FeatureSplitMetadataKeys.RATIO_OF_FA_PATCHES, ratioOfFAPatches);
+
+        // TODO we want the number of feature-aware patches per feature
+        HashMap<String, Integer> totalNumOfFAPatches = (HashMap<String, Integer>) totalFeatureAwarePatches.clone();
+        //totalNumOfFAPatches.putAll(totalNumOfFAPatches.clone());
+        totalNumOfFAPatches.forEach((key, value) -> totalNumOfFAPatches.replace(key, value + totalRemainderPatches.get(key)));
+        //int totalNumOfPatches = totalFeatureAwarePatches.values().stream().reduce(0, Integer::sum) + totalRemainderPatches.values().stream().reduce(0, Integer::sum);
+        snap.put(FeatureSplitMetadataKeys.RESULTING_NUM_OF_PATCHES, totalNumOfFAPatches);
         snap.put(FeatureSplitMetadataKeys.TOTAL_FEATURE_AWARE_PATCHES, totalFeatureAwarePatches);
         snap.put(FeatureSplitMetadataKeys.TOTAL_REMAINDER_PATCHES, totalRemainderPatches);
-        double averageNumFAPatches = totalNumOfPatches / (totalFeatures.size() == 0 ? 1 : totalFeatures.size());
+        double averageNumFAPatches = totalNumOfFAPatches.values().stream().reduce(0, Integer::sum) / (totalNumOfFAPatches.size() == 0 ? 1 : totalNumOfFAPatches.size());
         snap.put(FeatureSplitMetadataKeys.AVERAGE_NUM_FA_PATCHES, averageNumFAPatches);
-        snap.put(FeatureSplitMetadataKeys.RATIO_OF_FA_PATCHES, averageNumFAPatches / totalPatches);
         snap.put(FeatureSplitMetadataKeys.MAX_DIFF_SIZE, maxDiffSize);
         snap.put(FeatureSplitMetadataKeys.RATIO_OF_NODES, ratioNodes);
-
-        snap.put(MetadataKeys.PROCESSED_COMMITS, exportedCommits);
         snap.put(MetadataKeys.MINCOMMIT, min.toString());
         snap.put(MetadataKeys.MAXCOMMIT, max.toString());
         snap.put(MetadataKeys.RUNTIME, runtimeInSeconds);

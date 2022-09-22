@@ -4,16 +4,11 @@ import org.eclipse.jgit.revwalk.RevCommit;
 import org.tinylog.Logger;
 import org.variantsync.diffdetective.diff.CommitDiff;
 import org.variantsync.diffdetective.diff.PatchDiff;
-import org.variantsync.diffdetective.diff.difftree.ConsistencyResult;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
 import org.variantsync.diffdetective.diff.difftree.serialize.DiffTreeLineGraphExportOptions;
 import org.variantsync.diffdetective.diff.difftree.transform.DiffTreeTransformer;
-import org.variantsync.diffdetective.diff.difftree.transform.FeatureSplit;
 import org.variantsync.diffdetective.diff.result.CommitDiffResult;
-import org.variantsync.diffdetective.metadata.ExplainedFilterSummary;
-import org.variantsync.diffdetective.util.*;
-
-import java.util.*;
+import org.variantsync.diffdetective.util.Clock;
 
 public class FeatureSplitFeatureExtractionTask extends FeatureSplitAnalysisTask {
     public FeatureSplitFeatureExtractionTask(FeatureSplitAnalysisTask.Options options) {
@@ -58,8 +53,8 @@ public class FeatureSplitFeatureExtractionTask extends FeatureSplitAnalysisTask 
                         miningResult.totalFeatures.addAll(FeatureQueryGenerator.featureQueryGenerator(t));
                     }
                 }
-                exportOptions.treeFilter().resetExplanations();
-            } catch (Exception e) {
+                exportOptions.treeFilter().resetExplanations();                
+            } catch (Exception e) { 
                 Logger.error(e, "An unexpected error occurred at {} in {}", commit.getId().getName(), getOptions().repository().getRepositoryName());
                 throw e;
             }

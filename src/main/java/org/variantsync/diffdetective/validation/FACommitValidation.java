@@ -26,13 +26,24 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-public class ValidationFeatureSplit {
+public class FACommitValidation {
     public static final boolean UPDATE_REPOS_BEFORE_VALIDATION = false;
     public static final boolean PRINT_LATEX_TABLE = true;
     public static final int PRINT_LARGEST_SUBJECTS = 3;
 
-    public static final FeatureSplitAnalysisTaskFactory VALIDATION_TASK_FACTORY =
-            (repo, differ, outputPath, commits) -> new FeatureSplitValidationTask(new FeatureSplitAnalysisTask.Options(
+    public static final FACommitExtractionAnalysisTaskFactory VALIDATION_TASK_FACTORY =
+            (repo, differ, outputPath, commits, randomFeatures) -> new FACommitExtractionValidationTask(new FeatureSplitAnalysisTask.Options(
+                    repo,
+                    differ,
+                    outputPath,
+                    ValidationExportOptions(repo),
+                    new NullStrategy(),
+                    commits
+            ),
+            randomFeatures);
+
+    public static final FACommitExtractionAnalysisTaskFactory FEATURE_EXTRACTION_TASK_FACTORY =
+            (repo, differ, outputPath, commits, randomFeatures) -> new FeatureSplitFeatureExtractionTask(new FeatureSplitAnalysisTask.Options(
                     repo,
                     differ,
                     outputPath,
@@ -133,10 +144,11 @@ public class ValidationFeatureSplit {
         \* ************************ */
 
         final Consumer<Path> repoPostProcessing = p -> {};
-        final FeatureSplitHistoryAnalysis analysis = new FeatureSplitHistoryAnalysis(
+        final FACommitExtractionHistoryAnalysis analysis = new FACommitExtractionHistoryAnalysis(
                 repos,
                 outputDir,
                 FeatureSplitHistoryAnalysis.COMMITS_TO_PROCESS_PER_THREAD_DEFAULT,
+                FEATURE_EXTRACTION_TASK_FACTORY,
                 VALIDATION_TASK_FACTORY,
                 repoPostProcessing);
         analysis.runAsync();
