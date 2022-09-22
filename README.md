@@ -1,5 +1,7 @@
 # Classifying Edits to Variability in Source Code
 
+[<img padding="10" align="right" src="https://www.acm.org/binaries/content/gallery/acm/publications/artifact-review-v1_1-badges/artifacts_evaluated_reusable_v1_1.png" alt="ACM Artifacts Evaluated Reusable" width="114" height="113"/>][paper]
+
 ![Maven](https://github.com/VariantSync/DiffDetective/actions/workflows/maven.yml/badge.svg)
 [![Documentation](https://img.shields.io/badge/Documentation-Read-purple)][documentation]
 [![Install](https://img.shields.io/badge/Install-Instructions-blue)](INSTALL.md)
