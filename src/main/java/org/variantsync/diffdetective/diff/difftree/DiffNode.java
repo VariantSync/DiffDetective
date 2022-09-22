@@ -920,6 +920,13 @@ public class DiffNode {
     }
 
     /**
+      * Returns the diff type of this node.
+     */
+    public DiffType getDiffType() {
+        return this.diffType;
+    }
+
+    /**
      * Returns true if this node represents an ELIF macro.
      * @see CodeType#ELIF
      */
