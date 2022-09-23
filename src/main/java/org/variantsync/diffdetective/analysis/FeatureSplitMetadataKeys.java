@@ -15,6 +15,8 @@ public final class FeatureSplitMetadataKeys {
     public static final String RATIO_OF_NODES = "ratio of nodes between initial and feature-split";
     public static final String INVALID_FA_DIFFS = "invalid feature aware diffs";
 
+    public static final String PATCH_TIME_MS = "patch time MS";
+
     public static final String MAX_DIFF_SIZE = "Diff size of biggest variation diff";
 
     public static final String PATCH_STATS = "patch stats";
@@ -24,7 +26,6 @@ public final class FeatureSplitMetadataKeys {
 
 
     public static final String FEATURE = "current feature";
-    public static final String PATCH_TIME_MS = "patch time MS";
     public static final String NUM_OF_FEATURES = "num of features in a feature aware diff";
     public static final String FEATURE_AWARE_DIFF_SIZE = "feature-aware diff size";
 

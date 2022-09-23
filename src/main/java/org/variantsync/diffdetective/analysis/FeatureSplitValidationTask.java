@@ -24,6 +24,7 @@ public class FeatureSplitValidationTask extends FeatureSplitAnalysisTask {
         final DiffTreeLineGraphExportOptions exportOptions = options.exportOptions();
         final List<CommitProcessTime> commitTimes = new ArrayList<>(HistoryAnalysis.COMMITS_TO_PROCESS_PER_THREAD_DEFAULT);
         final Clock totalTime = new Clock();
+        final Clock patchTime = new Clock();
         totalTime.start();
         final Clock commitProcessTimer = new Clock();
 
@@ -71,6 +72,9 @@ public class FeatureSplitValidationTask extends FeatureSplitAnalysisTask {
                         // validate FeatureSplit
                         allFeatures.forEach(feature -> {
 
+                            // calculate time of each input patch
+                            patchTime.start();
+
                             //System.out.println(t.toString());
                             //System.out.println(t.computeSize());
 
@@ -82,7 +86,6 @@ public class FeatureSplitValidationTask extends FeatureSplitAnalysisTask {
                             // 1. get number of feature-aware patches for a patch
                             miningResult.ratioOfFAPatches = (miningResult.ratioOfFAPatches + featureAware.size()) / 2;
 
-                            // TODO ERROR test/xa/src4/server.c@ commit from e2ca594d70de7cbd1f2e7bc6cdb9542de0305318 (parent) to 5b7b02ae052442626af54c176335b67ecc613a30 (child)=[3, 7, 32, 5]
                             if(featureAware.get(feature) != null) {
                                 List<Integer> nodes = miningResult.FAtreeDiffSizes.get(patch.toString());
                                 if(nodes == null) nodes = new LinkedList<>();
@@ -103,7 +106,14 @@ public class FeatureSplitValidationTask extends FeatureSplitAnalysisTask {
                                 int featureDiffSizeRatio = value.computeSize() / t.computeSize();
                                 miningResult.ratioNodes = (miningResult.ratioNodes + featureDiffSizeRatio) / 2;
                             });
+
+                            // calc patch times
+                            List<Long> nodes = miningResult.patchTimes.get(patch.toString());
+                            if(nodes == null) nodes = new LinkedList<>();
+                            nodes.add(patchTime.getPassedMilliseconds());
+                            miningResult.patchTimes.put(patch.toString(), nodes);
                         });
+
 
                         ++numDiffTrees;
                     }

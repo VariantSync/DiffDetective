@@ -42,6 +42,7 @@ public class FeatureSplitResult implements Metadata<FeatureSplitResult> {
         a.totalFeatures.addAll(b.totalFeatures);
         a.initialTreeDiffSizes.putAll(b.initialTreeDiffSizes);
         a.FAtreeDiffSizes.putAll(b.FAtreeDiffSizes);
+        a.patchTimes.putAll(b.patchTimes);
         a.ratioOfFAPatches = (a.ratioOfFAPatches + b.ratioOfFAPatches) / 2;
         a.ratioNodes = (a.ratioNodes + b.ratioNodes) / 2;
         MergeMap.putAllValues(a.customInfo, b.customInfo, Semigroup.assertEquals());
@@ -88,8 +89,9 @@ public class FeatureSplitResult implements Metadata<FeatureSplitResult> {
     public Set<String> totalFeatures;
     public HashMap<String, Integer> totalFeatureAwarePatches;
     public HashMap<String, Integer> totalRemainderPatches;
-    public HashMap<String, List<Integer>> FAtreeDiffSizes;
     public HashMap<String, Integer> initialTreeDiffSizes;
+    public HashMap<String, List<Integer>> FAtreeDiffSizes;
+    public HashMap<String, List<Long>> patchTimes;
     public double ratioNodes;
     public double ratioOfFAPatches;
 
@@ -106,7 +108,7 @@ public class FeatureSplitResult implements Metadata<FeatureSplitResult> {
                 CommitProcessTime.Unknown(repoName, Long.MAX_VALUE),
                 CommitProcessTime.Unknown(repoName, Long.MIN_VALUE),
                 0,0, new HashMap<>(), new HashMap<>(), new HashSet<>(),
-                new HashMap<>(), new HashMap<>(), 0.0, 1.0, new DiffTreeSerializeDebugData());
+                new HashMap<>(), new HashMap<>(), new HashMap<>(), 0.0, 1.0, new DiffTreeSerializeDebugData());
     }
 
     public FeatureSplitResult(
@@ -127,6 +129,7 @@ public class FeatureSplitResult implements Metadata<FeatureSplitResult> {
             Set<String> totalFeatures,
             HashMap<String, Integer> initialTreeDiffSizes,
             HashMap<String, List<Integer>> FAtreeDiffSizes,
+            HashMap<String, List<Long>> patchTimes,
             double ratioNodes,
             double ratioOfFAPatches,
             final DiffTreeSerializeDebugData debugData)
@@ -148,6 +151,7 @@ public class FeatureSplitResult implements Metadata<FeatureSplitResult> {
         this.totalFeatures = totalFeatures;
         this.FAtreeDiffSizes = FAtreeDiffSizes;
         this.initialTreeDiffSizes = initialTreeDiffSizes;
+        this.patchTimes = patchTimes;
         this.ratioNodes = ratioNodes;
         this.ratioOfFAPatches = ratioOfFAPatches;
     }
@@ -185,7 +189,6 @@ public class FeatureSplitResult implements Metadata<FeatureSplitResult> {
         // RQ1.2
         snap.put(FeatureSplitMetadataKeys.INIT_TREE_DIFF_SIZES, initialTreeDiffSizes);
         snap.put(FeatureSplitMetadataKeys.FA_TREE_DIFF_SIZES, FAtreeDiffSizes.toString());
-        // todo treeDiff size stored in buckets of each commit
 
         // RQ1.3
         snap.put(FeatureSplitMetadataKeys.INVALID_FA_DIFFS, invalidFADiff);
@@ -197,13 +200,8 @@ public class FeatureSplitResult implements Metadata<FeatureSplitResult> {
         snap.put(MetadataKeys.RUNTIME_WITH_MULTITHREADING, runtimeWithMultithreadingInSeconds);
 
         // RQ2.2
-        // TODO process time of each commit
+        snap.put(FeatureSplitMetadataKeys.PATCH_TIME_MS, patchTimes.toString());
 
-        snap.put(FeatureSplitMetadataKeys.TOTAL_FEATURE_AWARE_PATCHES, totalFeatureAwarePatches);
-        snap.put(FeatureSplitMetadataKeys.TOTAL_REMAINDER_PATCHES, totalRemainderPatches);
-
-        snap.put(FeatureSplitMetadataKeys.RATIO_OF_NODES, ratioNodes);
-        snap.put(FeatureSplitMetadataKeys.FEATURE_EXTRACTION_TIME, featureExtractTime);
         snap.putAll(customInfo);
         snap.putAll(debugData.snapshot());
         snap.putAll(Functjonal.bimap(diffErrors, error -> ERROR_BEGIN + error + ERROR_END, Object::toString));
