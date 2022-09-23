@@ -1,13 +1,20 @@
 package org.variantsync.diffdetective.diff.difftree;
 
+import org.variantsync.diffdetective.datasets.Repository;
+import org.variantsync.diffdetective.diff.CommitDiff;
+import org.variantsync.diffdetective.diff.GitPatch;
+import org.variantsync.diffdetective.diff.PatchDiff;
 import org.variantsync.diffdetective.diff.difftree.parse.DiffNodeParser;
 import org.variantsync.diffdetective.diff.difftree.parse.DiffTreeParser;
 import org.variantsync.diffdetective.diff.difftree.source.PatchFile;
 import org.variantsync.diffdetective.diff.difftree.source.PatchString;
 import org.variantsync.diffdetective.diff.difftree.traverse.DiffTreeTraversal;
 import org.variantsync.diffdetective.diff.difftree.traverse.DiffTreeVisitor;
+import org.variantsync.diffdetective.diff.result.CommitDiffResult;
+import org.variantsync.diffdetective.diff.result.DiffError;
 import org.variantsync.diffdetective.diff.result.DiffResult;
 import org.variantsync.diffdetective.util.Assert;
+import org.variantsync.functjonal.Result;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -109,6 +116,33 @@ public class DiffTree {
         final DiffResult<DiffTree> tree = DiffTreeParser.createDiffTree(diff, collapseMultipleCodeLines, ignoreEmptyLines, annotationParser);
         tree.unwrap().ifSuccess(t -> t.setSource(new PatchString(diff)));
         return tree;
+    }
+
+    public static Result<DiffTree, List<DiffError>> fromPatch(final GitPatch patchInfo, final Repository repository) throws IOException {
+        final CommitDiffResult result = CommitDiffResult.fromCommitInRepository(patchInfo.getCommitHash(), repository);
+        final Path changedFile = Path.of(patchInfo.getFileName());
+        if (result.diff().isPresent()) {
+            final CommitDiff commit = result.diff().get();
+            for (final PatchDiff patch : commit.getPatchDiffs()) {
+                if (changedFile.equals(Path.of(patch.getFileName()))) {
+                    return Result.Success(patch.getDiffTree());
+                }
+            }
+
+            final List<DiffError> errors = new ArrayList<>(result.errors().size() + 1);
+            errors.add(
+                new DiffError("There is no patch to "
+                        + changedFile
+                        + " in the given commit "
+                        + patchInfo.getCommitHash()
+                        + " in repo "
+                        + repository.getRepositoryName()
+                        + " or it could not be extracted! Reasons are:")
+            );
+            errors.addAll(result.errors());
+            return Result.Failure(errors);
+        }
+        return Result.Failure(result.errors());
     }
 
     /**

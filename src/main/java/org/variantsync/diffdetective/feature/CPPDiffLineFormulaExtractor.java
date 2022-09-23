@@ -2,6 +2,7 @@ package org.variantsync.diffdetective.feature;
 
 import org.variantsync.diffdetective.diff.difftree.parse.IllFormedAnnotationException;
 
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -40,6 +41,8 @@ public class CPPDiffLineFormulaExtractor {
     public String extractFormula(final String line) throws IllFormedAnnotationException {
         // TODO: There still regexes here in replaceAll that could be optimized by precompiling the regexes once.
         final Matcher matcher = CPP_ANNOTATION_REGEX_PATTERN.matcher(line);
+        final Supplier<IllFormedAnnotationException> couldNotExtractFormula = () ->
+                IllFormedAnnotationException.IfWithoutCondition("Could not extract formula from line \""+ line + "\".");
 
         String fm;
         if (matcher.find()) {
@@ -49,7 +52,7 @@ public class CPPDiffLineFormulaExtractor {
                 fm = matcher.group(4);
             }
         } else {
-            throw IllFormedAnnotationException.IfWithoutCondition("Could not extract formula from line \""+ line + "\".");
+            throw couldNotExtractFormula.get();
         }
 
         // remove comments
@@ -58,6 +61,10 @@ public class CPPDiffLineFormulaExtractor {
 
         // remove whitespace
         fm = fm.replaceAll("\\s", "");
+
+        if (fm.isEmpty()) {
+            throw couldNotExtractFormula.get();
+        }
 
         // remove defined()
         fm = DEFINED_PATTERN.matcher(fm).replaceAll("$1");

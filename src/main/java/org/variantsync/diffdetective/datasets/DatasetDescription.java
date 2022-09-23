@@ -26,6 +26,10 @@ public record DatasetDescription(
         String domain,
         String commits
 ) {
+    public static DatasetDescription summary(final String name, final String repoURL) {
+        return new DatasetDescription(name, repoURL, "", "");
+    }
+
     /**
      * Loads all dataset descriptions in the given markdown file.
      * This expects the markdown file only be a table with the columns
