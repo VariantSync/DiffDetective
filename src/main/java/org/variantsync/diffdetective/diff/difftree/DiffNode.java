@@ -1054,13 +1054,7 @@ public class DiffNode {
         if (beforeParent != null && afterParent != null) {
             Assert.assertTrue(isNon());
         }
-    }
 
-    /**
-     * Checks that Else and Elif nodes have an If or Elif as parent.
-     * @throws AssertionError when an inconsistency is detected.
-     */
-    public void assertSemanticConsistency() {
         // Else and Elif nodes have an If or Elif as parent.
         if (this.isElse() || this.isElif()) {
             if (beforeParent != null) {
@@ -1069,6 +1063,11 @@ public class DiffNode {
             if (afterParent != null) {
                 Assert.assertTrue(afterParent.isIf() || afterParent.isElif(), "After parent " + afterParent + " of " + this + " is neither IF nor ELIF!");
             }
+        }
+
+        // If and elif nodes have a formula
+        if (this.isIf() || this.isElif()) {
+            Assert.assertTrue(this.getDirectFeatureMapping() != null, "If or elif without feature mapping!");
         }
     }
 
