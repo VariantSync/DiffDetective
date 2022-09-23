@@ -1,7 +1,15 @@
 package org.variantsync.diffdetective.diff.result;
 
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.revwalk.RevWalk;
+import org.variantsync.diffdetective.datasets.Repository;
 import org.variantsync.diffdetective.diff.CommitDiff;
+import org.variantsync.diffdetective.diff.GitDiffer;
+import org.variantsync.diffdetective.util.Assert;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,5 +31,13 @@ public record CommitDiffResult(Optional<CommitDiff> diff, List<DiffError> errors
                 Optional.empty(),
                 List.of(DiffResult.Failure(error, message).unwrap().getFailure())
         );
+    }
+
+    public static CommitDiffResult fromCommitInRepository(final String commitHash, final Repository repository) throws IOException {
+        final Git git = repository.getGitRepo().run();
+        Assert.assertNotNull(git);
+        final RevWalk revWalk = new RevWalk(git.getRepository());
+        final RevCommit commit = revWalk.parseCommit(ObjectId.fromString(commitHash));
+        return new GitDiffer(repository).createCommitDiff(commit);
     }
 }
