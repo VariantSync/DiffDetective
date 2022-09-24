@@ -5,7 +5,7 @@
 [![Install](https://img.shields.io/badge/Install-Instructions-blue)](INSTALL.md)
 [![GitHubPages](https://img.shields.io/badge/GitHub%20Pages-online-blue.svg?style=flat)][website]
 [![License](https://img.shields.io/badge/License-GNU%20LGPLv3-blue)](LICENSE.LGPL3)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.6818140.svg)](https://doi.org/10.5281/zenodo.6818140)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7110095.svg)](https://doi.org/10.5281/zenodo.7110095)
 [![Status](https://img.shields.io/badge/ESEC%2FFSE'22-Badge%20Application-blue)](STATUS.md)
 
 This is the replication package for our paper _Classifying Edits to Variability in Source Code_ accepted at the 30th ACM Joint European Software Engineering Conference and Symposium on the Foundations of Software Engineering (ESEC/FSE 2022).
