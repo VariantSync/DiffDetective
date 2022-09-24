@@ -25,7 +25,7 @@ public class CPPParserTest {
             Node expectedFormula
     ) {}
 
-    private static final Path reposPathWSL = Paths.get("\\\\wsl$", "Ubuntu/home/bittner/VariantSync", "DiffDetectiveMining");
+    private static final Path reposPathWSL = Paths.get("..", "DiffDetectiveMining");
 
     private static TestCase tc(
             String diffLine,
@@ -98,6 +98,23 @@ public class CPPParserTest {
                 ))
         );
 
+        Assert.assertTrue(dr.isFailure());
+    }
+
+    @Test
+    public void testOpenSolaris() throws IOException {
+        final Result<DiffTree, List<DiffError>> dr = DiffTree.fromPatch(
+                new GitPatch.PatchReference(
+                        "usr/src/uts/common/zmod/zutil.h",
+                        "65b50c042ab274a35562ae78f4405e5c0bda1ba3",
+                        "56b2069abbf58be3bfc16fdadeb12b26063b130f"
+                ),
+                new DatasetFactory(reposPathWSL).create(DatasetDescription.summary(
+                        "opensolaris",
+                        "https://github.com/kofemann/opensolaris"
+                ))
+        );
+        System.out.println(dr.toString());
         Assert.assertTrue(dr.isFailure());
     }
 }
