@@ -40,6 +40,11 @@ public class CPPDiffLineFormulaExtractor {
     public String extractFormula(final String line) throws IllFormedAnnotationException {
         // TODO: There still regexes here in replaceAll that could be optimized by precompiling the regexes once.
         final Matcher matcher = CPP_ANNOTATION_REGEX_PATTERN.matcher(line);
+        
+        //check for equal number of brackets
+        int openBracets = line.length() - line.replaceAll("\\(", "").length();
+        int closedBracets = line.length() - line.replaceAll("\\)", "").length();
+        if(openBracets != closedBracets) throw IllFormedAnnotationException.IfWithoutCondition("Could not extract formula from line \""+ line + "\".");
 
         String fm;
         if (matcher.find()) {
