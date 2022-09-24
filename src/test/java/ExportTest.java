@@ -1,4 +1,5 @@
 import org.junit.Test;
+import org.tinylog.Logger;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
 import org.variantsync.diffdetective.diff.difftree.serialize.*;
 import org.variantsync.diffdetective.diff.difftree.serialize.edgeformat.DefaultEdgeLabelFormat;
@@ -45,8 +46,16 @@ public class ExportTest {
 
         // Export the test case
         var tikzOutput = new ByteArrayOutputStream();
-        new TikzExporter(format).exportDiffTree(diffTree, tikzOutput);
 
-        TestUtils.assertEqualToFile(Path.of("src/test/resources/serialize/expected.tex"), tikzOutput.toString());
+        try {
+            new TikzExporter(format).exportDiffTree(diffTree, tikzOutput);
+            TestUtils.assertEqualToFile(Path.of("src/test/resources/serialize/expected.tex"), tikzOutput.toString());
+        } catch (IOException e) {
+            if (e.getMessage().contains("Cannot run program")) {
+                Logger.warn("Missing programs! Did you install graphviz? Reason: " + e.getMessage());
+            } else {
+                throw e;
+            }
+        }
     }
 }
