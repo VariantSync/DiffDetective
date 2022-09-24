@@ -27,8 +27,8 @@ public class ExportTest {
     /**
      * Format used to deserialize the test case.
      */
-    private final static DiffTreeLineGraphImportOptions importOptions =
-        new DiffTreeLineGraphImportOptions(
+    private final static LineGraphImportOptions importOptions =
+        new LineGraphImportOptions(
             GraphFormat.DIFFTREE,
             new CommitDiffDiffTreeLabelFormat(),
             new LabelOnlyDiffNodeFormat(),

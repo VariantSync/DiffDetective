@@ -23,13 +23,13 @@ import static org.junit.Assert.assertEquals;
  * For testing the import of a line graph.
  */
 public class LineGraphTest {
-	private final static DiffTreeLineGraphImportOptions IMPORT_OPTIONS = new DiffTreeLineGraphImportOptions(
+	private final static LineGraphImportOptions IMPORT_OPTIONS = new LineGraphImportOptions(
             GraphFormat.DIFFTREE,
             new CommitDiffDiffTreeLabelFormat(),
             new LabelOnlyDiffNodeFormat(),
             new DefaultEdgeLabelFormat()
     );
-    private final static DiffTreeLineGraphExportOptions EXPORT_OPTIONS = new DiffTreeLineGraphExportOptions(
+    private final static LineGraphExportOptions EXPORT_OPTIONS = new LineGraphExportOptions(
             IMPORT_OPTIONS
     );
 

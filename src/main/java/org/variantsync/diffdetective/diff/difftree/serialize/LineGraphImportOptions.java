@@ -13,7 +13,7 @@ import org.variantsync.diffdetective.diff.difftree.serialize.treeformat.DiffTree
  * @param nodeFormat {@link DiffNodeLabelFormat}
  * @param edgeFormat {@link EdgeLabelFormat}
  */
-public record DiffTreeLineGraphImportOptions(
+public record LineGraphImportOptions(
         GraphFormat graphFormat,
         DiffTreeLabelFormat treeFormat,
         DiffNodeLabelFormat nodeFormat,

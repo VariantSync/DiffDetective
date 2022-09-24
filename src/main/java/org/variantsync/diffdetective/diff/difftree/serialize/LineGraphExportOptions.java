@@ -29,7 +29,7 @@ import java.util.function.BiConsumer;
  * @param onError Callback that is invoked when an error occurs.
  * @author Paul Bittner
  */
-public record DiffTreeLineGraphExportOptions(
+public record LineGraphExportOptions(
         GraphFormat graphFormat,
 		DiffTreeLabelFormat treeFormat,
 		DiffNodeLabelFormat nodeFormat,
@@ -41,17 +41,17 @@ public record DiffTreeLineGraphExportOptions(
     /**
      * Creates a export options with a neutral filter (that accepts all trees), no transformers, and that logs errors.
      */
-    public DiffTreeLineGraphExportOptions(GraphFormat graphFormat, DiffTreeLabelFormat treeFormat, DiffNodeLabelFormat nodeFormat, EdgeLabelFormat edgeFormat) {
+    public LineGraphExportOptions(GraphFormat graphFormat, DiffTreeLabelFormat treeFormat, DiffNodeLabelFormat nodeFormat, EdgeLabelFormat edgeFormat) {
         this(graphFormat, treeFormat, nodeFormat, edgeFormat, ExplainedFilter.Any(), new ArrayList<>(), LogError());
     }
 
     /**
      * Create export options from the given import options.
-     * Invokes {@link DiffTreeLineGraphExportOptions#DiffTreeLineGraphExportOptions(GraphFormat, DiffTreeLabelFormat, DiffNodeLabelFormat, EdgeLabelFormat)}
+     * Invokes {@link LineGraphExportOptions#LineGraphExportOptions(GraphFormat, DiffTreeLabelFormat, DiffNodeLabelFormat, EdgeLabelFormat)}
      * with all formats from the given import options.
      * @param importOptions The import options to convert to export options.
      */
-    public DiffTreeLineGraphExportOptions(final DiffTreeLineGraphImportOptions importOptions) {
+    public LineGraphExportOptions(final LineGraphImportOptions importOptions) {
         this(
                 importOptions.graphFormat(),
                 importOptions.treeFormat(),

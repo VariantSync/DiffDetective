@@ -4,7 +4,7 @@ import org.tinylog.Logger;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
 import org.variantsync.diffdetective.diff.difftree.parse.DiffNodeParser;
 import org.variantsync.diffdetective.diff.difftree.parse.DiffTreeParser;
-import org.variantsync.diffdetective.diff.difftree.serialize.DiffTreeLineGraphExportOptions;
+import org.variantsync.diffdetective.diff.difftree.serialize.LineGraphExportOptions;
 import org.variantsync.diffdetective.diff.difftree.serialize.DiffTreeSerializeDebugData;
 import org.variantsync.diffdetective.diff.difftree.serialize.GraphFormat;
 import org.variantsync.diffdetective.diff.difftree.serialize.LineGraphExport;
@@ -23,7 +23,7 @@ import java.nio.file.Path;
 public class TestMultiLineMacros {
     private static final Path resDir = Constants.RESOURCE_DIR.resolve("multilinemacros");
 
-    public void diffToDiffTree(DiffTreeLineGraphExportOptions exportOptions, Path p) throws IOException {
+    public void diffToDiffTree(LineGraphExportOptions exportOptions, Path p) throws IOException {
         DiffTree tree;
         try (BufferedReader fullDiff = Files.newBufferedReader(p)) {
             tree = DiffTreeParser.createDiffTree(
@@ -49,7 +49,7 @@ public class TestMultiLineMacros {
 
     @Test
     public void test() throws IOException {
-        final DiffTreeLineGraphExportOptions exportOptions = new DiffTreeLineGraphExportOptions(
+        final LineGraphExportOptions exportOptions = new LineGraphExportOptions(
                 GraphFormat.DIFFTREE,
                 new CommitDiffDiffTreeLabelFormat(),
                 new DebugDiffNodeFormat(),

@@ -6,7 +6,7 @@ import org.variantsync.diffdetective.analysis.monitoring.TaskCompletionMonitor;
 import org.variantsync.diffdetective.analysis.strategies.AnalysisStrategy;
 import org.variantsync.diffdetective.datasets.Repository;
 import org.variantsync.diffdetective.diff.GitDiffer;
-import org.variantsync.diffdetective.diff.difftree.serialize.DiffTreeLineGraphExportOptions;
+import org.variantsync.diffdetective.diff.difftree.serialize.LineGraphExportOptions;
 import org.variantsync.diffdetective.metadata.Metadata;
 import org.variantsync.diffdetective.mining.MiningTask;
 import org.variantsync.diffdetective.parallel.ScheduledTasksIterator;
@@ -56,7 +56,7 @@ public record HistoryAnalysis(
     public static void analyze(
             final Repository repo,
             final Path outputDir,
-            final DiffTreeLineGraphExportOptions exportOptions,
+            final LineGraphExportOptions exportOptions,
             final AnalysisStrategy strategy)
     {
         AnalysisResult totalResult;

@@ -26,13 +26,13 @@ import java.util.stream.Collectors;
 public class MiningPostprocessing {
     private static final DiffTreeRenderer DefaultRenderer = DiffTreeRenderer.WithinDiffDetective();
     private static final boolean RENDER_CANDIDATES = false;
-    private static final DiffTreeLineGraphImportOptions IMPORT_OPTIONS = new DiffTreeLineGraphImportOptions(
+    private static final LineGraphImportOptions IMPORT_OPTIONS = new LineGraphImportOptions(
             GraphFormat.DIFFGRAPH,
             new IndexedTreeFormat(),
             DiffTreeMiner.NodeFormat(),
             DiffTreeMiner.EdgeFormat()
     );
-    private static final DiffTreeLineGraphExportOptions EXPORT_OPTIONS = new DiffTreeLineGraphExportOptions(
+    private static final LineGraphExportOptions EXPORT_OPTIONS = new LineGraphExportOptions(
             GraphFormat.DIFFTREE,
             IMPORT_OPTIONS.treeFormat(),
             DiffTreeMiner.NodeFormat(),

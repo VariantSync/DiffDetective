@@ -106,7 +106,7 @@ public class MarlinDebug {
                         try {
                             Logger.info(ProposedEditClasses.Instance.match(node));
                         } catch (Exception e) {
-                            //DiffTreeLineGraphExportOptions.RenderError().accept(patch, e);
+                            //LineGraphExportOptions.RenderError().accept(patch, e);
                             Logger.error(e);
                             Logger.info("Died at node {}", node.toString());
                             Logger.info("  before parent: {}", node.getBeforeParent());

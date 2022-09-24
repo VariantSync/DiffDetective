@@ -26,12 +26,12 @@ public final class LineGraphExport {
      * @param options Configuration options for the export, such as the format used for node and edge labels.
      * @return A pair holding some debug information and the produced linegraph as a string.
      */
-    public static Pair<DiffTreeSerializeDebugData, String> toLineGraphFormat(final DiffTree diffTree, final DiffTreeLineGraphExportOptions options) {
+    public static Pair<DiffTreeSerializeDebugData, String> toLineGraphFormat(final DiffTree diffTree, final LineGraphExportOptions options) {
         DiffTreeTransformer.apply(options.treePreProcessing(), diffTree);
         diffTree.assertConsistency();
 
         if (options.treeFilter().test(diffTree)) {
-            final var exporter = new DiffTreeLineGraphExporter(options);
+            final var exporter = new LineGraphExporter(options);
             var output = new ByteArrayOutputStream();
             exporter.exportDiffTree(diffTree, output);
             return new Pair<>(exporter.getDebugData(), output.toString());
@@ -47,7 +47,7 @@ public final class LineGraphExport {
      * @param options Configuration options for the export, such as the format used for node and edge labels.
      * @return A pair of (1) metadata about the exported DiffTrees, and (2) the produced linegraph as String.
      */
-    public static Pair<AnalysisResult, String> toLineGraphFormat(final String repoName, final Iterable<DiffTree> trees, final DiffTreeLineGraphExportOptions options) {
+    public static Pair<AnalysisResult, String> toLineGraphFormat(final String repoName, final Iterable<DiffTree> trees, final LineGraphExportOptions options) {
         final AnalysisResult result = new AnalysisResult(repoName);
 
         final StringBuilder lineGraph = new StringBuilder();
@@ -68,18 +68,18 @@ public final class LineGraphExport {
     }
 
     /**
-     * Same as {@link LineGraphExport#toLineGraphFormat(String, Iterable, DiffTreeLineGraphExportOptions)} but with an
+     * Same as {@link LineGraphExport#toLineGraphFormat(String, Iterable, LineGraphExportOptions)} but with an
      * {@link AnalysisResult#NO_REPO unkown repository}.
      */
-    public static Pair<AnalysisResult, String> toLineGraphFormat(final Iterable<DiffTree> trees, final DiffTreeLineGraphExportOptions options) {
+    public static Pair<AnalysisResult, String> toLineGraphFormat(final Iterable<DiffTree> trees, final LineGraphExportOptions options) {
         return toLineGraphFormat(AnalysisResult.NO_REPO, trees, options);
     }
 
     /**
-     * Same as {@link LineGraphExport#toLineGraphFormat(String, CommitDiff, StringBuilder, DiffTreeLineGraphExportOptions)}
+     * Same as {@link LineGraphExport#toLineGraphFormat(String, CommitDiff, StringBuilder, LineGraphExportOptions)}
      * but with an {@link AnalysisResult#NO_REPO unkown repository}.
      */
-    public static AnalysisResult toLineGraphFormat(final CommitDiff commitDiff, final StringBuilder lineGraph, final DiffTreeLineGraphExportOptions options) {
+    public static AnalysisResult toLineGraphFormat(final CommitDiff commitDiff, final StringBuilder lineGraph, final LineGraphExportOptions options) {
         return toLineGraphFormat(AnalysisResult.NO_REPO, commitDiff, lineGraph, options);
     }
 
@@ -91,7 +91,7 @@ public final class LineGraphExport {
      * @param options Configuration options for the export, such as the format used for node and edge labels.
      * @return The number of the next diff tree to export (updated value of treeCounter).
      */
-    public static AnalysisResult toLineGraphFormat(final String repoName, final CommitDiff commitDiff, final StringBuilder lineGraph, final DiffTreeLineGraphExportOptions options) {
+    public static AnalysisResult toLineGraphFormat(final String repoName, final CommitDiff commitDiff, final StringBuilder lineGraph, final LineGraphExportOptions options) {
         final AnalysisResult result = new AnalysisResult(repoName);
 
         final String hash = commitDiff.getCommitHash();
@@ -124,14 +124,14 @@ public final class LineGraphExport {
     
     /**
      * Produces the final linegraph file content.
-     * Creates a linegraph header from the given DiffTreeSource using the {@link DiffTreeLineGraphExportOptions#treeFormat} in the given options.
+     * Creates a linegraph header from the given DiffTreeSource using the {@link LineGraphExportOptions#treeFormat} in the given options.
      * Then appends the already created file content for nodes and edges.
      * @param lineGraph The string builder to write the result to.
      * @param source The {@link DiffTreeSource} that describes where the DiffTree whose content is written to the file originated from.
-     * @param nodesAndEdges Result from {@link #toLineGraphFormat(DiffTree, DiffTreeLineGraphExportOptions)}. Holds all nodes and edges in linegraph format, separated by a newline each.
-     * @param options {@link DiffTreeLineGraphExportOptions} used to determine the treeFormat for the header.
+     * @param nodesAndEdges Result from {@link #toLineGraphFormat(DiffTree, LineGraphExportOptions)}. Holds all nodes and edges in linegraph format, separated by a newline each.
+     * @param options {@link LineGraphExportOptions} used to determine the treeFormat for the header.
      */
-    public static void composeTreeInLineGraph(final StringBuilder lineGraph, final DiffTreeSource source, final String nodesAndEdges, final DiffTreeLineGraphExportOptions options) {
+    public static void composeTreeInLineGraph(final StringBuilder lineGraph, final DiffTreeSource source, final String nodesAndEdges, final LineGraphExportOptions options) {
     	lineGraph
     		.append(options.treeFormat().toLineGraphLine(source)) // print "t # $LABEL"
     		.append(StringUtils.LINEBREAK)

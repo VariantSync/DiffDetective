@@ -12,7 +12,7 @@ import org.variantsync.diffdetective.datasets.predefined.StanciulescuMarlin;
 import org.variantsync.diffdetective.diff.difftree.filter.DiffTreeFilter;
 import org.variantsync.diffdetective.diff.difftree.filter.ExplainedFilter;
 import org.variantsync.diffdetective.diff.difftree.parse.DiffNodeParser;
-import org.variantsync.diffdetective.diff.difftree.serialize.DiffTreeLineGraphExportOptions;
+import org.variantsync.diffdetective.diff.difftree.serialize.LineGraphExportOptions;
 import org.variantsync.diffdetective.diff.difftree.serialize.GraphFormat;
 import org.variantsync.diffdetective.diff.difftree.serialize.edgeformat.EdgeLabelFormat;
 import org.variantsync.diffdetective.diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
@@ -72,9 +72,9 @@ public class DiffTreeMiner {
                 new DirectedEdgeLabelFormat(nodeFormat, false, direction);
     }
 
-    public static DiffTreeLineGraphExportOptions MiningExportOptions(final Repository repository) {
+    public static LineGraphExportOptions MiningExportOptions(final Repository repository) {
         final MiningNodeFormat nodeFormat = NodeFormat();
-        return new DiffTreeLineGraphExportOptions(
+        return new LineGraphExportOptions(
                   GraphFormat.DIFFTREE
                 // We have to ensure that all DiffTrees have unique IDs, so use name of changed file and commit hash.
                 , new CommitDiffDiffTreeLabelFormat()
@@ -91,9 +91,9 @@ public class DiffTreeMiner {
                         DiffTreeFilter.hasAtLeastOneEditToVariability()
                 )
                 , Postprocessing(repository)
-                , DiffTreeLineGraphExportOptions.LogError()
-                .andThen(DiffTreeLineGraphExportOptions.RenderError())
-                .andThen(DiffTreeLineGraphExportOptions.SysExitOnError())
+                , LineGraphExportOptions.LogError()
+                .andThen(LineGraphExportOptions.RenderError())
+                .andThen(LineGraphExportOptions.SysExitOnError())
         );
     }
 

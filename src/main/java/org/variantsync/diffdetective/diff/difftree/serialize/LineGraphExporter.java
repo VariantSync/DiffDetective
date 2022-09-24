@@ -10,16 +10,16 @@ import org.variantsync.functjonal.Functjonal;
 /**
  * Exporter that converts a single DiffTree's nodes and edges to linegraph.
  */
-public class DiffTreeLineGraphExporter implements Exporter {
+public class LineGraphExporter implements Exporter {
     private final Format format;
     private final DiffTreeSerializeDebugData debugData;
 
-    public DiffTreeLineGraphExporter(Format format) {
+    public LineGraphExporter(Format format) {
         this.format = format;
         this.debugData = new DiffTreeSerializeDebugData();
     }
 
-    public DiffTreeLineGraphExporter(DiffTreeLineGraphExportOptions options) {
+    public LineGraphExporter(LineGraphExportOptions options) {
         this(new Format(options.nodeFormat(), options.edgeFormat()));
     }
 

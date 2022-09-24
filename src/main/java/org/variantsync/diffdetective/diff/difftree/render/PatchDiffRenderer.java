@@ -5,7 +5,7 @@ import org.variantsync.diffdetective.diff.GitPatch;
 import org.variantsync.diffdetective.diff.PatchDiff;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
 import org.variantsync.diffdetective.diff.difftree.LineGraphConstants;
-import org.variantsync.diffdetective.diff.difftree.serialize.DiffTreeLineGraphExportOptions;
+import org.variantsync.diffdetective.diff.difftree.serialize.LineGraphExportOptions;
 import org.variantsync.diffdetective.diff.difftree.serialize.nodeformat.TypeDiffNodeFormat;
 import org.variantsync.diffdetective.util.IO;
 
@@ -64,7 +64,7 @@ public class PatchDiffRenderer {
      * Renders the given patch to the given output directory.
      * @param patch The patch to render.
      * @param outputDirectory The directory to which the rendered image should be written.
-     * @see DiffTreeRenderer#render(DiffTree, String, Path, RenderOptions, DiffTreeLineGraphExportOptions, BiFunction)
+     * @see DiffTreeRenderer#render(DiffTree, String, Path, RenderOptions, LineGraphExportOptions, BiFunction)
      */
     public void render(final PatchDiff patch, final Path outputDirectory) {
         render(patch.getDiffTree(), patch, outputDirectory);

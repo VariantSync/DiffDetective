@@ -5,7 +5,7 @@ import org.tinylog.Logger;
 import org.variantsync.diffdetective.analysis.strategies.AnalysisStrategy;
 import org.variantsync.diffdetective.datasets.Repository;
 import org.variantsync.diffdetective.diff.GitDiffer;
-import org.variantsync.diffdetective.diff.difftree.serialize.DiffTreeLineGraphExportOptions;
+import org.variantsync.diffdetective.diff.difftree.serialize.LineGraphExportOptions;
 import org.variantsync.diffdetective.util.CSV;
 import org.variantsync.diffdetective.util.IO;
 import org.variantsync.diffdetective.util.StringUtils;
@@ -37,7 +37,7 @@ public abstract class CommitHistoryAnalysisTask implements Callable<AnalysisResu
         Repository repository,
         GitDiffer differ,
         Path outputDir,
-        DiffTreeLineGraphExportOptions exportOptions,
+        LineGraphExportOptions exportOptions,
         AnalysisStrategy analysisStrategy,
         Iterable<RevCommit> commits
     ) {}
@@ -61,7 +61,7 @@ public abstract class CommitHistoryAnalysisTask implements Callable<AnalysisResu
         options.analysisStrategy().start(options.repository(), options.outputDir(), options.exportOptions());
 
         final AnalysisResult miningResult = new AnalysisResult(options.repository.getRepositoryName());
-        final DiffTreeLineGraphExportOptions exportOptions = options.exportOptions();
+        final LineGraphExportOptions exportOptions = options.exportOptions();
 
         miningResult.putCustomInfo(MetadataKeys.TREEFORMAT, exportOptions.treeFormat().getName());
         miningResult.putCustomInfo(MetadataKeys.NODEFORMAT, exportOptions.nodeFormat().getName());

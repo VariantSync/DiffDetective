@@ -9,7 +9,7 @@ import org.variantsync.diffdetective.analysis.HistoryAnalysis;
 import org.variantsync.diffdetective.diff.CommitDiff;
 import org.variantsync.diffdetective.diff.PatchDiff;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
-import org.variantsync.diffdetective.diff.difftree.serialize.DiffTreeLineGraphExportOptions;
+import org.variantsync.diffdetective.diff.difftree.serialize.LineGraphExportOptions;
 import org.variantsync.diffdetective.diff.difftree.transform.DiffTreeTransformer;
 import org.variantsync.diffdetective.diff.result.CommitDiffResult;
 import org.variantsync.diffdetective.metadata.ExplainedFilterSummary;
@@ -33,7 +33,7 @@ public class EditClassValidationTask extends CommitHistoryAnalysisTask {
     public AnalysisResult call() throws Exception {
         // Setup. Obtain the result from the initial setup in the super class.
         final AnalysisResult miningResult = super.call();
-        final DiffTreeLineGraphExportOptions exportOptions = options.exportOptions();
+        final LineGraphExportOptions exportOptions = options.exportOptions();
         // List to store the process time of each commit.
         final List<CommitProcessTime> commitTimes = new ArrayList<>(HistoryAnalysis.COMMITS_TO_PROCESS_PER_THREAD_DEFAULT);
         // Clock for runtime measurement.

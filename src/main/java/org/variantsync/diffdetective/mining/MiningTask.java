@@ -6,7 +6,7 @@ import org.variantsync.diffdetective.analysis.*;
 import org.variantsync.diffdetective.diff.CommitDiff;
 import org.variantsync.diffdetective.diff.PatchDiff;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
-import org.variantsync.diffdetective.diff.difftree.serialize.DiffTreeLineGraphExportOptions;
+import org.variantsync.diffdetective.diff.difftree.serialize.LineGraphExportOptions;
 import org.variantsync.diffdetective.diff.difftree.serialize.LineGraphExport;
 import org.variantsync.diffdetective.diff.difftree.transform.DiffTreeTransformer;
 import org.variantsync.diffdetective.diff.result.CommitDiffResult;
@@ -27,7 +27,7 @@ public class MiningTask extends CommitHistoryAnalysisTask {
     @Override
     public AnalysisResult call() throws Exception {
         final AnalysisResult miningResult = super.call();
-        final DiffTreeLineGraphExportOptions exportOptions = options.exportOptions();
+        final LineGraphExportOptions exportOptions = options.exportOptions();
 
         final Clock totalTime = new Clock();
 
