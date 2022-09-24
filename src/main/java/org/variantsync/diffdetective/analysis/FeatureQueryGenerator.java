@@ -4,6 +4,7 @@ import org.prop4j.Literal;
 import org.prop4j.Node;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
 
+import java.awt.*;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;

@@ -1,7 +1,6 @@
 package org.variantsync.diffdetective.diff.difftree.transform;
 
 import org.prop4j.Node;
-import org.tinylog.Logger;
 import org.variantsync.diffdetective.analysis.logic.SAT;
 import org.variantsync.diffdetective.diff.difftree.*;
 import org.variantsync.diffdetective.feature.PropositionalFormulaParser;
@@ -93,6 +92,7 @@ public class FeatureSplit {
             DiffNode cpParent = composedTree.stream().filter(node -> node.equals(edge.parent)).findFirst().orElseThrow();
             DiffNode cpChild = composedTree.stream().filter(node -> node.equals(edge.child)).findFirst().orElseThrow();
 
+            // Add all changes, unchanged node edges aren't added here
             if(cpChild.isAdd() || cpChild.isNon() && cpParent.isAdd()) cpParent.addAfterChild(cpChild);
             if(cpChild.isRem() || cpChild.isNon() && cpParent.isRem()) cpParent.addBeforeChild(cpChild);
         });
@@ -100,10 +100,15 @@ public class FeatureSplit {
         DiffNode composeRoot = composedTree.stream().filter(DiffNode::isRoot).findFirst().orElseThrow();
         DiffTree composeTree = new DiffTree(composeRoot, first.getSource());
 
-        composedTree.stream().filter(DiffNode::isNon).forEach(node -> {
-            if(node.getBeforeParent() == null && node.getAfterParent() != null) node.getAfterParent().addBeforeChild(node);
-            if(node.getAfterParent() == null && node.getBeforeParent() != null) node.getBeforeParent().addAfterChild(node);
-            if(!node.isRoot() && node.getAfterParent() == null && node.getBeforeParent() == null) node.addBelow(composeRoot, composeRoot);
+        allEdges.forEach(edge -> {
+            if(!edge.child.isNon()) return;
+
+            DiffNode cpParent = composedTree.stream().filter(node -> node.equals(edge.parent)).findFirst().orElseThrow();
+            DiffNode cpChild = composedTree.stream().filter(node -> node.equals(edge.child)).findFirst().orElseThrow();
+
+            if(cpChild.getBeforeParent() == null && cpChild.getAfterParent() != null) cpChild.getAfterParent().addBeforeChild(cpChild);
+            if(cpChild.getAfterParent() == null && cpChild.getBeforeParent() != null) cpChild.getBeforeParent().addAfterChild(cpChild);
+            if(cpChild.getBeforeParent() == null && cpChild.getAfterParent() == null) cpChild.addBelow(cpParent, cpParent);
         });
 
         composeTree.assertConsistency();
@@ -187,13 +192,12 @@ public class FeatureSplit {
         List<Integer> includedNodes = subtree.computeAllNodes().stream().map(DiffNode::getID).toList();
         List<HashSet<Integer>> parentNodes = includedNodes.stream()
                 .map(elem -> findAncestors(
-                        initDiffTree.computeAllNodesThat(inspectedNode -> inspectedNode.getID() == elem).get(0)
+                                initDiffTree.computeAllNodesThat(inspectedNode -> inspectedNode.getID() == elem).get(0)
                         )
-                    )
+                )
                 .toList();
 
-        Set<Integer> allNodes = new HashSet<>();
-        allNodes.addAll(parentNodes.stream().flatMap(Set::stream).toList());
+        Set<Integer> allNodes = new HashSet<>(parentNodes.stream().flatMap(Set::stream).toList());
 
         DiffTree copy = new Duplication().deepClone(initDiffTree);
         List<DiffNode> toDelete = copy.computeAllNodesThat(elem -> !allNodes.contains(elem.getID()));

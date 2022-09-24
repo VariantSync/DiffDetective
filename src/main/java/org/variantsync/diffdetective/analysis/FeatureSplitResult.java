@@ -1,22 +1,14 @@
 package org.variantsync.diffdetective.analysis;
 
-import org.variantsync.diffdetective.diff.difftree.DiffTree;
 import org.variantsync.diffdetective.diff.difftree.serialize.DiffTreeSerializeDebugData;
 import org.variantsync.diffdetective.diff.result.DiffError;
-import org.variantsync.diffdetective.metadata.ElementaryPatternCount;
-import org.variantsync.diffdetective.metadata.ExplainedFilterSummary;
 import org.variantsync.diffdetective.metadata.Metadata;
-import org.variantsync.diffdetective.pattern.elementary.proposed.ProposedElementaryPatterns;
 import org.variantsync.functjonal.Functjonal;
 import org.variantsync.functjonal.category.InplaceMonoid;
 import org.variantsync.functjonal.category.InplaceSemigroup;
 import org.variantsync.functjonal.category.Semigroup;
 import org.variantsync.functjonal.map.MergeMap;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.*;
 import java.util.function.BiConsumer;
 
@@ -48,7 +40,9 @@ public class FeatureSplitResult implements Metadata<FeatureSplitResult> {
         a.totalFeatureAwarePatches.putAll(b.totalFeatureAwarePatches);
         a.totalRemainderPatches.putAll(b.totalRemainderPatches);
         a.totalFeatures.addAll(b.totalFeatures);
-        a.maxDiffSize = a.maxDiffSize >= b.maxDiffSize ? a.maxDiffSize : b.maxDiffSize;
+        a.initialTreeDiffSizes.putAll(b.initialTreeDiffSizes);
+        a.FAtreeDiffSizes.putAll(b.FAtreeDiffSizes);
+        a.patchTimes.putAll(b.patchTimes);
         a.ratioOfFAPatches = (a.ratioOfFAPatches + b.ratioOfFAPatches) / 2;
         a.ratioNodes = (a.ratioNodes + b.ratioNodes) / 2;
         MergeMap.putAllValues(a.customInfo, b.customInfo, Semigroup.assertEquals());
@@ -95,7 +89,9 @@ public class FeatureSplitResult implements Metadata<FeatureSplitResult> {
     public Set<String> totalFeatures;
     public HashMap<String, Integer> totalFeatureAwarePatches;
     public HashMap<String, Integer> totalRemainderPatches;
-    public int maxDiffSize;
+    public HashMap<String, Integer> initialTreeDiffSizes;
+    public HashMap<String, List<Integer>> FAtreeDiffSizes;
+    public HashMap<String, List<Long>> patchTimes;
     public double ratioNodes;
     public double ratioOfFAPatches;
 
@@ -112,7 +108,7 @@ public class FeatureSplitResult implements Metadata<FeatureSplitResult> {
                 CommitProcessTime.Unknown(repoName, Long.MAX_VALUE),
                 CommitProcessTime.Unknown(repoName, Long.MIN_VALUE),
                 0,0, new HashMap<>(), new HashMap<>(), new HashSet<>(),
-                0, 0.0, 1.0, new DiffTreeSerializeDebugData());
+                new HashMap<>(), new HashMap<>(), new HashMap<>(), 0.0, 1.0, new DiffTreeSerializeDebugData());
     }
 
     public FeatureSplitResult(
@@ -131,7 +127,9 @@ public class FeatureSplitResult implements Metadata<FeatureSplitResult> {
             HashMap<String, Integer> totalFeatureAwarePatches,
             HashMap<String, Integer> totalRemainderPatches,
             Set<String> totalFeatures,
-            int maxDiffSize,
+            HashMap<String, Integer> initialTreeDiffSizes,
+            HashMap<String, List<Integer>> FAtreeDiffSizes,
+            HashMap<String, List<Long>> patchTimes,
             double ratioNodes,
             double ratioOfFAPatches,
             final DiffTreeSerializeDebugData debugData)
@@ -151,7 +149,9 @@ public class FeatureSplitResult implements Metadata<FeatureSplitResult> {
         this.totalFeatureAwarePatches = totalFeatureAwarePatches;
         this.totalRemainderPatches = totalRemainderPatches;
         this.totalFeatures = totalFeatures;
-        this.maxDiffSize = maxDiffSize;
+        this.FAtreeDiffSizes = FAtreeDiffSizes;
+        this.initialTreeDiffSizes = initialTreeDiffSizes;
+        this.patchTimes = patchTimes;
         this.ratioNodes = ratioNodes;
         this.ratioOfFAPatches = ratioOfFAPatches;
     }
@@ -183,26 +183,25 @@ public class FeatureSplitResult implements Metadata<FeatureSplitResult> {
         snap.put(MetadataKeys.PROCESSED_COMMITS, exportedCommits);
         snap.put(FeatureSplitMetadataKeys.TOTAL_PATCHES, totalPatches);
         snap.put(FeatureSplitMetadataKeys.TOTAL_FEATURES, totalFeatures.size());
+        // RQ1.1
         snap.put(FeatureSplitMetadataKeys.RATIO_OF_FA_PATCHES, ratioOfFAPatches);
 
-        // TODO we want the number of feature-aware patches per feature
-        HashMap<String, Integer> totalNumOfFAPatches = (HashMap<String, Integer>) totalFeatureAwarePatches.clone();
-        //totalNumOfFAPatches.putAll(totalNumOfFAPatches.clone());
-        totalNumOfFAPatches.forEach((key, value) -> totalNumOfFAPatches.replace(key, value + totalRemainderPatches.get(key)));
-        //int totalNumOfPatches = totalFeatureAwarePatches.values().stream().reduce(0, Integer::sum) + totalRemainderPatches.values().stream().reduce(0, Integer::sum);
-        snap.put(FeatureSplitMetadataKeys.RESULTING_NUM_OF_PATCHES, totalNumOfFAPatches);
-        snap.put(FeatureSplitMetadataKeys.TOTAL_FEATURE_AWARE_PATCHES, totalFeatureAwarePatches);
-        snap.put(FeatureSplitMetadataKeys.TOTAL_REMAINDER_PATCHES, totalRemainderPatches);
-        double averageNumFAPatches = totalNumOfFAPatches.values().stream().reduce(0, Integer::sum) / (totalNumOfFAPatches.size() == 0 ? 1 : totalNumOfFAPatches.size());
-        snap.put(FeatureSplitMetadataKeys.AVERAGE_NUM_FA_PATCHES, averageNumFAPatches);
-        snap.put(FeatureSplitMetadataKeys.MAX_DIFF_SIZE, maxDiffSize);
-        snap.put(FeatureSplitMetadataKeys.RATIO_OF_NODES, ratioNodes);
+        // RQ1.2
+        snap.put(FeatureSplitMetadataKeys.INIT_TREE_DIFF_SIZES, initialTreeDiffSizes);
+        snap.put(FeatureSplitMetadataKeys.FA_TREE_DIFF_SIZES, FAtreeDiffSizes.toString());
+
+        // RQ1.3
+        snap.put(FeatureSplitMetadataKeys.INVALID_FA_DIFFS, invalidFADiff);
+
+        // RQ2.1
         snap.put(MetadataKeys.MINCOMMIT, min.toString());
         snap.put(MetadataKeys.MAXCOMMIT, max.toString());
         snap.put(MetadataKeys.RUNTIME, runtimeInSeconds);
         snap.put(MetadataKeys.RUNTIME_WITH_MULTITHREADING, runtimeWithMultithreadingInSeconds);
-        snap.put(FeatureSplitMetadataKeys.FEATURE_EXTRACTION_TIME, featureExtractTime);
-        snap.put(FeatureSplitMetadataKeys.INVALID_FA_DIFFS, invalidFADiff);
+
+        // RQ2.2
+        snap.put(FeatureSplitMetadataKeys.PATCH_TIME_MS, patchTimes.toString());
+
         snap.putAll(customInfo);
         snap.putAll(debugData.snapshot());
         snap.putAll(Functjonal.bimap(diffErrors, error -> ERROR_BEGIN + error + ERROR_END, Object::toString));

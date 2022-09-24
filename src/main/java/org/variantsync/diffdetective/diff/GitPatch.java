@@ -30,6 +30,25 @@ public interface GitPatch extends DiffTreeSource, TextBasedDiff {
         }
     }
 
+    record PatchReference(String getFileName, String getCommitHash, String getParentCommitHash)
+        implements GitPatch {
+
+        @Override
+        public DiffEntry.ChangeType getChangeType() {
+            return DiffEntry.ChangeType.MODIFY;
+        }
+
+        @Override
+        public GitPatch shallowClone() {
+            return new PatchReference(getFileName, getCommitHash, getParentCommitHash);
+        }
+
+        @Override
+        public String getDiff() {
+            return "unknown patch contents";
+        }
+    }
+
     /**
      * Returns the change type of this patch (e.g., file insertion or modification).
      */
