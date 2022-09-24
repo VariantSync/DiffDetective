@@ -1,5 +1,3 @@
-# Classifying Edits to Variability in Source Code
-
 <img padding="10" align="right" src="https://www.acm.org/binaries/content/gallery/acm/publications/artifact-review-v1_1-badges/artifacts_evaluated_reusable_v1_1.png" alt="ACM Artifacts Evaluated Reusable" width="114" height="113"/>
 
 ![Maven](https://github.com/VariantSync/DiffDetective/actions/workflows/maven.yml/badge.svg)
@@ -9,6 +7,8 @@
 [![License](https://img.shields.io/badge/License-GNU%20LGPLv3-blue)](LICENSE.LGPL3)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.6818140.svg)](https://doi.org/10.5281/zenodo.6818140)
 [![Status](https://img.shields.io/badge/ESEC%2FFSE'22-Badge%20Application-blue)](STATUS.md)
+
+# Classifying Edits to Variability in Source Code
 
 This is the replication package for our paper _Classifying Edits to Variability in Source Code_ accepted at the 30th ACM Joint European Software Engineering Conference and Symposium on the Foundations of Software Engineering (ESEC/FSE 2022).
 
