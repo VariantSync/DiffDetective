@@ -55,7 +55,7 @@ public class DiffTreeParser {
      *
      * @param fullDiff                  The full diff of a patch obtained from a buffered reader.
      * @param collapseMultipleCodeLines Whether multiple consecutive code lines with the same diff type
-     *                                  should be collapsed into a single code node.
+     *                                  should be collapsed into a single artifact node.
      * @param ignoreEmptyLines          Whether empty lines (no matter if they are added removed
      *                                  or remained unchanged) should be ignored.
      * @param nodeParser                The parser to parse individual lines in the diff to DiffNodes.
@@ -74,7 +74,7 @@ public class DiffTreeParser {
         final DiffLineNumber lineNo = new DiffLineNumber(0, 0, 0);
         final DiffLineNumber lastLineNo = DiffLineNumber.Copy(lineNo);
 
-        DiffNode lastCode = null;
+        DiffNode lastArtifact = null;
         final AtomicReference<DiffResult<DiffTree>> error = new AtomicReference<>();
         final BiConsumer<DiffError, String> errorPropagation = (errType, message) -> {
             if (error.get() == null) {
@@ -115,8 +115,8 @@ public class DiffTreeParser {
 
             switch (isMLMacro.type()) {
                 case Success: {
-                    if (lastCode != null) {
-                        lastCode = endCodeBlock(lastCode, lastLineNo);
+                    if (lastArtifact != null) {
+                        lastArtifact = endCodeBlock(lastArtifact, lastLineNo);
                     }
                     // This line belongs to a multiline macro and was handled, so go to the next line.
                     continue;
@@ -129,7 +129,7 @@ public class DiffTreeParser {
                 case NotMyDuty: break;
             }
 
-            // This gets the code type and diff type of the current line and creates a node
+            // This gets the node type and diff type of the current line and creates a node
             // Note that the node is not yet added to the diff tree.
             final DiffNode newNode;
             try {
@@ -139,12 +139,12 @@ public class DiffTreeParser {
             }
 
             // collapse multiple code lines
-            if (lastCode != null) {
-                if (collapseMultipleCodeLines && newNode.isCode() && lastCode.diffType.equals(newNode.diffType)) {
-                    lastCode.addLines(newNode.getLines());
+            if (lastArtifact != null) {
+                if (collapseMultipleCodeLines && newNode.isArtifact() && lastArtifact.diffType.equals(newNode.diffType)) {
+                    lastArtifact.addLines(newNode.getLines());
                     continue;
                 } else {
-                    lastCode = endCodeBlock(lastCode, lastLineNo);
+                    lastArtifact = endCodeBlock(lastArtifact, lastLineNo);
                 }
             }
 
@@ -154,8 +154,8 @@ public class DiffTreeParser {
                 nodes.add(newNode);
             }
 
-            if (newNode.isCode()) {
-                lastCode = newNode;
+            if (newNode.isArtifact()) {
+                lastArtifact = newNode;
             } else if (newNode.isEndif()) {
                 final String currentLineFinal = currentLine;
                 diffType.matchBeforeAfter(beforeStack, afterStack,
@@ -187,8 +187,8 @@ public class DiffTreeParser {
             return DiffResult.Failure(DiffError.NOT_ALL_ANNOTATIONS_CLOSED);
         }
 
-        if (lastCode != null) {
-            lastCode = endCodeBlock(lastCode, lineNo);
+        if (lastArtifact != null) {
+            lastArtifact = endCodeBlock(lastArtifact, lineNo);
         }
 
         endCodeBlock(root, lineNo);

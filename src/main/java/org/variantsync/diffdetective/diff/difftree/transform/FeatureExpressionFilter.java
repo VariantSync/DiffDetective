@@ -17,13 +17,13 @@ public record FeatureExpressionFilter(Predicate<DiffNode> isFeatureAnnotation) i
     public void transform(DiffTree diffTree) {
         final List<DiffNode> illegalNodes = new ArrayList<>();
         diffTree.forAll(node -> {
-            if (node.isMacro() && !isFeatureAnnotation.test(node)) {
+            if (node.isAnnotation() && !isFeatureAnnotation.test(node)) {
                 illegalNodes.add(node);
             }
         });
 
-        for (final DiffNode illegalMacro : illegalNodes) {
-            diffTree.removeNode(illegalMacro);
+        for (final DiffNode illegalAnnotation : illegalNodes) {
+            diffTree.removeNode(illegalAnnotation);
         }
     }
 }

@@ -1,7 +1,7 @@
 package org.variantsync.diffdetective.diff.difftree.parse;
 
 import org.variantsync.diffdetective.diff.DiffLineNumber;
-import org.variantsync.diffdetective.diff.difftree.CodeType;
+import org.variantsync.diffdetective.diff.difftree.NodeType;
 import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.diff.difftree.DiffType;
 
@@ -81,8 +81,8 @@ public class MultiLineMacroParser {
 
         if (continuesMultilineDefinition(line)) {
             // If this multiline macro line is a header...
-            final CodeType codeType = CodeType.ofDiffLine(line);
-            if (codeType.isConditionalMacro()) {
+            final NodeType nodeType = NodeType.ofDiffLine(line);
+            if (nodeType.isConditionalAnnotation()) {
                 // ... create a new multi line macro to complete.
                 if (!isAdd) {
                     if (beforeMLMacro != null) {
@@ -103,7 +103,7 @@ public class MultiLineMacroParser {
                         /* If this happens (at least) one of this happened
                          * 1. Found line of a multiline macro without header at line " + line + "!
                          * 2. Backslash in a comment.
-                         * 3. It is the head of a multiline #define macro that we classify as code.
+                         * 3. It is the head of a multiline #define macro that we classify as artifact.
                          *
                          * As 2 and 3 are most likely we just assume those.
                          */

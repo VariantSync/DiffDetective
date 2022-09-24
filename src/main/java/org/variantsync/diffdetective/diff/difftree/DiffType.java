@@ -32,12 +32,12 @@ public enum DiffType {
 
     /**
      * Runs the given procedure depending whether this diff types exists at the respective times.
-     * Runs the first given procedure if the edited artefact existed before the edit (DiffType != ADD).
-     * Runs the second given procedure if the edited artefact exists after the edit (DiffType != REM).
-     * Note: Runs both procedures sequentially if the artefact was not edited and thus
+     * Runs the first given procedure if the edited artifact existed before the edit (DiffType != ADD).
+     * Runs the second given procedure if the edited artifact exists after the edit (DiffType != REM).
+     * Note: Runs both procedures sequentially if the artifact was not edited and thus
      *       exists before and after the edit (DiffType = NON).
-     * @param ifExistsBefore Procedure to run if the edited artefact existed before the edit (DiffType != ADD).
-     * @param ifExistsAfter Procedure to run if the edited artefact exists after the edit (DiffType != REM).
+     * @param ifExistsBefore Procedure to run if the edited artifact existed before the edit (DiffType != ADD).
+     * @param ifExistsAfter Procedure to run if the edited artifact exists after the edit (DiffType != REM).
      */
     public void matchBeforeAfter(final Runnable ifExistsBefore, final Runnable ifExistsAfter) {
         if (this != DiffType.ADD) {
@@ -52,7 +52,7 @@ public enum DiffType {
      * Runs the given task once for each argument that would exist at a certain time if it had this diff type.
      * Runs task on ifExistsBefore if the value existed before the edit (DiffType != ADD).
      * Runs task on ifExistsAfter if the value exists after the edit (DiffType != ADD).
-     * Note: Runs task on both arguments sequentially if the artefact was not edited (DiffType == NON).
+     * Note: Runs task on both arguments sequentially if the artifact was not edited (DiffType == NON).
      *
      * @param ifExistsBefore Argument that is valid if the diff did not add.
      * @param ifExistsAfter Argument that is valid if the edit did not remove.

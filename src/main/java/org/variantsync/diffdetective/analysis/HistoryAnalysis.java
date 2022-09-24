@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 /**
- * An analyses that is performed for the entire commit histories of each given git repositoy.
+ * An analyses that is performed for the entire commit histories of each given git repository.
  * @param repositoriesToAnalyze The repositories whose commit history should be analyzed.
  * @param outputDir The directory to which any produced results should be written.
  * @param commitsToProcessPerThread Number of commits that should be processed by each single thread if multithreading is used.

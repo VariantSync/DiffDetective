@@ -3,7 +3,7 @@
 The artifact for the paper _Classifying Edits to Variability in Source Code_ consists of four parts:
 
 1. **DiffDetective**: For our validation, we built DiffDetective, a java library and command-line tool to classify edits to variability in git histories of preprocessor-based software product lines. 
-  DiffDetective is the main artifact used to replicate the validation for our paper (see Section 5).
+  DiffDetective is the main artifact used to replicate the validation of our paper (see Section 5).
   DiffDetective is self-contained in that it does not require or depend on in-depth knowledge on the theoretical foundation of our work.
   Practitioners and researches are free to ignore the appendix as well as the haskell formalization and may use DiffDetective out-of-the-box.
 2. **Appendix**: The appendix of our paper is given in PDF format in the file [`appendix.pdf`][ddappendix].
@@ -22,18 +22,18 @@ DiffDetective is designed as a library that offers reusable functionality.
 Researchers and practitioners can use our DiffDetective library to build on our theory and results (e.g., for future prototypes to study the evolution of variability in source code).
 
 DiffDetective offers various features, including but not limited to:
-parsing variation tree diffs from unix diffs, obtaining variation tree diffs for certain patches and commits, matching elementary edit patterns on variation tree diffs, defining custom classifications, rendering, traversing, and transforming variation tree diffs, various de-/serialization methods, and running analyses for the git histories of C preprocessor-based software product lines. We documented each part of the library and provide a [javadoc website][dddocumentation] within the repository.
+parsing variation diffs from unix diffs, obtaining variation diffs for certain patches and commits, classifying edits in variation diffs, defining custom classifications, rendering, traversing, and transforming variation diffs, various de-/serialization methods, and running analyses for the git histories of C preprocessor-based software product lines. We documented each part of the library and provide a [javadoc website][dddocumentation] within the repository.
 Moreover, our validation (see _replicability_ above) may also be run on any custom dataset as described in our [README.md][ddreadme].
 
 ### **Extended Formal Specification**
 The [`proofs`][ddproofs] Haskell project provides an extended formal specification of our theory.
 Its main purpose is to document the theory and its extensions to serve as a reference for the proofs in our appendix.
 Yet, the project can also be used as a library to reason on variation trees and diffs in Haskell projects.
-The library is accompanied by a small demo application that shows an example test case for our proof of completeness by creating a variation tree diff from two variation trees and re-projecting them.
+The library is accompanied by a small demo application that shows an example test case for our proof of completeness by creating a variation diff from two variation trees and re-projecting them.
 The `proofs` project is described in detail in our appendix.
 
 ## Claims
-We claim the _Artifacts Available_ badge as we made our artefacts publicly available on [Github][ddgithub] and [Zenodo][ddzenodo] with an [open-source license][ddlicense]. All [44 input datasets][ddforks] are open-source projects and publicly available.
+We claim the _Artifacts Available_ badge as we made our artifacts publicly available on [Github][ddgithub] and [Zenodo][ddzenodo] with an [open-source license][ddlicense]. All [44 input datasets][ddforks] are open-source projects and publicly available.
 
 We claim the _Artifacts Evaluated Reusable_ badge as we implemented DiffDetective as a reusable library (see above).
 Furthermore, both DiffDetective and our Haskell formalization serve as reference implementations if researchers or practitioners want to reimplement our theory in other programming languages.

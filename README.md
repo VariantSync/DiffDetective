@@ -1,5 +1,3 @@
-# Classifying Edits to Variability in Source Code
-
 <img padding="10" align="right" src="https://www.acm.org/binaries/content/gallery/acm/publications/artifact-review-v1_1-badges/artifacts_evaluated_reusable_v1_1.png" alt="ACM Artifacts Evaluated Reusable" width="114" height="113"/>
 
 ![Maven](https://github.com/VariantSync/DiffDetective/actions/workflows/maven.yml/badge.svg)
@@ -9,6 +7,8 @@
 [![License](https://img.shields.io/badge/License-GNU%20LGPLv3-blue)](LICENSE.LGPL3)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.6818140.svg)](https://doi.org/10.5281/zenodo.6818140)
 [![Status](https://img.shields.io/badge/ESEC%2FFSE'22-Badge%20Application-blue)](STATUS.md)
+
+# Classifying Edits to Variability in Source Code
 
 This is the replication package for our paper _Classifying Edits to Variability in Source Code_ accepted at the 30th ACM Joint European Software Engineering Conference and Symposium on the Foundations of Software Engineering (ESEC/FSE 2022).
 
@@ -72,7 +72,7 @@ Moreover, the results comprise the (LaTeX) tables that are part of our paper and
 DiffDetective is documented with javadoc. The documentation can be accessed on this [website][documentation]. Notable classes of our library are:
 - [DiffTree](https://variantsync.github.io/DiffDetective/docs/javadoc/org/variantsync/diffdetective/diff/difftree/DiffTree.html) and [DiffNode](https://variantsync.github.io/DiffDetective/docs/javadoc/org/variantsync/diffdetective/diff/difftree/DiffNode.html) implement variation diffs from our paper. A variation diff is represented by an instance of the `DiffTree` class. It stores the root node of the diff and offers various methods to parse, traverse, and analyze variation diffs. `DiffNode`s represent individual nodes within a variation diff.
 - [Validation](https://variantsync.github.io/DiffDetective/docs/javadoc/org/variantsync/diffdetective/validation/Validation.html) contains the main method for our validation.
-- [ProposedElementaryPatterns](https://variantsync.github.io/DiffDetective/docs/javadoc/org/variantsync/diffdetective/pattern/elementary/proposed/ProposedElementaryPatterns.html) holds the catalog of the nine edit classes we proposed in our paper. It implements the interface [ElementaryPatternCatalogue](https://variantsync.github.io/DiffDetective/docs/javadoc/org/variantsync/diffdetective/pattern/elementary/ElementaryPatternCatalogue.html), which allows to define custom edit classifications.
+- [ProposedEditClasses](https://variantsync.github.io/DiffDetective/docs/javadoc/org/variantsync/diffdetective/editclass/proposed/ProposedEditClasses.html) holds the catalog of the nine edit classes we proposed in our paper. It implements the interface [EditClassCatalogue](https://variantsync.github.io/DiffDetective/docs/javadoc/org/variantsync/diffdetective/editclass/EditClassCatalogue.html), which allows to define custom edit classifications.
 - [BooleanAbstraction](https://variantsync.github.io/DiffDetective/docs/javadoc/org/variantsync/diffdetective/feature/BooleanAbstraction.html) contains data and methods for boolean abstraction of higher-order logic formulas. We use this for macro parsing.
 - [GitDiffer](https://variantsync.github.io/DiffDetective/docs/javadoc/org/variantsync/diffdetective/diff/GitDiffer.html) may parse the history of a git repository to variation diffs.
 - The [datasets](https://variantsync.github.io/DiffDetective/docs/javadoc/org/variantsync/diffdetective/datasets/package-summary.html) package contains various classes for describing and loading datasets.
@@ -95,7 +95,7 @@ How to build our library and how to run the example is described in the [proofs/
 ## 4. Dataset Overview
 ### 4.1 Open-Source Repositories
 We provide an overview of the used 44 open-source preprocessor-based software product lines in the [docs/datasets.md][dataset] file.
-As described in our paper in Section 5.1 this list contains all systems that were studied by Liebig et al., extended by four new subject systems (Busybox, Marlin, LibSSH, Godot).
+As described in our paper in Section 5.1, this list contains all systems that were studied by Liebig et al., extended by four new subject systems (Busybox, Marlin, LibSSH, Godot).
 We provide updated links for each system's repository.
 
 ### 4.2 Forked Repositories for Replication
