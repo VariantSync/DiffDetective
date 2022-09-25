@@ -2,7 +2,6 @@ package org.variantsync.diffdetective.analysis.strategies;
 
 import org.variantsync.diffdetective.datasets.Repository;
 import org.variantsync.diffdetective.diff.CommitDiff;
-import org.variantsync.diffdetective.diff.difftree.serialize.LineGraphExportOptions;
 
 import java.nio.file.Path;
 
@@ -15,19 +14,16 @@ import java.nio.file.Path;
 public abstract class AnalysisStrategy {
     protected Repository repo;
     protected Path outputPath;
-    protected LineGraphExportOptions exportOptions;
 
     /**
      * Invoked when the analysis starts.
      *
      * @param repo The repository on which an analysis is performed.
      * @param outputPath A directory to which output should be written.
-     * @param options Options for data export.
      */
-    public void start(Repository repo, Path outputPath, LineGraphExportOptions options) {
+    public void start(Repository repo, Path outputPath) {
         this.repo = repo;
         this.outputPath = outputPath;
-        this.exportOptions = options;
     }
 
     /**

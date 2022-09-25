@@ -9,7 +9,6 @@ import org.variantsync.diffdetective.analysis.HistoryAnalysis;
 import org.variantsync.diffdetective.diff.CommitDiff;
 import org.variantsync.diffdetective.diff.PatchDiff;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
-import org.variantsync.diffdetective.diff.difftree.serialize.LineGraphExportOptions;
 import org.variantsync.diffdetective.diff.difftree.transform.DiffTreeTransformer;
 import org.variantsync.diffdetective.diff.result.CommitDiffResult;
 import org.variantsync.diffdetective.metadata.ExplainedFilterSummary;
@@ -33,7 +32,6 @@ public class EditClassValidationTask extends CommitHistoryAnalysisTask {
     public AnalysisResult call() throws Exception {
         // Setup. Obtain the result from the initial setup in the super class.
         final AnalysisResult miningResult = super.call();
-        final LineGraphExportOptions exportOptions = options.exportOptions();
         // List to store the process time of each commit.
         final List<CommitProcessTime> commitTimes = new ArrayList<>(HistoryAnalysis.COMMITS_TO_PROCESS_PER_THREAD_DEFAULT);
         // Clock for runtime measurement.
@@ -66,10 +64,10 @@ public class EditClassValidationTask extends CommitHistoryAnalysisTask {
                 for (final PatchDiff patch : commitDiff.getPatchDiffs()) {
                     if (patch.isValid()) {
                         final DiffTree t = patch.getDiffTree();
-                        DiffTreeTransformer.apply(exportOptions.treePreProcessing(), t);
+                        DiffTreeTransformer.apply(options.treePreProcessing(), t);
                         t.assertConsistency();
 
-                        if (!exportOptions.treeFilter().test(t)) {
+                        if (!options.treeFilter().test(t)) {
                             continue;
                         }
 
@@ -86,8 +84,8 @@ public class EditClassValidationTask extends CommitHistoryAnalysisTask {
                     }
                 }
                 miningResult.exportedTrees += numDiffTrees;
-                miningResult.filterHits.append(new ExplainedFilterSummary(exportOptions.treeFilter()));
-                exportOptions.treeFilter().resetExplanations();
+                miningResult.filterHits.append(new ExplainedFilterSummary(options.treeFilter()));
+                options.treeFilter().resetExplanations();
 
                 // Report the commit process time if the commit is not empty.
                 if (numDiffTrees > 0) {

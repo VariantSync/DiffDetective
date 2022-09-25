@@ -20,14 +20,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MiningTask extends CommitHistoryAnalysisTask {
-    public MiningTask(final Options options) {
+    private final LineGraphExportOptions exportOptions;
+
+    public MiningTask(final Options options, final LineGraphExportOptions exportOptions) {
         super(options);
+
+        this.exportOptions = exportOptions;
     }
 
     @Override
     public AnalysisResult call() throws Exception {
         final AnalysisResult miningResult = super.call();
-        final LineGraphExportOptions exportOptions = options.exportOptions();
+        miningResult.putCustomInfo(MetadataKeys.TREEFORMAT, exportOptions.treeFormat().getName());
+        miningResult.putCustomInfo(MetadataKeys.NODEFORMAT, exportOptions.nodeFormat().getName());
+        miningResult.putCustomInfo(MetadataKeys.EDGEFORMAT, exportOptions.edgeFormat().getName());
 
         final Clock totalTime = new Clock();
 
@@ -48,14 +54,12 @@ public class MiningTask extends CommitHistoryAnalysisTask {
             }
 
             /*
-             * We export all difftrees that match our filter criteria (e.g., match more than one edit class).
-             * However, we count edit classes of all DiffTrees, even those that are not exported to Linegraph.
+             * We count the edit classes of all difftrees that match our filter criteria
+             * (e.g., match more than one edit class) and export them to the destination
+             * determined by the AnalysisStrategy.
              */
             final CommitDiff commitDiff = commitDiffResult.diff().get();
             final StringBuilder lineGraph = new StringBuilder();
-            miningResult.append(LineGraphExport.toLineGraphFormat(commitDiff, lineGraph, options.exportOptions()));
-            options.analysisStrategy().onCommit(commitDiff, lineGraph.toString());
-            options.exportOptions().treeFilter().resetExplanations();
 
             // Count edit classes
             int numDiffTrees = 0;
@@ -64,12 +68,14 @@ public class MiningTask extends CommitHistoryAnalysisTask {
 
                 if (patch.isValid()) {
                     final DiffTree t = patch.getDiffTree();
-                    DiffTreeTransformer.apply(exportOptions.treePreProcessing(), t);
+                    DiffTreeTransformer.apply(options.treePreProcessing(), t);
                     t.assertConsistency();
 
-                    if (!exportOptions.treeFilter().test(t)) {
+                    if (!options.treeFilter().test(t)) {
                         continue;
                     }
+
+                    LineGraphExport.toLineGraphFormat(patch, lineGraph, exportOptions, miningResult);
 
                     t.forAll(node -> {
                         if (node.isArtifact()) {
@@ -87,9 +93,13 @@ public class MiningTask extends CommitHistoryAnalysisTask {
 
                 patchStatistics.add(thisPatchesStatistics);
             }
+
+            options.analysisStrategy().onCommit(commitDiff, lineGraph.toString());
+
+            miningResult.exportedCommits += 1;
             miningResult.exportedTrees += numDiffTrees;
-            miningResult.filterHits.append(new ExplainedFilterSummary(exportOptions.treeFilter()));
-            exportOptions.treeFilter().resetExplanations();
+            miningResult.filterHits.append(new ExplainedFilterSummary(options.treeFilter()));
+            options.treeFilter().resetExplanations();
 
             // Only consider non-empty commits
             if (numDiffTrees > 0) {

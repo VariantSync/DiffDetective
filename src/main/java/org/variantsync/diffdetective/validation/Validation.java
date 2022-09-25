@@ -56,7 +56,8 @@ public class Validation {
                     repo,
                     differ,
                     outputPath,
-                    ValidationExportOptions(repo),
+                    new ExplainedFilter<>(DiffTreeFilter.notEmpty()),
+                    List.of(new CutNonEditedSubtrees()),
                     new NullStrategy(),
                     commits
             ));
@@ -87,8 +88,6 @@ public class Validation {
                 , new CommitDiffDiffTreeLabelFormat()
                 , nodeFormat
                 , EdgeFormat(nodeFormat)
-                , new ExplainedFilter<>(DiffTreeFilter.notEmpty())
-                , List.of(new CutNonEditedSubtrees())
                 , LineGraphExportOptions.LogError()
                 .andThen(LineGraphExportOptions.RenderError())
                 .andThen(LineGraphExportOptions.SysExitOnError())

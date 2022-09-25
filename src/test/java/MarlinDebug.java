@@ -7,7 +7,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.prop4j.Node;
 import org.tinylog.Logger;
-import org.variantsync.diffdetective.analysis.CommitHistoryAnalysisTask;
 import org.variantsync.diffdetective.datasets.DatasetDescription;
 import org.variantsync.diffdetective.datasets.DatasetFactory;
 import org.variantsync.diffdetective.datasets.ParseOptions;
@@ -22,7 +21,6 @@ import org.variantsync.diffdetective.diff.difftree.serialize.LineGraphExport;
 import org.variantsync.diffdetective.diff.difftree.transform.DiffTreeTransformer;
 import org.variantsync.diffdetective.feature.CPPAnnotationParser;
 import org.variantsync.diffdetective.mining.DiffTreeMiner;
-import org.variantsync.diffdetective.mining.MiningTask;
 import org.variantsync.diffdetective.editclass.proposed.ProposedEditClasses;
 import org.variantsync.diffdetective.util.Clock;
 import org.variantsync.diffdetective.validation.Validation;
@@ -135,14 +133,12 @@ public class MarlinDebug {
         final RevWalk revWalk = new RevWalk(git.getRepository());
         final RevCommit childCommit = revWalk.parseCommit(ObjectId.fromString(commitHash));
 
-        MiningTask m = new MiningTask(new CommitHistoryAnalysisTask.Options(
-                repoInspection.repo,
-                new GitDiffer(repoInspection.repo),
-                repoInspection.outputPath,
-                DiffTreeMiner.MiningExportOptions(repoInspection.repo),
-                DiffTreeMiner.MiningStrategy(),
-                List.of(childCommit)));
-        m.call();
+        DiffTreeMiner.Mine().create(
+            repoInspection.repo,
+            new GitDiffer(repoInspection.repo),
+            repoInspection.outputPath,
+            List.of(childCommit)
+        ).call();
     }
 
     public static void asValidationTask(final RepoInspection repoInspection, final String commitHash) throws Exception {

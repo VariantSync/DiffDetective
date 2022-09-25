@@ -6,7 +6,10 @@ import org.variantsync.diffdetective.analysis.monitoring.TaskCompletionMonitor;
 import org.variantsync.diffdetective.analysis.strategies.AnalysisStrategy;
 import org.variantsync.diffdetective.datasets.Repository;
 import org.variantsync.diffdetective.diff.GitDiffer;
+import org.variantsync.diffdetective.diff.difftree.DiffTree;
+import org.variantsync.diffdetective.diff.difftree.filter.ExplainedFilter;
 import org.variantsync.diffdetective.diff.difftree.serialize.LineGraphExportOptions;
+import org.variantsync.diffdetective.diff.difftree.transform.DiffTreeTransformer;
 import org.variantsync.diffdetective.metadata.Metadata;
 import org.variantsync.diffdetective.mining.MiningTask;
 import org.variantsync.diffdetective.parallel.ScheduledTasksIterator;
@@ -56,6 +59,8 @@ public record HistoryAnalysis(
     public static void analyze(
             final Repository repo,
             final Path outputDir,
+            final ExplainedFilter<DiffTree> treeFilter,
+            final List<DiffTreeTransformer> treePreProcessing,
             final LineGraphExportOptions exportOptions,
             final AnalysisStrategy strategy)
     {
@@ -71,10 +76,11 @@ public record HistoryAnalysis(
                 repo,
                 differ,
                 outputDir.resolve(repo.getRepositoryName() + ".lg"),
-                exportOptions,
+                treeFilter,
+                treePreProcessing,
                 strategy,
                 commitsToProcess
-        ));
+        ), exportOptions);
         Logger.info("Scheduled {} commits.", commitsToProcess.size());
         commitsToProcess = null; // free reference to enable garbage collection
         Logger.info("<<< done after {}", clock.printPassedSeconds());

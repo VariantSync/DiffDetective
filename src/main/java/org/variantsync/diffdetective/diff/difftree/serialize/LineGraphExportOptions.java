@@ -3,7 +3,6 @@ package org.variantsync.diffdetective.diff.difftree.serialize;
 import org.tinylog.Logger;
 import org.variantsync.diffdetective.diff.PatchDiff;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
-import org.variantsync.diffdetective.diff.difftree.filter.ExplainedFilter;
 import org.variantsync.diffdetective.diff.difftree.render.DiffTreeRenderer;
 import org.variantsync.diffdetective.diff.difftree.render.PatchDiffRenderer;
 import org.variantsync.diffdetective.diff.difftree.serialize.edgeformat.EdgeLabelFormat;
@@ -12,8 +11,6 @@ import org.variantsync.diffdetective.diff.difftree.serialize.treeformat.DiffTree
 import org.variantsync.diffdetective.diff.difftree.transform.DiffTreeTransformer;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.function.BiConsumer;
 
 /**
@@ -34,15 +31,13 @@ public record LineGraphExportOptions(
 		DiffTreeLabelFormat treeFormat,
 		DiffNodeLabelFormat nodeFormat,
         EdgeLabelFormat edgeFormat,
-		ExplainedFilter<DiffTree> treeFilter,
-        List<DiffTreeTransformer> treePreProcessing,
         BiConsumer<PatchDiff, Exception> onError) {
 
     /**
      * Creates a export options with a neutral filter (that accepts all trees), no transformers, and that logs errors.
      */
     public LineGraphExportOptions(GraphFormat graphFormat, DiffTreeLabelFormat treeFormat, DiffNodeLabelFormat nodeFormat, EdgeLabelFormat edgeFormat) {
-        this(graphFormat, treeFormat, nodeFormat, edgeFormat, ExplainedFilter.Any(), new ArrayList<>(), LogError());
+        this(graphFormat, treeFormat, nodeFormat, edgeFormat, LogError());
     }
 
     /**

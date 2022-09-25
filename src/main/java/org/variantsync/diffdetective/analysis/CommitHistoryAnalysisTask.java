@@ -5,7 +5,9 @@ import org.tinylog.Logger;
 import org.variantsync.diffdetective.analysis.strategies.AnalysisStrategy;
 import org.variantsync.diffdetective.datasets.Repository;
 import org.variantsync.diffdetective.diff.GitDiffer;
-import org.variantsync.diffdetective.diff.difftree.serialize.LineGraphExportOptions;
+import org.variantsync.diffdetective.diff.difftree.DiffTree;
+import org.variantsync.diffdetective.diff.difftree.filter.ExplainedFilter;
+import org.variantsync.diffdetective.diff.difftree.transform.DiffTreeTransformer;
 import org.variantsync.diffdetective.util.CSV;
 import org.variantsync.diffdetective.util.IO;
 import org.variantsync.diffdetective.util.StringUtils;
@@ -29,7 +31,8 @@ public abstract class CommitHistoryAnalysisTask implements Callable<AnalysisResu
      * @param repository The repository that is analyzed.
      * @param differ The differ that should be used to obtain diffs.
      * @param outputDir The path to which any output should be written on disk.
-     * @param exportOptions Options for exporting DiffTrees.
+     * @param treeFilter filters commits before processing them
+     * @param treePreProcessing applies a processing function after filtering, but before processing
      * @param analysisStrategy A callback that is invoked for each commit.
      * @param commits The set of commits to process in this task.
      */
@@ -37,7 +40,8 @@ public abstract class CommitHistoryAnalysisTask implements Callable<AnalysisResu
         Repository repository,
         GitDiffer differ,
         Path outputDir,
-        LineGraphExportOptions exportOptions,
+        ExplainedFilter<DiffTree> treeFilter,
+        List<DiffTreeTransformer> treePreProcessing,
         AnalysisStrategy analysisStrategy,
         Iterable<RevCommit> commits
     ) {}
@@ -58,14 +62,9 @@ public abstract class CommitHistoryAnalysisTask implements Callable<AnalysisResu
 
     @Override
     public AnalysisResult call() throws Exception {
-        options.analysisStrategy().start(options.repository(), options.outputDir(), options.exportOptions());
+        options.analysisStrategy().start(options.repository(), options.outputDir());
 
         final AnalysisResult miningResult = new AnalysisResult(options.repository.getRepositoryName());
-        final LineGraphExportOptions exportOptions = options.exportOptions();
-
-        miningResult.putCustomInfo(MetadataKeys.TREEFORMAT, exportOptions.treeFormat().getName());
-        miningResult.putCustomInfo(MetadataKeys.NODEFORMAT, exportOptions.nodeFormat().getName());
-        miningResult.putCustomInfo(MetadataKeys.EDGEFORMAT, exportOptions.edgeFormat().getName());
         miningResult.putCustomInfo(MetadataKeys.TASKNAME, this.getClass().getName());
 
         return miningResult;

@@ -2,7 +2,6 @@ package org.variantsync.diffdetective.analysis.strategies;
 
 import org.variantsync.diffdetective.datasets.Repository;
 import org.variantsync.diffdetective.diff.CommitDiff;
-import org.variantsync.diffdetective.diff.difftree.serialize.LineGraphExportOptions;
 
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -26,10 +25,10 @@ public class CompositeAnalysisStrategy extends AnalysisStrategy {
     }
 
     @Override
-    public void start(Repository repo, Path outputPath, LineGraphExportOptions options) {
-        super.start(repo, outputPath, options);
+    public void start(Repository repo, Path outputPath) {
+        super.start(repo, outputPath);
         for (final AnalysisStrategy s : strategies) {
-            s.start(repo, outputPath, options);
+            s.start(repo, outputPath);
         }
     }
 

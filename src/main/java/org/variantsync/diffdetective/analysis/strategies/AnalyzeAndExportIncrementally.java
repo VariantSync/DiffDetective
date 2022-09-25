@@ -3,7 +3,6 @@ package org.variantsync.diffdetective.analysis.strategies;
 import org.tinylog.Logger;
 import org.variantsync.diffdetective.datasets.Repository;
 import org.variantsync.diffdetective.diff.CommitDiff;
-import org.variantsync.diffdetective.diff.difftree.serialize.LineGraphExportOptions;
 import org.variantsync.diffdetective.util.IO;
 
 import java.io.IOException;
@@ -44,8 +43,8 @@ public class AnalyzeAndExportIncrementally extends AnalysisStrategy {
     }
 
     @Override
-    public void start(Repository repo, Path outputPath, LineGraphExportOptions options) {
-        super.start(repo, outputPath, options);
+    public void start(Repository repo, Path outputPath) {
+        super.start(repo, outputPath);
 
         IO.tryDeleteFile(outputPath);
         nextChunkToExport = new StringBuilder();
