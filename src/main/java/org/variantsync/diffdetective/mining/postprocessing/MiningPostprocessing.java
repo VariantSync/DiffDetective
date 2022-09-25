@@ -1,6 +1,6 @@
 package org.variantsync.diffdetective.mining.postprocessing;
 
-import org.variantsync.diffdetective.analysis.AnalysisResult;
+import org.tinylog.Logger;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
 import org.variantsync.diffdetective.diff.difftree.render.DiffTreeRenderer;
 import org.variantsync.diffdetective.diff.difftree.render.RenderOptions;
@@ -9,7 +9,6 @@ import org.variantsync.diffdetective.diff.difftree.serialize.treeformat.IndexedT
 import org.variantsync.diffdetective.mining.DiffTreeMiner;
 import org.variantsync.diffdetective.util.FileUtils;
 import org.variantsync.diffdetective.util.IO;
-import org.variantsync.functjonal.Pair;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -137,8 +136,13 @@ public class MiningPostprocessing {
                 ++patternNo;
             }
         } else {
-            final Pair<AnalysisResult, String> lineGraph = LineGraphExport.toLineGraphFormat(semanticPatterns, EXPORT_OPTIONS);
-            IO.tryWrite(outputDir.resolve("candidates.lg"), lineGraph.second());
+            Path destinationPath = outputDir.resolve("candidates.lg");
+
+            try (var destination = IO.newBufferedOutputStream(destinationPath)) {
+                LineGraphExport.toLineGraphFormat(semanticPatterns, EXPORT_OPTIONS, destination);
+            } catch (IOException e) {
+                Logger.error(e);
+            }
         }
     }
 }

@@ -1,8 +1,10 @@
 package org.variantsync.diffdetective.analysis.strategies;
 
+import org.apache.commons.io.output.TeeOutputStream;
 import org.variantsync.diffdetective.datasets.Repository;
 import org.variantsync.diffdetective.diff.CommitDiff;
 
+import java.io.OutputStream;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collection;
@@ -33,10 +35,19 @@ public class CompositeAnalysisStrategy extends AnalysisStrategy {
     }
 
     @Override
-    public void onCommit(CommitDiff commit, String lineGraph) {
-        for (final AnalysisStrategy s : strategies) {
-            s.onCommit(commit, lineGraph);
+    public OutputStream onCommit(CommitDiff commit) {
+        var it = strategies.iterator();
+
+        if (!it.hasNext()) {
+            return OutputStream.nullOutputStream();
         }
+
+        OutputStream destination = it.next().onCommit(commit);
+        while (it.hasNext()) {
+            destination = new TeeOutputStream(destination, it.next().onCommit(commit));
+        }
+
+        return destination;
     }
 
     @Override

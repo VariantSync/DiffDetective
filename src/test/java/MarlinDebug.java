@@ -17,7 +17,6 @@ import org.variantsync.diffdetective.diff.PatchDiff;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
 import org.variantsync.diffdetective.diff.difftree.parse.DiffTreeParser;
 import org.variantsync.diffdetective.diff.difftree.parse.IllFormedAnnotationException;
-import org.variantsync.diffdetective.diff.difftree.serialize.LineGraphExport;
 import org.variantsync.diffdetective.diff.difftree.transform.DiffTreeTransformer;
 import org.variantsync.diffdetective.feature.CPPAnnotationParser;
 import org.variantsync.diffdetective.mining.DiffTreeMiner;
@@ -122,9 +121,6 @@ public class MarlinDebug {
                 Logger.info("  End processing {}", patch);
             }
         }
-
-        StringBuilder bigB = new StringBuilder();
-        LineGraphExport.toLineGraphFormat(commitDiff, bigB, DiffTreeMiner.MiningExportOptions(repoInspection.repo));
     }
 
     public static void asMiningTask(final RepoInspection repoInspection, final String commitHash) throws Exception {

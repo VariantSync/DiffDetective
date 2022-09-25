@@ -4,6 +4,7 @@ import org.variantsync.diffdetective.analysis.monitoring.TaskCompletionMonitor;
 import org.variantsync.diffdetective.datasets.Repository;
 import org.variantsync.diffdetective.diff.CommitDiff;
 
+import java.io.OutputStream;
 import java.nio.file.Path;
 
 /**
@@ -29,8 +30,11 @@ public class AnalysisMonitor extends AnalysisStrategy {
     }
 
     @Override
-    public void onCommit(CommitDiff commit, String lineGraph) {
+    public OutputStream onCommit(CommitDiff commit) {
+        // FIXME This function is called before processing the commit.
         monitor.addFinishedTasks(1);
+
+        return OutputStream.nullOutputStream();
     }
 
     @Override

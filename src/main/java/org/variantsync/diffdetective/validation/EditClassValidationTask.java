@@ -57,7 +57,7 @@ public class EditClassValidationTask extends CommitHistoryAnalysisTask {
 
                 // extract the produced commit diff and inform the strategy
                 final CommitDiff commitDiff = commitDiffResult.diff().get();
-                options.analysisStrategy().onCommit(commitDiff, "");
+                options.analysisStrategy().onCommit(commitDiff).close();
 
                 // Count edit class matches
                 int numDiffTrees = 0;

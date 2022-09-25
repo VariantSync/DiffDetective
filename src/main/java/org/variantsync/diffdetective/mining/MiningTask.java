@@ -58,43 +58,40 @@ public class MiningTask extends CommitHistoryAnalysisTask {
              * (e.g., match more than one edit class) and export them to the destination
              * determined by the AnalysisStrategy.
              */
-            final CommitDiff commitDiff = commitDiffResult.diff().get();
-            final StringBuilder lineGraph = new StringBuilder();
-
-            // Count edit classes
             int numDiffTrees = 0;
-            for (final PatchDiff patch : commitDiff.getPatchDiffs()) {
-                final PatchStatistics thisPatchesStatistics = new PatchStatistics(patch, ProposedEditClasses.Instance);
+            final CommitDiff commitDiff = commitDiffResult.diff().get();
+            try (var lineGraphDestination = options.analysisStrategy().onCommit(commitDiff)) {
+                for (final PatchDiff patch : commitDiff.getPatchDiffs()) {
+                    final PatchStatistics thisPatchesStatistics = new PatchStatistics(patch, ProposedEditClasses.Instance);
 
-                if (patch.isValid()) {
-                    final DiffTree t = patch.getDiffTree();
-                    DiffTreeTransformer.apply(options.treePreProcessing(), t);
-                    t.assertConsistency();
+                    if (patch.isValid()) {
+                        final DiffTree t = patch.getDiffTree();
+                        DiffTreeTransformer.apply(options.treePreProcessing(), t);
+                        t.assertConsistency();
 
-                    if (!options.treeFilter().test(t)) {
-                        continue;
+                        if (!options.treeFilter().test(t)) {
+                            continue;
+                        }
+
+                        LineGraphExport.toLineGraphFormat(patch, exportOptions, lineGraphDestination, miningResult);
+
+                        t.forAll(node -> {
+                            if (node.isArtifact()) {
+                                final EditClass editClass = ProposedEditClasses.Instance.match(node);
+                                miningResult.editClassCounts.reportOccurrenceFor(
+                                        editClass,
+                                        commitDiff
+                                );
+                                thisPatchesStatistics.editClassCount().increment(editClass);
+                            }
+                        });
+
+                        ++numDiffTrees;
                     }
 
-                    LineGraphExport.toLineGraphFormat(patch, lineGraph, exportOptions, miningResult);
-
-                    t.forAll(node -> {
-                        if (node.isArtifact()) {
-                            final EditClass editClass = ProposedEditClasses.Instance.match(node);
-                            miningResult.editClassCounts.reportOccurrenceFor(
-                                    editClass,
-                                    commitDiff
-                            );
-                            thisPatchesStatistics.editClassCount().increment(editClass);
-                        }
-                    });
-
-                    ++numDiffTrees;
+                    patchStatistics.add(thisPatchesStatistics);
                 }
-
-                patchStatistics.add(thisPatchesStatistics);
             }
-
-            options.analysisStrategy().onCommit(commitDiff, lineGraph.toString());
 
             miningResult.exportedCommits += 1;
             miningResult.exportedTrees += numDiffTrees;

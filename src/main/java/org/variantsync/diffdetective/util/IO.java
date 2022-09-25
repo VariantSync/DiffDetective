@@ -7,6 +7,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Optional;
@@ -56,6 +57,24 @@ public class IO {
 
         writer.flush();
         writer.close();
+    }
+
+    /**
+     * Same as {@link Files#newOutputStream} but creates all parent directories of
+     * {@code file} and wraps the result in a {@link BuferedOutputStream}.
+     */
+    public static BufferedOutputStream newBufferedOutputStream(Path file, OpenOption... openOptions) throws IOException {
+        if (file.getParent() != null) {
+            Files.createDirectories(file.getParent());
+        }
+
+        var outputStream = Files.newOutputStream(file, openOptions);
+        try {
+            return new BufferedOutputStream(outputStream);
+        } catch (Exception e) {
+            outputStream.close();
+            throw e;
+        }
     }
 
     /**

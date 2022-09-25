@@ -182,7 +182,7 @@ public class DiffTreeRenderer {
      * The python script will produce an image file at the given directory.
      * @param tree The tree to render.
      * @param treeAndFileName A name for the written file as well as the tree (used as a caption in the produced image).
-     * @param directory The directory to which the the rendered file should be written to.
+     * @param directory The directory to which the rendered file should be written to.
      * @param options Configuration options for the rendering process.
      * @param exportOptions Configuration options for the intermediate export to the linegraph format.
      *                      Should be compatible with the render options.
@@ -194,12 +194,10 @@ public class DiffTreeRenderer {
     private boolean render(final DiffTree tree, final String treeAndFileName, final Path directory, RenderOptions options, LineGraphExportOptions exportOptions, BiFunction<String, DiffTreeSource, String> treeHeader) {
         final Path tempFile = directory.resolve(treeAndFileName + ".lg");
 
-        final Pair<DiffTreeSerializeDebugData, String> result = LineGraphExport.toLineGraphFormat(tree, exportOptions);
-        Assert.assertNotNull(result);
-        final String lg = treeHeader.apply(treeAndFileName, tree.getSource()) + StringUtils.LINEBREAK + result.second();
-
-        try {
-            IO.write(tempFile, lg);
+        try (var destination = IO.newBufferedOutputStream(tempFile)) {
+            destination.write((treeHeader.apply(treeAndFileName, tree.getSource()) + StringUtils.LINEBREAK).getBytes());
+            final DiffTreeSerializeDebugData result = LineGraphExport.toLineGraphFormat(tree, exportOptions, destination);
+            Assert.assertNotNull(result);
         } catch (IOException e) {
             Logger.error(e, "Could not render difftree {} because", treeAndFileName);
             return false;

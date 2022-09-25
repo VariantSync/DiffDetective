@@ -3,6 +3,7 @@ package org.variantsync.diffdetective.analysis.strategies;
 import org.variantsync.diffdetective.datasets.Repository;
 import org.variantsync.diffdetective.diff.CommitDiff;
 
+import java.io.OutputStream;
 import java.nio.file.Path;
 
 /**
@@ -27,11 +28,15 @@ public abstract class AnalysisStrategy {
     }
 
     /**
-     * Invoked whenever the analysis processed a commit and converted it to linegraph format.
+     * Invoked before a commit is analyzed.
+     *
+     * The returned line graph export destination is closed after processing the commit given by
+     * {@code commit}.
+     *
      * @param commit The commit that was just processed.
-     * @param lineGraph The linegraph representation of the processed commit. Might be empty if no export to linegraph is desired.
+     * @return the line graph export destination
      */
-    public abstract void onCommit(CommitDiff commit, String lineGraph);
+    public abstract OutputStream onCommit(CommitDiff commit);
 
     /**
      * Invoked when the analysis is done for the current repository.
