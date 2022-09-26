@@ -30,14 +30,7 @@ public class Duplication implements DiffTreeVisitor {
      * Subtree duplication
      */
     public DiffNode deepClone(DiffNode subtree) {
-        this.duplicatedNodes = new HashMap<>();
-        this.hasAllNodes = false;
-        // fill hashmap
-        DiffTreeTraversal.with(this).visit(subtree);
-        this.hasAllNodes = true;
-        // Add connections
-        DiffTreeTraversal.with(this).visit(subtree);
-        return this.duplicatedNodes.get(subtree.getID());
+        return deepCloneAsHashmap(subtree).get(subtree.getID());
     }
 
     /**

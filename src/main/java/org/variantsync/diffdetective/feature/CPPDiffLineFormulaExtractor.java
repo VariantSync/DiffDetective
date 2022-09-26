@@ -48,9 +48,9 @@ public class CPPDiffLineFormulaExtractor {
                 IllFormedAnnotationException.IfWithoutCondition("Could not extract formula from line \""+ line + "\".");
 
         //check for equal number of brackets
-        int openBracets = line.length() - line.replaceAll("\\(", "").length();
-        int closedBracets = line.length() - line.replaceAll("\\)", "").length();
-        if(openBracets != closedBracets) throw IllFormedAnnotationException.IfWithoutCondition("Could not extract formula from line \""+ line + "\".");
+        int openBrackets = line.length() - line.replaceAll("\\(", "").length();
+        int closedBrackets = line.length() - line.replaceAll("\\)", "").length();
+        if(openBrackets != closedBrackets) throw IllFormedAnnotationException.IfWithoutCondition("Could not extract formula from line \""+ line + "\".");
 
         String fm;
         if (matcher.find()) {

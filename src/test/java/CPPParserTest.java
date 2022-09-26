@@ -97,7 +97,7 @@ public class CPPParserTest {
                         "https://gitlab.com/libssh/libssh-mirror"
                 ))
         );
-
+        
         Assert.assertTrue(dr.isFailure());
     }
 
@@ -114,7 +114,6 @@ public class CPPParserTest {
                         "https://github.com/kofemann/opensolaris"
                 ))
         );
-        System.out.println(dr.toString());
         Assert.assertTrue(dr.isFailure());
     }
 }
