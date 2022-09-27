@@ -21,8 +21,6 @@ public class CPPDiffLineFormulaExtractor {
     private static final Pattern COMMENT_PATTERN = Pattern.compile("/\\*.*\\*/");
     private static final Pattern DEFINED_PATTERN = Pattern.compile("defined\\(([^)]*)\\)");
 
-    private static final Pattern BRACKETS_PATTERN = Pattern.compile("defined\\(([^)]*)\\)");
-
     /**
      * Resolves any macros in the given formula that are relevant for feature annotations.
      * For example, in {@link org.variantsync.diffdetective.datasets.predefined.MarlinCPPDiffLineFormulaExtractor Marlin},
@@ -58,7 +56,6 @@ public class CPPDiffLineFormulaExtractor {
                 fm = matcher.group(3);
             } else {
                 fm = matcher.group(4);
-                if (BRACKETS_PATTERN.matcher(fm) != null) throw couldNotExtractFormula.get();
             }
         } else {
             throw couldNotExtractFormula.get();
