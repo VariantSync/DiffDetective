@@ -111,7 +111,7 @@ public class DiffNode {
         return new DiffNode(
                 DiffType.NON,
                 NodeType.IF,
-                new DiffLineNumber(1, 1, 1),
+                DiffLineNumber.Invalid(),
                 DiffLineNumber.Invalid(),
                 FixTrueFalse.True,
                 new ArrayList<>()
@@ -982,6 +982,7 @@ public class DiffNode {
      * {@code 2^26}, this id will no longer be unique.
      */
     public int getID() {
+        // Add one to ensure invalid (negative) line numbers don't cause issues.
         int lineNumber = 1 + from.inDiff;
         Assert.assertTrue((lineNumber << 2*ID_OFFSET) >> 2*ID_OFFSET == lineNumber);
 

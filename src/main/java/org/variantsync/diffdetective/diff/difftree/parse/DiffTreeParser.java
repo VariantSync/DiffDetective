@@ -195,8 +195,6 @@ public class DiffTreeParser {
             lastArtifact = endCodeBlock(lastArtifact, lineNo);
         }
 
-        endCodeBlock(root, lineNo);
-
         // Invalidate line numbers according to edits.
         // E.g. if a node was added, it had no line number before the edit.
         for (final DiffNode node : nodes) {

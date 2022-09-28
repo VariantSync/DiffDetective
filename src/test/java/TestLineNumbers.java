@@ -22,7 +22,7 @@ public class TestLineNumbers {
         // Testcases rely on stability of IDs
 
         final var elifchain_map = new HashMap<Integer, Pair<DiffLineNumber, DiffLineNumber>>();
-        elifchain_map.put(144, new Pair<>(new DiffLineNumber(1, 1, 1), new DiffLineNumber(11, 9, 10)));
+        elifchain_map.put(16, new Pair<>(DiffLineNumber.Invalid(), DiffLineNumber.Invalid()));
         elifchain_map.put(147, new Pair<>(new DiffLineNumber(1, 1, 1), new DiffLineNumber(2, 2, 2)));
         elifchain_map.put(208, new Pair<>(new DiffLineNumber(2, 2, 2), new DiffLineNumber(4, 4, 4)));
         elifchain_map.put(275, new Pair<>(new DiffLineNumber(3, 3, 3), new DiffLineNumber(4, 4, 4)));
@@ -35,7 +35,7 @@ public class TestLineNumbers {
         TestCase elifchain = new TestCase("elifchain.txt", elifchain_map);
 
         final var lineno1_map = new HashMap<Integer, Pair<DiffLineNumber, DiffLineNumber>>();
-        lineno1_map.put(144, new Pair<>(new DiffLineNumber(1, 1, 1), new DiffLineNumber(17, 14, 12)));
+        lineno1_map.put(16, new Pair<>(DiffLineNumber.Invalid(), DiffLineNumber.Invalid()));
         lineno1_map.put(147, new Pair<>(new DiffLineNumber(1, 1, 1), new DiffLineNumber(2, 2, 2)));
         lineno1_map.put(208, new Pair<>(new DiffLineNumber(2, 2, 2), new DiffLineNumber(4, 4, 4)));
         lineno1_map.put(275, new Pair<>(new DiffLineNumber(3, 3, 3), new DiffLineNumber(4, 4, 4)));
@@ -51,7 +51,7 @@ public class TestLineNumbers {
         TestCase lineno1 = new TestCase("lineno1.txt", lineno1_map);
 
         final var deleteMLM_map = new HashMap<Integer, Pair<DiffLineNumber, DiffLineNumber>>();
-        deleteMLM_map.put(144, new Pair<>(new DiffLineNumber(1, 1, 1), new DiffLineNumber(5, 5, 1)));
+        deleteMLM_map.put(16, new Pair<>(DiffLineNumber.Invalid(), DiffLineNumber.Invalid()));
         deleteMLM_map.put(136, new Pair<>(new DiffLineNumber(1, 1, -1), new DiffLineNumber(4, 4, -1)));
         deleteMLM_map.put(267, new Pair<>(new DiffLineNumber(3, 3, -1), new DiffLineNumber(4, 4, -1)));
         TestCase deleteMLM = new TestCase("deleteMLM.txt", deleteMLM_map);
