@@ -60,13 +60,20 @@ public class IO {
     }
 
     /**
+     * Creates all parent directories of {@code file}.
+     */
+    public static void createParentDirectories(Path file) throws IOException {
+        if (file.getParent() != null) {
+            Files.createDirectories(file.getParent());
+        }
+    }
+
+    /**
      * Same as {@link Files#newOutputStream} but creates all parent directories of
      * {@code file} and wraps the result in a {@link BuferedOutputStream}.
      */
     public static BufferedOutputStream newBufferedOutputStream(Path file, OpenOption... openOptions) throws IOException {
-        if (file.getParent() != null) {
-            Files.createDirectories(file.getParent());
-        }
+        createParentDirectories(file);
 
         var outputStream = Files.newOutputStream(file, openOptions);
         try {
@@ -88,9 +95,7 @@ public class IO {
      * the file, or the text cannot be encoded using UTF-8
      */
     public static void write(final Path p, final String text) throws IOException {
-        if (p.getParent() != null) {
-            Files.createDirectories(p.getParent());
-        }
+        createParentDirectories(p);
         Files.writeString(p, text, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
     }
 
@@ -105,9 +110,7 @@ public class IO {
      * cannot be encoded using UTF-8
      */
     public static void append(final Path p, final String text) throws IOException {
-        if (p.getParent() != null) {
-            Files.createDirectories(p.getParent());
-        }
+        createParentDirectories(p);
         Files.writeString(p, text, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
     }
 

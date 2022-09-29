@@ -15,7 +15,6 @@ import org.variantsync.diffdetective.shell.ShellExecutor;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.util.IO;
 import org.variantsync.diffdetective.util.StringUtils;
-import org.variantsync.functjonal.Pair;
 
 import java.io.IOException;
 import java.nio.file.Files;
