@@ -1,13 +1,11 @@
 package org.variantsync.diffdetective.relationshipedges;
 
 import org.eclipse.jgit.revwalk.RevCommit;
-import org.prop4j.Node;
 import org.tinylog.Logger;
 import org.variantsync.diffdetective.analysis.AnalysisResult;
 import org.variantsync.diffdetective.analysis.CommitHistoryAnalysisTask;
 import org.variantsync.diffdetective.analysis.CommitProcessTime;
 import org.variantsync.diffdetective.analysis.HistoryAnalysis;
-import org.variantsync.diffdetective.analysis.logic.SAT;
 import org.variantsync.diffdetective.diff.CommitDiff;
 import org.variantsync.diffdetective.diff.PatchDiff;
 import org.variantsync.diffdetective.diff.difftree.DiffNode;
@@ -16,10 +14,8 @@ import org.variantsync.diffdetective.diff.difftree.serialize.DiffTreeLineGraphEx
 import org.variantsync.diffdetective.diff.difftree.transform.DiffTreeTransformer;
 import org.variantsync.diffdetective.diff.result.CommitDiffResult;
 import org.variantsync.diffdetective.metadata.ExplainedFilterSummary;
-import org.variantsync.diffdetective.pattern.elementary.proposed.ProposedElementaryPatterns;
 import org.variantsync.diffdetective.util.Clock;
 import org.variantsync.diffdetective.util.FileUtils;
-import org.variantsync.functjonal.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -87,29 +83,34 @@ public class PatternValidationTask extends CommitHistoryAnalysisTask {
                         /*
                         extend the @DiffTree t with relationship edges
                         */
-                            EdgeTypedTreeDiff edgeTypedTreeDiff = new EdgeTypedTreeDiff(t);
-                            ArrayList<RelationshipEdge> implicationEdges = new ArrayList<>();
-                            ArrayList<RelationshipEdge> alternativeEdges = new ArrayList<>();
+                            EdgeTypedDiff edgeTypedDiff = new EdgeTypedDiff(t);
+                            ArrayList<RelationshipEdge<? extends RelationshipType>> implicationEdges = new ArrayList<>();
+                            ArrayList<RelationshipEdge<? extends RelationshipType>> alternativeEdges = new ArrayList<>();
                             List<DiffNode> annotationNodes = t.computeAnnotationNodes();
                             List<DiffNode> ifNodes = t.computeAllNodesThat(DiffNode::isIf);
                             for (int i = 0; i < ifNodes.size(); i++) {
                                 for (int j = i + 1; j < ifNodes.size(); j++) {
                                     if (Implication.areInRelation(ifNodes.get(i), ifNodes.get(j))) {
-                                        implicationEdges.add(new RelationshipEdge<Implication>(Implication.class, ifNodes.get(i), ifNodes.get(j)));
+                                        implicationEdges.add(new RelationshipEdge<>(Implication.class, ifNodes.get(i), ifNodes.get(j)));
                                     }
                                     if (Implication.areInRelation(ifNodes.get(j), ifNodes.get(i))) {
-                                        implicationEdges.add(new RelationshipEdge<Implication>(Implication.class, ifNodes.get(j), ifNodes.get(i)));
+                                        implicationEdges.add(new RelationshipEdge<>(Implication.class, ifNodes.get(j), ifNodes.get(i)));
                                     }
                                     if (Alternative.areInRelation(ifNodes.get(j), ifNodes.get(i))) {
-                                        alternativeEdges.add(new RelationshipEdge<Alternative>(Alternative.class, ifNodes.get(i), ifNodes.get(j)));
-                                        alternativeEdges.add(new RelationshipEdge<Alternative>(Alternative.class, ifNodes.get(j), ifNodes.get(i)));
+                                        alternativeEdges.add(new RelationshipEdge<>(Alternative.class, ifNodes.get(i), ifNodes.get(j)));
+                                        alternativeEdges.add(new RelationshipEdge<>(Alternative.class, ifNodes.get(j), ifNodes.get(i)));
                                     }
                                 }
                             }
                             numRelEdges += implicationEdges.size();
                             numRelEdges += alternativeEdges.size();
-                            edgeTypedTreeDiff.addEdgesWithType(Implication.class, implicationEdges);
-                            edgeTypedTreeDiff.addEdgesWithType(Alternative.class, alternativeEdges);
+                            edgeTypedDiff.addEdgesWithType(Implication.class, implicationEdges);
+                            edgeTypedDiff.addEdgesWithType(Alternative.class, alternativeEdges);
+
+                            // TODO: analyse edgeTypedTreeDiff
+
+
+                            
                         }
                     }
                 }
