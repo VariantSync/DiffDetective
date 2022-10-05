@@ -4,23 +4,22 @@ import org.variantsync.diffdetective.diff.difftree.traverse.DiffTreeTraversal;
 import org.variantsync.diffdetective.diff.difftree.traverse.DiffTreeVisitor;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class DiffTreeComparison implements DiffTreeVisitor {
+public class AtomicDiffComparison implements DiffTreeVisitor {
     private HashMap<Integer, List<DiffNode>> comparisonHashMap;
 
     /**
-     * Validate tree equation
+     * Validate tree equality
      */
     public Boolean equals(DiffTree first, DiffTree second) {
         return first.getSource().equals(second.getSource()) && equals(first.getRoot(), second.getRoot());
     }
 
     /**
-     * validate subtree equation
+     * validate subtree equality
      */
     public Boolean equals(DiffNode first, DiffNode second) {
         this.comparisonHashMap = new HashMap<>();
@@ -31,9 +30,11 @@ public class DiffTreeComparison implements DiffTreeVisitor {
         // compare elements
         return !this.comparisonHashMap.values().stream().map(diffNodes ->
                         diffNodes.size() != 2
-                        || !diffNodes.get(0).equals(diffNodes.get(1))
-                        || !diffNodes.get(0).getAllChildren().equals(diffNodes.get(1).getAllChildren()))
-                .collect(Collectors.toSet()).contains(true);
+                        || !(diffNodes.get(0).getID() == diffNodes.get(1).getID())
+                        || !(diffNodes.get(0).getAllChildren().stream().map(DiffNode::getID).collect(Collectors.toSet()).equals(
+                                diffNodes.get(1).getAllChildren().stream().map(DiffNode::getID).collect(Collectors.toSet())
+                        ))
+                ).collect(Collectors.toSet()).contains(true);
     }
 
     /**
