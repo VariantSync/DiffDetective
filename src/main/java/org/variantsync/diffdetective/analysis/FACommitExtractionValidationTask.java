@@ -14,6 +14,7 @@ import org.variantsync.diffdetective.diff.difftree.serialize.DiffTreeLineGraphEx
 import org.variantsync.diffdetective.diff.difftree.transform.DiffTreeTransformer;
 import org.variantsync.diffdetective.diff.difftree.transform.FeatureSplit;
 import org.variantsync.diffdetective.diff.result.CommitDiffResult;
+import org.variantsync.diffdetective.feature.PropositionalFormulaParser;
 import org.variantsync.diffdetective.util.Clock;
 import org.variantsync.diffdetective.util.FileUtils;
 
@@ -82,7 +83,7 @@ public class FACommitExtractionValidationTask extends FeatureSplitAnalysisTask {
                             System.out.println(t.computeSize());
 
                             // generate feature-aware and remaining patches
-                            HashMap<String, DiffTree> featureAware = FeatureSplit.featureSplit(t, feature);
+                            HashMap<String, DiffTree> featureAware = FeatureSplit.featureSplit(t, PropositionalFormulaParser.Default.parse(feature));
                             System.out.println("FeatureSplit");
 
                             // 1. get number of feature-aware patches for a patch

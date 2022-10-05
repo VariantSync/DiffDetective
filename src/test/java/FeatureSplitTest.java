@@ -7,6 +7,7 @@ import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
 import org.variantsync.diffdetective.diff.difftree.Duplication;
 import org.variantsync.diffdetective.diff.difftree.transform.FeatureSplit;
+import org.variantsync.diffdetective.feature.PropositionalFormulaParser;
 
 import java.awt.*;
 import java.io.IOException;
@@ -51,7 +52,7 @@ public class FeatureSplitTest {
     @Test
     public void featureSplitTest() {
         DiffTree tree = DIFF_TREES.get(0);
-        HashMap<String, DiffTree> featureAwareTrees = FeatureSplit.featureSplit(tree, Arrays.asList("Unix", "Get"));
+        HashMap<String, DiffTree> featureAwareTrees = FeatureSplit.featureSplit(tree, Arrays.asList(PropositionalFormulaParser.Default.parse("Unix"), PropositionalFormulaParser.Default.parse("Get")));
 
         Assert.assertEquals(featureAwareTrees.get("Get").getRoot().getAllChildren().get(0).getAllChildren().size(), 2);
         Assert.assertEquals(featureAwareTrees.get("Unix").getRoot().getAllChildren().get(0).getAllChildren().size(), 1);
@@ -60,7 +61,7 @@ public class FeatureSplitTest {
     @Test
     public void featureSplitTest2() {
         DiffTree tree = DIFF_TREES.get(0);
-        HashMap<String, DiffTree> featureAwareTrees = FeatureSplit.featureSplit(tree, "Get");
+        HashMap<String, DiffTree> featureAwareTrees = FeatureSplit.featureSplit(tree, PropositionalFormulaParser.Default.parse("Get"));
 
         featureAwareTrees.get("Get").getRoot().getAllChildren().get(0).getAllChildren().forEach(diffNode -> System.out.println(diffNode.toString()));
         Assert.assertEquals(featureAwareTrees.get("Get").getRoot().getAllChildren().get(1).getAllChildren().size(), 3);
@@ -69,15 +70,15 @@ public class FeatureSplitTest {
     @Test
     public void featureSplitTest3() {
         DiffTree tree = DIFF_TREES.get(2);
-        HashMap<String, DiffTree> featureAwareTrees = FeatureSplit.featureSplit(tree, "OPENSSL_NO_TLSEXT");
+        HashMap<String, DiffTree> featureAwareTrees = FeatureSplit.featureSplit(tree, PropositionalFormulaParser.Default.parse("OPENSSL_NO_TLSEXT"));
         featureAwareTrees.forEach((key, value) -> value.assertConsistency());
     }
 
     @Test
     public void featureSplitTest4() {
         DiffTree tree = DIFF_TREES.get(0);
-        HashMap<String, DiffTree> featureAwareTrees = FeatureSplit.featureSplit(tree, "Get");
-        HashMap<String, DiffTree> featureAwareTrees2 = FeatureSplit.featureSplit(tree, "Get");
+        HashMap<String, DiffTree> featureAwareTrees = FeatureSplit.featureSplit(tree, PropositionalFormulaParser.Default.parse("Get"));
+        HashMap<String, DiffTree> featureAwareTrees2 = FeatureSplit.featureSplit(tree, PropositionalFormulaParser.Default.parse("Get"));
 
         featureAwareTrees2.get("Get").getRoot().getAllChildren().get(0).getAllChildren().forEach(diffNode -> System.out.println(diffNode.toString()));
         Assert.assertEquals(featureAwareTrees2.get("Get").getRoot().getAllChildren().get(1).getAllChildren().size(), 3);
@@ -90,7 +91,7 @@ public class FeatureSplitTest {
     public void generateClustersTest() {
         DiffTree tree = DIFF_TREES.get(0);
         List<DiffTree> subtrees = FeatureSplit.generateAllSubtrees(tree);
-        HashMap<String, List<DiffTree>> clusters = FeatureSplit.generateClusters(subtrees, Arrays.asList("Unix", "Get"));
+        HashMap<String, List<DiffTree>> clusters = FeatureSplit.generateClusters(subtrees, Arrays.asList(PropositionalFormulaParser.Default.parse("Unix"), PropositionalFormulaParser.Default.parse("Get")));
 
         Assert.assertEquals(clusters.get("Unix").size(), 1);
         Assert.assertEquals(clusters.get("Get").size(), 2);

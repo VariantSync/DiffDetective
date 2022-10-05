@@ -15,8 +15,8 @@ public class FeatureSplit {
      *
      * @return a Hashmap of features and its corresponding feature-aware DiffTrees
      */
-    public static HashMap<String, DiffTree> featureSplit(DiffTree initDiffTree, String query){
-        ArrayList<String> queries = new ArrayList<>();
+    public static HashMap<String, DiffTree> featureSplit(DiffTree initDiffTree, Node query) {
+        ArrayList<Node> queries = new ArrayList<>();
         queries.add(query);
         return featureSplit(initDiffTree, queries);
     }
@@ -26,7 +26,7 @@ public class FeatureSplit {
      *
      * @return a Hashmap of features and its corresponding feature-aware DiffTrees
      */
-    public static HashMap<String, DiffTree> featureSplit(DiffTree initDiffTree, List<String> queries){
+    public static HashMap<String, DiffTree> featureSplit(DiffTree initDiffTree, List<Node> queries) {
         List<DiffTree> subtrees = generateAllSubtrees(initDiffTree);
         HashMap<String, List<DiffTree>> clusters = generateClusters(subtrees, queries);
         return generateFeatureAwareDiffTrees(clusters);
@@ -38,7 +38,7 @@ public class FeatureSplit {
      * @param clusters contains the grouped subtrees
      * @return a List of subtrees that represent changes to one feature or one composite feature
      */
-    public static HashMap<String, DiffTree> generateFeatureAwareDiffTrees(HashMap<String, List<DiffTree>> clusters){
+    public static HashMap<String, DiffTree> generateFeatureAwareDiffTrees(HashMap<String, List<DiffTree>> clusters) {
         HashMap<String, DiffTree> featureAwareTreeDiffs = new HashMap<>();
         for (Map.Entry<String, List<DiffTree>> entry : clusters.entrySet()) {
             featureAwareTreeDiffs.put(entry.getKey(),
@@ -53,13 +53,13 @@ public class FeatureSplit {
      * @param cluster contains subtrees of a cluster
      * @return a feature-aware DiffTrees
      */
-    public static DiffTree generateFeatureAwareDiffTree(List<DiffTree> cluster){
+    public static DiffTree generateFeatureAwareDiffTree(List<DiffTree> cluster) {
         if (cluster.size() == 0) return null;
         if (cluster.size() == 1) return cluster.get(0);
         return generateFeatureAwareDiffTree(
                 Stream.concat(
-                    Stream.of(composeDiffTrees(cluster.get(0),cluster.get(1))),
-                    cluster.subList(2, cluster.size()).stream()
+                        Stream.of(composeDiffTrees(cluster.get(0), cluster.get(1))),
+                        cluster.subList(2, cluster.size()).stream()
                 ).collect(Collectors.toList())
         );
     }
@@ -86,29 +86,32 @@ public class FeatureSplit {
         HashSet<DiffNode> composedTree = new HashSet<>();
 
         allEdges.forEach(edge -> {
-            if(!composedTree.contains(edge.parent)) composedTree.add(Duplication.shallowClone(edge.parent));
-            if(!composedTree.contains(edge.child)) composedTree.add(Duplication.shallowClone(edge.child));
+            if (!composedTree.contains(edge.parent)) composedTree.add(Duplication.shallowClone(edge.parent));
+            if (!composedTree.contains(edge.child)) composedTree.add(Duplication.shallowClone(edge.child));
 
             DiffNode cpParent = composedTree.stream().filter(node -> node.equals(edge.parent)).findFirst().orElseThrow();
             DiffNode cpChild = composedTree.stream().filter(node -> node.equals(edge.child)).findFirst().orElseThrow();
 
             // Add all changes, unchanged node edges aren't added here
-            if(cpChild.isAdd() || cpChild.isNon() && cpParent.isAdd()) cpParent.addAfterChild(cpChild);
-            if(cpChild.isRem() || cpChild.isNon() && cpParent.isRem()) cpParent.addBeforeChild(cpChild);
+            if (cpChild.isAdd() || cpChild.isNon() && cpParent.isAdd()) cpParent.addAfterChild(cpChild);
+            if (cpChild.isRem() || cpChild.isNon() && cpParent.isRem()) cpParent.addBeforeChild(cpChild);
         });
 
         DiffNode composeRoot = composedTree.stream().filter(DiffNode::isRoot).findFirst().orElseThrow();
         DiffTree composeTree = new DiffTree(composeRoot, first.getSource());
 
         allEdges.forEach(edge -> {
-            if(!edge.child.isNon()) return;
+            if (!edge.child.isNon()) return;
 
             DiffNode cpParent = composedTree.stream().filter(node -> node.equals(edge.parent)).findFirst().orElseThrow();
             DiffNode cpChild = composedTree.stream().filter(node -> node.equals(edge.child)).findFirst().orElseThrow();
 
-            if(cpChild.getBeforeParent() == null && cpChild.getAfterParent() != null) cpChild.getAfterParent().addBeforeChild(cpChild);
-            if(cpChild.getAfterParent() == null && cpChild.getBeforeParent() != null) cpChild.getBeforeParent().addAfterChild(cpChild);
-            if(cpChild.getBeforeParent() == null && cpChild.getAfterParent() == null) cpChild.addBelow(cpParent, cpParent);
+            if (cpChild.getBeforeParent() == null && cpChild.getAfterParent() != null)
+                cpChild.getAfterParent().addBeforeChild(cpChild);
+            if (cpChild.getAfterParent() == null && cpChild.getBeforeParent() != null)
+                cpChild.getBeforeParent().addAfterChild(cpChild);
+            if (cpChild.getBeforeParent() == null && cpChild.getAfterParent() == null)
+                cpChild.addBelow(cpParent, cpParent);
         });
 
         composeTree.assertConsistency();
@@ -118,19 +121,20 @@ public class FeatureSplit {
 
     /**
      * Generates a cluster for each given query and a "remaining" cluster for all non-selected subtrees
+     *
      * @param queries: feature mapping which represents a query.
      * @return true if query is implied in the presence condition
      */
-    public static HashMap<String, List<DiffTree>> generateClusters(List<DiffTree> subtrees, List<String> queries){
+    public static HashMap<String, List<DiffTree>> generateClusters(List<DiffTree> subtrees, List<Node> queries) {
         HashMap<String, List<DiffTree>> clusters = new HashMap<>();
         clusters.put("remains", new ArrayList<>());
 
-        for (DiffTree subtree: subtrees){
+        for (DiffTree subtree : subtrees) {
             boolean hasFound = false;
-            for (String query: queries){
-                if (evaluate(subtree, query)){
-                    if(!clusters.containsKey(query)) clusters.put(query, new ArrayList<>());
-                    clusters.get(query).add(subtree); // call by reference
+            for (Node query : queries) {
+                if (evaluate(subtree, query)) {
+                    if (!clusters.containsKey(query.toString())) clusters.put(query.toString(), new ArrayList<>());
+                    clusters.get(query.toString()).add(subtree); // call by reference
                     hasFound = true;
                     break;
                 }
@@ -142,25 +146,26 @@ public class FeatureSplit {
 
     /**
      * compares every node in the subtree with the query
+     *
      * @return true if query is implied in a presence condition of a node
      */
-    private static Boolean evaluate(DiffTree subtree, String query){
-        return subtree.anyMatch(node -> {
-            return (node.getBeforeParent() != null && satSolver(node.getBeforePresenceCondition(), query)) || node.getAfterParent() != null && satSolver(node.getAfterPresenceCondition(), query);
-        });
+    private static Boolean evaluate(DiffTree subtree, Node query) {
+        return subtree.anyMatch(node -> (node.getBeforeParent() != null && satSolver(node.getBeforePresenceCondition(), query)) || node.getAfterParent() != null && satSolver(node.getAfterPresenceCondition(), query));
     }
 
     /**
      * Checks if the query and the presence condition intersect, by checking implication.
+     *
      * @param query: feature mapping which represents a query.
      * @return true if query is implied in the presence condition
      */
-    private static boolean satSolver(Node presenceCondition, String query) {
-        return SAT.implies(presenceCondition, PropositionalFormulaParser.Default.parse(query));
+    private static boolean satSolver(Node presenceCondition, Node query) {
+        return SAT.implies(presenceCondition, query);
     }
 
     /**
      * Generates valid subtrees, which represent all changes from the initial DiffTree
+     *
      * @param initDiffTree is transformed into subtrees
      * @return a set of subtrees
      */
