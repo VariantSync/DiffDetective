@@ -25,7 +25,10 @@ import java.util.function.Predicate;
 import static org.variantsync.functjonal.Functjonal.when;
 
 /**
- * Implementation of the diff tree.
+ * Implementation of variation tree diffs from our ESEC/FSE'22 paper.
+ * An instance of this class represents a variation tree diff. It stores the root of the graph as a {@link DiffNode}.
+ * It optionally holds a {@link DiffTreeSource} that describes how the variation tree diff was obtained.
+ * The graph structure is implemented by the {@link DiffNode} class.
  * @author Paul Bittner, Sören Viegener
  */
 public class DiffTree {

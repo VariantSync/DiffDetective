@@ -10,7 +10,7 @@ import org.variantsync.diffdetective.editclass.EditClass;
  * Our Untouched edit class from the ESEC/FSE'22 paper.
  * @author Paul Bittner, Sören Viegener
  */
-public class Untouched extends EditClass {
+final class Untouched extends EditClass {
     Untouched() {
         super("Untouched", DiffType.NON);
     }

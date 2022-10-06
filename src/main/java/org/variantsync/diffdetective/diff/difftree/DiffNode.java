@@ -16,8 +16,11 @@ import static org.variantsync.diffdetective.util.fide.FormulaUtils.negate;
 
 /**
  * Implementation of a node in a {@link DiffTree}.
- *
- * Includes methods for creating a node by getting its node type and diff type and for getting the feature mapping of the node.
+ * A DiffNode represents a single node within a variation tree diff (according to our ESEC/FSE'22 paper), but is specialized
+ * to the target domain of preprocessor-based software product lines.
+ * Thus, opposed to the generic mathematical model of variation tree diffs, a DiffNode always stores lines of text, line numbers, and child ordering information as its label.
+ * Each DiffNode may be edited according to its {@link DiffType} and represents a source code element according to its {@link NodeType}.
+ * DiffNode's store parent and child information to build a graph.
  * @author Paul Bittner, Sören Viegener, Benjamin Moosherr
  */
 public class DiffNode {
