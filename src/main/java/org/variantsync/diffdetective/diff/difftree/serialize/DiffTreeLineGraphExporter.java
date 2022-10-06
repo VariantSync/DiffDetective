@@ -1,64 +1,60 @@
 package org.variantsync.diffdetective.diff.difftree.serialize;
 
-import org.variantsync.diffdetective.diff.difftree.DiffNode;
+import java.io.OutputStream;
+import java.io.PrintStream;
+
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
-import org.variantsync.diffdetective.util.StringUtils;
+import org.variantsync.diffdetective.diff.difftree.LineGraphConstants;
+import org.variantsync.functjonal.Functjonal;
 
 /**
  * Exporter that converts a single DiffTree's nodes and edges to linegraph.
  */
-public class DiffTreeLineGraphExporter {
-    private final StringBuilder nodesString = new StringBuilder();
-    private final StringBuilder edgesString = new StringBuilder();
-
-    private final DiffTree diffTree;
-
+public class DiffTreeLineGraphExporter implements Exporter {
+    private final Format format;
     private final DiffTreeSerializeDebugData debugData;
 
-    /**
-     * Creates a new exporter that will export the given tree.
-     */
-    public DiffTreeLineGraphExporter(DiffTree treeToExport) {
-        this.diffTree = treeToExport;
+    public DiffTreeLineGraphExporter(Format format) {
+        this.format = format;
         this.debugData = new DiffTreeSerializeDebugData();
     }
 
-    /**
-     * Converts the given node and its edges to linegraph using the formats specified in the given options.
-     * The produced linegraph statements will be added to the internal StringBuilders.
-     * @param node The node to convert to linegraph format together with its edges.
-     * @param options Options that specify the node and edge format to use.
-     */
-    private void visit(DiffNode node, DiffTreeLineGraphExportOptions options) {
-        switch (node.diffType) {
-            case ADD -> ++debugData.numExportedAddNodes;
-            case REM -> ++debugData.numExportedRemNodes;
-            case NON -> ++debugData.numExportedNonNodes;
-        }
-
-        nodesString
-                .append(options.nodeFormat().toLineGraphLine(node))
-                .append(StringUtils.LINEBREAK);
-
-        edgesString
-                .append(options.edgeFormat().getParentEdgeLines(node));
+    public DiffTreeLineGraphExporter(DiffTreeLineGraphExportOptions options) {
+        this(new Format(options.nodeFormat(), options.edgeFormat()));
     }
 
     /**
-     * Export this exporter's tree using the given options.
-     * This method will return the final linegraph as string.
-     * The string will contain all linegraph statements for the tree's nodes and edges,
-     * but not the tree header.
-     * @param options Options that specify the node and edge format to use.
-     * @return The linegraph as String.
-     * @see LineGraphExport#composeTreeInLineGraph
+     * Export a line graph of {@code diffTree} into {@code destination}.
+     *
+     * @param diffTree to be exported
+     * @param destination where the result should be written
      */
-    public String export(DiffTreeLineGraphExportOptions options) {
-        diffTree.forAll(n -> visit(n, options));
-        final String result = nodesString.toString() + edgesString;
-        StringUtils.clear(nodesString);
-        StringUtils.clear(edgesString);
-        return result;
+    @Override
+    public void exportDiffTree(DiffTree diffTree, OutputStream destination) {
+        var output = new PrintStream(destination);
+        format.forEachNode(diffTree, (node) -> {
+            switch (node.diffType) {
+                case ADD -> ++debugData.numExportedAddNodes;
+                case REM -> ++debugData.numExportedRemNodes;
+                case NON -> ++debugData.numExportedNonNodes;
+            }
+
+            output.println(LineGraphConstants.LG_NODE + " " + node.getID() + " " + format.getNodeFormat().toLabel(node));
+        });
+
+        format.forEachUniqueEdge(diffTree, (edges) -> {
+            output.print(Functjonal.unwords(LineGraphConstants.LG_EDGE, edges.get(0).from().getID(), edges.get(0).to().getID(), ""));
+
+            for (var edge : edges) {
+                output.print(edge.style().lineGraphType());
+            }
+
+            for (var edge : edges) {
+                output.print(format.getEdgeFormat().labelOf(edge));
+            }
+
+            output.println();
+        });
     }
 
     /**

@@ -14,6 +14,7 @@ import org.variantsync.diffdetective.diff.difftree.transform.DiffTreeTransformer
 import org.variantsync.diffdetective.mining.DiffTreeMiner;
 import org.variantsync.diffdetective.mining.RWCompositePatternNodeFormat;
 import org.variantsync.diffdetective.mining.RWCompositePatternTreeFormat;
+import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.util.FileUtils;
 
 import java.io.IOException;
@@ -156,7 +157,7 @@ public class SimpleRenderer {
 
             final List<DiffTreeTransformer> transform = DiffTreeMiner.Postprocessing(repository);
             final PatchDiff patch = DiffTreeParser.parsePatch(repository, file, commit);
-            assert patch != null;
+            Assert.assertNotNull(patch != null);
             DiffTreeTransformer.apply(transform, patch.getDiffTree());
             renderer.render(patch, Path.of("render", repoName), RENDER_OPTIONS_TO_USE);
         }

@@ -11,8 +11,8 @@ import org.variantsync.diffdetective.diff.difftree.serialize.LineGraphExport;
 import org.variantsync.diffdetective.diff.difftree.transform.DiffTreeTransformer;
 import org.variantsync.diffdetective.diff.result.CommitDiffResult;
 import org.variantsync.diffdetective.metadata.ExplainedFilterSummary;
-import org.variantsync.diffdetective.pattern.elementary.ElementaryPattern;
-import org.variantsync.diffdetective.pattern.elementary.proposed.ProposedElementaryPatterns;
+import org.variantsync.diffdetective.editclass.EditClass;
+import org.variantsync.diffdetective.editclass.proposed.ProposedEditClasses;
 import org.variantsync.diffdetective.util.Clock;
 import org.variantsync.diffdetective.util.FileUtils;
 
@@ -48,8 +48,8 @@ public class MiningTask extends CommitHistoryAnalysisTask {
             }
 
             /*
-             * We export all difftrees that match our filter criteria (e.g., has more than one elementary pattern).
-             * However, we count elementary patterns of all DiffTrees, even those that are not exported to Linegraph.
+             * We export all difftrees that match our filter criteria (e.g., match more than one edit class).
+             * However, we count edit classes of all DiffTrees, even those that are not exported to Linegraph.
              */
             final CommitDiff commitDiff = commitDiffResult.diff().get();
             final StringBuilder lineGraph = new StringBuilder();
@@ -57,10 +57,10 @@ public class MiningTask extends CommitHistoryAnalysisTask {
             options.analysisStrategy().onCommit(commitDiff, lineGraph.toString());
             options.exportOptions().treeFilter().resetExplanations();
 
-            // Count elementary patterns
+            // Count edit classes
             int numDiffTrees = 0;
             for (final PatchDiff patch : commitDiff.getPatchDiffs()) {
-                final PatchStatistics thisPatchesStatistics = new PatchStatistics(patch, ProposedElementaryPatterns.Instance);
+                final PatchStatistics thisPatchesStatistics = new PatchStatistics(patch, ProposedEditClasses.Instance);
 
                 if (patch.isValid()) {
                     final DiffTree t = patch.getDiffTree();
@@ -72,13 +72,13 @@ public class MiningTask extends CommitHistoryAnalysisTask {
                     }
 
                     t.forAll(node -> {
-                        if (node.isCode()) {
-                            final ElementaryPattern nodePattern = ProposedElementaryPatterns.Instance.match(node);
-                            miningResult.elementaryPatternCounts.reportOccurrenceFor(
-                                    nodePattern,
+                        if (node.isArtifact()) {
+                            final EditClass editClass = ProposedEditClasses.Instance.match(node);
+                            miningResult.editClassCounts.reportOccurrenceFor(
+                                    editClass,
                                     commitDiff
                             );
-                            thisPatchesStatistics.elementaryPatternCount().increment(nodePattern);
+                            thisPatchesStatistics.editClassCount().increment(editClass);
                         }
                     });
 

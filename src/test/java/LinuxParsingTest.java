@@ -26,7 +26,7 @@ public class LinuxParsingTest {
 //        new FeatureExpressionFilter(LinuxKernel::isFeature).transform(t);
 
         t.forAll(n -> {
-            if (n.isMacro()) {
+            if (n.isAnnotation()) {
                 Assert.assertTrue(n.getLabel().contains("CONFIG_"), () -> "Macro node " + n + " is not a feature annotation!");
             }
         });

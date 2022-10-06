@@ -1,0 +1,15 @@
+t # extract/of/thirdparty/vulkan/include/vulkan/vulkan_structs.hpp$$$fd641ac85c6170c34845db5e345d3bf9cedce8d7
+v 144 NON_ROOT_""
+v 592 NON_IF_"if -VULKAN_STRUCTS_HPP"
+v 899 ADD_CODE_""
+v 3200 ADD_IF_"if -VULKAN_HPP_NO_STRUCT_SETTERS"
+v 3283 NON_CODE_""
+v 8192 ADD_IF_"if -VULKAN_HPP_NO_UNION_CONSTRUCTORS"
+v 8275 NON_CODE_""
+e 592 144 ba
+e 899 592 a
+e 3200 592 a
+e 3283 3200 a
+e 8192 592 a
+e 8275 592 b
+e 8275 8192 a

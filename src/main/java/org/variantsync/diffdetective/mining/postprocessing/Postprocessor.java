@@ -39,7 +39,7 @@ public class Postprocessor {
      * Creates the default filter to distill semantic patterns from frequent subgraphs.
      * This processor will
      *   - filter ill-formed trees
-     *   - filter trees with less than two elementary patterns
+     *   - filter trees with less than two edit classes
      *   - filter duplicates w.r.t. isomorphism
      *   - {@link CutNonEditedSubtrees}
      * @return the default postprocessor.
@@ -50,8 +50,7 @@ public class Postprocessor {
                 List.of(
                         // Filter ill-formed patterns
                         DiffTreeFilter.consistent(),
-                        // filter patterns containing less than two elementary patterns
-                        DiffTreeFilter.moreThanOneCodeNode(),
+                        DiffTreeFilter.moreThanOneArtifactNode(),
                         DiffTreeFilter.hasAtLeastOneEditToVariability()
                 )
         );

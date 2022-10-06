@@ -49,10 +49,10 @@ public class Validation {
 
     /**
      * The {@link CommitHistoryAnalysisTaskFactory} for the {@link HistoryAnalysis} that will run our validation.
-     * This factory creates {@link PatternValidationTask}s with the respective settings.
+     * This factory creates {@link EditClassValidationTask}s with the respective settings.
      */
     public static final CommitHistoryAnalysisTaskFactory VALIDATION_TASK_FACTORY =
-            (repo, differ, outputPath, commits) -> new PatternValidationTask(new CommitHistoryAnalysisTask.Options(
+            (repo, differ, outputPath, commits) -> new EditClassValidationTask(new CommitHistoryAnalysisTask.Options(
                     repo,
                     differ,
                     outputPath,

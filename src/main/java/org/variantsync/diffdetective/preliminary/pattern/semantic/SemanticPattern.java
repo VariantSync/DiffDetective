@@ -1,7 +1,7 @@
 package org.variantsync.diffdetective.preliminary.pattern.semantic;
 
 import org.variantsync.diffdetective.diff.difftree.DiffNode;
-import org.variantsync.diffdetective.pattern.EditPattern;
+import org.variantsync.diffdetective.preliminary.pattern.Pattern;
 import org.variantsync.diffdetective.preliminary.analysis.data.PatternMatch;
 import org.variantsync.diffdetective.preliminary.pattern.FeatureContextReverseEngineering;
 
@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Deprecated
-public abstract class SemanticPattern extends EditPattern<DiffNode> implements FeatureContextReverseEngineering<DiffNode> {
+public abstract class SemanticPattern extends Pattern<DiffNode> implements FeatureContextReverseEngineering<DiffNode> {
     public static final SemanticPattern AddIfdefElif = new AddIfdefElif();
     public static final SemanticPattern AddIfdefElse = new AddIfdefElse();
     public static final SemanticPattern AddIfdefWrapElse = new AddIfdefWrapElse();
@@ -37,7 +37,7 @@ public abstract class SemanticPattern extends EditPattern<DiffNode> implements F
     }
 
     @Override
-    public EditPattern<DiffNode> getPattern() {
+    public Pattern<DiffNode> getPattern() {
         return this;
     }
 }

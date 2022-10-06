@@ -17,6 +17,8 @@ org.variantsync.diffdetective.diff.difftree.source
 org.variantsync.diffdetective.diff.difftree.transform
 org.variantsync.diffdetective.diff.difftree.traverse
 org.variantsync.diffdetective.diff.result
+org.variantsync.diffdetective.editclass
+org.variantsync.diffdetective.editclass.proposed
 org.variantsync.diffdetective.feature
 org.variantsync.diffdetective.internal
 org.variantsync.diffdetective.load
@@ -25,9 +27,6 @@ org.variantsync.diffdetective.mining
 org.variantsync.diffdetective.mining.formats
 org.variantsync.diffdetective.mining.postprocessing
 org.variantsync.diffdetective.parallel
-org.variantsync.diffdetective.pattern
-org.variantsync.diffdetective.pattern.elementary
-org.variantsync.diffdetective.pattern.elementary.proposed
 org.variantsync.diffdetective.preliminary
 org.variantsync.diffdetective.preliminary.analysis
 org.variantsync.diffdetective.preliminary.analysis.data
