@@ -12,6 +12,7 @@ import org.variantsync.functjonal.Pair;
  * Reads and writes {@link DiffNode DiffNodes} from and to line graph.
  * @author Paul Bittner, Kevin Jedelhauser
  */
+@FunctionalInterface
 public interface DiffNodeLabelFormat extends LinegraphFormat {
 	/**
 	 * Converts a label of line graph into a {@link DiffNode}.
