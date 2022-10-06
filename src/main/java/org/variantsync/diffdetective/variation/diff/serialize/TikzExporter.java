@@ -66,23 +66,11 @@ public final class TikzExporter implements Exporter {
 
         // Add all TikZ nodes positioned at the Graphviz coordinates.
         format.forEachNode(diffTree, (node) -> {
-            String escapedLabel =
-                format
-                    .getNodeFormat()
-                    .toMultilineLabel(node)
-                    .stream()
-                    .map(LaTeX::escape)
-                    .collect(Collectors
-                    .joining(" \\\\ "));
-
             output.format("%n\t\\node[%s, %s] (node_%s) at (%s) {};%n",
                 node.isArtifact() ? "artifact" : "annotation",
                 node.getDiffType().toString().toLowerCase(Locale.ROOT),
                 node.getID(),
                 node.getID());
-            output.format("\t\\node[textbox] at (%s) {%s};%n",
-                node.getID(),
-                escapedLabel);
         });
 
         // Add all TikZ edges positioned.
@@ -94,6 +82,22 @@ public final class TikzExporter implements Exporter {
                 edge.to().getID());
         });
         output.println(";");
+
+        // Draw node labels. We do this last so that they are on top of edges and nodes.
+        format.forEachNode(diffTree, (node) -> {
+            String escapedLabel =
+                    format
+                            .getNodeFormat()
+                            .toMultilineLabel(node)
+                            .stream()
+                            .map(LaTeX::escape)
+                            .collect(Collectors
+                                    .joining(" \\\\ "));
+
+            output.format("\t\\node[textbox] at (%s) {%s};%n",
+                    node.getID(),
+                    escapedLabel);
+        });
 
         // Finish the TikZ picture.
         output.println("\\end{tikzpicture}");
