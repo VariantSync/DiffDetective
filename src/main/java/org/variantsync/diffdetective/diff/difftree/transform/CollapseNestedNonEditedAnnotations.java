@@ -2,7 +2,7 @@ package org.variantsync.diffdetective.diff.difftree.transform;
 
 import org.prop4j.And;
 import org.prop4j.Node;
-import org.variantsync.diffdetective.diff.difftree.CodeType;
+import org.variantsync.diffdetective.diff.difftree.NodeType;
 import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
 import org.variantsync.diffdetective.diff.difftree.DiffType;
@@ -14,11 +14,11 @@ import java.util.List;
 import java.util.Stack;
 
 /**
- * Collapses chains of nested non-edited macros.
- * Imagine a macro node that is unchanged and has the same parent before and after the edit that
- * is again an unchanged macro node that has the same parent before and after the edit, and so on.
- * Such chains <code>NON_IF -> NON_IF -> NON_IF -> ... -> NON_IF</code> can be collapsed
- * into a single unchanged macro node with the formulas of all nodes combined (by AND).
+ * Collapses chains of nested non-edited annotations.
+ * Imagine a annotation node that is unchanged and has the same parent before and after the edit
+ * that is again an unchanged annotation node that has the same parent before and after the edit,
+ * and so on. Such chains <code>NON_IF -> NON_IF -> NON_IF -> ... -> NON_IF</code> can be collapsed
+ * into a single unchanged annotation node with the formulas of all nodes combined (by AND).
  * This collapse is realized by this transformer.
  *
  * Fun fact: We implemented this transformation because of the
@@ -26,7 +26,7 @@ import java.util.Stack;
  *
  * @author Paul Bittner
  */
-public class CollapseNestedNonEditedMacros implements DiffTreeTransformer {
+public class CollapseNestedNonEditedAnnotations implements DiffTreeTransformer {
     private final List<Stack<DiffNode>> chainCandidates = new ArrayList<>();
     private final List<Stack<DiffNode>> chains = new ArrayList<>();
 
@@ -66,7 +66,7 @@ public class CollapseNestedNonEditedMacros implements DiffTreeTransformer {
     }
 
     private void findChains(DiffTreeTraversal traversal, DiffNode subtree) {
-        if (subtree.isNon() && subtree.isMacro()) {
+        if (subtree.isNon() && subtree.isAnnotation()) {
             if (isHead(subtree)) {
                 final Stack<DiffNode> s = new Stack<>();
                 s.push(subtree);
@@ -102,7 +102,7 @@ public class CollapseNestedNonEditedMacros implements DiffTreeTransformer {
         while (!chain.isEmpty()) {
             lastPopped = chain.pop();
 
-            switch (lastPopped.codeType) {
+            switch (lastPopped.nodeType) {
                 case IF ->
                     featureMappings.add(lastPopped.getAfterFeatureMapping());
                 case ELSE, ELIF -> {
@@ -113,9 +113,8 @@ public class CollapseNestedNonEditedMacros implements DiffTreeTransformer {
                         lastPopped = chain.pop();
                     }
                 }
-                case ROOT, CODE ->
-                    throw new RuntimeException("Unexpected code type " + lastPopped.codeType + " within macro chain!");
-                case ENDIF -> {}
+                case ARTIFACT ->
+                    throw new RuntimeException("Unexpected node type " + lastPopped.nodeType + " within annotation chain!");
             }
         }
 
@@ -127,7 +126,7 @@ public class CollapseNestedNonEditedMacros implements DiffTreeTransformer {
         ArrayList lines = new ArrayList();
         lines.add("$Collapsed Nested Annotations$");
         final DiffNode merged = new DiffNode(
-                DiffType.NON, CodeType.IF,
+                DiffType.NON, NodeType.IF,
                 head.getFromLine(), head.getToLine(),
                 new And(featureMappings.toArray()),
                 lines);
@@ -178,6 +177,6 @@ public class CollapseNestedNonEditedMacros implements DiffTreeTransformer {
 
     @Override
     public String toString() {
-        return "CollapseNestedNonEditedMacros";
+        return "CollapseNestedNonEditedAnnotations";
     }
 }

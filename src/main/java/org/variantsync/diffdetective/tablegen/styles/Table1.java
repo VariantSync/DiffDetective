@@ -1,7 +1,7 @@
 package org.variantsync.diffdetective.tablegen.styles;
 
-import org.variantsync.diffdetective.pattern.elementary.ElementaryPattern;
-import org.variantsync.diffdetective.pattern.elementary.proposed.ProposedElementaryPatterns;
+import org.variantsync.diffdetective.editclass.EditClass;
+import org.variantsync.diffdetective.editclass.proposed.ProposedEditClasses;
 import org.variantsync.diffdetective.tablegen.Row;
 import org.variantsync.diffdetective.tablegen.TableDefinition;
 import org.variantsync.diffdetective.tablegen.TableGenerator;
@@ -21,7 +21,7 @@ import static org.variantsync.diffdetective.tablegen.Alignment.*;
  *   <li>a dataset description
  *   <li>commit counts
  *   <li>diff counts
- *   <li>elementary pattern counts
+ *   <li>edit class counts
  *   <li>processing time
  * </ul>
  */
@@ -37,8 +37,8 @@ public class Table1 extends TableDefinition {
                 col("\\#diffs", RIGHT, row -> makeReadable(row.results().exportedTrees))
         ));
 
-        for (final ElementaryPattern a : ProposedElementaryPatterns.Instance.all()) {
-            this.columnDefinitions.add(col(a.getName(), RIGHT, row ->  makeReadable(row.results().elementaryPatternCounts.getOccurences().get(a).getTotalAmount())));
+        for (final EditClass a : ProposedEditClasses.Instance.all()) {
+            this.columnDefinitions.add(col(a.getName(), RIGHT, row ->  makeReadable(row.results().editClassCounts.getOccurences().get(a).getTotalAmount())));
         }
 
         this.columnDefinitions.add(col("runtime (s)", RIGHT, row -> makeReadable(row.results().runtimeInSeconds)));

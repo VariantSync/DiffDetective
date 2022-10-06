@@ -2,7 +2,7 @@ package org.variantsync.diffdetective.preliminary.analysis;
 
 import org.variantsync.diffdetective.diff.CommitDiff;
 import org.variantsync.diffdetective.diff.PatchDiff;
-import org.variantsync.diffdetective.pattern.EditPattern;
+import org.variantsync.diffdetective.preliminary.pattern.Pattern;
 import org.variantsync.diffdetective.preliminary.GitDiff;
 import org.variantsync.diffdetective.preliminary.analysis.data.CommitDiffAnalysisResult;
 import org.variantsync.diffdetective.preliminary.analysis.data.GDAnalysisResult;
@@ -25,7 +25,7 @@ public abstract class GDAnalyzer<E> {
 
     public GDAnalyzer(GitDiff gitDiff, List<FeatureContextReverseEngineering<E>> patterns) {
         this.gitDiff = gitDiff;
-//        List<EditPattern<DiffNode>> patternList = new ArrayList<>(Arrays.asList(patterns));
+//        List<Pattern<DiffNode>> patternList = new ArrayList<>(Arrays.asList(patterns));
 //        patternList.add(0, new InvalidPatchPattern<>());
         this.patterns = patterns;
     }
@@ -34,7 +34,7 @@ public abstract class GDAnalyzer<E> {
         return patterns;
     }
 
-    public List<EditPattern<E>> getPatterns() {
+    public List<Pattern<E>> getPatterns() {
         return patterns.stream().map(FeatureContextReverseEngineering::getPattern).collect(Collectors.toList());
     }
 

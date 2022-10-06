@@ -1,78 +1,78 @@
-package org.variantsync.diffdetective.pattern.elementary.proposed;
+package org.variantsync.diffdetective.editclass.proposed;
 
 import org.prop4j.Node;
 import org.variantsync.diffdetective.analysis.logic.SAT;
 import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.diff.difftree.DiffType;
-import org.variantsync.diffdetective.pattern.elementary.ElementaryPattern;
-import org.variantsync.diffdetective.pattern.elementary.ElementaryPatternCatalogue;
 import org.variantsync.diffdetective.util.Assert;
+import org.variantsync.diffdetective.editclass.EditClass;
+import org.variantsync.diffdetective.editclass.EditClassCatalogue;
 
 import java.util.*;
 
 /**
- * The catalog of elementary edit patterns proposed in our ESEC/FSE'22 paper.
+ * The catalog of edit classes proposed in our ESEC/FSE'22 paper.
  * @author Paul Bittner
  */
-public class ProposedElementaryPatterns implements ElementaryPatternCatalogue {
-    public static final ElementaryPattern AddToPC = new AddToPC();
-    public static final ElementaryPattern AddWithMapping = new AddWithMapping();
-    public static final ElementaryPattern RemFromPC = new RemFromPC();
-    public static final ElementaryPattern RemWithMapping = new RemWithMapping();
-    public static final ElementaryPattern Specialization = new Specialization();
-    public static final ElementaryPattern Generalization = new Generalization();
-    public static final ElementaryPattern Reconfiguration = new Reconfiguration();
-    public static final ElementaryPattern Refactoring = new Refactoring();
-    public static final ElementaryPattern Untouched = new Untouched();
+public class ProposedEditClasses implements EditClassCatalogue {
+    public static final EditClass AddToPC = new AddToPC();
+    public static final EditClass AddWithMapping = new AddWithMapping();
+    public static final EditClass RemFromPC = new RemFromPC();
+    public static final EditClass RemWithMapping = new RemWithMapping();
+    public static final EditClass Specialization = new Specialization();
+    public static final EditClass Generalization = new Generalization();
+    public static final EditClass Reconfiguration = new Reconfiguration();
+    public static final EditClass Refactoring = new Refactoring();
+    public static final EditClass Untouched = new Untouched();
 
     /**
-     * A list of all nine patterns in their order of appearance in the paper.
+     * A list of all nine edit classes in their order of appearance in the paper.
      */
-    public static final List<ElementaryPattern> All = List.of(
+    public static final List<EditClass> All = List.of(
             AddToPC, AddWithMapping,
             RemFromPC, RemWithMapping,
             Specialization, Generalization, Reconfiguration, Refactoring, Untouched
     );
 
     /**
-     * A map of all nine edit patterns, indexed by their DiffType.
+     * A map of all nine edit classes, indexed by their DiffType.
      */
-    public static final Map<DiffType, List<ElementaryPattern>> PatternsByType;
+    public static final Map<DiffType, List<EditClass>> EditClassesByType;
 
     /**
      * Singleton instance of this catalog.
      */
-    public static final ProposedElementaryPatterns Instance = new ProposedElementaryPatterns();
+    public static final ProposedEditClasses Instance = new ProposedEditClasses();
 
     static {
-        PatternsByType = new HashMap<>();
-        for (final ElementaryPattern ap : All) {
-            PatternsByType.computeIfAbsent(ap.getDiffType(), d -> new ArrayList<>()).add(ap);
+        EditClassesByType = new HashMap<>();
+        for (final EditClass ap : All) {
+            EditClassesByType.computeIfAbsent(ap.getDiffType(), d -> new ArrayList<>()).add(ap);
         }
     }
 
-    private ProposedElementaryPatterns() {}
+    private ProposedEditClasses() {}
 
     @Override
-    public List<ElementaryPattern> all() {
+    public List<EditClass> all() {
         return All;
     }
 
     @Override
-    public Map<DiffType, List<ElementaryPattern>> byType() {
-        return PatternsByType;
+    public Map<DiffType, List<EditClass>> byType() {
+        return EditClassesByType;
     }
 
     @Override
-    public ElementaryPattern match(DiffNode node)
+    public EditClass match(DiffNode node)
     {
-        // This is an inlined version of all patterns to optimize runtime when detecting the pattern of a certain node.
+        // This is an inlined version of all edit classes to optimize runtime when detecting the class of a certain node.
 
         // Because this compiles, we know that each branch terminates and returns a value.
-        // Each returned value is not null but an actual pattern object.
-        // Since the given node may be any node, we have proven that every node is classified by at least one pattern.
-        if (!node.isCode()) {
-            throw new IllegalArgumentException("Expected a code node but got " + node.codeType + "!");
+        // Each returned value is not null but an actual edit class object.
+        // Since the given node may be any node, we have proven that every node is classified by at least one edit class.
+        if (!node.isArtifact()) {
+            throw new IllegalArgumentException("Expected an artifact node but got " + node.nodeType + "!");
         }
 
         if (node.isAdd()) {
@@ -133,11 +133,11 @@ public class ProposedElementaryPatterns implements ElementaryPatternCatalogue {
     }
 
     /**
-     * Returns the elementary edit pattern that has the given name.
-     * Returns empty of no pattern has the given name.
+     * Returns the edit class that has the given name.
+     * Returns empty of no edit class has the given name.
      */
-    public Optional<ElementaryPattern> fromName(String label) {
-        for (final ElementaryPattern p : All) {
+    public Optional<EditClass> fromName(String label) {
+        for (final EditClass p : All) {
             if (p.getName().equals(label)) {
                 return Optional.of(p);
             }

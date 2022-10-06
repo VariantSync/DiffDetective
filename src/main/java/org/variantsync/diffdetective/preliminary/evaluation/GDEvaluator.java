@@ -8,7 +8,7 @@ import org.prop4j.explain.solvers.SatSolverFactory;
 import org.tinylog.Logger;
 import org.variantsync.diffdetective.diff.PatchDiff;
 import org.variantsync.diffdetective.diff.difftree.DiffNode;
-import org.variantsync.diffdetective.pattern.EditPattern;
+import org.variantsync.diffdetective.preliminary.pattern.Pattern;
 import org.variantsync.diffdetective.preliminary.analysis.GDAnalyzer;
 import org.variantsync.diffdetective.preliminary.analysis.data.CommitDiffAnalysisResult;
 import org.variantsync.diffdetective.preliminary.analysis.data.GDAnalysisResult;
@@ -68,7 +68,7 @@ public class GDEvaluator {
      * @param patterns The patterns to search for
      * @return An int array containing the amount of matches for each pattern
      */
-    public <E> int[] getPatternCounts(List<EditPattern<E>> patterns) {
+    public <E> int[] getPatternCounts(List<Pattern<E>> patterns) {
         int[] patternCounts = new int[patterns.size()];
 
         for (PatternMatchEvaluation pme : pmEvaluations) {
@@ -105,7 +105,7 @@ public class GDEvaluator {
         return patternCounts;
     }
 
-    private <E> int[] getLineCounts(List<EditPattern<E>> patterns) {
+    private <E> int[] getLineCounts(List<Pattern<E>> patterns) {
         int[] lineCounts = new int[patterns.size()];
 
         for (PatternMatchEvaluation pme : pmEvaluations) {

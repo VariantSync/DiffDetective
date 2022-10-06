@@ -1,4 +1,4 @@
-package org.variantsync.diffdetective.pattern;
+package org.variantsync.diffdetective.preliminary.pattern;
 
 /**
  * Abstract class for edit patterns.
@@ -6,7 +6,7 @@ package org.variantsync.diffdetective.pattern;
  * @param <E> Type of elements on which the pattern may be matched.
  * @author Sören Viegener, Paul Bittner
  */
-public abstract class EditPattern<E> {
+public abstract class Pattern<E> {
     /**
      * The name that uniquely identifies this pattern.
      */
@@ -16,7 +16,7 @@ public abstract class EditPattern<E> {
      * Create a new pattern with the given name.
      * @param name Unique identifier.
      */
-    public EditPattern(final String name) {
+    public Pattern(final String name) {
         this.name = name;
     }
 
