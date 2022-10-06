@@ -66,12 +66,13 @@ public final class TikzExporter implements Exporter {
 
         // Add all TikZ nodes positioned at the Graphviz coordinates.
         format.forEachNode(diffTree, (node) -> {
-            output.format("%n\t\\node[%s, %s] (node_%s) at (%s) {};%n",
+            output.format("%n\t\\node[%s, %s] (node_%s) at (%s) {};",
                 node.isArtifact() ? "artifact" : "annotation",
                 node.getDiffType().toString().toLowerCase(Locale.ROOT),
                 node.getID(),
                 node.getID());
         });
+        output.println("");
 
         // Add all TikZ edges positioned.
         output.format("%n\t\\draw[vtdarrow]");
@@ -82,6 +83,7 @@ public final class TikzExporter implements Exporter {
                 edge.to().getID());
         });
         output.println(";");
+        output.println("");
 
         // Draw node labels. We do this last so that they are on top of edges and nodes.
         format.forEachNode(diffTree, (node) -> {
