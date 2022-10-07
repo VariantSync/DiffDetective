@@ -15,7 +15,7 @@ public class AtomicDiffComparison implements DiffTreeVisitor {
      * Validate tree equality
      */
     public Boolean equals(DiffTree first, DiffTree second) {
-        return first.getSource().equals(second.getSource()) && equals(first.getRoot(), second.getRoot());
+        return equals(first.getRoot(), second.getRoot());
     }
 
     /**

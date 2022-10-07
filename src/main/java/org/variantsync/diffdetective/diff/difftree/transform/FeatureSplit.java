@@ -72,17 +72,7 @@ public class FeatureSplit {
         if (first == null || first.isEmpty()) return second;
         if (second == null || second.isEmpty()) return first;
 
-        HashSet<DiffNode> allFirstNodes = new HashSet<>(first.computeAllNodes());
-        HashSet<DiffNode> allSecondNodes = new HashSet<>(second.computeAllNodes());
-        ArrayList<DiffNode> allNodes = new ArrayList<>();
-        allNodes.addAll(allFirstNodes);
-        allNodes.addAll(allSecondNodes);
-
-        HashSet<DiffEdge> allEdges = allNodes.stream().map(
-                node -> node.getAllChildren().stream().map(
-                        child -> new DiffEdge(node, child)
-                ).collect(Collectors.toSet())).collect(HashSet::new, Set::addAll, Set::addAll);
-
+        HashSet<DiffEdge> allEdges = getAllEdges(first, second);
         HashSet<DiffNode> composedTree = new HashSet<>();
 
         allEdges.forEach(edge -> {
@@ -116,6 +106,20 @@ public class FeatureSplit {
 
         composeTree.assertConsistency();
         return composeTree;
+    }
+
+    private static HashSet<DiffEdge> getAllEdges(DiffTree first, DiffTree second) {
+        HashSet<DiffNode> allFirstNodes = new HashSet<>(first.computeAllNodes());
+        HashSet<DiffNode> allSecondNodes = new HashSet<>(second.computeAllNodes());
+        ArrayList<DiffNode> allNodes = new ArrayList<>();
+        allNodes.addAll(allFirstNodes);
+        allNodes.addAll(allSecondNodes);
+
+        HashSet<DiffEdge> allEdges = allNodes.stream().map(
+                node -> node.getAllChildren().stream().map(
+                        child -> new DiffEdge(node, child)
+                ).collect(Collectors.toSet())).collect(HashSet::new, Set::addAll, Set::addAll);
+        return allEdges;
     }
 
 
