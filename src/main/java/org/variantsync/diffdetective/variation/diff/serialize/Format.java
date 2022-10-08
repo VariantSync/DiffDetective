@@ -1,11 +1,12 @@
 package org.variantsync.diffdetective.variation.diff.serialize;
 
-import java.util.List;
-import java.util.function.Consumer;
+import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.variation.diff.serialize.edgeformat.EdgeLabelFormat;
 import org.variantsync.diffdetective.variation.diff.serialize.nodeformat.DiffNodeLabelFormat;
+
+import java.util.function.Consumer;
 
 import static org.variantsync.diffdetective.variation.diff.Time.AFTER;
 import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
@@ -54,26 +55,6 @@ public class Format {
     }
 
     /**
-     * Iterates over all edges in {@code diffTree} and calls {@code callback}.
-     *
-     * Exporters should use this method to enable subclasses of {@code Format} to filter edges, add
-     * new edges and change the order of the exported edges.
-     *
-     * This implementation uses {@link forEachUniqueEdge} by calling {@code callback} for each edge
-     * in the order given by the lists of {@link forEachUniqueEdge}.
-     *
-     * @param diffTree to be exported
-     * @param callback is called for each edge
-     */
-    public void forEachEdge(DiffTree diffTree, Consumer<StyledEdge> callback) {
-        forEachUniqueEdge(diffTree, (edges) -> {
-            for (var edge : edges) {
-                callback.accept(edge);
-            }
-        });
-    }
-
-    /**
      * Iterates over all edges in {@code diffTree} and calls {@code callback}, visiting parallel edges only once.
      *
      * Two edges are parallel if they start at the same node and end at the same node. Note that
@@ -87,20 +68,20 @@ public class Format {
      * @param diffTree to be exported
      * @param callback is called for each unique edge
      */
-    public void forEachUniqueEdge(DiffTree diffTree, Consumer<List<StyledEdge>> callback) {
+    public void forEachEdge(DiffTree diffTree, Consumer<StyledEdge> callback) {
         diffTree.forAll((node) -> {
             var beforeParent = node.getParent(BEFORE);
             var afterParent = node.getParent(AFTER);
 
             // Are both parent edges the same?
-            if (beforeParent != null && afterParent != null && beforeParent == afterParent) {
-                callback.accept(List.of(beforeEdge(node), afterEdge(node)));
+            if (beforeParent != null && beforeParent == afterParent) {
+                callback.accept(beforeAndAfterEdge(node));
             } else {
                 if (beforeParent != null) {
-                    callback.accept(List.of(beforeEdge(node)));
+                    callback.accept(beforeEdge(node));
                 }
                 if (afterParent != null) {
-                    callback.accept(List.of(afterEdge(node)));
+                    callback.accept(afterEdge(node));
                 }
             }
         });
@@ -124,6 +105,19 @@ public class Format {
      */
     protected StyledEdge afterEdge(DiffNode node) {
         return sortedEdgeWithLabel(node, node.getParent(AFTER), StyledEdge.AFTER);
+    }
+
+
+    /**
+     * Constructs a {@link StyledEdge} from {@code node} and its before and after parent.
+     * The before and after parent are assumed to be equal.
+     *
+     * The order of these nodes is permuted according to {@link EdgeLabelFormat#getEdgeDirection}
+     * of {@link getEdgeFormat()}.
+     */
+    protected StyledEdge beforeAndAfterEdge(DiffNode node) {
+        Assert.assertTrue(node.getParent(BEFORE) != null && node.getParent(BEFORE) == node.getParent(AFTER));
+        return sortedEdgeWithLabel(node, node.getParent(BEFORE), StyledEdge.ALWAYS);
     }
 
     /**
