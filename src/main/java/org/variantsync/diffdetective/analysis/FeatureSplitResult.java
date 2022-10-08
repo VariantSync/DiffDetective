@@ -182,7 +182,7 @@ public class FeatureSplitResult implements Metadata<FeatureSplitResult> {
         snap.put(MetadataKeys.EMPTY_COMMITS, emptyCommits);
         snap.put(MetadataKeys.PROCESSED_COMMITS, exportedCommits);
         snap.put(FeatureSplitMetadataKeys.TOTAL_PATCHES, totalPatches);
-        snap.put(FeatureSplitMetadataKeys.TOTAL_FEATURES, totalFeatures.size());
+        snap.put(FeatureSplitMetadataKeys.TOTAL_FEATURES, totalFeatures);
         // RQ1.1
         snap.put(FeatureSplitMetadataKeys.RATIO_OF_FA_PATCHES, ratioOfFAPatches);
 
