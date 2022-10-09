@@ -86,7 +86,7 @@ public abstract class CommitHistoryAnalysisTask implements Callable<AnalysisResu
             IO.write(pathToOutputFile, times.toString());
         } catch (IOException e) {
             Logger.error(e);
-            System.exit(0);
+            System.exit(1);
         }
     }
 
@@ -102,7 +102,7 @@ public abstract class CommitHistoryAnalysisTask implements Callable<AnalysisResu
             IO.write(pathToOutputFile, csv);
         } catch (IOException e) {
             Logger.error(e);
-            System.exit(0);
+            System.exit(1);
         }
     }
 }

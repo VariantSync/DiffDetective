@@ -150,7 +150,7 @@ public record HistoryAnalysis(
             }
         } catch (Exception e) {
             Logger.error(e, "Failed to run all mining task");
-            System.exit(0);
+            System.exit(1);
         }
 
         final double runtime = clock.getPassedSeconds();

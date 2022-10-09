@@ -77,6 +77,6 @@ public record LineGraphExportOptions(
      * Default value for {@link #onError} that exits the program immediately upon an error with {@link System#exit(int)}.
      */
     public static BiConsumer<PatchDiff, Exception> SysExitOnError() {
-        return (p, e) -> System.exit(0);
+        return (p, e) -> System.exit(1);
     }
 }
