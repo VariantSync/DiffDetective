@@ -621,7 +621,7 @@ public class DiffNode {
     }
 
     public void setFromLine(DiffLineNumber from) {
-        this.from = from;
+        this.from = from.as(diffType);
     }
 
     /**
@@ -633,7 +633,7 @@ public class DiffNode {
     }
 
     public void setToLine(DiffLineNumber to) {
-        this.to = to;
+        this.to = to.as(diffType);
     }
 
     /**

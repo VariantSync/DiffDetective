@@ -5,7 +5,6 @@ import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.diff.difftree.DiffType;
 
 import java.io.BufferedReader;
-import java.util.List;
 import java.util.Stack;
 import java.util.regex.Pattern;
 
@@ -40,21 +39,18 @@ public class MultiLineMacroParser {
      * @param line The last line of the macro.
      * @param macro The macro to finalize.
      * @param diffType The diff type of the produced node.
-     * @param nodes The list to add the node to.
      * @return The finalized macro converted to a DiffNode.
      */
     private DiffNode finalizeMLMacro(
             final DiffLineNumber lineNo,
             final String line,
             final MultilineMacro macro,
-            final DiffType diffType,
-            final List<DiffNode> nodes) throws IllFormedAnnotationException {
+            final DiffType diffType) throws IllFormedAnnotationException {
         macro.addLine(line);
         macro.diffType = diffType;
 
         final DiffNode node = macro.toDiffNode(nodeParser);
         node.setToLine(lineNo);
-        nodes.add(node);
         return node;
     }
 
@@ -65,7 +61,6 @@ public class MultiLineMacroParser {
      * @param line The line to parse.
      * @param beforeStack The current before stack as defined by Sören's algorithm.
      * @param afterStack The current after stack as defined by Sören's algorithm.
-     * @param nodes The list of all DiffNodes that where already parsed.
      * @return {@link ParseResult#SUCCESS} if the line was consumed and is part of a multiline macro definition.
      *         {@link ParseResult#NOT_MY_DUTY} if the line is not part of a multiline macro definition and was not parsed.
      *         The line remains unparsed and should be parsed in another way.
@@ -77,8 +72,7 @@ public class MultiLineMacroParser {
             final DiffLineNumber lineNo,
             final String line,
             final Stack<DiffNode> beforeStack,
-            final Stack<DiffNode> afterStack,
-            final List<DiffNode> nodes
+            final Stack<DiffNode> afterStack
     ) throws IllFormedAnnotationException {
         final DiffType diffType = DiffType.ofDiffLine(line);
         final boolean isAdd = diffType == DiffType.ADD;
@@ -144,7 +138,7 @@ public class MultiLineMacroParser {
                             lineNo,
                             line,
                             beforeMLMacro /* == afterMLMacro */,
-                            DiffType.NON, nodes);
+                            DiffType.NON);
 
                     ParseResult pushResult = DiffTreeParser.pushNodeToStack(mlNode, beforeStack, beforeMLMacro.getLineFrom());
                     if (pushResult.isError()) {
@@ -164,7 +158,7 @@ public class MultiLineMacroParser {
                                 lineNo,
                                 line,
                                 beforeMLMacro,
-                                DiffType.REM, nodes);
+                                DiffType.REM);
 
                         final ParseResult pushResult = DiffTreeParser.pushNodeToStack(beforeMLNode, beforeStack, beforeMLMacro.getLineFrom());
                         if (pushResult.isError()) {
@@ -178,7 +172,7 @@ public class MultiLineMacroParser {
                         final DiffNode afterMLNode = finalizeMLMacro(
                                 lineNo,
                                 line,
-                                afterMLMacro, DiffType.ADD, nodes);
+                                afterMLMacro, DiffType.ADD);
 
                         final ParseResult pushResult = DiffTreeParser.pushNodeToStack(afterMLNode, afterStack, afterMLMacro.getLineFrom());
                         if (pushResult.isError()) {

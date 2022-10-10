@@ -19,8 +19,6 @@ import org.variantsync.diffdetective.util.Assert;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Stack;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
@@ -68,7 +66,6 @@ public class DiffTreeParser {
             boolean ignoreEmptyLines,
             DiffNodeParser nodeParser) throws IOException
     {
-        final List<DiffNode> nodes = new ArrayList<>();
         final Stack<DiffNode> beforeStack = new Stack<>();
         final Stack<DiffNode> afterStack = new Stack<>();
         DiffLineNumber lineNo = new DiffLineNumber(0, 0, 0);
@@ -107,7 +104,7 @@ public class DiffTreeParser {
             // check if this is a multiline macro
             final ParseResult isMLMacro;
             try {
-                isMLMacro = mlMacroParser.consume(lineNo, currentLine, beforeStack, afterStack, nodes);
+                isMLMacro = mlMacroParser.consume(lineNo, currentLine, beforeStack, afterStack);
             } catch (IllFormedAnnotationException e) {
                 return DiffResult.Failure(e);
             }
@@ -172,7 +169,6 @@ public class DiffTreeParser {
 
                 newNode.setFromLine(lineNo);
                 newNode.addBelow(beforeStack.peek(), afterStack.peek());
-                nodes.add(newNode);
 
                 if (newNode.isArtifact()) {
                     lastArtifact = newNode;
@@ -194,13 +190,6 @@ public class DiffTreeParser {
 
         if (lastArtifact != null) {
             lastArtifact = endCodeBlock(lastArtifact, lineNo);
-        }
-
-        // Invalidate line numbers according to edits.
-        // E.g. if a node was added, it had no line number before the edit.
-        for (final DiffNode node : nodes) {
-            node.setFromLine(node.getFromLine().as(node.diffType));
-            node.setToLine(node.getToLine().as(node.diffType));
         }
 
         return DiffResult.Success(new DiffTree(root));
