@@ -42,7 +42,7 @@ public record ParseResult(ParseResultType type, DiffError errorType, String mess
      * error as the custom message (i.e., {@link DiffError#id()}).
      */
     public static ParseResult ERROR(final DiffError errorType) {
-        return ERROR(errorType, errorType.id());
+        return ERROR(errorType, errorType.getMessage());
     }
 
     private ParseResult(ParseResultType type) {

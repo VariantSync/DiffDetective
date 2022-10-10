@@ -58,7 +58,7 @@ public class DiffResult<T> {
      * @param <T> The type the result value should have had if no error had been occurred.
      */
     public static <T> DiffResult<T> Failure(DiffError error) {
-        return Failure(error, error.id());
+        return Failure(error, error.getMessage());
     }
 
     /**
