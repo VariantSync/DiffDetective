@@ -16,7 +16,7 @@ public class MultilineMacro {
     private final List<String> lines;
     private final DiffNode beforeParent;
     private final DiffNode afterParent;
-    private final DiffLineNumber startLine = DiffLineNumber.Invalid();
+    private DiffLineNumber startLine = DiffLineNumber.Invalid();
     DiffType diffType;
 
     /**
@@ -36,7 +36,7 @@ public class MultilineMacro {
         this.lines = new ArrayList<>();
         this.lines.add(line);
         this.diffType = diffType;
-        this.startLine.set(startLine);
+        this.startLine = startLine;
         this.beforeParent = beforeParent;
         this.afterParent = afterParent;
     }
@@ -76,7 +76,7 @@ public class MultilineMacro {
         }
 
         final DiffNode result = nodeParser.fromDiffLine(asSingleLine.toString());
-        result.getFromLine().set(startLine);
+        result.setFromLine(startLine);
         result.addBelow(beforeParent, afterParent);
         result.setIsMultilineMacro(true);
         return result;

@@ -79,7 +79,7 @@ public class TestLineNumbers {
     private static String generateTestCaseCode(final Path p) throws IOException {
         final DiffTree diffTree = loadFullDiff(p);
         final Function<DiffLineNumber, String> toConstructorCall = l ->
-                "new DiffLineNumber(" + l.inDiff + ", " + l.beforeEdit + ", " + l.afterEdit + ")";
+                "new DiffLineNumber(" + l.inDiff() + ", " + l.beforeEdit() + ", " + l.afterEdit() + ")";
         String testName = p.getFileName().toString();
         testName = testName.substring(0, testName.lastIndexOf("."));
         String mapName = testName + "_map";

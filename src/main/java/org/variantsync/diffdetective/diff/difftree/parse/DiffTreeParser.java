@@ -71,8 +71,8 @@ public class DiffTreeParser {
         final List<DiffNode> nodes = new ArrayList<>();
         final Stack<DiffNode> beforeStack = new Stack<>();
         final Stack<DiffNode> afterStack = new Stack<>();
-        final DiffLineNumber lineNo = new DiffLineNumber(0, 0, 0);
-        final DiffLineNumber lastLineNo = DiffLineNumber.Copy(lineNo);
+        DiffLineNumber lineNo = new DiffLineNumber(0, 0, 0);
+        DiffLineNumber lastLineNo = lineNo;
 
         DiffNode lastArtifact = null;
         final AtomicReference<DiffResult<DiffTree>> error = new AtomicReference<>();
@@ -93,9 +93,8 @@ public class DiffTreeParser {
             final DiffType diffType = DiffType.ofDiffLine(currentLine);
 
             // count line numbers
-            lastLineNo.set(lineNo);
-            lineNo.inDiff = i + 1;
-            diffType.matchBeforeAfter(() -> ++lineNo.beforeEdit, () -> ++lineNo.afterEdit);
+            lastLineNo = lineNo;
+            lineNo = lineNo.add(1, diffType);
 
             // Ignore line if it is empty.
             if (ignoreEmptyLines && (currentLine.isEmpty()
@@ -135,11 +134,12 @@ public class DiffTreeParser {
                 }
 
                 final String currentLineFinal = currentLine;
+                final DiffLineNumber lastLineNoFinal = lastLineNo;
                 diffType.matchBeforeAfter(beforeStack, afterStack,
                         stack -> {
                             // Set corresponding line of now closed annotation.
                             // The last block is the first one on the stack.
-                            endMacroBlock(stack.peek(), lastLineNo, diffType);
+                            endMacroBlock(stack.peek(), lastLineNoFinal, diffType);
 
                             // Pop the relevant stacks until an IF node is popped. If there were ELSEs or ELIFs between
                             // an IF and an ENDIF, they were placed on the stack and have to be popped now.
@@ -170,7 +170,7 @@ public class DiffTreeParser {
                     }
                 }
 
-                newNode.getFromLine().set(lineNo);
+                newNode.setFromLine(lineNo);
                 newNode.addBelow(beforeStack.peek(), afterStack.peek());
                 nodes.add(newNode);
 
@@ -179,8 +179,9 @@ public class DiffTreeParser {
                 } else {
                     // newNode is if, elif or else
                     // push the node to the relevant stacks
+                    final DiffLineNumber lastLineNoFinal = lastLineNo;
                     diffType.matchBeforeAfter(beforeStack, afterStack, stack ->
-                            pushNodeToStack(newNode, stack, lastLineNo).onError(errorPropagation)
+                            pushNodeToStack(newNode, stack, lastLineNoFinal).onError(errorPropagation)
                     );
                     if (error.get() != null) { return error.get(); }
                 }
@@ -198,8 +199,8 @@ public class DiffTreeParser {
         // Invalidate line numbers according to edits.
         // E.g. if a node was added, it had no line number before the edit.
         for (final DiffNode node : nodes) {
-            node.getFromLine().as(node.diffType);
-            node.getToLine().as(node.diffType);
+            node.setFromLine(node.getFromLine().as(node.diffType));
+            node.setToLine(node.getToLine().as(node.diffType));
         }
 
         return DiffResult.Success(new DiffTree(root));
@@ -244,7 +245,7 @@ public class DiffTreeParser {
      * @return null
      */
     private static DiffNode endCodeBlock(final DiffNode block, final DiffLineNumber lastLineNo) {
-        block.getToLine().set(lastLineNo).add(1);
+        block.setToLine(lastLineNo.add(1));
         return null;
     }
 
@@ -257,12 +258,14 @@ public class DiffTreeParser {
      */
     private static void endMacroBlock(final DiffNode block, final DiffLineNumber lastLineNo, final DiffType diffTypeOfNewBlock) {
         // Add 1 because the end line is exclusive, so we have to point one behind the last line we found.
-        final DiffLineNumber to = block.getToLine();
-        diffTypeOfNewBlock.matchBeforeAfter(
-                () -> to.beforeEdit = lastLineNo.beforeEdit + 1,
-                () -> to.afterEdit = lastLineNo.afterEdit + 1);
-        // Take the highest value ever set as we want to include all lines that are somehow affected by this block.
-        to.inDiff = Math.max(to.inDiff, lastLineNo.inDiff + 1);
+        final DiffLineNumber to = lastLineNo.add(1, diffTypeOfNewBlock);
+
+        block.setToLine(new DiffLineNumber(
+            // Take the highest value ever set as we want to include all lines that are somehow affected by this block.
+            Math.max(block.getToLine().inDiff(), to.inDiff()),
+            diffTypeOfNewBlock == DiffType.ADD ? block.getToLine().beforeEdit() : to.beforeEdit(),
+            diffTypeOfNewBlock == DiffType.REM ? block.getToLine().afterEdit() : to.afterEdit()
+        ));
     }
 
     /**

@@ -94,8 +94,8 @@ public class NaiveMovedArtifactDetection implements DiffTreeTransformer {
         final DiffLineNumber addTo = added.getToLine();
         final DiffLineNumber remTo = removed.getToLine();
 
-        final DiffLineNumber from = new DiffLineNumber(Math.min(addFrom.inDiff, remFrom.inDiff), remFrom.beforeEdit, addFrom.afterEdit);
-        final DiffLineNumber to = new DiffLineNumber(Math.max(addTo.inDiff, remTo.inDiff), remTo.beforeEdit, addTo.afterEdit);
+        final DiffLineNumber from = new DiffLineNumber(Math.min(addFrom.inDiff(), remFrom.inDiff()), remFrom.beforeEdit(), addFrom.afterEdit());
+        final DiffLineNumber to = new DiffLineNumber(Math.max(addTo.inDiff(), remTo.inDiff()), remTo.beforeEdit(), addTo.afterEdit());
 
         return DiffNode.createArtifact(DiffType.NON, from, to, added.getLabel() /* equals removed.getText() */);
     }

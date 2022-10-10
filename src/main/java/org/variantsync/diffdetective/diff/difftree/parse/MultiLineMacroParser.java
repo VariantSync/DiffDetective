@@ -53,7 +53,7 @@ public class MultiLineMacroParser {
         macro.diffType = diffType;
 
         final DiffNode node = macro.toDiffNode(nodeParser);
-        node.getToLine().set(lineNo);
+        node.setToLine(lineNo);
         nodes.add(node);
         return node;
     }
