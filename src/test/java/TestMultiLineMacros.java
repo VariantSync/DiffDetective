@@ -11,6 +11,7 @@ import org.variantsync.diffdetective.diff.difftree.serialize.LineGraphExport;
 import org.variantsync.diffdetective.diff.difftree.serialize.edgeformat.DefaultEdgeLabelFormat;
 import org.variantsync.diffdetective.diff.difftree.serialize.nodeformat.DebugDiffNodeFormat;
 import org.variantsync.diffdetective.diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
+import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.util.IO;
 import org.variantsync.diffdetective.util.StringUtils;
 
@@ -22,14 +23,14 @@ import java.nio.file.Path;
 public class TestMultiLineMacros {
     private static final Path resDir = Constants.RESOURCE_DIR.resolve("multilinemacros");
 
-    public void diffToDiffTree(LineGraphExportOptions exportOptions, Path p) throws IOException {
+    public void diffToDiffTree(LineGraphExportOptions exportOptions, Path p) throws IOException, DiffParseException {
         DiffTree tree;
         try (BufferedReader fullDiff = Files.newBufferedReader(p)) {
             tree = DiffTreeParser.createDiffTree(
                     fullDiff,
                     true,
                     true,
-                    DiffNodeParser.Default).unwrap().getSuccess();
+                    DiffNodeParser.Default);
         }
 
         try (var destination = IO.newBufferedOutputStream(resDir.resolve("gen").resolve(p.getFileName() + ".lg"))) {
@@ -46,7 +47,7 @@ public class TestMultiLineMacros {
     }
 
     @Test
-    public void test() throws IOException {
+    public void test() throws IOException, DiffParseException {
         final LineGraphExportOptions exportOptions = new LineGraphExportOptions(
                 GraphFormat.DIFFTREE,
                 new CommitDiffDiffTreeLabelFormat(),

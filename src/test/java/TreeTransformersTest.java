@@ -14,6 +14,7 @@ import org.variantsync.diffdetective.diff.difftree.serialize.edgeformat.DefaultE
 import org.variantsync.diffdetective.diff.difftree.serialize.nodeformat.TypeDiffNodeFormat;
 import org.variantsync.diffdetective.diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
 import org.variantsync.diffdetective.diff.difftree.transform.DiffTreeTransformer;
+import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.mining.DiffTreeMiner;
 
 import java.io.IOException;
@@ -42,8 +43,8 @@ public class TreeTransformersTest {
 
     private static final Consumer<String> INFO = System.out::println;
 
-    private void transformAndRender(String diffFileName) throws IOException {
-        final DiffTree t = DiffTree.fromFile(resDir.resolve(diffFileName), true, true).unwrap().getSuccess();
+    private void transformAndRender(String diffFileName) throws IOException, DiffParseException {
+        final DiffTree t = DiffTree.fromFile(resDir.resolve(diffFileName), true, true);
         transformAndRender(t, diffFileName, "0", null);
     }
 
@@ -86,13 +87,13 @@ public class TreeTransformersTest {
 
 //    @Test
     @Ignore
-    public void simpleTest() throws IOException {
+    public void simpleTest() throws IOException, DiffParseException {
         transformAndRender("simple.txt");
     }
 
 //    @Test
     @Ignore
-    public void elifTest() throws IOException {
+    public void elifTest() throws IOException, DiffParseException {
         transformAndRender("elif.txt");
     }
 

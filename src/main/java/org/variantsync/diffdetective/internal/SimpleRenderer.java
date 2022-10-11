@@ -11,6 +11,7 @@ import org.variantsync.diffdetective.diff.difftree.render.DiffTreeRenderer;
 import org.variantsync.diffdetective.diff.difftree.render.RenderOptions;
 import org.variantsync.diffdetective.diff.difftree.serialize.nodeformat.MappingsDiffNodeFormat;
 import org.variantsync.diffdetective.diff.difftree.transform.DiffTreeTransformer;
+import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.mining.DiffTreeMiner;
 import org.variantsync.diffdetective.mining.RWCompositePatternNodeFormat;
 import org.variantsync.diffdetective.mining.RWCompositePatternTreeFormat;
@@ -97,8 +98,8 @@ public class SimpleRenderer {
             Logger.info("Rendering {}", fileToRender);
             final DiffTree t;
             try {
-                t = DiffTree.fromFile(fileToRender, collapseMultipleCodeLines, ignoreEmptyLines, DiffNodeParser.Default).unwrap().getSuccess();
-            } catch (IOException e) {
+                t = DiffTree.fromFile(fileToRender, collapseMultipleCodeLines, ignoreEmptyLines, DiffNodeParser.Default);
+            } catch (IOException | DiffParseException e) {
                 Logger.error(e, "Could not read given file '{}'", fileToRender);
                 return;
             }

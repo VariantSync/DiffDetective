@@ -3,6 +3,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.variantsync.diffdetective.diff.DiffLineNumber;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
+import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.functjonal.Pair;
 
 import java.io.IOException;
@@ -59,8 +60,8 @@ public class TestLineNumbers {
         testCases = List.of(elifchain, lineno1, deleteMLM);
     }
 
-    private static DiffTree loadFullDiff(final Path p) throws IOException {
-        return DiffTree.fromFile(p, false, false).unwrap().getSuccess();
+    private static DiffTree loadFullDiff(final Path p) throws IOException, DiffParseException {
+        return DiffTree.fromFile(p, false, false);
     }
 
     private static void printLineNumbers(final DiffTree diffTree) {
@@ -76,7 +77,7 @@ public class TestLineNumbers {
         System.out.println();
     }
 
-    private static String generateTestCaseCode(final Path p) throws IOException {
+    private static String generateTestCaseCode(final Path p) throws IOException, DiffParseException {
         final DiffTree diffTree = loadFullDiff(p);
         final Function<DiffLineNumber, String> toConstructorCall = l ->
                 "new DiffLineNumber(" + l.inDiff() + ", " + l.beforeEdit() + ", " + l.afterEdit() + ")";
@@ -99,7 +100,7 @@ public class TestLineNumbers {
     }
 
 //    @Test
-    public void generateTestCode() throws IOException {
+    public void generateTestCode() throws IOException, DiffParseException {
         final StringBuilder listof = new StringBuilder("List.of(");
         boolean first = true;
         for (final TestCase s : testCases) {
@@ -115,7 +116,7 @@ public class TestLineNumbers {
     }
 
 //    @Test
-    public void printLineNumbers() throws IOException {
+    public void printLineNumbers() throws IOException, DiffParseException {
         for (final TestCase s : testCases) {
             System.out.println("Diff of " + s.filename());
             printLineNumbers(loadFullDiff(resDir.resolve(s.filename())));
@@ -123,7 +124,7 @@ public class TestLineNumbers {
     }
 
     @Test
-    public void testLineNumbers() throws IOException {
+    public void testLineNumbers() throws IOException, DiffParseException {
         for (final TestCase s : testCases) {
             final DiffTree t = loadFullDiff(resDir.resolve(s.filename()));
             t.forAll(node -> {

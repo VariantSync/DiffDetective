@@ -13,7 +13,7 @@ import org.variantsync.diffdetective.diff.difftree.filter.TaggedPredicate;
 import org.variantsync.diffdetective.diff.difftree.parse.DiffNodeParser;
 import org.variantsync.diffdetective.diff.difftree.render.DiffTreeRenderer;
 import org.variantsync.diffdetective.diff.difftree.transform.ExampleFinder;
-import org.variantsync.diffdetective.diff.result.DiffResult;
+import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.util.Assert;
 
 import java.nio.file.Path;
@@ -45,22 +45,21 @@ public class RunningExampleFinder {
     {
         return new ExampleFinder(
                 diffTree -> {
-                    final String localDiff = getDiff(diffTree);
-                    final DiffResult<DiffTree> parseResult = DiffTree.fromDiff(localDiff, true, true, nodeParser);
-                    // Not every local diff can be parsed to a difftree because diffs are unaware of the underlying language (i.e., CPP).
-                    // We want only running examples whose diffs describe entire diff trees for easier understanding.
-                    return parseResult.unwrap().match(
-                            localTree -> {
-                                if (treeConditions.test(localTree)) {
-                                    Assert.assertTrue(diffTree.getSource() instanceof GitPatch);
-                                    final GitPatch diffTreeSource = (GitPatch) diffTree.getSource();
-                                    localTree.setSource(diffTreeSource.shallowClone());
-                                    return Optional.of(localTree);
-                                }
-                                return Optional.empty();
-                            },
-                            error -> Optional.empty()
-                    );
+                    try {
+                        final String localDiff = getDiff(diffTree);
+                        final DiffTree localTree = DiffTree.fromDiff(localDiff, true, true, nodeParser);
+                        // Not every local diff can be parsed to a difftree because diffs are unaware of the underlying language (i.e., CPP).
+                        // We want only running examples whose diffs describe entire diff trees for easier understanding.
+                        if (treeConditions.test(localTree)) {
+                            Assert.assertTrue(diffTree.getSource() instanceof GitPatch);
+                            final GitPatch diffTreeSource = (GitPatch) diffTree.getSource();
+                            localTree.setSource(diffTreeSource.shallowClone());
+                            return Optional.of(localTree);
+                        }
+                        return Optional.empty();
+                    } catch (DiffParseException e) {
+                        return Optional.empty();
+                    }
                 },
                 exportDirectory,
                 DiffTreeRenderer.WithinDiffDetective()

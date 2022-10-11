@@ -2,6 +2,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
 import org.variantsync.diffdetective.diff.difftree.transform.Starfold;
+import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.util.FileUtils;
 
 import java.io.IOException;
@@ -28,9 +29,9 @@ public class StarfoldTest {
             "2x2", "nesting1"
     ).map(s -> s + ".diff").map(TestCase::new).toList();
 
-    private void test(final Starfold starfold, Function<TestCase, Path> getExpectedResultFile) throws IOException {
+    private void test(final Starfold starfold, Function<TestCase, Path> getExpectedResultFile) throws IOException, DiffParseException {
         for (TestCase testCase : TEST_CASES) {
-            final DiffTree t = DiffTree.fromFile(testCase.inputDiff, true, true).unwrap().getSuccess();
+            final DiffTree t = DiffTree.fromFile(testCase.inputDiff, true, true);
             starfold.transform(t);
             TestUtils.assertEqualToFile(
                     getExpectedResultFile.apply(testCase),
@@ -40,12 +41,12 @@ public class StarfoldTest {
     }
 
     @Test
-    public void testRespectNodeOrder() throws IOException {
+    public void testRespectNodeOrder() throws IOException, DiffParseException {
         test(Starfold.RespectNodeOrder(), TestCase::expectedDiffRespectingNodeOrder);
     }
 
     @Test
-    public void testIgnoreNodeOrder() throws IOException {
+    public void testIgnoreNodeOrder() throws IOException, DiffParseException {
         test(Starfold.IgnoreNodeOrder(), TestCase::expectedDiffIgnoringNodeOrder);
     }
 }

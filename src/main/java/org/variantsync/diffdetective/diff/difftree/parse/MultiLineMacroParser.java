@@ -3,12 +3,12 @@ package org.variantsync.diffdetective.diff.difftree.parse;
 import org.variantsync.diffdetective.diff.DiffLineNumber;
 import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.diff.difftree.DiffType;
+import org.variantsync.diffdetective.diff.result.DiffError;
+import org.variantsync.diffdetective.diff.result.DiffParseException;
 
 import java.io.BufferedReader;
 import java.util.Stack;
 import java.util.regex.Pattern;
-
-import static org.variantsync.diffdetective.diff.result.DiffError.MLMACRO_WITHIN_MLMACRO;
 
 /**
  * A parser for definitions of multiline macros in text-based diffs.
@@ -61,19 +61,16 @@ public class MultiLineMacroParser {
      * @param line The line to parse.
      * @param beforeStack The current before stack as defined by Sören's algorithm.
      * @param afterStack The current after stack as defined by Sören's algorithm.
-     * @return {@link ParseResult#SUCCESS} if the line was consumed and is part of a multiline macro definition.
-     *         {@link ParseResult#NOT_MY_DUTY} if the line is not part of a multiline macro definition and was not parsed.
-     *         The line remains unparsed and should be parsed in another way.
-     *         {@link ParseResult#ERROR} if an error occurred (e.g., because of a syntax error).
+     * @return true iff the line was consumed and is part of a multiline macro definition.
      * @throws IllFormedAnnotationException when {@link MultiLineMacroParser#finalizeMLMacro} fails.
      * @see DiffTreeParser#createDiffTree(BufferedReader, boolean, boolean, DiffNodeParser)
      */
-    ParseResult consume(
+    boolean consume(
             final DiffLineNumber lineNo,
             final String line,
             final Stack<DiffNode> beforeStack,
             final Stack<DiffNode> afterStack
-    ) throws IllFormedAnnotationException {
+    ) throws IllFormedAnnotationException, DiffParseException {
         final DiffType diffType = DiffType.ofDiffLine(line);
         final boolean isAdd = diffType == DiffType.ADD;
         final boolean isRem = diffType == DiffType.REM;
@@ -84,13 +81,13 @@ public class MultiLineMacroParser {
                 // ... create a new multi line macro to complete.
                 if (!isAdd) {
                     if (beforeMLMacro != null) {
-                        return ParseResult.ERROR(MLMACRO_WITHIN_MLMACRO, "Found definition of multiline macro within multiline macro at line " + line + "!");
+                        throw new DiffParseException(DiffError.MLMACRO_WITHIN_MLMACRO, lineNo);
                     }
                     beforeMLMacro = new MultilineMacro(line, diffType, lineNo, beforeStack.peek(), afterStack.peek());
                 }
                 if (!isRem) {
                     if (afterMLMacro != null) {
-                        return ParseResult.ERROR(MLMACRO_WITHIN_MLMACRO, "Found definition of multiline macro within multiline macro at line " + line + "!");
+                        throw new DiffParseException(DiffError.MLMACRO_WITHIN_MLMACRO, lineNo);
                     }
                     afterMLMacro = new MultilineMacro(line, diffType, lineNo, beforeStack.peek(), afterStack.peek());
                 }
@@ -105,22 +102,20 @@ public class MultiLineMacroParser {
                          *
                          * As 2 and 3 are most likely we just assume those.
                          */
-//                        return ParseResult.ERROR("Found line of a multiline macro without header at line " + line + "!");
-                        return ParseResult.NOT_MY_DUTY;
+                        return false;
                     }
                     beforeMLMacro.addLine(line);
                 }
                 if (!isRem) {
                     if (afterMLMacro == null) {
                         // see above
-//                        return ParseResult.ERROR("Found line of a multiline macro without header at line " + line + "!");
-                        return ParseResult.NOT_MY_DUTY;
+                        return false;
                     }
                     afterMLMacro.addLine(line);
                 }
             }
 
-            return ParseResult.SUCCESS;
+            return true;
         } else {
             // We either found the ending line of a multiline macro or just a plain line outside of a macro.
             final boolean inBeforeMLMacro = beforeMLMacro != null;
@@ -140,15 +135,8 @@ public class MultiLineMacroParser {
                             beforeMLMacro /* == afterMLMacro */,
                             DiffType.NON);
 
-                    ParseResult pushResult = DiffTreeParser.pushNodeToStack(mlNode, beforeStack, beforeMLMacro.getLineFrom());
-                    if (pushResult.isError()) {
-                        return pushResult;
-                    }
-
-                    pushResult = DiffTreeParser.pushNodeToStack(mlNode, afterStack, afterMLMacro.getLineFrom());
-                    if (pushResult.isError()) {
-                        return pushResult;
-                    }
+                    DiffTreeParser.pushNodeToStack(mlNode, beforeStack, beforeMLMacro.getLineFrom());
+                    DiffTreeParser.pushNodeToStack(mlNode, afterStack, afterMLMacro.getLineFrom());
 
                     beforeMLMacro = null;
                     afterMLMacro = null;
@@ -160,10 +148,7 @@ public class MultiLineMacroParser {
                                 beforeMLMacro,
                                 DiffType.REM);
 
-                        final ParseResult pushResult = DiffTreeParser.pushNodeToStack(beforeMLNode, beforeStack, beforeMLMacro.getLineFrom());
-                        if (pushResult.isError()) {
-                            return pushResult;
-                        }
+                        DiffTreeParser.pushNodeToStack(beforeMLNode, beforeStack, beforeMLMacro.getLineFrom());
 
                         beforeMLMacro = null;
                     }
@@ -174,20 +159,17 @@ public class MultiLineMacroParser {
                                 line,
                                 afterMLMacro, DiffType.ADD);
 
-                        final ParseResult pushResult = DiffTreeParser.pushNodeToStack(afterMLNode, afterStack, afterMLMacro.getLineFrom());
-                        if (pushResult.isError()) {
-                            return pushResult;
-                        }
+                        DiffTreeParser.pushNodeToStack(afterMLNode, afterStack, afterMLMacro.getLineFrom());
 
                         afterMLMacro = null;
                     }
                 }
 
-                return ParseResult.SUCCESS;
+                return true;
             }
         }
 
-        return ParseResult.NOT_MY_DUTY;
+        return false;
     }
 
     /**

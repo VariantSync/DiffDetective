@@ -2,6 +2,8 @@ package org.variantsync.diffdetective.diff.difftree;
 
 import java.util.function.Consumer;
 
+import org.apache.commons.lang3.function.FailableConsumer;
+
 /**
  * Type of change made to an artifact (e.g., a line of text in a text-based diff).
  * An artifact is either added, removed, or unchanged.
@@ -53,12 +55,18 @@ public enum DiffType {
      * Runs task on ifExistsBefore if the value existed before the edit (DiffType != ADD).
      * Runs task on ifExistsAfter if the value exists after the edit (DiffType != ADD).
      * Note: Runs task on both arguments sequentially if the artifact was not edited (DiffType == NON).
+     * Some tasks may not be run if a task throws an exception.
      *
      * @param ifExistsBefore Argument that is valid if the diff did not add.
      * @param ifExistsAfter Argument that is valid if the edit did not remove.
      * @param task Task to run with all given arguments that are valid w.r.t. to this DiffType's lifetime.
+     * @throws E iff {@code task} throws {@code E}
      */
-    public <T> void matchBeforeAfter(final T ifExistsBefore, final T ifExistsAfter, final Consumer<T> task) {
+    public <T, E extends Throwable> void matchBeforeAfter(
+        final T ifExistsBefore,
+        final T ifExistsAfter,
+        final FailableConsumer<T, E> task
+    ) throws E {
         if (this != DiffType.ADD) {
             task.accept(ifExistsBefore);
         }

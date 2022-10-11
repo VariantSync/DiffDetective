@@ -6,7 +6,7 @@ import org.variantsync.diffdetective.diff.difftree.source.PatchFile;
 import org.variantsync.diffdetective.diff.difftree.source.PatchString;
 import org.variantsync.diffdetective.diff.difftree.traverse.DiffTreeTraversal;
 import org.variantsync.diffdetective.diff.difftree.traverse.DiffTreeVisitor;
-import org.variantsync.diffdetective.diff.result.DiffResult;
+import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.util.Assert;
 
 import java.io.BufferedReader;
@@ -58,15 +58,17 @@ public class DiffTree {
      * Same as {@link DiffTree#fromFile(Path, boolean, boolean, DiffNodeParser)} but with
      * the {@link DiffNodeParser#Default default parser} for the lines in the diff.
      */
-    public static DiffResult<DiffTree> fromFile(final Path p, boolean collapseMultipleCodeLines, boolean ignoreEmptyLines) throws IOException {
+    public static DiffTree fromFile(final Path p, boolean collapseMultipleCodeLines, boolean ignoreEmptyLines) throws IOException, DiffParseException {
         return fromFile(p, collapseMultipleCodeLines, ignoreEmptyLines, DiffNodeParser.Default);
     }
 
     /**
      * Same as {@link DiffTree#fromDiff(String, boolean, boolean, DiffNodeParser)} but with
      * the {@link DiffNodeParser#Default default parser} for the lines in the diff.
+     *
+     * @throws DiffParseException if {@code diff} couldn't be parsed
      */
-    public static DiffResult<DiffTree> fromDiff(final String diff, boolean collapseMultipleCodeLines, boolean ignoreEmptyLines) {
+    public static DiffTree fromDiff(final String diff, boolean collapseMultipleCodeLines, boolean ignoreEmptyLines) throws DiffParseException {
         return fromDiff(diff, collapseMultipleCodeLines, ignoreEmptyLines, DiffNodeParser.Default);
     }
 
@@ -84,10 +86,10 @@ public class DiffTree {
      * @return A result either containing the parsed DiffTree or an error message in case of failure.
      * @throws IOException when the given file could not be read for some reason.
      */
-    public static DiffResult<DiffTree> fromFile(final Path p, boolean collapseMultipleCodeLines, boolean ignoreEmptyLines, final DiffNodeParser annotationParser) throws IOException {
+    public static DiffTree fromFile(final Path p, boolean collapseMultipleCodeLines, boolean ignoreEmptyLines, final DiffNodeParser annotationParser) throws IOException, DiffParseException {
         try (BufferedReader file = Files.newBufferedReader(p)) {
-            final DiffResult<DiffTree> tree = DiffTreeParser.createDiffTree(file, collapseMultipleCodeLines, ignoreEmptyLines, annotationParser);
-            tree.unwrap().ifSuccess(t -> t.setSource(new PatchFile(p)));
+            final DiffTree tree = DiffTreeParser.createDiffTree(file, collapseMultipleCodeLines, ignoreEmptyLines, annotationParser);
+            tree.setSource(new PatchFile(p));
             return tree;
         }
     }
@@ -104,10 +106,11 @@ public class DiffTree {
      * @param ignoreEmptyLines Set to true if empty lines should not be included in the DiffTree.
      * @param annotationParser The parser that is used to parse lines in the diff to {@link DiffNode}s.
      * @return A result either containing the parsed DiffTree or an error message in case of failure.
+     * @throws DiffParseException if {@code diff} couldn't be parsed
      */
-    public static DiffResult<DiffTree> fromDiff(final String diff, boolean collapseMultipleCodeLines, boolean ignoreEmptyLines, final DiffNodeParser annotationParser) {
-        final DiffResult<DiffTree> tree = DiffTreeParser.createDiffTree(diff, collapseMultipleCodeLines, ignoreEmptyLines, annotationParser);
-        tree.unwrap().ifSuccess(t -> t.setSource(new PatchString(diff)));
+    public static DiffTree fromDiff(final String diff, boolean collapseMultipleCodeLines, boolean ignoreEmptyLines, final DiffNodeParser annotationParser) throws DiffParseException {
+        final DiffTree tree = DiffTreeParser.createDiffTree(diff, collapseMultipleCodeLines, ignoreEmptyLines, annotationParser);
+        tree.setSource(new PatchString(diff));
         return tree;
     }
 

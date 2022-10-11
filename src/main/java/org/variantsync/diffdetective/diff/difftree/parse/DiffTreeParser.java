@@ -13,15 +13,13 @@ import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
 import org.variantsync.diffdetective.diff.difftree.DiffType;
 import org.variantsync.diffdetective.diff.result.DiffError;
-import org.variantsync.diffdetective.diff.result.DiffResult;
+import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.util.Assert;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.Stack;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.BiConsumer;
 
 /**
  * Parser that parses {@link DiffTree}s from text-based diffs.
@@ -31,13 +29,15 @@ public class DiffTreeParser {
      * The same as {@link DiffTreeParser#createDiffTree(BufferedReader, boolean, boolean, DiffNodeParser)}
      * but with the diff given as a single string with linebreaks instead of a BufferedReader.
      * Rethrows IOExceptions as Assertion errors (that do not have to be catched).
+     *
+     * @throws DiffParseException if {@code fullDiff} couldn't be parsed
      */
-    public static DiffResult<DiffTree> createDiffTree(
+    public static DiffTree createDiffTree(
             String fullDiff,
             boolean collapseMultipleCodeLines,
             boolean ignoreEmptyLines,
-            DiffNodeParser nodeParser)
-    {
+            DiffNodeParser nodeParser
+    ) throws DiffParseException {
         try {
             return createDiffTree(new BufferedReader(new StringReader(fullDiff)), collapseMultipleCodeLines, ignoreEmptyLines, nodeParser);
         } catch (IOException e) {
@@ -60,24 +60,18 @@ public class DiffTreeParser {
      * @return A parsed DiffTree upon success or an error indicating why parsing failed.
      * @throws IOException when reading the given BufferedReader fails.
      */
-    public static DiffResult<DiffTree> createDiffTree(
+    public static DiffTree createDiffTree(
             BufferedReader fullDiff,
             boolean collapseMultipleCodeLines,
             boolean ignoreEmptyLines,
-            DiffNodeParser nodeParser) throws IOException
-    {
+            DiffNodeParser nodeParser
+    ) throws IOException, DiffParseException {
         final Stack<DiffNode> beforeStack = new Stack<>();
         final Stack<DiffNode> afterStack = new Stack<>();
         DiffLineNumber lineNo = new DiffLineNumber(0, 0, 0);
         DiffLineNumber lastLineNo = lineNo;
 
         DiffNode lastArtifact = null;
-        final AtomicReference<DiffResult<DiffTree>> error = new AtomicReference<>();
-        final BiConsumer<DiffError, String> errorPropagation = (errType, message) -> {
-            if (error.get() == null) {
-                error.set(DiffResult.Failure(errType, message));
-            }
-        };
 
         final MultiLineMacroParser mlMacroParser = new MultiLineMacroParser(nodeParser);
 
@@ -102,35 +96,24 @@ public class DiffTreeParser {
             }
 
             // check if this is a multiline macro
-            final ParseResult isMLMacro;
             try {
-                isMLMacro = mlMacroParser.consume(lineNo, currentLine, beforeStack, afterStack);
-            } catch (IllFormedAnnotationException e) {
-                return DiffResult.Failure(e);
-            }
-
-            switch (isMLMacro.type()) {
-                case Success: {
+                if (mlMacroParser.consume(lineNo, currentLine, beforeStack, afterStack)) {
                     if (lastArtifact != null) {
                         lastArtifact = endCodeBlock(lastArtifact, lastLineNo);
                     }
                     // This line belongs to a multiline macro and was handled, so go to the next line.
                     continue;
                 }
-                case Error: {
-                    isMLMacro.onError(errorPropagation);
-                    return error.get();
-                }
-                // line is not a mult-line macro so keep going (break the switch statement).
-                case NotMyDuty: break;
+            } catch (IllFormedAnnotationException e) {
+                throw new DiffParseException(e.getType(), lineNo);
             }
+            // line is not a mult-line macro so keep going.
 
             if ("endif".equals(MultiLineMacroParser.conditionalMacroName(currentLine))) {
                 if (lastArtifact != null) {
                     lastArtifact = endCodeBlock(lastArtifact, lastLineNo);
                 }
 
-                final String currentLineFinal = currentLine;
                 final DiffLineNumber lastLineNoFinal = lastLineNo;
                 diffType.matchBeforeAfter(beforeStack, afterStack,
                         stack -> {
@@ -143,10 +126,9 @@ public class DiffTreeParser {
                             popIf(stack);
 
                             if (stack.isEmpty()) {
-                                errorPropagation.accept(DiffError.ENDIF_WITHOUT_IF, "ENDIF without IF at line \"" + currentLineFinal + "\"!");
+                                throw new DiffParseException(DiffError.ENDIF_WITHOUT_IF, lastLineNoFinal);
                             }
                         });
-                if (error.get() != null) { return error.get(); }
             } else {
                 // This gets the node type and diff type of the current line and creates a node
                 // Note that the node is not yet added to the diff tree.
@@ -154,7 +136,7 @@ public class DiffTreeParser {
                 try {
                     newNode = nodeParser.fromDiffLine(currentLine);
                 } catch (IllFormedAnnotationException e) {
-                    return DiffResult.Failure(e);
+                    throw new DiffParseException(e.getType(), lineNo);
                 }
 
                 // collapse multiple code lines
@@ -177,22 +159,21 @@ public class DiffTreeParser {
                     // push the node to the relevant stacks
                     final DiffLineNumber lastLineNoFinal = lastLineNo;
                     diffType.matchBeforeAfter(beforeStack, afterStack, stack ->
-                            pushNodeToStack(newNode, stack, lastLineNoFinal).onError(errorPropagation)
+                            pushNodeToStack(newNode, stack, lastLineNoFinal)
                     );
-                    if (error.get() != null) { return error.get(); }
                 }
             }
         }
 
         if (beforeStack.size() > 1 || afterStack.size() > 1) {
-            return DiffResult.Failure(DiffError.NOT_ALL_ANNOTATIONS_CLOSED);
+            throw new DiffParseException(DiffError.NOT_ALL_ANNOTATIONS_CLOSED, lastLineNo);
         }
 
         if (lastArtifact != null) {
             lastArtifact = endCodeBlock(lastArtifact, lineNo);
         }
 
-        return DiffResult.Success(new DiffTree(root));
+        return new DiffTree(root);
     }
 
     /**
@@ -203,18 +184,20 @@ public class DiffTreeParser {
      * @param stack Describes current the nesting depth of feature annotations.
      * @param lastLineNo The current line number from which's line the given node was parsed.
      * @return Either success or an error in case a sanity check failed.
+     * @throws DiffParseException if an error in an if-chain is detected
      */
-    static ParseResult pushNodeToStack(
+    static void pushNodeToStack(
             final DiffNode newNode,
             final Stack<DiffNode> stack,
-            final DiffLineNumber lastLineNo) {
+            final DiffLineNumber lastLineNo
+    ) throws DiffParseException {
         if (newNode.isElif() || newNode.isElse()) {
             if (stack.size() == 1) {
-                return ParseResult.ERROR(DiffError.ELSE_OR_ELIF_WITHOUT_IF);
+                throw new DiffParseException(DiffError.ELSE_OR_ELIF_WITHOUT_IF, lastLineNo);
             }
 
             if (stack.peek().isElse()) {
-                return ParseResult.ERROR(DiffError.ELSE_AFTER_ELSE);
+                throw new DiffParseException(DiffError.ELSE_AFTER_ELSE, lastLineNo);
             }
 
             // set corresponding line of now closed annotation
@@ -222,7 +205,6 @@ public class DiffTreeParser {
         }
 
         stack.push(newNode);
-        return ParseResult.SUCCESS;
     }
 
     /**

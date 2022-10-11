@@ -6,6 +6,7 @@ import org.prop4j.Node;
 import org.tinylog.Logger;
 import org.variantsync.diffdetective.analysis.logic.SAT;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
+import org.variantsync.diffdetective.diff.result.DiffParseException;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -53,9 +54,9 @@ public class PCTest {
         return time + " PC of node \"" + node + "\" is \"" + is + "\" but expected \"" + should + "\"!";
     }
 
-    private void test(final TestCase testCase) throws IOException {
+    private void test(final TestCase testCase) throws IOException, DiffParseException {
         final Path path = testDir.resolve(testCase.file);
-        final DiffTree t = DiffTree.fromFile(path, false, true).unwrap().getSuccess();
+        final DiffTree t = DiffTree.fromFile(path, false, true);
         t.forAll(node -> {
            if (node.isArtifact()) {
                final String text = node.getLabel().trim();
@@ -77,17 +78,17 @@ public class PCTest {
     }
 
     @Test
-    public void testA() throws IOException {
+    public void testA() throws IOException, DiffParseException {
         test(a);
     }
 
     @Test
-    public void testElif() throws IOException {
+    public void testElif() throws IOException, DiffParseException {
         test(elif);
     }
 
     @Test
-    public void testElse() throws IOException {
+    public void testElse() throws IOException, DiffParseException {
         test(elze);
     }
 }
