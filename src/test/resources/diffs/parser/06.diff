@@ -1,0 +1,4 @@
+ // hehe \
+ #ifdef A
+ Code \
+ #endif

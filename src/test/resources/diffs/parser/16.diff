@@ -1,0 +1,10 @@
+-#ifdef A
+ a
++#ifdef B
+ b
++#elif C
+ c
+ #else D
+ d
+-#endif
++#endif // D
