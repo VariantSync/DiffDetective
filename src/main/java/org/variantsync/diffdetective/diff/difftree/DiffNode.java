@@ -38,8 +38,6 @@ public class DiffNode {
      */
     public final NodeType nodeType;
 
-    private boolean isMultilineMacro = false;
-
     private DiffLineNumber from = DiffLineNumber.Invalid();
     private DiffLineNumber to = DiffLineNumber.Invalid();
 
@@ -686,21 +684,6 @@ public class DiffNode {
     }
 
     /**
-     * Determines if this node represents a multi-line macro.
-     * @param isMultilineMacro True iff this node represents a multi-line macro.
-     */
-    public void setIsMultilineMacro(boolean isMultilineMacro) {
-        this.isMultilineMacro = isMultilineMacro;
-    }
-
-    /**
-     * Returns true if this node represents a multi-line macro.
-     */
-    public boolean isMultilineMacro() {
-        return isMultilineMacro;
-    }
-
-    /**
      * Returns the full feature mapping formula of this node.
      * The feature mapping of an {@link NodeType#IF} node is its {@link DiffNode#getDirectFeatureMapping direct feature mapping}.
      * The feature mapping of {@link NodeType#ELSE} and {@link NodeType#ELIF} nodes is determined by all formulas in the respective if-elif-else chain.
@@ -1146,7 +1129,7 @@ public class DiffNode {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         DiffNode diffNode = (DiffNode) o;
-        return isMultilineMacro == diffNode.isMultilineMacro && diffType == diffNode.diffType && nodeType == diffNode.nodeType && from.equals(diffNode.from) && to.equals(diffNode.to) && Objects.equals(featureMapping, diffNode.featureMapping) && lines.equals(diffNode.lines);
+        return diffType == diffNode.diffType && nodeType == diffNode.nodeType && from.equals(diffNode.from) && to.equals(diffNode.to) && Objects.equals(featureMapping, diffNode.featureMapping) && lines.equals(diffNode.lines);
     }
 
     /**
@@ -1159,6 +1142,6 @@ public class DiffNode {
      */
     @Override
     public int hashCode() {
-        return Objects.hash(diffType, nodeType, isMultilineMacro, from, to, featureMapping, lines);
+        return Objects.hash(diffType, nodeType, from, to, featureMapping, lines);
     }
 }

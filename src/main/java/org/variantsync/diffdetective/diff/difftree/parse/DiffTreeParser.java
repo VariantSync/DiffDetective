@@ -12,23 +12,104 @@ import org.variantsync.diffdetective.diff.PatchDiff;
 import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
 import org.variantsync.diffdetective.diff.difftree.DiffType;
+import org.variantsync.diffdetective.diff.difftree.NodeType;
 import org.variantsync.diffdetective.diff.result.DiffError;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
+import org.variantsync.diffdetective.feature.CPPAnnotationParser;
 import org.variantsync.diffdetective.util.Assert;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.Stack;
+import java.util.regex.Pattern;
 
 /**
  * Parser that parses {@link DiffTree}s from text-based diffs.
+ *
+ * Note: Weird line continuations and comments can cause misidentification of conditional macros.
+ * The following examples are all correct according to the C11 standard: (comment end is marked by
+ * {@code *\/}):
+ * <code>
+ * /*
+ * #ifdef A
+ * *\/
+ *
+ * #ifdef /*
+ * *\/ A
+ * #endif
+ *
+ * # /**\/ ifdef
+ * #endif
+ *
+ * # \
+ *   ifdef
+ * #endif
+ * </code>
  */
 public class DiffTreeParser {
     /**
-     * The same as {@link DiffTreeParser#createDiffTree(BufferedReader, boolean, boolean, DiffNodeParser)}
-     * but with the diff given as a single string with linebreaks instead of a BufferedReader.
-     * Rethrows IOExceptions as Assertion errors (that do not have to be catched).
+     * Matches the beginning of conditional macros.
+     * It doesn't match the whole macro name, for example for {@code #ifdef} only {@code "#if"} is
+     * matched and only {@code "if"} is captured.
+     *
+     * Note that this pattern doesn't handle comments between {@code #} and the macro name.
+     */
+    private final static Pattern macroPattern =
+        Pattern.compile("^[+-]?\\s*#\\s*(if|elif|else|endif)");
+
+
+    /* Settings */
+
+    /**
+     * Whether to collapse multiple adjacent lines with the same {@code DiffType} to one artifact
+     * node.
+     */
+    final boolean collapseMultipleCodeLines;
+    /**
+     * Whether to add {@code DiffNode}s for empty lines (regardless of their {@code DiffType}).
+     * If {@link collapseMultipleCodeLines} is {@code true} empty lines are also not added to
+     * existing {@code DiffNode}s.
+     */
+    final boolean ignoreEmptyLines;
+    /**
+     * Customization point for how conditional macros are parsed.
+     */
+    final CPPAnnotationParser annotationParser;
+
+
+    /* State */
+
+    /**
+     * A stack containing the current path before the edit from the root of the currently parsed
+     * {@link DiffTree} to the currently parsed {@link DiffNode}.
+     *
+     * The granularity of the {@link DiffTree}s parsed by this class is always lines because line
+     * diffs can't represent different granularities. This implies that there are no nested artifact
+     * nodes in the resulting {@link DiffTree} and therefore {@code beforeStack} will never contain
+     * an artifact node.
+     */
+    private final Stack<DiffNode> beforeStack = new Stack<>();
+    /**
+     * A stack containing the current path after the edit from the root of the currently parsed
+     * {@link DiffTree} to the currently parsed {@link DiffNode}.
+     *
+     * See {@link beforeStack} for more explanations.
+     */
+    private final Stack<DiffNode> afterStack = new Stack<>();
+
+    /**
+     * The last artifact node which was parsed by {@link parseLine}.
+     * If the last parsed {@code DiffNode} was not an artifact, {@code lastArtifact} is {@code null}.
+     *
+     * This state is used to implement {@link collapseMultipleCodeLines}.
+     */
+    private DiffNode lastArtifact = null;
+
+
+    /**
+     * The same as {@link DiffTreeParser#createDiffTree(BufferedReader, boolean, boolean, CPPAnnotationParser)}
+     * but with the diff given as a single string with line breaks instead of a {@link BufferedReader}.
      *
      * @throws DiffParseException if {@code fullDiff} couldn't be parsed
      */
@@ -36,229 +117,299 @@ public class DiffTreeParser {
             String fullDiff,
             boolean collapseMultipleCodeLines,
             boolean ignoreEmptyLines,
-            DiffNodeParser nodeParser
+            CPPAnnotationParser annotationParser
     ) throws DiffParseException {
         try {
-            return createDiffTree(new BufferedReader(new StringReader(fullDiff)), collapseMultipleCodeLines, ignoreEmptyLines, nodeParser);
+            return createDiffTree(new BufferedReader(new StringReader(fullDiff)), collapseMultipleCodeLines, ignoreEmptyLines, annotationParser);
         } catch (IOException e) {
-            throw new AssertionError("No actual IO should be performed, because only a StringReader is used");
+            throw new AssertionError("No actual IO should be performed because only a StringReader is used");
         }
     }
 
     /**
-     * Default parsing method for DiffTrees from diffs.
+     * Default parsing method for {@link DiffTree}s from diffs.
      * This implementation has options to collapse multiple code lines into one node and to
      * discard empty lines.
      * This parsing algorithm is described in detail in Sören Viegener's bachelor's thesis.
      *
-     * @param fullDiff                  The full diff of a patch obtained from a buffered reader.
-     * @param collapseMultipleCodeLines Whether multiple consecutive code lines with the same diff type
-     *                                  should be collapsed into a single artifact node.
-     * @param ignoreEmptyLines          Whether empty lines (no matter if they are added removed
-     *                                  or remained unchanged) should be ignored.
-     * @param nodeParser                The parser to parse individual lines in the diff to DiffNodes.
-     * @return A parsed DiffTree upon success or an error indicating why parsing failed.
-     * @throws IOException when reading the given BufferedReader fails.
+     * @param fullDiff The full diff of a patch obtained from a buffered reader.
+     * @param collapseMultipleCodeLines Whether multiple consecutive code lines with the same diff
+     * type should be collapsed into a single artifact node.
+     * @param ignoreEmptyLines Whether empty lines (no matter if they are added removed or remained
+     * unchanged) should be ignored.
+     * @param annotationParser The parser to parse conditional macros lines in the diff to
+     * {@link DiffNode}s.
+     * @return A parsed {@link DiffTree} upon success or an error indicating why parsing failed.
+     * @throws IOException when reading from {@code fullDiff} fails.
+     * @throws DiffParseException if an error in the diff or macro syntax is detected
      */
     public static DiffTree createDiffTree(
             BufferedReader fullDiff,
             boolean collapseMultipleCodeLines,
             boolean ignoreEmptyLines,
-            DiffNodeParser nodeParser
+            CPPAnnotationParser annotationParser
     ) throws IOException, DiffParseException {
-        final Stack<DiffNode> beforeStack = new Stack<>();
-        final Stack<DiffNode> afterStack = new Stack<>();
-        DiffLineNumber lineNo = new DiffLineNumber(0, 0, 0);
-        DiffLineNumber lastLineNo = lineNo;
+        return new DiffTreeParser(
+            collapseMultipleCodeLines,
+            ignoreEmptyLines,
+            annotationParser
+        ).parse(fullDiff);
+    }
 
-        DiffNode lastArtifact = null;
+    /**
+     * Initializes the parse state.
+     *
+     * @see createDiffTree(BufferedReader, boolean, boolean, CPPAnnotationParser)
+     */
+    private DiffTreeParser(
+            boolean collapseMultipleCodeLines,
+            boolean ignoreEmptyLines,
+            CPPAnnotationParser annotationParser
+    ) {
+        this.collapseMultipleCodeLines = collapseMultipleCodeLines;
+        this.ignoreEmptyLines = ignoreEmptyLines;
+        this.annotationParser = annotationParser;
+    }
 
-        final MultiLineMacroParser mlMacroParser = new MultiLineMacroParser(nodeParser);
-
-        final DiffNode root = DiffNode.createRoot();
+    /**
+     * Parses the line diff {@code fullDiff}.
+     *
+     * @param lines should supply successive lines of the diff to be parsed, or {@code null} if
+     * there are no more lines to be parsed.
+     * @return the parsed {@code DiffTree}
+     * @throws IOException iff {@code lines.get()} throws {@code IOException}
+     * @throws DiffParseException if an error in the line diff or the underlying preprocessor syntax
+     * is detected
+     */
+    private DiffTree parse(BufferedReader fullDiff) throws IOException, DiffParseException {
+        DiffNode root = DiffNode.createRoot();
         beforeStack.push(root);
         afterStack.push(root);
 
+        final LogicalLine beforeLine = new LogicalLine();
+        final LogicalLine afterLine = new LogicalLine();
+        boolean isNon = false;
+
+        DiffLineNumber lineNumber = new DiffLineNumber(0, 0, 0);
         String currentLine;
-        for (int i = 0; (currentLine = fullDiff.readLine()) != null; i++) {
-            final DiffType diffType = DiffType.ofDiffLine(currentLine);
-
-            // count line numbers
-            lastLineNo = lineNo;
-            lineNo = lineNo.add(1, diffType);
-
+        while ((currentLine = fullDiff.readLine()) != null) {
             // Ignore line if it is empty.
             if (ignoreEmptyLines && (currentLine.isEmpty()
-                    // substring(1) here because of diff symbol ('+', '-', ' ') at the beginning of a line.
+                    // substring(1) here because of diff symbol ('+', '-', ' ') at the beginning of
+                    // a line.
                     || currentLine.substring(1).isBlank())) {
                 // discard empty lines
                 continue;
             }
 
-            // check if this is a multiline macro
-            try {
-                if (mlMacroParser.consume(lineNo, currentLine, beforeStack, afterStack)) {
-                    if (lastArtifact != null) {
-                        lastArtifact = endCodeBlock(lastArtifact, lastLineNo);
-                    }
-                    // This line belongs to a multiline macro and was handled, so go to the next line.
-                    continue;
-                }
-            } catch (IllFormedAnnotationException e) {
-                throw new DiffParseException(e.getType(), lineNo);
+            final DiffType diffType = DiffType.ofDiffLine(currentLine);
+            if (diffType == null) {
+                throw new DiffParseException(DiffError.INVALID_DIFF, lineNumber.add(1));
             }
-            // line is not a mult-line macro so keep going.
 
-            if ("endif".equals(MultiLineMacroParser.conditionalMacroName(currentLine))) {
-                if (lastArtifact != null) {
-                    lastArtifact = endCodeBlock(lastArtifact, lastLineNo);
-                }
+            lineNumber = lineNumber.add(1, diffType);
 
-                final DiffLineNumber lastLineNoFinal = lastLineNo;
-                diffType.matchBeforeAfter(beforeStack, afterStack,
-                        stack -> {
-                            // Set corresponding line of now closed annotation.
-                            // The last block is the first one on the stack.
-                            endMacroBlock(stack.peek(), lastLineNoFinal, diffType);
+            // Do beforeLine and afterLine represent the same unchanged diff line?
+            isNon = diffType == DiffType.NON &&
+                (isNon || (!beforeLine.hasStarted() && !afterLine.hasStarted()));
 
-                            // Pop the relevant stacks until an IF node is popped. If there were ELSEs or ELIFs between
-                            // an IF and an ENDIF, they were placed on the stack and have to be popped now.
-                            popIf(stack);
+            // Add the physical line to the logical line.
+            final String originalLine = currentLine.substring(1);
+            final DiffLineNumber lineNumberFinal = lineNumber;
+            diffType.matchBeforeAfter(beforeLine, afterLine,
+                node -> node.consume(originalLine, lineNumberFinal)
+            );
 
-                            if (stack.isEmpty()) {
-                                throw new DiffParseException(DiffError.ENDIF_WITHOUT_IF, lastLineNoFinal);
-                            }
-                        });
+            // Parse the completed logical line
+            if (isNon && beforeLine.isComplete() && afterLine.isComplete()) {
+                // Only parse it once if beforeLine and afterLine represent the same unchanged
+                // diff line.
+                parseLine(beforeLine, DiffType.NON, lineNumber);
+                beforeLine.reset();
+                afterLine.reset();
             } else {
-                // This gets the node type and diff type of the current line and creates a node
-                // Note that the node is not yet added to the diff tree.
-                final DiffNode newNode;
-                try {
-                    newNode = nodeParser.fromDiffLine(currentLine);
-                } catch (IllFormedAnnotationException e) {
-                    throw new DiffParseException(e.getType(), lineNo);
+                if (beforeLine.isComplete()) {
+                    parseLine(beforeLine, DiffType.REM, lineNumber);
+                    beforeLine.reset();
                 }
-
-                // collapse multiple code lines
-                if (lastArtifact != null) {
-                    if (collapseMultipleCodeLines && newNode.isArtifact() && lastArtifact.diffType.equals(newNode.diffType)) {
-                        lastArtifact.addLines(newNode.getLines());
-                        continue;
-                    } else {
-                        lastArtifact = endCodeBlock(lastArtifact, lastLineNo);
-                    }
-                }
-
-                newNode.setFromLine(lineNo);
-                newNode.addBelow(beforeStack.peek(), afterStack.peek());
-
-                if (newNode.isArtifact()) {
-                    lastArtifact = newNode;
-                } else {
-                    // newNode is if, elif or else
-                    // push the node to the relevant stacks
-                    final DiffLineNumber lastLineNoFinal = lastLineNo;
-                    diffType.matchBeforeAfter(beforeStack, afterStack, stack ->
-                            pushNodeToStack(newNode, stack, lastLineNoFinal)
-                    );
+                if (afterLine.isComplete()) {
+                    parseLine(afterLine, DiffType.ADD, lineNumber);
+                    afterLine.reset();
                 }
             }
         }
 
-        if (beforeStack.size() > 1 || afterStack.size() > 1) {
-            throw new DiffParseException(DiffError.NOT_ALL_ANNOTATIONS_CLOSED, lastLineNo);
+        if (beforeLine.hasStarted() || afterLine.hasStarted()) {
+            throw new DiffParseException(
+                DiffError.INVALID_LINE_CONTINUATION,
+                lineNumber
+            );
         }
 
-        if (lastArtifact != null) {
-            lastArtifact = endCodeBlock(lastArtifact, lineNo);
+        if (beforeStack.size() > 1) {
+            throw new DiffParseException(
+                DiffError.NOT_ALL_ANNOTATIONS_CLOSED,
+                beforeStack.peek().getFromLine()
+            );
         }
+        if (afterStack.size() > 1) {
+            throw new DiffParseException(
+                DiffError.NOT_ALL_ANNOTATIONS_CLOSED,
+                afterStack.peek().getFromLine()
+            );
+        }
+
+        // Cleanup state
+        beforeStack.clear();
+        afterStack.clear();
+        lastArtifact = null;
 
         return new DiffTree(root);
     }
 
     /**
-     * Push the given node to the given stack including some sanity checks.
-     * This method also ensures that annotation blocks are closed correctly,
-     * by setting ending line numbers.
-     * @param newNode The node to push to the given parsing stack.
-     * @param stack Describes current the nesting depth of feature annotations.
-     * @param lastLineNo The current line number from which's line the given node was parsed.
-     * @return Either success or an error in case a sanity check failed.
-     * @throws DiffParseException if an error in an if-chain is detected
+     * Parses one logical line and most notably, handles conditional macros.
+     *
+     * @param line a logical line with {@code line.isComplete() == true}
+     * @param diffType whether {@code line} was added, inserted or unchanged
+     * @param lastLineNumber the last physical line of {@code line}
+     * @throws DiffParseException if erroneous preprocessor macros are detected
      */
-    static void pushNodeToStack(
-            final DiffNode newNode,
-            final Stack<DiffNode> stack,
-            final DiffLineNumber lastLineNo
+    private void parseLine(
+            final LogicalLine line,
+            final DiffType diffType,
+            final DiffLineNumber lastLineNumber
     ) throws DiffParseException {
-        if (newNode.isElif() || newNode.isElse()) {
-            if (stack.size() == 1) {
-                throw new DiffParseException(DiffError.ELSE_OR_ELIF_WITHOUT_IF, lastLineNo);
-            }
+        final DiffLineNumber fromLine = line.getStartLineNumber().as(diffType);
+        final DiffLineNumber toLine = lastLineNumber.add(1).as(diffType);
 
-            if (stack.peek().isElse()) {
-                throw new DiffParseException(DiffError.ELSE_AFTER_ELSE, lastLineNo);
-            }
+        // Is this line a conditional macro?
+        // Note: The following line doesn't handle comments and line continuations correctly.
+        var matcher = macroPattern.matcher(line.getLines().get(0));
+        var conditionalMacroName = matcher.find()
+            ? matcher.group(1)
+            : null;
 
-            // set corresponding line of now closed annotation
-            endMacroBlock(stack.peek(), lastLineNo, newNode.diffType);
+        if ("endif".equals(conditionalMacroName)) {
+            lastArtifact = null;
+
+            // Do not create a node for ENDIF, but update the line numbers of the closed if-chain
+            // and remove that if-chain from the relevant stacks.
+            diffType.matchBeforeAfter(beforeStack, afterStack, stack ->
+                popIfChain(stack, fromLine)
+            );
+        } else if (collapseMultipleCodeLines
+                && conditionalMacroName == null
+                && lastArtifact != null
+                && lastArtifact.diffType.equals(diffType)
+                && lastArtifact.getToLine().inDiff() == fromLine.inDiff()) {
+            // Collapse consecutive lines if possible.
+            lastArtifact.addLines(line.getLines());
+            lastArtifact.setToLine(toLine);
+        } else {
+            try {
+                NodeType nodeType = NodeType.ARTIFACT;
+                if (conditionalMacroName != null) {
+                    try {
+                        nodeType = NodeType.fromName(conditionalMacroName);
+                    } catch (IllegalArgumentException e) {
+                        throw new DiffParseException(DiffError.INVALID_MACRO_NAME, fromLine);
+                    }
+                }
+
+                DiffNode newNode = new DiffNode(
+                    diffType,
+                    nodeType,
+                    fromLine,
+                    toLine,
+                    nodeType == NodeType.ARTIFACT || nodeType == NodeType.ELSE
+                        ? null
+                        : annotationParser.parseDiffLines(line.getLines()),
+                    line.getLines()
+                );
+
+                addNode(newNode);
+                lastArtifact = newNode.isArtifact() ? newNode : null;
+            } catch (IllFormedAnnotationException e) {
+                throw new DiffParseException(e.getType(), fromLine);
+            }
         }
-
-        stack.push(newNode);
     }
 
     /**
-     * Ends a given code block by setting its ending line number correctly.
-     * @param block The code block to end.
-     * @param lastLineNo The line number of the last parsed line.
-     *                   This should be the line number of the last line in the diff
-     *                   that is part of the given block.
-     * @return null
+     * Pop {@code stack} until an IF node is popped.
+     * If there were ELSEs or ELIFs between an IF and an ENDIF, they were placed on the stack and
+     * have to be popped now. The {@link DiffNode#getToLine() end line numbers} are adjusted
+     *
+     * @param stack the stack which should be popped
+     * @param elseLineNumber the first line of the else which causes this IF to be popped
+     * @throws DiffParseException if {@code stack} doesn't contain an IF node
      */
-    private static DiffNode endCodeBlock(final DiffNode block, final DiffLineNumber lastLineNo) {
-        block.setToLine(lastLineNo.add(1));
-        return null;
-    }
-
-    /**
-     * Ends a given macro block by setting its ending line number correctly.
-     * @param block The macro block to end.
-     * @param lastLineNo The last line number in the diff that is part of the given block.
-     * @param diffTypeOfNewBlock The diff type of the upcoming block. This type determines
-     *                           at which times the given block ends.
-     */
-    private static void endMacroBlock(final DiffNode block, final DiffLineNumber lastLineNo, final DiffType diffTypeOfNewBlock) {
-        // Add 1 because the end line is exclusive, so we have to point one behind the last line we found.
-        final DiffLineNumber to = lastLineNo.add(1, diffTypeOfNewBlock);
-
-        block.setToLine(new DiffLineNumber(
-            // Take the highest value ever set as we want to include all lines that are somehow affected by this block.
-            Math.max(block.getToLine().inDiff(), to.inDiff()),
-            diffTypeOfNewBlock == DiffType.ADD ? block.getToLine().beforeEdit() : to.beforeEdit(),
-            diffTypeOfNewBlock == DiffType.REM ? block.getToLine().afterEdit() : to.afterEdit()
-        ));
-    }
-
-    /**
-     * Pop nodes from the given annotation nesting stack until an If or the root was popped.
-     * Used to exist if-elif-else chains.
-     * @param stack The stack representing the current nesting of annotations.
-     * @return The last popped node. This is either an IF node or the root.
-     */
-    public static DiffNode popIf(final Stack<DiffNode> stack) {
-        DiffNode popped;
+    private void popIfChain(
+        Stack<DiffNode> stack,
+        DiffLineNumber elseLineNumber
+    ) throws DiffParseException {
+        DiffLineNumber previousLineNumber = elseLineNumber;
         do {
-            // Don't update line numbers of popped nodes here as this already happened.
-            popped = stack.pop();
-        } while (!popped.isIf());
-        return popped;
+            DiffNode annotation = stack.peek();
+
+            // Set the line number of now closed annotations to the beginning of the
+            // following annotation.
+            annotation.setToLine(new DiffLineNumber(
+                Math.max(previousLineNumber.inDiff(), annotation.getToLine().inDiff()),
+                stack == beforeStack
+                    ? previousLineNumber.beforeEdit()
+                    : annotation.getToLine().beforeEdit(),
+                stack == afterStack
+                    ? previousLineNumber.afterEdit()
+                    : annotation.getToLine().afterEdit()
+            ));
+
+            previousLineNumber = annotation.getFromLine();
+        } while (!stack.pop().isIf());
+
+        if (stack.isEmpty()) {
+            throw new DiffParseException(DiffError.ENDIF_WITHOUT_IF, elseLineNumber);
+        }
+    }
+
+    /**
+     * Adds a fully parsed node into the {@code DiffTree}.
+     * Annotations also pushed to the relevant stacks.
+     *
+     * @param newNode the fully parsed node to be added
+     * @throws DiffParseException if {@code line} erroneous preprocessor macros are detected
+     */
+    private void addNode(DiffNode newNode) throws DiffParseException {
+        newNode.addBelow(beforeStack.peek(), afterStack.peek());
+
+        if (newNode.isAnnotation()) {
+            // newNode is IF, ELIF or ELSE, so push it to the relevant stacks.
+            newNode.diffType.matchBeforeAfter(beforeStack, afterStack, stack -> {
+                if (newNode.isElif() || newNode.isElse()) {
+                    if (stack.size() == 1) {
+                        throw new DiffParseException(
+                            DiffError.ELSE_OR_ELIF_WITHOUT_IF,
+                            newNode.getFromLine()
+                        );
+                    }
+
+                    if (stack.peek().isElse()) {
+                        throw new DiffParseException(DiffError.ELSE_AFTER_ELSE, newNode.getFromLine());
+                    }
+                }
+
+                stack.push(newNode);
+            });
+        }
     }
 
     /**
      * Parses the given commit of the given repository.
      * @param repo The repository from which a commit should be parsed.
      * @param commitHash Hash of the commit to parse.
-     * @return A CommitDiff describing edits to variability introduced by the given commit relative to its first parent commit.
+     * @return A CommitDiff describing edits to variability introduced by the given commit relative
+     * to its first parent commit.
      * @throws IOException when an error occurred.
      */
     public static CommitDiff parseCommit(Repository repo, String commitHash) throws IOException {
@@ -286,7 +437,8 @@ public class DiffTreeParser {
      * @param repo The repository from which a patch should be parsed.
      * @param file The file that was edited by the patch.
      * @param commitHash The hash of the commit in which the patch was made.
-     * @return A PatchDiff describing edits to variability introduced by the given patch relative to the corresponding commit's first parent commit.
+     * @return A PatchDiff describing edits to variability introduced by the given patch relative to
+     * the corresponding commit's first parent commit.
      * @throws IOException when an error occurred.
      * @throws AssertionError when no such patch exists.
      */

@@ -1,7 +1,5 @@
 package org.variantsync.diffdetective.diff.difftree;
 
-import java.util.function.Consumer;
-
 import org.apache.commons.lang3.function.FailableConsumer;
 
 /**
@@ -93,15 +91,17 @@ public enum DiffType {
     /**
      * Parses the diff type from a line taken from a text-based diff.
      * @param line A line in a patch.
-     * @return The type of edit of <code>line</code>.
+     * @return The type of edit of <code>line</code> or null if its an invalid diff line.
      */
     public static DiffType ofDiffLine(String line) {
         if (line.startsWith(ADD.symbol)) {
             return ADD;
         } else if (line.startsWith(REM.symbol)) {
             return REM;
-        } else {
+        } else if (line.startsWith(NON.symbol)) {
             return NON;
+        } else {
+            return null;
         }
     }
 

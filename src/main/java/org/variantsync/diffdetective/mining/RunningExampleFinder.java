@@ -10,10 +10,10 @@ import org.variantsync.diffdetective.diff.difftree.DiffTreeSource;
 import org.variantsync.diffdetective.diff.difftree.filter.DiffTreeFilter;
 import org.variantsync.diffdetective.diff.difftree.filter.ExplainedFilter;
 import org.variantsync.diffdetective.diff.difftree.filter.TaggedPredicate;
-import org.variantsync.diffdetective.diff.difftree.parse.DiffNodeParser;
 import org.variantsync.diffdetective.diff.difftree.render.DiffTreeRenderer;
 import org.variantsync.diffdetective.diff.difftree.transform.ExampleFinder;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
+import org.variantsync.diffdetective.feature.CPPAnnotationParser;
 import org.variantsync.diffdetective.util.Assert;
 
 import java.nio.file.Path;
@@ -33,10 +33,10 @@ public class RunningExampleFinder {
             new TaggedPredicate<>("has a complex formula", RunningExampleFinder::hasAtLeastOneComplexFormulaBeforeTheEdit)
     );
 
-    private final DiffNodeParser nodeParser;
+    private final CPPAnnotationParser annotationParser;
 
-    public RunningExampleFinder(final DiffNodeParser nodeParser) {
-        this.nodeParser = nodeParser;
+    public RunningExampleFinder(final CPPAnnotationParser annotationParser) {
+        this.annotationParser = annotationParser;
     }
 
     public ExampleFinder The_Diff_Itself_Is_A_Valid_DiffTree_And(
@@ -47,7 +47,7 @@ public class RunningExampleFinder {
                 diffTree -> {
                     try {
                         final String localDiff = getDiff(diffTree);
-                        final DiffTree localTree = DiffTree.fromDiff(localDiff, true, true, nodeParser);
+                        final DiffTree localTree = DiffTree.fromDiff(localDiff, true, true, annotationParser);
                         // Not every local diff can be parsed to a difftree because diffs are unaware of the underlying language (i.e., CPP).
                         // We want only running examples whose diffs describe entire diff trees for easier understanding.
                         if (treeConditions.test(localTree)) {

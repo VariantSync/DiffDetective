@@ -1,12 +1,12 @@
 package org.variantsync.diffdetective.diff.difftree;
 
-import org.variantsync.diffdetective.diff.difftree.parse.DiffNodeParser;
 import org.variantsync.diffdetective.diff.difftree.parse.DiffTreeParser;
 import org.variantsync.diffdetective.diff.difftree.source.PatchFile;
 import org.variantsync.diffdetective.diff.difftree.source.PatchString;
 import org.variantsync.diffdetective.diff.difftree.traverse.DiffTreeTraversal;
 import org.variantsync.diffdetective.diff.difftree.traverse.DiffTreeVisitor;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
+import org.variantsync.diffdetective.feature.CPPAnnotationParser;
 import org.variantsync.diffdetective.util.Assert;
 
 import java.io.BufferedReader;
@@ -55,21 +55,21 @@ public class DiffTree {
     }
 
     /**
-     * Same as {@link DiffTree#fromFile(Path, boolean, boolean, DiffNodeParser)} but with
-     * the {@link DiffNodeParser#Default default parser} for the lines in the diff.
+     * Same as {@link DiffTree#fromFile(Path, boolean, boolean, CPPAnnotationParser)} but with
+     * the {@link CPPAnnotationParser#Default default parser} for the lines in the diff.
      */
     public static DiffTree fromFile(final Path p, boolean collapseMultipleCodeLines, boolean ignoreEmptyLines) throws IOException, DiffParseException {
-        return fromFile(p, collapseMultipleCodeLines, ignoreEmptyLines, DiffNodeParser.Default);
+        return fromFile(p, collapseMultipleCodeLines, ignoreEmptyLines, CPPAnnotationParser.Default);
     }
 
     /**
-     * Same as {@link DiffTree#fromDiff(String, boolean, boolean, DiffNodeParser)} but with
-     * the {@link DiffNodeParser#Default default parser} for the lines in the diff.
+     * Same as {@link DiffTree#fromDiff(String, boolean, boolean, CPPAnnotationParser)} but with
+     * the {@link CPPAnnotationParser#Default default parser} for the lines in the diff.
      *
      * @throws DiffParseException if {@code diff} couldn't be parsed
      */
     public static DiffTree fromDiff(final String diff, boolean collapseMultipleCodeLines, boolean ignoreEmptyLines) throws DiffParseException {
-        return fromDiff(diff, collapseMultipleCodeLines, ignoreEmptyLines, DiffNodeParser.Default);
+        return fromDiff(diff, collapseMultipleCodeLines, ignoreEmptyLines, CPPAnnotationParser.Default);
     }
 
     /**
@@ -86,7 +86,7 @@ public class DiffTree {
      * @return A result either containing the parsed DiffTree or an error message in case of failure.
      * @throws IOException when the given file could not be read for some reason.
      */
-    public static DiffTree fromFile(final Path p, boolean collapseMultipleCodeLines, boolean ignoreEmptyLines, final DiffNodeParser annotationParser) throws IOException, DiffParseException {
+    public static DiffTree fromFile(final Path p, boolean collapseMultipleCodeLines, boolean ignoreEmptyLines, final CPPAnnotationParser annotationParser) throws IOException, DiffParseException {
         try (BufferedReader file = Files.newBufferedReader(p)) {
             final DiffTree tree = DiffTreeParser.createDiffTree(file, collapseMultipleCodeLines, ignoreEmptyLines, annotationParser);
             tree.setSource(new PatchFile(p));
@@ -108,7 +108,7 @@ public class DiffTree {
      * @return A result either containing the parsed DiffTree or an error message in case of failure.
      * @throws DiffParseException if {@code diff} couldn't be parsed
      */
-    public static DiffTree fromDiff(final String diff, boolean collapseMultipleCodeLines, boolean ignoreEmptyLines, final DiffNodeParser annotationParser) throws DiffParseException {
+    public static DiffTree fromDiff(final String diff, boolean collapseMultipleCodeLines, boolean ignoreEmptyLines, final CPPAnnotationParser annotationParser) throws DiffParseException {
         final DiffTree tree = DiffTreeParser.createDiffTree(diff, collapseMultipleCodeLines, ignoreEmptyLines, annotationParser);
         tree.setSource(new PatchString(diff));
         return tree;

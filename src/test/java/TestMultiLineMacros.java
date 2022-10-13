@@ -2,7 +2,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.tinylog.Logger;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
-import org.variantsync.diffdetective.diff.difftree.parse.DiffNodeParser;
+import org.variantsync.diffdetective.feature.CPPAnnotationParser;
 import org.variantsync.diffdetective.diff.difftree.parse.DiffTreeParser;
 import org.variantsync.diffdetective.diff.difftree.serialize.LineGraphExportOptions;
 import org.variantsync.diffdetective.diff.difftree.serialize.DiffTreeSerializeDebugData;
@@ -30,7 +30,7 @@ public class TestMultiLineMacros {
                     fullDiff,
                     true,
                     true,
-                    DiffNodeParser.Default);
+                    CPPAnnotationParser.Default);
         }
 
         try (var destination = IO.newBufferedOutputStream(resDir.resolve("gen").resolve(p.getFileName() + ".lg"))) {

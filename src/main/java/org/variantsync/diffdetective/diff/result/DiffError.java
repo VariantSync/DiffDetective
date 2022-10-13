@@ -54,7 +54,25 @@ public enum DiffError {
      * A condition annotation is missing an expression.
      * This typically occurs when an #if macro has no arguments.
      */
-    IF_WITHOUT_CONDITION("conditional macro without expression");
+    IF_WITHOUT_CONDITION("conditional macro without expression"),
+
+    /**
+     * Unknown macro name which was identified as a conditional macro.
+     * Example: {@code #iflol}
+     */
+    INVALID_MACRO_NAME("invalid preprocessor macro name"),
+
+    /**
+     * Empty line in a diff.
+     * All lines in a diff need at least one symbol (the
+     * {@link org.variantsync.diffdetective.diff.difftree.DiffType}) in it.
+     */
+    INVALID_DIFF("missing diff symbol"),
+
+    /**
+     * A line continuation without a following line.
+     */
+    INVALID_LINE_CONTINUATION("a line continuation was detected but there are no more lines");
 
     private final String message;
 

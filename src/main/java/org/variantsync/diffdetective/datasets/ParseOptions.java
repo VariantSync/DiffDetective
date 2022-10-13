@@ -1,6 +1,6 @@
 package org.variantsync.diffdetective.datasets;
 
-import org.variantsync.diffdetective.diff.difftree.parse.DiffNodeParser;
+import org.variantsync.diffdetective.feature.CPPAnnotationParser;
 
 /**
  * Parse options that should be used when parsing commits and patches within a commit history.
@@ -8,7 +8,7 @@ import org.variantsync.diffdetective.diff.difftree.parse.DiffNodeParser;
  * @param annotationParser A parser for parsing c preprocessor annotations.
  * @author Paul Bittner
  */
-public record ParseOptions(DiffStoragePolicy diffStoragePolicy, DiffNodeParser annotationParser) {
+public record ParseOptions(DiffStoragePolicy diffStoragePolicy, CPPAnnotationParser annotationParser) {
     public enum DiffStoragePolicy {
         REMEMBER_DIFF,
         REMEMBER_STRIPPED_DIFF,
@@ -21,13 +21,13 @@ public record ParseOptions(DiffStoragePolicy diffStoragePolicy, DiffNodeParser a
      * @see ParseOptions#Default
      * @param annotationParser A parser for parsing c preprocessor annotations.
      */
-    public ParseOptions(DiffNodeParser annotationParser) {
+    public ParseOptions(CPPAnnotationParser annotationParser) {
         this(Default.diffStoragePolicy, annotationParser);
     }
 
     /**
      * Creates ParseOptions with the given policy for storing diffs.
-     * @see ParseOptions#ParseOptions(DiffStoragePolicy, DiffNodeParser)
+     * @see ParseOptions#ParseOptions(DiffStoragePolicy, CPPAnnotationParser)
      * @param diffStoragePolicy Decides if and how unix diffs should be remembered when parsing commits.
      */
     public ParseOptions withDiffStoragePolicy(DiffStoragePolicy diffStoragePolicy) {
@@ -36,10 +36,10 @@ public record ParseOptions(DiffStoragePolicy diffStoragePolicy, DiffNodeParser a
 
     /**
      * Default value for ParseOptions that does not remember parsed unix diffs
-     * and uses the default value for the parsing annotations ({@link DiffNodeParser#Default}).
+     * and uses the default value for the parsing annotations ({@link CPPAnnotationParser#Default}).
      */
     public static final ParseOptions Default = new ParseOptions(
             DiffStoragePolicy.DO_NOT_REMEMBER,
-            DiffNodeParser.Default
+            CPPAnnotationParser.Default
     );
 }
