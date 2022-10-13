@@ -29,7 +29,7 @@ public class TestMultiLineMacros {
             tree = DiffTreeParser.createDiffTree(
                     fullDiff,
                     true,
-                    true,
+                    false,
                     CPPAnnotationParser.Default);
         }
 
