@@ -1,13 +1,13 @@
 package org.variantsync.diffdetective.diff.difftree.serialize;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Locale;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -131,10 +131,10 @@ public final class TikzExporter implements Exporter {
      * by exporting directly into a file.
      *
      * @param diffTree to be exported
-     * @param filename of the destination file
+     * @param destination path of the generated file
      */
-    public void exportFullLatexExample(DiffTree diffTree, String filename) throws IOException {
-        try (var file = new BufferedOutputStream(new FileOutputStream(filename))) {
+    public void exportFullLatexExample(DiffTree diffTree, Path destination) throws IOException {
+        try (var file = Files.newOutputStream(destination)) {
             try (var header = new BufferedInputStream(getClass().getResourceAsStream("/tikz_header.tex"))) {
                 header.transferTo(file);
             }
