@@ -1,5 +1,5 @@
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.prop4j.*;
 import org.variantsync.diffdetective.util.fide.FixTrueFalse;
 
@@ -13,16 +13,13 @@ import static org.variantsync.diffdetective.util.fide.FormulaUtils.negate;
 public class FixTrueFalseTest {
     private record TestCase(Node formula, Node expectedResult) {}
 
-    private List<TestCase> testCases;
-
     private final static Literal A = new Literal("A");
     private final static Literal B = new Literal("B");
     private final static Literal C = new Literal("C");
     private final static Node SomeIrreducible = new And(A, new Implies(A, B));
 
-    @BeforeEach
-    public void initTestCases() {
-        testCases = List.of(
+    public static List<TestCase> testCases() {
+        return List.of(
                 new TestCase(new And(True, A), A),
                 new TestCase(new Or(False, A), A),
                 new TestCase(new And(False, A), False),
@@ -37,7 +34,7 @@ public class FixTrueFalseTest {
                 new TestCase(new Equals(True, A), A),
                 new TestCase(new Equals(A, False), negate(A)),
                 new TestCase(new Equals(False, A), negate(A)),
-                
+
                 new TestCase(
                         new Equals(
                                 new Or(
@@ -53,10 +50,9 @@ public class FixTrueFalseTest {
         );
     }
 
-    @Test
-    public void testAll() {
-        for (TestCase testCase : testCases) {
-            assertEquals(FixTrueFalse.EliminateTrueAndFalse(testCase.formula), testCase.expectedResult);
-        }
+    @ParameterizedTest
+    @MethodSource("testCases")
+    public void test(TestCase testCase) {
+        assertEquals(FixTrueFalse.EliminateTrueAndFalse(testCase.formula), testCase.expectedResult);
     }
 }

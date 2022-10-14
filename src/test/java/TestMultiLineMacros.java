@@ -1,4 +1,5 @@
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.tinylog.Logger;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
 import org.variantsync.diffdetective.feature.CPPAnnotationParser;
@@ -46,8 +47,9 @@ public class TestMultiLineMacros {
         }
     }
 
-    @Test
-    public void test() throws IOException, DiffParseException {
+    @ParameterizedTest
+    @ValueSource(strings = { "mldiff1.txt", "diffWithComments.txt" })
+    public void test(String filename) throws IOException, DiffParseException {
         final LineGraphExportOptions exportOptions = new LineGraphExportOptions(
                 GraphFormat.DIFFTREE,
                 new CommitDiffDiffTreeLabelFormat(),
@@ -55,7 +57,6 @@ public class TestMultiLineMacros {
                 new DefaultEdgeLabelFormat()
         );
 
-        diffToDiffTree(exportOptions, resDir.resolve("mldiff1.txt"));
-        diffToDiffTree(exportOptions, resDir.resolve("diffWithComments.txt"));
+        diffToDiffTree(exportOptions, resDir.resolve(filename));
     }
 }

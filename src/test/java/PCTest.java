@@ -1,4 +1,5 @@
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.prop4j.And;
 import org.prop4j.Literal;
 import org.prop4j.Node;
@@ -9,6 +10,7 @@ import org.variantsync.diffdetective.diff.result.DiffParseException;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -21,7 +23,12 @@ public class PCTest {
     private static final Literal D = new Literal("D");
     private static final Literal E = new Literal("E");
     record ExpectedPC(Node before, Node after) {}
-    record TestCase(Path file, Map<String, ExpectedPC> expectedResult) {}
+    record TestCase(Path file, Map<String, ExpectedPC> expectedResult) {
+        @Override
+        public String toString() {
+            return file.toString();
+        }
+    }
 
     private final static Path testDir = Constants.RESOURCE_DIR.resolve("pctest");
     private final static TestCase a = new TestCase(
@@ -54,7 +61,13 @@ public class PCTest {
         return time + " PC of node \"" + node + "\" is \"" + is + "\" but expected \"" + should + "\"!";
     }
 
-    private void test(final TestCase testCase) throws IOException, DiffParseException {
+    public static List<TestCase> testCases() {
+        return List.of(a, elif, elze);
+    }
+
+    @ParameterizedTest
+    @MethodSource("testCases")
+    public void test(final TestCase testCase) throws IOException, DiffParseException {
         final Path path = testDir.resolve(testCase.file);
         final DiffTree t = DiffTree.fromFile(path, false, true);
         t.forAll(node -> {
@@ -75,20 +88,5 @@ public class PCTest {
                }
            }
         });
-    }
-
-    @Test
-    public void testA() throws IOException, DiffParseException {
-        test(a);
-    }
-
-    @Test
-    public void testElif() throws IOException, DiffParseException {
-        test(elif);
-    }
-
-    @Test
-    public void testElse() throws IOException, DiffParseException {
-        test(elze);
     }
 }

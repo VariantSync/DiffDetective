@@ -10,7 +10,8 @@ import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.feature.CPPAnnotationParser;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -18,126 +19,42 @@ import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.stream.Stream;
 
 public class DiffTreeParserTest {
     private final static Path testDir = Constants.RESOURCE_DIR.resolve("diffs").resolve("parser");
+    private final static String testCaseSuffix = ".diff";
 
-    @Test
-    public void test01() throws IOException, DiffParseException {
-        testCase("01");
+    private static Stream<Path> findTestCases(Path dir) throws IOException {
+        return Files
+            .list(dir)
+            .filter(filename -> filename.getFileName().toString().endsWith(testCaseSuffix));
     }
 
-    @Test
-    public void test02() throws IOException, DiffParseException {
-        testCase("02");
+    public static Stream<Path> tests() throws IOException {
+        return findTestCases(testDir);
     }
 
-    @Test
-    public void test03() throws IOException, DiffParseException {
-        testCase("03");
+    public static Stream<Path> wontfixTests() throws IOException {
+        return findTestCases(testDir.resolve("wontfix"));
     }
 
-    @Test
-    public void test04() throws IOException, DiffParseException {
-        testCase("04");
+    @ParameterizedTest
+    @MethodSource("tests")
+    public void test(Path basename) throws IOException, DiffParseException {
+        testCase(basename);
     }
 
-    @Test
-    public void test05() throws IOException, DiffParseException  {
-        testCase("05");
+    @Disabled("WONTFIX")
+    @ParameterizedTest
+    @MethodSource("wontfixTests")
+    public void wontfixTest(Path testCase) throws IOException, DiffParseException {
+        testCase(testCase);
     }
 
-    @Test
-    public void test06() throws IOException, DiffParseException  {
-        testCase("06");
-    }
-
-    @Test
-    public void test07() throws IOException, DiffParseException  {
-        testCase("07");
-    }
-
-    @Test
-    public void test08() throws IOException, DiffParseException  {
-        testCase("08");
-    }
-
-    @Test
-    public void test09() throws IOException, DiffParseException  {
-        testCase("09");
-    }
-
-    @Test
-    public void test10() throws IOException, DiffParseException  {
-        testCase("10");
-    }
-
-    @Test
-    public void test11() throws IOException, DiffParseException  {
-        testCase("11");
-    }
-
-    @Test
-    public void test12() throws IOException, DiffParseException  {
-        testCase("12");
-    }
-
-    @Test
-    public void test13() throws IOException, DiffParseException  {
-        testCase("13");
-    }
-
-    @Test
-    public void test14() throws IOException, DiffParseException  {
-        testCase("14");
-    }
-
-    @Test
-    public void test15() throws IOException, DiffParseException  {
-        testCase("15");
-    }
-
-    @Test
-    public void test16() throws IOException, DiffParseException  {
-        testCase("16");
-    }
-
-    @Test
-    public void test17() throws IOException, DiffParseException  {
-        testCase("17");
-    }
-
-    @Test
-    public void test18() throws IOException, DiffParseException  {
-        testCase("18");
-    }
-
-    @Disabled("WONTFIX, would require comment parsing in DiffTreeParser")
-    @Test
-    public void test19() throws IOException, DiffParseException  {
-        testCase("19");
-    }
-
-    @Disabled("WONTFIX, would require comment parsing in DiffTreeParser")
-    @Test
-    public void test20() throws IOException, DiffParseException  {
-        testCase("20");
-    }
-
-    @Disabled("WONTFIX, would require comment parsing in DiffTreeParser")
-    @Test
-    public void test21() throws IOException, DiffParseException  {
-        testCase("21");
-    }
-
-    @Disabled("WONTFIX, would require comment parsing in DiffTreeParser")
-    @Test
-    public void test22() throws IOException, DiffParseException  {
-        testCase("22");
-    }
-
-    public void testCase(String basename) throws IOException, DiffParseException {
-        var testCasePath = testDir.resolve(basename + ".diff");
+    public void testCase(Path testCasePath) throws IOException, DiffParseException {
+        String filename = testCasePath.getFileName().toString();
+        String basename = filename.substring(0, filename.length() - testCaseSuffix.length());
         var actualPath = testDir.resolve(basename + "_actual.lg");
         var expectedPath = testDir.resolve(basename + "_expected.lg");
 
