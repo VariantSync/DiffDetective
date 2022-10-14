@@ -1,6 +1,7 @@
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.NoHeadException;
 import org.eclipse.jgit.revwalk.RevCommit;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.variantsync.diffdetective.datasets.ParseOptions.DiffStoragePolicy;
 import org.variantsync.diffdetective.datasets.Repository;
@@ -16,6 +17,7 @@ import java.nio.file.Paths;
 /**
  * Perform "git diff" on a git repository.
  */
+@Disabled
 public class PrintWorkingTreeDiff {
 	
 	@Test

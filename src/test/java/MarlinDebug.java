@@ -3,6 +3,7 @@ import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.prop4j.Node;
 import org.tinylog.Logger;
@@ -31,6 +32,7 @@ import java.nio.file.Paths;
 import java.util.List;
 
 @Deprecated
+@Disabled
 public class MarlinDebug {
     private record RepoInspection(
             List<String> suspiciousCommits,
