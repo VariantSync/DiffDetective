@@ -1,5 +1,4 @@
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.prop4j.And;
 import org.prop4j.Literal;
 import org.prop4j.Node;
@@ -12,6 +11,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Map;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.variantsync.diffdetective.util.fide.FormulaUtils.negate;
 
 public class PCTest {
@@ -63,13 +63,13 @@ public class PCTest {
                final ExpectedPC expectedPC = testCase.expectedResult.getOrDefault(text, null);
                if (expectedPC != null) {
                    Node pc = node.getBeforePresenceCondition();
-                   Assert.assertTrue(
-                           errorAt(text, "before", pc, expectedPC.before),
-                           SAT.equivalent(pc, expectedPC.before));
+                   assertTrue(
+                           SAT.equivalent(pc, expectedPC.before),
+                           errorAt(text, "before", pc, expectedPC.before));
                    pc = node.getAfterPresenceCondition();
-                   Assert.assertTrue(
-                           errorAt(text, "after", pc, expectedPC.after),
-                           SAT.equivalent(pc, expectedPC.after));
+                   assertTrue(
+                           SAT.equivalent(pc, expectedPC.after),
+                           errorAt(text, "after", pc, expectedPC.after));
                } else {
                    Logger.warn("No expected PC specified for node '{}'!", text);
                }

@@ -1,10 +1,11 @@
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.variantsync.diffdetective.diff.DiffLineNumber;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.functjonal.Pair;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -18,7 +19,7 @@ public class TestLineNumbers {
     private record TestCase(String filename, Map<Integer, Pair<DiffLineNumber, DiffLineNumber>> expectedLineNumbers) { }
     private List<TestCase> testCases;
 
-    @Before
+    @BeforeEach
     public void initTestCases() {
         // Testcases rely on stability of IDs
 
@@ -131,8 +132,8 @@ public class TestLineNumbers {
                 var fromTo = s.expectedLineNumbers.get(node.getID());
                 final DiffLineNumber from = fromTo.first();
                 final DiffLineNumber to = fromTo.second();
-                Assert.assertEquals(from, node.getFromLine());
-                Assert.assertEquals(to, node.getToLine());
+                assertEquals(from, node.getFromLine());
+                assertEquals(to, node.getToLine());
             });
         }
     }

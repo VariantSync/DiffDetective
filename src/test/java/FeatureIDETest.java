@@ -1,8 +1,11 @@
 import de.ovgu.featureide.fm.core.editing.NodeCreator;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.prop4j.*;
 import org.variantsync.diffdetective.analysis.logic.SAT;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -20,12 +23,12 @@ public class FeatureIDETest {
 
     @Test
     public void trueIsTaut() {
-        Assert.assertTrue(SAT.isTautology(createTrue()));
+        assertTrue(SAT.isTautology(createTrue()));
     }
 
     @Test
     public void falseIsContradiction() {
-        Assert.assertFalse(SAT.isSatisfiable(createFalse()));
+        assertFalse(SAT.isSatisfiable(createFalse()));
     }
 
     /**
@@ -36,7 +39,7 @@ public class FeatureIDETest {
         final Node tru = createTrue();
         final Node a = new Literal("A");
         final Node trueAndA = new And(tru, a);
-        Assert.assertTrue(SAT.equivalent(trueAndA, a));
+        assertTrue(SAT.equivalent(trueAndA, a));
     }
 
     /**
@@ -45,7 +48,7 @@ public class FeatureIDETest {
     @Test
     public void A_Equals_A() {
         final Node a = new Literal("A");
-        Assert.assertTrue(SAT.equivalent(a, a));
+        assertTrue(SAT.equivalent(a, a));
     }
 
     @Test
@@ -53,7 +56,7 @@ public class FeatureIDETest {
         final Node no = createFalse();
         final Node a = new Literal("A");
         final Node noOrA = new Or(no, a);
-        Assert.assertTrue(SAT.equivalent(noOrA, a));
+        assertTrue(SAT.equivalent(noOrA, a));
     }
 
     // The following three tests failed and where reported in Issue 1111 (https://github.com/FeatureIDE/FeatureIDE/issues/1111).
@@ -69,8 +72,8 @@ public class FeatureIDETest {
 
     @Test
     public void atomValuesEqual() {
-        Assert.assertEquals(createTrue(), new Literal(NodeCreator.varTrue));
-        Assert.assertEquals(createFalse(), new Literal(NodeCreator.varFalse));
+        assertEquals(createTrue(), new Literal(NodeCreator.varTrue));
+        assertEquals(createFalse(), new Literal(NodeCreator.varFalse));
     }
 
     @Test

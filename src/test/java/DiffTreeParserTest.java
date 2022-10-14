@@ -1,6 +1,3 @@
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
 import org.variantsync.diffdetective.diff.difftree.parse.DiffTreeParser;
 import org.variantsync.diffdetective.diff.difftree.serialize.LineGraphExporter;
@@ -12,6 +9,10 @@ import org.variantsync.diffdetective.diff.difftree.serialize.nodeformat.FullNode
 import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.feature.CPPAnnotationParser;
 import org.apache.commons.io.IOUtils;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.BufferedOutputStream;
 import java.io.IOException;
@@ -111,25 +112,25 @@ public class DiffTreeParserTest {
         testCase("18");
     }
 
-    @Ignore("WONTFIX, would require comment parsing in DiffTreeParser")
+    @Disabled("WONTFIX, would require comment parsing in DiffTreeParser")
     @Test
     public void test19() throws IOException, DiffParseException  {
         testCase("19");
     }
 
-    @Ignore("WONTFIX, would require comment parsing in DiffTreeParser")
+    @Disabled("WONTFIX, would require comment parsing in DiffTreeParser")
     @Test
     public void test20() throws IOException, DiffParseException  {
         testCase("20");
     }
 
-    @Ignore("WONTFIX, would require comment parsing in DiffTreeParser")
+    @Disabled("WONTFIX, would require comment parsing in DiffTreeParser")
     @Test
     public void test21() throws IOException, DiffParseException  {
         testCase("21");
     }
 
-    @Ignore("WONTFIX, would require comment parsing in DiffTreeParser")
+    @Disabled("WONTFIX, would require comment parsing in DiffTreeParser")
     @Test
     public void test22() throws IOException, DiffParseException  {
         testCase("22");
@@ -166,7 +167,7 @@ public class DiffTreeParserTest {
                 var visualizationPath = testDir.resolve(basename + ".tex");
                 new TikzExporter(new Format(new FullNodeFormat(), new DefaultEdgeLabelFormat()))
                     .exportFullLatexExample(diffTree, visualizationPath);
-                Assert.fail("The DiffTree in file " + testCasePath + " didn't parse correctly. "
+                fail("The DiffTree in file " + testCasePath + " didn't parse correctly. "
                     + "Expected the content of " + expectedPath + " but got the content of " + actualPath + ". "
                     + "Note: A visualisation is available at " + visualizationPath);
                 // Keep output files if the test failed

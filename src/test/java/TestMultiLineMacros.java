@@ -1,5 +1,4 @@
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.tinylog.Logger;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
 import org.variantsync.diffdetective.feature.CPPAnnotationParser;
@@ -14,6 +13,8 @@ import org.variantsync.diffdetective.diff.difftree.serialize.treeformat.CommitDi
 import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.util.IO;
 import org.variantsync.diffdetective.util.StringUtils;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -36,9 +37,8 @@ public class TestMultiLineMacros {
         try (var destination = IO.newBufferedOutputStream(resDir.resolve("gen").resolve(p.getFileName() + ".lg"))) {
             destination.write(("t # 1" + StringUtils.LINEBREAK).getBytes());
 
-
             final DiffTreeSerializeDebugData debugData = LineGraphExport.toLineGraphFormat(tree, exportOptions, destination);
-            Assert.assertNotNull(debugData);
+            assertNotNull(debugData);
             Logger.info("Parsed {} nodes of diff type NON.", debugData.numExportedNonNodes);
             Logger.info("Parsed {} nodes of diff type ADD.", debugData.numExportedAddNodes);
             Logger.info("Parsed {} nodes of diff type REM.", debugData.numExportedRemNodes);

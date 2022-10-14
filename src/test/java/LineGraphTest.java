@@ -1,7 +1,6 @@
 import org.apache.commons.io.IOUtils;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.tinylog.Logger;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
 import org.variantsync.diffdetective.diff.difftree.serialize.*;
@@ -9,6 +8,8 @@ import org.variantsync.diffdetective.diff.difftree.serialize.edgeformat.DefaultE
 import org.variantsync.diffdetective.diff.difftree.serialize.nodeformat.LabelOnlyDiffNodeFormat;
 import org.variantsync.diffdetective.diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
 import org.variantsync.diffdetective.util.IO;
+
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -33,7 +34,7 @@ public class LineGraphTest {
 
     private static List<Path> TEST_FILES;
 
-    @BeforeClass
+    @BeforeAll
     public static void init() throws IOException {
         TEST_FILES = Files.list(Paths.get("src/test/resources/line_graph")).toList();
     }
@@ -61,7 +62,7 @@ public class LineGraphTest {
                     var actualFile = Files.newBufferedReader(actualPath);
             ) {
                 if (!IOUtils.contentEqualsIgnoreEOL(expectedFile, actualFile)) {
-                    Assert.fail("The file " + testFile + " couldn't be exported or imported without modifications");
+                    fail("The file " + testFile + " couldn't be exported or imported without modifications");
                 } else {
                     // Only keep output file on errors
                     Files.delete(actualPath);

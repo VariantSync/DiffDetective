@@ -1,11 +1,11 @@
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.prop4j.*;
 import org.variantsync.diffdetective.util.fide.FixTrueFalse;
 
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.variantsync.diffdetective.util.fide.FixTrueFalse.False;
 import static org.variantsync.diffdetective.util.fide.FixTrueFalse.True;
 import static org.variantsync.diffdetective.util.fide.FormulaUtils.negate;
@@ -20,7 +20,7 @@ public class FixTrueFalseTest {
     private final static Literal C = new Literal("C");
     private final static Node SomeIrreducible = new And(A, new Implies(A, B));
 
-    @Before
+    @BeforeEach
     public void initTestCases() {
         testCases = List.of(
                 new TestCase(new And(True, A), A),
@@ -56,7 +56,7 @@ public class FixTrueFalseTest {
     @Test
     public void testAll() {
         for (TestCase testCase : testCases) {
-            Assert.assertEquals(FixTrueFalse.EliminateTrueAndFalse(testCase.formula), testCase.expectedResult);
+            assertEquals(FixTrueFalse.EliminateTrueAndFalse(testCase.formula), testCase.expectedResult);
         }
     }
 }
