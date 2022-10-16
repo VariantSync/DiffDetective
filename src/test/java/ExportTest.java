@@ -1,3 +1,4 @@
+import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
@@ -8,13 +9,17 @@ import org.variantsync.diffdetective.diff.difftree.serialize.nodeformat.LineNumb
 import org.variantsync.diffdetective.diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
 import org.variantsync.diffdetective.diff.difftree.serialize.Format;
 
+import static org.junit.jupiter.api.Assertions.fail;
+
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class ExportTest {
+    private final static Path RESOURCE_DIR = Path.of("src/test/resources/serialize");
+
     /**
      * Format used for the test export.
      */
@@ -48,17 +53,35 @@ public class ExportTest {
     @Test
     @EnabledIf("isGraphvizInstalled")
     public void export() throws IOException {
+        var testCasePath = RESOURCE_DIR.resolve("testcase.lg");
+        var actualPath = RESOURCE_DIR.resolve("actual.tex");
+        var expectedPath = RESOURCE_DIR.resolve("expected.tex");
+
         // Deserialize the test case.
-        var testFile = Path.of("src/test/resources/serialize/testcase.lg");
         DiffTree diffTree;
-        try (BufferedReader lineGraph = Files.newBufferedReader(testFile)) {
-            diffTree = LineGraphImport.fromLineGraph(lineGraph, testFile, importOptions).get(0);
+        try (BufferedReader lineGraph = Files.newBufferedReader(testCasePath)) {
+            diffTree = LineGraphImport.fromLineGraph(lineGraph, testCasePath, importOptions).get(0);
         }
 
         // Export the test case
-        var tikzOutput = new ByteArrayOutputStream();
-        new TikzExporter(format).exportDiffTree(diffTree, tikzOutput);
+        try (
+                var unbufferedOutput = Files.newOutputStream(actualPath);
+                var output = new BufferedOutputStream(unbufferedOutput)
+        ) {
+            new TikzExporter(format).exportDiffTree(diffTree, output);
+        }
 
-        TestUtils.assertEqualToFile(Path.of("src/test/resources/serialize/expected.tex"), tikzOutput.toString());
+        try (
+                var expectedFile = Files.newBufferedReader(expectedPath);
+                var actualFile = Files.newBufferedReader(actualPath);
+        ) {
+            if (!IOUtils.contentEqualsIgnoreEOL(expectedFile, actualFile)) {
+                fail("The DiffTree in file " + testCasePath + " didn't parse correctly. "
+                    + "Expected the content of " + expectedPath + " but got the content of " + actualPath + ". ");
+            } else {
+                // Keep output file for debugging on errors
+                Files.delete(actualPath);
+            }
+        }
     }
 }
