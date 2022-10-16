@@ -1,5 +1,5 @@
 import org.junit.jupiter.api.Test;
-import org.tinylog.Logger;
+import org.junit.jupiter.api.condition.EnabledIf;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
 import org.variantsync.diffdetective.diff.difftree.serialize.*;
 import org.variantsync.diffdetective.diff.difftree.serialize.edgeformat.DefaultEdgeLabelFormat;
@@ -35,7 +35,18 @@ public class ExportTest {
             new DefaultEdgeLabelFormat()
         );
 
+    public static boolean isGraphvizInstalled() throws InterruptedException {
+        try {
+            Process dotProcess = new ProcessBuilder("dot", "-V").start();
+            dotProcess.waitFor();
+            return true;
+        } catch (IOException e) {
+            return false;
+        }
+    }
+
     @Test
+    @EnabledIf("isGraphvizInstalled")
     public void export() throws IOException {
         // Deserialize the test case.
         var testFile = Path.of("src/test/resources/serialize/testcase.lg");
@@ -46,16 +57,8 @@ public class ExportTest {
 
         // Export the test case
         var tikzOutput = new ByteArrayOutputStream();
+        new TikzExporter(format).exportDiffTree(diffTree, tikzOutput);
 
-        try {
-            new TikzExporter(format).exportDiffTree(diffTree, tikzOutput);
-            TestUtils.assertEqualToFile(Path.of("src/test/resources/serialize/expected.tex"), tikzOutput.toString());
-        } catch (IOException e) {
-            if (e.getMessage().contains("Cannot run program")) {
-                Logger.warn("Missing programs! Did you install graphviz? Reason: " + e.getMessage());
-            } else {
-                throw e;
-            }
-        }
+        TestUtils.assertEqualToFile(Path.of("src/test/resources/serialize/expected.tex"), tikzOutput.toString());
     }
 }
