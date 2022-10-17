@@ -73,7 +73,7 @@ public class MiningTask extends CommitHistoryAnalysisTask {
                             continue;
                         }
 
-                        LineGraphExport.toLineGraphFormat(patch, exportOptions, lineGraphDestination, miningResult);
+                        miningResult.append(LineGraphExport.toLineGraphFormat(miningResult.repoName, patch, exportOptions, lineGraphDestination));
 
                         t.forAll(node -> {
                             if (node.isArtifact()) {

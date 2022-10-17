@@ -81,7 +81,7 @@ public final class LineGraphExport {
 
         for (final PatchDiff patchDiff : commitDiff.getPatchDiffs()) {
             try {
-                toLineGraphFormat(patchDiff, options, destination, result);
+                result.append(toLineGraphFormat(repoName, patchDiff, options, destination));
             } catch (Exception e) {
                 options.onError().accept(patchDiff, e);
                 break;
@@ -100,7 +100,9 @@ public final class LineGraphExport {
      * @param options Configuration options for the export, such as the format used for node and edge labels.
      * @param result where the number of exported trees and debug data is updated
      */
-    public static void toLineGraphFormat(final PatchDiff patch, final LineGraphExportOptions options, OutputStream destination, AnalysisResult result) throws IOException {
+    public static AnalysisResult toLineGraphFormat(final String repoName, final PatchDiff patch, final LineGraphExportOptions options, OutputStream destination) throws IOException {
+        final AnalysisResult result = new AnalysisResult(repoName);
+
         if (patch.isValid()) {
             //Logger.info("  Exporting DiffTree #{}", treeCounter);
 
@@ -113,6 +115,8 @@ public final class LineGraphExport {
         } else {
             Logger.debug("  Skipping invalid patch for file {} at commit {}", patch.getFileName(), patch.getCommitHash());
         }
+
+        return result;
     }
 
     /**
