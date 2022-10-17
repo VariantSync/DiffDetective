@@ -66,6 +66,9 @@ To execute the replication you can run the `execute` script corresponding to you
 > #### Linux/Mac (bash):
 > `./stop-execution.sh`
 
+You might see warnings or errors reported from SLF4J like `Failed to load class "org.slf4j.impl.StaticLoggerBinder"` which you can safely ignore.
+Further troubleshooting advice can be found at the bottom of this file.
+
 The results of the verification will be stored in the [results](results) directory.
 
 ### Expected Output of the Verification
@@ -149,3 +152,8 @@ The input file must have the same format as the other dataset files (i.e., repos
 
 `Fix:` If there is a _results_ directory, delete it with elevated permission (e.g., `sudo rm -r results`). 
 Then, create a new _results_ directory without elevated permissions, or execute `git restore .` to restore the deleted directory.
+
+### Failed to load class "org.slf4j.impl.StaticLoggerBinder"
+`Problem:` An operation within the initialization phase of the logger library we use (tinylog) failed.
+
+`Fix:` Please ignore this warning. Tinylog will fall back onto a default implementation (`Defaulting to no-operation (NOP) logger implementation`) and logging will work as expected.

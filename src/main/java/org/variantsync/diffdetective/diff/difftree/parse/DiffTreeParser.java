@@ -55,7 +55,7 @@ public class DiffTreeParser {
      *
      * @param fullDiff                  The full diff of a patch obtained from a buffered reader.
      * @param collapseMultipleCodeLines Whether multiple consecutive code lines with the same diff type
-     *                                  should be collapsed into a single code node.
+     *                                  should be collapsed into a single artifact node.
      * @param ignoreEmptyLines          Whether empty lines (no matter if they are added removed
      *                                  or remained unchanged) should be ignored.
      * @param nodeParser                The parser to parse individual lines in the diff to DiffNodes.
@@ -74,7 +74,7 @@ public class DiffTreeParser {
         final DiffLineNumber lineNo = new DiffLineNumber(0, 0, 0);
         final DiffLineNumber lastLineNo = DiffLineNumber.Copy(lineNo);
 
-        DiffNode lastCode = null;
+        DiffNode lastArtifact = null;
         final AtomicReference<DiffResult<DiffTree>> error = new AtomicReference<>();
         final BiConsumer<DiffError, String> errorPropagation = (errType, message) -> {
             if (error.get() == null) {
@@ -115,8 +115,8 @@ public class DiffTreeParser {
 
             switch (isMLMacro.type()) {
                 case Success: {
-                    if (lastCode != null) {
-                        lastCode = endCodeBlock(lastCode, lastLineNo);
+                    if (lastArtifact != null) {
+                        lastArtifact = endCodeBlock(lastArtifact, lastLineNo);
                     }
                     // This line belongs to a multiline macro and was handled, so go to the next line.
                     continue;
@@ -129,34 +129,11 @@ public class DiffTreeParser {
                 case NotMyDuty: break;
             }
 
-            // This gets the code type and diff type of the current line and creates a node
-            // Note that the node is not yet added to the diff tree.
-            final DiffNode newNode;
-            try {
-                newNode = nodeParser.fromDiffLine(currentLine);
-            } catch (IllFormedAnnotationException e) {
-                return DiffResult.Failure(e);
-            }
-
-            // collapse multiple code lines
-            if (lastCode != null) {
-                if (collapseMultipleCodeLines && newNode.isCode() && lastCode.diffType.equals(newNode.diffType)) {
-                    lastCode.addLines(newNode.getLines());
-                    continue;
-                } else {
-                    lastCode = endCodeBlock(lastCode, lastLineNo);
+            if ("endif".equals(MultiLineMacroParser.conditionalMacroName(currentLine))) {
+                if (lastArtifact != null) {
+                    lastArtifact = endCodeBlock(lastArtifact, lastLineNo);
                 }
-            }
 
-            newNode.getFromLine().set(lineNo);
-            if (!newNode.isEndif()) {
-                newNode.addBelow(beforeStack.peek(), afterStack.peek());
-                nodes.add(newNode);
-            }
-
-            if (newNode.isCode()) {
-                lastCode = newNode;
-            } else if (newNode.isEndif()) {
                 final String currentLineFinal = currentLine;
                 diffType.matchBeforeAfter(beforeStack, afterStack,
                         stack -> {
@@ -174,12 +151,39 @@ public class DiffTreeParser {
                         });
                 if (error.get() != null) { return error.get(); }
             } else {
-                // newNode is if, elif or else
-                // push the node to the relevant stacks
-                diffType.matchBeforeAfter(beforeStack, afterStack, stack ->
-                        pushNodeToStack(newNode, stack, lastLineNo).onError(errorPropagation)
-                );
-                if (error.get() != null) { return error.get(); }
+                // This gets the node type and diff type of the current line and creates a node
+                // Note that the node is not yet added to the diff tree.
+                final DiffNode newNode;
+                try {
+                    newNode = nodeParser.fromDiffLine(currentLine);
+                } catch (IllFormedAnnotationException e) {
+                    return DiffResult.Failure(e);
+                }
+
+                // collapse multiple code lines
+                if (lastArtifact != null) {
+                    if (collapseMultipleCodeLines && newNode.isArtifact() && lastArtifact.diffType.equals(newNode.diffType)) {
+                        lastArtifact.addLines(newNode.getLines());
+                        continue;
+                    } else {
+                        lastArtifact = endCodeBlock(lastArtifact, lastLineNo);
+                    }
+                }
+
+                newNode.getFromLine().set(lineNo);
+                newNode.addBelow(beforeStack.peek(), afterStack.peek());
+                nodes.add(newNode);
+
+                if (newNode.isArtifact()) {
+                    lastArtifact = newNode;
+                } else {
+                    // newNode is if, elif or else
+                    // push the node to the relevant stacks
+                    diffType.matchBeforeAfter(beforeStack, afterStack, stack ->
+                            pushNodeToStack(newNode, stack, lastLineNo).onError(errorPropagation)
+                    );
+                    if (error.get() != null) { return error.get(); }
+                }
             }
         }
 
@@ -187,11 +191,9 @@ public class DiffTreeParser {
             return DiffResult.Failure(DiffError.NOT_ALL_ANNOTATIONS_CLOSED);
         }
 
-        if (lastCode != null) {
-            lastCode = endCodeBlock(lastCode, lineNo);
+        if (lastArtifact != null) {
+            lastArtifact = endCodeBlock(lastArtifact, lineNo);
         }
-
-        endCodeBlock(root, lineNo);
 
         // Invalidate line numbers according to edits.
         // E.g. if a node was added, it had no line number before the edit.
@@ -274,7 +276,7 @@ public class DiffTreeParser {
         do {
             // Don't update line numbers of popped nodes here as this already happened.
             popped = stack.pop();
-        } while (!popped.isIf() && !popped.isRoot());
+        } while (!popped.isIf());
         return popped;
     }
 

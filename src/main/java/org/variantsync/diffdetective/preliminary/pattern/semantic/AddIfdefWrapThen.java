@@ -30,7 +30,7 @@ class AddIfdefWrapThen extends SemanticPattern {
                 if(child.isElif()){
                     return Optional.empty();
                 }
-                if(child.isCode() && child.isNon()){
+                if(child.isArtifact() && child.isNon()){
                     nonCodeInIf = true;
                 }
                 if(child.isElse() && child.isAdd()){
@@ -44,7 +44,7 @@ class AddIfdefWrapThen extends SemanticPattern {
 
             boolean addedCodeInElse = false;
             for(DiffNode child : elseNode.getAllChildren()){
-                if(child.isCode() && child.isAdd()){
+                if(child.isArtifact() && child.isAdd()){
                     addedCodeInElse = true;
                 }
             }

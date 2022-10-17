@@ -5,7 +5,7 @@ None
 ## Software Requirements
 
 We do not require a certain operating system or prepared environment.
-We tested our setup on Windows 10, WSL2, and Manjaro.
+The setup is tested on Windows 10, WSL2, Manjaro, Ubuntu, and MacOS Monterey.
 
 To run DiffDetective, JDK16, and Maven are required.
 Dependencies to other packages are documented in the maven build file ([pom.xml](pom.xml)) and are handled automatically by Maven.
