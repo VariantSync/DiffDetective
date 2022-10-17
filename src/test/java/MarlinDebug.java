@@ -29,6 +29,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
+@Deprecated
 public class MarlinDebug {
     private record RepoInspection(
             List<String> suspiciousCommits,
