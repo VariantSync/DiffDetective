@@ -62,10 +62,6 @@ public class CPPDiffLineFormulaExtractor {
         // remove whitespace
         fm = fm.replaceAll("\\s", "");
 
-        if (fm.isEmpty()) {
-            throw couldNotExtractFormula.get();
-        }
-
         // remove defined()
         fm = DEFINED_PATTERN.matcher(fm).replaceAll("$1");
         fm = fm.replaceAll("defined ", " ");
@@ -74,6 +70,10 @@ public class CPPDiffLineFormulaExtractor {
         ////// abstract arithmetics
         fm = BooleanAbstraction.arithmetics(fm);
         fm = BooleanAbstraction.functionCalls(fm);
+
+        if (fm.isEmpty()) {
+            throw couldNotExtractFormula.get();
+        }
 
         // negate for ifndef
         if (line.contains("ifndef")) {
