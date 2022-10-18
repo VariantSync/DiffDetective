@@ -1,6 +1,6 @@
 package org.variantsync.diffdetective.preliminary.pattern;
 
-import org.variantsync.diffdetective.pattern.EditPattern;
+import org.variantsync.diffdetective.preliminary.pattern.Pattern;
 import org.variantsync.diffdetective.preliminary.analysis.data.PatternMatch;
 import org.variantsync.diffdetective.preliminary.evaluation.FeatureContext;
 
@@ -8,7 +8,7 @@ import java.util.Optional;
 
 @Deprecated
 public interface FeatureContextReverseEngineering<E> {
-    EditPattern<E> getPattern();
+    Pattern<E> getPattern();
     /**
      * Creates a PatternMatch object for the given element.
      * Assumes {@code matches(codeNode) == true}.

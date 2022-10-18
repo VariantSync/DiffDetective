@@ -31,7 +31,7 @@ class AddIfdefElif extends SemanticPattern {
             boolean addedCodeInIf = false;
             DiffNode elifNode = null;
             for(DiffNode child : annotationNode.getAllChildren()){
-                if(child.isCode() && child.isAdd()){
+                if(child.isArtifact() && child.isAdd()){
                     addedCodeInIf = true;
                 }
                 if(child.isElif() && child.isAdd()){
@@ -60,7 +60,7 @@ class AddIfdefElif extends SemanticPattern {
         DiffNode nextNode = null;
 
         for(DiffNode child : elifNode.getAllChildren()){
-            if(child.isCode() && child.isAdd()){
+            if(child.isArtifact() && child.isAdd()){
                 addedCode = true;
             }
             if((child.isElif() || child.isElse()) && child.isAdd()){

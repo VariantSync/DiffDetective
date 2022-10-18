@@ -19,7 +19,7 @@ import static org.variantsync.diffdetective.util.fide.FormulaUtils.negate;
  * A DiffNode represents a single node within a variation tree diff (according to our ESEC/FSE'22 paper), but is specialized
  * to the target domain of preprocessor-based software product lines.
  * Thus, opposed to the generic mathematical model of variation tree diffs, a DiffNode always stores lines of text, line numbers, and child ordering information as its label.
- * Each DiffNode may be edited according to its {@link DiffType} and represents a source code element according to its {@link CodeType}.
+ * Each DiffNode may be edited according to its {@link DiffType} and represents a source code element according to its {@link NodeType}.
  * DiffNode's store parent and child information to build a graph.
  * @author Paul Bittner, Sören Viegener, Benjamin Moosherr
  */
@@ -33,10 +33,10 @@ public class DiffNode {
     public final DiffType diffType;
 
     /**
-     * The code type of this node, which determines the type of the represented
+     * The node type of this node, which determines the type of the represented
      * element in the diff (e.g., mapping or artifact).
      */
-    public final CodeType codeType;
+    public final NodeType nodeType;
 
     private boolean isMultilineMacro = false;
 
@@ -76,30 +76,30 @@ public class DiffNode {
     /**
      * Creates a DiffNode with the given parameters.
      * @param diffType The type of change made to this node.
-     * @param codeType The type of this node (i.e., mapping or artifact).
+     * @param nodeType The type of this node (i.e., mapping or artifact).
      * @param fromLines The starting line number of the corresponding text.
      * @param toLines The ending line number of the corresponding text.
-     * @param featureMapping The formula stored in this node. Should be null for code (/artifact) nodes.
+     * @param featureMapping The formula stored in this node. Should be null for artifact nodes.
      * @param label A text label containing information to identify the node (such as the corresponding source code).
      */
-    public DiffNode(DiffType diffType, CodeType codeType,
+    public DiffNode(DiffType diffType, NodeType nodeType,
                     DiffLineNumber fromLines, DiffLineNumber toLines,
                     Node featureMapping, String label) {
-        this(diffType, codeType, fromLines, toLines, featureMapping,
+        this(diffType, nodeType, fromLines, toLines, featureMapping,
                 new ArrayList<String>(Arrays.asList(StringUtils.LINEBREAK_REGEX.split(label, -1))));
     }
 
     /**
-     * The same as {@link DiffNode#DiffNode(DiffType, CodeType, DiffLineNumber, DiffLineNumber, Node, String)}
+     * The same as {@link DiffNode#DiffNode(DiffType, NodeType, DiffLineNumber, DiffLineNumber, Node, String)}
      * but with the label separated into different lines of text instead of as a single String with newlines.
      */
-    public DiffNode(DiffType diffType, CodeType codeType,
+    public DiffNode(DiffType diffType, NodeType nodeType,
                     DiffLineNumber fromLines, DiffLineNumber toLines,
                     Node featureMapping, List<String> lines) {
         this.childOrder = new ArrayList<>();
 
         this.diffType = diffType;
-        this.codeType = codeType;
+        this.nodeType = nodeType;
         this.from.set(fromLines);
         this.to.set(toLines);
         this.featureMapping = featureMapping;
@@ -113,8 +113,8 @@ public class DiffNode {
     public static DiffNode createRoot() {
         return new DiffNode(
                 DiffType.NON,
-                CodeType.ROOT,
-                new DiffLineNumber(1, 1, 1),
+                NodeType.IF,
+                DiffLineNumber.Invalid(),
                 DiffLineNumber.Invalid(),
                 FixTrueFalse.True,
                 new ArrayList<>()
@@ -123,19 +123,19 @@ public class DiffNode {
 
     /**
      * Creates an artifact node with the given parameters.
-     * For parameter descriptions, see {@link DiffNode#DiffNode(DiffType, CodeType, DiffLineNumber, DiffLineNumber, Node, String)}.
+     * For parameter descriptions, see {@link DiffNode#DiffNode(DiffType, NodeType, DiffLineNumber, DiffLineNumber, Node, String)}.
      * The <code>code</code> parameter will be set as the node's label.
      */
-    public static DiffNode createCode(DiffType diffType, DiffLineNumber fromLines, DiffLineNumber toLines, String code) {
-        return new DiffNode(diffType, CodeType.CODE, fromLines, toLines, null, code);
+    public static DiffNode createArtifact(DiffType diffType, DiffLineNumber fromLines, DiffLineNumber toLines, String code) {
+        return new DiffNode(diffType, NodeType.ARTIFACT, fromLines, toLines, null, code);
     }
 
     /**
-     * The same as {@link DiffNode#createCode(DiffType, DiffLineNumber, DiffLineNumber, String)} but with the code for the label
+     * The same as {@link DiffNode#createArtifact(DiffType, DiffLineNumber, DiffLineNumber, String)} but with the code for the label
      * given as a list of individual lines instead of a single String with linebreaks to identify newlines.
      */
-    public static DiffNode createCode(DiffType diffType, DiffLineNumber fromLines, DiffLineNumber toLines, List<String> lines) {
-        return new DiffNode(diffType, CodeType.CODE, fromLines, toLines, null, lines);
+    public static DiffNode createArtifact(DiffType diffType, DiffLineNumber fromLines, DiffLineNumber toLines, List<String> lines) {
+        return new DiffNode(diffType, NodeType.ARTIFACT, fromLines, toLines, null, lines);
     }
 
     /**
@@ -366,12 +366,12 @@ public class DiffNode {
     }
 
     private void dropBeforeChild(final DiffNode child) {
-        assert child.beforeParent == this;
+        Assert.assertTrue(child.beforeParent == this);
         child.beforeParent = null;
     }
 
     private void dropAfterChild(final DiffNode child) {
-        assert child.afterParent == this;
+        Assert.assertTrue(child.afterParent == this);
         child.afterParent = null;
     }
 
@@ -654,9 +654,9 @@ public class DiffNode {
 
     /**
      * Returns the formula that is stored in this node.
-     * The formula is null for artifact nodes (i.e., {@link CodeType#CODE}).
+     * The formula is null for artifact nodes (i.e., {@link NodeType#ARTIFACT}).
      * The formula is not null for mapping nodes
-     * @see CodeType#isMacro
+     * @see NodeType#isAnnotation
      */
     public Node getDirectFeatureMapping() {
         return featureMapping;
@@ -694,9 +694,9 @@ public class DiffNode {
 
     /**
      * Returns the full feature mapping formula of this node.
-     * The feature mapping of an {@link CodeType#IF} node is its {@link DiffNode#getDirectFeatureMapping direct feature mapping}.
-     * The feature mapping of {@link CodeType#ELSE} and {@link CodeType#ELIF} nodes is determined by all formulas in the respective if-elif-else chain.
-     * The feature mapping of an {@link CodeType#CODE artifact} node is the feature mapping of its parent.
+     * The feature mapping of an {@link NodeType#IF} node is its {@link DiffNode#getDirectFeatureMapping direct feature mapping}.
+     * The feature mapping of {@link NodeType#ELSE} and {@link NodeType#ELIF} nodes is determined by all formulas in the respective if-elif-else chain.
+     * The feature mapping of an {@link NodeType#ARTIFACT artifact} node is the feature mapping of its parent.
      * See Equation (1) in our paper (+ its extension to time for variation tree diffs described in Section 3.1).
      * @param parentOf Function that returns the parent of a node.
      *                 This function decides whether the before or after parent should be visited.
@@ -720,15 +720,15 @@ public class DiffNode {
                 if (ancestor.isElif()) {
                     and.add(negate(ancestor.getDirectFeatureMapping()));
                 } else {
-                    throw new RuntimeException("Expected If or Elif above Else or Elif but got " + ancestor.codeType + " from " + ancestor);
-                    // Assert.assertTrue(ancestor.isCode());
+                    throw new RuntimeException("Expected If or Elif above Else or Elif but got " + ancestor.nodeType + " from " + ancestor);
+                    // Assert.assertTrue(ancestor.isArtifact());
                 }
                 ancestor = parentOf.apply(ancestor);
             }
             and.add(negate(ancestor.getDirectFeatureMapping()));
 
             return and;
-        } else if (isCode()) {
+        } else if (isArtifact()) {
             return parent.getFeatureMappingClauses(parentOf);
         }
 
@@ -748,9 +748,9 @@ public class DiffNode {
 
     /**
      * Returns the full feature mapping formula of this node before the edit.
-     * The feature mapping of an {@link CodeType#IF} node is its {@link DiffNode#getDirectFeatureMapping direct feature mapping}.
-     * The feature mapping of {@link CodeType#ELSE} and {@link CodeType#ELIF} nodes is determined by all formulas in the respective if-elif-else chain.
-     * The feature mapping of an {@link CodeType#CODE artifact} node is the feature mapping of its parent.
+     * The feature mapping of an {@link NodeType#IF} node is its {@link DiffNode#getDirectFeatureMapping direct feature mapping}.
+     * The feature mapping of {@link NodeType#ELSE} and {@link NodeType#ELIF} nodes is determined by all formulas in the respective if-elif-else chain.
+     * The feature mapping of an {@link NodeType#ARTIFACT artifact} node is the feature mapping of its parent.
      * See Equation (1) in our paper (+ its extension to time for variation tree diffs described in Section 3.1).
      * @return The feature mapping of this node for the given parent edges.
      */
@@ -760,9 +760,9 @@ public class DiffNode {
 
     /**
      * Returns the full feature mapping formula of this node after the edit.
-     * The feature mapping of an {@link CodeType#IF} node is its {@link DiffNode#getDirectFeatureMapping direct feature mapping}.
-     * The feature mapping of {@link CodeType#ELSE} and {@link CodeType#ELIF} nodes is determined by all formulas in the respective if-elif-else chain.
-     * The feature mapping of an {@link CodeType#CODE artifact} node is the feature mapping of its parent.
+     * The feature mapping of an {@link NodeType#IF} node is its {@link DiffNode#getDirectFeatureMapping direct feature mapping}.
+     * The feature mapping of {@link NodeType#ELSE} and {@link NodeType#ELIF} nodes is determined by all formulas in the respective if-elif-else chain.
+     * The feature mapping of an {@link NodeType#ARTIFACT artifact} node is the feature mapping of its parent.
      * See Equation (1) in our paper (+ its extension to time for variation tree diffs described in Section 3.1).
      * @return The feature mapping of this node for the given parent edges.
      */
@@ -810,7 +810,7 @@ public class DiffNode {
             }
 
             return clauses;
-        } else if (isCode()) {
+        } else if (isArtifact()) {
             return parent.getPresenceCondition(parentOf);
         }
 
@@ -923,58 +923,56 @@ public class DiffNode {
     }
 
     /**
-     * Returns true if this node represents an ELIF macro.
-     * @see CodeType#ELIF
+      * Returns the diff type of this node.
+     */
+    public DiffType getDiffType() {
+        return this.diffType;
+    }
+
+    /**
+     * Returns true if this node represents an ELIF annotation.
+     * @see NodeType#ELIF
      */
     public boolean isElif() {
-        return this.codeType.equals(CodeType.ELIF);
+        return this.nodeType.equals(NodeType.ELIF);
     }
 
     /**
      * Returns true if this node represents a conditional annotation.
-     * @see CodeType#IF
+     * @see NodeType#IF
      */
     public boolean isIf() {
-        return this.codeType.equals(CodeType.IF);
+        return this.nodeType.equals(NodeType.IF);
     }
 
     /**
      * Returns true if this node is an artifact node.
-     * @see CodeType#CODE
+     * @see NodeType#ARTIFACT
      */
-    public boolean isCode() {
-        return this.codeType.equals(CodeType.CODE);
+    public boolean isArtifact() {
+        return this.nodeType.equals(NodeType.ARTIFACT);
     }
 
     /**
-     * Returns true if this node represents the end of an annotation block.
-     * Such a node should not be part of any {@link DiffTree}.
-     * @see CodeType#ENDIF
-     */
-    public boolean isEndif() {
-        return this.codeType.equals(CodeType.ENDIF);
-    }
-
-    /**
-     * Returns true if this node represents an ELSE macro.
-     * @see CodeType#ELSE
+     * Returns true if this node represents an ELSE annotation.
+     * @see NodeType#ELSE
      */
     public boolean isElse() {
-        return this.codeType.equals(CodeType.ELSE);
+        return this.nodeType.equals(NodeType.ELSE);
     }
 
     /**
-     * Returns true if this node is a root node (i.e., it has {@link CodeType#ROOT}.
+     * Returns true if this node is a root node (has no parents).
      */
     public boolean isRoot() {
-        return this.codeType.equals(CodeType.ROOT);
+        return getBeforeParent() == null && getAfterParent() == null;
     }
 
     /**
-     * Returns {@link CodeType#isMacro()} for this node's {@link DiffNode#codeType}.
+     * Returns {@link NodeType#isAnnotation()} for this node's {@link DiffNode#nodeType}.
      */
-    public boolean isMacro() {
-        return this.codeType.isMacro();
+    public boolean isAnnotation() {
+        return this.nodeType.isAnnotation();
     }
 
     /**
@@ -987,6 +985,7 @@ public class DiffNode {
      * {@code 2^26}, this id will no longer be unique.
      */
     public int getID() {
+        // Add one to ensure invalid (negative) line numbers don't cause issues.
         int lineNumber = 1 + from.inDiff;
         Assert.assertTrue((lineNumber << 2*ID_OFFSET) >> 2*ID_OFFSET == lineNumber);
 
@@ -995,13 +994,13 @@ public class DiffNode {
         id <<= ID_OFFSET;
         id += diffType.ordinal();
         id <<= ID_OFFSET;
-        id += codeType.ordinal();
+        id += nodeType.ordinal();
         return id;
     }
 
     /**
      * Reconstructs a node from the given id and sets the given label.
-     * An id uniquely determines a node's {@link DiffNode#codeType}, {@link DiffNode#diffType}, and {@link DiffLineNumber#inDiff line number in the diff}.
+     * An id uniquely determines a node's {@link DiffNode#nodeType}, {@link DiffNode#diffType}, and {@link DiffLineNumber#inDiff line number in the diff}.
      * The almost-inverse function is {@link DiffNode#getID()} but the conversion is not lossless.
      * @param id The id from which to reconstruct the node.
      * @param label The label the node should have.
@@ -1010,13 +1009,13 @@ public class DiffNode {
     public static DiffNode fromID(final int id, String label) {
         final int lowestBitsMask = (1 << ID_OFFSET) - 1;
 
-        final int codeTypeOrdinal = id & lowestBitsMask;
+        final int nodeTypeOrdinal = id & lowestBitsMask;
         final int diffTypeOrdinal = (id >> ID_OFFSET) & lowestBitsMask;
         final int fromInDiff      = (id >> (2*ID_OFFSET)) - 1;
 
         return new DiffNode(
                 DiffType.values()[diffTypeOrdinal],
-                CodeType.values()[codeTypeOrdinal],
+                NodeType.values()[nodeTypeOrdinal],
                 new DiffLineNumber(fromInDiff, DiffLineNumber.InvalidLineNumber, DiffLineNumber.InvalidLineNumber),
                 DiffLineNumber.Invalid(),
                 null,
@@ -1110,9 +1109,9 @@ public class DiffNode {
         }
 
         // Add endif after macro
-        if (isMacro()) {
+        if (isAnnotation() && !isRoot()) {
             diff
-                    .append(toTextDiffLine(this.diffType, List.of(CodeType.ENDIF.asMacroText())))
+                    .append(toTextDiffLine(this.diffType, List.of("#endif")))
                     .append(StringUtils.LINEBREAK);
         }
 
@@ -1122,12 +1121,12 @@ public class DiffNode {
     @Override
     public String toString() {
         String s;
-        if (isCode()) {
-            s = String.format("%s_%s from %d to %d", diffType, codeType, from.inDiff, to.inDiff);
+        if (isArtifact()) {
+            s = String.format("%s_%s from %d to %d", diffType, nodeType, from.inDiff, to.inDiff);
         } else if (isRoot()) {
             s = "ROOT";
         } else {
-            s = String.format("%s_%s from %d to %d with \"%s\"", diffType, codeType,
+            s = String.format("%s_%s from %d to %d with \"%s\"", diffType, nodeType,
                     from.inDiff, to.inDiff, featureMapping);
         }
         return s;
@@ -1138,7 +1137,7 @@ public class DiffNode {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         DiffNode diffNode = (DiffNode) o;
-        return isMultilineMacro == diffNode.isMultilineMacro && diffType == diffNode.diffType && codeType == diffNode.codeType && from.equals(diffNode.from) && to.equals(diffNode.to) && Objects.equals(featureMapping, diffNode.featureMapping) && lines.equals(diffNode.lines);
+        return isMultilineMacro == diffNode.isMultilineMacro && diffType == diffNode.diffType && nodeType == diffNode.nodeType && from.equals(diffNode.from) && to.equals(diffNode.to) && Objects.equals(featureMapping, diffNode.featureMapping) && lines.equals(diffNode.lines);
     }
 
     /**
@@ -1151,6 +1150,6 @@ public class DiffNode {
      */
     @Override
     public int hashCode() {
-        return Objects.hash(diffType, codeType, isMultilineMacro, from, to, featureMapping, lines);
+        return Objects.hash(diffType, nodeType, isMultilineMacro, from, to, featureMapping, lines);
     }
 }

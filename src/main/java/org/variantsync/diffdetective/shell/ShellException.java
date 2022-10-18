@@ -21,7 +21,7 @@ public class ShellException extends Exception {
 
     /**
      * Constructs a {@code ShellException} on command failures indicated by an exit code.
-     * If possible both {@code stdout} and {@code stderr} should be provided in @{code output}.
+     * If possible both {@code stdout} and {@code stderr} should be provided in {@code output}.
      */
     public ShellException(List<String> output) {
         super(convert(output));

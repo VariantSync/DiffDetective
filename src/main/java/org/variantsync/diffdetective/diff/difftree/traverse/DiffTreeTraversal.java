@@ -3,7 +3,8 @@ package org.variantsync.diffdetective.diff.difftree.traverse;
 import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
 
-import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.Consumer;
 
 /**
@@ -21,12 +22,12 @@ import java.util.function.Consumer;
  * @author Paul Bittner
  */
 public class DiffTreeTraversal {
-    private final HashMap<Integer, Boolean> visited;
+    private final Set<Integer> visited;
     private final DiffTreeVisitor visitor;
 
     private DiffTreeTraversal(final DiffTreeVisitor visitor) {
         this.visitor = visitor;
-        this.visited = new HashMap<>();
+        this.visited = new HashSet<>();
     }
 
     /**
@@ -84,12 +85,7 @@ public class DiffTreeTraversal {
      * @return True if the node was unvisited and is now marked visited.
      *         False if the node was already marked visited.
      */
-    public boolean markAsVisited(final DiffNode node) {
-        final Integer id = node.getID();
-        if (!visited.containsKey(id)) {
-            visited.put(id, true);
-            return true;
-        }
-        return false;
+    private boolean markAsVisited(final DiffNode node) {
+        return visited.add(node.getID());
     }
 }
