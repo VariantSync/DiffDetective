@@ -17,6 +17,8 @@ public class BooleanAbstraction {
 
     /** Abstraction value for equality checks <code>==</code>. */
     public static final String EQ =  "__EQ__";
+    /** Abstraction value for inequality checks <code>!=</code>. */
+    public static final String NEQ =  "__NEQ__";
     /** Abstraction value for greater-equals checks <code>&gt;=</code>. */
     public static final String GEQ = "__GEQ__";
     /** Abstraction value for smaller-equals checks <code>&lt;=</code>. */
@@ -25,7 +27,7 @@ public class BooleanAbstraction {
     public static final String GT = "__GT__";
     /** Abstraction value for smaller checks <code>&lt;</code>. */
     public static final String LT = "__LT__";
-    /** Abstraction value for substractions <code>-</code>. */
+    /** Abstraction value for subtractions <code>-</code>. */
     public static final String SUB = "__SUB__";
     /** Abstraction value for additions <code>+</code>. */
     public static final String ADD = "__ADD__";
@@ -35,6 +37,22 @@ public class BooleanAbstraction {
     public static final String DIV = "__DIV__";
     /** Abstraction value for modulo <code>%</code>. */
     public static final String MOD = "__MOD__";
+    /** Abstraction value for bitwise left shift <code>&lt;&lt;</code>. */
+    public static final String LSHIFT = "__LSHIFT__";
+    /** Abstraction value for bitwise right shift <code>&gt;&gt;</code>. */
+    public static final String RSHIFT = "__RSHIFT__";
+    /** Abstraction value for bitwise not <code>~</code>. */
+    public static final String NOT = "__NOT__";
+    /** Abstraction value for bitwise and <code>&amp;</code>. */
+    public static final String AND = "__AND__";
+    /** Abstraction value for bitwise or <code>|</code>. */
+    public static final String OR = "__OR__";
+    /** Abstraction value for bitwise xor <code>^</code>. */
+    public static final String XOR = "__XOR__";
+    /** Abstraction value for the condition of the ternary operator <code>?</code>. */
+    public static final String THEN = "__THEN__";
+    /** Abstraction value for the alternative of the ternary operator <code>:</code>. */
+    public static final String ELSE = "__ELSE__";
     /** Abstraction value for opening brackets <code>(</code>. */
     public static final String BRACKET_L = "__LB__";
     /** Abstraction value for clsong brackets <code>)</code>. */
@@ -60,6 +78,7 @@ public class BooleanAbstraction {
 
     private static final List<Replacement> ARITHMETICS = List.of(
         new Replacement("==", EQ),
+        new Replacement("!=", NEQ),
         new Replacement(">=", GEQ),
         new Replacement("<=", LEQ),
         new Replacement(">", GT),
@@ -68,7 +87,15 @@ public class BooleanAbstraction {
         new Replacement("-", SUB),
         new Replacement("*", MUL),
         new Replacement("/", DIV),
-        new Replacement("%", MOD)
+        new Replacement("%", MOD),
+        new Replacement("<<", LSHIFT),
+        new Replacement(">>", RSHIFT),
+        new Replacement("~", NOT),
+        new Replacement("&", AND),
+        new Replacement("^", XOR),
+        new Replacement("|", OR),
+        new Replacement("?", THEN),
+        new Replacement(":", ELSE)
     );
 
     private static final Pattern COMMA = Pattern.compile(",");
