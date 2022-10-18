@@ -69,7 +69,7 @@ public class CPPDiffLineFormulaExtractor {
 
         ////// abstract arithmetics
         fm = BooleanAbstraction.arithmetics(fm);
-        fm = BooleanAbstraction.functionCalls(fm);
+        fm = BooleanAbstraction.parentheses(fm);
 
         if (fm.isEmpty()) {
             throw couldNotExtractFormula.get();

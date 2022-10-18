@@ -100,12 +100,8 @@ public class BooleanAbstraction {
 
     private static final Pattern COMMA = Pattern.compile(",");
     private static final String COMMA_REPLACEMENT = "__";
-
-    private static final Pattern BRACKETS = Pattern.compile("\\((\\w*)\\)");
-    private static final String BRACKETS_REPLACEMENT = BRACKET_L + "$1" + BRACKET_R;
-
-    private static final Pattern CALL = Pattern.compile("(\\w+)\\((\\w*)\\)");
-    private static final String CALL_REPLACEMENT = "$1__$2";
+    private static final Pattern CALL = Pattern.compile("\\((\\w*)\\)");
+    private static final String CALL_REPLACEMENT = BRACKET_L + "$1" + BRACKET_R;
 
     private static String abstractAll(String formula, final List<Replacement> replacements) {
         for (var replacement : replacements) {
@@ -122,30 +118,29 @@ public class BooleanAbstraction {
      * @return A copy of the formula with abstracted arithmetics.
      */
     public static String arithmetics(final String formula) {
-        // TODO: The extra call for BRACKETS could be avoided by adding it to the ARITHMETICS map.
-        //       This requires a sorted map (e.g., LinkedHashMap) though which is not yet supported by the smart
-        //       constructor Map.of.
-        return BRACKETS.matcher(abstractAll(formula, ARITHMETICS)).replaceAll(BRACKETS_REPLACEMENT);
+        return abstractAll(formula, ARITHMETICS);
     }
 
     /**
-     * Abstracts all function calls in the given formula.
+     * Abstracts parentheses, including the commas of macro calls, in the given formula.
+     *
      * For example, a call "FOO(3, 4, lol)" would be abstracted to a single variable "FOO__3__4__lol".
      * The given formula should be a string of a CPP conforming condition.
      * @param formula The formula whose function calls should be abstracted.
      * @return A copy of the formula with abstracted function calls.
      */
-    public static String functionCalls(String formula) {
+    public static String parentheses(String formula) {
         ////// abstract function calls
         /// replace commata in macro calls
         formula = COMMA.matcher(formula).replaceAll(COMMA_REPLACEMENT);
 
         /// inline macro calls as long as there are some
         /// Example
-        ///    bar(2, foo(baz))
-        /// -> bar(2__foo(baz)) // because of the comma replacement above
-        /// -> bar(2__foo__baz)
-        /// -> bar__2__foo__baz
+        ///    bar(2, foo(A__MUL__(B__PLUS__C))
+        /// -> bar(2__foo(A__MUL__(B__PLUS__C))) // because of the comma replacement above
+        /// -> bar(2__foo(A__MUL____LB__B__PLUS__C__RB__))
+        /// -> bar(2__foo__LB__A__MUL____LB__B__PLUS__C__RB____RB__)
+        /// -> bar__LB__2__foo__LB__A__MUL____LB__B__PLUS__C__RB____RB____RB__
         String old;
         do {
             old = formula;
