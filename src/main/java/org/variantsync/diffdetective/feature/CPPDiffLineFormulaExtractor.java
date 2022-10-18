@@ -19,7 +19,7 @@ public class CPPDiffLineFormulaExtractor {
     private static final String CPP_ANNOTATION_REGEX = "^[+-]?\\s*#\\s*(if|ifdef|ifndef|elif)(\\s+(.*)|\\((.*)\\))$";
     private static final Pattern CPP_ANNOTATION_REGEX_PATTERN = Pattern.compile(CPP_ANNOTATION_REGEX);
     private static final Pattern COMMENT_PATTERN = Pattern.compile("/\\*.*\\*/");
-    private static final Pattern DEFINED_PATTERN = Pattern.compile("defined\\(([^)]*)\\)");
+    private static final Pattern DEFINED_PATTERN = Pattern.compile("\\bdefined\\b(\\s*\\((\\w*)\\))?");
 
     /**
      * Resolves any macros in the given formula that are relevant for feature annotations.
@@ -59,12 +59,12 @@ public class CPPDiffLineFormulaExtractor {
         fm = fm.split("//")[0];
         fm = COMMENT_PATTERN.matcher(fm).replaceAll("");
 
+        // remove defined()
+        fm = DEFINED_PATTERN.matcher(fm).replaceAll("$2");
+
         // remove whitespace
         fm = fm.replaceAll("\\s", "");
 
-        // remove defined()
-        fm = DEFINED_PATTERN.matcher(fm).replaceAll("$1");
-        fm = fm.replaceAll("defined ", " ");
         fm = resolveFeatureMacroFunctions(fm);
 
         ////// abstract arithmetics
