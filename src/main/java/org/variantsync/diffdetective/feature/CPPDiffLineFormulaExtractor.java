@@ -76,7 +76,7 @@ public class CPPDiffLineFormulaExtractor {
         }
 
         // negate for ifndef
-        if (line.contains("ifndef")) {
+        if ("ifndef".equals(matcher.group(1))) {
             fm = "!(" + fm + ")";
         }
 
