@@ -1,10 +1,7 @@
 package org.variantsync.diffdetective.feature;
 
-import org.variantsync.functjonal.Functjonal;
-
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.function.Function;
+import java.util.List;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -43,21 +40,37 @@ public class BooleanAbstraction {
     /** Abstraction value for clsong brackets <code>)</code>. */
     public static final String BRACKET_R = "__RB__";
 
-    private static final Map<Pattern, String> ARITHMETICS;
-    static {
-        ARITHMETICS = compile(Map.of(
-                "==", EQ,
-                ">=", GEQ,
-                "<=", LEQ,
-                ">", GT,
-                "<", LT,
-                Pattern.quote("+"), ADD,
-                "-", SUB,
-                Pattern.quote("*"), MUL,
-                "/", DIV,
-                "%", MOD
-        ));
+    private static class Replacement {
+        private Pattern pattern;
+        private String replacement;
+
+        /**
+         * @param original the literal string to be replaced if it matches a whole word
+         * @param the literal replacement
+         */
+        public Replacement(String original, String replacement) {
+            this.pattern = Pattern.compile("(?<=\\b|[()])" + Pattern.quote(original) + "(?=\\b|[()])");
+            this.replacement = Matcher.quoteReplacement(replacement);
+        }
+
+        public String applyTo(String value) {
+            return pattern.matcher(value).replaceAll(replacement);
+        }
     }
+
+    private static final List<Replacement> ARITHMETICS = List.of(
+        new Replacement("==", EQ),
+        new Replacement(">=", GEQ),
+        new Replacement("<=", LEQ),
+        new Replacement(">", GT),
+        new Replacement("<", LT),
+        new Replacement("+", ADD),
+        new Replacement("-", SUB),
+        new Replacement("*", MUL),
+        new Replacement("/", DIV),
+        new Replacement("%", MOD)
+    );
+
     private static final Pattern COMMA = Pattern.compile(",");
     private static final String COMMA_REPLACEMENT = "__";
 
@@ -67,19 +80,9 @@ public class BooleanAbstraction {
     private static final Pattern CALL = Pattern.compile("(\\w+)\\((\\w*)\\)");
     private static final String CALL_REPLACEMENT = "$1__$2";
 
-    private static Map<Pattern, String> compile(final Map<String, String> regex_replace) {
-        return Functjonal.bimap(
-                regex_replace,
-                Pattern::compile,
-                Function.identity(),
-                // Use a linked hashmap here to ensure that regexes are always replaced in the same order.
-                LinkedHashMap::new
-        );
-    }
-
-    private static String abstractAll(String formula, final Map<Pattern, String> regex_replace) {
-        for (Map.Entry<Pattern, String> regex : regex_replace.entrySet()) {
-            formula = regex.getKey().matcher(formula).replaceAll(regex.getValue());
+    private static String abstractAll(String formula, final List<Replacement> replacements) {
+        for (var replacement : replacements) {
+            formula = replacement.applyTo(formula);
         }
         return formula;
     }
