@@ -18,7 +18,7 @@ public class CPPDiffLineFormulaExtractor {
     // ^[+-]?\s*#\s*(if|ifdef|ifndef|elif)(\s+(.*)|\((.*)\))$
     private static final String CPP_ANNOTATION_REGEX = "^[+-]?\\s*#\\s*(if|ifdef|ifndef|elif)(\\s+(.*)|\\((.*)\\))$";
     private static final Pattern CPP_ANNOTATION_REGEX_PATTERN = Pattern.compile(CPP_ANNOTATION_REGEX);
-    private static final Pattern COMMENT_PATTERN = Pattern.compile("/\\*.*\\*/");
+    private static final Pattern COMMENT_PATTERN = Pattern.compile("/\\*.*?\\*/");
     private static final Pattern DEFINED_PATTERN = Pattern.compile("\\bdefined\\b(\\s*\\((\\w*)\\))?");
 
     /**
