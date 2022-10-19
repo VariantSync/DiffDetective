@@ -49,7 +49,8 @@ public class AnalysisResult implements Metadata<AnalysisResult> {
         a.emptyCommits += b.emptyCommits;
         a.failedCommits += b.failedCommits;
         a.exportedTrees += b.exportedTrees;
-        a.relationshipEdges += b.relationshipEdges;
+        a.implicationEdges += b.implicationEdges;
+        a.alternativeEdges += b.alternativeEdges;
         a.runtimeInSeconds += b.runtimeInSeconds;
         a.runtimeWithMultithreadingInSeconds += b.runtimeWithMultithreadingInSeconds;
         a.min.set(CommitProcessTime.min(a.min, b.min));
@@ -59,6 +60,14 @@ public class AnalysisResult implements Metadata<AnalysisResult> {
         a.elementaryPatternCounts.append(b.elementaryPatternCounts);
         MergeMap.putAllValues(a.customInfo, b.customInfo, Semigroup.assertEquals());
         a.diffErrors.append(b.diffErrors);
+        a.complexityChangeCount[0] += b.complexityChangeCount[0];
+        a.complexityChangeCount[1] += b.complexityChangeCount[1];
+        a.complexityChangeCount[2] += b.complexityChangeCount[2];
+        a.complexityChangeCount[3] += b.complexityChangeCount[3];
+        a.complexityChangeCount[4] += b.complexityChangeCount[4];
+        a.complexityChangeCount[5] += b.complexityChangeCount[5];
+        a.complexityChangeCount[6] += b.complexityChangeCount[6];
+        a.falseNodes += b.falseNodes;
     };
 
     /**
@@ -76,13 +85,16 @@ public class AnalysisResult implements Metadata<AnalysisResult> {
     public int emptyCommits;
     public int failedCommits;
     public int exportedTrees;
-    public int relationshipEdges;
+    public int implicationEdges;
+    public int alternativeEdges;
+    public int falseNodes;
     public double runtimeInSeconds;
     public double runtimeWithMultithreadingInSeconds;
     public final CommitProcessTime min, max;
     public final DiffTreeSerializeDebugData debugData;
     public ExplainedFilterSummary filterHits;
     public ElementaryPatternCount elementaryPatternCounts;
+    public int[] complexityChangeCount;
     private final LinkedHashMap<String, String> customInfo = new LinkedHashMap<>();
     private final MergeMap<DiffError, Integer> diffErrors = new MergeMap<>(new HashMap<>(), Integer::sum);
 
@@ -157,7 +169,10 @@ public class AnalysisResult implements Metadata<AnalysisResult> {
         this.elementaryPatternCounts = new ElementaryPatternCount();
         this.min = min;
         this.max = max;
-        this.relationshipEdges = 0;
+        this.implicationEdges = 0;
+        this.alternativeEdges = 0;
+        this.complexityChangeCount = new int[7];
+        this.falseNodes = 0;
     }
 
     /**
@@ -205,7 +220,8 @@ public class AnalysisResult implements Metadata<AnalysisResult> {
                 switch (key) {
                     case MetadataKeys.REPONAME -> result.repoName = value;
                     case MetadataKeys.TREES -> result.exportedTrees = Integer.parseInt(value);
-                    case MetadataKeys.RELATIONSHIP_EDGES -> result.relationshipEdges = Integer.parseInt(value);
+                    case MetadataKeys.IMPLICATION_EDGES -> result.implicationEdges = Integer.parseInt(value);
+                    case MetadataKeys.ALTERNATIVE_EDGES -> result.alternativeEdges = Integer.parseInt(value);
                     case MetadataKeys.PROCESSED_COMMITS -> result.exportedCommits = Integer.parseInt(value);
                     case MetadataKeys.TOTAL_COMMITS -> result.totalCommits = Integer.parseInt(value);
                     case MetadataKeys.EMPTY_COMMITS -> result.emptyCommits = Integer.parseInt(value);
@@ -286,7 +302,15 @@ public class AnalysisResult implements Metadata<AnalysisResult> {
         snap.put(MetadataKeys.EMPTY_COMMITS, emptyCommits);
         snap.put(MetadataKeys.PROCESSED_COMMITS, exportedCommits);
         snap.put(MetadataKeys.TREES, exportedTrees);
-        snap.put(MetadataKeys.RELATIONSHIP_EDGES, relationshipEdges);
+        snap.put(MetadataKeys.IMPLICATION_EDGES, implicationEdges);
+        snap.put(MetadataKeys.ALTERNATIVE_EDGES, alternativeEdges);
+        snap.put("complexity unchanged", complexityChangeCount[0]);
+        snap.put("complexity +<5 %", complexityChangeCount[1]);
+        snap.put("complexity +5-10 %", complexityChangeCount[2]);
+        snap.put("complexity +10-20 %", complexityChangeCount[3]);
+        snap.put("complexity +20-40 %", complexityChangeCount[4]);
+        snap.put("complexity +40-60 %", complexityChangeCount[5]);
+        snap.put("complexity +>60 %", complexityChangeCount[6]);
         snap.put(MetadataKeys.MINCOMMIT, min.toString());
         snap.put(MetadataKeys.MAXCOMMIT, max.toString());
         snap.put(MetadataKeys.RUNTIME, runtimeInSeconds);

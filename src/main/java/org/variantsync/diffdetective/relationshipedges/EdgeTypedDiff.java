@@ -75,4 +75,8 @@ public class EdgeTypedDiff {
     public int getNonNestingEdgeCount(){
         return getNonNestingEdges().size();
     }
+
+    public float calculateAdditionalComplexity(){
+        return ((float) getNonNestingEdgeCount())/((float) getNestingEdgeCount());
+    }
 }

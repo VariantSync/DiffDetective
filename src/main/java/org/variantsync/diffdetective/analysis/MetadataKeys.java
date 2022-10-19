@@ -27,5 +27,7 @@ public final class MetadataKeys {
     public static final String MINCOMMIT = "fastestCommit";
     public static final String MAXCOMMIT = "slowestCommit";
     public final static String TREES = "tree diffs";
-    public final static String RELATIONSHIP_EDGES = "relationship edges";
+    public final static String IMPLICATION_EDGES = "implication edges";
+    public final static String ALTERNATIVE_EDGES = "alternative edges";
+    public final static String FALSE_NODES= "nodes with feature formula FALSE";
 }
