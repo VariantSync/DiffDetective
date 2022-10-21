@@ -1,5 +1,6 @@
 package org.variantsync.diffdetective.diff.difftree.parse;
 
+import org.apache.commons.lang3.function.FailableSupplier;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.revwalk.RevCommit;
@@ -48,6 +49,17 @@ import java.util.regex.Pattern;
  * </code>
  */
 public class DiffTreeParser {
+    /**
+     * One line of a diff.
+     * In contrast to {@link LogicalLine}, this represents a physical line corresponding to a diff
+     * instead of some source code file.
+     *
+     * @param diffType the diff type of this line, may be {@code null} if this line has no valid
+     * diff type
+     * @param content the actual line content without a line delimiter
+     */
+    public record DiffLine(DiffType diffType, String content) {}
+
     /**
      * Matches the beginning of conditional macros.
      * It doesn't match the whole macro name, for example for {@code #ifdef} only {@code "#if"} is
@@ -153,7 +165,51 @@ public class DiffTreeParser {
             collapseMultipleCodeLines,
             ignoreEmptyLines,
             annotationParser
-        ).parse(fullDiff);
+        ).parse(() -> {
+            String line = fullDiff.readLine();
+            if (line == null) {
+                return null;
+            } else if (line.length() == 0) {
+                return new DiffLine(null, "");
+            } else {
+                return new DiffLine(DiffType.ofDiffLine(line), line.substring(1));
+            }
+        });
+    }
+
+    /**
+     * Parses a variation tree from a source file.
+     * This method is similar to {@link createDiffTree(BufferedReader, boolean, boolean, CPPAnnotationParser)}
+     * but acts as if all lines where unmodified.
+     *
+     * @param file The source code file (not a diff) to be parsed.
+     * @param collapseMultipleCodeLines Whether multiple consecutive artifact lines should be
+     * collapsed into a single artifact node.
+     * @param ignoreEmptyLines Whether empty lines (no matter if they are added removed or remained
+     * unchanged) should be ignored.
+     * @param annotationParser The parser to parse conditional macros.
+     * @return A parsed {@link DiffTree}.
+     * @throws IOException iff {@code file} throws an {@code IOException}
+     * @throws DiffParseException if an error in the diff or macro syntax is detected
+     */
+    public static DiffTree createVariationTree(
+            BufferedReader file,
+            boolean collapseMultipleCodeLines,
+            boolean ignoreEmptyLines,
+            CPPAnnotationParser annotationParser
+    ) throws IOException, DiffParseException {
+        return new DiffTreeParser(
+            collapseMultipleCodeLines,
+            ignoreEmptyLines,
+            annotationParser
+        ).parse(() -> {
+            String line = file.readLine();
+            if (line == null) {
+                return null;
+            } else {
+                return new DiffLine(DiffType.NON, line);
+            }
+        });
     }
 
     /**
@@ -181,7 +237,9 @@ public class DiffTreeParser {
      * @throws DiffParseException if an error in the line diff or the underlying preprocessor syntax
      * is detected
      */
-    private DiffTree parse(BufferedReader fullDiff) throws IOException, DiffParseException {
+    private DiffTree parse(
+        FailableSupplier<DiffLine, IOException> lines
+    ) throws IOException, DiffParseException {
         DiffNode root = DiffNode.createRoot();
         beforeStack.push(root);
         afterStack.push(root);
@@ -191,18 +249,17 @@ public class DiffTreeParser {
         boolean isNon = false;
 
         DiffLineNumber lineNumber = new DiffLineNumber(0, 0, 0);
-        String currentLine;
-        while ((currentLine = fullDiff.readLine()) != null) {
+        DiffLine currentDiffLine;
+        while ((currentDiffLine = lines.get()) != null) {
+            final String currentLine = currentDiffLine.content();
+
             // Ignore line if it is empty.
-            if (ignoreEmptyLines && (currentLine.isEmpty()
-                    // substring(1) here because of diff symbol ('+', '-', ' ') at the beginning of
-                    // a line.
-                    || currentLine.substring(1).isBlank())) {
+            if (ignoreEmptyLines && currentLine.isBlank()) {
                 // discard empty lines
                 continue;
             }
 
-            final DiffType diffType = DiffType.ofDiffLine(currentLine);
+            final DiffType diffType = currentDiffLine.diffType();
             if (diffType == null) {
                 throw new DiffParseException(DiffError.INVALID_DIFF, lineNumber.add(1));
             }
@@ -214,10 +271,9 @@ public class DiffTreeParser {
                 (isNon || (!beforeLine.hasStarted() && !afterLine.hasStarted()));
 
             // Add the physical line to the logical line.
-            final String originalLine = currentLine.substring(1);
             final DiffLineNumber lineNumberFinal = lineNumber;
             diffType.matchBeforeAfter(beforeLine, afterLine,
-                node -> node.consume(originalLine, lineNumberFinal)
+                node -> node.consume(currentLine, lineNumberFinal)
             );
 
             // Parse the completed logical line
