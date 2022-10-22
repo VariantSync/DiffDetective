@@ -74,6 +74,8 @@ public class FeatureSplit {
 
         HashSet<DiffEdge> allEdges = getAllEdges(first, second);
         HashSet<DiffNode> composedTree = new HashSet<>();
+        DiffNode composeRoot = DiffNode.createRoot();
+        composedTree.add(composeRoot);
 
         allEdges.forEach(edge -> {
             if (!composedTree.contains(edge.parent)) composedTree.add(Duplication.shallowClone(edge.parent));
@@ -86,8 +88,6 @@ public class FeatureSplit {
             if (cpChild.isAdd() || cpChild.isNon() && cpParent.isAdd()) cpParent.addAfterChild(cpChild);
             if (cpChild.isRem() || cpChild.isNon() && cpParent.isRem()) cpParent.addBeforeChild(cpChild);
         });
-
-        DiffNode composeRoot = composedTree.stream().filter(DiffNode::isRoot).findFirst().orElseThrow();
         DiffTree composeTree = new DiffTree(composeRoot, first.getSource());
 
         allEdges.forEach(edge -> {
@@ -103,7 +103,6 @@ public class FeatureSplit {
             if (cpChild.getBeforeParent() == null && cpChild.getAfterParent() == null)
                 cpChild.addBelow(cpParent, cpParent);
         });
-
         composeTree.assertConsistency();
         return composeTree;
     }

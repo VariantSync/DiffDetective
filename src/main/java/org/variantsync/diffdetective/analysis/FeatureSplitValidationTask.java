@@ -79,10 +79,14 @@ public class FeatureSplitValidationTask extends FeatureSplitAnalysisTask {
                             //System.out.println(t.toString());
                             //System.out.println(t.computeSize());
 
+                            if(feature == null || PropositionalFormulaParser.Default.parse(feature) == null){
+                                System.out.println("Parser Error: " + PropositionalFormulaParser.Default.parse(feature));
+                            }
+
                             // generate feature-aware and remaining patches
                             HashMap<String, DiffTree> featureAware = FeatureSplit.featureSplit(t, PropositionalFormulaParser.Default.parse(feature));
                             
-                            System.out.println("FeatureSplit"); 
+                            //System.out.println("FeatureSplit");
 
                             // 1. get number of feature-aware patches for a patch
                             miningResult.ratioOfFAPatches = (miningResult.ratioOfFAPatches + featureAware.size()) / 2;
