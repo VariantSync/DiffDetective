@@ -1,35 +1,33 @@
+import org.apache.commons.io.IOUtils;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.tinylog.Logger;
-import org.variantsync.diffdetective.diff.difftree.CommitDiffDiffTreeSource;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
 import org.variantsync.diffdetective.diff.difftree.serialize.*;
 import org.variantsync.diffdetective.diff.difftree.serialize.edgeformat.DefaultEdgeLabelFormat;
 import org.variantsync.diffdetective.diff.difftree.serialize.nodeformat.LabelOnlyDiffNodeFormat;
 import org.variantsync.diffdetective.diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
-import org.variantsync.diffdetective.util.FileUtils;
+import org.variantsync.diffdetective.util.IO;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.Objects;
 
-import static org.junit.Assert.assertEquals;
 /**
  * For testing the import of a line graph.
  */
 public class LineGraphTest {
-	private final static DiffTreeLineGraphImportOptions IMPORT_OPTIONS = new DiffTreeLineGraphImportOptions(
+	private final static LineGraphImportOptions IMPORT_OPTIONS = new LineGraphImportOptions(
             GraphFormat.DIFFTREE,
             new CommitDiffDiffTreeLabelFormat(),
             new LabelOnlyDiffNodeFormat(),
             new DefaultEdgeLabelFormat()
     );
-    private final static DiffTreeLineGraphExportOptions EXPORT_OPTIONS = new DiffTreeLineGraphExportOptions(
+    private final static LineGraphExportOptions EXPORT_OPTIONS = new LineGraphExportOptions(
             IMPORT_OPTIONS
     );
 
@@ -52,8 +50,23 @@ public class LineGraphTest {
                 diffTrees = LineGraphImport.fromLineGraph(lineGraph, testFile, IMPORT_OPTIONS);
             }
             assertConsistencyForAll(diffTrees);
-            final String lineGraphResult = exportDiffTreeToLineGraph(diffTrees);
-            TestUtils.assertEqualToFile(testFile, lineGraphResult);
+
+            Path actualPath = testFile.getParent().resolve(testFile.getFileName().toString() + ".actual");
+            try (var output = IO.newBufferedOutputStream(actualPath)) {
+                LineGraphExport.toLineGraphFormat(diffTrees, EXPORT_OPTIONS, output);
+            }
+
+            try (
+                    var expectedFile = Files.newBufferedReader(testFile);
+                    var actualFile = Files.newBufferedReader(actualPath);
+            ) {
+                if (!IOUtils.contentEqualsIgnoreEOL(expectedFile, actualFile)) {
+                    Assert.fail("The file " + testFile + " couldn't be exported or imported without modifications");
+                } else {
+                    // Only keep output file on errors
+                    Files.delete(actualPath);
+                }
+            }
         }
 	}
 	
@@ -67,21 +80,5 @@ public class LineGraphTest {
 //            DiffTreeRenderer.WithinDiffDetective().render(t, t.getSource().toString(), Path.of("error"), PatchDiffRenderer.ErrorDiffTreeRenderOptions);
 //        }
 		treeList.forEach(DiffTree::assertConsistency);
-	}
-	
-	/**
-	 * Exports computed trees to line graph.
-	 * 
-	 * @param treeList A list of {@link DiffTree DiffTrees}
-	 * @return The computed line graph
-	 */
-	private static String exportDiffTreeToLineGraph(final List<DiffTree> treeList) {
-        final StringBuilder lineGraphOutput = new StringBuilder();
-        for (var tree : treeList) {
-        	if (tree.getSource() instanceof CommitDiffDiffTreeSource source) {
-                LineGraphExport.composeTreeInLineGraph(lineGraphOutput, source, Objects.requireNonNull(LineGraphExport.toLineGraphFormat(tree, EXPORT_OPTIONS)).second(), EXPORT_OPTIONS);
-        	} else throw new RuntimeException("The DiffTreeSoruce of DiffTree " + tree + " is not a CommitDiffDiffTreeSource: " + tree.getSource());
-        }
-        return lineGraphOutput.toString();
 	}
 }

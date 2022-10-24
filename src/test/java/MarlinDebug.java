@@ -7,7 +7,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.prop4j.Node;
 import org.tinylog.Logger;
-import org.variantsync.diffdetective.analysis.CommitHistoryAnalysisTask;
 import org.variantsync.diffdetective.datasets.DatasetDescription;
 import org.variantsync.diffdetective.datasets.DatasetFactory;
 import org.variantsync.diffdetective.datasets.ParseOptions;
@@ -18,11 +17,9 @@ import org.variantsync.diffdetective.diff.PatchDiff;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
 import org.variantsync.diffdetective.diff.difftree.parse.DiffTreeParser;
 import org.variantsync.diffdetective.diff.difftree.parse.IllFormedAnnotationException;
-import org.variantsync.diffdetective.diff.difftree.serialize.LineGraphExport;
 import org.variantsync.diffdetective.diff.difftree.transform.DiffTreeTransformer;
 import org.variantsync.diffdetective.feature.CPPAnnotationParser;
 import org.variantsync.diffdetective.mining.DiffTreeMiner;
-import org.variantsync.diffdetective.mining.MiningTask;
 import org.variantsync.diffdetective.editclass.proposed.ProposedEditClasses;
 import org.variantsync.diffdetective.util.Clock;
 import org.variantsync.diffdetective.validation.Validation;
@@ -32,6 +29,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
+@Deprecated
 public class MarlinDebug {
     private record RepoInspection(
             List<String> suspiciousCommits,
@@ -106,7 +104,7 @@ public class MarlinDebug {
                         try {
                             Logger.info(ProposedEditClasses.Instance.match(node));
                         } catch (Exception e) {
-                            //DiffTreeLineGraphExportOptions.RenderError().accept(patch, e);
+                            //LineGraphExportOptions.RenderError().accept(patch, e);
                             Logger.error(e);
                             Logger.info("Died at node {}", node.toString());
                             Logger.info("  before parent: {}", node.getBeforeParent());
@@ -124,9 +122,6 @@ public class MarlinDebug {
                 Logger.info("  End processing {}", patch);
             }
         }
-
-        StringBuilder bigB = new StringBuilder();
-        LineGraphExport.toLineGraphFormat(commitDiff, bigB, DiffTreeMiner.MiningExportOptions(repoInspection.repo));
     }
 
     public static void asMiningTask(final RepoInspection repoInspection, final String commitHash) throws Exception {
@@ -135,14 +130,12 @@ public class MarlinDebug {
         final RevWalk revWalk = new RevWalk(git.getRepository());
         final RevCommit childCommit = revWalk.parseCommit(ObjectId.fromString(commitHash));
 
-        MiningTask m = new MiningTask(new CommitHistoryAnalysisTask.Options(
-                repoInspection.repo,
-                new GitDiffer(repoInspection.repo),
-                repoInspection.outputPath,
-                DiffTreeMiner.MiningExportOptions(repoInspection.repo),
-                DiffTreeMiner.MiningStrategy(),
-                List.of(childCommit)));
-        m.call();
+        DiffTreeMiner.Mine().create(
+            repoInspection.repo,
+            new GitDiffer(repoInspection.repo),
+            repoInspection.outputPath,
+            List.of(childCommit)
+        ).call();
     }
 
     public static void asValidationTask(final RepoInspection repoInspection, final String commitHash) throws Exception {

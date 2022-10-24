@@ -75,7 +75,7 @@ public interface Metadata<T> {
             return result;
         } catch (IOException e) {
             Logger.error(e);
-            System.exit(0);
+            System.exit(1);
             return "";
         }
     }
