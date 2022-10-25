@@ -11,7 +11,6 @@ import org.variantsync.diffdetective.datasets.*;
 import org.variantsync.diffdetective.datasets.predefined.StanciulescuMarlin;
 import org.variantsync.diffdetective.diff.difftree.filter.DiffTreeFilter;
 import org.variantsync.diffdetective.diff.difftree.filter.ExplainedFilter;
-import org.variantsync.diffdetective.diff.difftree.parse.DiffNodeParser;
 import org.variantsync.diffdetective.diff.difftree.serialize.LineGraphExportOptions;
 import org.variantsync.diffdetective.diff.difftree.serialize.GraphFormat;
 import org.variantsync.diffdetective.diff.difftree.serialize.edgeformat.EdgeLabelFormat;
@@ -20,6 +19,7 @@ import org.variantsync.diffdetective.diff.difftree.transform.CollapseNestedNonEd
 import org.variantsync.diffdetective.diff.difftree.transform.CutNonEditedSubtrees;
 import org.variantsync.diffdetective.diff.difftree.transform.DiffTreeTransformer;
 import org.variantsync.diffdetective.diff.difftree.transform.Starfold;
+import org.variantsync.diffdetective.feature.CPPAnnotationParser;
 import org.variantsync.diffdetective.metadata.ExplainedFilterSummary;
 import org.variantsync.diffdetective.mining.formats.DirectedEdgeLabelFormat;
 import org.variantsync.diffdetective.mining.formats.MiningNodeFormat;
@@ -44,7 +44,7 @@ public class DiffTreeMiner {
         final List<DiffTreeTransformer> processing = new ArrayList<>();
         processing.add(new CutNonEditedSubtrees());
         if (SEARCH_FOR_GOOD_RUNNING_EXAMPLES) {
-            processing.add(new RunningExampleFinder(repository == null ? DiffNodeParser.Default : repository.getParseOptions().annotationParser()).
+            processing.add(new RunningExampleFinder(repository == null ? CPPAnnotationParser.Default : repository.getParseOptions().annotationParser()).
                     The_Diff_Itself_Is_A_Valid_DiffTree_And(
                             RunningExampleFinder.DefaultExampleConditions,
                             RunningExampleFinder.DefaultExamplesDirectory.resolve(repository == null ? "unknown" : repository.getRepositoryName())

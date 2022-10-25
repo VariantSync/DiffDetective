@@ -1,0 +1,10 @@
+# People might run LaTeX to visualize failed tests and there are many LaTeX
+# files which will be generated, so just ignore all files, except explicitly
+# allowed.
+*
+
+!.gitignore
+!*.diff
+!*_expected.lg
+!/wontfix/
+!README.md

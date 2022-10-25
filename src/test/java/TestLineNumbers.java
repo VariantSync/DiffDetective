@@ -1,9 +1,11 @@
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.variantsync.diffdetective.diff.DiffLineNumber;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
+import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.functjonal.Pair;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -15,10 +17,8 @@ import java.util.function.Function;
 public class TestLineNumbers {
     private static final Path resDir = Constants.RESOURCE_DIR.resolve("diffs/linenumbers");
     private record TestCase(String filename, Map<Integer, Pair<DiffLineNumber, DiffLineNumber>> expectedLineNumbers) { }
-    private List<TestCase> testCases;
 
-    @Before
-    public void initTestCases() {
+    public static List<TestCase> testCases() {
         // Testcases rely on stability of IDs
 
         final var elifchain_map = new HashMap<Integer, Pair<DiffLineNumber, DiffLineNumber>>();
@@ -56,11 +56,11 @@ public class TestLineNumbers {
         deleteMLM_map.put(267, new Pair<>(new DiffLineNumber(3, 3, -1), new DiffLineNumber(4, 4, -1)));
         TestCase deleteMLM = new TestCase("deleteMLM.txt", deleteMLM_map);
 
-        testCases = List.of(elifchain, lineno1, deleteMLM);
+        return List.of(elifchain, lineno1, deleteMLM);
     }
 
-    private static DiffTree loadFullDiff(final Path p) throws IOException {
-        return DiffTree.fromFile(p, false, false).unwrap().getSuccess();
+    private static DiffTree loadFullDiff(final Path p) throws IOException, DiffParseException {
+        return DiffTree.fromFile(p, false, false);
     }
 
     private static void printLineNumbers(final DiffTree diffTree) {
@@ -76,10 +76,10 @@ public class TestLineNumbers {
         System.out.println();
     }
 
-    private static String generateTestCaseCode(final Path p) throws IOException {
+    private static String generateTestCaseCode(final Path p) throws IOException, DiffParseException {
         final DiffTree diffTree = loadFullDiff(p);
         final Function<DiffLineNumber, String> toConstructorCall = l ->
-                "new DiffLineNumber(" + l.inDiff + ", " + l.beforeEdit + ", " + l.afterEdit + ")";
+                "new DiffLineNumber(" + l.inDiff() + ", " + l.beforeEdit() + ", " + l.afterEdit() + ")";
         String testName = p.getFileName().toString();
         testName = testName.substring(0, testName.lastIndexOf("."));
         String mapName = testName + "_map";
@@ -99,10 +99,10 @@ public class TestLineNumbers {
     }
 
 //    @Test
-    public void generateTestCode() throws IOException {
+    public void generateTestCode() throws IOException, DiffParseException {
         final StringBuilder listof = new StringBuilder("List.of(");
         boolean first = true;
-        for (final TestCase s : testCases) {
+        for (final TestCase s : testCases()) {
             if (first) {
                 first = false;
             } else {
@@ -114,25 +114,23 @@ public class TestLineNumbers {
         System.out.println("testCases = " + listof);
     }
 
-//    @Test
-    public void printLineNumbers() throws IOException {
-        for (final TestCase s : testCases) {
-            System.out.println("Diff of " + s.filename());
-            printLineNumbers(loadFullDiff(resDir.resolve(s.filename())));
-        }
+//    @ParameterizedTest
+    @MethodSource("testCases")
+    public void printLineNumbers(TestCase testCase) throws IOException, DiffParseException {
+        System.out.println("Diff of " + testCase.filename());
+        printLineNumbers(loadFullDiff(resDir.resolve(testCase.filename())));
     }
 
-    @Test
-    public void testLineNumbers() throws IOException {
-        for (final TestCase s : testCases) {
-            final DiffTree t = loadFullDiff(resDir.resolve(s.filename()));
-            t.forAll(node -> {
-                var fromTo = s.expectedLineNumbers.get(node.getID());
-                final DiffLineNumber from = fromTo.first();
-                final DiffLineNumber to = fromTo.second();
-                Assert.assertEquals(from, node.getFromLine());
-                Assert.assertEquals(to, node.getToLine());
-            });
-        }
+    @ParameterizedTest
+    @MethodSource("testCases")
+    public void testLineNumbers(TestCase testCase) throws IOException, DiffParseException {
+        final DiffTree t = loadFullDiff(resDir.resolve(testCase.filename()));
+        t.forAll(node -> {
+            var fromTo = testCase.expectedLineNumbers.get(node.getID());
+            final DiffLineNumber from = fromTo.first();
+            final DiffLineNumber to = fromTo.second();
+            assertEquals(from, node.getFromLine());
+            assertEquals(to, node.getToLine());
+        });
     }
 }

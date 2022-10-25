@@ -13,7 +13,7 @@ import org.variantsync.diffdetective.diff.difftree.DiffNode;
 public class FormulasAndLineNumbersNodeFormat implements DiffNodeLabelFormat {
     @Override
     public String toLabel(DiffNode node) {
-        final String lineNumbers = node.getFromLine().inDiff + "-" + node.getToLine().inDiff + ": " + node.nodeType;
+        final String lineNumbers = node.getFromLine().inDiff() + "-" + node.getToLine().inDiff() + ": " + node.nodeType;
         if (node.isAnnotation()) {
             return lineNumbers + " " + node.getDirectFeatureMapping();
         }

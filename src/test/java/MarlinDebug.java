@@ -2,9 +2,9 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.prop4j.Node;
 import org.tinylog.Logger;
 import org.variantsync.diffdetective.datasets.DatasetDescription;
@@ -24,12 +24,15 @@ import org.variantsync.diffdetective.editclass.proposed.ProposedEditClasses;
 import org.variantsync.diffdetective.util.Clock;
 import org.variantsync.diffdetective.validation.Validation;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
 @Deprecated
+@Disabled
 public class MarlinDebug {
     private record RepoInspection(
             List<String> suspiciousCommits,
@@ -42,7 +45,7 @@ public class MarlinDebug {
 
     private static RepoInspection MARLIN, PHP;
 
-    @Before
+    @BeforeEach
     public void init() {
         {
             DatasetDescription marlin = new DatasetDescription(
@@ -126,7 +129,7 @@ public class MarlinDebug {
 
     public static void asMiningTask(final RepoInspection repoInspection, final String commitHash) throws Exception {
         final Git git = repoInspection.repo.getGitRepo().run();
-        Assert.assertNotNull(git);
+        assertNotNull(git);
         final RevWalk revWalk = new RevWalk(git.getRepository());
         final RevCommit childCommit = revWalk.parseCommit(ObjectId.fromString(commitHash));
 
@@ -140,7 +143,7 @@ public class MarlinDebug {
 
     public static void asValidationTask(final RepoInspection repoInspection, final String commitHash) throws Exception {
         final Git git = repoInspection.repo.getGitRepo().run();
-        Assert.assertNotNull(git);
+        assertNotNull(git);
         final RevWalk revWalk = new RevWalk(git.getRepository());
         final RevCommit childCommit = revWalk.parseCommit(ObjectId.fromString(commitHash));
 

@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.List;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -144,8 +145,9 @@ public class GraphvizExporter implements Exporter {
     static private String escape(List<String> label) {
         return label
             .stream()
-            .map((line) -> quotePattern.matcher(line).replaceAll((match) -> "\\\\" + match.group()))
+            .map((line) -> quotePattern.matcher(line).replaceAll((match) ->
+                Matcher.quoteReplacement("\\" + match.group())
+            ))
             .collect(Collectors.joining("\\n"));
-
     }
 }
