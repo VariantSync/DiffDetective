@@ -5,6 +5,7 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
+import org.tinylog.Logger;
 import org.variantsync.diffdetective.datasets.Repository;
 import org.variantsync.diffdetective.diff.CommitDiff;
 import org.variantsync.diffdetective.diff.DiffLineNumber;
@@ -207,6 +208,14 @@ public class DiffTreeParser {
             if (line == null) {
                 return null;
             } else {
+                if (line.startsWith("+") || line.startsWith("-")) {
+                    Logger.warn(
+                        "The source file given to createVariationTree contains a plus or " +
+                        "minus sign at the start of a line. Please ensure that you are " +
+                        "actually parsing a source file and not a diff."
+                    );
+                }
+
                 return new DiffLine(DiffType.NON, line);
             }
         });
