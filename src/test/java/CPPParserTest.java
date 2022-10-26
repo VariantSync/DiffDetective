@@ -25,7 +25,7 @@ public class CPPParserTest {
             Node expectedFormula
     ) {}
 
-    private static final Path reposPathWSL = Paths.get("..", "DiffDetectiveMining");
+    private static final Path reposPathWSL = Paths.get("\\\\wsl$", "Ubuntu/home/bittner/VariantSync", "DiffDetectiveMining");
 
     private static TestCase tc(
             String diffLine,
@@ -114,6 +114,7 @@ public class CPPParserTest {
                         "https://github.com/kofemann/opensolaris"
                 ))
         );
+
         Assert.assertTrue(dr.isFailure());
     }
 }
