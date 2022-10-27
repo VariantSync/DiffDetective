@@ -44,4 +44,8 @@ public interface DiffTreeLabelFormat extends LinegraphFormat {
     default String toLineGraphLine(final DiffTreeSource diffTreeSource) {
 		return LineGraphConstants.LG_TREE_HEADER + " " + toLabel(diffTreeSource);
 	}
+
+	default String toLineGraphLineEdgeTyped(final DiffTreeSource diffTreeSource) {
+		return LineGraphConstants.LG_ETTREE_HEADER + " " + toLabel(diffTreeSource);
+	}
 }

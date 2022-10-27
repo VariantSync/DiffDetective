@@ -189,7 +189,7 @@ public final class LineGraphExport {
 
                 if (patchDiffLg != null) {
                     result.debugData.append(patchDiffLg.first());
-                    composeTreeInLineGraph(lineGraph, patchDiff, patchDiffLg.second(), options);
+                    composeTreeInLineGraphEdgeTyped(lineGraph, patchDiff, patchDiffLg.second(), options);
                     ++result.exportedTrees;
                 }
             } else {
@@ -219,5 +219,14 @@ public final class LineGraphExport {
     		.append(nodesAndEdges)
     		.append(StringUtils.LINEBREAK)
     		.append(StringUtils.LINEBREAK);
+    }
+
+    public static void composeTreeInLineGraphEdgeTyped(final StringBuilder lineGraph, final DiffTreeSource source, final String nodesAndEdges, final DiffTreeLineGraphExportOptions options) {
+        lineGraph
+                .append(options.treeFormat().toLineGraphLineEdgeTyped(source)) // print "t # $LABEL"
+                .append(StringUtils.LINEBREAK)
+                .append(nodesAndEdges)
+                .append(StringUtils.LINEBREAK)
+                .append(StringUtils.LINEBREAK);
     }
 }
