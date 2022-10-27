@@ -13,6 +13,11 @@ public class EdgeTypedDiff {
     HashMap<Class<? extends RelationshipType>, List<RelationshipEdge<? extends RelationshipType>>> typedEdges;
 
     List<DiffNode> nodes;
+
+    public DiffTree getDiffTree() {
+        return diffTree;
+    }
+
     public EdgeTypedDiff(DiffTree diffTree) {
         this.diffTree = diffTree;
         this.typedEdges = new HashMap<>();

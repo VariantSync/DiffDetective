@@ -2,7 +2,12 @@ package org.variantsync.diffdetective.diff.difftree.serialize;
 
 import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
+import org.variantsync.diffdetective.diff.difftree.LineGraphConstants;
+import org.variantsync.diffdetective.relationshipedges.*;
 import org.variantsync.diffdetective.util.StringUtils;
+import org.variantsync.functjonal.Functjonal;
+
+import java.util.List;
 
 /**
  * Exporter that converts a single DiffTree's nodes and edges to linegraph.
@@ -15,11 +20,20 @@ public class DiffTreeLineGraphExporter {
 
     private final DiffTreeSerializeDebugData debugData;
 
+    private final EdgeTypedDiff edgeTypedDiff;
+
     /**
      * Creates a new exporter that will export the given tree.
      */
     public DiffTreeLineGraphExporter(DiffTree treeToExport) {
         this.diffTree = treeToExport;
+        this.edgeTypedDiff = null;
+        this.debugData = new DiffTreeSerializeDebugData();
+    }
+
+    public DiffTreeLineGraphExporter(EdgeTypedDiff treeToExport){
+        this.diffTree = treeToExport.getDiffTree();
+        this.edgeTypedDiff = treeToExport;
         this.debugData = new DiffTreeSerializeDebugData();
     }
 
@@ -55,6 +69,16 @@ public class DiffTreeLineGraphExporter {
      */
     public String export(DiffTreeLineGraphExportOptions options) {
         diffTree.forAll(n -> visit(n, options));
+        if(edgeTypedDiff != null){
+            List<RelationshipEdge<? extends RelationshipType>> edges = edgeTypedDiff.getNonNestingEdges();
+            for(RelationshipEdge<? extends  RelationshipType> edge : edges){
+                if (edge.getType() == Implication.class){
+                    edgesString.append(Functjonal.unwords(LineGraphConstants.LG_IMPLEDGE, edge.getFrom().getID(), edge.getTo().getID(), LineGraphConstants.TIME_INDEPENDENT)).append(StringUtils.LINEBREAK);
+                }else if(edge.getType() == Alternative.class){
+                    edgesString.append(Functjonal.unwords(LineGraphConstants.LG_ALTEDGE, edge.getFrom().getID(), edge.getTo().getID(), LineGraphConstants.TIME_INDEPENDENT)).append(StringUtils.LINEBREAK);
+                }
+            }
+        }
         final String result = nodesString.toString() + edgesString;
         StringUtils.clear(nodesString);
         StringUtils.clear(edgesString);

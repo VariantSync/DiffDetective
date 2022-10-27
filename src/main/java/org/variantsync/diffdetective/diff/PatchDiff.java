@@ -3,6 +3,7 @@ package org.variantsync.diffdetective.diff;
 import org.apache.commons.io.FilenameUtils;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
+import org.variantsync.diffdetective.relationshipedges.EdgeTypedDiff;
 
 /**
  * Data class containing information about a single patch (i.e., the differences in a single file).
@@ -14,6 +15,8 @@ import org.variantsync.diffdetective.diff.difftree.DiffTree;
 public class PatchDiff implements GitPatch {
     private final String fullDiff;
     private final DiffTree diffTree;
+    
+    private EdgeTypedDiff edgeTypedDiff;
     
     /**
      * The commit the patch belongs to.
@@ -47,6 +50,7 @@ public class PatchDiff implements GitPatch {
         if (this.diffTree != null) {
             this.diffTree.setSource(this);
         }
+        this.edgeTypedDiff = null;
     }
 
     /**
@@ -93,6 +97,14 @@ public class PatchDiff implements GitPatch {
      */
     public DiffTree getDiffTree() {
         return diffTree;
+    }
+
+    public EdgeTypedDiff getEdgeTypedDiff() {
+        return edgeTypedDiff;
+    }
+
+    public void setEdgeTypedDiff(EdgeTypedDiff edgeTypedDiff) {
+        this.edgeTypedDiff = edgeTypedDiff;
     }
 
     /**

@@ -6,6 +6,7 @@ import org.tinylog.Logger;
 import org.variantsync.diffdetective.analysis.CommitHistoryAnalysisTask;
 import org.variantsync.diffdetective.analysis.CommitHistoryAnalysisTaskFactory;
 import org.variantsync.diffdetective.analysis.HistoryAnalysis;
+import org.variantsync.diffdetective.analysis.strategies.AnalyzeAllThenExport;
 import org.variantsync.diffdetective.analysis.strategies.NullStrategy;
 import org.variantsync.diffdetective.datasets.*;
 import org.variantsync.diffdetective.diff.difftree.filter.DiffTreeFilter;
@@ -49,15 +50,15 @@ public class Validation {
 
     /**
      * The {@link CommitHistoryAnalysisTaskFactory} for the {@link HistoryAnalysis} that will run our validation.
-     * This factory creates {@link PatternValidationTask}s with the respective settings.
+     * This factory creates {@link ThesisValidationTask}s with the respective settings.
      */
     public static final CommitHistoryAnalysisTaskFactory VALIDATION_TASK_FACTORY =
-            (repo, differ, outputPath, commits) -> new PatternValidationTask(new CommitHistoryAnalysisTask.Options(
+            (repo, differ, outputPath, commits) -> new ThesisValidationTask(new CommitHistoryAnalysisTask.Options(
                     repo,
                     differ,
                     outputPath,
                     ValidationExportOptions(repo),
-                    new NullStrategy(),
+                    new AnalyzeAllThenExport(),
                     commits
             ));
 

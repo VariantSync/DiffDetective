@@ -13,6 +13,7 @@ import org.variantsync.diffdetective.diff.PatchDiff;
 import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
 import org.variantsync.diffdetective.diff.difftree.serialize.DiffTreeLineGraphExportOptions;
+import org.variantsync.diffdetective.diff.difftree.serialize.LineGraphExport;
 import org.variantsync.diffdetective.diff.difftree.transform.DiffTreeTransformer;
 import org.variantsync.diffdetective.diff.result.CommitDiffResult;
 import org.variantsync.diffdetective.metadata.ExplainedFilterSummary;
@@ -27,8 +28,8 @@ import java.util.List;
  *
  * @author Paul Bittner, Lukas Güthing
  */
-public class PatternValidationTask extends CommitHistoryAnalysisTask {
-    public PatternValidationTask(Options options) {
+public class ThesisValidationTask extends CommitHistoryAnalysisTask {
+    public ThesisValidationTask(Options options) {
         super(options);
     }
 
@@ -61,7 +62,7 @@ public class PatternValidationTask extends CommitHistoryAnalysisTask {
 
                 // extract the produced commit diff and inform the strategy
                 final CommitDiff commitDiff = commitDiffResult.diff().get();
-                options.analysisStrategy().onCommit(commitDiff, "");
+                // options.analysisStrategy().onCommit(commitDiff, "");
 
                 int numDiffTrees = 0;
                 int numImplEdges = 0;
@@ -145,7 +146,6 @@ public class PatternValidationTask extends CommitHistoryAnalysisTask {
                             edgeTypedDiff.addEdgesWithType(Implication.class, implicationEdges);
                             edgeTypedDiff.addEdgesWithType(Alternative.class, alternativeEdges);
 
-                            // TODO: analyse edgeTypedTreeDiff
                             int addedComplexityPercents = (int) (edgeTypedDiff.calculateAdditionalComplexity() * 100);
                             if(edgeTypedDiff.calculateAdditionalComplexity() == 0){
                                 miningResult.complexityChangeCount[0] += 1;
@@ -162,11 +162,11 @@ public class PatternValidationTask extends CommitHistoryAnalysisTask {
                             } else {
                                 miningResult.complexityChangeCount[6] += 1;
                             }
-                            // TODO: export edgeTypedTreeDiff
-                            // only if edgeTypedDiff.calculateAdditionalComplexity() != 0?
 
+                            if(edgeTypedDiff.calculateAdditionalComplexity() != 0) patch.setEdgeTypedDiff(edgeTypedDiff);
                         }
                     }
+
                 }
                 miningResult.implicationEdges += numImplEdges;
                 miningResult.alternativeEdges += numAltEdges;
@@ -191,6 +191,10 @@ public class PatternValidationTask extends CommitHistoryAnalysisTask {
                 } else {
                     ++miningResult.emptyCommits;
                 }
+
+                final StringBuilder lineGraph = new StringBuilder();
+                miningResult.append(LineGraphExport.toLineGraphFormatEdgeTyped(commitDiff, lineGraph, options.exportOptions()));
+                options.analysisStrategy().onCommit(commitDiff, lineGraph.toString());
 
             } catch (Exception e) {
                 Logger.error(e, "An unexpected error occurred at {} in {}", commit.getId().getName(), getOptions().repository().getRepositoryName());

@@ -13,6 +13,14 @@ public class RelationshipEdge<T extends RelationshipType>{
         this.relationshipType = type;
     }
 
+    public DiffNode getFrom() {
+        return from;
+    }
+
+    public DiffNode getTo() {
+        return to;
+    }
+
     public Class<T> getType(){
         return this.relationshipType;
     }
