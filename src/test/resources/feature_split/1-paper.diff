@@ -1,0 +1,10 @@
+ #ifdef Get
+-   database.get(request);
++   if (database.is_connected) database.get(request);
+-#else
+-#ifdef GUI
++#endif
++#if Unix && GUI
+    render_unix_gui();
+-#endif
+ #endif

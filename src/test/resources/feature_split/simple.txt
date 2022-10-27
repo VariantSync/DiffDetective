@@ -1,0 +1,7 @@
+ #if A
+ #if B
+ #if C
++foo();
+ #endif
+ #endif
+ #endif

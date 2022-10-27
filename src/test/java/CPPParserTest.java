@@ -97,6 +97,23 @@ public class CPPParserTest {
                         "https://gitlab.com/libssh/libssh-mirror"
                 ))
         );
+        
+        Assert.assertTrue(dr.isFailure());
+    }
+
+    @Test
+    public void testOpenSolaris() throws IOException {
+        final Result<DiffTree, List<DiffError>> dr = DiffTree.fromPatch(
+                new GitPatch.PatchReference(
+                        "usr/src/uts/common/zmod/zutil.h",
+                        "65b50c042ab274a35562ae78f4405e5c0bda1ba3",
+                        "56b2069abbf58be3bfc16fdadeb12b26063b130f"
+                ),
+                new DatasetFactory(reposPathWSL).create(DatasetDescription.summary(
+                        "opensolaris",
+                        "https://github.com/kofemann/opensolaris"
+                ))
+        );
 
         Assert.assertTrue(dr.isFailure());
     }

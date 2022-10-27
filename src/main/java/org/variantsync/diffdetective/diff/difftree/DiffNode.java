@@ -1044,14 +1044,14 @@ public class DiffNode {
 
         // a node with exactly one parent was edited
         if (beforeParent == null && afterParent != null) {
-            Assert.assertTrue(isAdd());
+            Assert.assertTrue(isAdd(), "A added node was not labeled as added");
         }
         if (beforeParent != null && afterParent == null) {
-            Assert.assertTrue(isRem());
+            Assert.assertTrue(isRem(), "A removed node was not labeled removed");
         }
         // a node with exactly two parents was not edited
         if (beforeParent != null && afterParent != null) {
-            Assert.assertTrue(isNon());
+            Assert.assertTrue(isNon(), "A node which did not change, was labeled as edited");
         }
 
         // Else and Elif nodes have an If or Elif as parent.

@@ -44,6 +44,14 @@ public class CPPDiffLineFormulaExtractor {
         final Supplier<IllFormedAnnotationException> couldNotExtractFormula = () ->
                 IllFormedAnnotationException.IfWithoutCondition("Could not extract formula from line \""+ line + "\".");
 
+        final Supplier<IllFormedAnnotationException> couldNotExtractFormula = () ->
+                IllFormedAnnotationException.IfWithoutCondition("Could not extract formula from line \""+ line + "\".");
+
+        //check for equal number of brackets
+        int openBrackets = line.length() - line.replaceAll("\\(", "").length();
+        int closedBrackets = line.length() - line.replaceAll("\\)", "").length();
+        if(openBrackets != closedBrackets) throw IllFormedAnnotationException.IfWithoutCondition("Could not extract formula from line \""+ line + "\".");
+
         String fm;
         if (matcher.find()) {
             if (matcher.group(3) != null) {
@@ -65,6 +73,13 @@ public class CPPDiffLineFormulaExtractor {
         // remove whitespace
         fm = fm.replaceAll("\\s", "");
 
+        if (fm.isEmpty()) {
+            throw couldNotExtractFormula.get();
+        }
+
+        // remove defined()
+        fm = DEFINED_PATTERN.matcher(fm).replaceAll("$1");
+        fm = fm.replaceAll("defined ", " ");
         fm = resolveFeatureMacroFunctions(fm);
 
         ////// abstract arithmetics

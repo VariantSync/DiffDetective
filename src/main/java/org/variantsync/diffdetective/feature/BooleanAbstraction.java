@@ -100,8 +100,22 @@ public class BooleanAbstraction {
 
     private static final Pattern COMMA = Pattern.compile(",");
     private static final String COMMA_REPLACEMENT = "__";
-    private static final Pattern CALL = Pattern.compile("\\((\\w*)\\)");
-    private static final String CALL_REPLACEMENT = BRACKET_L + "$1" + BRACKET_R;
+
+    private static final Pattern BRACKETS = Pattern.compile("\\((\\w*)\\)");
+    private static final String BRACKETS_REPLACEMENT = BRACKET_L + "$1" + BRACKET_R;
+
+    private static final Pattern CALL = Pattern.compile("(\\w+)\\((\\w*)\\)");
+    private static final String CALL_REPLACEMENT = "$1__$2";
+
+    private static Map<Pattern, String> compile(final Map<String, String> regex_replace) {
+        return Functjonal.bimap(
+                regex_replace,
+                Pattern::compile,
+                Function.identity(),
+                // Use a linked hashmap here to ensure that regexes are always replaced in the same order.
+                LinkedHashMap::new
+        );
+    }
 
     private static String abstractAll(String formula, final List<Replacement> replacements) {
         for (var replacement : replacements) {
@@ -118,7 +132,10 @@ public class BooleanAbstraction {
      * @return A copy of the formula with abstracted arithmetics.
      */
     public static String arithmetics(final String formula) {
-        return abstractAll(formula, ARITHMETICS);
+        // TODO: The extra call for BRACKETS could be avoided by adding it to the ARITHMETICS map.
+        //       This requires a sorted map (e.g., LinkedHashMap) though which is not yet supported by the smart
+        //       constructor Map.of.
+        return BRACKETS.matcher(abstractAll(formula, ARITHMETICS)).replaceAll(BRACKETS_REPLACEMENT);
     }
 
     /**
