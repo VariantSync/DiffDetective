@@ -340,17 +340,13 @@ public class DiffTree {
     public void removeNode(DiffNode node) {
         Assert.assertTrue(node != root);
 
-        final DiffNode beforeParent = node.getParent(BEFORE);
-        if (beforeParent != null) {
-            beforeParent.removeChild(node, BEFORE);
-            beforeParent.addChildren(node.removeChildren(BEFORE), BEFORE);
-        }
-
-        final DiffNode afterParent = node.getParent(AFTER);
-        if (afterParent != null) {
-            afterParent.removeChild(node, AFTER);
-            afterParent.addChildren(node.removeChildren(AFTER), AFTER);
-        }
+        Time.forAll(time -> {
+            final DiffNode parent = node.getParent(time);
+            if (parent != null) {
+                parent.removeChild(node, time);
+                parent.addChildren(node.removeChildren(time), time);
+            }
+        });
     }
 
     /**

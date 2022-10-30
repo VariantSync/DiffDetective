@@ -56,7 +56,7 @@ public class Starfold implements DiffTreeTransformer {
 
     private void foldStar(final DiffNode starRoot) {
         // We fold the stars for each time respectively.
-        Time.forall(t -> foldStarAtTime(starRoot, t));
+        Time.forAll(t -> foldStarAtTime(starRoot, t));
     }
 
     private void foldStarAtTime(final DiffNode starRoot, Time time) {

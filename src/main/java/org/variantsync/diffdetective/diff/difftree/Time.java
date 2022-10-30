@@ -15,7 +15,7 @@ public enum Time {
      * Invoke the given function for each time value (i.e., each value in this enum).
      * @param f callback
      */
-    public static void forall(final Consumer<Time> f) {
+    public static void forAll(final Consumer<Time> f) {
         f.accept(BEFORE);
         f.accept(AFTER);
     }

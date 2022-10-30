@@ -2,6 +2,7 @@ package org.variantsync.diffdetective.diff.difftree.serialize.edgeformat;
 
 import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.diff.difftree.LineGraphConstants;
+import org.variantsync.diffdetective.diff.difftree.Time;
 import org.variantsync.diffdetective.diff.difftree.serialize.StyledEdge;
 import org.variantsync.diffdetective.diff.difftree.serialize.LinegraphFormat;
 import org.variantsync.diffdetective.util.Assert;
@@ -98,8 +99,7 @@ public abstract class EdgeLabelFormat implements LinegraphFormat {
     protected void connectAccordingToLabel(final DiffNode child, final DiffNode parent, final String edgeLabel) {
         if (edgeLabel.startsWith(LineGraphConstants.BEFORE_AND_AFTER_PARENT)) {
             // Nothing has been changed. The child-parent relationship remains the same
-            Assert.assertTrue(parent.addChild(child, AFTER));
-            Assert.assertTrue(parent.addChild(child, BEFORE));
+            Time.forAll(time -> Assert.assertTrue(parent.addChild(child, time)));
         } else if (edgeLabel.startsWith(LineGraphConstants.BEFORE_PARENT)) {
             // The child DiffNode lost its parent DiffNode (an orphan DiffNode)
             Assert.assertTrue(parent.addChild(child, BEFORE));

@@ -286,12 +286,11 @@ public class DiffNode {
      * Inverse of addBelow.
      */
     public void drop() {
-        if (getParent(BEFORE) != null) {
-            getParent(BEFORE).removeChild(this, BEFORE);
-        }
-        if (getParent(AFTER) != null) {
-            getParent(AFTER).removeChild(this, AFTER);
-        }
+        Time.forAll(time -> {
+            if (getParent(time) != null) {
+                getParent(time).removeChild(this, time);
+            }
+        });
     }
 
     /**
@@ -377,8 +376,7 @@ public class DiffNode {
      */
     public void removeChildren(final Collection<DiffNode> childrenToRemove) {
         for (final DiffNode childToRemove : childrenToRemove) {
-            removeChild(childToRemove, BEFORE);
-            removeChild(childToRemove, AFTER);
+            Time.forAll(time -> removeChild(childToRemove, time));
         }
     }
 
@@ -426,8 +424,7 @@ public class DiffNode {
      * @param other The node whose children should be stolen.
      */
     public void stealChildrenOf(final DiffNode other) {
-        addChildren(other.removeChildren(BEFORE), BEFORE);
-        addChildren(other.removeChildren(AFTER), AFTER);
+        Time.forAll(time -> addChildren(other.removeChildren(time), time));
     }
 
     /**
@@ -766,12 +763,11 @@ public class DiffNode {
         // check consistency of children lists and edges
         for (final DiffNode c : childOrder) {
             Assert.assertTrue(isChild(c), () -> "Child " + c + " of " + this + " is neither a before nor an after child!");
-            if (c.getParent(BEFORE) != null) {
-                Assert.assertTrue(c.getParent(BEFORE).isChild(c, BEFORE), () -> "The parent before the edit of " + c + " doesn't contain that node as child");
-            }
-            if (c.getParent(AFTER) != null) {
-                Assert.assertTrue(c.getParent(AFTER).isChild(c, AFTER), () -> "The parent after the edit of " + c + " doesn't contain that node as child");
-            }
+            Time.forAll(time -> {
+                if (c.getParent(time) != null) {
+                    Assert.assertTrue(c.getParent(time).isChild(c, time), () -> "The parent " + time.toString().toLowerCase() + " the edit of " + c + " doesn't contain that node as child");
+                }
+            });
         }
 
         // a node with exactly one parent was edited
@@ -788,12 +784,11 @@ public class DiffNode {
 
         // Else and Elif nodes have an If or Elif as parent.
         if (this.isElse() || this.isElif()) {
-            if (getParent(BEFORE) != null) {
-                Assert.assertTrue(getParent(BEFORE).isIf() || getParent(BEFORE).isElif(), "Before parent " + getParent(BEFORE) + " of " + this + " is neither IF nor ELIF!");
-            }
-            if (getParent(AFTER) != null) {
-                Assert.assertTrue(getParent(AFTER).isIf() || getParent(AFTER).isElif(), "After parent " + getParent(AFTER) + " of " + this + " is neither IF nor ELIF!");
-            }
+            Time.forAll(time -> {
+                if (getParent(time) != null) {
+                    Assert.assertTrue(getParent(time).isIf() || getParent(time).isElif(), time + " parent " + getParent(time) + " of " + this + " is neither IF nor ELIF!");
+                }
+            });
         }
 
         // Only if and elif nodes have a formula
