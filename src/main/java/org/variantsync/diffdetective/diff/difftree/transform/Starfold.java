@@ -89,7 +89,7 @@ public class Starfold implements DiffTreeTransformer {
         if (starArms.size() > 1) {
             final int targetIndex = starRoot.indexOfChild(starArms.get(0));
             starRoot.removeChildren(starArms);
-            starRoot.insertChildAt(
+            starRoot.insertChild(
                     DiffNode.createArtifact(
                             targetDiffType,
                             DiffLineNumber.Invalid(),

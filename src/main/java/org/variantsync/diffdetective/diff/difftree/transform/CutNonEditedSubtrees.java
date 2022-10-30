@@ -7,6 +7,9 @@ import org.variantsync.diffdetective.diff.difftree.traverse.DiffTreeVisitor;
 
 import java.util.ArrayList;
 
+import static org.variantsync.diffdetective.diff.difftree.Time.AFTER;
+import static org.variantsync.diffdetective.diff.difftree.Time.BEFORE;
+
 /**
  * This transformer removes all subtrees from a DiffTree that are non-edited.
  * A subtree is unedited, if all nodes in it are unchanged and all nodes have the same
@@ -49,8 +52,8 @@ public class CutNonEditedSubtrees implements DiffTreeTransformer, DiffTreeVisito
              */
             if (
                     child.getAllChildren().isEmpty()
-                            && child.getAfterParent() == subtree
-                            && child.getBeforeParent() == subtree)
+                            && child.getParent(AFTER) == subtree
+                            && child.getParent(BEFORE) == subtree)
             {
                 collapsableChildren.add(child);
             }

@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static org.variantsync.diffdetective.diff.difftree.Time.AFTER;
+
 @Deprecated
 class AddIfdefElif extends SemanticPattern {
     AddIfdefElif() {
@@ -40,7 +42,7 @@ class AddIfdefElif extends SemanticPattern {
             }
 
             List<Node> mappings = new ArrayList<>();
-            mappings.add(annotationNode.getAfterFeatureMapping());
+            mappings.add(annotationNode.getFeatureMapping(AFTER));
             if(elifNode == null || !addedCodeInIf || !isValidElif(elifNode, mappings)){
                 return Optional.empty();
             }
@@ -68,7 +70,7 @@ class AddIfdefElif extends SemanticPattern {
             }
         }
         if(addedCode && nextNode != null){
-            mappings.add(elifNode.getAfterFeatureMapping());
+            mappings.add(elifNode.getFeatureMapping(AFTER));
             return isValidElif(nextNode, mappings);
         }
 

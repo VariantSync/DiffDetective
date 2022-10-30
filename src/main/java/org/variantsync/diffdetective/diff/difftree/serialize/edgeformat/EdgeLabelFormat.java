@@ -10,6 +10,9 @@ import org.variantsync.functjonal.Pair;
 import java.util.List;
 import java.util.Map;
 
+import static org.variantsync.diffdetective.diff.difftree.Time.AFTER;
+import static org.variantsync.diffdetective.diff.difftree.Time.BEFORE;
+
 /**
  * Reads and writes edges between {@link DiffNode DiffNodes} from and to line graph.
  *
@@ -83,7 +86,7 @@ public abstract class EdgeLabelFormat implements LinegraphFormat {
 
     /**
      * Adds the given child node as the child of the given parent node for all times described by the given label
-     * (via {@link DiffNode#addBeforeChild(DiffNode)} and {@link DiffNode#addAfterChild(DiffNode)})
+     * (via {@link DiffNode#addChild(DiffNode, Time)})
      * In particular, this method checks if the given edge label starts with
      * {@link LineGraphConstants#BEFORE_PARENT}, {@link LineGraphConstants#AFTER_PARENT}, or
      * {@link LineGraphConstants#BEFORE_AND_AFTER_PARENT} and connects both nodes accordingly.
@@ -95,14 +98,14 @@ public abstract class EdgeLabelFormat implements LinegraphFormat {
     protected void connectAccordingToLabel(final DiffNode child, final DiffNode parent, final String edgeLabel) {
         if (edgeLabel.startsWith(LineGraphConstants.BEFORE_AND_AFTER_PARENT)) {
             // Nothing has been changed. The child-parent relationship remains the same
-            Assert.assertTrue(parent.addAfterChild(child));
-            Assert.assertTrue(parent.addBeforeChild(child));
+            Assert.assertTrue(parent.addChild(child, AFTER));
+            Assert.assertTrue(parent.addChild(child, BEFORE));
         } else if (edgeLabel.startsWith(LineGraphConstants.BEFORE_PARENT)) {
             // The child DiffNode lost its parent DiffNode (an orphan DiffNode)
-            Assert.assertTrue(parent.addBeforeChild(child));
+            Assert.assertTrue(parent.addChild(child, BEFORE));
         } else if (edgeLabel.startsWith(LineGraphConstants.AFTER_PARENT)) {
             // The parent DiffNode has a new child DiffNode
-            Assert.assertTrue(parent.addAfterChild(child));
+            Assert.assertTrue(parent.addChild(child, AFTER));
         } else {
             throw new IllegalArgumentException("Syntax error. Invalid name in edge label " + edgeLabel);
         }

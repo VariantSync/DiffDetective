@@ -49,4 +49,15 @@ public enum Time {
             case AFTER -> after;
         };
     }
+
+    /**
+     * Returns the complement of this time.
+     * @return {@code BEFORE} if {@code this == AFTER} or {@code AFTER} if {@code this == BEFORE}
+     */
+    public Time other() {
+        return switch (this) {
+            case BEFORE -> AFTER;
+            case AFTER -> BEFORE;
+        };
+    }
 }

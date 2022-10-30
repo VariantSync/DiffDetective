@@ -7,6 +7,8 @@ import org.variantsync.diffdetective.preliminary.evaluation.FeatureContext;
 
 import java.util.Optional;
 
+import static org.variantsync.diffdetective.diff.difftree.Time.AFTER;
+
 @Deprecated
 class AddIfdefElse extends SemanticPattern {
     AddIfdefElse() {
@@ -55,7 +57,7 @@ class AddIfdefElse extends SemanticPattern {
 
             return Optional.of(new PatternMatch<>(this,
                     annotationNode.getLinesInDiff().getFromInclusive(), elseNode.getLinesInDiff().getToExclusive(),
-                    annotationNode.getAfterFeatureMapping()
+                    annotationNode.getFeatureMapping(AFTER)
             ));
         }
 

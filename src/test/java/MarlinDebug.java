@@ -31,6 +31,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
+import static org.variantsync.diffdetective.diff.difftree.Time.AFTER;
+import static org.variantsync.diffdetective.diff.difftree.Time.BEFORE;
+
 @Deprecated
 @Disabled
 public class MarlinDebug {
@@ -110,8 +113,8 @@ public class MarlinDebug {
                             //LineGraphExportOptions.RenderError().accept(patch, e);
                             Logger.error(e);
                             Logger.info("Died at node {}", node.toString());
-                            Logger.info("  before parent: {}", node.getBeforeParent());
-                            Logger.info("   after parent: {}", node.getBeforeParent());
+                            Logger.info("  before parent: {}", node.getParent(BEFORE));
+                            Logger.info("   after parent: {}", node.getParent(AFTER));
                             Logger.info("isAdd: {}", node.isAdd());
                             Logger.info("isRem: {}", node.isRem());
                             Logger.info("isNon: {}", node.isNon());
