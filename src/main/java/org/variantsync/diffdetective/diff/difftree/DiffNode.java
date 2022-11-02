@@ -1004,12 +1004,13 @@ public class DiffNode {
         final int diffTypeOrdinal = (id >> ID_OFFSET) & lowestBitsMask;
         final int fromInDiff      = (id >> (2*ID_OFFSET)) - 1;
 
+        var nodeType = NodeType.values()[nodeTypeOrdinal];
         return new DiffNode(
                 DiffType.values()[diffTypeOrdinal],
-                NodeType.values()[nodeTypeOrdinal],
+                nodeType,
                 new DiffLineNumber(fromInDiff, DiffLineNumber.InvalidLineNumber, DiffLineNumber.InvalidLineNumber),
                 DiffLineNumber.Invalid(),
-                null,
+                nodeType.isConditionalAnnotation() ? FixTrueFalse.True : null,
                 label
         );
     }
