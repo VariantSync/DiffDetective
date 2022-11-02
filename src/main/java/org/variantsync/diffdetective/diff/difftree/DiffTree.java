@@ -2,8 +2,8 @@ package org.variantsync.diffdetective.diff.difftree;
 
 import org.variantsync.diffdetective.datasets.Repository;
 import org.variantsync.diffdetective.diff.CommitDiff;
-import org.variantsync.diffdetective.diff.GitPatch;
 import org.variantsync.diffdetective.diff.PatchDiff;
+import org.variantsync.diffdetective.diff.PatchReference;
 import org.variantsync.diffdetective.diff.difftree.parse.DiffNodeParser;
 import org.variantsync.diffdetective.diff.difftree.parse.DiffTreeParser;
 import org.variantsync.diffdetective.diff.difftree.source.PatchFile;
@@ -118,9 +118,21 @@ public class DiffTree {
         return tree;
     }
 
-    public static Result<DiffTree, List<DiffError>> fromPatch(final GitPatch patchInfo, final Repository repository) throws IOException {
-        final CommitDiffResult result = CommitDiffResult.fromCommitInRepository(patchInfo.getCommitHash(), repository);
-        final Path changedFile = Path.of(patchInfo.getFileName());
+    /**
+     * Parses a patch of a Git repository.
+     *
+     * Warning: The current implementation ignored {@code patchReference.getParentCommitHash}.
+     * It assumes that it's equal to the first parent of {@code patchReference.getCommitHash}, so
+     * it cannot parse patches across multiple commits.
+     *
+     * @param patchReference the patch to be parsed
+     * @param repository the repository which contains the path {@code patchReference}
+     * @return a {@link DiffTree} representing the referenced patch, or a list of errors
+     * encountered while trying to parse the {@link DiffTree}
+     */
+    public static Result<DiffTree, List<DiffError>> fromPatch(final PatchReference patchReference, final Repository repository) throws IOException {
+        final CommitDiffResult result = CommitDiffResult.fromCommitInRepository(patchReference.getCommitHash(), repository);
+        final Path changedFile = Path.of(patchReference.getFileName());
         if (result.diff().isPresent()) {
             final CommitDiff commit = result.diff().get();
             for (final PatchDiff patch : commit.getPatchDiffs()) {
@@ -134,7 +146,7 @@ public class DiffTree {
                 new DiffError("There is no patch to "
                         + changedFile
                         + " in the given commit "
-                        + patchInfo.getCommitHash()
+                        + patchReference.getCommitHash()
                         + " in repo "
                         + repository.getRepositoryName()
                         + " or it could not be extracted! Reasons are:")

@@ -5,7 +5,7 @@ import org.prop4j.Literal;
 import org.prop4j.Node;
 import org.variantsync.diffdetective.datasets.DatasetDescription;
 import org.variantsync.diffdetective.datasets.DatasetFactory;
-import org.variantsync.diffdetective.diff.GitPatch;
+import org.variantsync.diffdetective.diff.PatchReference;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
 import org.variantsync.diffdetective.diff.difftree.parse.IllFormedAnnotationException;
 import org.variantsync.diffdetective.diff.result.DiffError;
@@ -87,7 +87,7 @@ public class CPPParserTest {
     @Test
     public void testLibSSHx() throws IOException {
         final Result<DiffTree, List<DiffError>> dr = DiffTree.fromPatch(
-                new GitPatch.PatchReference(
+                new PatchReference(
                 "tests/pkd/pkd_hello.c",
                 "c8f49becfde6777aa73cea3c8aa58a752d2adce4",
                 "f64814b7be533080a7117cd174c3a81d859f4399"
