@@ -36,8 +36,9 @@ public record CommitDiffResult(Optional<CommitDiff> diff, List<DiffError> errors
     public static CommitDiffResult fromCommitInRepository(final String commitHash, final Repository repository) throws IOException {
         final Git git = repository.getGitRepo().run();
         Assert.assertNotNull(git);
-        final RevWalk revWalk = new RevWalk(git.getRepository());
-        final RevCommit commit = revWalk.parseCommit(ObjectId.fromString(commitHash));
-        return new GitDiffer(repository).createCommitDiff(commit);
+        try (var revWalk = new RevWalk(git.getRepository())) {
+            final RevCommit commit = revWalk.parseCommit(ObjectId.fromString(commitHash));
+            return new GitDiffer(repository).createCommitDiff(commit);
+        }
     }
 }

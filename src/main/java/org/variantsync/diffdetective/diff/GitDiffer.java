@@ -194,8 +194,8 @@ public class GitDiffer {
         }
 
         final RevCommit parent;
-        try {
-            parent = new RevWalk(git.getRepository()).parseCommit(currentCommit.getParent(0).getId());
+        try (var revWalk = new RevWalk(git.getRepository())) {
+            parent = revWalk.parseCommit(currentCommit.getParent(0).getId());
         } catch (IOException e) {
             return CommitDiffResult.Failure(DiffError.JGIT_ERROR, "Could not parse parent commit of " + currentCommit.getId().getName() + "!");
         }
