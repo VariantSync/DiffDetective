@@ -1064,9 +1064,11 @@ public class DiffNode {
             }
         }
 
-        // If and elif nodes have a formula
+        // Only if and elif nodes have a formula
         if (this.isIf() || this.isElif()) {
             Assert.assertTrue(this.getDirectFeatureMapping() != null, "If or elif without feature mapping!");
+        } else {
+            Assert.assertTrue(this.getDirectFeatureMapping() == null, "Node with type " + nodeType + " has a non null feature mapping");
         }
     }
 
