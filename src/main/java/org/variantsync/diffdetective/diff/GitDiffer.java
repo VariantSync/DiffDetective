@@ -24,6 +24,7 @@ import org.variantsync.diffdetective.diff.result.CommitDiffResult;
 import org.variantsync.diffdetective.diff.result.DiffError;
 import org.variantsync.diffdetective.diff.result.DiffResult;
 import org.variantsync.diffdetective.preliminary.GitDiff;
+import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.util.StringUtils;
 import org.variantsync.functjonal.Result;
 import org.variantsync.functjonal.iteration.MappedIterator;
@@ -167,6 +168,14 @@ public class GitDiffer {
                     return null;
                 }
         );
+    }
+
+    public CommitDiffResult createCommitDiff(final String commitHash) throws IOException {
+        Assert.assertNotNull(git);
+        try (var revWalk = new RevWalk(git.getRepository())) {
+            final RevCommit commit = revWalk.parseCommit(ObjectId.fromString(commitHash));
+            return createCommitDiff(commit);
+        }
     }
 
     public CommitDiffResult createCommitDiff(final RevCommit revCommit) {

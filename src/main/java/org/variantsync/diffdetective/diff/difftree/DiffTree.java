@@ -2,6 +2,7 @@ package org.variantsync.diffdetective.diff.difftree;
 
 import org.variantsync.diffdetective.datasets.Repository;
 import org.variantsync.diffdetective.diff.CommitDiff;
+import org.variantsync.diffdetective.diff.GitDiffer;
 import org.variantsync.diffdetective.diff.PatchDiff;
 import org.variantsync.diffdetective.diff.PatchReference;
 import org.variantsync.diffdetective.diff.difftree.parse.DiffNodeParser;
@@ -131,7 +132,7 @@ public class DiffTree {
      * encountered while trying to parse the {@link DiffTree}
      */
     public static Result<DiffTree, List<DiffError>> fromPatch(final PatchReference patchReference, final Repository repository) throws IOException {
-        final CommitDiffResult result = CommitDiffResult.fromCommitInRepository(patchReference.getCommitHash(), repository);
+        final CommitDiffResult result = new GitDiffer(repository).createCommitDiff(patchReference.getCommitHash());
         final Path changedFile = Path.of(patchReference.getFileName());
         if (result.diff().isPresent()) {
             final CommitDiff commit = result.diff().get();
