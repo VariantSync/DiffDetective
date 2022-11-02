@@ -22,11 +22,10 @@ import org.variantsync.diffdetective.diff.difftree.DiffTree;
 import org.variantsync.diffdetective.diff.difftree.parse.DiffTreeParser;
 import org.variantsync.diffdetective.diff.result.CommitDiffResult;
 import org.variantsync.diffdetective.diff.result.DiffError;
-import org.variantsync.diffdetective.diff.result.DiffResult;
+import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.preliminary.GitDiff;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.util.StringUtils;
-import org.variantsync.functjonal.Result;
 import org.variantsync.functjonal.iteration.MappedIterator;
 import org.variantsync.functjonal.iteration.SideEffectIterator;
 import org.variantsync.functjonal.iteration.Yield;
@@ -317,18 +316,26 @@ public class GitDiffer {
 
                 diffFormatter.format(diffEntry);
                 final String gitDiff = outputStream.toString(StandardCharsets.UTF_8);
-                final Result<PatchDiff, DiffError> patchDiff =
-                        getBeforeFullFile(git, parentCommit, diffEntry.getOldPath()).unwrap()
-                        .bind(file -> createPatchDiff(
-                                commitDiff,
-                                diffEntry,
-                                gitDiff,
-                                file,
-                                parseOptions).unwrap()
+                final String filename = diffEntry.getOldPath();
+                try {
+                    final BufferedReader file = getBeforeFullFile(git, parentCommit, filename);
+                    final PatchDiff patchDiff =
+                        createPatchDiff(
+                            commitDiff,
+                            diffEntry,
+                            gitDiff,
+                            file,
+                            parseOptions
                         );
 
-                patchDiff.ifSuccess(commitDiff::addPatchDiff);
-                patchDiff.ifFailure(errors::add);
+                    commitDiff.addPatchDiff(patchDiff);
+                } catch (IOException e) {
+                    Logger.debug(e, "Could not obtain full diff of file " + filename + " before commit " + parentCommit + "!");
+                    errors.add(DiffError.COULD_NOT_OBTAIN_FULLDIFF);
+                } catch (DiffParseException e) {
+                    errors.add(e.getError());
+                }
+
                 outputStream.reset();
             }
         } catch (IOException e) {
@@ -346,13 +353,15 @@ public class GitDiffer {
      * @param gitDiff        The git diff of the file that was changed
      * @param beforeFullFile The full file before the change
      * @return The PatchDiff of the given DiffEntry
+     * @throws DiffParseException if {@code gitDiff} couldn't be parsed
      */
-    private static DiffResult<PatchDiff> createPatchDiff(
+    private static PatchDiff createPatchDiff(
             CommitDiff commitDiff,
             DiffEntry diffEntry,
             String gitDiff,
             BufferedReader beforeFullFile,
-            final ParseOptions parseOptions) {
+            final ParseOptions parseOptions
+    ) throws DiffParseException {
         final Matcher matcher = DIFF_HEADER_PATTERN.matcher(gitDiff);
         final String strippedDiff;
         if (matcher.find()) {
@@ -362,14 +371,9 @@ public class GitDiffer {
         }
 
         final String fullDiff = getFullDiff(beforeFullFile, new BufferedReader(new StringReader(strippedDiff)));
-        final DiffResult<DiffTree> diffTree = DiffTreeParser.createDiffTree(fullDiff, true, true, parseOptions.annotationParser());
+        try {
+            DiffTree diffTree = DiffTreeParser.createDiffTree(fullDiff, true, true, parseOptions.annotationParser());
 
-//        if (diffTree.isFailure()) {
-//            Logger.debug("Something went wrong parsing patch for file {} at commit {}!",
-//                    diffEntry.getOldPath(), commitDiff.getAbbreviatedCommitHash());
-//        }
-
-        return diffTree.map(t -> {
             // not storing the full diff reduces memory usage by around 40-50%
             final String diffToRemember = switch (parseOptions.diffStoragePolicy()) {
                 case DO_NOT_REMEMBER -> "";
@@ -378,8 +382,14 @@ public class GitDiffer {
                 case REMEMBER_STRIPPED_DIFF -> strippedDiff;
             };
 
-            return new PatchDiff(commitDiff, diffEntry, diffToRemember, t);
-        });
+            return new PatchDiff(commitDiff, diffEntry, diffToRemember, diffTree);
+        } catch (DiffParseException e) {
+            // if (diffTree.isFailure()) {
+            //     Logger.debug(e, "Something went wrong parsing patch for file {} at commit {}!",
+            //             diffEntry.getOldPath(), commitDiff.getAbbreviatedCommitHash());
+            // }
+            throw e;
+        }
     }
 
     /**
@@ -444,7 +454,7 @@ public class GitDiffer {
      * @param filename The name of the file
      * @return The full content of the file before the commit
      */
-    public static DiffResult<BufferedReader> getBeforeFullFile(Git git, RevCommit commit, String filename) {
+    public static BufferedReader getBeforeFullFile(Git git, RevCommit commit, String filename) throws IOException {
         RevTree tree = commit.getTree();
 
         try (TreeWalk treeWalk = new TreeWalk(git.getRepository())) {
@@ -454,14 +464,12 @@ public class GitDiffer {
 
             // Look for the first file that matches filename.
             if (!treeWalk.next()) {
-                return DiffResult.Failure(DiffError.COULD_NOT_OBTAIN_FULLDIFF, "Could not obtain full diff of file " + filename + " before commit " + commit + "!");
+                throw new FileNotFoundException("Couldn't find " + filename + " in the commit " + commit);
             }
 
             ObjectId objectId = treeWalk.getObjectId(0);
             ObjectLoader loader = git.getRepository().open(objectId);
-            return DiffResult.Success(new BufferedReader(new InputStreamReader(loader.openStream())));
-        } catch (IOException e) {
-            return DiffResult.Failure(DiffError.COULD_NOT_OBTAIN_FULLDIFF, "Could not obtain full diff of file " + filename + " before commit " + commit + "!");
+            return new BufferedReader(new InputStreamReader(loader.openStream()));
         }
     }
 

@@ -1,5 +1,7 @@
 package org.variantsync.diffdetective.feature;
 
+import java.util.List;
+
 import org.prop4j.Literal;
 import org.prop4j.Node;
 import org.variantsync.diffdetective.diff.difftree.parse.IllFormedAnnotationException;
@@ -64,5 +66,16 @@ public class CPPAnnotationParser {
         }
 
         return formula;
+    }
+
+    public Node parseDiffLines(List<String> lines) throws IllFormedAnnotationException {
+        var logicalLine = new StringBuilder();
+        for (var it = lines.iterator(); it.hasNext(); ) {
+            String physicalLine = it.next();
+            // Remove the backslash of the line continuation
+            logicalLine.append(physicalLine, 0, physicalLine.length() - (it.hasNext() ? 1 : 0));
+        }
+
+        return parseDiffLine(logicalLine.toString());
     }
 }

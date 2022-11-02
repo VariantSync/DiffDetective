@@ -1,0 +1,5 @@
+v 16 NON;IF;(old: -1, diff: -1, new:-1);(old: -1, diff: -1, new:-1);True
+v 139 REM;ARTIFACT;(old: 1, diff: 1, new:-1);(old: 3, diff: 3, new:-1);;a \;b
+v 195 ADD;ARTIFACT;(old: -1, diff: 2, new:1);(old: -1, diff: 3, new:2);;b
+e 139 16 b;0
+e 195 16 a;1

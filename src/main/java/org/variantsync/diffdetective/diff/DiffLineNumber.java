@@ -12,12 +12,11 @@ import java.util.Objects;
  * - the corresponding line number after the edit
  * @author Paul Bittner
  */
-public class DiffLineNumber {
+public record DiffLineNumber(int inDiff, int beforeEdit, int afterEdit) {
     /**
      * Index for invalid line numbers.
      */
     public static final int InvalidLineNumber = -1;
-    public int inDiff, beforeEdit, afterEdit;
 
     /**
      * Creates a line number of a diff.
@@ -41,34 +40,26 @@ public class DiffLineNumber {
     }
 
     /**
-     * Creates a copy of the given DiffLineNumber.
+     * Shifts this line number by adding the given offset.
+     * @param offset value to add to this line number.
+     * @return a new {@code DiffLineNumber} shifted by {@code offset}
      */
-    public static DiffLineNumber Copy(final DiffLineNumber other) {
-        return new DiffLineNumber(other.inDiff, other.beforeEdit, other.afterEdit);
-    }
-
-    /**
-     * Make this line number become a copy of the given line number.
-     * @param other Number to copy. Remains unchanged.
-     * @return this
-     */
-    public DiffLineNumber set(final DiffLineNumber other) {
-        this.inDiff = other.inDiff;
-        this.beforeEdit = other.beforeEdit;
-        this.afterEdit = other.afterEdit;
-        return this;
+    public DiffLineNumber add(int offset) {
+        return add(offset, DiffType.NON);
     }
 
     /**
      * Shifts this line number by adding the given offset.
-     * @param offset Value to add to this line number.
-     * @return this
+     * @param offset value to add to this line number.
+     * @param diffType specifies which components are shifted
+     * @return a new {@code DiffLineNumber} shifted by {@code offset}
      */
-    public DiffLineNumber add(int offset) {
-        this.inDiff += offset;
-        this.beforeEdit += offset;
-        this.afterEdit += offset;
-        return this;
+    public DiffLineNumber add(int offset, DiffType diffType) {
+        return new DiffLineNumber(
+            inDiff + offset,
+            beforeEdit + (diffType == DiffType.ADD ? 0 : offset),
+            afterEdit + (diffType == DiffType.REM ? 0 : offset)
+        );
     }
 
     /**
@@ -78,12 +69,12 @@ public class DiffLineNumber {
      * Non-existing values will be set to {@link DiffLineNumber#InvalidLineNumber}.
      * @param diffType The diff type according to which this line number should be filtered.
      */
-    public void as(final DiffType diffType) {
-        if (diffType == DiffType.ADD) {
-            beforeEdit = InvalidLineNumber;
-        } else if (diffType == DiffType.REM) {
-            afterEdit = InvalidLineNumber;
-        }
+    public DiffLineNumber as(final DiffType diffType) {
+        return new DiffLineNumber(
+            inDiff,
+            diffType == DiffType.ADD ? InvalidLineNumber : beforeEdit,
+            diffType == DiffType.REM ? InvalidLineNumber : afterEdit
+        );
     }
 
     @Override

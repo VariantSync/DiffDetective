@@ -1,0 +1,12 @@
+v 16 NON;IF;(old: -1, diff: -1, new:-1);(old: -1, diff: -1, new:-1);True
+v 136 REM;IF;(old: 1, diff: 1, new:-1);(old: 7, diff: 9, new:-1);A & B & C & D;#if A \;  && B \;  && C \;  && D
+v 523 REM;ARTIFACT;(old: 5, diff: 7, new:-1);(old: 6, diff: 8, new:-1);;  // Foo
+v 595 NON;ARTIFACT;(old: 6, diff: 8, new:5);(old: 7, diff: 9, new:6);;Code
+v 128 ADD;IF;(old: -1, diff: 1, new:1);(old: -1, diff: 10, new:6);A | B | C;#if A \;  || B \;  || C \;  // Foo
+v 771 ADD;ARTIFACT;(old: -1, diff: 11, new:7);(old: -1, diff: 12, new:8);;  // Bar
+e 136 16 b;0
+e 523 136 b;0
+e 595 136 b;1
+e 595 128 a;0
+e 128 16 a;1
+e 771 16 a;2

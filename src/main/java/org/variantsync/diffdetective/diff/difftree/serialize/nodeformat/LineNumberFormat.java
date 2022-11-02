@@ -8,6 +8,6 @@ import org.variantsync.diffdetective.diff.difftree.DiffNode;
 public class LineNumberFormat implements DiffNodeLabelFormat {
 	@Override
 	public String toLabel(final DiffNode node) {
-		return String.valueOf(node.getFromLine().inDiff);
+		return String.valueOf(node.getFromLine().inDiff());
 	}
 }

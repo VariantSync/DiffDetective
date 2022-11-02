@@ -1,51 +1,49 @@
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
 import org.variantsync.diffdetective.diff.difftree.transform.Starfold;
-import org.variantsync.diffdetective.util.FileUtils;
+import org.variantsync.diffdetective.diff.result.DiffParseException;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
-import java.util.function.Function;
 import java.util.stream.Stream;
 
 public class StarfoldTest {
-    private static final Path RESOURCE_DIR = Constants.RESOURCE_DIR.resolve("starfold");
+    private static final Path INPUT_DIR = Constants.RESOURCE_DIR.resolve("starfold");
+    private static final Path EXPECTED_DIR = INPUT_DIR.resolve("expected");
 
-    private record TestCase(Path inputDiff, Path expectedDiffRespectingNodeOrder, Path expectedDiffIgnoringNodeOrder) {
-        TestCase(final String filename) {
-            this(
-                    RESOURCE_DIR.resolve(filename),
-                    RESOURCE_DIR.resolve("expected").resolve("respectNodeOrder").resolve(filename),
-                    RESOURCE_DIR.resolve("expected").resolve("ignoreNodeOrder").resolve(filename)
-            );
-        }
+    public static Stream<String> testCases() {
+        return Stream
+            .of("2x2", "nesting1")
+            .map(s -> s + ".diff");
     }
 
-    private static final List<TestCase> TEST_CASES = Stream.of(
-            "2x2", "nesting1"
-    ).map(s -> s + ".diff").map(TestCase::new).toList();
-
-    private void test(final Starfold starfold, Function<TestCase, Path> getExpectedResultFile) throws IOException {
-        for (TestCase testCase : TEST_CASES) {
-            final DiffTree t = DiffTree.fromFile(testCase.inputDiff, true, true).unwrap().getSuccess();
-            starfold.transform(t);
-            TestUtils.assertEqualToFile(
-                    getExpectedResultFile.apply(testCase),
-                    t.toTextDiff().trim()
-            );
-        }
+    private void test(Path inputDiff, final Starfold starfold, Path expected) throws IOException, DiffParseException {
+        final DiffTree t = DiffTree.fromFile(inputDiff, true, true);
+        starfold.transform(t);
+        TestUtils.assertEqualToFile(
+                expected,
+                t.toTextDiff().trim()
+        );
     }
 
-    @Test
-    public void testRespectNodeOrder() throws IOException {
-        test(Starfold.RespectNodeOrder(), TestCase::expectedDiffRespectingNodeOrder);
+    @ParameterizedTest
+    @MethodSource("testCases")
+    public void testRespectNodeOrder(String filename) throws IOException, DiffParseException {
+        test(
+            INPUT_DIR.resolve(filename),
+            Starfold.RespectNodeOrder(),
+            EXPECTED_DIR.resolve("respectNodeOrder").resolve(filename)
+        );
     }
 
-    @Test
-    public void testIgnoreNodeOrder() throws IOException {
-        test(Starfold.IgnoreNodeOrder(), TestCase::expectedDiffIgnoringNodeOrder);
+    @ParameterizedTest
+    @MethodSource("testCases")
+    public void testIgnoreNodeOrder(String filename) throws IOException, DiffParseException {
+        test(
+            INPUT_DIR.resolve(filename),
+            Starfold.IgnoreNodeOrder(),
+            EXPECTED_DIR.resolve("ignoreNodeOrder").resolve(filename)
+        );
     }
 }

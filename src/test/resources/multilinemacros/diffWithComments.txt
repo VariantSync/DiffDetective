@@ -1,10 +1,11 @@
 +#define multi \
 +kulti
-
+ 
  /** hihi **\
-
+ 
  //\
-
+ a
+ 
 +#if A & B
  foo();
 +#endif

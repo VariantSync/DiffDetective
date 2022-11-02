@@ -1,5 +1,6 @@
 package org.variantsync.diffdetective.diff.result;
 
+import org.tinylog.Logger;
 import org.variantsync.diffdetective.diff.CommitDiff;
 
 import java.util.List;
@@ -19,9 +20,10 @@ public record CommitDiffResult(Optional<CommitDiff> diff, List<DiffError> errors
      * @return A failure result that was caused by the given error.
      */
     public static CommitDiffResult Failure(DiffError error, String message) {
+        Logger.debug("{}", message);
         return new CommitDiffResult(
                 Optional.empty(),
-                List.of(DiffResult.Failure(error, message).unwrap().getFailure())
+                List.of(error)
         );
     }
 }
