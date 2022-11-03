@@ -24,6 +24,7 @@ import org.variantsync.diffdetective.diff.result.CommitDiffResult;
 import org.variantsync.diffdetective.diff.result.DiffError;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.preliminary.GitDiff;
+import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.util.StringUtils;
 import org.variantsync.functjonal.iteration.MappedIterator;
 import org.variantsync.functjonal.iteration.SideEffectIterator;
@@ -168,6 +169,14 @@ public class GitDiffer {
         );
     }
 
+    public CommitDiffResult createCommitDiff(final String commitHash) throws IOException {
+        Assert.assertNotNull(git);
+        try (var revWalk = new RevWalk(git.getRepository())) {
+            final RevCommit commit = revWalk.parseCommit(ObjectId.fromString(commitHash));
+            return createCommitDiff(commit);
+        }
+    }
+
     public CommitDiffResult createCommitDiff(final RevCommit revCommit) {
         return createCommitDiffFromFirstParent(git, diffFilter, revCommit, parseOptions);
     }
@@ -193,8 +202,8 @@ public class GitDiffer {
         }
 
         final RevCommit parent;
-        try {
-            parent = new RevWalk(git.getRepository()).parseCommit(currentCommit.getParent(0).getId());
+        try (var revWalk = new RevWalk(git.getRepository())) {
+            parent = revWalk.parseCommit(currentCommit.getParent(0).getId());
         } catch (IOException e) {
             return CommitDiffResult.Failure(DiffError.JGIT_ERROR, "Could not parse parent commit of " + currentCommit.getId().getName() + "!");
         }

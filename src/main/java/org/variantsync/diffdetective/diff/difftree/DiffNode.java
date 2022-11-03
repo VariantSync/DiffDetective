@@ -1004,12 +1004,13 @@ public class DiffNode {
         final int diffTypeOrdinal = (id >> ID_OFFSET) & lowestBitsMask;
         final int fromInDiff      = (id >> (2*ID_OFFSET)) - 1;
 
+        var nodeType = NodeType.values()[nodeTypeOrdinal];
         return new DiffNode(
                 DiffType.values()[diffTypeOrdinal],
-                NodeType.values()[nodeTypeOrdinal],
+                nodeType,
                 new DiffLineNumber(fromInDiff, DiffLineNumber.InvalidLineNumber, DiffLineNumber.InvalidLineNumber),
                 DiffLineNumber.Invalid(),
-                null,
+                nodeType.isConditionalAnnotation() ? FixTrueFalse.True : null,
                 label
         );
     }
@@ -1044,13 +1045,7 @@ public class DiffNode {
         if (beforeParent != null && afterParent != null) {
             Assert.assertTrue(isNon());
         }
-    }
 
-    /**
-     * Checks that Else and Elif nodes have an If or Elif as parent.
-     * @throws AssertionError when an inconsistency is detected.
-     */
-    public void assertSemanticConsistency() {
         // Else and Elif nodes have an If or Elif as parent.
         if (this.isElse() || this.isElif()) {
             if (beforeParent != null) {
@@ -1059,6 +1054,13 @@ public class DiffNode {
             if (afterParent != null) {
                 Assert.assertTrue(afterParent.isIf() || afterParent.isElif(), "After parent " + afterParent + " of " + this + " is neither IF nor ELIF!");
             }
+        }
+
+        // Only if and elif nodes have a formula
+        if (this.isIf() || this.isElif()) {
+            Assert.assertTrue(this.getDirectFeatureMapping() != null, "If or elif without feature mapping!");
+        } else {
+            Assert.assertTrue(this.getDirectFeatureMapping() == null, "Node with type " + nodeType + " has a non null feature mapping");
         }
     }
 

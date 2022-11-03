@@ -19,6 +19,11 @@ public enum DiffError {
     JGIT_ERROR("error when operating jgit"),
 
     /**
+     * The patch of a file was requested, but the file was not found in a git diff.
+     */
+    FILE_NOT_FOUND("couldn't find the requested file or the requested file is unmodified"),
+
+    /**
      * An error which occurred when obtaining the full diff from a local diff.
      */
     COULD_NOT_OBTAIN_FULLDIFF("could not obtain full diff"),
