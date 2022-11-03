@@ -81,7 +81,7 @@ public class ThesisValidationTask extends CommitHistoryAnalysisTask {
 
                         boolean RELATIONSHIP_EDGES = true; // TODO: replace this later with some sort of options parameter
                         boolean optimized = true;
-                        boolean implicationFirst = true;
+                        boolean implicationFirst = false;
 
                         if (RELATIONSHIP_EDGES) {
                         /*

@@ -58,7 +58,7 @@ public class Validation {
                     differ,
                     outputPath,
                     ValidationExportOptions(repo),
-                    new AnalyzeAllThenExport(),
+                    new NullStrategy(), //new AnalyzeAllThenExport(),
                     commits
             ));
 
