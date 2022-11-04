@@ -7,6 +7,7 @@ import org.variantsync.diffdetective.diff.Lines;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.util.StringUtils;
 import org.variantsync.diffdetective.util.fide.FixTrueFalse;
+import org.variantsync.diffdetective.variationtree.HasNodeType;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -24,7 +25,7 @@ import static org.variantsync.diffdetective.util.fide.FormulaUtils.negate;
  * DiffNode's store parent and child information to build a graph.
  * @author Paul Bittner, Sören Viegener, Benjamin Moosherr
  */
-public class DiffNode {
+public class DiffNode implements HasNodeType {
     private static final short ID_OFFSET = 3;
 
     /**
@@ -657,36 +658,9 @@ public class DiffNode {
         return this.diffType;
     }
 
-    /**
-     * Returns true if this node represents an ELIF annotation.
-     * @see NodeType#ELIF
-     */
-    public boolean isElif() {
-        return this.nodeType.equals(NodeType.ELIF);
-    }
-
-    /**
-     * Returns true if this node represents a conditional annotation.
-     * @see NodeType#IF
-     */
-    public boolean isIf() {
-        return this.nodeType.equals(NodeType.IF);
-    }
-
-    /**
-     * Returns true if this node is an artifact node.
-     * @see NodeType#ARTIFACT
-     */
-    public boolean isArtifact() {
-        return this.nodeType.equals(NodeType.ARTIFACT);
-    }
-
-    /**
-     * Returns true if this node represents an ELSE annotation.
-     * @see NodeType#ELSE
-     */
-    public boolean isElse() {
-        return this.nodeType.equals(NodeType.ELSE);
+    @Override
+    public NodeType getNodeType() {
+        return nodeType;
     }
 
     /**
@@ -694,13 +668,6 @@ public class DiffNode {
      */
     public boolean isRoot() {
         return getParent(BEFORE) == null && getParent(AFTER) == null;
-    }
-
-    /**
-     * Returns {@link NodeType#isAnnotation()} for this node's {@link DiffNode#nodeType}.
-     */
-    public boolean isAnnotation() {
-        return this.nodeType.isAnnotation();
     }
 
     /**
