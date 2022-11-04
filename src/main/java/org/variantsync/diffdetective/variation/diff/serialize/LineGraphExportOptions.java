@@ -20,9 +20,6 @@ import java.util.function.BiConsumer;
  * @param treeFormat {@link DiffTreeLabelFormat}
  * @param nodeFormat {@link DiffNodeLabelFormat}
  * @param edgeFormat {@link EdgeLabelFormat}
- * @param treeFilter A filter that is applied to all DiffTrees before exporting them.
- *                   Only DiffTrees for which the filter returns true will be exported.
- * @param treePreProcessing A list of {@link DiffTreeTransformer transformers} that will be sequentially applied to each unfiltered DiffTree before export.
  * @param onError Callback that is invoked when an error occurs.
  * @author Paul Bittner
  */

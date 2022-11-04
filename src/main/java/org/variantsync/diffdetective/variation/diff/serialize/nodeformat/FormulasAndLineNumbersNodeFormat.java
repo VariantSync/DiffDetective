@@ -1,5 +1,6 @@
 package org.variantsync.diffdetective.variation.diff.serialize.nodeformat;
 
+import org.variantsync.diffdetective.diff.text.DiffLineNumber; // For Javadoc
 import org.variantsync.diffdetective.variation.diff.DiffNode;
 
 /**
@@ -7,7 +8,7 @@ import org.variantsync.diffdetective.variation.diff.DiffNode;
  * The line numbers reference the line numbers in the diff.
  * @see DiffNode#getFromLine()
  * @see DiffNode#getToLine()
- * @see org.variantsync.diffdetective.diff.DiffLineNumber#inDiff
+ * @see DiffLineNumber#inDiff
  * @author Paul Bittner, Kevin Jedelhauser
  */
 public class FormulasAndLineNumbersNodeFormat implements DiffNodeLabelFormat {

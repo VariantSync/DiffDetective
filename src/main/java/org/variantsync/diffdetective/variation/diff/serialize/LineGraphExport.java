@@ -73,8 +73,8 @@ public final class LineGraphExport {
      * Writes the given commitDiff in linegraph format to the given StringBuilder.
      * @param repoName The name of the repository from which the given CommitDiff originated.
      * @param commitDiff The diff to convert to line graph format.
-     * @param lineGraph The string builder to write the result to.
      * @param options Configuration options for the export, such as the format used for node and edge labels.
+     * @param destination where the resulting line graph is written
      * @return The number of the next diff tree to export (updated value of treeCounter).
      */
     public static AnalysisResult toLineGraphFormat(final String repoName, final CommitDiff commitDiff, LineGraphExportOptions options, OutputStream destination) throws IOException {
@@ -97,9 +97,9 @@ public final class LineGraphExport {
     /**
      * Writes the given patch in linegraph format to the given StringBuilder.
      * @param patch The diff to convert to line graph format.
-     * @param lineGraph The string builder to write the result to.
      * @param options Configuration options for the export, such as the format used for node and edge labels.
-     * @param result where the number of exported trees and debug data is updated
+     * @param destination where the resulting line graph is written
+     * @return The number of the next diff tree to export (updated value of treeCounter).
      */
     public static AnalysisResult toLineGraphFormat(final String repoName, final PatchDiff patch, final LineGraphExportOptions options, OutputStream destination) throws IOException {
         final AnalysisResult result = new AnalysisResult(repoName);

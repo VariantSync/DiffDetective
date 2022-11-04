@@ -2,8 +2,10 @@ package org.variantsync.diffdetective.variation.diff.source;
 
 import java.nio.file.Path;
 
+import org.variantsync.diffdetective.diff.git.CommitDiff; // For Javadoc
+
 /**
- * Describes that a DiffTree was created from a patch in a {@link org.variantsync.diffdetective.diff.CommitDiff}.
+ * Describes that a DiffTree was created from a patch in a {@link CommitDiff}.
  */
 public class CommitDiffDiffTreeSource implements DiffTreeSource {
 	private final Path fileName;
