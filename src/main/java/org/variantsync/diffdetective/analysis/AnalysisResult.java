@@ -93,7 +93,6 @@ public class AnalysisResult implements Metadata<AnalysisResult> {
     public final CommitProcessTime min, max;
     public final DiffTreeSerializeDebugData debugData;
     public ExplainedFilterSummary filterHits;
-    public ElementaryPatternCount elementaryPatternCounts;
     public int[] complexityChangeCount;
     public EditClassCount editClassCounts;
     private final LinkedHashMap<String, String> customInfo = new LinkedHashMap<>();

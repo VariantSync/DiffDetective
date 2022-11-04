@@ -11,7 +11,7 @@ import org.variantsync.diffdetective.analysis.strategies.NullStrategy;
 import org.variantsync.diffdetective.datasets.*;
 import org.variantsync.diffdetective.diff.difftree.filter.DiffTreeFilter;
 import org.variantsync.diffdetective.diff.difftree.filter.ExplainedFilter;
-import org.variantsync.diffdetective.diff.difftree.serialize.DiffTreeLineGraphExportOptions;
+import org.variantsync.diffdetective.diff.difftree.serialize.LineGraphExportOptions;
 import org.variantsync.diffdetective.diff.difftree.serialize.GraphFormat;
 import org.variantsync.diffdetective.diff.difftree.serialize.edgeformat.EdgeLabelFormat;
 import org.variantsync.diffdetective.diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
@@ -57,8 +57,9 @@ public class Validation {
                     repo,
                     differ,
                     outputPath,
-                    ValidationExportOptions(repo),
-                    new NullStrategy(), //new AnalyzeAllThenExport(),
+                    new ExplainedFilter<>(DiffTreeFilter.notEmpty()),
+                    List.of(new CutNonEditedSubtrees()),
+                    new AnalyzeAllThenExport(), // new NullStrategy(),
                     commits
             ));
 
@@ -80,19 +81,17 @@ public class Validation {
     /**
      * Creates new export options for running the validation on the given repository.
      */
-    public static DiffTreeLineGraphExportOptions ValidationExportOptions(final Repository repository) {
+    public static LineGraphExportOptions ValidationExportOptions(final Repository repository) {
         final MiningNodeFormat nodeFormat = NodeFormat();
-        return new DiffTreeLineGraphExportOptions(
+        return new LineGraphExportOptions(
                 GraphFormat.DIFFTREE
                 // We have to ensure that all DiffTrees have unique IDs, so use name of changed file and commit hash.
                 , new CommitDiffDiffTreeLabelFormat()
                 , nodeFormat
                 , EdgeFormat(nodeFormat)
-                , new ExplainedFilter<>(DiffTreeFilter.notEmpty())
-                , List.of(new CutNonEditedSubtrees())
-                , DiffTreeLineGraphExportOptions.LogError()
-                .andThen(DiffTreeLineGraphExportOptions.RenderError())
-                .andThen(DiffTreeLineGraphExportOptions.SysExitOnError())
+                , LineGraphExportOptions.LogError()
+                .andThen(LineGraphExportOptions.RenderError())
+                .andThen(LineGraphExportOptions.SysExitOnError())
         );
     }
 

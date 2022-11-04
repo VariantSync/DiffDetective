@@ -12,8 +12,10 @@ import org.variantsync.diffdetective.diff.CommitDiff;
 import org.variantsync.diffdetective.diff.PatchDiff;
 import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
-import org.variantsync.diffdetective.diff.difftree.serialize.DiffTreeLineGraphExportOptions;
+import org.variantsync.diffdetective.diff.difftree.serialize.GraphFormat;
 import org.variantsync.diffdetective.diff.difftree.serialize.LineGraphExport;
+import org.variantsync.diffdetective.diff.difftree.serialize.LineGraphExportOptions;
+import org.variantsync.diffdetective.diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
 import org.variantsync.diffdetective.diff.difftree.transform.DiffTreeTransformer;
 import org.variantsync.diffdetective.diff.result.CommitDiffResult;
 import org.variantsync.diffdetective.metadata.ExplainedFilterSummary;
@@ -22,6 +24,8 @@ import org.variantsync.diffdetective.util.FileUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.variantsync.diffdetective.relationshipedges.Validation.ValidationExportOptions;
 
 /**
  * Task for performing the mining for Lukas Güthing's thesis.
@@ -37,7 +41,6 @@ public class ThesisValidationTask extends CommitHistoryAnalysisTask {
     public AnalysisResult call() throws Exception {
         // Setup. Obtain the result from the initial setup in the super class.
         final AnalysisResult miningResult = super.call();
-        final DiffTreeLineGraphExportOptions exportOptions = options.exportOptions();
         // List to store the process time of each commit.
         final List<CommitProcessTime> commitTimes = new ArrayList<>(HistoryAnalysis.COMMITS_TO_PROCESS_PER_THREAD_DEFAULT);
         // Clock for runtime measurement.
@@ -70,10 +73,10 @@ public class ThesisValidationTask extends CommitHistoryAnalysisTask {
                 for (final PatchDiff patch : commitDiff.getPatchDiffs()) {
                     if (patch.isValid()) {
                         final DiffTree t = patch.getDiffTree();
-                        DiffTreeTransformer.apply(exportOptions.treePreProcessing(), t);
+                        DiffTreeTransformer.apply(options.treePreProcessing(), t);
                         t.assertConsistency();
 
-                        if (!exportOptions.treeFilter().test(t)) {
+                        if (!options.treeFilter().test(t)) {
                             continue;
                         }
 
@@ -171,8 +174,8 @@ public class ThesisValidationTask extends CommitHistoryAnalysisTask {
                 miningResult.implicationEdges += numImplEdges;
                 miningResult.alternativeEdges += numAltEdges;
                 miningResult.exportedTrees += numDiffTrees;
-                miningResult.filterHits.append(new ExplainedFilterSummary(exportOptions.treeFilter()));
-                exportOptions.treeFilter().resetExplanations();
+                miningResult.filterHits.append(new ExplainedFilterSummary(options.treeFilter()));
+                options.treeFilter().resetExplanations();
 
                 // Report the commit process time if the commit is not empty.
                 if (numDiffTrees > 0) {
@@ -193,8 +196,9 @@ public class ThesisValidationTask extends CommitHistoryAnalysisTask {
                 }
 
                 final StringBuilder lineGraph = new StringBuilder();
-                miningResult.append(LineGraphExport.toLineGraphFormatEdgeTyped(commitDiff, lineGraph, options.exportOptions()));
-                options.analysisStrategy().onCommit(commitDiff, lineGraph.toString());
+                var lineGraphDestination = options.analysisStrategy().onCommit(commitDiff);
+                miningResult.append(LineGraphExport.toLineGraphFormatEdgeTyped(commitDiff, ValidationExportOptions(options.repository()), lineGraphDestination));
+
 
             } catch (Exception e) {
                 Logger.error(e, "An unexpected error occurred at {} in {}", commit.getId().getName(), getOptions().repository().getRepositoryName());

@@ -12,7 +12,7 @@ public class Implication implements RelationshipType {
     }
 
     public static boolean areInRelation(DiffNode a, DiffNode b) {
-        if(!a.isMacro() || !b.isMacro()){
+        if(!a.isIf() || !b.isIf()){ // TODO: check for all macro nodes
             return false;
         }
         Node featureMappingA = a.getDirectFeatureMapping();
