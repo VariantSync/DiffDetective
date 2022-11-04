@@ -8,6 +8,7 @@ import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.util.StringUtils;
 import org.variantsync.diffdetective.util.fide.FixTrueFalse;
 import org.variantsync.diffdetective.variationtree.HasNodeType;
+import org.variantsync.diffdetective.variationtree.VariationNode;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -65,6 +66,16 @@ public class DiffNode implements HasNodeType {
      * {@code child.getParent(BEFORE) == this && child.getParent(AFTER) == this}.
      */
     private final List<DiffNode> childOrder;
+
+    /**
+     * Cache for before and after projections.
+     * It stores the projection node at each time so that only one instance of {@link Projection}
+     * per {@link Time} is ever created. This array has to be indexed by {@code Time.ordinal()}
+     *
+     * <p>This field is required to allow identity tests of {@link Projection}s with {@code ==} instead
+     * of {@link Projection#isSameAs}.
+     */
+    private Projection[] projections = new Projection[2];
 
     /**
      * Creates a DiffNode with the given parameters.
@@ -141,14 +152,15 @@ public class DiffNode implements HasNodeType {
 
     /**
      * Returns the lines in the diff that are represented by this DiffNode.
+     * The returned list is unmodifiable.
      */
-    public List<String> getLines() {
-        return lines;
+    public List<String> getLabelLines() {
+        return Collections.unmodifiableList(lines);
     }
 
     /**
      * Returns the lines in the diff that are represented by this DiffNode as a single text.
-     * @see DiffNode#getLines
+     * @see DiffNode#getLabelLines
      */
     public String getLabel() {
         return String.join(StringUtils.LINEBREAK, lines);
@@ -295,7 +307,7 @@ public class DiffNode implements HasNodeType {
     }
 
     /**
-     * Remove this as the parent of {@code child}.
+     * Remove this node as the parent of {@code child} but it doesn't change {@link childOrder}.
      */
     private void dropChild(final DiffNode child, Time time) {
         Assert.assertTrue(child.getParent(time) == this);
@@ -383,7 +395,7 @@ public class DiffNode implements HasNodeType {
 
     /**
      * Removes all children before or after the edit.
-     * Afterwards, this node will have no before children.
+     * Afterwards, this node will have no children at the given time.
      * @param time whether to remove all children before or after the edit
      * @return All removed children.
      */
@@ -812,6 +824,51 @@ public class DiffNode implements HasNodeType {
         }
 
         return diff.toString();
+    }
+
+    /**
+     * Returns a view of this {@code DiffNode} as a variation node at the time {@code time}.
+     *
+     * <p>See the {@code project} function in section 3.1 of
+     * <a href="https://github.com/SoftVarE-Group/Papers/raw/main/2022/2022-ESECFSE-Bittner.pdf">
+     * our paper</a>.
+     */
+    public Projection projection(Time time) {
+        Assert.assertTrue(getDiffType().existsAtTime(time));
+
+        if (projections[time.ordinal()] == null) {
+            projections[time.ordinal()] = new Projection(this, time);
+        }
+
+        return projections[time.ordinal()];
+    }
+
+    /**
+     * Transforms a {@code VariationNode} into a {@code DiffNode} by diffing {@code variationNode}
+     * to itself.
+     *
+     * This is the inverse of {@link projection} iff the original {@link DiffNode} wasn't modified
+     * (all node had a {@link getDiffType diff type} of {@link DiffType#NON}).
+     */
+    public static <T> DiffNode unchanged(VariationNode<T> variationNode) {
+        int from = variationNode.getFromLine();
+        int to = variationNode.getToLine();
+
+        var diffNode = new DiffNode(
+            DiffType.NON,
+            variationNode.getNodeType(),
+            new DiffLineNumber(from, from, from),
+            new DiffLineNumber(to, to, to),
+            variationNode.getDirectFeatureMapping(),
+            variationNode.getLabelLines()
+        );
+
+        for (var variationChildNode : variationNode.getChildren()) {
+            var diffChildNode = unchanged(variationChildNode);
+            Time.forAll(time -> diffNode.addChild(diffChildNode, time));
+        }
+
+        return diffNode;
     }
 
     @Override
