@@ -93,8 +93,8 @@ public class MiningResultAccumulator {
      * <ul>
      *   <li>Whether the results are filtered to only include the biggest datasets.
      *   <li>Whether the amount of each edit type is given in absolute or relative numbers.
-     *   <li>Whether the edit count of each pattern or only the share of edit pattern editing the
-     *   variability is included.
+     *   <li>Whether the edit count of each edit class or only the share of edit classes editing
+     *   the variability is included.
      * </ul>
      *
      * @see getAllTotalResultsIn
@@ -143,7 +143,7 @@ public class MiningResultAccumulator {
                          automationResult = FindMedianCommitTime.getResultOfDirectory(automationResultDir);
                     } catch (IOException e) {
                         Logger.error("Could not load automation results for dataset {} in {}", dataset.name(), automationResultDir);
-                        System.exit(0);
+                        System.exit(1);
                         return null;
                     }
 

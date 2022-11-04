@@ -10,10 +10,10 @@ import org.variantsync.diffdetective.diff.difftree.DiffTreeSource;
 import org.variantsync.diffdetective.diff.difftree.filter.DiffTreeFilter;
 import org.variantsync.diffdetective.diff.difftree.filter.ExplainedFilter;
 import org.variantsync.diffdetective.diff.difftree.filter.TaggedPredicate;
-import org.variantsync.diffdetective.diff.difftree.parse.DiffNodeParser;
 import org.variantsync.diffdetective.diff.difftree.render.DiffTreeRenderer;
 import org.variantsync.diffdetective.diff.difftree.transform.ExampleFinder;
-import org.variantsync.diffdetective.diff.result.DiffResult;
+import org.variantsync.diffdetective.diff.result.DiffParseException;
+import org.variantsync.diffdetective.feature.CPPAnnotationParser;
 import org.variantsync.diffdetective.util.Assert;
 
 import java.nio.file.Path;
@@ -26,17 +26,17 @@ public class RunningExampleFinder {
             new TaggedPredicate<>("diff length <= " + DefaultMaxDiffLineCount, t -> diffIsNotLongerThan(t, DefaultMaxDiffLineCount)),
             new TaggedPredicate<>("has nesting before the edit", RunningExampleFinder::hasNestingBeforeEdit),
             new TaggedPredicate<>("has additions", t -> t.anyMatch(DiffNode::isAdd)),
-            new TaggedPredicate<>("code was edited", t -> t.anyMatch(n -> n.isCode() && !n.isNon())),
+            new TaggedPredicate<>("an artifact was edited", t -> t.anyMatch(n -> n.isArtifact() && !n.isNon())),
             DiffTreeFilter.hasAtLeastOneEditToVariability(),
-            DiffTreeFilter.moreThanOneCodeNode(),
+            DiffTreeFilter.moreThanOneArtifactNode(),
             new TaggedPredicate<>("has no annotated macros", t -> !RunningExampleFinder.hasAnnotatedMacros(t)),
             new TaggedPredicate<>("has a complex formula", RunningExampleFinder::hasAtLeastOneComplexFormulaBeforeTheEdit)
     );
 
-    private final DiffNodeParser nodeParser;
+    private final CPPAnnotationParser annotationParser;
 
-    public RunningExampleFinder(final DiffNodeParser nodeParser) {
-        this.nodeParser = nodeParser;
+    public RunningExampleFinder(final CPPAnnotationParser annotationParser) {
+        this.annotationParser = annotationParser;
     }
 
     public ExampleFinder The_Diff_Itself_Is_A_Valid_DiffTree_And(
@@ -45,22 +45,21 @@ public class RunningExampleFinder {
     {
         return new ExampleFinder(
                 diffTree -> {
-                    final String localDiff = getDiff(diffTree);
-                    final DiffResult<DiffTree> parseResult = DiffTree.fromDiff(localDiff, true, true, nodeParser);
-                    // Not every local diff can be parsed to a difftree because diffs are unaware of the underlying language (i.e., CPP).
-                    // We want only running examples whose diffs describe entire diff trees for easier understanding.
-                    return parseResult.unwrap().match(
-                            localTree -> {
-                                if (treeConditions.test(localTree)) {
-                                    Assert.assertTrue(diffTree.getSource() instanceof GitPatch);
-                                    final GitPatch diffTreeSource = (GitPatch) diffTree.getSource();
-                                    localTree.setSource(diffTreeSource.shallowClone());
-                                    return Optional.of(localTree);
-                                }
-                                return Optional.empty();
-                            },
-                            error -> Optional.empty()
-                    );
+                    try {
+                        final String localDiff = getDiff(diffTree);
+                        final DiffTree localTree = DiffTree.fromDiff(localDiff, true, true, annotationParser);
+                        // Not every local diff can be parsed to a difftree because diffs are unaware of the underlying language (i.e., CPP).
+                        // We want only running examples whose diffs describe entire diff trees for easier understanding.
+                        if (treeConditions.test(localTree)) {
+                            Assert.assertTrue(diffTree.getSource() instanceof GitPatch);
+                            final GitPatch diffTreeSource = (GitPatch) diffTree.getSource();
+                            localTree.setSource(diffTreeSource.shallowClone());
+                            return Optional.of(localTree);
+                        }
+                        return Optional.empty();
+                    } catch (DiffParseException e) {
+                        return Optional.empty();
+                    }
                 },
                 exportDirectory,
                 DiffTreeRenderer.WithinDiffDetective()
@@ -72,7 +71,7 @@ public class RunningExampleFinder {
     }
 
     private static boolean hasAnnotatedMacros(final DiffTree diffTree) {
-        return diffTree.anyMatch(n -> n.isCode() && n.getLabel().trim().startsWith("#"));
+        return diffTree.anyMatch(n -> n.isArtifact() && n.getLabel().trim().startsWith("#"));
     }
 
     private static boolean hasNestingBeforeEdit(final DiffTree diffTree) {
@@ -87,7 +86,7 @@ public class RunningExampleFinder {
         // We would like to have a complex formula in the tree (complex := not just a positive literal).
         return diffTree.anyMatch(n -> {
             // and the formula should be visible before the edit
-            if (n.isMacro() && !n.isAdd()) {
+            if (n.isAnnotation() && !n.isAdd()) {
                 return isComplexFormula(n.getDirectFeatureMapping());
             }
 

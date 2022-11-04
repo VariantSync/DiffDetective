@@ -3,8 +3,8 @@ package org.variantsync.diffdetective.preliminary.pattern.elementary;
 import org.prop4j.Node;
 import org.variantsync.diffdetective.diff.Lines;
 import org.variantsync.diffdetective.diff.difftree.DiffNode;
-import org.variantsync.diffdetective.pattern.EditPattern;
-import org.variantsync.diffdetective.pattern.elementary.proposed.ProposedElementaryPatterns;
+import org.variantsync.diffdetective.preliminary.pattern.Pattern;
+import org.variantsync.diffdetective.editclass.proposed.ProposedEditClasses;
 import org.variantsync.diffdetective.preliminary.analysis.data.PatternMatch;
 import org.variantsync.diffdetective.preliminary.evaluation.FeatureContext;
 import org.variantsync.diffdetective.preliminary.pattern.FeatureContextReverseEngineering;
@@ -12,8 +12,8 @@ import org.variantsync.diffdetective.preliminary.pattern.FeatureContextReverseEn
 @Deprecated
 public final class FeatureContextOfAddWithMapping implements FeatureContextReverseEngineering<DiffNode> {
     @Override
-    public EditPattern<DiffNode> getPattern() {
-        return ProposedElementaryPatterns.AddWithMapping;
+    public Pattern<DiffNode> getPattern() {
+        return ProposedEditClasses.AddWithMapping;
     }
 
     @Override

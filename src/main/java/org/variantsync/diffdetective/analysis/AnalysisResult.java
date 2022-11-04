@@ -2,10 +2,10 @@ package org.variantsync.diffdetective.analysis;
 
 import org.variantsync.diffdetective.diff.difftree.serialize.DiffTreeSerializeDebugData;
 import org.variantsync.diffdetective.diff.result.DiffError;
-import org.variantsync.diffdetective.metadata.ElementaryPatternCount;
+import org.variantsync.diffdetective.metadata.EditClassCount;
 import org.variantsync.diffdetective.metadata.ExplainedFilterSummary;
 import org.variantsync.diffdetective.metadata.Metadata;
-import org.variantsync.diffdetective.pattern.elementary.proposed.ProposedElementaryPatterns;
+import org.variantsync.diffdetective.editclass.proposed.ProposedEditClasses;
 import org.variantsync.functjonal.Functjonal;
 import org.variantsync.functjonal.category.InplaceMonoid;
 import org.variantsync.functjonal.category.InplaceSemigroup;
@@ -57,7 +57,7 @@ public class AnalysisResult implements Metadata<AnalysisResult> {
         a.max.set(CommitProcessTime.max(a.max, b.max));
         a.debugData.append(b.debugData);
         a.filterHits.append(b.filterHits);
-        a.elementaryPatternCounts.append(b.elementaryPatternCounts);
+        a.editClassCounts.append(b.editClassCounts);
         MergeMap.putAllValues(a.customInfo, b.customInfo, Semigroup.assertEquals());
         a.diffErrors.append(b.diffErrors);
         a.complexityChangeCount[0] += b.complexityChangeCount[0];
@@ -95,6 +95,7 @@ public class AnalysisResult implements Metadata<AnalysisResult> {
     public ExplainedFilterSummary filterHits;
     public ElementaryPatternCount elementaryPatternCounts;
     public int[] complexityChangeCount;
+    public EditClassCount editClassCounts;
     private final LinkedHashMap<String, String> customInfo = new LinkedHashMap<>();
     private final MergeMap<DiffError, Integer> diffErrors = new MergeMap<>(new HashMap<>(), Integer::sum);
 
@@ -166,7 +167,7 @@ public class AnalysisResult implements Metadata<AnalysisResult> {
         this.runtimeWithMultithreadingInSeconds = runtimeWithMultithreadingInSeconds;
         this.debugData = debugData;
         this.filterHits = filterHits;
-        this.elementaryPatternCounts = new ElementaryPatternCount();
+        this.editClassCounts = new EditClassCount();
         this.min = min;
         this.max = max;
         this.implicationEdges = 0;
@@ -207,7 +208,7 @@ public class AnalysisResult implements Metadata<AnalysisResult> {
         AnalysisResult result = new AnalysisResult();
         
         final List<String> filterHitsLines = new ArrayList<>();
-        final List<String> elementaryPatternCountsLines = new ArrayList<>();
+        final List<String> editClassCountsLines = new ArrayList<>();
 
         try (BufferedReader input = Files.newBufferedReader(p)) {
             // examine each line of the metadata file separately
@@ -249,19 +250,23 @@ public class AnalysisResult implements Metadata<AnalysisResult> {
                         // temporary fix for renaming from Unchanged to Untouched
                         final String unchanged = "Unchanged";
                         if (key.startsWith(unchanged)) {
-                            key = ProposedElementaryPatterns.Untouched.getName();
+                            key = ProposedEditClasses.Untouched.getName();
                             line = key + line.substring(unchanged.length());
                         }
 
                         final String finalKey = key;
-                        if (ProposedElementaryPatterns.All.stream().anyMatch(pattern -> pattern.getName().equals(finalKey))) {
-                            elementaryPatternCountsLines.add(line);
+                        if (ProposedEditClasses.All.stream().anyMatch(editClass -> editClass.getName().equals(finalKey))) {
+                            editClassCountsLines.add(line);
                         } else if (key.startsWith(ExplainedFilterSummary.FILTERED_MESSAGE_BEGIN)) {
                             filterHitsLines.add(line);
                         } else if (key.startsWith(ERROR_BEGIN)) {
-                            DiffError e = new DiffError(key.substring(ERROR_BEGIN.length(), key.length() - ERROR_END.length()));
+                            var errorId = key.substring(ERROR_BEGIN.length(), key.length() - ERROR_END.length());
+                            var e = DiffError.fromMessage(errorId);
+                            if (e.isEmpty()) {
+                                throw new RuntimeException("Invalid error id " + errorId + " while importing " + p);
+                            }
                             // add DiffError
-                            result.diffErrors.put(e, Integer.parseInt(value));
+                            result.diffErrors.put(e.get(), Integer.parseInt(value));
                         } else {
                             final BiConsumer<AnalysisResult, String> customParser = customParsers.get(key);
                             if (customParser == null) {
@@ -277,7 +282,7 @@ public class AnalysisResult implements Metadata<AnalysisResult> {
         }
 
         result.filterHits = ExplainedFilterSummary.parse(filterHitsLines);
-        result.elementaryPatternCounts = ElementaryPatternCount.parse(elementaryPatternCountsLines, p.toString());
+        result.editClassCounts = EditClassCount.parse(editClassCountsLines, p.toString());
 
         return result;
     }
@@ -318,7 +323,7 @@ public class AnalysisResult implements Metadata<AnalysisResult> {
         snap.putAll(customInfo);
         snap.putAll(debugData.snapshot());
         snap.putAll(filterHits.snapshot());
-        snap.putAll(elementaryPatternCounts.snapshot());
+        snap.putAll(editClassCounts.snapshot());
         snap.putAll(Functjonal.bimap(diffErrors, error -> ERROR_BEGIN + error + ERROR_END, Object::toString));
         return snap;
     }

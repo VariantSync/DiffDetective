@@ -2,11 +2,12 @@ package org.variantsync.diffdetective.diff.difftree.serialize.edgeformat;
 
 import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.diff.difftree.LineGraphConstants;
+import org.variantsync.diffdetective.diff.difftree.serialize.StyledEdge;
 import org.variantsync.diffdetective.diff.difftree.serialize.LinegraphFormat;
 import org.variantsync.diffdetective.util.Assert;
-import org.variantsync.diffdetective.util.StringUtils;
 import org.variantsync.functjonal.Pair;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -55,7 +56,7 @@ public abstract class EdgeLabelFormat implements LinegraphFormat {
          * @return Both values sorted according to this direction.
          * @param <A> Value type.
          */
-        <A> Pair<A, A> sort(A child, A parent) {
+        public <A> Pair<A, A> sort(A child, A parent) {
             if (this == ChildToParent) {
                 return new Pair<>(child, parent);
             } else {
@@ -141,51 +142,23 @@ public abstract class EdgeLabelFormat implements LinegraphFormat {
     }
 
     /**
-     * Serializes the edges from given node to its parent
-     * to a string of lines, where each edge is placed on one line.
+     * Converts a {@link StyledEdge} into a label suitable for exporting.
+     * This may be human readable text or machine parseable metadata.
      *
-     * @param node The {@link DiffNode} whose edges to parents to export.
-     * @return Linegraph lines for each edge from the given node to its parents. All lines are put into the same string and separated by a line break ("\n").
+     * @param edge The {@link StyledEdge} to be labeled
+     * @return a label for {@code edge}
      */
-    public String getParentEdgeLines(final DiffNode node) {
-        final DiffNode beforeParent = node.getBeforeParent();
-        final DiffNode afterParent = node.getAfterParent();
-        final boolean hasBeforeParent = beforeParent != null;
-        final boolean hasAfterParent = afterParent != null;
-
-        StringBuilder edgesString = new StringBuilder();
-        // If the node has exactly one parent
-        if (hasBeforeParent && hasAfterParent && beforeParent == afterParent) {
-            edgesString
-                    .append(edgeToLineGraphSorted(node, beforeParent, LineGraphConstants.BEFORE_AND_AFTER_PARENT))
-                    .append(StringUtils.LINEBREAK);
-        } else {
-            if (hasBeforeParent) {
-                edgesString
-                        .append(edgeToLineGraphSorted(node, beforeParent, LineGraphConstants.BEFORE_PARENT))
-                        .append(StringUtils.LINEBREAK);
-            }
-            if (hasAfterParent) {
-                edgesString
-                        .append(edgeToLineGraphSorted(node, afterParent, LineGraphConstants.AFTER_PARENT))
-                        .append(StringUtils.LINEBREAK);
-            }
-        }
-        return edgesString.toString();
-    }
-
-    private String edgeToLineGraphSorted(DiffNode desiredFrom, DiffNode desiredTo, final String labelPrefix) {
-        final Pair<DiffNode, DiffNode> sorted = edgeDirection.sort(desiredFrom, desiredTo);
-        return edgeToLineGraph(sorted.first(), sorted.second(), labelPrefix);
-    }
+    public abstract String labelOf(StyledEdge edge);
 
     /**
-     * Creates a linegraph edge in the direction from -> to.
-     * The edge's label should be prefixed by the given prefix.
-     * @param from Node the edge begins at.
-     * @param to Node the edge ends at.
-     * @param labelPrefix Prefix for the produced edge's label.
-     * @return A line for a linegraph file that describes the given edge.
+     * Converts a {@link StyledEdge} into a multi line label suitable for exporting.
+     * This should be human readable text. Use a single line for machine parseable metadata
+     * ({@link labelOf}).
+     *
+     * @param edge The {@link StyledEdge} to be labeled
+     * @return a list of lines of the label for {@code edge}
      */
-    protected abstract String edgeToLineGraph(DiffNode from, DiffNode to, final String labelPrefix);
+    public List<String> multilineLabelOf(StyledEdge edge) {
+        return List.of(labelOf(edge));
+    }
 }

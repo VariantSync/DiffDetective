@@ -6,7 +6,10 @@ import org.variantsync.diffdetective.analysis.monitoring.TaskCompletionMonitor;
 import org.variantsync.diffdetective.analysis.strategies.AnalysisStrategy;
 import org.variantsync.diffdetective.datasets.Repository;
 import org.variantsync.diffdetective.diff.GitDiffer;
-import org.variantsync.diffdetective.diff.difftree.serialize.DiffTreeLineGraphExportOptions;
+import org.variantsync.diffdetective.diff.difftree.DiffTree;
+import org.variantsync.diffdetective.diff.difftree.filter.ExplainedFilter;
+import org.variantsync.diffdetective.diff.difftree.serialize.LineGraphExportOptions;
+import org.variantsync.diffdetective.diff.difftree.transform.DiffTreeTransformer;
 import org.variantsync.diffdetective.metadata.Metadata;
 import org.variantsync.diffdetective.mining.MiningTask;
 import org.variantsync.diffdetective.parallel.ScheduledTasksIterator;
@@ -23,7 +26,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 /**
- * An analyses that is performed for the entire commit histories of each given git repositoy.
+ * An analyses that is performed for the entire commit histories of each given git repository.
  * @param repositoriesToAnalyze The repositories whose commit history should be analyzed.
  * @param outputDir The directory to which any produced results should be written.
  * @param commitsToProcessPerThread Number of commits that should be processed by each single thread if multithreading is used.
@@ -56,7 +59,9 @@ public record HistoryAnalysis(
     public static void analyze(
             final Repository repo,
             final Path outputDir,
-            final DiffTreeLineGraphExportOptions exportOptions,
+            final ExplainedFilter<DiffTree> treeFilter,
+            final List<DiffTreeTransformer> treePreProcessing,
+            final LineGraphExportOptions exportOptions,
             final AnalysisStrategy strategy)
     {
         AnalysisResult totalResult;
@@ -71,10 +76,11 @@ public record HistoryAnalysis(
                 repo,
                 differ,
                 outputDir.resolve(repo.getRepositoryName() + ".lg"),
-                exportOptions,
+                treeFilter,
+                treePreProcessing,
                 strategy,
                 commitsToProcess
-        ));
+        ), exportOptions);
         Logger.info("Scheduled {} commits.", commitsToProcess.size());
         commitsToProcess = null; // free reference to enable garbage collection
         Logger.info("<<< done after {}", clock.printPassedSeconds());
@@ -144,7 +150,7 @@ public record HistoryAnalysis(
             }
         } catch (Exception e) {
             Logger.error(e, "Failed to run all mining task");
-            System.exit(0);
+            System.exit(1);
         }
 
         final double runtime = clock.getPassedSeconds();

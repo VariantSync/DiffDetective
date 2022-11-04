@@ -5,15 +5,17 @@ import org.variantsync.diffdetective.datasets.ParseOptions;
 import org.variantsync.diffdetective.datasets.Repository;
 import org.variantsync.diffdetective.diff.PatchDiff;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
-import org.variantsync.diffdetective.diff.difftree.parse.DiffNodeParser;
 import org.variantsync.diffdetective.diff.difftree.parse.DiffTreeParser;
 import org.variantsync.diffdetective.diff.difftree.render.DiffTreeRenderer;
 import org.variantsync.diffdetective.diff.difftree.render.RenderOptions;
 import org.variantsync.diffdetective.diff.difftree.serialize.nodeformat.MappingsDiffNodeFormat;
 import org.variantsync.diffdetective.diff.difftree.transform.DiffTreeTransformer;
+import org.variantsync.diffdetective.diff.result.DiffParseException;
+import org.variantsync.diffdetective.feature.CPPAnnotationParser;
 import org.variantsync.diffdetective.mining.DiffTreeMiner;
 import org.variantsync.diffdetective.mining.RWCompositePatternNodeFormat;
 import org.variantsync.diffdetective.mining.RWCompositePatternTreeFormat;
+import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.util.FileUtils;
 
 import java.io.IOException;
@@ -96,8 +98,8 @@ public class SimpleRenderer {
             Logger.info("Rendering {}", fileToRender);
             final DiffTree t;
             try {
-                t = DiffTree.fromFile(fileToRender, collapseMultipleCodeLines, ignoreEmptyLines, DiffNodeParser.Default).unwrap().getSuccess();
-            } catch (IOException e) {
+                t = DiffTree.fromFile(fileToRender, collapseMultipleCodeLines, ignoreEmptyLines, CPPAnnotationParser.Default);
+            } catch (IOException | DiffParseException e) {
                 Logger.error(e, "Could not read given file '{}'", fileToRender);
                 return;
             }
@@ -156,7 +158,7 @@ public class SimpleRenderer {
 
             final List<DiffTreeTransformer> transform = DiffTreeMiner.Postprocessing(repository);
             final PatchDiff patch = DiffTreeParser.parsePatch(repository, file, commit);
-            assert patch != null;
+            Assert.assertNotNull(patch != null);
             DiffTreeTransformer.apply(transform, patch.getDiffTree());
             renderer.render(patch, Path.of("render", repoName), RENDER_OPTIONS_TO_USE);
         }

@@ -27,9 +27,9 @@ public class LineGraphImport {
 	 * @param path Path to a linegraph file in which only DiffTrees are stored.
 	 * @param options Options for the import, such as hints for the used formats for node and edge labels.
      * @return All {@link DiffTree DiffTrees} contained in the linegraph file.
-	 * @throws IOException when {@link LineGraphImport#fromLineGraph(BufferedReader, Path, DiffTreeLineGraphImportOptions)} throws.
+	 * @throws IOException when {@link LineGraphImport#fromLineGraph(BufferedReader, Path, LineGraphImportOptions)} throws.
      */
-    public static List<DiffTree> fromFile(final Path path, final DiffTreeLineGraphImportOptions options) throws IOException {
+    public static List<DiffTree> fromFile(final Path path, final LineGraphImportOptions options) throws IOException {
         Assert.assertTrue(Files.isRegularFile(path));
         Assert.assertTrue(FileUtils.isLineGraph(path));
         try (BufferedReader input = Files.newBufferedReader(path)) {
@@ -45,7 +45,7 @@ public class LineGraphImport {
 	 * @param options Options for the import, such as hints for the used formats for node and edge labels.
 	 * @return All {@link DiffTree DiffTrees} contained in the linegraph text.
 	 */
-	public static List<DiffTree> fromLineGraph(final BufferedReader lineGraph, final Path originalFile, final DiffTreeLineGraphImportOptions options) throws IOException {
+	public static List<DiffTree> fromLineGraph(final BufferedReader lineGraph, final Path originalFile, final LineGraphImportOptions options) throws IOException {
 		// All DiffTrees read from the line graph
 		List<DiffTree> diffTreeList = new ArrayList<>();
 		
@@ -114,10 +114,10 @@ public class LineGraphImport {
 	 * @param lineGraph The header line in the linegraph that describes the DiffTree (starting with <code>t #</code>).
 	 * @param inFile Path to the linegraph file that is currently parsed.
 	 * @param diffNodeList All nodes of the DiffTree that is to be created. The nodes can be assumed to be complete and already connected.
-	 * @param options {@link DiffTreeLineGraphImportOptions}
+	 * @param options {@link LineGraphImportOptions}
 	 * @return {@link DiffTree} generated from the given, already parsed parameters.
 	 */
-	private static DiffTree parseDiffTree(final String lineGraph, final Path inFile, final List<DiffNode> diffNodeList, final DiffTreeLineGraphImportOptions options) {
+	private static DiffTree parseDiffTree(final String lineGraph, final Path inFile, final List<DiffNode> diffNodeList, final LineGraphImportOptions options) {
 		DiffTreeSource diffTreeSource = options.treeFormat().fromLineGraphLine(lineGraph);
 
 		if (diffTreeSource == null || DiffTreeSource.Unknown.equals(diffTreeSource)) {
@@ -129,22 +129,20 @@ public class LineGraphImport {
 
 		// Handle trees and graphs differently
 		if (options.graphFormat() == GraphFormat.DIFFGRAPH) {
-			// If you should interpret the input data as DiffTrees, always expect a root to be present. Parse all nodes (v) to a list of nodes. Search for the root. Assert that there is exactly one root.
-			Assert.assertTrue(diffNodeList.stream().noneMatch(DiffNode::isRoot)); // test if it’s not a tree
 			return DiffGraph.fromNodes(diffNodeList, diffTreeSource);
 		} else if (options.graphFormat() == GraphFormat.DIFFTREE) {
 			// If you should interpret the input data as DiffTrees, always expect a root to be present. Parse all nodes (v) to a list of nodes. Search for the root. Assert that there is exactly one root.
             DiffNode root = null;
             for (final DiffNode v : diffNodeList) {
-                if (DiffGraph.hasNoParents(v)) {
+                if (v.isRoot()) {
                     // v is root candidate
                     if (root != null) {
-                        throw new RuntimeException("Not a DiffTree but a DiffGraph: Got more than one root! Got \"" + root + "\" and \"" + v + "\"!");
+                        throw new RuntimeException("Not a DiffTree: Got more than one root! Got \"" + root + "\" and \"" + v + "\"!");
                     }
-                    if (v.codeType == CodeType.IF || v.codeType == CodeType.ROOT) {
+                    if (v.nodeType == NodeType.IF) {
                         root = v;
                     } else {
-                        throw new RuntimeException("Not a DiffTree but a DiffGraph: The node \"" + v + "\" is not labeled as ROOT or IF but has no parents!");
+                        throw new RuntimeException("Not a DiffTree but a DiffGraph: The node \"" + v + "\" is not labeled as IF but has no parents!");
                     }
                 }
             }
@@ -153,7 +151,7 @@ public class LineGraphImport {
                 throw new RuntimeException("Not a DiffTree but a DiffGraph: No root found!");
             }
 
-//            countRootTypes.merge(root.codeType, 1, Integer::sum);
+//            countRootTypes.merge(root.nodeType, 1, Integer::sum);
 
 			return new DiffTree(root, diffTreeSource);
 		} else {

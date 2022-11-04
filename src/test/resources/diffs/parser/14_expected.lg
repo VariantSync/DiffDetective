@@ -1,0 +1,5 @@
+v 16 NON;IF;(old: -1, diff: -1, new:-1);(old: -1, diff: -1, new:-1);True
+v 144 NON;IF;(old: 1, diff: 1, new:1);(old: 2, diff: 3, new:2);A;#ifdef A
+v 201 REM;ELSE;(old: 2, diff: 2, new:-1);(old: 3, diff: 3, new:-1);;#else // B
+e 144 16 ba;0;0
+e 201 144 b;0

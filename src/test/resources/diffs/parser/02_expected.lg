@@ -1,0 +1,8 @@
+v 16 NON;IF;(old: -1, diff: -1, new:-1);(old: -1, diff: -1, new:-1);True
+v 136 REM;IF;(old: 1, diff: 1, new:-1);(old: 3, diff: 3, new:-1);A;#if A
+v 211 NON;ARTIFACT;(old: 2, diff: 2, new:1);(old: 3, diff: 3, new:2);;  Code
+v 323 ADD;ARTIFACT;(old: -1, diff: 4, new:2);(old: -1, diff: 5, new:3);;  // Hehe
+e 136 16 b;0
+e 211 136 b;0
+e 211 16 a;1
+e 323 16 a;2

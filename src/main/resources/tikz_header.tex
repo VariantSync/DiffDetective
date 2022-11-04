@@ -1,0 +1,60 @@
+\documentclass[tikz]{standalone}
+
+\usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{positioning}
+\usetikzlibrary{shapes.symbols}
+\usetikzlibrary{arrows.meta}
+
+%%% COLORS FOR DIFF SNIPPETS AND DIFFTREE NODES
+\definecolor{darkpastelgreen}{rgb}{0.01, 0.75, 0.24}
+\definecolor{darkpastelblue}{rgb}{0.47, 0.62, 0.8}
+\definecolor{pastelorange}{rgb}{1.0, 0.7, 0.28}
+
+\definecolor{diffAddColour}{RGB}{161,215,106}
+\definecolor{diffRemColour}{RGB}{233,163,201}
+
+\colorlet{diffAddColourDarkened}{darkpastelgreen!50!darkpastelblue}
+\colorlet{diffAddColour}{diffAddColourDarkened!80}
+\colorlet{diffRemColourDarkened}{pastelorange}
+\colorlet{diffRemColour}{diffRemColourDarkened!80}
+
+%%% COLORS FOR SYMBOLS (+, -, ., b, a)
+\newcommand{\epAddColor}{diffAddColourDarkened}
+\newcommand{\epRemColor}{diffRemColourDarkened}
+\newcommand{\epNonColor}{gray}
+
+%%% COLORS FOR DIFFTREES
+\newcommand{\vtdEdgeBeforeColor}{diffRemColourDarkened}
+\newcommand{\vtdEdgeAfterColor}{diffAddColourDarkened}
+
+\definecolor{vtdAnnotationBorderColor}{rgb}{0.2, 0.4, 0.9}
+\definecolor{vtdCodeColor}{rgb}{0,0,0}
+
+%%% tikz stuff
+
+%% Load the library
+%\usetikzlibrary{external}
+%% Enable the library !!!>>> MUST be in the preamble <<<!!!!
+%\tikzexternalize
+
+\tikzset{
+	text centered,
+	annotation/.style = {draw=vtdAnnotationBorderColor, circle, inner sep=0pt, minimum size=6.5mm, font=\footnotesize, line width=.4mm, fill=black!5},
+	artifact/.style = {draw=vtdCodeColor, circle, inner sep=0pt, minimum size=6.5mm, font=\footnotesize, line width=.4mm, fill=black!5},
+	non/.style = {},
+	add/.style = {fill=diffAddColour},
+	rem/.style = {fill=diffRemColour, dashed},
+	before/.style = {color=\vtdEdgeBeforeColor},
+	after/.style = {color=\vtdEdgeAfterColor},
+	vtdarrow/.style = {black, {Latex[length=1.5mm,width=1.5mm]}-, line width = 0.35mm},
+	vtddashed/.style = {black, dash pattern=on 2pt off 2pt, line width = 0.35mm},
+	node distance = {9.5mm},
+	object/.style = {draw, thick},
+	large/.style = {node distance = 13mm, minimum size=9.5mm},
+	textbox/.style = {draw, rectangle, rounded corners=0.4mm, fill=white, inner sep=2pt, font=\tiny, align=center},
+	largertextbox/.style = {font=\small},
+	vtdcloud/.style = {cloud, draw, minimum width=22mm, minimum height=15mm}
+}
+
+\begin{document}

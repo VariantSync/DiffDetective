@@ -3,7 +3,7 @@ package org.variantsync.diffdetective.preliminary.analysis;
 import org.variantsync.diffdetective.diff.PatchDiff;
 import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
-import org.variantsync.diffdetective.pattern.elementary.ElementaryPattern;
+import org.variantsync.diffdetective.editclass.EditClass;
 import org.variantsync.diffdetective.preliminary.GitDiff;
 import org.variantsync.diffdetective.preliminary.analysis.data.PatchDiffAnalysisResult;
 import org.variantsync.diffdetective.preliminary.analysis.data.PatternMatch;
@@ -67,9 +67,9 @@ public class TreeGDAnalyzer extends GDAnalyzer<DiffNode> {
         DiffTree diffTree = patchDiff.getDiffTree();
         if(diffTree != null) {
             // match atomic patterns
-            for (DiffNode diffNode : diffTree.computeCodeNodes()) {
+            for (DiffNode diffNode : diffTree.computeArtifactNodes()) {
                 for (FeatureContextReverseEngineering<DiffNode> pattern : patterns) {
-                    if (pattern.getPattern() instanceof ElementaryPattern) {
+                    if (pattern.getPattern() instanceof EditClass) {
                         results.add(pattern.createMatch(diffNode));
 //                        pattern.match(diffNode).ifPresent(results::add);
                     }

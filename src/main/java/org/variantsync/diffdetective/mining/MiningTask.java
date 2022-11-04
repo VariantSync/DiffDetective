@@ -6,13 +6,13 @@ import org.variantsync.diffdetective.analysis.*;
 import org.variantsync.diffdetective.diff.CommitDiff;
 import org.variantsync.diffdetective.diff.PatchDiff;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
-import org.variantsync.diffdetective.diff.difftree.serialize.DiffTreeLineGraphExportOptions;
+import org.variantsync.diffdetective.diff.difftree.serialize.LineGraphExportOptions;
 import org.variantsync.diffdetective.diff.difftree.serialize.LineGraphExport;
 import org.variantsync.diffdetective.diff.difftree.transform.DiffTreeTransformer;
 import org.variantsync.diffdetective.diff.result.CommitDiffResult;
 import org.variantsync.diffdetective.metadata.ExplainedFilterSummary;
-import org.variantsync.diffdetective.pattern.elementary.ElementaryPattern;
-import org.variantsync.diffdetective.pattern.elementary.proposed.ProposedElementaryPatterns;
+import org.variantsync.diffdetective.editclass.EditClass;
+import org.variantsync.diffdetective.editclass.proposed.ProposedEditClasses;
 import org.variantsync.diffdetective.util.Clock;
 import org.variantsync.diffdetective.util.FileUtils;
 
@@ -20,14 +20,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MiningTask extends CommitHistoryAnalysisTask {
-    public MiningTask(final Options options) {
+    private final LineGraphExportOptions exportOptions;
+
+    public MiningTask(final Options options, final LineGraphExportOptions exportOptions) {
         super(options);
+
+        this.exportOptions = exportOptions;
     }
 
     @Override
     public AnalysisResult call() throws Exception {
         final AnalysisResult miningResult = super.call();
-        final DiffTreeLineGraphExportOptions exportOptions = options.exportOptions();
+        miningResult.putCustomInfo(MetadataKeys.TREEFORMAT, exportOptions.treeFormat().getName());
+        miningResult.putCustomInfo(MetadataKeys.NODEFORMAT, exportOptions.nodeFormat().getName());
+        miningResult.putCustomInfo(MetadataKeys.EDGEFORMAT, exportOptions.edgeFormat().getName());
 
         final Clock totalTime = new Clock();
 
@@ -48,48 +54,49 @@ public class MiningTask extends CommitHistoryAnalysisTask {
             }
 
             /*
-             * We export all difftrees that match our filter criteria (e.g., has more than one elementary pattern).
-             * However, we count elementary patterns of all DiffTrees, even those that are not exported to Linegraph.
+             * We count the edit classes of all difftrees that match our filter criteria
+             * (e.g., match more than one edit class) and export them to the destination
+             * determined by the AnalysisStrategy.
              */
-            final CommitDiff commitDiff = commitDiffResult.diff().get();
-            final StringBuilder lineGraph = new StringBuilder();
-            miningResult.append(LineGraphExport.toLineGraphFormat(commitDiff, lineGraph, options.exportOptions()));
-            options.analysisStrategy().onCommit(commitDiff, lineGraph.toString());
-            options.exportOptions().treeFilter().resetExplanations();
-
-            // Count elementary patterns
             int numDiffTrees = 0;
-            for (final PatchDiff patch : commitDiff.getPatchDiffs()) {
-                final PatchStatistics thisPatchesStatistics = new PatchStatistics(patch, ProposedElementaryPatterns.Instance);
+            final CommitDiff commitDiff = commitDiffResult.diff().get();
+            try (var lineGraphDestination = options.analysisStrategy().onCommit(commitDiff)) {
+                for (final PatchDiff patch : commitDiff.getPatchDiffs()) {
+                    final PatchStatistics thisPatchesStatistics = new PatchStatistics(patch, ProposedEditClasses.Instance);
 
-                if (patch.isValid()) {
-                    final DiffTree t = patch.getDiffTree();
-                    DiffTreeTransformer.apply(exportOptions.treePreProcessing(), t);
-                    t.assertConsistency();
+                    if (patch.isValid()) {
+                        final DiffTree t = patch.getDiffTree();
+                        DiffTreeTransformer.apply(options.treePreProcessing(), t);
+                        t.assertConsistency();
 
-                    if (!exportOptions.treeFilter().test(t)) {
-                        continue;
+                        if (!options.treeFilter().test(t)) {
+                            continue;
+                        }
+
+                        miningResult.append(LineGraphExport.toLineGraphFormat(miningResult.repoName, patch, exportOptions, lineGraphDestination));
+
+                        t.forAll(node -> {
+                            if (node.isArtifact()) {
+                                final EditClass editClass = ProposedEditClasses.Instance.match(node);
+                                miningResult.editClassCounts.reportOccurrenceFor(
+                                        editClass,
+                                        commitDiff
+                                );
+                                thisPatchesStatistics.editClassCount().increment(editClass);
+                            }
+                        });
+
+                        ++numDiffTrees;
                     }
 
-                    t.forAll(node -> {
-                        if (node.isCode()) {
-                            final ElementaryPattern nodePattern = ProposedElementaryPatterns.Instance.match(node);
-                            miningResult.elementaryPatternCounts.reportOccurrenceFor(
-                                    nodePattern,
-                                    commitDiff
-                            );
-                            thisPatchesStatistics.elementaryPatternCount().increment(nodePattern);
-                        }
-                    });
-
-                    ++numDiffTrees;
+                    patchStatistics.add(thisPatchesStatistics);
                 }
-
-                patchStatistics.add(thisPatchesStatistics);
             }
+
+            miningResult.exportedCommits += 1;
             miningResult.exportedTrees += numDiffTrees;
-            miningResult.filterHits.append(new ExplainedFilterSummary(exportOptions.treeFilter()));
-            exportOptions.treeFilter().resetExplanations();
+            miningResult.filterHits.append(new ExplainedFilterSummary(options.treeFilter()));
+            options.treeFilter().resetExplanations();
 
             // Only consider non-empty commits
             if (numDiffTrees > 0) {

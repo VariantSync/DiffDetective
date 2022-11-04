@@ -1,0 +1,8 @@
+v 16 NON;IF;(old: -1, diff: -1, new:-1);(old: -1, diff: -1, new:-1);True
+v 128 ADD;IF;(old: -1, diff: 1, new:1);(old: -1, diff: 5, new:3);B;#ifdef B
+v 275 NON;ARTIFACT;(old: 2, diff: 3, new:2);(old: 3, diff: 4, new:3);;Code
+v 200 REM;IF;(old: 1, diff: 2, new:-1);(old: 3, diff: 4, new:-1);A;#ifdef A
+e 128 16 a;0
+e 275 200 b;0
+e 275 128 a;0
+e 200 16 b;1
