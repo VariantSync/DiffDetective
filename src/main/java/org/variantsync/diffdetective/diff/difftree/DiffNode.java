@@ -1,6 +1,5 @@
 package org.variantsync.diffdetective.diff.difftree;
 
-import org.prop4j.And;
 import org.prop4j.Node;
 import org.variantsync.diffdetective.diff.DiffLineNumber;
 import org.variantsync.diffdetective.diff.Lines;
@@ -15,7 +14,6 @@ import java.util.stream.Collectors;
 
 import static org.variantsync.diffdetective.diff.difftree.Time.AFTER;
 import static org.variantsync.diffdetective.diff.difftree.Time.BEFORE;
-import static org.variantsync.diffdetective.util.fide.FormulaUtils.negate;
 
 /**
  * Implementation of a node in a {@link DiffTree}.
@@ -181,13 +179,7 @@ public class DiffNode implements HasNodeType {
      * @return The first {@code if} node in the path to the root at the time {@code time}
      */
     public DiffNode getIfNode(Time time) {
-        if (isIf()) {
-            return this;
-        }
-        if (isRoot()) {
-            return null;
-        }
-        return getParent(time).getIfNode(time);
+        return projection(time).getIfNode().getBackingNode();
     }
 
     /**
@@ -196,15 +188,7 @@ public class DiffNode implements HasNodeType {
      * @return the number of annotations above this node at the time {@code time}
      */
     public int getAnnotationDepth(Time time) {
-        if (isRoot()) {
-            return 0;
-        }
-
-        if (isIf()) {
-            return getParent(time).getAnnotationDepth(time) + 1;
-        }
-
-        return getParent(time).getAnnotationDepth(time);
+        return projection(time).getAnnotationDepth();
     }
 
     /**
@@ -212,11 +196,7 @@ public class DiffNode implements HasNodeType {
      * @return the depth of the this node in the diff tree at the time {@code time}
      */
     public int getDepth(Time time) {
-        if (isRoot()) {
-            return 0;
-        }
-
-        return getParent(time).getDepth(time) + 1;
+        return projection(time).getDepth();
     }
 
     /**
@@ -277,7 +257,7 @@ public class DiffNode implements HasNodeType {
     }
 
     /**
-     * Adds thus subtree below the given parents.
+     * Adds this subtree below the given parents.
      * Inverse of drop.
      * @param newBeforeParent Node that should be this node's before parent. May be null.
      * @param newAfterParent Node that should be this node's after parent. May be null.
@@ -519,89 +499,9 @@ public class DiffNode implements HasNodeType {
      * See Equation (1) in our paper (+ its extension to time for variation tree diffs described in Section 3.1).
      * @param time Whether to return the feature mapping clauses before or after the edit.
      * @return The feature mapping of this node for the given parent edges.
-     *         The returned list represents a conjunction (i.e., all clauses should be combined with boolean AND).
-     */
-    private List<Node> getFeatureMappingClauses(Time time) {
-        final DiffNode parent = getParent(time);
-
-        if (isElse() || isElif()) {
-            List<Node> and = new ArrayList<>();
-
-            if (isElif()) {
-                and.add(getDirectFeatureMapping());
-            }
-
-            // Negate all previous cases
-            DiffNode ancestor = parent;
-            while (!ancestor.isIf()) {
-                if (ancestor.isElif()) {
-                    and.add(negate(ancestor.getDirectFeatureMapping()));
-                } else {
-                    throw new RuntimeException("Expected If or Elif above Else or Elif but got " + ancestor.nodeType + " from " + ancestor);
-                    // Assert.assertTrue(ancestor.isArtifact());
-                }
-                ancestor = ancestor.getParent(time);
-            }
-            and.add(negate(ancestor.getDirectFeatureMapping()));
-
-            return and;
-        } else if (isArtifact()) {
-            return parent.getFeatureMappingClauses(time);
-        }
-
-        return List.of(getDirectFeatureMapping());
-    }
-
-    /**
-     * Depending on the given time, returns either the feature mapping before or after the edit.
      */
     public Node getFeatureMapping(Time time) {
-        final List<Node> fmClauses = getFeatureMappingClauses(time);
-        if (fmClauses.size() == 1) {
-            return fmClauses.get(0);
-        }
-        return new And(fmClauses);
-    }
-
-    /**
-     * Returns the presence condition of this node for the respective time.
-     * See Equation (2) in our paper (+ its extension to time for variation tree diffs described in Section 3.1).
-     * @param time Whether to return the presence condition clauses before or after the edit.
-     * @return The presence condition of this node for the given parent edges.
-     *         The returned list represents a conjunction (i.e., all clauses should be combined with boolean AND).
-     */
-    private List<Node> getPresenceConditionClauses(Time time) {
-        final DiffNode parent = getParent(time);
-
-        if (isElse() || isElif()) {
-            final List<Node> clauses = new ArrayList<>(getFeatureMappingClauses(time));
-
-            // Find corresponding if
-            DiffNode correspondingIf = parent;
-            while (!correspondingIf.isIf()) {
-                correspondingIf = correspondingIf.getParent(time);
-            }
-
-            // If this elif-else-chain was again nested in another annotation, add its pc.
-            final DiffNode outerNesting = correspondingIf.getParent(time);
-            if (outerNesting != null) {
-                clauses.addAll(outerNesting.getPresenceConditionClauses(time));
-            }
-
-            return clauses;
-        } else if (isArtifact()) {
-            return parent.getPresenceConditionClauses(time);
-        }
-
-        // this is mapping or root
-        final List<Node> clauses;
-        if (parent == null) {
-            clauses = new ArrayList<>(1);
-        } else {
-            clauses = parent.getPresenceConditionClauses(time);
-        }
-        clauses.add(featureMapping);
-        return clauses;
+        return projection(time).getFeatureMapping();
     }
 
     /**
@@ -611,11 +511,7 @@ public class DiffNode implements HasNodeType {
      * @return The presence condition of this node for the given parent edges.
      */
     public Node getPresenceCondition(Time time) {
-        if (diffType.existsAtTime(time)) {
-            return new And(getPresenceConditionClauses(time));
-        } else {
-            throw new WrongTimeException("Cannot determine after PC of removed node " + this);
-        }
+        return projection(time).getPresenceCondition();
     }
 
     /**
