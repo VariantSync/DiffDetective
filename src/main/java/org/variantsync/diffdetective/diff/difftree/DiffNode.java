@@ -743,7 +743,7 @@ public class DiffNode implements HasNodeType {
      * This is the inverse of {@link projection} iff the original {@link DiffNode} wasn't modified
      * (all node had a {@link getDiffType diff type} of {@link DiffType#NON}).
      */
-    public static <T> DiffNode unchanged(VariationNode<T> variationNode) {
+    public static <T extends VariationNode<T>> DiffNode unchanged(VariationNode<T> variationNode) {
         int from = variationNode.getFromLine();
         int to = variationNode.getToLine();
 

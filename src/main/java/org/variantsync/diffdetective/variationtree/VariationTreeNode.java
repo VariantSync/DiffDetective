@@ -158,7 +158,7 @@ public class VariationTreeNode extends VariationNode<VariationTreeNode> {
     }
 
     @Override
-    public VariationTreeNode getBackingNode() {
+    public VariationTreeNode upCast() {
         return this;
     }
 
@@ -215,7 +215,7 @@ public class VariationTreeNode extends VariationNode<VariationTreeNode> {
     }
 
     @Override
-    public VariationNode<VariationTreeNode> getParent() {
+    public VariationTreeNode getParent() {
         return parent;
     }
 
@@ -230,27 +230,27 @@ public class VariationTreeNode extends VariationNode<VariationTreeNode> {
     }
 
     @Override
-    public List<VariationNode<VariationTreeNode>> getChildren() {
+    public List<VariationTreeNode> getChildren() {
         return Collections.unmodifiableList(childOrder);
     }
 
     @Override
-    public void addChild(final VariationNode<VariationTreeNode> child) {
-        child.getBackingNode().setParent(this);
-        childOrder.add(child.getBackingNode());
+    public void addChild(final VariationTreeNode child) {
+        child.setParent(this);
+        childOrder.add(child);
     }
 
     @Override
-    public void insertChild(final VariationNode<VariationTreeNode> child, int index) {
-        child.getBackingNode().setParent(this);
-        childOrder.add(index, child.getBackingNode());
+    public void insertChild(final VariationTreeNode child, int index) {
+        child.setParent(this);
+        childOrder.add(index, child);
     }
 
     @Override
-    public boolean removeChild(final VariationNode<VariationTreeNode> child) {
+    public boolean removeChild(final VariationTreeNode child) {
         if (isChild(child)) {
-            child.getBackingNode().parent = null;
-            childOrder.remove(child.getBackingNode());
+            child.parent = null;
+            childOrder.remove(child);
             return true;
         }
         return false;
@@ -259,7 +259,7 @@ public class VariationTreeNode extends VariationNode<VariationTreeNode> {
     @Override
     public void removeAllChildren() {
         for (var child : childOrder) {
-            child.getBackingNode().parent = null;
+            child.parent = null;
         }
 
         childOrder.clear();
@@ -329,7 +329,7 @@ public class VariationTreeNode extends VariationNode<VariationTreeNode> {
     }
 
     @Override
-    public boolean isSameAs(VariationNode<VariationTreeNode> other) {
+    public boolean isSameAs(VariationTreeNode other) {
         return this == other;
     }
 

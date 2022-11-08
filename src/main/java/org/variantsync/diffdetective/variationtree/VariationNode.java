@@ -37,20 +37,30 @@ import static org.variantsync.diffdetective.util.fide.FormulaUtils.negate;
  * {@code getParent() != getParent()}). Instead the method {@link isSameAs} should be used to test
  * for identity.
  *
- * @param <T> the backing type storing the actual information presented by this class. This is
- * currently either a {@link VariationTreeNode concrete variation tree} (in this case
- * {@link getBackingNode} acts as identity) or a {@link Projection} of a {@link DiffNode}.
+ * @param <T> the derived type (the type extending this class)
  *
  * @see assertConsistency
  * @author Benjamin Moosherr
  */
-public abstract class VariationNode<T> implements HasNodeType {
+public abstract class VariationNode<T extends VariationNode<T>> implements HasNodeType {
     /**
-     * Returns the class instance storing the actual attributes of this node. This currently is
-     * either a {@link VariationTreeNode concrete variation tree} or the projection of a
-     * {@link DiffNode} at a specific time.
+     * Returns this instance as the derived class type {@code T}.
+     * The deriving class will only have to return {@code this} here but this can't be implemented
+     * in the base class. If some derived class can't implement this method by returning
+     * {@code this}, it probably violates the requirements for the type parameter {@code T} (namely
+     * that it' the derived class itself).
      */
-    public abstract T getBackingNode();
+    public abstract T upCast();
+
+    /**
+     * Returns this instance as a {@link VariationNode}.
+     * This is only useful for accessing private members inside of {@link VariationNode}. These
+     * can't be accessed if the type of the variable of this instance is {@code T} so a down cast is
+     * required. This function only exists to document this necessity and make it more readable.
+     */
+    public VariationNode<T> downCast() {
+        return this;
+    }
 
     /**
      * Returns the node type of this node which determines the type of the represented element in
@@ -118,7 +128,7 @@ public abstract class VariationNode<T> implements HasNodeType {
      * @see drop
      * @see addBelow
      */
-    public abstract VariationNode<T> getParent();
+    public abstract T getParent();
 
     /**
      * Returns an unmodifiable list representing the children of this node.
@@ -134,7 +144,7 @@ public abstract class VariationNode<T> implements HasNodeType {
      * @see addChild
      * @see removeChild
      */
-    public abstract List<VariationNode<T>> getChildren();
+    public abstract List<T> getChildren();
 
     /**
      * Returns {@code true} iff this node has no parent.
@@ -179,9 +189,9 @@ public abstract class VariationNode<T> implements HasNodeType {
     /**
      * Returns the first {@code if} node in the path from this node upwards to the root.
      */
-    public VariationNode<T> getIfNode() {
+    public T getIfNode() {
         if (isIf()) {
-            return this;
+            return this.upCast();
         }
         return getParent().getIfNode();
     }
@@ -191,8 +201,8 @@ public abstract class VariationNode<T> implements HasNodeType {
      *
      * @see getChildren
      */
-    public boolean isChild(VariationNode<T> child) {
-        return child.getParent().isSameAs(this);
+    public boolean isChild(T child) {
+        return child.getParent().isSameAs(this.upCast());
     }
 
     /**
@@ -204,7 +214,7 @@ public abstract class VariationNode<T> implements HasNodeType {
      *
      * @see getChildren
      */
-    public int indexOfChild(final VariationNode<T> child) {
+    public int indexOfChild(final T child) {
         return getChildren().indexOf(child);
     }
 
@@ -215,7 +225,7 @@ public abstract class VariationNode<T> implements HasNodeType {
      * @throws IllegalArgumentException if {@code child} already has a parent
      * @see getChildren
      */
-    public abstract void addChild(final VariationNode<T> child);
+    public abstract void addChild(final T child);
 
     /**
      * Adds a child before the given index to the children list of this node and sets its parent to
@@ -227,7 +237,7 @@ public abstract class VariationNode<T> implements HasNodeType {
      * @throws IllegalArgumentException if {@code child} already has a parent
      * @see addChildren
      */
-    public abstract void insertChild(final VariationNode<T> child, int index);
+    public abstract void insertChild(final T child, int index);
 
     /**
      * Adds the given nodes in traversal order as children using
@@ -235,7 +245,7 @@ public abstract class VariationNode<T> implements HasNodeType {
      * *
      * @throws IllegalArgumentException if any child of {@code children} already has a parent
      */
-    public void addChildren(final Collection<VariationNode<T>> children) {
+    public void addChildren(final Collection<T> children) {
         for (final var child : children) {
             addChild(child);
         }
@@ -251,7 +261,7 @@ public abstract class VariationNode<T> implements HasNodeType {
      * @see removeChildren
      * @see getChildren
      */
-    public abstract boolean removeChild(final VariationNode<T> child);
+    public abstract boolean removeChild(final T child);
 
     /**
      * Removes the given nodes from the children list using {@link removeChild}.
@@ -260,7 +270,7 @@ public abstract class VariationNode<T> implements HasNodeType {
      * this node
      * @see removeAllChildren
      */
-    public void removeChildren(final Collection<VariationNode<T>> childrenToRemove) {
+    public void removeChildren(final Collection<T> childrenToRemove) {
         for (final var childToRemove : childrenToRemove) {
             removeChild(childToRemove);
         }
@@ -279,9 +289,9 @@ public abstract class VariationNode<T> implements HasNodeType {
      * @see addChild
      * @throws IllegalArgumentException if this node already has a parent
      */
-    public void addBelow(final VariationNode<T> parent) {
+    public void addBelow(final T parent) {
         if (parent != null) {
-            parent.addChild(this);
+            parent.addChild(this.upCast());
         }
     }
 
@@ -294,7 +304,7 @@ public abstract class VariationNode<T> implements HasNodeType {
      */
     public void drop() {
         if (getParent() != null) {
-            getParent().removeChild(this);
+            getParent().removeChild(this.upCast());
         }
     }
 
@@ -306,7 +316,7 @@ public abstract class VariationNode<T> implements HasNodeType {
      * @see addChildren
      * @see removeAllChildren
      */
-    public void stealChildrenOf(final VariationNode<T> other) {
+    public void stealChildrenOf(final T other) {
         addChildren(other.getChildren());
         other.removeAllChildren();
     }
@@ -351,7 +361,7 @@ public abstract class VariationNode<T> implements HasNodeType {
 
             return and;
         } else if (isArtifact()) {
-            return parent.getFeatureMappingClauses();
+            return parent.downCast().getFeatureMappingClauses();
         }
 
         return List.of(getDirectFeatureMapping());
@@ -400,12 +410,12 @@ public abstract class VariationNode<T> implements HasNodeType {
             // If this elif-else-chain was again nested in another annotation, add its pc.
             final var outerNesting = correspondingIf.getParent();
             if (outerNesting != null) {
-                clauses.addAll(outerNesting.getPresenceConditionClauses());
+                clauses.addAll(outerNesting.downCast().getPresenceConditionClauses());
             }
 
             return clauses;
         } else if (isArtifact()) {
-            return parent.getPresenceConditionClauses();
+            return parent.downCast().getPresenceConditionClauses();
         }
 
         // this is mapping or root
@@ -413,7 +423,7 @@ public abstract class VariationNode<T> implements HasNodeType {
         if (parent == null) {
             clauses = new ArrayList<>(1);
         } else {
-            clauses = parent.getPresenceConditionClauses();
+            clauses = parent.downCast().getPresenceConditionClauses();
         }
         clauses.add(getDirectFeatureMapping());
         return clauses;
@@ -436,8 +446,8 @@ public abstract class VariationNode<T> implements HasNodeType {
     /**
      * Traverses all nodes in this subtree in preorder.
      */
-    public void forAllPreorder(Consumer<VariationNode<T>> action) {
-        action.accept(this);
+    public void forAllPreorder(Consumer<T> action) {
+        action.accept(this.upCast());
 
         for (var child : getChildren()) {
             child.forAllPreorder(action);
@@ -520,7 +530,7 @@ public abstract class VariationNode<T> implements HasNodeType {
         // check consistency of children lists and edges
         for (var child : getChildren()) {
             Assert.assertTrue(
-                child.getParent().isSameAs(this), () ->
+                child.getParent().isSameAs(this.upCast()), () ->
                 "The parent (" + this + ") of " + child + " is not set correctly");
         }
     }
@@ -541,19 +551,14 @@ public abstract class VariationNode<T> implements HasNodeType {
      * Checks if {@code other} represents the same node as this node.
      *
      * <p>The difference between this method and {@link equals} is the same as the difference
-     * between {@code ==} and {@link equals}: {@code isSameAs} respects the identity of the
-     * {@link getBackingNode backing nodes} and {@link equals} does not.
+     * between {@code ==} and {@link equals}: {@code isSameAs} respects the identity of the backing
+     * node and {@link equals} does not.
      *
      * <p>This method has to be used instead of {@code ==} because multiple instances of this view
      * representing the same node might be created (i.e., {@code getParent() == getParent()} might
      * not always hold).
      */
-    public abstract boolean isSameAs(VariationNode<T> other);
-
-    @Override
-    public String toString() {
-        return getBackingNode().toString();
-    }
+    public abstract boolean isSameAs(T other);
 
     /**
      * Unparses the labels of this subtree into {@code output}.

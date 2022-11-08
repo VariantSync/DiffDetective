@@ -28,7 +28,7 @@ import static org.variantsync.diffdetective.diff.difftree.Time.BEFORE;
  *
  * @see DiffNode#projection
  */
-public class Projection extends VariationNode<DiffNode> {
+public class Projection extends VariationNode<Projection> {
     private DiffNode backingNode;
     private Time time;
 
@@ -50,10 +50,15 @@ public class Projection extends VariationNode<DiffNode> {
         return time;
     }
 
-    @Override
     public DiffNode getBackingNode() {
         return backingNode;
     }
+
+    @Override
+    public Projection upCast() {
+        return this;
+    }
+
 
     @Override
     public NodeType getNodeType() {
@@ -98,7 +103,7 @@ public class Projection extends VariationNode<DiffNode> {
     }
 
     @Override
-    public VariationNode<DiffNode> getParent() {
+    public Projection getParent() {
         var parent = getBackingNode().getParent(time);
 
         if (parent == null) {
@@ -110,7 +115,7 @@ public class Projection extends VariationNode<DiffNode> {
 
 
     @Override
-    public List<VariationNode<DiffNode>> getChildren() {
+    public List<Projection> getChildren() {
         return FilteredMappedListView.filterMap(
             getBackingNode().getChildOrder(),
             (child) -> {
@@ -124,12 +129,12 @@ public class Projection extends VariationNode<DiffNode> {
     }
 
     @Override
-    public void addChild(final VariationNode<DiffNode> child) {
+    public void addChild(final Projection child) {
         getBackingNode().addChild(child.getBackingNode(), time);
     }
 
     @Override
-    public void insertChild(final VariationNode<DiffNode> child, int index) {
+    public void insertChild(final Projection child, int index) {
         // The method `DiffNode.addChild` can't be used here because `index` has a different
         // meaning: For `DiffNode.addChild` it counts all children, before and after, but here
         // it only counts children at `time`.
@@ -149,7 +154,7 @@ public class Projection extends VariationNode<DiffNode> {
     }
 
     @Override
-    public boolean removeChild(final VariationNode<DiffNode> child) {
+    public boolean removeChild(final Projection child) {
         return getBackingNode().removeChild(child.getBackingNode(), time);
     }
 
@@ -169,7 +174,7 @@ public class Projection extends VariationNode<DiffNode> {
     }
 
     @Override
-    public boolean isSameAs(VariationNode<DiffNode> other) {
+    public boolean isSameAs(Projection other) {
         if (other != null && getClass() == other.getClass()) {
             Projection otherProjection = (Projection) other;
             return time.equals(otherProjection.time) && getBackingNode() == otherProjection.getBackingNode();
