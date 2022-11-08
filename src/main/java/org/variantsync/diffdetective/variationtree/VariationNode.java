@@ -177,21 +177,6 @@ public abstract class VariationNode<T> implements HasNodeType {
     }
 
     /**
-     * Computes the number of if-elif-else chains of the path from the root node to this node.
-     */
-    public int getAnnotationDepth() {
-        if (isRoot()) {
-            return 0;
-        }
-
-        if (isIf()) {
-            return getParent().getAnnotationDepth() + 1;
-        }
-
-        return getParent().getAnnotationDepth();
-    }
-
-    /**
      * Returns the first {@code if} node in the path from this node upwards to the root.
      */
     public VariationNode<T> getIfNode() {

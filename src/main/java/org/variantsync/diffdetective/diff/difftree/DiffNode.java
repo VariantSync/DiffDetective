@@ -181,15 +181,6 @@ public class DiffNode implements HasNodeType {
     }
 
     /**
-     * Gets the number of annotations in the path from the root to this node at the time
-     * {@code time}.
-     * @return the number of annotations above this node at the time {@code time}
-     */
-    public int getAnnotationDepth(Time time) {
-        return projection(time).getAnnotationDepth();
-    }
-
-    /**
      * Gets the length of the path from the root to this node at the time {@code time}.
      * @return the depth of the this node in the diff tree at the time {@code time}
      */
