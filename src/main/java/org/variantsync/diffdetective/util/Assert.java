@@ -75,4 +75,8 @@ public class Assert {
             fail("Given object is null but assumed to be not null.");
         }
     }
+
+    public static <T> void assertEquals(T expected, T actual) {
+        assertTrue(expected.equals(actual));
+    }
 }

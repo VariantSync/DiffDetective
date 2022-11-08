@@ -47,4 +47,11 @@ public enum NodeType {
 
         throw new IllegalArgumentException("Given string \"" + name + "\" is not the name of a NodeType.");
     }
+
+    /**
+     * Returns the number of bits required for storing {@link ordinal}.
+     */
+    public static int getRequiredBitCount() {
+        return 3;
+    }
 }

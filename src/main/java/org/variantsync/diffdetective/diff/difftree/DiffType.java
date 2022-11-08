@@ -142,4 +142,11 @@ public enum DiffType {
     public boolean existsAtTime(Time time) {
         return (time == Time.BEFORE && this != ADD) || (time == Time.AFTER && this != REM);
     }
+
+    /**
+     * Returns the number of bits required for storing {@link ordinal}.
+     */
+    public static int getRequiredBitCount() {
+        return 3;
+    }
 }

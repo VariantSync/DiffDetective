@@ -47,8 +47,6 @@ import java.util.*;
  * @author Benjamin Moosherr
  */
 public class VariationTreeNode extends VariationNode<VariationTreeNode> {
-    private static final short ID_OFFSET = 3;
-
     /**
      * The node type of this node, which determines the type of the represented
      * element in the diff (e.g., mapping or artifact).
@@ -284,16 +282,20 @@ public class VariationTreeNode extends VariationNode<VariationTreeNode> {
     @Override
     public int getID() {
         // Add one to ensure invalid (negative) line numbers don't cause issues.
-        int lineNumber = 1 + from;
-        Assert.assertTrue((lineNumber << 2*ID_OFFSET) >> 2*ID_OFFSET == lineNumber);
+        final int lineNumber = 1 + from;
+
+        final int usedBitCount = DiffType.getRequiredBitCount() + NodeType.getRequiredBitCount();
+        Assert.assertTrue((lineNumber << usedBitCount) >> usedBitCount == lineNumber);
 
         int id;
         id = lineNumber;
-        id <<= ID_OFFSET;
+
         // This makes `VariationTreeNode.toID` compatible with `DiffNode.toID`
-        id += DiffType.NON.ordinal();
-        id <<= ID_OFFSET;
-        id += nodeType.ordinal();
+        id <<= DiffType.getRequiredBitCount();
+        id |= DiffType.NON.ordinal();
+
+        id <<= NodeType.getRequiredBitCount();
+        id |= nodeType.ordinal();
         return id;
     }
 
@@ -305,12 +307,16 @@ public class VariationTreeNode extends VariationNode<VariationTreeNode> {
      * @param label the label the node should have
      * @return the reconstructed node
      */
-    public static VariationTreeNode fromID(final int id, List<String> label) {
-        final int lowestBitsMask = (1 << ID_OFFSET) - 1;
+    public static VariationTreeNode fromID(int id, List<String> label) {
+        final int nodeTypeBitmask = (1 << NodeType.getRequiredBitCount()) - 1;
+        final int nodeTypeOrdinal = id & nodeTypeBitmask;
+        id >>= NodeType.getRequiredBitCount();
 
-        final int nodeTypeOrdinal = id & lowestBitsMask;
-        Assert.assertTrue(((id >> ID_OFFSET) & lowestBitsMask) == DiffType.NON.ordinal());
-        final int from = (id >> (2*ID_OFFSET)) - 1;
+        final int diffTypeBitmask = (1 << DiffType.getRequiredBitCount()) - 1;
+        Assert.assertEquals(DiffType.NON.ordinal(), id & diffTypeBitmask);
+        id >>= DiffType.getRequiredBitCount();
+
+        final int from = id - 1;
 
         var nodeType = NodeType.values()[nodeTypeOrdinal];
         return new VariationTreeNode(

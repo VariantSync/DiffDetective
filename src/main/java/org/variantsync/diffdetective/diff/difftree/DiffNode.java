@@ -25,8 +25,6 @@ import static org.variantsync.diffdetective.diff.difftree.Time.BEFORE;
  * @author Paul Bittner, Sören Viegener, Benjamin Moosherr
  */
 public class DiffNode implements HasNodeType {
-    private static final short ID_OFFSET = 3;
-
     /**
      * The diff type of this node, which determines if this node represents
      * an inserted, removed, or unchanged element in a diff.
@@ -589,15 +587,19 @@ public class DiffNode implements HasNodeType {
      */
     public int getID() {
         // Add one to ensure invalid (negative) line numbers don't cause issues.
-        int lineNumber = 1 + from.inDiff();
-        Assert.assertTrue((lineNumber << 2*ID_OFFSET) >> 2*ID_OFFSET == lineNumber);
+        final int lineNumber = 1 + from.inDiff();
+
+        final int usedBitCount = DiffType.getRequiredBitCount() + NodeType.getRequiredBitCount();
+        Assert.assertTrue((lineNumber << usedBitCount) >> usedBitCount == lineNumber);
 
         int id;
         id = lineNumber;
-        id <<= ID_OFFSET;
-        id += diffType.ordinal();
-        id <<= ID_OFFSET;
-        id += nodeType.ordinal();
+
+        id <<= DiffType.getRequiredBitCount();
+        id |= diffType.ordinal();
+
+        id <<= NodeType.getRequiredBitCount();
+        id |= nodeType.ordinal();
         return id;
     }
 
@@ -609,12 +611,16 @@ public class DiffNode implements HasNodeType {
      * @param label The label the node should have.
      * @return The reconstructed DiffNode.
      */
-    public static DiffNode fromID(final int id, String label) {
-        final int lowestBitsMask = (1 << ID_OFFSET) - 1;
+    public static DiffNode fromID(int id, String label) {
+        final int nodeTypeBitmask = (1 << NodeType.getRequiredBitCount()) - 1;
+        final int nodeTypeOrdinal = id & nodeTypeBitmask;
+        id >>= NodeType.getRequiredBitCount();
 
-        final int nodeTypeOrdinal = id & lowestBitsMask;
-        final int diffTypeOrdinal = (id >> ID_OFFSET) & lowestBitsMask;
-        final int fromInDiff      = (id >> (2*ID_OFFSET)) - 1;
+        final int diffTypeBitmask = (1 << DiffType.getRequiredBitCount()) - 1;
+        final int diffTypeOrdinal = id & diffTypeBitmask;
+        id >>= DiffType.getRequiredBitCount();
+
+        final int fromInDiff = id - 1;
 
         var nodeType = NodeType.values()[nodeTypeOrdinal];
         return new DiffNode(
