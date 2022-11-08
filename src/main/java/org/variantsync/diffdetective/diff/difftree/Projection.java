@@ -4,12 +4,9 @@ import java.util.List;
 import java.util.Optional;
 
 import org.prop4j.Node;
-import org.variantsync.diffdetective.diff.DiffLineNumber;
+import org.variantsync.diffdetective.diff.Lines;
 import org.variantsync.diffdetective.variationtree.VariationNode;
 import org.variantsync.functjonal.list.FilteredMappedListView;
-
-import static org.variantsync.diffdetective.diff.difftree.Time.AFTER;
-import static org.variantsync.diffdetective.diff.difftree.Time.BEFORE;
 
 /**
  * A view of a {@link DiffNode} as variation node at a specific time.
@@ -71,35 +68,13 @@ public class Projection extends VariationNode<Projection> {
     }
 
     @Override
-    public int getFromLine() {
-        return getBackingNode().getFromLine().atTime(time);
+    public Lines getLineRange() {
+        return getBackingNode().getLinesAtTime(time);
     }
 
     @Override
-    public void setFromLine(int from) {
-        var node = getBackingNode();
-        var current = node.getFromLine();
-        node.setFromLine(new DiffLineNumber(
-            current.inDiff(),
-            time == BEFORE ? from : current.beforeEdit(),
-            time == AFTER ? from : current.afterEdit()
-        ));
-    }
-
-    @Override
-    public int getToLine() {
-        return getBackingNode().getToLine().atTime(time);
-    }
-
-    @Override
-    public void setToLine(int to) {
-        var node = getBackingNode();
-        var current = node.getToLine();
-        node.setToLine(new DiffLineNumber(
-            current.inDiff(),
-            time == BEFORE ? to : current.beforeEdit(),
-            time == AFTER ? to : current.afterEdit()
-        ));
+    public void setLineRange(Lines lineRange) {
+        getBackingNode().setLinesAtTime(lineRange, time);
     }
 
     @Override

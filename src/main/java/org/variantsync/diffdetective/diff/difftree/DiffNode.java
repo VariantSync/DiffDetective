@@ -456,6 +456,15 @@ public class DiffNode implements HasNodeType {
     }
 
     /**
+     * Returns the range of line numbers of this node's corresponding source code before or after
+     * the edit.
+     */
+    public void setLinesAtTime(Lines lines, Time time) {
+        from = from.withLineNumberAtTime(lines.getFromInclusive(), time);
+        to = to.withLineNumberAtTime(lines.getToExclusive(), time);
+    }
+
+    /**
      * Returns the formula that is stored in this node.
      * The formula is null for artifact nodes (i.e., {@link NodeType#ARTIFACT}).
      * The formula is not null for mapping nodes
@@ -744,8 +753,8 @@ public class DiffNode implements HasNodeType {
      * (all node had a {@link getDiffType diff type} of {@link DiffType#NON}).
      */
     public static <T extends VariationNode<T>> DiffNode unchanged(VariationNode<T> variationNode) {
-        int from = variationNode.getFromLine();
-        int to = variationNode.getToLine();
+        int from = variationNode.getLineRange().getFromInclusive();
+        int to = variationNode.getLineRange().getToExclusive();
 
         var diffNode = new DiffNode(
             DiffType.NON,

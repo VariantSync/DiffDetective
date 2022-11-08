@@ -40,6 +40,22 @@ public record DiffLineNumber(int inDiff, int beforeEdit, int afterEdit) {
         return new DiffLineNumber(InvalidLineNumber, InvalidLineNumber, InvalidLineNumber);
     }
 
+    public DiffLineNumber withLineNumberAtTime(int lineNumber, Time time) {
+        return new DiffLineNumber(
+            inDiff,
+            time.match(lineNumber, beforeEdit),
+            time.match(afterEdit, lineNumber)
+        );
+    }
+
+    public DiffLineNumber withLineNumberInDiff(int lineNumber) {
+        return new DiffLineNumber(
+            lineNumber,
+            beforeEdit,
+            afterEdit
+        );
+    }
+
     /**
      * Shifts this line number by adding the given offset.
      * @param offset value to add to this line number.

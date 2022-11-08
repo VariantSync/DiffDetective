@@ -81,46 +81,18 @@ public abstract class VariationNode<T extends VariationNode<T>> implements HasNo
     public abstract List<String> getLabelLines();
 
     /**
-     * Returns the start line number of the {@link getLabelLines label} of this node in the
-     * corresponding source code.
-     *
-     * @see setFromLine
-     */
-    public abstract int getFromLine();
-
-    /**
-     * Changes the line number returned by {@link getFromLine}.
-     *
-     * @see getFromLine
-     */
-    public abstract void setFromLine(int from);
-
-    /**
-     * Returns the end line number of the {@link getLabelLines label} of this node in the
-     * corresponding source code.
-     *
-     * <p>The line number is exclusive (i.e., it points 1 behind the last included line).
-     *
-     * @see setToLine
-     */
-    public abstract int getToLine();
-
-    /**
-     * Changes the line number returned by {@link getToLine}.
-     *
-     * @see getToLine
-     */
-    public abstract void setToLine(int to);
-
-    /**
      * Returns the range of line numbers of this node's corresponding source code.
      *
-     * @see getFromLine
-     * @see getToLine
+     * @see setLineRange
      */
-    public Lines getLineRange() {
-        return Lines.FromInclToExcl(getFromLine(), getToLine());
-    }
+    public abstract Lines getLineRange();
+
+    /**
+     * Sets the range of line numbers of this node's corresponding source code.
+     *
+     * @see getLineRange
+     */
+    public abstract void setLineRange(Lines lineRange);
 
     /**
      * Returns the parent of this node, or {@code null} if this node doesn't have a parent.
@@ -463,9 +435,8 @@ public abstract class VariationNode<T extends VariationNode<T>> implements HasNo
         // Copy mutable attributes to allow modifications of the new node.
         var newNode = new VariationTreeNode(
             getNodeType(),
-            getFromLine(),
-            getToLine(),
             getDirectFeatureMapping().clone(),
+            getLineRange(),
             new ArrayList<String>(getLabelLines())
         );
 
@@ -542,8 +513,9 @@ public abstract class VariationNode<T extends VariationNode<T>> implements HasNo
      *
      * <p>Some attributes may be recovered from this ID but this depends on the derived class. For
      * example {@link VariationTreeNode#fromID} can recover {@link getNodeType} and
-     * {@link getFromLine}. Beware that {@link Projection} returns {@link DiffNode#getID} so this
-     * id is not compatible with {@link VariationTreeNode#getID}.
+     * {@link getLineRange the start line number}. Beware that {@link Projection} returns
+     * {@link DiffNode#getID} so this id is not fully compatible with
+     * {@link VariationTreeNode#getID}.
      */
     public abstract int getID();
 

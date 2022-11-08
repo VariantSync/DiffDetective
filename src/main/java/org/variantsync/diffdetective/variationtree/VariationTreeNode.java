@@ -2,6 +2,7 @@ package org.variantsync.diffdetective.variationtree;
 
 import org.prop4j.Node;
 import org.variantsync.diffdetective.diff.DiffLineNumber;
+import org.variantsync.diffdetective.diff.Lines;
 import org.variantsync.diffdetective.diff.difftree.DiffNode; // For Javdoc
 import org.variantsync.diffdetective.diff.difftree.DiffTree; // For Javdoc
 import org.variantsync.diffdetective.diff.difftree.DiffType;
@@ -51,17 +52,12 @@ public class VariationTreeNode extends VariationNode<VariationTreeNode> {
      * The node type of this node, which determines the type of the represented
      * element in the diff (e.g., mapping or artifact).
      */
-    public final NodeType nodeType;
+    private final NodeType nodeType;
 
     /**
-     * The start line number of the {@link label} of this node in the corresponding source code.
+     * The range of line numbers of this node's corresponding source code.
      */
-    private int from = DiffLineNumber.InvalidLineNumber;
-    /**
-     * The end line number of the {@link label} of this node in the corresponding source code.
-     * The line number is exclusive (i.e., it points 1 behind the last included line).
-     */
-    private int to = DiffLineNumber.InvalidLineNumber;
+    private Lines lineRange;
 
     /**
      * A list of lines representing the label of this node.
@@ -98,26 +94,23 @@ public class VariationTreeNode extends VariationNode<VariationTreeNode> {
      * modifications to this list.
      *
      * @param nodeType the type of this node
-     * @param fromLine the start line number of the code of {@code label}
-     * @param toLine the end line number (exclusive) of the code of {@code label}
      * @param featureMapping the direct feature mapping of this node, has be non null iff
      * {@code nodeType.isConditionalAnnotation} is {@code true}
+     * @param lineRange the line range of the code of {@code label}
      * @param label a list of lines used as label
      * @see addChild
      * @see addBelow
      */
     public VariationTreeNode(
         NodeType nodeType,
-        int fromLine,
-        int toLine,
         Node featureMapping,
+        Lines lineRange,
         List<String> label
     ) {
         super();
 
         this.nodeType = nodeType;
-        this.from = fromLine;
-        this.to = toLine;
+        this.lineRange = lineRange;
         this.label = label;
         this.featureMapping = featureMapping;
 
@@ -138,9 +131,8 @@ public class VariationTreeNode extends VariationNode<VariationTreeNode> {
     public static VariationTreeNode createRoot() {
         return new VariationTreeNode(
                 NodeType.IF,
-                DiffLineNumber.InvalidLineNumber,
-                DiffLineNumber.InvalidLineNumber,
                 FixTrueFalse.True,
+                Lines.Invalid(),
                 new ArrayList<>()
         );
     }
@@ -148,13 +140,12 @@ public class VariationTreeNode extends VariationNode<VariationTreeNode> {
     /**
      * Convenience constructor for creating an artifact node of a {@link VariationTree}.
      *
-     * @param fromLine the start line number of the code of {@code label}
-     * @param toLine the end line number (exclusive) of the code of {@code label}
+     * @param lineRange the line range of the code of {@code label}
      * @param label a list of lines used as label
      * @see addBelow
      */
-    public static VariationTreeNode createArtifact(int fromLine, int toLine, List<String> label) {
-        return new VariationTreeNode(NodeType.ARTIFACT, fromLine, toLine, null, label);
+    public static VariationTreeNode createArtifact(Lines lineRange, List<String> label) {
+        return new VariationTreeNode(NodeType.ARTIFACT, null, lineRange, label);
     }
 
     @Override
@@ -195,23 +186,13 @@ public class VariationTreeNode extends VariationNode<VariationTreeNode> {
     }
 
     @Override
-    public int getFromLine() {
-        return from;
+    public Lines getLineRange() {
+        return lineRange;
     }
 
     @Override
-    public void setFromLine(int from) {
-        this.from = from;
-    }
-
-    @Override
-    public int getToLine() {
-        return to;
-    }
-
-    @Override
-    public void setToLine(int to) {
-        this.to = to;
+    public void setLineRange(Lines lineRange) {
+        this.lineRange = lineRange;
     }
 
     @Override
@@ -274,7 +255,7 @@ public class VariationTreeNode extends VariationNode<VariationTreeNode> {
      * Returns an integer that uniquely identifiers this node within its variation tree.
      *
      * <p>From the returned id a new node with all essential attributes ({@link getNodeType node
-     * type} and {@link getFromLine start line number}) can be reconstructed by using
+     * type} and {@link getLineRange start line number}) can be reconstructed by using
      * {@link fromID}.
      *
      * <p>Note that this encoding assumes that line numbers fit into {@code 26} bits.
@@ -282,7 +263,7 @@ public class VariationTreeNode extends VariationNode<VariationTreeNode> {
     @Override
     public int getID() {
         // Add one to ensure invalid (negative) line numbers don't cause issues.
-        final int lineNumber = 1 + from;
+        final int lineNumber = 1 + getLineRange().getFromInclusive();
 
         final int usedBitCount = DiffType.getRequiredBitCount() + NodeType.getRequiredBitCount();
         Assert.assertTrue((lineNumber << usedBitCount) >> usedBitCount == lineNumber);
@@ -321,9 +302,8 @@ public class VariationTreeNode extends VariationNode<VariationTreeNode> {
         var nodeType = NodeType.values()[nodeTypeOrdinal];
         return new VariationTreeNode(
                 nodeType,
-                from,
-                DiffLineNumber.InvalidLineNumber,
                 nodeType.isConditionalAnnotation() ? FixTrueFalse.True : null,
+                Lines.SingleLine(from),
                 label
         );
     }
@@ -338,7 +318,7 @@ public class VariationTreeNode extends VariationNode<VariationTreeNode> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         var other = (VariationTreeNode) o;
-        return nodeType == other.nodeType && from == other.from && to == other.to && Objects.equals(featureMapping, other.featureMapping) && label.equals(other.label);
+        return nodeType == other.nodeType && lineRange.equals(other.lineRange) && Objects.equals(featureMapping, other.featureMapping) && label.equals(other.label);
     }
 
     /**
@@ -351,19 +331,19 @@ public class VariationTreeNode extends VariationNode<VariationTreeNode> {
      */
     @Override
     public int hashCode() {
-        return Objects.hash(nodeType, from, to, featureMapping, label);
+        return Objects.hash(nodeType, lineRange, featureMapping, label);
     }
 
     @Override
     public String toString() {
         String s;
         if (isArtifact()) {
-            s = String.format("%s from %d to %d", nodeType, from, to);
+            s = String.format("%s in the lines %d", nodeType, lineRange);
         } else if (isRoot()) {
             s = "ROOT";
         } else {
-            s = String.format("%s from %d to %d with \"%s\"", nodeType,
-                    from, to, featureMapping);
+            s = String.format("%s in the lines %d with \"%s\"", nodeType,
+                    lineRange, featureMapping);
         }
         return s;
     }
