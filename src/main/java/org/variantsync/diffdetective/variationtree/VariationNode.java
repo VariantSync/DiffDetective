@@ -183,9 +183,6 @@ public abstract class VariationNode<T> implements HasNodeType {
         if (isIf()) {
             return this;
         }
-        if (isRoot()) {
-            return null;
-        }
         return getParent().getIfNode();
     }
 
