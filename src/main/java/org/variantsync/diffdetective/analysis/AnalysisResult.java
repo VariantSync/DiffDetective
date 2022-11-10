@@ -53,6 +53,7 @@ public class AnalysisResult implements Metadata<AnalysisResult> {
         a.alternativeEdges += b.alternativeEdges;
         a.runtimeInSeconds += b.runtimeInSeconds;
         a.runtimeWithMultithreadingInSeconds += b.runtimeWithMultithreadingInSeconds;
+        a.edgeAddingRuntimeInMilliseconds += b.edgeAddingRuntimeInMilliseconds;
         a.min.set(CommitProcessTime.min(a.min, b.min));
         a.max.set(CommitProcessTime.max(a.max, b.max));
         a.debugData.append(b.debugData);
@@ -90,6 +91,7 @@ public class AnalysisResult implements Metadata<AnalysisResult> {
     public int falseNodes;
     public double runtimeInSeconds;
     public double runtimeWithMultithreadingInSeconds;
+    public double edgeAddingRuntimeInMilliseconds;
     public final CommitProcessTime min, max;
     public final DiffTreeSerializeDebugData debugData;
     public ExplainedFilterSummary filterHits;
@@ -319,6 +321,7 @@ public class AnalysisResult implements Metadata<AnalysisResult> {
         snap.put(MetadataKeys.MAXCOMMIT, max.toString());
         snap.put(MetadataKeys.RUNTIME, runtimeInSeconds);
         snap.put(MetadataKeys.RUNTIME_WITH_MULTITHREADING, runtimeWithMultithreadingInSeconds);
+        snap.put(MetadataKeys.EDGE_ADDING_TIME, edgeAddingRuntimeInMilliseconds);
         snap.putAll(customInfo);
         snap.putAll(debugData.snapshot());
         snap.putAll(filterHits.snapshot());

@@ -4,24 +4,22 @@ import org.eclipse.jgit.revwalk.RevCommit;
 import org.prop4j.False;
 import org.prop4j.True;
 import org.tinylog.Logger;
-import org.variantsync.diffdetective.analysis.AnalysisResult;
-import org.variantsync.diffdetective.analysis.CommitHistoryAnalysisTask;
-import org.variantsync.diffdetective.analysis.CommitProcessTime;
-import org.variantsync.diffdetective.analysis.HistoryAnalysis;
+import org.variantsync.diffdetective.analysis.*;
 import org.variantsync.diffdetective.diff.CommitDiff;
 import org.variantsync.diffdetective.diff.PatchDiff;
 import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
-import org.variantsync.diffdetective.diff.difftree.serialize.GraphFormat;
 import org.variantsync.diffdetective.diff.difftree.serialize.LineGraphExport;
-import org.variantsync.diffdetective.diff.difftree.serialize.LineGraphExportOptions;
-import org.variantsync.diffdetective.diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
 import org.variantsync.diffdetective.diff.difftree.transform.DiffTreeTransformer;
 import org.variantsync.diffdetective.diff.result.CommitDiffResult;
 import org.variantsync.diffdetective.metadata.ExplainedFilterSummary;
 import org.variantsync.diffdetective.util.Clock;
 import org.variantsync.diffdetective.util.FileUtils;
+import org.variantsync.diffdetective.util.IO;
+import org.variantsync.diffdetective.util.StringUtils;
 
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,6 +41,8 @@ public class ThesisValidationTask extends CommitHistoryAnalysisTask {
         final AnalysisResult miningResult = super.call();
         // List to store the process time of each commit.
         final List<CommitProcessTime> commitTimes = new ArrayList<>(HistoryAnalysis.COMMITS_TO_PROCESS_PER_THREAD_DEFAULT);
+
+        final List<PatchProcessDetails> patchDetails = new ArrayList<>();
         // Clock for runtime measurement.
         final Clock totalTime = new Clock();
         totalTime.start();
@@ -90,6 +90,7 @@ public class ThesisValidationTask extends CommitHistoryAnalysisTask {
                         /*
                         extend the @DiffTree t with relationship edges
                         */
+                            Clock additionalTime = new Clock();
                             EdgeTypedDiff edgeTypedDiff = new EdgeTypedDiff(t);
                             ArrayList<RelationshipEdge<? extends RelationshipType>> implicationEdges = new ArrayList<>();
                             ArrayList<RelationshipEdge<? extends RelationshipType>> alternativeEdges = new ArrayList<>();
@@ -167,6 +168,9 @@ public class ThesisValidationTask extends CommitHistoryAnalysisTask {
                             }
 
                             if(edgeTypedDiff.calculateAdditionalComplexity() != 0) patch.setEdgeTypedDiff(edgeTypedDiff);
+                            var time = additionalTime.getPassedMilliseconds();
+                            miningResult.edgeAddingRuntimeInMilliseconds += time;
+                            patchDetails.add(new PatchProcessDetails(commitDiff.getCommitHash(), patch.getFileName(), options.repository().getRepositoryName(), time, addedComplexityPercents));
                         }
                     }
 
@@ -210,9 +214,26 @@ public class ThesisValidationTask extends CommitHistoryAnalysisTask {
         miningResult.runtimeInSeconds = totalTime.getPassedSeconds();
         miningResult.exportTo(FileUtils.addExtension(options.outputDir(), AnalysisResult.EXTENSION));
         exportCommitTimes(commitTimes, FileUtils.addExtension(options.outputDir(), COMMIT_TIME_FILE_EXTENSION));
+        exportPathDetails(patchDetails, FileUtils.addExtension(options.outputDir(), ".patchdetail.txt"));
         return miningResult;
     }
 
+    public static void exportPathDetails(final List<PatchProcessDetails> patchDetails, final Path pathToOutputFile) {
+        if(patchDetails.isEmpty()) return;
+
+        final StringBuilder times = new StringBuilder();
+
+        for (final PatchProcessDetails pD : patchDetails) {
+            times.append(pD.toString()).append(StringUtils.LINEBREAK);
+        }
+
+        try {
+            IO.write(pathToOutputFile, times.toString());
+        } catch (IOException e) {
+            Logger.error(e);
+            System.exit(1);
+        }
+    }
     boolean isBetween(int x, int a, int b){
         return (x <= b && x > a);
     }

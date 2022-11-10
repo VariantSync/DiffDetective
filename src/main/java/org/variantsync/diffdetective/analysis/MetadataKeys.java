@@ -24,6 +24,7 @@ public final class MetadataKeys {
 
     public final static String RUNTIME = "runtime in seconds";
     public final static String RUNTIME_WITH_MULTITHREADING = "runtime with multithreading in seconds";
+    public final static String EDGE_ADDING_TIME = "relationship edge adding in ms";
     public static final String MINCOMMIT = "fastestCommit";
     public static final String MAXCOMMIT = "slowestCommit";
     public final static String TREES = "tree diffs";
