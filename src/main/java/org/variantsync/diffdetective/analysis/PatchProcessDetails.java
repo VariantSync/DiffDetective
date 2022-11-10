@@ -8,21 +8,26 @@ public class PatchProcessDetails {
     private String repoName;
     private long milliseconds;
     private int addedComplexityPercents;
+    private int totalNodeCount;
+    private int ifNodeCount;
+
     
-    public PatchProcessDetails(final String hash, final String fileName, final String reponame, long milliseconds, int addedComplexityPercents){
+    public PatchProcessDetails(final String hash, final String fileName, final String reponame, long milliseconds, int addedComplexityPercents, int totalNodeCount, int ifNodeCount){
         this.hash = hash;
         this.fileName = fileName;
         this.repoName = reponame;
         this.milliseconds = milliseconds;
         this.addedComplexityPercents = addedComplexityPercents;
+        this.totalNodeCount = totalNodeCount;
+        this.ifNodeCount = ifNodeCount;
     }
 
     public String toString() {
-        return hash + STR_DELIMITER + repoName + STR_DELIMITER + fileName + STR_DELIMITER+ addedComplexityPercents + "%" + STR_DELIMITER + milliseconds + "ms";
+        return hash + STR_DELIMITER + repoName + STR_DELIMITER + fileName + STR_DELIMITER+ addedComplexityPercents + "%" + STR_DELIMITER + milliseconds + "ms" + STR_DELIMITER + totalNodeCount + STR_DELIMITER + ifNodeCount;
     }
 
     public String toCSV(){
-        return hash + CSV_DELIMITER + repoName + CSV_DELIMITER + fileName + CSV_DELIMITER+ addedComplexityPercents + CSV_DELIMITER + milliseconds;
+        return hash + CSV_DELIMITER + repoName + CSV_DELIMITER + fileName + CSV_DELIMITER+ addedComplexityPercents + CSV_DELIMITER + milliseconds + CSV_DELIMITER + totalNodeCount + CSV_DELIMITER + ifNodeCount;
     }
 }
 

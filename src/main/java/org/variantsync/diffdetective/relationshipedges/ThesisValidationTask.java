@@ -170,7 +170,7 @@ public class ThesisValidationTask extends CommitHistoryAnalysisTask {
                             if(edgeTypedDiff.calculateAdditionalComplexity() != 0) patch.setEdgeTypedDiff(edgeTypedDiff);
                             var time = additionalTime.getPassedMilliseconds();
                             miningResult.edgeAddingRuntimeInMilliseconds += time;
-                            patchDetails.add(new PatchProcessDetails(commitDiff.getCommitHash(), patch.getFileName(), options.repository().getRepositoryName(), time, addedComplexityPercents));
+                            patchDetails.add(new PatchProcessDetails(commitDiff.getCommitHash(), patch.getFileName(), options.repository().getRepositoryName(), time, addedComplexityPercents, t.computeSize(), ifNodes.size()));
                         }
                     }
 
@@ -214,17 +214,22 @@ public class ThesisValidationTask extends CommitHistoryAnalysisTask {
         miningResult.runtimeInSeconds = totalTime.getPassedSeconds();
         miningResult.exportTo(FileUtils.addExtension(options.outputDir(), AnalysisResult.EXTENSION));
         exportCommitTimes(commitTimes, FileUtils.addExtension(options.outputDir(), COMMIT_TIME_FILE_EXTENSION));
-        exportPathDetails(patchDetails, FileUtils.addExtension(options.outputDir(), ".patchdetail.txt"));
+        exportPatchDetails(patchDetails, FileUtils.addExtension(options.outputDir(), ".patchdetail.txt"), false);
+        exportPatchDetails(patchDetails, FileUtils.addExtension(options.outputDir(), ".patchdetail.csv"), true);
         return miningResult;
     }
 
-    public static void exportPathDetails(final List<PatchProcessDetails> patchDetails, final Path pathToOutputFile) {
+    public static void exportPatchDetails(final List<PatchProcessDetails> patchDetails, final Path pathToOutputFile, boolean asCsv) {
         if(patchDetails.isEmpty()) return;
 
         final StringBuilder times = new StringBuilder();
 
         for (final PatchProcessDetails pD : patchDetails) {
-            times.append(pD.toString()).append(StringUtils.LINEBREAK);
+            if(asCsv){
+                times.append(pD.toCSV()).append(StringUtils.LINEBREAK);
+            }else {
+                times.append(pD.toString()).append(StringUtils.LINEBREAK);
+            }
         }
 
         try {
