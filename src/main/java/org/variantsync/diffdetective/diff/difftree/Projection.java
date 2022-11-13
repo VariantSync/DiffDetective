@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.prop4j.Node;
-import org.variantsync.diffdetective.diff.Lines;
+import org.variantsync.diffdetective.diff.LineRange;
 import org.variantsync.diffdetective.variationtree.VariationNode;
 import org.variantsync.functjonal.list.FilteredMappedListView;
 
@@ -68,12 +68,12 @@ public class Projection extends VariationNode<Projection> {
     }
 
     @Override
-    public Lines getLineRange() {
+    public LineRange getLineRange() {
         return getBackingNode().getLinesAtTime(time);
     }
 
     @Override
-    public void setLineRange(Lines lineRange) {
+    public void setLineRange(LineRange lineRange) {
         getBackingNode().setLinesAtTime(lineRange, time);
     }
 

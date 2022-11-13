@@ -1,7 +1,7 @@
 package org.variantsync.diffdetective.preliminary.pattern.semantic;
 
 import org.prop4j.Node;
-import org.variantsync.diffdetective.diff.Lines;
+import org.variantsync.diffdetective.diff.LineRange;
 import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.preliminary.analysis.data.PatternMatch;
 import org.variantsync.diffdetective.preliminary.evaluation.FeatureContext;
@@ -47,7 +47,7 @@ class AddIfdefElif extends SemanticPattern {
                 return Optional.empty();
             }
 
-            final Lines diffLines = annotationNode.getLinesInDiff();
+            final LineRange diffLines = annotationNode.getLinesInDiff();
             return Optional.of(new PatternMatch<>(this,
                     diffLines.getFromInclusive(), diffLines.getToExclusive(),
                     mappings.toArray(new Node[0])

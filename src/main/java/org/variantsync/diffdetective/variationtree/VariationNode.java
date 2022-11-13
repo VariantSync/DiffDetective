@@ -9,7 +9,7 @@ import java.util.function.Consumer;
 
 import org.prop4j.And;
 import org.prop4j.Node;
-import org.variantsync.diffdetective.diff.Lines;
+import org.variantsync.diffdetective.diff.LineRange;
 import org.variantsync.diffdetective.diff.difftree.DiffNode; // For Javadoc
 import org.variantsync.diffdetective.diff.difftree.NodeType;
 import org.variantsync.diffdetective.diff.difftree.Projection; // For Javadoc
@@ -85,14 +85,14 @@ public abstract class VariationNode<T extends VariationNode<T>> implements HasNo
      *
      * @see setLineRange
      */
-    public abstract Lines getLineRange();
+    public abstract LineRange getLineRange();
 
     /**
      * Sets the range of line numbers of this node's corresponding source code.
      *
      * @see getLineRange
      */
-    public abstract void setLineRange(Lines lineRange);
+    public abstract void setLineRange(LineRange lineRange);
 
     /**
      * Returns the parent of this node, or {@code null} if this node doesn't have a parent.

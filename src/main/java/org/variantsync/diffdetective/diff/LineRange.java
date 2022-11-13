@@ -5,11 +5,11 @@ package org.variantsync.diffdetective.diff;
  * Mainly used to locate code snippets in source code files and textual diffs.
  * @author Paul Bittner
  */
-public class Lines {
+public class LineRange {
     private final int fromInclusive; // including
     private final int toExclusive; // excluding
 
-    private Lines(int fromInclusive, int toExclusive) {
+    private LineRange(int fromInclusive, int toExclusive) {
         this.fromInclusive = fromInclusive;
         this.toExclusive = toExclusive;
     }
@@ -17,15 +17,15 @@ public class Lines {
     /**
      * Creates an invalid range that does not represent a valid range of line numbers in a text file.
      */
-    public static Lines Invalid() {
-        return new Lines(-1, -1);
+    public static LineRange Invalid() {
+        return new LineRange(-1, -1);
     }
 
     /**
      * Creates a range that covers only a single line.
      * @param lineNo The line number to range over.
      */
-    public static Lines SingleLine(int lineNo) {
+    public static LineRange SingleLine(int lineNo) {
         return FromInclToIncl(lineNo, lineNo);
     }
 
@@ -34,8 +34,8 @@ public class Lines {
      * @param fromInclusive Start of the range.
      * @param toExclusive Line number after the end of the range.
      */
-    public static Lines FromInclToExcl(int fromInclusive, int toExclusive) {
-        return new Lines(fromInclusive, toExclusive);
+    public static LineRange FromInclToExcl(int fromInclusive, int toExclusive) {
+        return new LineRange(fromInclusive, toExclusive);
     }
 
     /**
@@ -43,8 +43,8 @@ public class Lines {
      * @param fromInclusive Start of the range.
      * @param toInclusive End of the range.
      */
-    public static Lines FromInclToIncl(int fromInclusive, int toInclusive) {
-        return new Lines(fromInclusive, toInclusive + 1);
+    public static LineRange FromInclToIncl(int fromInclusive, int toInclusive) {
+        return new LineRange(fromInclusive, toInclusive + 1);
     }
 
     /**

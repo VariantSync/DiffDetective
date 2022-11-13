@@ -2,7 +2,7 @@ package org.variantsync.diffdetective.variationtree;
 
 import org.prop4j.Node;
 import org.variantsync.diffdetective.diff.DiffLineNumber;
-import org.variantsync.diffdetective.diff.Lines;
+import org.variantsync.diffdetective.diff.LineRange;
 import org.variantsync.diffdetective.diff.difftree.DiffNode; // For Javdoc
 import org.variantsync.diffdetective.diff.difftree.DiffTree; // For Javdoc
 import org.variantsync.diffdetective.diff.difftree.DiffType;
@@ -57,7 +57,7 @@ public class VariationTreeNode extends VariationNode<VariationTreeNode> {
     /**
      * The range of line numbers of this node's corresponding source code.
      */
-    private Lines lineRange;
+    private LineRange lineRange;
 
     /**
      * A list of lines representing the label of this node.
@@ -104,7 +104,7 @@ public class VariationTreeNode extends VariationNode<VariationTreeNode> {
     public VariationTreeNode(
         NodeType nodeType,
         Node featureMapping,
-        Lines lineRange,
+        LineRange lineRange,
         List<String> label
     ) {
         super();
@@ -132,7 +132,7 @@ public class VariationTreeNode extends VariationNode<VariationTreeNode> {
         return new VariationTreeNode(
                 NodeType.IF,
                 FixTrueFalse.True,
-                Lines.Invalid(),
+                LineRange.Invalid(),
                 new ArrayList<>()
         );
     }
@@ -144,7 +144,7 @@ public class VariationTreeNode extends VariationNode<VariationTreeNode> {
      * @param label a list of lines used as label
      * @see addBelow
      */
-    public static VariationTreeNode createArtifact(Lines lineRange, List<String> label) {
+    public static VariationTreeNode createArtifact(LineRange lineRange, List<String> label) {
         return new VariationTreeNode(NodeType.ARTIFACT, null, lineRange, label);
     }
 
@@ -186,12 +186,12 @@ public class VariationTreeNode extends VariationNode<VariationTreeNode> {
     }
 
     @Override
-    public Lines getLineRange() {
+    public LineRange getLineRange() {
         return lineRange;
     }
 
     @Override
-    public void setLineRange(Lines lineRange) {
+    public void setLineRange(LineRange lineRange) {
         this.lineRange = lineRange;
     }
 
@@ -303,7 +303,7 @@ public class VariationTreeNode extends VariationNode<VariationTreeNode> {
         return new VariationTreeNode(
                 nodeType,
                 nodeType.isConditionalAnnotation() ? FixTrueFalse.True : null,
-                Lines.SingleLine(from),
+                LineRange.SingleLine(from),
                 label
         );
     }

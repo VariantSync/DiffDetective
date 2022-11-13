@@ -1,7 +1,7 @@
 package org.variantsync.diffdetective.preliminary.pattern.elementary;
 
 import org.prop4j.Node;
-import org.variantsync.diffdetective.diff.Lines;
+import org.variantsync.diffdetective.diff.LineRange;
 import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.preliminary.pattern.Pattern;
 import org.variantsync.diffdetective.editclass.proposed.ProposedEditClasses;
@@ -21,7 +21,7 @@ public final class FeatureContextOfRemWithMapping implements FeatureContextRever
     @Override
     public PatternMatch<DiffNode> createMatch(DiffNode codeNode) {
         final Node fm = codeNode.getParent(BEFORE).getFeatureMapping(BEFORE);
-        final Lines diffLines = codeNode.getLinesInDiff();
+        final LineRange diffLines = codeNode.getLinesInDiff();
 
         return new PatternMatch<>(this,
                 diffLines.getFromInclusive(), diffLines.getToExclusive(), fm

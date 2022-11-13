@@ -2,7 +2,7 @@ package org.variantsync.diffdetective.diff.difftree;
 
 import org.prop4j.Node;
 import org.variantsync.diffdetective.diff.DiffLineNumber;
-import org.variantsync.diffdetective.diff.Lines;
+import org.variantsync.diffdetective.diff.LineRange;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.util.StringUtils;
 import org.variantsync.diffdetective.util.fide.FixTrueFalse;
@@ -443,7 +443,7 @@ public class DiffNode implements HasNodeType {
      * Returns the range of line numbers of this node's corresponding source code in the text-based diff.
      * @see DiffLineNumber#rangeInDiff
      */
-    public Lines getLinesInDiff() {
+    public LineRange getLinesInDiff() {
         return DiffLineNumber.rangeInDiff(from, to);
     }
 
@@ -451,7 +451,7 @@ public class DiffNode implements HasNodeType {
      * Returns the range of line numbers of this node's corresponding source code before or after
      * the edit.
      */
-    public Lines getLinesAtTime(Time time) {
+    public LineRange getLinesAtTime(Time time) {
         return DiffLineNumber.rangeAtTime(from, to, time);
     }
 
@@ -459,9 +459,9 @@ public class DiffNode implements HasNodeType {
      * Returns the range of line numbers of this node's corresponding source code before or after
      * the edit.
      */
-    public void setLinesAtTime(Lines lines, Time time) {
-        from = from.withLineNumberAtTime(lines.getFromInclusive(), time);
-        to = to.withLineNumberAtTime(lines.getToExclusive(), time);
+    public void setLinesAtTime(LineRange lineRange, Time time) {
+        from = from.withLineNumberAtTime(lineRange.getFromInclusive(), time);
+        to = to.withLineNumberAtTime(lineRange.getToExclusive(), time);
     }
 
     /**

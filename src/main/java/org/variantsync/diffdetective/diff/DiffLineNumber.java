@@ -128,8 +128,8 @@ public record DiffLineNumber(int inDiff, int beforeEdit, int afterEdit) {
      * @param to The end line number.
      * @return [from.inDiff, to.inDiff)
      */
-    public static Lines rangeInDiff(final DiffLineNumber from, final DiffLineNumber to) {
-        return Lines.FromInclToExcl(from.inDiff, to.inDiff);
+    public static LineRange rangeInDiff(final DiffLineNumber from, final DiffLineNumber to) {
+        return LineRange.FromInclToExcl(from.inDiff, to.inDiff);
     }
 
     /**
@@ -140,7 +140,7 @@ public record DiffLineNumber(int inDiff, int beforeEdit, int afterEdit) {
      * @param time The time at which to return the line range.
      * @return [from.beforeEdit, to.beforeEdit) or [from.afterEdit, to.afterEdit)
      */
-    public static Lines rangeAtTime(final DiffLineNumber from, final DiffLineNumber to, Time time) {
-        return Lines.FromInclToExcl(from.atTime(time), to.atTime(time));
+    public static LineRange rangeAtTime(final DiffLineNumber from, final DiffLineNumber to, Time time) {
+        return LineRange.FromInclToExcl(from.atTime(time), to.atTime(time));
     }
 }
