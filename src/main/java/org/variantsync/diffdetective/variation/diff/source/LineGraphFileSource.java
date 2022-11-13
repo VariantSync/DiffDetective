@@ -1,7 +1,5 @@
 package org.variantsync.diffdetective.variation.diff.source;
 
-import org.variantsync.diffdetective.variation.diff.DiffTreeSource;
-
 import java.nio.file.Path;
 
 /**

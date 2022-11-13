@@ -10,11 +10,11 @@ import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.util.IO;
 import org.variantsync.diffdetective.util.StringUtils;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
-import org.variantsync.diffdetective.variation.diff.DiffTreeSource;
 import org.variantsync.diffdetective.variation.diff.LineGraphConstants;
 import org.variantsync.diffdetective.variation.diff.serialize.DiffTreeSerializeDebugData;
 import org.variantsync.diffdetective.variation.diff.serialize.LineGraphExport;
 import org.variantsync.diffdetective.variation.diff.serialize.LineGraphExportOptions;
+import org.variantsync.diffdetective.variation.diff.source.DiffTreeSource;
 
 import java.io.IOException;
 import java.nio.file.Files;

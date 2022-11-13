@@ -9,7 +9,7 @@ import org.variantsync.diffdetective.feature.CPPAnnotationParser;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
-import org.variantsync.diffdetective.variation.diff.DiffTreeSource;
+import org.variantsync.diffdetective.variation.diff.source.DiffTreeSource;
 import org.variantsync.diffdetective.variation.diff.filter.DiffTreeFilter;
 import org.variantsync.diffdetective.variation.diff.filter.ExplainedFilter;
 import org.variantsync.diffdetective.variation.diff.filter.TaggedPredicate;

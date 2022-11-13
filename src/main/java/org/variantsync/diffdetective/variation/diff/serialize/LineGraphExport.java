@@ -8,8 +8,9 @@ import org.variantsync.diffdetective.analysis.AnalysisResult;
 import org.variantsync.diffdetective.diff.CommitDiff;
 import org.variantsync.diffdetective.diff.PatchDiff;
 import org.variantsync.diffdetective.util.StringUtils;
+import org.variantsync.diffdetective.util.StringUtils;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
-import org.variantsync.diffdetective.variation.diff.DiffTreeSource;
+import org.variantsync.diffdetective.variation.diff.source.DiffTreeSource;
 
 /**
  * Class that contains functions for writing {@link CommitDiff}s and (sets of) {@link DiffTree}s to a linegraph file.

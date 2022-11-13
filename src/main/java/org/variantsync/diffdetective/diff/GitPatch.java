@@ -2,7 +2,7 @@ package org.variantsync.diffdetective.diff;
 
 import org.eclipse.jgit.diff.DiffEntry;
 import org.variantsync.diffdetective.variation.diff.DiffTree; // For Javadoc
-import org.variantsync.diffdetective.variation.diff.DiffTreeSource;
+import org.variantsync.diffdetective.variation.diff.source.DiffTreeSource;
 
 /**
  * Interface for patches from a git repository.

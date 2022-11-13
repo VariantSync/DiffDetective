@@ -12,6 +12,7 @@ import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.feature.CPPAnnotationParser;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParser;
+import org.variantsync.diffdetective.variation.diff.source.DiffTreeSource;
 import org.variantsync.diffdetective.variation.diff.source.PatchFile;
 import org.variantsync.diffdetective.variation.diff.source.PatchString;
 import org.variantsync.diffdetective.variation.diff.traverse.DiffTreeTraversal;

@@ -1,5 +1,7 @@
 package org.variantsync.diffdetective.variation.diff;
 
+import org.variantsync.diffdetective.variation.diff.source.DiffTreeSource;
+
 import java.util.Collection;
 import static org.variantsync.diffdetective.variation.diff.Time.AFTER;
 import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;

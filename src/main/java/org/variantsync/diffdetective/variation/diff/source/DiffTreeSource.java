@@ -1,4 +1,4 @@
-package org.variantsync.diffdetective.variation.diff;
+package org.variantsync.diffdetective.variation.diff.source;
 
 /**
  * Describes or identifies that data a DiffTree was created or parsed from.

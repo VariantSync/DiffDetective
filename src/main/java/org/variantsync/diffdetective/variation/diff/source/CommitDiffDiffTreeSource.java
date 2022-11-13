@@ -1,4 +1,4 @@
-package org.variantsync.diffdetective.variation.diff;
+package org.variantsync.diffdetective.variation.diff.source;
 
 import java.nio.file.Path;
 

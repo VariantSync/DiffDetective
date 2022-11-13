@@ -3,8 +3,8 @@ package org.variantsync.diffdetective.variation.diff.serialize.treeformat;
 import org.apache.commons.io.FilenameUtils;
 import org.variantsync.diffdetective.diff.CommitDiff;
 import org.variantsync.diffdetective.diff.PatchDiff;
-import org.variantsync.diffdetective.variation.diff.CommitDiffDiffTreeSource;
-import org.variantsync.diffdetective.variation.diff.DiffTreeSource;
+import org.variantsync.diffdetective.variation.diff.source.CommitDiffDiffTreeSource;
+import org.variantsync.diffdetective.variation.diff.source.DiffTreeSource;
 import org.variantsync.diffdetective.variation.diff.LineGraphConstants;
 
 import java.nio.file.InvalidPathException;

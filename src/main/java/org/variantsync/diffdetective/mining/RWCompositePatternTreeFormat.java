@@ -1,6 +1,6 @@
 package org.variantsync.diffdetective.mining;
 
-import org.variantsync.diffdetective.variation.diff.DiffTreeSource;
+import org.variantsync.diffdetective.variation.diff.source.DiffTreeSource;
 import org.variantsync.diffdetective.variation.diff.serialize.treeformat.DiffTreeLabelFormat;
 import org.variantsync.diffdetective.variation.diff.source.PatchFile;
 

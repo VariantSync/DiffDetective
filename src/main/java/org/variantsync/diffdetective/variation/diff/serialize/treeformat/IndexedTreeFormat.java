@@ -1,6 +1,6 @@
 package org.variantsync.diffdetective.variation.diff.serialize.treeformat;
 
-import org.variantsync.diffdetective.variation.diff.DiffTreeSource;
+import org.variantsync.diffdetective.variation.diff.source.DiffTreeSource;
 
 /**
  * Exports tree by indexing them.
