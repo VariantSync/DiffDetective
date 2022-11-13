@@ -14,10 +14,10 @@ import org.variantsync.diffdetective.datasets.Repository;
 import org.variantsync.diffdetective.diff.CommitDiff;
 import org.variantsync.diffdetective.diff.GitDiffer;
 import org.variantsync.diffdetective.diff.PatchDiff;
-import org.variantsync.diffdetective.diff.difftree.DiffTree;
-import org.variantsync.diffdetective.diff.difftree.parse.DiffTreeParser;
-import org.variantsync.diffdetective.diff.difftree.parse.IllFormedAnnotationException;
-import org.variantsync.diffdetective.diff.difftree.transform.DiffTreeTransformer;
+import org.variantsync.diffdetective.variation.diff.DiffTree;
+import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParser;
+import org.variantsync.diffdetective.variation.diff.parse.IllFormedAnnotationException;
+import org.variantsync.diffdetective.variation.diff.transform.DiffTreeTransformer;
 import org.variantsync.diffdetective.feature.CPPAnnotationParser;
 import org.variantsync.diffdetective.mining.DiffTreeMiner;
 import org.variantsync.diffdetective.editclass.proposed.ProposedEditClasses;
@@ -31,8 +31,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
-import static org.variantsync.diffdetective.diff.difftree.Time.AFTER;
-import static org.variantsync.diffdetective.diff.difftree.Time.BEFORE;
+import static org.variantsync.diffdetective.variation.diff.Time.AFTER;
+import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
 
 @Deprecated
 @Disabled

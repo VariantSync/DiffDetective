@@ -1,5 +1,5 @@
 import org.junit.jupiter.api.Test;
-import org.variantsync.diffdetective.diff.difftree.DiffTree;
+import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.editclass.proposed.ProposedEditClasses;
 

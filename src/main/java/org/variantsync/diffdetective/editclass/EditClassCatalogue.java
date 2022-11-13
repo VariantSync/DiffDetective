@@ -1,7 +1,7 @@
 package org.variantsync.diffdetective.editclass;
 
-import org.variantsync.diffdetective.diff.difftree.DiffNode;
-import org.variantsync.diffdetective.diff.difftree.DiffType;
+import org.variantsync.diffdetective.variation.diff.DiffNode;
+import org.variantsync.diffdetective.variation.diff.DiffType;
 
 import java.util.List;
 import java.util.Map;

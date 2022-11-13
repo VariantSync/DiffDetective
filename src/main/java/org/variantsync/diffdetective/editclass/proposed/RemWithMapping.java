@@ -1,10 +1,10 @@
 package org.variantsync.diffdetective.editclass.proposed;
 
-import org.variantsync.diffdetective.diff.difftree.DiffNode;
-import org.variantsync.diffdetective.diff.difftree.DiffType;
 import org.variantsync.diffdetective.editclass.EditClass;
+import org.variantsync.diffdetective.variation.diff.DiffNode;
+import org.variantsync.diffdetective.variation.diff.DiffType;
 
-import static org.variantsync.diffdetective.diff.difftree.Time.BEFORE;
+import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
 
 /**
  * Our RemWithMapping edit class from the ESEC/FSE'22 paper.

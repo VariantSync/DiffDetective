@@ -2,7 +2,7 @@ package org.variantsync.diffdetective.diff;
 
 import org.apache.commons.io.FilenameUtils;
 import org.eclipse.jgit.diff.DiffEntry;
-import org.variantsync.diffdetective.diff.difftree.DiffTree;
+import org.variantsync.diffdetective.variation.diff.DiffTree;
 
 /**
  * Data class containing information about a single patch (i.e., the differences in a single file).

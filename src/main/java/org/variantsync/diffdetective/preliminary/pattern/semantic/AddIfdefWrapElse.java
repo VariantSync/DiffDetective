@@ -1,12 +1,12 @@
 package org.variantsync.diffdetective.preliminary.pattern.semantic;
 
-import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.preliminary.analysis.data.PatternMatch;
 import org.variantsync.diffdetective.preliminary.evaluation.FeatureContext;
+import org.variantsync.diffdetective.variation.diff.DiffNode;
 
 import java.util.Optional;
 
-import static org.variantsync.diffdetective.diff.difftree.Time.AFTER;
+import static org.variantsync.diffdetective.variation.diff.Time.AFTER;
 
 @Deprecated
 class AddIfdefWrapElse extends SemanticPattern {

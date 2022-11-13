@@ -8,13 +8,13 @@ import org.variantsync.diffdetective.analysis.CommitProcessTime;
 import org.variantsync.diffdetective.analysis.HistoryAnalysis;
 import org.variantsync.diffdetective.diff.CommitDiff;
 import org.variantsync.diffdetective.diff.PatchDiff;
-import org.variantsync.diffdetective.diff.difftree.DiffTree;
-import org.variantsync.diffdetective.diff.difftree.transform.DiffTreeTransformer;
 import org.variantsync.diffdetective.diff.result.CommitDiffResult;
-import org.variantsync.diffdetective.metadata.ExplainedFilterSummary;
 import org.variantsync.diffdetective.editclass.proposed.ProposedEditClasses;
+import org.variantsync.diffdetective.metadata.ExplainedFilterSummary;
 import org.variantsync.diffdetective.util.Clock;
 import org.variantsync.diffdetective.util.FileUtils;
+import org.variantsync.diffdetective.variation.diff.DiffTree;
+import org.variantsync.diffdetective.variation.diff.transform.DiffTreeTransformer;
 
 import java.util.ArrayList;
 import java.util.List;

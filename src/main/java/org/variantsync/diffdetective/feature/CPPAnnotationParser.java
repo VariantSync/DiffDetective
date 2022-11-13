@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.prop4j.Literal;
 import org.prop4j.Node;
-import org.variantsync.diffdetective.diff.difftree.parse.IllFormedAnnotationException;
+import org.variantsync.diffdetective.variation.diff.parse.IllFormedAnnotationException;
 
 /**
  * A parser of C-preprocessor annotations.

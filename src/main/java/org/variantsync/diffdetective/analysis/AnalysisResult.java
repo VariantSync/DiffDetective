@@ -1,11 +1,11 @@
 package org.variantsync.diffdetective.analysis;
 
-import org.variantsync.diffdetective.diff.difftree.serialize.DiffTreeSerializeDebugData;
 import org.variantsync.diffdetective.diff.result.DiffError;
+import org.variantsync.diffdetective.editclass.proposed.ProposedEditClasses;
 import org.variantsync.diffdetective.metadata.EditClassCount;
 import org.variantsync.diffdetective.metadata.ExplainedFilterSummary;
 import org.variantsync.diffdetective.metadata.Metadata;
-import org.variantsync.diffdetective.editclass.proposed.ProposedEditClasses;
+import org.variantsync.diffdetective.variation.diff.serialize.DiffTreeSerializeDebugData;
 import org.variantsync.functjonal.Functjonal;
 import org.variantsync.functjonal.category.InplaceMonoid;
 import org.variantsync.functjonal.category.InplaceSemigroup;

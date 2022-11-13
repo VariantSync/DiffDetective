@@ -4,18 +4,18 @@ import org.junit.jupiter.api.Test;
 import org.variantsync.diffdetective.datasets.Repository;
 import org.variantsync.diffdetective.datasets.predefined.StanciulescuMarlin;
 import org.variantsync.diffdetective.diff.PatchDiff;
-import org.variantsync.diffdetective.diff.difftree.DiffTree;
-import org.variantsync.diffdetective.diff.difftree.LineGraphConstants;
-import org.variantsync.diffdetective.diff.difftree.parse.DiffTreeParser;
-import org.variantsync.diffdetective.diff.difftree.render.DiffTreeRenderer;
-import org.variantsync.diffdetective.diff.difftree.render.RenderOptions;
-import org.variantsync.diffdetective.diff.difftree.serialize.GraphFormat;
-import org.variantsync.diffdetective.diff.difftree.serialize.edgeformat.DefaultEdgeLabelFormat;
-import org.variantsync.diffdetective.diff.difftree.serialize.nodeformat.TypeDiffNodeFormat;
-import org.variantsync.diffdetective.diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
-import org.variantsync.diffdetective.diff.difftree.transform.DiffTreeTransformer;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.mining.DiffTreeMiner;
+import org.variantsync.diffdetective.variation.diff.DiffTree;
+import org.variantsync.diffdetective.variation.diff.LineGraphConstants;
+import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParser;
+import org.variantsync.diffdetective.variation.diff.render.DiffTreeRenderer;
+import org.variantsync.diffdetective.variation.diff.render.RenderOptions;
+import org.variantsync.diffdetective.variation.diff.serialize.GraphFormat;
+import org.variantsync.diffdetective.variation.diff.serialize.edgeformat.DefaultEdgeLabelFormat;
+import org.variantsync.diffdetective.variation.diff.serialize.nodeformat.TypeDiffNodeFormat;
+import org.variantsync.diffdetective.variation.diff.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
+import org.variantsync.diffdetective.variation.diff.transform.DiffTreeTransformer;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 

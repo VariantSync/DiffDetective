@@ -1,8 +1,8 @@
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
-import org.variantsync.diffdetective.diff.difftree.DiffType;
-import org.variantsync.diffdetective.diff.difftree.NodeType;
+import org.variantsync.diffdetective.variation.diff.DiffType;
+import org.variantsync.diffdetective.variation.diff.NodeType;
 
 public class StaticAsserts {
     @Test

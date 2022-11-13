@@ -2,16 +2,16 @@ package org.variantsync.diffdetective.editclass.proposed;
 
 import org.prop4j.Node;
 import org.variantsync.diffdetective.analysis.logic.SAT;
-import org.variantsync.diffdetective.diff.difftree.DiffNode;
-import org.variantsync.diffdetective.diff.difftree.DiffType;
-import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.editclass.EditClass;
 import org.variantsync.diffdetective.editclass.EditClassCatalogue;
+import org.variantsync.diffdetective.util.Assert;
+import org.variantsync.diffdetective.variation.diff.DiffNode;
+import org.variantsync.diffdetective.variation.diff.DiffType;
 
 import java.util.*;
 
-import static org.variantsync.diffdetective.diff.difftree.Time.AFTER;
-import static org.variantsync.diffdetective.diff.difftree.Time.BEFORE;
+import static org.variantsync.diffdetective.variation.diff.Time.AFTER;
+import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
 
 /**
  * The catalog of edit classes proposed in our ESEC/FSE'22 paper.

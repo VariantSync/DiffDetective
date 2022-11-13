@@ -1,11 +1,11 @@
 package org.variantsync.diffdetective.mining.formats;
 
-import org.variantsync.diffdetective.diff.difftree.NodeType;
-import org.variantsync.diffdetective.diff.difftree.DiffNode;
-import org.variantsync.diffdetective.diff.difftree.DiffType;
 import org.variantsync.diffdetective.editclass.EditClass;
 import org.variantsync.diffdetective.editclass.proposed.ProposedEditClasses;
 import org.variantsync.diffdetective.util.Assert;
+import org.variantsync.diffdetective.variation.diff.DiffNode;
+import org.variantsync.diffdetective.variation.diff.DiffType;
+import org.variantsync.diffdetective.variation.diff.NodeType;
 import org.variantsync.functjonal.Pair;
 
 /**

@@ -5,12 +5,12 @@ import org.tinylog.Logger;
 import org.variantsync.diffdetective.analysis.strategies.AnalysisStrategy;
 import org.variantsync.diffdetective.datasets.Repository;
 import org.variantsync.diffdetective.diff.GitDiffer;
-import org.variantsync.diffdetective.diff.difftree.DiffTree;
-import org.variantsync.diffdetective.diff.difftree.filter.ExplainedFilter;
-import org.variantsync.diffdetective.diff.difftree.transform.DiffTreeTransformer;
 import org.variantsync.diffdetective.util.CSV;
 import org.variantsync.diffdetective.util.IO;
 import org.variantsync.diffdetective.util.StringUtils;
+import org.variantsync.diffdetective.variation.diff.DiffTree;
+import org.variantsync.diffdetective.variation.diff.filter.ExplainedFilter;
+import org.variantsync.diffdetective.variation.diff.transform.DiffTreeTransformer;
 
 import java.io.IOException;
 import java.nio.file.Path;

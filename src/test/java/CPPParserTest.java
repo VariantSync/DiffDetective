@@ -1,4 +1,4 @@
-import org.variantsync.diffdetective.diff.difftree.parse.IllFormedAnnotationException;
+import org.variantsync.diffdetective.variation.diff.parse.IllFormedAnnotationException;
 import org.variantsync.diffdetective.feature.CPPDiffLineFormulaExtractor;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.params.ParameterizedTest;

@@ -1,7 +1,7 @@
 package org.variantsync.diffdetective.diff;
 
-import org.variantsync.diffdetective.diff.difftree.DiffType;
-import org.variantsync.diffdetective.diff.difftree.Time;
+import org.variantsync.diffdetective.variation.diff.DiffType;
+import org.variantsync.diffdetective.variation.diff.Time;
 
 import java.util.Objects;
 

@@ -98,7 +98,7 @@ The example file content shown below should match your results when running the 
   slowestCommit: 9838b7032ea9792bec21af424c53c07078636d21___xorg-server___7996ms
   runtime in seconds: 853.9739999999999
   runtime with multithreading in seconds: 144.549
-  treeformat: org.variantsync.diffdetective.diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat
+  treeformat: org.variantsync.diffdetective.variation.diff.serialize.treeformat.CommitDiffDiffTreeLabelFormat
   nodeformat: org.variantsync.diffdetective.mining.formats.ReleaseMiningDiffNodeFormat
   edgeformat: org.variantsync.diffdetective.mining.formats.DirectedEdgeLabelFormat with org.variantsync.diffdetective.mining.formats.ReleaseMiningDiffNodeFormat
   analysis: org.variantsync.diffdetective.validation.PatternValidationTask

@@ -1,9 +1,9 @@
 package org.variantsync.diffdetective.editclass;
 
-import org.variantsync.diffdetective.diff.difftree.DiffNode;
-import org.variantsync.diffdetective.diff.difftree.DiffTree;
-import org.variantsync.diffdetective.diff.difftree.DiffType;
 import org.variantsync.diffdetective.preliminary.pattern.Pattern;
+import org.variantsync.diffdetective.variation.diff.DiffNode;
+import org.variantsync.diffdetective.variation.diff.DiffTree;
+import org.variantsync.diffdetective.variation.diff.DiffType;
 
 /**
  * Abstract edit class according to our ESEC/FSE'22 paper.

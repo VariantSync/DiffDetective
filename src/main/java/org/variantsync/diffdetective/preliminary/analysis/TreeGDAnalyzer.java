@@ -1,8 +1,6 @@
 package org.variantsync.diffdetective.preliminary.analysis;
 
 import org.variantsync.diffdetective.diff.PatchDiff;
-import org.variantsync.diffdetective.diff.difftree.DiffNode;
-import org.variantsync.diffdetective.diff.difftree.DiffTree;
 import org.variantsync.diffdetective.editclass.EditClass;
 import org.variantsync.diffdetective.preliminary.GitDiff;
 import org.variantsync.diffdetective.preliminary.analysis.data.PatchDiffAnalysisResult;
@@ -10,6 +8,8 @@ import org.variantsync.diffdetective.preliminary.analysis.data.PatternMatch;
 import org.variantsync.diffdetective.preliminary.pattern.FeatureContextReverseEngineering;
 import org.variantsync.diffdetective.preliminary.pattern.elementary.*;
 import org.variantsync.diffdetective.preliminary.pattern.semantic.SemanticPattern;
+import org.variantsync.diffdetective.variation.diff.DiffNode;
+import org.variantsync.diffdetective.variation.diff.DiffTree;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,11 +1,12 @@
 package org.variantsync.diffdetective.diff;
 
 import org.eclipse.jgit.diff.DiffEntry;
-import org.variantsync.diffdetective.diff.difftree.DiffTreeSource;
+import org.variantsync.diffdetective.variation.diff.DiffTree; // For Javadoc
+import org.variantsync.diffdetective.variation.diff.DiffTreeSource;
 
 /**
  * Interface for patches from a git repository.
- * A git patch is a {@link TextBasedDiff} from which {@link org.variantsync.diffdetective.diff.difftree.DiffTree DiffTrees} can be created.
+ * A git patch is a {@link TextBasedDiff} from which {@link DiffTree}s can be created.
  *
  */
 public interface GitPatch extends DiffTreeSource, TextBasedDiff {

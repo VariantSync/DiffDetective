@@ -2,14 +2,14 @@ package org.variantsync.diffdetective.preliminary.pattern.elementary;
 
 import org.prop4j.Node;
 import org.variantsync.diffdetective.diff.LineRange;
-import org.variantsync.diffdetective.diff.difftree.DiffNode;
-import org.variantsync.diffdetective.preliminary.pattern.Pattern;
 import org.variantsync.diffdetective.editclass.proposed.ProposedEditClasses;
 import org.variantsync.diffdetective.preliminary.analysis.data.PatternMatch;
 import org.variantsync.diffdetective.preliminary.evaluation.FeatureContext;
 import org.variantsync.diffdetective.preliminary.pattern.FeatureContextReverseEngineering;
+import org.variantsync.diffdetective.preliminary.pattern.Pattern;
+import org.variantsync.diffdetective.variation.diff.DiffNode;
 
-import static org.variantsync.diffdetective.diff.difftree.Time.BEFORE;
+import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
 
 @Deprecated
 public final class FeatureContextOfRemWithMapping implements FeatureContextReverseEngineering<DiffNode> {

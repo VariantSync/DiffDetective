@@ -1,8 +1,8 @@
 package org.variantsync.diffdetective.mining;
 
-import org.variantsync.diffdetective.diff.difftree.DiffNode;
-import org.variantsync.diffdetective.mining.formats.DebugMiningDiffNodeFormat;
 import org.variantsync.diffdetective.editclass.proposed.ProposedEditClasses;
+import org.variantsync.diffdetective.mining.formats.DebugMiningDiffNodeFormat;
+import org.variantsync.diffdetective.variation.diff.DiffNode;
 
 public class RWCompositePatternNodeFormat extends DebugMiningDiffNodeFormat {
     @Override
