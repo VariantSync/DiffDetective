@@ -16,6 +16,7 @@ import org.variantsync.diffdetective.variation.diff.source.PatchFile;
 import org.variantsync.diffdetective.variation.diff.source.PatchString;
 import org.variantsync.diffdetective.variation.diff.traverse.DiffTreeTraversal;
 import org.variantsync.diffdetective.variation.diff.traverse.DiffTreeVisitor;
+import org.variantsync.diffdetective.variation.NodeType;
 import org.variantsync.functjonal.Result;
 
 import java.io.BufferedReader;

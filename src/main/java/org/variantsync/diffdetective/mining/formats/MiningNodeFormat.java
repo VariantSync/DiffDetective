@@ -4,8 +4,8 @@ import org.variantsync.diffdetective.diff.DiffLineNumber;
 import org.variantsync.diffdetective.util.fide.FixTrueFalse;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
 import org.variantsync.diffdetective.variation.diff.DiffType;
-import org.variantsync.diffdetective.variation.diff.NodeType;
 import org.variantsync.diffdetective.variation.diff.serialize.nodeformat.DiffNodeLabelFormat;
+import org.variantsync.diffdetective.variation.NodeType;
 import org.variantsync.functjonal.Pair;
 
 public interface MiningNodeFormat extends DiffNodeLabelFormat {

@@ -7,8 +7,8 @@ import org.variantsync.diffdetective.variation.diff.DiffNode;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.variation.diff.DiffTreeSource;
 import org.variantsync.diffdetective.variation.diff.LineGraphConstants;
-import org.variantsync.diffdetective.variation.diff.NodeType;
 import org.variantsync.diffdetective.variation.diff.source.LineGraphFileSource;
+import org.variantsync.diffdetective.variation.NodeType;
 import org.variantsync.functjonal.Pair;
 
 import java.io.BufferedReader;

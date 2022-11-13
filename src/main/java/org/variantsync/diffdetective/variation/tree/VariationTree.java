@@ -3,8 +3,8 @@ package org.variantsync.diffdetective.variation.tree;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.feature.CPPAnnotationParser;
 import org.variantsync.diffdetective.util.Assert;
-import org.variantsync.diffdetective.variation.diff.NodeType; // For Javadoc
 import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParser;
+import org.variantsync.diffdetective.variation.NodeType; // For Javadoc
 import org.variantsync.diffdetective.variation.tree.source.LocalFileSource;
 import org.variantsync.diffdetective.variation.tree.source.VariationTreeSource;
 

@@ -2,7 +2,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 import org.variantsync.diffdetective.variation.diff.DiffType;
-import org.variantsync.diffdetective.variation.diff.NodeType;
+import org.variantsync.diffdetective.variation.NodeType;
 
 public class StaticAsserts {
     @Test

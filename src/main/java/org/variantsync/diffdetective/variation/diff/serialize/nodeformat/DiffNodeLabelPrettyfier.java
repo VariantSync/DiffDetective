@@ -2,7 +2,7 @@ package org.variantsync.diffdetective.variation.diff.serialize.nodeformat;
 
 import org.prop4j.Node;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
-import org.variantsync.diffdetective.variation.diff.NodeType;
+import org.variantsync.diffdetective.variation.NodeType;
 
 /**
  * Making methods accessible for {@link DiffNodeLabelFormat} for formatting the output of {@link DiffNode DiffNodes}.

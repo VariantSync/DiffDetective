@@ -13,8 +13,8 @@ import org.variantsync.diffdetective.diff.LineRange;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.util.fide.FixTrueFalse;
 import org.variantsync.diffdetective.variation.diff.DiffNode; // For Javadoc
-import org.variantsync.diffdetective.variation.diff.NodeType;
 import org.variantsync.diffdetective.variation.diff.Projection; // For Javadoc
+import org.variantsync.diffdetective.variation.NodeType;
 
 import static org.variantsync.diffdetective.util.fide.FormulaUtils.negate;
 

@@ -3,7 +3,7 @@ package org.variantsync.diffdetective.variation.diff.transform;
 import org.variantsync.diffdetective.editclass.EditClassCatalogue;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
-import org.variantsync.diffdetective.variation.diff.NodeType; // For Javadoc
+import org.variantsync.diffdetective.variation.NodeType; // For Javadoc
 
 import java.util.List;
 

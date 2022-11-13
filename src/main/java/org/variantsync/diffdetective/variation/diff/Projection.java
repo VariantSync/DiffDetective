@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.prop4j.Node;
 import org.variantsync.diffdetective.diff.LineRange;
+import org.variantsync.diffdetective.variation.NodeType;
 import org.variantsync.diffdetective.variation.tree.VariationNode;
 import org.variantsync.functjonal.list.FilteredMappedListView;
 

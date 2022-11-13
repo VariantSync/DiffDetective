@@ -8,7 +8,7 @@ import org.variantsync.diffdetective.util.fide.FixTrueFalse;
 import org.variantsync.diffdetective.variation.diff.DiffNode; // For Javdoc
 import org.variantsync.diffdetective.variation.diff.DiffTree; // For Javdoc
 import org.variantsync.diffdetective.variation.diff.DiffType;
-import org.variantsync.diffdetective.variation.diff.NodeType;
+import org.variantsync.diffdetective.variation.NodeType;
 
 import java.util.*;
 

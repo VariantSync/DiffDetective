@@ -6,6 +6,7 @@ import org.variantsync.diffdetective.diff.LineRange;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.util.StringUtils;
 import org.variantsync.diffdetective.util.fide.FixTrueFalse;
+import org.variantsync.diffdetective.variation.NodeType;
 import org.variantsync.diffdetective.variation.tree.HasNodeType;
 import org.variantsync.diffdetective.variation.tree.VariationNode;
 
