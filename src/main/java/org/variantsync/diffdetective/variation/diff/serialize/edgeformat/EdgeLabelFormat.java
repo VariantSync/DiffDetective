@@ -2,8 +2,8 @@ package org.variantsync.diffdetective.variation.diff.serialize.edgeformat;
 
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
-import org.variantsync.diffdetective.variation.diff.LineGraphConstants;
 import org.variantsync.diffdetective.variation.diff.Time;
+import org.variantsync.diffdetective.variation.diff.serialize.LineGraphConstants;
 import org.variantsync.diffdetective.variation.diff.serialize.LinegraphFormat;
 import org.variantsync.diffdetective.variation.diff.serialize.StyledEdge;
 import org.variantsync.functjonal.Pair;

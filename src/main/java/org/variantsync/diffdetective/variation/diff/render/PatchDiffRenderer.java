@@ -5,7 +5,7 @@ import org.variantsync.diffdetective.diff.GitPatch;
 import org.variantsync.diffdetective.diff.PatchDiff;
 import org.variantsync.diffdetective.util.IO;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
-import org.variantsync.diffdetective.variation.diff.LineGraphConstants;
+import org.variantsync.diffdetective.variation.diff.serialize.LineGraphConstants;
 import org.variantsync.diffdetective.variation.diff.serialize.LineGraphExportOptions;
 import org.variantsync.diffdetective.variation.diff.serialize.nodeformat.TypeDiffNodeFormat;
 

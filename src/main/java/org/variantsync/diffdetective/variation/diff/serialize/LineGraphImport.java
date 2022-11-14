@@ -5,7 +5,6 @@ import org.variantsync.diffdetective.util.FileUtils;
 import org.variantsync.diffdetective.variation.diff.DiffGraph;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
-import org.variantsync.diffdetective.variation.diff.LineGraphConstants;
 import org.variantsync.diffdetective.variation.diff.source.DiffTreeSource;
 import org.variantsync.diffdetective.variation.diff.source.LineGraphFileSource;
 import org.variantsync.diffdetective.variation.NodeType;

@@ -4,7 +4,6 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 
 import org.variantsync.diffdetective.variation.diff.DiffTree;
-import org.variantsync.diffdetective.variation.diff.LineGraphConstants;
 import org.variantsync.functjonal.Functjonal;
 
 /**

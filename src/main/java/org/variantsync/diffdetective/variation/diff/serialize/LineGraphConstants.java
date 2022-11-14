@@ -1,4 +1,7 @@
-package org.variantsync.diffdetective.variation.diff;
+package org.variantsync.diffdetective.variation.diff.serialize;
+
+import org.variantsync.diffdetective.variation.diff.DiffNode; // For Javadoc
+import org.variantsync.diffdetective.variation.diff.DiffTree; // For Javadoc
 
 /**
  * Constants that are related to line graph IO.

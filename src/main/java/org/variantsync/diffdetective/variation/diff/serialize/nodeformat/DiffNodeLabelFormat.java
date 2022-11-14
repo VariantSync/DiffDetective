@@ -3,7 +3,7 @@ package org.variantsync.diffdetective.variation.diff.serialize.nodeformat;
 import java.util.List;
 
 import org.variantsync.diffdetective.variation.diff.DiffNode;
-import org.variantsync.diffdetective.variation.diff.LineGraphConstants;
+import org.variantsync.diffdetective.variation.diff.serialize.LineGraphConstants;
 import org.variantsync.diffdetective.variation.diff.serialize.LinegraphFormat;
 import org.variantsync.diffdetective.variation.diff.source.DiffTreeSource;
 import org.variantsync.functjonal.Pair;
