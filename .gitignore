@@ -121,6 +121,7 @@ patches/*
 /input
 /error
 examples/
+docs/javadoc
 
 /log.txt
 
