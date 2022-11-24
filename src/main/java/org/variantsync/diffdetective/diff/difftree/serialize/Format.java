@@ -7,6 +7,9 @@ import org.variantsync.diffdetective.diff.difftree.DiffTree;
 import org.variantsync.diffdetective.diff.difftree.serialize.edgeformat.EdgeLabelFormat;
 import org.variantsync.diffdetective.diff.difftree.serialize.nodeformat.DiffNodeLabelFormat;
 
+import static org.variantsync.diffdetective.diff.difftree.Time.AFTER;
+import static org.variantsync.diffdetective.diff.difftree.Time.BEFORE;
+
 /**
  * Format used for exporting a {@link DiffTree}.
  * For easy reusability this class is composed of separate node and edge formats.
@@ -84,8 +87,8 @@ public class Format {
      */
     public void forEachUniqueEdge(DiffTree diffTree, Consumer<List<StyledEdge>> callback) {
         diffTree.forAll((node) -> {
-            var beforeParent = node.getBeforeParent();
-            var afterParent = node.getAfterParent();
+            var beforeParent = node.getParent(BEFORE);
+            var afterParent = node.getParent(AFTER);
 
             // Are both parent edges the same?
             if (beforeParent != null && afterParent != null && beforeParent == afterParent) {
@@ -108,7 +111,7 @@ public class Format {
      * of {@link getEdgeFormat()}.
      */
     protected StyledEdge beforeEdge(DiffNode node) {
-        return sortedEdgeWithLabel(node, node.getBeforeParent(), StyledEdge.BEFORE);
+        return sortedEdgeWithLabel(node, node.getParent(BEFORE), StyledEdge.BEFORE);
     }
 
     /**
@@ -118,7 +121,7 @@ public class Format {
      * of {@link getEdgeFormat()}.
      */
     protected StyledEdge afterEdge(DiffNode node) {
-        return sortedEdgeWithLabel(node, node.getAfterParent(), StyledEdge.AFTER);
+        return sortedEdgeWithLabel(node, node.getParent(AFTER), StyledEdge.AFTER);
     }
 
     /**

@@ -9,6 +9,8 @@ import org.variantsync.diffdetective.preliminary.analysis.data.PatternMatch;
 import org.variantsync.diffdetective.preliminary.evaluation.FeatureContext;
 import org.variantsync.diffdetective.preliminary.pattern.FeatureContextReverseEngineering;
 
+import static org.variantsync.diffdetective.diff.difftree.Time.BEFORE;
+
 @Deprecated
 public final class FeatureContextOfRemWithMapping implements FeatureContextReverseEngineering<DiffNode> {
     @Override
@@ -18,7 +20,7 @@ public final class FeatureContextOfRemWithMapping implements FeatureContextRever
 
     @Override
     public PatternMatch<DiffNode> createMatch(DiffNode codeNode) {
-        final Node fm = codeNode.getBeforeParent().getBeforeFeatureMapping();
+        final Node fm = codeNode.getParent(BEFORE).getFeatureMapping(BEFORE);
         final Lines diffLines = codeNode.getLinesInDiff();
 
         return new PatternMatch<>(this,

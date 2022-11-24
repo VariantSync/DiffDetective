@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.variantsync.diffdetective.diff.difftree.Time.AFTER;
+import static org.variantsync.diffdetective.diff.difftree.Time.BEFORE;
 import static org.variantsync.diffdetective.util.fide.FormulaUtils.negate;
 
 public class PCTest {
@@ -75,11 +77,11 @@ public class PCTest {
                final String text = node.getLabel().trim();
                final ExpectedPC expectedPC = testCase.expectedResult.getOrDefault(text, null);
                if (expectedPC != null) {
-                   Node pc = node.getBeforePresenceCondition();
+                   Node pc = node.getPresenceCondition(BEFORE);
                    assertTrue(
                            SAT.equivalent(pc, expectedPC.before),
                            errorAt(text, "before", pc, expectedPC.before));
-                   pc = node.getAfterPresenceCondition();
+                   pc = node.getPresenceCondition(AFTER);
                    assertTrue(
                            SAT.equivalent(pc, expectedPC.after),
                            errorAt(text, "after", pc, expectedPC.after));

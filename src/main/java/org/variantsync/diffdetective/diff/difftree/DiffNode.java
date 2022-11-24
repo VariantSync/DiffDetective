@@ -1,18 +1,19 @@
 package org.variantsync.diffdetective.diff.difftree;
 
-import org.prop4j.And;
 import org.prop4j.Node;
 import org.variantsync.diffdetective.diff.DiffLineNumber;
 import org.variantsync.diffdetective.diff.Lines;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.util.StringUtils;
 import org.variantsync.diffdetective.util.fide.FixTrueFalse;
+import org.variantsync.diffdetective.variationtree.HasNodeType;
+import org.variantsync.diffdetective.variationtree.VariationNode;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static org.variantsync.diffdetective.util.fide.FormulaUtils.negate;
+import static org.variantsync.diffdetective.diff.difftree.Time.AFTER;
+import static org.variantsync.diffdetective.diff.difftree.Time.BEFORE;
 
 /**
  * Implementation of a node in a {@link DiffTree}.
@@ -23,9 +24,7 @@ import static org.variantsync.diffdetective.util.fide.FormulaUtils.negate;
  * DiffNode's store parent and child information to build a graph.
  * @author Paul Bittner, Sören Viegener, Benjamin Moosherr
  */
-public class DiffNode {
-    private static final short ID_OFFSET = 3;
-
+public class DiffNode implements HasNodeType {
     /**
      * The diff type of this node, which determines if this node represents
      * an inserted, removed, or unchanged element in a diff.
@@ -45,31 +44,34 @@ public class DiffNode {
     private List<String> lines;
 
     /**
-     * The parent {@link DiffNode} before the edit.
+     * The parents {@link DiffNode} before and after the edit.
+     * This array has to be indexed by {@code Time.ordinal()}
      *
-     * Invariant: Iff {@code beforeParent != null} then
-     * {@code beforeParent.childOrder.contains(this)}.
+     * Invariant: Iff {@code getParent(time) != null} then
+     * {@code getParent(time).childOrder.contains(this)}.
      */
-    private DiffNode beforeParent;
-
-    /**
-     * The parent {@link DiffNode} after the edit.
-     *
-     * Invariant: Iff {@code afterParent != null} then
-     * {@code afterParent.childOrder.contains(this)}.
-     */
-    private DiffNode afterParent;
+    private DiffNode[] parents = new DiffNode[2];
 
     /**
      * We use a list for children to maintain order.
      *
      * Invariant: Iff {@code childOrder.contains(child)} then
-     * {@code child.beforeParent == this || child.afterParent == this}.
+     * {@code child.getParent(BEFORE) == this || child.getParent(AFTER) == this}.
      *
      * Note that it's explicitly allowed to have
-     * {@code child.beforeParent == this && child.afterParent == this}.
+     * {@code child.getParent(BEFORE) == this && child.getParent(AFTER) == this}.
      */
     private final List<DiffNode> childOrder;
+
+    /**
+     * Cache for before and after projections.
+     * It stores the projection node at each time so that only one instance of {@link Projection}
+     * per {@link Time} is ever created. This array has to be indexed by {@code Time.ordinal()}
+     *
+     * <p>This field is required to allow identity tests of {@link Projection}s with {@code ==} instead
+     * of {@link Projection#isSameAs}.
+     */
+    private Projection[] projections = new Projection[2];
 
     /**
      * Creates a DiffNode with the given parameters.
@@ -146,14 +148,15 @@ public class DiffNode {
 
     /**
      * Returns the lines in the diff that are represented by this DiffNode.
+     * The returned list is unmodifiable.
      */
-    public List<String> getLines() {
-        return lines;
+    public List<String> getLabelLines() {
+        return Collections.unmodifiableList(lines);
     }
 
     /**
      * Returns the lines in the diff that are represented by this DiffNode as a single text.
-     * @see DiffNode#getLines
+     * @see DiffNode#getLabelLines
      */
     public String getLabel() {
         return String.join(StringUtils.LINEBREAK, lines);
@@ -169,87 +172,20 @@ public class DiffNode {
     }
 
     /**
-     * Gets the first if node in the path following the before parent
-     * @return The first if node in the path following the before parent
+     * Gets the first {@code if} node in the path from the root to this node at the time
+     * {@code time}.
+     * @return The first {@code if} node in the path to the root at the time {@code time}
      */
-    public DiffNode getBeforeIfNode() {
-        if (isIf()) {
-            return this;
-        }
-        if (isRoot()) {
-            return null;
-        }
-        return beforeParent.getBeforeIfNode();
+    public DiffNode getIfNode(Time time) {
+        return projection(time).getIfNode().getBackingNode();
     }
 
     /**
-     * Gets the first if node in the path following the after parent
-     * @return The first if node in the path following the after parent
+     * Gets the length of the path from the root to this node at the time {@code time}.
+     * @return the depth of the this node in the diff tree at the time {@code time}
      */
-    public DiffNode getAfterIfNode() {
-        if (isIf()) {
-            return this;
-        }
-        if (isRoot()) {
-            return null;
-        }
-        return afterParent.getAfterIfNode();
-    }
-
-    /**
-     * Gets the depth of the diff tree following the before parent
-     * @return the depth of the diff tree following the before parent
-     */
-    public int getBeforeAnnotationDepth(){
-        if (isRoot()) {
-            return 0;
-        }
-
-        if (isIf()) {
-            return beforeParent.getBeforeAnnotationDepth() + 1;
-        }
-
-        return beforeParent.getBeforeAnnotationDepth();
-    }
-
-    /**
-     * Gets the depth of the diff tree following the after parent
-     * @return the depth of the diff tree following the after parent
-     */
-    public int getAfterAnnotationDepth(){
-        if (isRoot()) {
-            return 0;
-        }
-
-        if (isIf()) {
-            return afterParent.getAfterAnnotationDepth() + 1;
-        }
-
-        return afterParent.getAfterAnnotationDepth();
-    }
-
-    /**
-     * Gets the depth of the diff tree following the before parent
-     * @return the depth of the diff tree following the before parent
-     */
-    public int getBeforeDepth(){
-        if (isRoot()) {
-            return 0;
-        }
-
-        return beforeParent.getBeforeDepth() + 1;
-    }
-
-    /**
-     * Gets the depth of the diff tree following the after parent
-     * @return the depth of the diff tree following the after parent
-     */
-    public int getAfterDepth(){
-        if (isRoot()) {
-            return 0;
-        }
-
-        return afterParent.getAfterDepth() + 1;
+    public int getDepth(Time time) {
+        return projection(time).getDepth();
     }
 
     /**
@@ -257,13 +193,13 @@ public class DiffNode {
      * are the very same.
      */
     public boolean beforePathEqualsAfterPath() {
-        if (beforeParent == afterParent) {
-            if (beforeParent == null) {
+        if (getParent(BEFORE) == getParent(AFTER)) {
+            if (getParent(BEFORE) == null) {
                 // root
                 return true;
             }
 
-            return beforeParent.beforePathEqualsAfterPath();
+            return getParent(BEFORE).beforePathEqualsAfterPath();
         }
 
         return false;
@@ -277,63 +213,40 @@ public class DiffNode {
     }
 
     /**
-     * Gets the amount of nodes with diff type REM in the path following the before parent
-     * @return the amount of nodes with diff type REM in the path following the before parent
+     * Gets the amount of nodes on the path from the root to this node which only exist at the time
+     * {@code time}.
      */
-    public int getRemAmount() {
+    public int getChangeAmount(Time time) {
         if (isRoot()) {
             return 0;
         }
 
-        if (isIf() && diffType.equals(DiffType.REM)) {
-            return beforeParent.getRemAmount() + 1;
+        var changeType = DiffType.thatExistsOnlyAt(time);
+
+        if (isIf() && diffType.equals(changeType)) {
+            return getParent(time).getChangeAmount(time) + 1;
         }
 
-        if ((isElif() || isElse()) && diffType.equals(DiffType.REM)) {
+        if ((isElif() || isElse()) && diffType.equals(changeType)) {
             // if this is a removed elif or else we do not want to count the other branches of
             // this annotation
             // we thus go up the tree until we get the next if and continue with the parent of it
-            return beforeParent.getBeforeIfNode().beforeParent.getRemAmount() + 1;
+            return getParent(time).getIfNode(time).getParent(time).getChangeAmount(time) + 1;
         }
 
-        return beforeParent.getRemAmount();
+        return getParent(time).getChangeAmount(time);
     }
 
     /**
-     * Gets the amount of nodes with diff type ADD in the path following the after parent
-     * @return the amount of nodes with diff type ADD in the path following the after parent
+     * Sets the parent at {@code time} checking that this node doesn't currently have a parent.
      */
-    public int getAddAmount() {
-        if (isRoot()) {
-            return 0;
-        }
-
-        if (isIf() && diffType.equals(DiffType.ADD)) {
-            return afterParent.getAddAmount() + 1;
-        }
-
-        if ((isElif() || isElse()) && diffType.equals(DiffType.ADD)) {
-            // if this is an added elif or else we do not want to count the other branches of
-            // this annotation
-            // we thus go up the tree until we get the next if and continue with the parent of it
-            return afterParent.getAfterIfNode().afterParent.getAddAmount() + 1;
-        }
-
-        return afterParent.getAddAmount();
-    }
-
-    private void setBeforeParent(final DiffNode newBeforeParent) {
-        Assert.assertTrue(beforeParent == null);
-        this.beforeParent = newBeforeParent;
-    }
-
-    private void setAfterParent(final DiffNode newAfterParent) {
-        Assert.assertTrue(afterParent == null);
-        this.afterParent = newAfterParent;
+    private void setParent(final DiffNode newParent, Time time) {
+        Assert.assertTrue(getParent(time) == null);
+        parents[time.ordinal()] = newParent;
     }
 
     /**
-     * Adds thus subtree below the given parents.
+     * Adds this subtree below the given parents.
      * Inverse of drop.
      * @param newBeforeParent Node that should be this node's before parent. May be null.
      * @param newAfterParent Node that should be this node's after parent. May be null.
@@ -342,10 +255,10 @@ public class DiffNode {
     public boolean addBelow(final DiffNode newBeforeParent, final DiffNode newAfterParent) {
         boolean success = false;
         if (newBeforeParent != null) {
-            success |= newBeforeParent.addBeforeChild(this);
+            success |= newBeforeParent.addChild(this, BEFORE);
         }
         if (newAfterParent != null) {
-            success |= newAfterParent.addAfterChild(this);
+            success |= newAfterParent.addChild(this, AFTER);
         }
         return success;
     }
@@ -355,22 +268,19 @@ public class DiffNode {
      * Inverse of addBelow.
      */
     public void drop() {
-        if (beforeParent != null) {
-            beforeParent.removeBeforeChild(this);
-        }
-        if (afterParent != null) {
-            afterParent.removeAfterChild(this);
-        }
+        Time.forAll(time -> {
+            if (getParent(time) != null) {
+                getParent(time).removeChild(this, time);
+            }
+        });
     }
 
-    private void dropBeforeChild(final DiffNode child) {
-        Assert.assertTrue(child.beforeParent == this);
-        child.beforeParent = null;
-    }
-
-    private void dropAfterChild(final DiffNode child) {
-        Assert.assertTrue(child.afterParent == this);
-        child.afterParent = null;
+    /**
+     * Remove this node as the parent of {@code child} but it doesn't change {@link childOrder}.
+     */
+    private void dropChild(final DiffNode child, Time time) {
+        Assert.assertTrue(child.getParent(time) == this);
+        child.parents[time.ordinal()] = null;
     }
 
     /**
@@ -382,132 +292,59 @@ public class DiffNode {
     }
 
     /**
-     * Adds the given node for the given time at the given index as the child.
-     * @param child The new child to add. This node should not be a child of another node for the given time.
-     * @param index The index at which the node should be inserted into the children list.
-     * @param time The time at which this node should be the parent of this node.
-     *             For example, if the time is BEFORE, then this node will become the before parent of the given node.
-     * @return True iff the insertion was successful. False iff the child could not be added.
-     * @see DiffNode#insertBeforeChild
-     * @see DiffNode#insertAfterChild
+     * Insert {@code child} as child at the time {@code time} at the position {@code index}.
      */
-    public boolean insertChildAt(final DiffNode child, int index, Time time) {
-        return switch (time) {
-            case BEFORE -> insertBeforeChild(child, index);
-            case AFTER -> insertAfterChild(child, index);
-        };
-    }
-
-    /**
-     * The same as {@link DiffNode#insertChildAt} but the time fixed to BEFORE.
-     */
-    public boolean insertBeforeChild(final DiffNode child, int index) {
-        if (!child.isAdd()) {
+    public boolean insertChild(final DiffNode child, int index, Time time) {
+        if (child.getDiffType().existsAtTime(time)) {
             if (!isChild(child)) {
                 childOrder.add(index, child);
             }
-            child.setBeforeParent(this);
+            child.setParent(this, time);
             return true;
         }
         return false;
     }
 
     /**
-     * The same as {@link DiffNode#insertChildAt} but the time fixed to AFTER.
-     */
-    public boolean insertAfterChild(final DiffNode child, int index) {
-        if (!child.isRem()) {
-            if (!isChild(child)) {
-                childOrder.add(index, child);
-            }
-            child.setAfterParent(this);
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * The same as {@link DiffNode#insertBeforeChild} but puts the node at the end of the children
+     * The same as {@link DiffNode#insertChild} but puts the node at the end of the children
      * list instead of inserting it at a specific index.
      */
-    public boolean addBeforeChild(final DiffNode child) {
-        if (!child.isAdd()) {
-            if (child.beforeParent != null) {
-                throw new IllegalArgumentException("Given child " + child + " already has a before parent (" + child.beforeParent + ")!");
+    public boolean addChild(final DiffNode child, Time time) {
+        if (child.getDiffType().existsAtTime(time)) {
+            if (child.getParent(time) != null) {
+                throw new IllegalArgumentException("Given child " + child + " already has a before parent (" + child.getParent(time) + ")!");
             }
 
             if (!isChild(child)) {
                 childOrder.add(child);
             }
-            child.setBeforeParent(this);
+            child.setParent(this, time);
             return true;
         }
         return false;
     }
 
     /**
-     * The same as {@link DiffNode#insertAfterChild} but puts the node at the end of the children
-     * list instead of inserting it at a specific index.
+     * Adds all given nodes at the time {@code time} as children using {@link DiffNode#addChild}.
+     * @param children Nodes to add as children.
+     * @param time whether to add {@code children} before or after the edit
      */
-    public boolean addAfterChild(final DiffNode child) {
-        if (!child.isRem()) {
-            if (child.afterParent != null) {
-                throw new IllegalArgumentException("Given child " + child + " already has an after parent (" + child.afterParent + ")!");
-            }
-
-            if (!isChild(child)) {
-                childOrder.add(child);
-            }
-            child.setAfterParent(this);
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * Adds all given nodes as before children using {@link DiffNode#addBeforeChild}.
-     * @param beforeChildren Nodes to add as children before the edit.
-     */
-    public void addBeforeChildren(final Collection<DiffNode> beforeChildren) {
-        for (final DiffNode beforeChild : beforeChildren) {
-            addBeforeChild(beforeChild);
+    public void addChildren(final Collection<DiffNode> children, Time time) {
+        for (final DiffNode child : children) {
+            addChild(child, time);
         }
     }
 
     /**
-     * Adds all given nodes as after children using {@link DiffNode#addAfterChild}.
-     * @param afterChildren Nodes to add as children after the edit.
+     * Removes the given node from this node's children before or after the edit.
+     * The node might still remain a child after or before the edit.
+     * @param child the child to remove
+     * @param time whether {@code child} should be removed before or after the edit
+     * @return True iff the child was removed, false iff it's not a child at {@code time}.
      */
-    public void addAfterChildren(final Collection<DiffNode> afterChildren) {
-        for (final DiffNode afterChild : afterChildren) {
-            addAfterChild(afterChild);
-        }
-    }
-
-    /**
-     * Removes the given node from this node's children before the edit.
-     * The node might still remain a child after the edit.
-     * @param child The child to remove before the edit.
-     * @return True iff the child was removed, false iff it was no before child.
-     */
-    public boolean removeBeforeChild(final DiffNode child) {
-        if (isBeforeChild(child)) {
-            dropBeforeChild(child);
-            removeFromCache(child);
-            return true;
-        }
-        return false;
-    }
-    
-    /**
-     * Removes the given node from this node's children after the edit.
-     * The node might still remain a child before the edit.
-     * @param child The child to remove after the edit.
-     * @return True iff the child was removed, false iff it was no after child.
-     */
-    public boolean removeAfterChild(final DiffNode child) {
-        if (isAfterChild(child)) {
-            dropAfterChild(child);
+    public boolean removeChild(final DiffNode child, Time time) {
+        if (isChild(child, time)) {
+            dropChild(child, time);
             removeFromCache(child);
             return true;
         }
@@ -521,53 +358,29 @@ public class DiffNode {
      */
     public void removeChildren(final Collection<DiffNode> childrenToRemove) {
         for (final DiffNode childToRemove : childrenToRemove) {
-            removeBeforeChild(childToRemove);
-            removeAfterChild(childToRemove);
+            Time.forAll(time -> removeChild(childToRemove, time));
         }
     }
 
     /**
-     * Removes all children before the edit.
-     * Afterwards, this node will have no before children.
-     * @return All removed before children.
+     * Removes all children before or after the edit.
+     * Afterwards, this node will have no children at the given time.
+     * @param time whether to remove all children before or after the edit
+     * @return All removed children.
      */
-    public List<DiffNode> removeBeforeChildren() {
+    public List<DiffNode> removeChildren(Time time) {
         final List<DiffNode> orphans = new ArrayList<>();
 
         // Note that the following method call can't be written using a foreach loop reusing
         // {@code removeBeforeChild} because lists can't be modified during traversal.
         childOrder.removeIf(child -> {
-            if (!isBeforeChild(child)) {
+            if (!isChild(child, time)) {
                 return false;
             }
 
             orphans.add(child);
-            dropBeforeChild(child);
-            return !isAfterChild(child);
-        });
-
-        return orphans;
-    }
-
-
-    /**
-     * Removes all children after the edit.
-     * Afterwards, this node will have no after children.
-     * @return All removed after children.
-     */
-    public List<DiffNode> removeAfterChildren() {
-        final List<DiffNode> orphans = new ArrayList<>();
-
-        // Note that the following method call can't be written using a foreach loop reusing
-        // {@code removeAfterChild} because lists can't be modified during traversal.
-        childOrder.removeIf(child -> {
-            if (!isAfterChild(child)) {
-                return false;
-            }
-
-            orphans.add(child);
-            dropAfterChild(child);
-            return !isBeforeChild(child);
+            dropChild(child, time);
+            return !isChild(child, time.other());
         });
 
         return orphans;
@@ -593,22 +406,14 @@ public class DiffNode {
      * @param other The node whose children should be stolen.
      */
     public void stealChildrenOf(final DiffNode other) {
-        addBeforeChildren(other.removeBeforeChildren());
-        addAfterChildren(other.removeAfterChildren());
+        Time.forAll(time -> addChildren(other.removeChildren(time), time));
     }
 
     /**
-     * Returns the parent of this node before the edit.
+     * Returns the parent of this node before or after the edit.
      */
-    public DiffNode getBeforeParent() {
-        return beforeParent;
-    }
-
-    /**
-     * Returns the parent of this node after the edit.
-     */
-    public DiffNode getAfterParent() {
-        return afterParent;
+    public DiffNode getParent(Time time) {
+        return parents[time.ordinal()];
     }
 
     /**
@@ -643,19 +448,20 @@ public class DiffNode {
     }
 
     /**
-     * Returns the range of line numbers of this node's corresponding source code before the edit.
-     * @see DiffLineNumber#rangeBeforeEdit
+     * Returns the range of line numbers of this node's corresponding source code before or after
+     * the edit.
      */
-    public Lines getLinesBeforeEdit() {
-        return DiffLineNumber.rangeBeforeEdit(from, to);
+    public Lines getLinesAtTime(Time time) {
+        return DiffLineNumber.rangeAtTime(from, to, time);
     }
 
     /**
-     * Returns the range of line numbers of this node's corresponding source code after the edit.
-     * @see DiffLineNumber#rangeAfterEdit
+     * Returns the range of line numbers of this node's corresponding source code before or after
+     * the edit.
      */
-    public Lines getLinesAfterEdit() {
-        return DiffLineNumber.rangeAfterEdit(from, to);
+    public void setLinesAtTime(Lines lines, Time time) {
+        from = from.withLineNumberAtTime(lines.getFromInclusive(), time);
+        to = to.withLineNumberAtTime(lines.getToExclusive(), time);
     }
 
     /**
@@ -689,197 +495,35 @@ public class DiffNode {
      * The feature mapping of {@link NodeType#ELSE} and {@link NodeType#ELIF} nodes is determined by all formulas in the respective if-elif-else chain.
      * The feature mapping of an {@link NodeType#ARTIFACT artifact} node is the feature mapping of its parent.
      * See Equation (1) in our paper (+ its extension to time for variation tree diffs described in Section 3.1).
-     * @param parentOf Function that returns the parent of a node.
-     *                 This function decides whether the before or after parent should be visited.
-     *                 It thus decides whether to compute the feature mapping before or after the edit.
+     * @param time Whether to return the feature mapping clauses before or after the edit.
      * @return The feature mapping of this node for the given parent edges.
-     *         The returned list represents a conjunction (i.e., all clauses should be combined with boolean AND).
-     */
-    private List<Node> getFeatureMappingClauses(final Function<DiffNode, DiffNode> parentOf) {
-        final DiffNode parent = parentOf.apply(this);
-
-        if (isElse() || isElif()) {
-            List<Node> and = new ArrayList<>();
-
-            if (isElif()) {
-                and.add(getDirectFeatureMapping());
-            }
-
-            // Negate all previous cases
-            DiffNode ancestor = parent;
-            while (!ancestor.isIf()) {
-                if (ancestor.isElif()) {
-                    and.add(negate(ancestor.getDirectFeatureMapping()));
-                } else {
-                    throw new RuntimeException("Expected If or Elif above Else or Elif but got " + ancestor.nodeType + " from " + ancestor);
-                    // Assert.assertTrue(ancestor.isArtifact());
-                }
-                ancestor = parentOf.apply(ancestor);
-            }
-            and.add(negate(ancestor.getDirectFeatureMapping()));
-
-            return and;
-        } else if (isArtifact()) {
-            return parent.getFeatureMappingClauses(parentOf);
-        }
-
-        return List.of(getDirectFeatureMapping());
-    }
-
-    /**
-     * Same as {@link DiffNode#getFeatureMappingClauses} but conjuncts the returned clauses to a single formula.
-     */
-    private Node getFeatureMapping(Function<DiffNode, DiffNode> parentOf) {
-        final List<Node> fmClauses = getFeatureMappingClauses(parentOf);
-        if (fmClauses.size() == 1) {
-            return fmClauses.get(0);
-        }
-        return new And(fmClauses);
-    }
-
-    /**
-     * Returns the full feature mapping formula of this node before the edit.
-     * The feature mapping of an {@link NodeType#IF} node is its {@link DiffNode#getDirectFeatureMapping direct feature mapping}.
-     * The feature mapping of {@link NodeType#ELSE} and {@link NodeType#ELIF} nodes is determined by all formulas in the respective if-elif-else chain.
-     * The feature mapping of an {@link NodeType#ARTIFACT artifact} node is the feature mapping of its parent.
-     * See Equation (1) in our paper (+ its extension to time for variation tree diffs described in Section 3.1).
-     * @return The feature mapping of this node for the given parent edges.
-     */
-    public Node getBeforeFeatureMapping() {
-        return getFeatureMapping(DiffNode::getBeforeParent);
-    }
-
-    /**
-     * Returns the full feature mapping formula of this node after the edit.
-     * The feature mapping of an {@link NodeType#IF} node is its {@link DiffNode#getDirectFeatureMapping direct feature mapping}.
-     * The feature mapping of {@link NodeType#ELSE} and {@link NodeType#ELIF} nodes is determined by all formulas in the respective if-elif-else chain.
-     * The feature mapping of an {@link NodeType#ARTIFACT artifact} node is the feature mapping of its parent.
-     * See Equation (1) in our paper (+ its extension to time for variation tree diffs described in Section 3.1).
-     * @return The feature mapping of this node for the given parent edges.
-     */
-    public Node getAfterFeatureMapping() {
-        return getFeatureMapping(DiffNode::getAfterParent);
-    }
-
-    /**
-     * Depending on the given time, returns either the
-     * {@link DiffNode#getBeforeFeatureMapping() before feature mapping} or
-     * {@link DiffNode#getAfterFeatureMapping() after feature mapping}.
      */
     public Node getFeatureMapping(Time time) {
-        return time.match(
-                this::getBeforeFeatureMapping,
-                this::getAfterFeatureMapping
-        );
+        return projection(time).getFeatureMapping();
     }
 
     /**
-     * Returns the presence condition of this node for the respective time.
+     * Returns the presence condition of this node before or after the edit.
      * See Equation (2) in our paper (+ its extension to time for variation tree diffs described in Section 3.1).
-     * @param parentOf Function that returns the parent of a node.
-     *                 This function decides whether the before or after parent should be visited.
-     *                 It thus decides whether to compute the feature mapping before or after the edit.
+     * @param time Whether to return the presence condition before or after the edit.
      * @return The presence condition of this node for the given parent edges.
-     *         The returned list represents a conjunction (i.e., all clauses should be combined with boolean AND).
-     */
-    private List<Node> getPresenceCondition(Function<DiffNode, DiffNode> parentOf) {
-        final DiffNode parent = parentOf.apply(this);
-
-        if (isElse() || isElif()) {
-            final List<Node> clauses = new ArrayList<>(getFeatureMappingClauses(parentOf));
-
-            // Find corresponding if
-            DiffNode correspondingIf = parent;
-            while (!correspondingIf.isIf()) {
-                correspondingIf = parentOf.apply(correspondingIf);
-            }
-
-            // If this elif-else-chain was again nested in another annotation, add its pc.
-            final DiffNode outerNesting = parentOf.apply(correspondingIf);
-            if (outerNesting != null) {
-                clauses.addAll(outerNesting.getPresenceCondition(parentOf));
-            }
-
-            return clauses;
-        } else if (isArtifact()) {
-            return parent.getPresenceCondition(parentOf);
-        }
-
-        // this is mapping or root
-        final List<Node> clauses;
-        if (parent == null) {
-            clauses = new ArrayList<>(1);
-        } else {
-            clauses = parent.getPresenceCondition(parentOf);
-        }
-        clauses.add(featureMapping);
-        return clauses;
-    }
-
-    /**
-     * Returns the presence condition of this node before the edit.
-     * See Equation (2) in our paper (+ its extension to time for variation tree diffs described in Section 3.1).
-     * @return The presence condition of this node for the given parent edges.
-     */
-    public Node getBeforePresenceCondition() {
-        if (diffType.existsBefore()) {
-            return new And(getPresenceCondition(DiffNode::getBeforeParent));
-        } else {
-            throw new WrongTimeException("Cannot determine before PC of added node " + this);
-        }
-    }
-
-    /**
-     * Returns the presence condition of this node after the edit.
-     * See Equation (2) in our paper (+ its extension to time for variation tree diffs described in Section 3.1).
-     * @return The presence condition of this node for the given parent edges.
-     */
-    public Node getAfterPresenceCondition() {
-        if (diffType.existsAfter()) {
-            return new And(getPresenceCondition(DiffNode::getAfterParent));
-        } else {
-            throw new WrongTimeException("Cannot determine after PC of removed node " + this);
-        }
-    }
-
-    /**
-     * Depending on the given time, returns either the
-     * {@link DiffNode#getBeforePresenceCondition() before presence condition} or
-     * {@link DiffNode#getAfterPresenceCondition() after presence condition}.
      */
     public Node getPresenceCondition(Time time) {
-        return time.match(
-                this::getBeforePresenceCondition,
-                this::getAfterPresenceCondition
-        );
-    }
-
-    /**
-     * Returns true iff this node is the before parent of the given node.
-     */
-    public boolean isBeforeChild(DiffNode child) {
-        return child.beforeParent == this;
-    }
-
-    /**
-     * Returns true iff this node is the after parent of the given node.
-     */
-    public boolean isAfterChild(DiffNode child) {
-        return child.afterParent == this;
+        return projection(time).getPresenceCondition();
     }
 
     /**
      * Returns true iff this node is the before or after parent of the given node.
      */
     public boolean isChild(DiffNode child) {
-        return isBeforeChild(child) || isAfterChild(child);
+        return isChild(child, BEFORE) || isChild(child, AFTER);
     }
 
     /**
      * Returns true iff this node is the parent of the given node at the given time.
      */
     public boolean isChild(DiffNode child, Time time) {
-        return time.match(isBeforeChild(child), isAfterChild(child));
+        return child.getParent(time) == this;
     }
 
     /**
@@ -920,50 +564,16 @@ public class DiffNode {
         return this.diffType;
     }
 
-    /**
-     * Returns true if this node represents an ELIF annotation.
-     * @see NodeType#ELIF
-     */
-    public boolean isElif() {
-        return this.nodeType.equals(NodeType.ELIF);
-    }
-
-    /**
-     * Returns true if this node represents a conditional annotation.
-     * @see NodeType#IF
-     */
-    public boolean isIf() {
-        return this.nodeType.equals(NodeType.IF);
-    }
-
-    /**
-     * Returns true if this node is an artifact node.
-     * @see NodeType#ARTIFACT
-     */
-    public boolean isArtifact() {
-        return this.nodeType.equals(NodeType.ARTIFACT);
-    }
-
-    /**
-     * Returns true if this node represents an ELSE annotation.
-     * @see NodeType#ELSE
-     */
-    public boolean isElse() {
-        return this.nodeType.equals(NodeType.ELSE);
+    @Override
+    public NodeType getNodeType() {
+        return nodeType;
     }
 
     /**
      * Returns true if this node is a root node (has no parents).
      */
     public boolean isRoot() {
-        return getBeforeParent() == null && getAfterParent() == null;
-    }
-
-    /**
-     * Returns {@link NodeType#isAnnotation()} for this node's {@link DiffNode#nodeType}.
-     */
-    public boolean isAnnotation() {
-        return this.nodeType.isAnnotation();
+        return getParent(BEFORE) == null && getParent(AFTER) == null;
     }
 
     /**
@@ -977,15 +587,19 @@ public class DiffNode {
      */
     public int getID() {
         // Add one to ensure invalid (negative) line numbers don't cause issues.
-        int lineNumber = 1 + from.inDiff();
-        Assert.assertTrue((lineNumber << 2*ID_OFFSET) >> 2*ID_OFFSET == lineNumber);
+        final int lineNumber = 1 + from.inDiff();
+
+        final int usedBitCount = DiffType.getRequiredBitCount() + NodeType.getRequiredBitCount();
+        Assert.assertTrue((lineNumber << usedBitCount) >> usedBitCount == lineNumber);
 
         int id;
         id = lineNumber;
-        id <<= ID_OFFSET;
-        id += diffType.ordinal();
-        id <<= ID_OFFSET;
-        id += nodeType.ordinal();
+
+        id <<= DiffType.getRequiredBitCount();
+        id |= diffType.ordinal();
+
+        id <<= NodeType.getRequiredBitCount();
+        id |= nodeType.ordinal();
         return id;
     }
 
@@ -997,12 +611,16 @@ public class DiffNode {
      * @param label The label the node should have.
      * @return The reconstructed DiffNode.
      */
-    public static DiffNode fromID(final int id, String label) {
-        final int lowestBitsMask = (1 << ID_OFFSET) - 1;
+    public static DiffNode fromID(int id, String label) {
+        final int nodeTypeBitmask = (1 << NodeType.getRequiredBitCount()) - 1;
+        final int nodeTypeOrdinal = id & nodeTypeBitmask;
+        id >>= NodeType.getRequiredBitCount();
 
-        final int nodeTypeOrdinal = id & lowestBitsMask;
-        final int diffTypeOrdinal = (id >> ID_OFFSET) & lowestBitsMask;
-        final int fromInDiff      = (id >> (2*ID_OFFSET)) - 1;
+        final int diffTypeBitmask = (1 << DiffType.getRequiredBitCount()) - 1;
+        final int diffTypeOrdinal = id & diffTypeBitmask;
+        id >>= DiffType.getRequiredBitCount();
+
+        final int fromInDiff = id - 1;
 
         var nodeType = NodeType.values()[nodeTypeOrdinal];
         return new DiffNode(
@@ -1026,34 +644,32 @@ public class DiffNode {
         // check consistency of children lists and edges
         for (final DiffNode c : childOrder) {
             Assert.assertTrue(isChild(c), () -> "Child " + c + " of " + this + " is neither a before nor an after child!");
-            if (c.getBeforeParent() != null) {
-                Assert.assertTrue(c.getBeforeParent().isBeforeChild(c), () -> "The beforeParent of " + c + " doesn't contain that node as child");
-            }
-            if (c.getAfterParent() != null) {
-                Assert.assertTrue(c.getAfterParent().isAfterChild(c), () -> "The afterParent of " + c + " doesn't contain that node as child");
-            }
+            Time.forAll(time -> {
+                if (c.getParent(time) != null) {
+                    Assert.assertTrue(c.getParent(time).isChild(c, time), () -> "The parent " + time.toString().toLowerCase() + " the edit of " + c + " doesn't contain that node as child");
+                }
+            });
         }
 
         // a node with exactly one parent was edited
-        if (beforeParent == null && afterParent != null) {
+        if (getParent(BEFORE) == null && getParent(AFTER) != null) {
             Assert.assertTrue(isAdd());
         }
-        if (beforeParent != null && afterParent == null) {
+        if (getParent(BEFORE) != null && getParent(AFTER) == null) {
             Assert.assertTrue(isRem());
         }
         // a node with exactly two parents was not edited
-        if (beforeParent != null && afterParent != null) {
+        if (getParent(BEFORE) != null && getParent(AFTER) != null) {
             Assert.assertTrue(isNon());
         }
 
         // Else and Elif nodes have an If or Elif as parent.
         if (this.isElse() || this.isElif()) {
-            if (beforeParent != null) {
-                Assert.assertTrue(beforeParent.isIf() || beforeParent.isElif(), "Before parent " + beforeParent + " of " + this + " is neither IF nor ELIF!");
-            }
-            if (afterParent != null) {
-                Assert.assertTrue(afterParent.isIf() || afterParent.isElif(), "After parent " + afterParent + " of " + this + " is neither IF nor ELIF!");
-            }
+            Time.forAll(time -> {
+                if (getParent(time) != null) {
+                    Assert.assertTrue(getParent(time).isIf() || getParent(time).isElif(), time + " parent " + getParent(time) + " of " + this + " is neither IF nor ELIF!");
+                }
+            });
         }
 
         // Only if and elif nodes have a formula
@@ -1110,6 +726,51 @@ public class DiffNode {
         }
 
         return diff.toString();
+    }
+
+    /**
+     * Returns a view of this {@code DiffNode} as a variation node at the time {@code time}.
+     *
+     * <p>See the {@code project} function in section 3.1 of
+     * <a href="https://github.com/SoftVarE-Group/Papers/raw/main/2022/2022-ESECFSE-Bittner.pdf">
+     * our paper</a>.
+     */
+    public Projection projection(Time time) {
+        Assert.assertTrue(getDiffType().existsAtTime(time));
+
+        if (projections[time.ordinal()] == null) {
+            projections[time.ordinal()] = new Projection(this, time);
+        }
+
+        return projections[time.ordinal()];
+    }
+
+    /**
+     * Transforms a {@code VariationNode} into a {@code DiffNode} by diffing {@code variationNode}
+     * to itself.
+     *
+     * This is the inverse of {@link projection} iff the original {@link DiffNode} wasn't modified
+     * (all node had a {@link getDiffType diff type} of {@link DiffType#NON}).
+     */
+    public static <T extends VariationNode<T>> DiffNode unchanged(VariationNode<T> variationNode) {
+        int from = variationNode.getLineRange().getFromInclusive();
+        int to = variationNode.getLineRange().getToExclusive();
+
+        var diffNode = new DiffNode(
+            DiffType.NON,
+            variationNode.getNodeType(),
+            new DiffLineNumber(from, from, from),
+            new DiffLineNumber(to, to, to),
+            variationNode.getDirectFeatureMapping(),
+            variationNode.getLabelLines()
+        );
+
+        for (var variationChildNode : variationNode.getChildren()) {
+            var diffChildNode = unchanged(variationChildNode);
+            Time.forAll(time -> diffNode.addChild(diffChildNode, time));
+        }
+
+        return diffNode;
     }
 
     @Override

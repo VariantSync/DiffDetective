@@ -31,6 +31,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
+import static org.variantsync.diffdetective.diff.difftree.Time.AFTER;
+import static org.variantsync.diffdetective.diff.difftree.Time.BEFORE;
 import static org.variantsync.functjonal.Functjonal.when;
 
 /**
@@ -338,17 +340,13 @@ public class DiffTree {
     public void removeNode(DiffNode node) {
         Assert.assertTrue(node != root);
 
-        final DiffNode beforeParent = node.getBeforeParent();
-        if (beforeParent != null) {
-            beforeParent.removeBeforeChild(node);
-            beforeParent.addBeforeChildren(node.removeBeforeChildren());
-        }
-
-        final DiffNode afterParent = node.getAfterParent();
-        if (afterParent != null) {
-            afterParent.removeAfterChild(node);
-            afterParent.addAfterChildren(node.removeAfterChildren());
-        }
+        Time.forAll(time -> {
+            final DiffNode parent = node.getParent(time);
+            if (parent != null) {
+                parent.removeChild(node, time);
+                parent.addChildren(node.removeChildren(time), time);
+            }
+        });
     }
 
     /**
@@ -394,8 +392,8 @@ public class DiffTree {
                     // The stranger is now known.
                     cache.putIfAbsent(id, VisitStatus.VISITED);
 
-                    final DiffNode b = d.getBeforeParent();
-                    final DiffNode a = d.getAfterParent();
+                    final DiffNode b = d.getParent(BEFORE);
+                    final DiffNode a = d.getParent(AFTER);
                     if (a == null && b == null) {
                         // We found a second root node which is invalid.
                         yield false;

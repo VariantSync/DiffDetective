@@ -15,7 +15,7 @@ public enum Time {
      * Invoke the given function for each time value (i.e., each value in this enum).
      * @param f callback
      */
-    public static void forall(final Consumer<Time> f) {
+    public static void forAll(final Consumer<Time> f) {
         f.accept(BEFORE);
         f.accept(AFTER);
     }
@@ -47,6 +47,17 @@ public enum Time {
         return switch (this) {
             case BEFORE -> before;
             case AFTER -> after;
+        };
+    }
+
+    /**
+     * Returns the complement of this time.
+     * @return {@code BEFORE} if {@code this == AFTER} or {@code AFTER} if {@code this == BEFORE}
+     */
+    public Time other() {
+        return switch (this) {
+            case BEFORE -> AFTER;
+            case AFTER -> BEFORE;
         };
     }
 }

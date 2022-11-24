@@ -13,6 +13,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
+import static org.variantsync.diffdetective.diff.difftree.Time.AFTER;
+import static org.variantsync.diffdetective.diff.difftree.Time.BEFORE;
+
 /**
  * Collapses chains of nested non-edited annotations.
  * Imagine a annotation node that is unchanged and has the same parent before and after the edit
@@ -72,7 +75,7 @@ public class CollapseNestedNonEditedAnnotations implements DiffTreeTransformer {
                 s.push(subtree);
                 chainCandidates.add(s);
             } else if (inChainTail(subtree)) {
-                final DiffNode parent = subtree.getBeforeParent(); // == after parent
+                final DiffNode parent = subtree.getParent(BEFORE); // == after parent
 
                 Stack<DiffNode> pushedTo = null;
                 for (final Stack<DiffNode> s : chainCandidates) {
@@ -104,9 +107,9 @@ public class CollapseNestedNonEditedAnnotations implements DiffTreeTransformer {
 
             switch (lastPopped.nodeType) {
                 case IF ->
-                    featureMappings.add(lastPopped.getAfterFeatureMapping());
+                    featureMappings.add(lastPopped.getFeatureMapping(AFTER));
                 case ELSE, ELIF -> {
-                    featureMappings.add(lastPopped.getAfterFeatureMapping());
+                    featureMappings.add(lastPopped.getFeatureMapping(AFTER));
                     // Pop all previous ELIF cases and the final IF (if present) as we accounted
                     // for their features mappings already.
                     while (!lastPopped.isIf() && !chain.isEmpty()) {
@@ -120,8 +123,8 @@ public class CollapseNestedNonEditedAnnotations implements DiffTreeTransformer {
 
         Assert.assertTrue(head == lastPopped);
 
-        final DiffNode beforeParent = head.getBeforeParent();
-        final DiffNode afterParent = head.getAfterParent();
+        final DiffNode beforeParent = head.getParent(BEFORE);
+        final DiffNode afterParent = head.getParent(AFTER);
 
         ArrayList lines = new ArrayList();
         lines.add("$Collapsed Nested Annotations$");
@@ -158,14 +161,14 @@ public class CollapseNestedNonEditedAnnotations implements DiffTreeTransformer {
      * @return True iff d is in the tail of a chain.
      */
     private static boolean inChainTail(DiffNode d) {
-        return d.getBeforeParent() == d.getAfterParent() && hasExactlyOneChild(d.getBeforeParent());
+        return d.getParent(BEFORE) == d.getParent(AFTER) && hasExactlyOneChild(d.getParent(BEFORE));
     }
 
     /**
      * @return True iff d is the head of a chain.
      */
     private static boolean isHead(DiffNode d) {
-        return (!inChainTail(d) || d.getBeforeParent().isRoot()) && !isEnd(d);
+        return (!inChainTail(d) || d.getParent(BEFORE).isRoot()) && !isEnd(d);
     }
 
     /**

@@ -19,6 +19,8 @@ import org.variantsync.diffdetective.util.Assert;
 import java.nio.file.Path;
 import java.util.Optional;
 
+import static org.variantsync.diffdetective.diff.difftree.Time.BEFORE;
+
 public class RunningExampleFinder {
     public static final Path DefaultExamplesDirectory = Path.of("examples");
     public static final int DefaultMaxDiffLineCount = 20;
@@ -77,8 +79,8 @@ public class RunningExampleFinder {
     private static boolean hasNestingBeforeEdit(final DiffTree diffTree) {
         return diffTree.anyMatch(n ->
                            !n.isAdd()
-                        && n.getBeforeDepth() > 2
-                        && !(n.getBeforeParent().isElse() || n.getBeforeParent().isElif())
+                        && n.getDepth(BEFORE) > 2
+                        && !(n.getParent(BEFORE).isElse() || n.getParent(BEFORE).isElif())
         );
     }
 

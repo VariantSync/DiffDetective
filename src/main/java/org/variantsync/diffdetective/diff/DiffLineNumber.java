@@ -1,6 +1,7 @@
 package org.variantsync.diffdetective.diff;
 
 import org.variantsync.diffdetective.diff.difftree.DiffType;
+import org.variantsync.diffdetective.diff.difftree.Time;
 
 import java.util.Objects;
 
@@ -37,6 +38,22 @@ public record DiffLineNumber(int inDiff, int beforeEdit, int afterEdit) {
      */
     public static DiffLineNumber Invalid() {
         return new DiffLineNumber(InvalidLineNumber, InvalidLineNumber, InvalidLineNumber);
+    }
+
+    public DiffLineNumber withLineNumberAtTime(int lineNumber, Time time) {
+        return new DiffLineNumber(
+            inDiff,
+            time.match(lineNumber, beforeEdit),
+            time.match(afterEdit, lineNumber)
+        );
+    }
+
+    public DiffLineNumber withLineNumberInDiff(int lineNumber) {
+        return new DiffLineNumber(
+            lineNumber,
+            beforeEdit,
+            afterEdit
+        );
     }
 
     /**
@@ -77,6 +94,15 @@ public record DiffLineNumber(int inDiff, int beforeEdit, int afterEdit) {
         );
     }
 
+    /**
+     * Returns the line number at the given time.
+     * @param time the time at which to return the line range
+     * @return {@code beforeEdit} or {@code afterEdit}, depending on {@code time}
+     */
+    public int atTime(Time time) {
+        return time.match(beforeEdit, afterEdit);
+    }
+
     @Override
     public String toString() {
         return "(old: " + beforeEdit + ", diff: " + inDiff + ", new:" + afterEdit + ")";
@@ -107,24 +133,14 @@ public record DiffLineNumber(int inDiff, int beforeEdit, int afterEdit) {
     }
 
     /**
-     * Returns the range between two line numbers before the edit.
+     * Returns the range between two line numbers at a given time.
      * @see DiffLineNumber#inDiff
      * @param from The start line number.
      * @param to The end line number.
-     * @return [from.beforeEdit, to.beforeEdit)
+     * @param time The time at which to return the line range.
+     * @return [from.beforeEdit, to.beforeEdit) or [from.afterEdit, to.afterEdit)
      */
-    public static Lines rangeBeforeEdit(final DiffLineNumber from, final DiffLineNumber to) {
-        return Lines.FromInclToExcl(from.beforeEdit, to.beforeEdit);
-    }
-
-    /**
-     * Returns the range between two line numbers before the edit.
-     * @see DiffLineNumber#inDiff
-     * @param from The start line number.
-     * @param to The end line number.
-     * @return [from.afterEdit, to.afterEdit)
-     */
-    public static Lines rangeAfterEdit(final DiffLineNumber from, final DiffLineNumber to) {
-        return Lines.FromInclToExcl(from.afterEdit, to.afterEdit);
+    public static Lines rangeAtTime(final DiffLineNumber from, final DiffLineNumber to, Time time) {
+        return Lines.FromInclToExcl(from.atTime(time), to.atTime(time));
     }
 }

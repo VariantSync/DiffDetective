@@ -2,6 +2,9 @@ package org.variantsync.diffdetective.diff.difftree;
 
 import java.util.Collection;
 
+import static org.variantsync.diffdetective.diff.difftree.Time.AFTER;
+import static org.variantsync.diffdetective.diff.difftree.Time.BEFORE;
+
 /**
  * Generalisation of DiffTrees to arbitrary change graphs with variability information.
  * The DiffGraph class currently does not model a graph itself but rather
@@ -33,8 +36,8 @@ public final class DiffGraph {
                 .filter(DiffNode::isRoot)
                 .forEach(n ->
                         n.diffType.matchBeforeAfter(
-                                () -> newRoot.addBeforeChild(n),
-                                () -> newRoot.addAfterChild(n)
+                                () -> newRoot.addChild(n, BEFORE),
+                                () -> newRoot.addChild(n, AFTER)
                         ));
         return new DiffTree(newRoot, source);
     }

@@ -9,6 +9,9 @@ import org.variantsync.functjonal.Pair;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.variantsync.diffdetective.diff.difftree.Time.AFTER;
+import static org.variantsync.diffdetective.diff.difftree.Time.BEFORE;
+
 /**
  * Finds artifact nodes whose label is exactly equal. If one of those nodes was added and the other one was removed,
  * NaiveMovedArtifactDetection merges them and interprets this edit as a move instead of separate insertion and deletion.
@@ -34,8 +37,8 @@ public class NaiveMovedArtifactDetection implements DiffTreeTransformer {
                 removed = twin.first();
             }
 
-            final DiffNode afterParent = added.getAfterParent();
-            final DiffNode beforeParent = removed.getBeforeParent();
+            final DiffNode afterParent = added.getParent(AFTER);
+            final DiffNode beforeParent = removed.getParent(BEFORE);
             final DiffNode mergedNode = merge(added, removed);
 
             added.drop();

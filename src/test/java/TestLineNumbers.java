@@ -14,6 +14,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
+import static org.variantsync.diffdetective.diff.difftree.Time.AFTER;
+import static org.variantsync.diffdetective.diff.difftree.Time.BEFORE;
+
 public class TestLineNumbers {
     private static final Path resDir = Constants.RESOURCE_DIR.resolve("diffs/linenumbers");
     private record TestCase(String filename, Map<Integer, Pair<DiffLineNumber, DiffLineNumber>> expectedLineNumbers) { }
@@ -69,9 +72,9 @@ public class TestLineNumbers {
                     + " " + node.nodeType
                     + " \"" + node.getLabel().trim()
                     + " with ID " + node.getID()
-                    + "\" old: " + node.getLinesBeforeEdit()
+                    + "\" old: " + node.getLinesAtTime(BEFORE)
                     + ", diff: " + node.getLinesInDiff()
-                    + ", new: " + node.getLinesAfterEdit())
+                    + ", new: " + node.getLinesAtTime(AFTER))
         );
         System.out.println();
     }
