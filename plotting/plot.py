@@ -1,6 +1,7 @@
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy
+import sys
 from matplotlib.ticker import FuncFormatter
 
 from result_data import load_runtime_results
@@ -28,7 +29,14 @@ def commit_runtime(runtime_results: [], annotate=False):
     runtimes = numpy.sort(runtimes)[::-1]
 
     # Count how often the runtime is less than one second
-    runtimes_below_one_second = len([x.runtime for x in runtime_results if x.runtime < 1000])
+    num_runtimes_below_one_second = len([x.runtime for x in runtime_results if x.runtime < 1000])
+    num_runtimes_one_second_to_one_minute = [x for x in runtime_results if x.runtime >= 1000 and x.runtime < 60000]
+    print(len(num_runtimes_one_second_to_one_minute), "commits were processed within a second and a minute.")
+    commits_geq_one_minute = [x for x in runtime_results if x.runtime >= 60000]
+    percentage_commits_geq_one_minute = len(commits_geq_one_minute) / len(runtimes)
+    print(len(commits_geq_one_minute), "commits required a minute or longer (", percentage_commits_geq_one_minute , "%) :")
+    for commit_result in commits_geq_one_minute:
+        print(str(commit_result.runtime / 60000) + "min for " + commit_result.linkToGithub())
 
     # For printing of commits with the greatest runtime
     # largest_commits = [x for x in runtime_results if x.runtime // 60000 == runtime_max]
@@ -54,21 +62,23 @@ def commit_runtime(runtime_results: [], annotate=False):
 
     # Add annotation
     if annotate:
-        percentage = 100 * (runtimes_below_one_second / len(runtimes))
-        ax.annotate(f'{runtimes_below_one_second:,.0f} commits require\nless than one second ({percentage:,.2f}%).', xy=(0, runtimes_below_one_second),
+        percentage = 100 * (num_runtimes_below_one_second / len(runtimes))
+        annotationtext = f'{num_runtimes_below_one_second:,.0f} commits require\nless than one second ({percentage:,.2f}%).'
+        print(annotationtext)
+        ax.annotate(annotationtext, xy=(0, num_runtimes_below_one_second),
                     xytext=(5, 40_000),
                     arrowprops=dict(arrowstyle="->"),
                     bbox=dict(boxstyle="round", fc="w"),
                     fontsize=text_box_font_size
                     )
 
-        percentage = 100 * (runtime_max / len(runtimes))
-        ax.annotate(f'Two commits require\n{runtime_max:,.0f} minutes ({percentage:,.2f}%).', xy=(runtime_max, 2),
-                    xytext=(runtime_max - 35, 10),
-                    arrowprops=dict(arrowstyle="->"),
-                    bbox=dict(boxstyle="round", fc="w"),
-                    fontsize=text_box_font_size
-                    )
+        # percentage = 100 * (runtime_max / len(runtimes))
+        # ax.annotate(f'Two commits require\n{runtime_max:,.0f} minutes ({percentage:,.2f}%).', xy=(runtime_max, 2),
+        #             xytext=(runtime_max - 35, 10),
+        #             arrowprops=dict(arrowstyle="->"),
+        #             bbox=dict(boxstyle="round", fc="w"),
+        #             fontsize=text_box_font_size
+        #             )
 
     def major_formatter(x, pos):
         return f'{x:,.0f}'
@@ -83,9 +93,12 @@ def commit_runtime(runtime_results: [], annotate=False):
 # For debugging
 if __name__ == "__main__":
     # folder = "/data/m2/edit-patterns/results/"
-    folder = "../results"
-    print("Loading results...")
-    results = load_runtime_results(folder)
-    print("Plotting runtime histogram...")
-    commit_runtime(results, True)
-    print("Done.")
+    if len(sys.argv) != 2:
+        print("Warning: Expected exactly one argument, the path to the result files.")
+    else:
+        folder = sys.argv[1]
+        print("Loading results...")
+        results = load_runtime_results(folder)
+        print("Plotting runtime histogram...")
+        commit_runtime(results, True)
+        print("Done.")
