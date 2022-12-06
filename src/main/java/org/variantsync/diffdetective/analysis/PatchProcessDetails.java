@@ -27,7 +27,7 @@ public class PatchProcessDetails {
     }
 
     public String toCSV(){
-        return hash + CSV_DELIMITER + repoName + CSV_DELIMITER + fileName + CSV_DELIMITER+ addedComplexityPercents + CSV_DELIMITER + milliseconds + CSV_DELIMITER + totalNodeCount + CSV_DELIMITER + ifNodeCount;
+        return repoName + CSV_DELIMITER + hash + CSV_DELIMITER + fileName + CSV_DELIMITER+ addedComplexityPercents + CSV_DELIMITER + milliseconds + CSV_DELIMITER + totalNodeCount + CSV_DELIMITER + ifNodeCount;
     }
 }
 

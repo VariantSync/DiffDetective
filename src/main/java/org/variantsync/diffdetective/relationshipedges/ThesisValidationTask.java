@@ -84,7 +84,7 @@ public class ThesisValidationTask extends CommitHistoryAnalysisTask {
 
                         boolean RELATIONSHIP_EDGES = true; // TODO: replace this later with some sort of options parameter
                         boolean optimized = true;
-                        boolean implicationFirst = false;
+                        boolean alternativeFirst = false;
 
                         if (RELATIONSHIP_EDGES) {
                         /*
@@ -97,11 +97,11 @@ public class ThesisValidationTask extends CommitHistoryAnalysisTask {
                             List<DiffNode> annotationNodes = t.computeAnnotationNodes();
                             List<DiffNode> ifNodes = t.computeAllNodesThat(DiffNode::isIf);
                             for (int i = 0; i < ifNodes.size(); i++) {
-                                if (ifNodes.get(i).getDirectFeatureMapping().equals(new False())|| ifNodes.get(i).getDirectFeatureMapping().equals(new True())) continue; // exclude nodes with Formula "True"/"False" (eqivalent to "#if 1"/"if 0"
+                                if (ifNodes.get(i).getDirectFeatureMapping().equals(new False())|| ifNodes.get(i).getDirectFeatureMapping().equals(new True())) continue; // exclude nodes with Formula "True"/"False" (equivalent to "#if 1"/"if 0")
                                 for (int j = i + 1; j < ifNodes.size(); j++) {
-                                    if (ifNodes.get(j).getDirectFeatureMapping().equals(new False())|| ifNodes.get(j).getDirectFeatureMapping().equals(new True())) continue; // exclude nodes with Formula "True"/"False" (eqivalent to "#if 1"/"if 0"
+                                    if (ifNodes.get(j).getDirectFeatureMapping().equals(new False())|| ifNodes.get(j).getDirectFeatureMapping().equals(new True())) continue; // exclude nodes with Formula "True"/"False" (equivalent to "#if 1"/"if 0")
                                     if(optimized){
-                                        if(implicationFirst){
+                                        if(alternativeFirst){
                                             if (Alternative.areInRelation(ifNodes.get(i), ifNodes.get(j))) { // we only need to check one way since alternative edges are always bi-directional
                                                 alternativeEdges.add(new RelationshipEdge<>(Alternative.class, ifNodes.get(i), ifNodes.get(j)));
                                                 alternativeEdges.add(new RelationshipEdge<>(Alternative.class, ifNodes.get(j), ifNodes.get(i)));
