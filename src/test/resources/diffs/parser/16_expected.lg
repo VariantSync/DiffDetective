@@ -7,15 +7,15 @@ v 529 NON;ELSE;(old: 5, diff: 7, new:6);(old: 7, diff: 10, new:8);;#else D
 v 595 NON;ARTIFACT;(old: 6, diff: 8, new:7);(old: 7, diff: 9, new:8);;d
 v 256 ADD;IF;(old: -1, diff: 3, new:2);(old: -1, diff: 5, new:4);B;#ifdef B
 v 386 ADD;ELIF;(old: -1, diff: 5, new:4);(old: -1, diff: 7, new:6);C;#elif C
-e 136 16 b;0
-e 211 136 b;0
-e 211 16 a;0
-e 339 136 b;1
-e 339 256 a;0
-e 467 136 b;2
-e 467 386 a;0
-e 529 136 b;3
-e 529 386 a;1
-e 595 529 ba;0;0
-e 256 16 a;1
-e 386 256 a;1
+e 136 16 b;0,-1
+e 211 136 b;0,-1
+e 211 16 a;-1,0
+e 339 136 b;1,-1
+e 339 256 a;-1,0
+e 467 136 b;2,-1
+e 467 386 a;-1,0
+e 529 136 b;3,-1
+e 529 386 a;-1,1
+e 595 529 ba;0,0
+e 256 16 a;-1,1
+e 386 256 a;-1,1

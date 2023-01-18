@@ -1,6 +1,5 @@
 package org.variantsync.diffdetective.variation.diff.serialize;
 
-import java.util.List;
 import java.util.function.Consumer;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
@@ -54,32 +53,10 @@ public class Format {
     }
 
     /**
-     * Iterates over all edges in {@code diffTree} and calls {@code callback}.
-     *
-     * Exporters should use this method to enable subclasses of {@code Format} to filter edges, add
-     * new edges and change the order of the exported edges.
-     *
-     * This implementation uses {@link forEachUniqueEdge} by calling {@code callback} for each edge
-     * in the order given by the lists of {@link forEachUniqueEdge}.
-     *
-     * @param diffTree to be exported
-     * @param callback is called for each edge
-     */
-    public void forEachEdge(DiffTree diffTree, Consumer<StyledEdge> callback) {
-        forEachUniqueEdge(diffTree, (edges) -> {
-            for (var edge : edges) {
-                callback.accept(edge);
-            }
-        });
-    }
-
-    /**
      * Iterates over all edges in {@code diffTree} and calls {@code callback}, visiting parallel edges only once.
      *
-     * Two edges are parallel if they start at the same node and end at the same node. Note that
-     * the direction of directed edges matters.
-     *
-     * All parallel edges are collected into a list and are passed once to {@code callback}.
+     * If an edge is unchanged (there are equal before and after edges) {@code callback} is only
+     * called once.
      *
      * Exporters should use this method to enable subclasses of {@code Format} to filter edges, add
      * new edges and change the order of the exported edges.
@@ -87,43 +64,23 @@ public class Format {
      * @param diffTree to be exported
      * @param callback is called for each unique edge
      */
-    public void forEachUniqueEdge(DiffTree diffTree, Consumer<List<StyledEdge>> callback) {
+    public void forEachEdge(DiffTree diffTree, Consumer<StyledEdge> callback) {
         diffTree.forAll((node) -> {
             var beforeParent = node.getParent(BEFORE);
             var afterParent = node.getParent(AFTER);
 
             // Are both parent edges the same?
             if (beforeParent != null && afterParent != null && beforeParent == afterParent) {
-                callback.accept(List.of(beforeEdge(node), afterEdge(node)));
+                sortedEdgeWithLabel(node, node.getParent(BEFORE), StyledEdge.UNCHANGED, callback);
             } else {
                 if (beforeParent != null) {
-                    callback.accept(List.of(beforeEdge(node)));
+                    sortedEdgeWithLabel(node, node.getParent(BEFORE), StyledEdge.BEFORE, callback);
                 }
                 if (afterParent != null) {
-                    callback.accept(List.of(afterEdge(node)));
+                    sortedEdgeWithLabel(node, node.getParent(AFTER), StyledEdge.AFTER, callback);
                 }
             }
         });
-    }
-
-    /**
-     * Constructs a {@link StyledEdge} from {@code node} and its before parent.
-     *
-     * The order of these nodes is permuted according to {@link EdgeLabelFormat#getEdgeDirection}
-     * of {@link getEdgeFormat()}.
-     */
-    protected StyledEdge beforeEdge(DiffNode node) {
-        return sortedEdgeWithLabel(node, node.getParent(BEFORE), StyledEdge.BEFORE);
-    }
-
-    /**
-     * Constructs a {@link StyledEdge} from {@code node} and its after parent.
-     *
-     * The order of these nodes is permuted according to {@link EdgeLabelFormat#getEdgeDirection}
-     * of {@link getEdgeFormat()}.
-     */
-    protected StyledEdge afterEdge(DiffNode node) {
-        return sortedEdgeWithLabel(node, node.getParent(AFTER), StyledEdge.AFTER);
     }
 
     /**
@@ -135,10 +92,15 @@ public class Format {
      * @param originalFrom the origin of the constructed edge
      * @param originalTo the destination of the constructed edge
      * @param style the export style of the constructed edge
-     * @return a new {@link StyledEdge}
+     * @param callback the consumer which is called with the resulting {@link StyledEdge}
      */
-    protected StyledEdge sortedEdgeWithLabel(DiffNode originalFrom, DiffNode originalTo, StyledEdge.Style style) {
+    protected void sortedEdgeWithLabel(
+            DiffNode originalFrom,
+            DiffNode originalTo,
+            StyledEdge.Style style,
+            Consumer<StyledEdge> callback
+    ) {
         var edge = edgeFormat.getEdgeDirection().sort(originalFrom, originalTo);
-        return new StyledEdge(edge.first(), edge.second(), style);
+        callback.accept(new StyledEdge(edge.first(), edge.second(), style));
     }
 }

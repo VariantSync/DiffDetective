@@ -10,9 +10,10 @@ import org.variantsync.diffdetective.variation.diff.DiffNode;
  * should be encoded into {@code style}.
  */
 public record StyledEdge(DiffNode from, DiffNode to, Style style) {
-    public record Style(char lineGraphType, String tikzStyle) {
+    public record Style(String lineGraphType, String tikzStyle) {
     }
 
-    public static final Style BEFORE = new Style('b', "before");
-    public static final Style AFTER = new Style('a', "after");
+    public static final Style BEFORE = new Style("b", "before");
+    public static final Style AFTER = new Style("a", "after");
+    public static final Style UNCHANGED = new Style("ba", "unchanged");
 }

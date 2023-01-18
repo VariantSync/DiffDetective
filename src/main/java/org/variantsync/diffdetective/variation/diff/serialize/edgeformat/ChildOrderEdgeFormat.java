@@ -21,18 +21,13 @@ import org.variantsync.diffdetective.variation.diff.serialize.StyledEdge;
 public class ChildOrderEdgeFormat extends EdgeLabelFormat {
     @Override
     public String labelOf(StyledEdge edge) {
-        Time time;
-        if (edge.style() == StyledEdge.BEFORE) {
-            time = BEFORE;
-        } else if (edge.style() == StyledEdge.AFTER) {
-            time = AFTER;
-        } else {
-            throw new UnsupportedOperationException("ChildOrderEdgeFormat is only defined for StyledEdge.BEFORE and StyledEdge.AFTER");
-        }
+        int[] index = new int[2];
+        Time.forAll(time -> {
+            int i = edge.from().indexOfChild(edge.to(), time);
+            int j = edge.to().indexOfChild(edge.from(), time);
+            index[time.ordinal()] = i < 0 ? j : i;
+        });
 
-        int i = edge.from().indexOfChild(edge.to(), time);
-        int j = edge.to().indexOfChild(edge.from(), time);
-
-        return String.format(";%d", i < 0 ? j : i);
+        return String.format(";%d,%d", index[BEFORE.ordinal()], index[AFTER.ordinal()]);
     }
 }
