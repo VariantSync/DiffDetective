@@ -15,9 +15,11 @@ import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
  * For easy reusability this class is composed of separate node and edge formats.
  *
  * The exported {@link DiffTree} can be influenced in the following ways:
- * - Providing both a node and an edge label format.
- * - Changing the order, filtering or adding the nodes and edges by creating a subclass of {@code
- *   Format}.
+ * <ul>
+ * <li>Providing both a node and an edge label format.
+ * <li>Changing the order, filtering or adding the nodes and edges by creating a subclass of
+ * {@code Format}.
+ * </ul>
  */
 public class Format {
     private final DiffNodeLabelFormat nodeFormat;

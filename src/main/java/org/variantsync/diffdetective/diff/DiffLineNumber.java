@@ -8,9 +8,11 @@ import java.util.Objects;
 /**
  * Identifies a line number in a textual diff.
  * A DiffLineNumber consists of
- * - the line number in the diff,
- * - the corresponding line number before the edit
- * - the corresponding line number after the edit
+ * <ul>
+ * <li>the line number in the diff,
+ * <li>the corresponding line number before the edit
+ * <li>the corresponding line number after the edit
+ * </ul>
  * @author Paul Bittner
  */
 public record DiffLineNumber(int inDiff, int beforeEdit, int afterEdit) {
