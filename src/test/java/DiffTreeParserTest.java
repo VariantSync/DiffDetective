@@ -1,21 +1,21 @@
-import org.variantsync.diffdetective.variation.diff.DiffTree;
-import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParser;
-import org.variantsync.diffdetective.variation.diff.serialize.LineGraphExporter;
-import org.variantsync.diffdetective.variation.diff.serialize.Format;
-import org.variantsync.diffdetective.variation.diff.serialize.TikzExporter;
-import org.variantsync.diffdetective.variation.diff.serialize.edgeformat.ChildOrderEdgeFormat;
-import org.variantsync.diffdetective.variation.diff.serialize.edgeformat.DefaultEdgeLabelFormat;
-import org.variantsync.diffdetective.variation.diff.serialize.nodeformat.FullNodeFormat;
-import org.variantsync.diffdetective.diff.result.DiffParseException;
-import org.variantsync.diffdetective.feature.CPPAnnotationParser;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.variantsync.diffdetective.diff.result.DiffParseException;
+import org.variantsync.diffdetective.feature.CPPAnnotationParser;
+import org.variantsync.diffdetective.util.IO;
+import org.variantsync.diffdetective.variation.diff.DiffTree;
+import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParser;
+import org.variantsync.diffdetective.variation.diff.serialize.Format;
+import org.variantsync.diffdetective.variation.diff.serialize.LineGraphExporter;
+import org.variantsync.diffdetective.variation.diff.serialize.TikzExporter;
+import org.variantsync.diffdetective.variation.diff.serialize.edgeformat.ChildOrderEdgeFormat;
+import org.variantsync.diffdetective.variation.diff.serialize.edgeformat.DefaultEdgeLabelFormat;
+import org.variantsync.diffdetective.variation.diff.serialize.nodeformat.FullNodeFormat;
 
 import static org.junit.jupiter.api.Assertions.fail;
 
-import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -68,10 +68,7 @@ public class DiffTreeParserTest {
             );
         }
 
-        try (
-                var unbufferedOutput = Files.newOutputStream(actualPath);
-                var output = new BufferedOutputStream(unbufferedOutput)
-        ) {
+        try (var output = IO.newBufferedOutputStream(actualPath)) {
             new LineGraphExporter(new Format(new FullNodeFormat(), new ChildOrderEdgeFormat()))
                 .exportDiffTree(diffTree, output);
         }
@@ -81,7 +78,7 @@ public class DiffTreeParserTest {
                 var actualFile = Files.newBufferedReader(actualPath);
         ) {
             if (!IOUtils.contentEqualsIgnoreEOL(expectedFile, actualFile)) {
-                var visualizationPath = testDir.resolve(basename + ".tex");
+                var visualizationPath = testDir.resolve("tex").resolve(basename + ".tex");
                 new TikzExporter(new Format(new FullNodeFormat(), new DefaultEdgeLabelFormat()))
                     .exportFullLatexExample(diffTree, visualizationPath);
                 fail("The DiffTree in file " + testCasePath + " didn't parse correctly. "
