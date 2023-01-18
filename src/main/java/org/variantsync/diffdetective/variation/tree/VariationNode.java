@@ -435,7 +435,7 @@ public abstract class VariationNode<T extends VariationNode<T>> implements HasNo
         // Copy mutable attributes to allow modifications of the new node.
         var newNode = new VariationTreeNode(
             getNodeType(),
-            getFormula().clone(),
+            getFormula() == null ? null : getFormula().clone(),
             getLineRange(),
             new ArrayList<String>(getLabelLines())
         );
