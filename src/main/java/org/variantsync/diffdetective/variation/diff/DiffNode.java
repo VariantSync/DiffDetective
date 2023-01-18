@@ -264,10 +264,17 @@ public class DiffNode implements HasNodeType {
      */
     public void drop() {
         Time.forAll(time -> {
-            if (getParent(time) != null) {
-                getParent(time).removeChild(this, time);
-            }
+            drop(time);
         });
+    }
+
+    /**
+     * Removes this subtree from its parents at the time {@code time}.
+     */
+    public void drop(Time time) {
+        if (getParent(time) != null) {
+            getParent(time).removeChild(this, time);
+        }
     }
 
     /**
