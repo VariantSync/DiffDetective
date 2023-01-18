@@ -1,0 +1,9 @@
+v 80 NON;IF;(old: -1, diff: 0, new:-1);(old: -1, diff: 0, new:-1);True
+v 147 NON;ARTIFACT;(old: 1, diff: 1, new:1);(old: 2, diff: 1, new:2);;1
+v 203 REM;ARTIFACT;(old: 2, diff: 2, new:-1);(old: 3, diff: 2, new:-1);;2
+v 275 NON;ARTIFACT;(old: 3, diff: 3, new:3);(old: 4, diff: 3, new:4);;3
+v 323 ADD;ARTIFACT;(old: -1, diff: 4, new:2);(old: -1, diff: 4, new:3);;B
+e 147 80 ba;0,0
+e 203 80 b;1,-1
+e 275 80 ba;2,2
+e 323 80 a;-1,1

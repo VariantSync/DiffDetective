@@ -1,5 +1,10 @@
 package org.variantsync.diffdetective.variation.diff;
 
+import com.github.gumtreediff.matchers.MappingStore;
+import com.github.gumtreediff.matchers.Matcher;
+import com.github.gumtreediff.matchers.Matchers;
+import com.github.gumtreediff.tree.Tree;
+
 import org.tinylog.Logger;
 import org.variantsync.diffdetective.datasets.Repository;
 import org.variantsync.diffdetective.diff.git.CommitDiff;
@@ -9,15 +14,21 @@ import org.variantsync.diffdetective.diff.git.PatchReference;
 import org.variantsync.diffdetective.diff.result.CommitDiffResult;
 import org.variantsync.diffdetective.diff.result.DiffError;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
+import org.variantsync.diffdetective.diff.text.DiffLineNumber;
 import org.variantsync.diffdetective.feature.CPPAnnotationParser;
+import org.variantsync.diffdetective.gumtree.WrappedDiffTree;
+import org.variantsync.diffdetective.gumtree.WrappedVariationTree;
 import org.variantsync.diffdetective.util.Assert;
+import org.variantsync.diffdetective.variation.NodeType;
 import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParser;
 import org.variantsync.diffdetective.variation.diff.source.DiffTreeSource;
 import org.variantsync.diffdetective.variation.diff.source.PatchFile;
 import org.variantsync.diffdetective.variation.diff.source.PatchString;
+import org.variantsync.diffdetective.variation.diff.source.VariationTreeDiffSource;
 import org.variantsync.diffdetective.variation.diff.traverse.DiffTreeTraversal;
 import org.variantsync.diffdetective.variation.diff.traverse.DiffTreeVisitor;
-import org.variantsync.diffdetective.variation.NodeType;
+import org.variantsync.diffdetective.variation.tree.VariationNode;
+import org.variantsync.diffdetective.variation.tree.VariationTree;
 import org.variantsync.functjonal.Result;
 
 import java.io.BufferedReader;
@@ -36,6 +47,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
+import static org.variantsync.diffdetective.variation.diff.DiffType.ADD;
+import static org.variantsync.diffdetective.variation.diff.DiffType.REM;
 import static org.variantsync.diffdetective.variation.diff.Time.AFTER;
 import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
 import static org.variantsync.functjonal.Functjonal.when;
@@ -503,4 +516,104 @@ public class DiffTree {
     public String toString() {
         return "DiffTree of " + source;
     }
+
+    /**
+     * Create a {@link DiffTree} by matching nodes between {@code before} and {@code after} with the
+     * default GumTree matcher.
+     *
+     * @see compareUsingMatching(VariationTree, VariationTree, Matcher)
+     */
+    public static DiffTree compareUsingMatching(VariationTree before, VariationTree after) {
+        DiffNode root = compareUsingMatching(
+            before.root(),
+            after.root(),
+            Matchers.getInstance().getMatcher()
+        );
+
+        return new DiffTree(root, new VariationTreeDiffSource(before.source(), after.source()));
+    }
+
+    /**
+     * Create a {@link DiffTree} by matching nodes between {@code before} and {@code after} with
+     * {@code matcher}.
+     *
+     * Note: There are currently no guarantees about the line numbers. But it is guaranteed that
+     * {@link DiffNode#getID} is unique.
+     *
+     * @param TODO
+     */
+    public static <A extends VariationNode<A>, B extends VariationNode<B>> DiffNode compareUsingMatching(
+        VariationNode<A> before,
+        VariationNode<B> after,
+        Matcher matcher
+    ) {
+        return compareUsingMatching(DiffNode.unchanged(before), after, matcher);
+    }
+
+    public static <B extends VariationNode<B>> DiffNode compareUsingMatching(
+        DiffNode before,
+        VariationNode<B> after,
+        Matcher matcher
+    ) {
+        var src = new WrappedDiffTree(before, BEFORE);
+        var dst = new WrappedVariationTree(after);
+
+        MappingStore matching = matcher.match(src, dst);
+        Assert.assertTrue(matching.has(src, dst));
+
+        removeUnmapped(matching, src);
+        for (var child : dst.getChildren()) {
+            addUnmapped(matching, src.getDiffNode(), (WrappedVariationTree)child);
+        }
+
+        int[] currentID = new int[1];
+        DiffTreeTraversal.forAll((node) -> {
+            node.setFromLine(node.getFromLine().withLineNumberInDiff(currentID[0]));
+            node.setToLine(node.getToLine().withLineNumberInDiff(currentID[0]));
+            ++currentID[0];
+        }).visit(before);
+
+        return before;
+    }
+
+    private static void removeUnmapped(MappingStore mappings, WrappedDiffTree root) {
+        for (var node : root.preOrder()) {
+            Tree dst = mappings.getDstForSrc(node);
+            if (dst == null || !dst.getLabel().equals(node.getLabel())) {
+                var diffNode = ((WrappedDiffTree)node).getDiffNode();
+                diffNode.diffType = REM;
+                diffNode.drop(AFTER);
+            }
+        }
+    }
+
+    private static void addUnmapped(MappingStore mappings, DiffNode parent, WrappedVariationTree afterNode) {
+        VariationNode<?> variationNode = afterNode.getVariationNode();
+        DiffNode diffNode;
+
+        Tree src = mappings.getSrcForDst(afterNode);
+        if (src == null || !src.getLabel().equals(afterNode.getLabel())) {
+            int from = variationNode.getLineRange().getFromInclusive();
+            int to = variationNode.getLineRange().getToExclusive();
+
+            diffNode = new DiffNode(
+                ADD,
+                variationNode.getNodeType(),
+                new DiffLineNumber(DiffLineNumber.InvalidLineNumber, from, from),
+                new DiffLineNumber(DiffLineNumber.InvalidLineNumber, to, to),
+                variationNode.getFormula(),
+                variationNode.getLabelLines()
+            );
+        } else {
+            diffNode = ((WrappedDiffTree)src).getDiffNode();
+            diffNode.drop(AFTER);
+        }
+        parent.addChild(diffNode, AFTER);
+
+        diffNode.removeChildren(AFTER);
+        for (var child : afterNode.getChildren()) {
+            addUnmapped(mappings, diffNode, (WrappedVariationTree)child);
+        }
+    }
+
 }

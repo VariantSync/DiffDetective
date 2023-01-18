@@ -31,7 +31,7 @@ public class DiffNode implements HasNodeType {
      * The diff type of this node, which determines if this node represents
      * an inserted, removed, or unchanged element in a diff.
      */
-    public final DiffType diffType;
+    public DiffType diffType;
 
     /**
      * The node type of this node, which determines the type of the represented

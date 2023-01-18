@@ -1,0 +1,6 @@
+v 80 NON;IF;(old: -1, diff: 0, new:-1);(old: -1, diff: 0, new:-1);True
+v 147 NON;ARTIFACT;(old: 1, diff: 1, new:1);(old: 2, diff: 1, new:2);;Line
+v 192 ADD;IF;(old: -1, diff: 2, new:1);(old: -1, diff: 2, new:3);A;#ifdef A
+e 147 80 b;0,-1
+e 147 192 a;-1,0
+e 192 80 a;-1,0
