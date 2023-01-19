@@ -1,6 +1,6 @@
 #! /bin/bash
 
-if [ $1 == '' ] || [ $1 == '--help' ] || [ $1 == '-help' ]; then
+if [ "$1" == '' ] || [ "$1" == '--help' ] || [ "$1" == '-help' ]; then
   echo "Either fully run DiffDetective as presented in the paper (replication), do quick setup verification (verification),
   or run DiffDetective on a custom dataset by providing the path to the dataset file."
   echo "-- Examples --"
@@ -23,7 +23,7 @@ else
   echo ""
   echo "Running detection on a custom dataset with the input file $1"
   echo ""
-  java -cp DiffDetective.jar org.variantsync.diffdetective.validation.Validation $1
+  java -cp DiffDetective.jar org.variantsync.diffdetective.validation.Validation "$1"
 fi
 echo "Collecting results."
 cp -r results/* ../results/
