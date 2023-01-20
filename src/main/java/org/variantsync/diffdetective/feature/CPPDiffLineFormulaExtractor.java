@@ -44,7 +44,9 @@ public class CPPDiffLineFormulaExtractor {
         final Supplier<IllFormedAnnotationException> couldNotExtractFormula = () ->
                 IllFormedAnnotationException.IfWithoutCondition("Could not extract formula from line \""+ line + "\".");
 
-        //check for equal number of brackets
+        // check for equal number of brackets
+        // The C11 standard actually allows character literals so there could be `')'` in a
+        // condition but that's never used in practice, right?
         int openBrackets = line.length() - line.replaceAll("\\(", "").length();
         int closedBrackets = line.length() - line.replaceAll("\\)", "").length();
         if (openBrackets != closedBrackets) {
