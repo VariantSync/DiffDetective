@@ -26,7 +26,7 @@ public interface Metadata<T> {
      * Metadata should be composable.
      * Composition should be inplace to optimize performance.
      */
-    InplaceSemigroup<T> semigroup(); //TODO  T = featureSplitResult
+    InplaceSemigroup<T> semigroup();
 
     /**
      * Append the other metadata's values to this metadata.
