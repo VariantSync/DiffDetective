@@ -109,54 +109,52 @@ public record FACommitExtractionHistoryAnalysis(
         final FACommitExtractionAnalysisTaskFactory taskFactory,
         int commitsToProcessPerThread
         ) {
-    final FeatureSplitResult totalResult = new FeatureSplitResult(repo.getRepositoryName());
-    final GitDiffer differ = new GitDiffer(repo);
-    final Clock clock = new Clock();
+        final FeatureSplitResult totalResult = new FeatureSplitResult(repo.getRepositoryName());
+        final GitDiffer differ = new GitDiffer(repo);
+        final Clock clock = new Clock();
 
-    // prepare tasks
-    final int nThreads = 1; //Diagnostics.INSTANCE.run().getNumberOfAvailableProcessors();
-    Logger.info(">>> Scheduling asynchronous extraction of features on {} threads.", nThreads);
-    clock.start();
-    final InvocationCounter<RevCommit, RevCommit> numberOfTotalCommits = InvocationCounter.justCount();
-    final Iterator<FeatureSplitAnalysisTask> tasks = new MappedIterator<>(
-            /// 1.) Retrieve COMMITS_TO_PROCESS_PER_THREAD commits from the differ and cluster them into one list.
-            new ClusteredIterator<>(
-                    differ.yieldRevCommitsAfter(numberOfTotalCommits),
-                    commitsToProcessPerThread
-            ),
-            /// 2.) Create a MiningTask for the list of commits. This task will then be processed by one
-            ///     particular thread.
-            commitList -> taskFactory.create(
-                    repo,
-                    differ,
-                    outputDir.resolve(commitList.get(0).getId().getName() + ".lg"),
-                    commitList,
-                    new HashSet<>())
-    );
-    Logger.info("<<< done in {}", clock.printPassedSeconds());
+        // prepare tasks
+        final int nThreads = 1; //Diagnostics.INSTANCE.run().getNumberOfAvailableProcessors();
+        Logger.info(">>> Scheduling asynchronous extraction of features on {} threads.", nThreads);
+        clock.start();
+        final InvocationCounter<RevCommit, RevCommit> numberOfTotalCommits = InvocationCounter.justCount();
+        final Iterator<FeatureSplitAnalysisTask> tasks = new MappedIterator<>(
+                /// 1.) Retrieve COMMITS_TO_PROCESS_PER_THREAD commits from the differ and cluster them into one list.
+                new ClusteredIterator<>(
+                        differ.yieldRevCommitsAfter(numberOfTotalCommits),
+                        commitsToProcessPerThread
+                ),
+                /// 2.) Create a MiningTask for the list of commits. This task will then be processed by one
+                ///     particular thread.
+                commitList -> taskFactory.create(
+                        repo,
+                        differ,
+                        outputDir.resolve(commitList.get(0).getId().getName() + ".lg"),
+                        commitList,
+                        new HashSet<>())
+        );
+        Logger.info("<<< done in {}", clock.printPassedSeconds());
 
-    final TaskCompletionMonitor commitSpeedMonitor = new TaskCompletionMonitor(0, TaskCompletionMonitor.LogProgress("commits"));
-    Logger.info(">>> Run Extraction");
-    clock.start();
-    commitSpeedMonitor.start();
-    try (final ScheduledTasksIterator<FeatureSplitResult> threads = new ScheduledTasksIterator<>(tasks, nThreads)) {
-        while (threads.hasNext()) {
-            final FeatureSplitResult threadsResult = threads.next();
-            totalResult.append(threadsResult);
-            commitSpeedMonitor.addFinishedTasks(threadsResult.exportedCommits);
+        final TaskCompletionMonitor commitSpeedMonitor = new TaskCompletionMonitor(0, TaskCompletionMonitor.LogProgress("commits"));
+        Logger.info(">>> Run Extraction");
+        clock.start();
+        commitSpeedMonitor.start();
+        try (final ScheduledTasksIterator<FeatureSplitResult> threads = new ScheduledTasksIterator<>(tasks, nThreads)) {
+            while (threads.hasNext()) {
+                final FeatureSplitResult threadsResult = threads.next();
+                totalResult.append(threadsResult);
+                commitSpeedMonitor.addFinishedTasks(threadsResult.exportedCommits);
+            }
+        } catch (Exception e) {
+            Logger.error(e, "Failed to run all mining task");
+            System.exit(0);
         }
-    } catch (Exception e) {
-        Logger.error(e, "Failed to run all mining task");
-        System.exit(0);
+
+        final double runtime = clock.getPassedSeconds();
+        Logger.info("<<< done in {}", Clock.printPassedSeconds(runtime));
+
+        return totalResult.totalFeatures;
     }
-
-    final double runtime = clock.getPassedSeconds();
-    Logger.info("<<< done in {}", Clock.printPassedSeconds(runtime));
-
-    return totalResult.totalFeatures;
-}
-
-
 
     public static <T> void exportMetadata(final Path outputDir, final Metadata<T> totalResult) {
         exportMetadataToFile(outputDir.resolve(TOTAL_RESULTS_FILE_NAME), totalResult);
