@@ -8,7 +8,7 @@ The artifact for the paper _Classifying Edits to Variability in Source Code_ con
   Practitioners and researches are free to ignore the appendix as well as the haskell formalization and may use DiffDetective out-of-the-box.
 2. **Appendix**: The appendix of our paper is given in PDF format in the file [`appendix.pdf`][ddappendix].
 3. **Haskell Formalization**: We provide an extended formalization in the Haskell programming language as described in our appendix. Its implementation can be found in the Haskell project in the [`proofs`][ddproofs] directory.
-4. **Dataset Overview**: We provide an overview of the 44 inspected open-source software product lines with updated links to their repositories in the file [docs/datasets.md][dddatasets].
+4. **Dataset Overview**: We provide an overview of the 44 inspected open-source software product lines with updated links to their repositories in the file [docs/datasets/all.md][dddatasets].
 
 ## Purpose
 Our artifact has the following purposes:
@@ -44,6 +44,6 @@ Furthermore, both DiffDetective and our Haskell formalization serve as reference
 [ddappendix]: https://github.com/VariantSync/DiffDetective/raw/esecfse22/appendix.pdf
 [ddproofs]: https://github.com/VariantSync/DiffDetective/tree/esecfse22/proofs
 [ddlicense]: https://github.com/VariantSync/DiffDetective/blob/main/LICENSE.LGPL3
-[dddatasets]: docs/datasets.md
-[ddforks]: docs/replication/datasets.md
+[dddatasets]: docs/datasets/all.md
+[ddforks]: docs/datasets/esecfse-replication.md
 [dddocumentation]: https://variantsync.github.io/DiffDetective/docs/javadoc/
