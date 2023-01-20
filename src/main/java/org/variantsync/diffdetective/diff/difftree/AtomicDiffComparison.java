@@ -1,58 +1,33 @@
 package org.variantsync.diffdetective.diff.difftree;
 
-import org.variantsync.diffdetective.diff.difftree.traverse.DiffTreeTraversal;
-import org.variantsync.diffdetective.diff.difftree.traverse.DiffTreeVisitor;
-
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
-public class AtomicDiffComparison implements DiffTreeVisitor {
-    private HashMap<Integer, List<DiffNode>> comparisonHashMap;
-
-    /**
-     * Validate tree equality
-     */
-    public Boolean equals(DiffTree first, DiffTree second) {
-        return equals(first.getRoot(), second.getRoot());
+public class AtomicDiffComparison {
+    private AtomicDiffComparison() {
     }
 
     /**
-     * validate subtree equality
+     * Checks if both arguments are structurally equal (except for child ordering).
+     *
+     * Two nodes are considered equal iff their {@link DiffNode#getID IDs} are equal
+     * .
      */
-    public Boolean equals(DiffNode first, DiffNode second) {
-        this.comparisonHashMap = new HashMap<>();
-        //populate hash map
-        DiffTreeTraversal.with(this).visit(first);
-        DiffTreeTraversal.with(this).visit(second);
+    public static boolean equals(DiffTree first, DiffTree second) {
+        var firstNodes = new HashMap<Integer, DiffNode>();
+        first.forAll(node -> firstNodes.put(node.getID(), node));
 
-        // compare elements
-        return !this.comparisonHashMap.values().stream().map(diffNodes ->
-                        diffNodes.size() != 2
-                        || !(diffNodes.get(0).getID() == diffNodes.get(1).getID())
-                        || !(diffNodes.get(0).getAllChildren().stream().map(DiffNode::getID).collect(Collectors.toSet()).equals(
-                                diffNodes.get(1).getAllChildren().stream().map(DiffNode::getID).collect(Collectors.toSet())
-                        ))
-                ).collect(Collectors.toSet()).contains(true);
+        return second.allMatch(secondNode -> {
+            DiffNode firstNode = firstNodes.remove(secondNode.getID());
+            return firstNode != null && childrenIDs(firstNode).equals(childrenIDs(secondNode));
+        }) && firstNodes.isEmpty();
     }
 
     /**
-     * Traverses subtrees to populate the comparison hash map
+     * Extract the set of {@link DiffNode#getID IDs} for the direct children of {@code node}.
      */
-    @Override
-    public void visit(DiffTreeTraversal traversal, DiffNode subtree) {
-        if (!this.comparisonHashMap.containsKey(subtree.getID()))
-            this.comparisonHashMap.put(subtree.getID(), new ArrayList<>());
-        this.comparisonHashMap.get(subtree.getID()).add(subtree);
-
-        for (final DiffNode child : subtree.getAllChildren()) {
-            traversal.visit(child);
-        }
-
-    }
-
-    public String toString() {
-        return "DiffTreeComparison";
+    private static Set<Integer> childrenIDs(DiffNode node) {
+        return node.getAllChildren().stream().map(DiffNode::getID).collect(Collectors.toSet());
     }
 }
