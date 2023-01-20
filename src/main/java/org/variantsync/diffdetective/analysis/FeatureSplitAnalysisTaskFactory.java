@@ -6,6 +6,7 @@ import org.variantsync.diffdetective.diff.GitDiffer;
 
 import java.nio.file.Path;
 import java.util.Set;
+
 @FunctionalInterface
 public interface FeatureSplitAnalysisTaskFactory {
 
