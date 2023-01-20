@@ -25,14 +25,14 @@ public class MiningTask extends CommitHistoryAnalysisTask {
     }
 
     @Override
-    public AnalysisResult call() throws Exception {
-        final AnalysisResult miningResult = super.call();
+    public CommitHistoryAnalysisResult call() throws Exception {
+        final CommitHistoryAnalysisResult miningResult = super.call();
         final DiffTreeLineGraphExportOptions exportOptions = options.exportOptions();
 
         final Clock totalTime = new Clock();
 
-        final List<CommitProcessTime> commitTimes = new ArrayList<>(HistoryAnalysis.COMMITS_TO_PROCESS_PER_THREAD_DEFAULT);
-        final List<PatchStatistics> patchStatistics = new ArrayList<>(HistoryAnalysis.COMMITS_TO_PROCESS_PER_THREAD_DEFAULT);
+        final List<CommitProcessTime> commitTimes = new ArrayList<>(Analysis.COMMITS_TO_PROCESS_PER_THREAD_DEFAULT);
+        final List<PatchStatistics> patchStatistics = new ArrayList<>(Analysis.COMMITS_TO_PROCESS_PER_THREAD_DEFAULT);
         final Clock commitProcessTimer = new Clock();
 
         totalTime.start();
@@ -109,7 +109,7 @@ public class MiningTask extends CommitHistoryAnalysisTask {
 
         options.analysisStrategy().end();
         miningResult.runtimeInSeconds = totalTime.getPassedSeconds();
-        miningResult.exportTo(FileUtils.addExtension(options.outputDir(), AnalysisResult.EXTENSION));
+        miningResult.exportTo(FileUtils.addExtension(options.outputDir(), CommitHistoryAnalysisResult.EXTENSION));
         exportCommitTimes(commitTimes, FileUtils.addExtension(options.outputDir(), COMMIT_TIME_FILE_EXTENSION));
         exportPatchStatistics(patchStatistics, FileUtils.addExtension(options.outputDir(), PATCH_STATISTICS_EXTENSION));
         return miningResult;

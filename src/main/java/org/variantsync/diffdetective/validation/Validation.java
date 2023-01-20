@@ -3,9 +3,10 @@ package org.variantsync.diffdetective.validation;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.tinylog.Logger;
+import org.variantsync.diffdetective.analysis.Analysis;
+import org.variantsync.diffdetective.analysis.AnalysisTaskFactory;
 import org.variantsync.diffdetective.analysis.CommitHistoryAnalysisTask;
-import org.variantsync.diffdetective.analysis.CommitHistoryAnalysisTaskFactory;
-import org.variantsync.diffdetective.analysis.HistoryAnalysis;
+import org.variantsync.diffdetective.analysis.CommitHistoryAnalysisResult;
 import org.variantsync.diffdetective.analysis.strategies.NullStrategy;
 import org.variantsync.diffdetective.datasets.*;
 import org.variantsync.diffdetective.diff.difftree.filter.DiffTreeFilter;
@@ -25,13 +26,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
  * This is the validation from our ESEC/FSE'22 paper.
  * It provides all configuration settings and facilities to setup the validation by
- * creating a {@link HistoryAnalysis} and run it.
+ * creating a {@link Analysis} and run it.
  * @author Paul Bittner
  */
 public class Validation {
@@ -48,10 +48,10 @@ public class Validation {
 //    public static final int PRINT_LARGEST_SUBJECTS = 3;
 
     /**
-     * The {@link CommitHistoryAnalysisTaskFactory} for the {@link HistoryAnalysis} that will run our validation.
+     * The {@link AnalysisTaskFactory} for the {@link Analysis} that will run our validation.
      * This factory creates {@link EditClassValidationTask}s with the respective settings.
      */
-    public static final CommitHistoryAnalysisTaskFactory VALIDATION_TASK_FACTORY =
+    public static final AnalysisTaskFactory<CommitHistoryAnalysisResult> VALIDATION_TASK_FACTORY =
             (repo, differ, outputPath, commits) -> new EditClassValidationTask(new CommitHistoryAnalysisTask.Options(
                     repo,
                     differ,
@@ -187,14 +187,13 @@ public class Validation {
         |      END OF ARGUMENTS      |
         \* ************************ */
 
-        final Consumer<Path> repoPostProcessing = p -> {};
-        final HistoryAnalysis analysis = new HistoryAnalysis(
-                repos,
-                outputDir,
-                HistoryAnalysis.COMMITS_TO_PROCESS_PER_THREAD_DEFAULT,
+        Analysis.forEachRepository(repos, outputDir, (repo, repoOutputDir) ->
+            Analysis.forEachCommit(
+                repo,
+                repoOutputDir,
                 VALIDATION_TASK_FACTORY,
-                repoPostProcessing);
-        analysis.runAsync();
+                new CommitHistoryAnalysisResult(repo.getRepositoryName())
+            ));
         Logger.info("Done");
 
         final String logFile = "log.txt";

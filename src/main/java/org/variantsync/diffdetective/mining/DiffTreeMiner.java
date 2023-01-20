@@ -2,9 +2,10 @@ package org.variantsync.diffdetective.mining;
 
 import org.apache.commons.io.FileUtils;
 import org.tinylog.Logger;
+import org.variantsync.diffdetective.analysis.Analysis;
+import org.variantsync.diffdetective.analysis.AnalysisTaskFactory;
 import org.variantsync.diffdetective.analysis.CommitHistoryAnalysisTask;
-import org.variantsync.diffdetective.analysis.CommitHistoryAnalysisTaskFactory;
-import org.variantsync.diffdetective.analysis.HistoryAnalysis;
+import org.variantsync.diffdetective.analysis.CommitHistoryAnalysisResult;
 import org.variantsync.diffdetective.analysis.strategies.AnalysisStrategy;
 import org.variantsync.diffdetective.analysis.strategies.AnalyzeAllThenExport;
 import org.variantsync.diffdetective.datasets.*;
@@ -105,7 +106,7 @@ public class DiffTreeMiner {
 //                );
     }
 
-    public static CommitHistoryAnalysisTaskFactory Mine() {
+    public static AnalysisTaskFactory<CommitHistoryAnalysisResult> Mine() {
         return (repo, differ, outputPath, commits) -> new MiningTask(new CommitHistoryAnalysisTask.Options(
                 repo,
                 differ,
@@ -167,13 +168,15 @@ public class DiffTreeMiner {
             repoPostProcessing = p -> {};
         }
 
-        final HistoryAnalysis analysis = new HistoryAnalysis(
-                repos,
-                outputDir,
-                HistoryAnalysis.COMMITS_TO_PROCESS_PER_THREAD_DEFAULT,
+        Analysis.forEachRepository(repos, outputDir, (repo, repoOutputDir) -> {
+            Analysis.forEachCommit(
+                repo,
+                repoOutputDir,
                 Mine(),
-                repoPostProcessing);
-        analysis.runAsync();
+                new CommitHistoryAnalysisResult(repo.getRepositoryName())
+            );
+            repoPostProcessing.accept(repoOutputDir);
+        });
         Logger.info("Done");
 
         final String logFile = "log.txt";

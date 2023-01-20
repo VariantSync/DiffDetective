@@ -21,9 +21,12 @@ import org.variantsync.diffdetective.util.Assert;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
-import java.util.function.Consumer;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class FACommitValidation {
@@ -42,8 +45,8 @@ public class FACommitValidation {
             ),
             randomFeatures);
 
-    public static final FACommitExtractionAnalysisTaskFactory FEATURE_EXTRACTION_TASK_FACTORY =
-            (repo, differ, outputPath, commits, randomFeatures) -> new FeatureSplitFeatureExtractionTask(new FeatureSplitAnalysisTask.Options(
+    public static final AnalysisTaskFactory<FeatureSplitResult> FEATURE_EXTRACTION_TASK_FACTORY =
+            (repo, differ, outputPath, commits) -> new FeatureSplitFeatureExtractionTask(new FeatureSplitFeatureExtractionTask.Options(
                     repo,
                     differ,
                     outputPath,
@@ -143,15 +146,39 @@ public class FACommitValidation {
         |      END OF ARGUMENTS      |
         \* ************************ */
 
-        final Consumer<Path> repoPostProcessing = p -> {};
-        final FACommitExtractionHistoryAnalysis analysis = new FACommitExtractionHistoryAnalysis(
-                repos,
-                outputDir,
-                FeatureSplitHistoryAnalysis.COMMITS_TO_PROCESS_PER_THREAD_DEFAULT,
+        Analysis.forEachRepository(repos, outputDir, (repo, repoOutputDir) -> {
+            Logger.info(" === Begin Feature Extraction {} ===", repo.getRepositoryName());
+            var featureExtrationResult = (FeatureSplitResult)Analysis.forEachCommit(
+                repo,
+                repoOutputDir,
                 FEATURE_EXTRACTION_TASK_FACTORY,
-                VALIDATION_TASK_FACTORY,
-                repoPostProcessing);
-        analysis.runAsync();
+                new FeatureSplitResult(repo.getRepositoryName()),
+                1
+            );
+            Set<String> extractedFeatures = featureExtrationResult.totalFeatures;
+
+            Logger.info(" === Begin Evaluation {} ===", repo.getRepositoryName());
+
+            int numOfFeatures = 3;
+
+            // Select desired features
+            Set<String> randomFeatures = new HashSet<>();
+            List<String> rndFeatures = new ArrayList<>(extractedFeatures);
+            Collections.shuffle(rndFeatures);
+            if (rndFeatures.size() >= numOfFeatures) {
+                randomFeatures.addAll(rndFeatures.subList(0, numOfFeatures));
+            } else {
+                randomFeatures.addAll(rndFeatures);
+            }
+
+            Analysis.forEachCommit(
+                repo,
+                repoOutputDir,
+                (repository, differ, outputFile, commitList) ->
+                    VALIDATION_TASK_FACTORY.create(repository, differ, outputFile, commitList, randomFeatures),
+                new FeatureSplitResult(repo.getRepositoryName(), randomFeatures)
+            );
+        });
         Logger.info("Done");
 
         final String logFile = "log.txt";

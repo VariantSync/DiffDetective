@@ -16,11 +16,11 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 /**
- * Abstract base class for tasks to run during a {@link HistoryAnalysis}.
+ * Abstract base class for tasks to run during a {@link Analysis}.
  * A <code>CommitHistoryAnalysisTask</code>s purpose is to process a given set of commits with a specific analysis.
  * @author Paul Bittner
  */
-public abstract class CommitHistoryAnalysisTask implements Callable<AnalysisResult> {
+public abstract class CommitHistoryAnalysisTask implements Callable<CommitHistoryAnalysisResult> {
     public static final String COMMIT_TIME_FILE_EXTENSION = ".committimes.txt";
     public static final String PATCH_STATISTICS_EXTENSION = ".patchStatistics.csv";
 
@@ -57,10 +57,10 @@ public abstract class CommitHistoryAnalysisTask implements Callable<AnalysisResu
     }
 
     @Override
-    public AnalysisResult call() throws Exception {
+    public CommitHistoryAnalysisResult call() throws Exception {
         options.analysisStrategy().start(options.repository(), options.outputDir(), options.exportOptions());
 
-        final AnalysisResult miningResult = new AnalysisResult(options.repository.getRepositoryName());
+        final CommitHistoryAnalysisResult miningResult = new CommitHistoryAnalysisResult(options.repository.getRepositoryName());
         final DiffTreeLineGraphExportOptions exportOptions = options.exportOptions();
 
         miningResult.putCustomInfo(MetadataKeys.TREEFORMAT, exportOptions.treeFormat().getName());

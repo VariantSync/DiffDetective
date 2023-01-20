@@ -28,7 +28,7 @@ public class FACommitExtractionValidationTask extends FeatureSplitAnalysisTask {
     public FeatureSplitResult call() throws Exception {
         final FeatureSplitResult miningResult = super.call();
         final DiffTreeLineGraphExportOptions exportOptions = options.exportOptions();
-        final List<CommitProcessTime> commitTimes = new ArrayList<>(HistoryAnalysis.COMMITS_TO_PROCESS_PER_THREAD_DEFAULT);
+        final List<CommitProcessTime> commitTimes = new ArrayList<>(Analysis.COMMITS_TO_PROCESS_PER_THREAD_DEFAULT);
         final Clock totalTime = new Clock();
         totalTime.start();
         final Clock commitProcessTimer = new Clock();

@@ -2,10 +2,10 @@ package org.variantsync.diffdetective.validation;
 
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.tinylog.Logger;
-import org.variantsync.diffdetective.analysis.AnalysisResult;
+import org.variantsync.diffdetective.analysis.Analysis;
+import org.variantsync.diffdetective.analysis.CommitHistoryAnalysisResult;
 import org.variantsync.diffdetective.analysis.CommitHistoryAnalysisTask;
 import org.variantsync.diffdetective.analysis.CommitProcessTime;
-import org.variantsync.diffdetective.analysis.HistoryAnalysis;
 import org.variantsync.diffdetective.diff.CommitDiff;
 import org.variantsync.diffdetective.diff.PatchDiff;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
@@ -30,12 +30,12 @@ public class EditClassValidationTask extends CommitHistoryAnalysisTask {
     }
 
     @Override
-    public AnalysisResult call() throws Exception {
+    public CommitHistoryAnalysisResult call() throws Exception {
         // Setup. Obtain the result from the initial setup in the super class.
-        final AnalysisResult miningResult = super.call();
+        final CommitHistoryAnalysisResult miningResult = super.call();
         final DiffTreeLineGraphExportOptions exportOptions = options.exportOptions();
         // List to store the process time of each commit.
-        final List<CommitProcessTime> commitTimes = new ArrayList<>(HistoryAnalysis.COMMITS_TO_PROCESS_PER_THREAD_DEFAULT);
+        final List<CommitProcessTime> commitTimes = new ArrayList<>(Analysis.COMMITS_TO_PROCESS_PER_THREAD_DEFAULT);
         // Clock for runtime measurement.
         final Clock totalTime = new Clock();
         totalTime.start();
@@ -116,7 +116,7 @@ public class EditClassValidationTask extends CommitHistoryAnalysisTask {
         // shutdown; report total time; export results
         options.analysisStrategy().end();
         miningResult.runtimeInSeconds = totalTime.getPassedSeconds();
-        miningResult.exportTo(FileUtils.addExtension(options.outputDir(), AnalysisResult.EXTENSION));
+        miningResult.exportTo(FileUtils.addExtension(options.outputDir(), CommitHistoryAnalysisResult.EXTENSION));
         exportCommitTimes(commitTimes, FileUtils.addExtension(options.outputDir(), COMMIT_TIME_FILE_EXTENSION));
         return miningResult;
     }

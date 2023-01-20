@@ -1,9 +1,9 @@
 package org.variantsync.diffdetective.tablegen;
 
 import org.tinylog.Logger;
-import org.variantsync.diffdetective.analysis.AnalysisResult;
+import org.variantsync.diffdetective.analysis.Analysis;
+import org.variantsync.diffdetective.analysis.CommitHistoryAnalysisResult;
 import org.variantsync.diffdetective.analysis.AutomationResult;
-import org.variantsync.diffdetective.analysis.HistoryAnalysis;
 import org.variantsync.diffdetective.analysis.MetadataKeys;
 import org.variantsync.diffdetective.datasets.DatasetDescription;
 import org.variantsync.diffdetective.datasets.DefaultDatasets;
@@ -26,49 +26,49 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-/** Accumulates multiple {@link AnalysisResult}s of several datasets. */
+/** Accumulates multiple {@link CommitHistoryAnalysisResult}s of several datasets. */
 public class MiningResultAccumulator {
     /** Specification of the information loaded by {@link getAllTotalResultsIn}. */
-    private final static Map<String, BiConsumer<AnalysisResult, String>> CustomEntryParsers = Map.ofEntries(
-            AnalysisResult.storeAsCustomInfo(MetadataKeys.TREEFORMAT),
-            AnalysisResult.storeAsCustomInfo(MetadataKeys.NODEFORMAT),
-            AnalysisResult.storeAsCustomInfo(MetadataKeys.EDGEFORMAT),
-            AnalysisResult.storeAsCustomInfo(MetadataKeys.TASKNAME),
+    private final static Map<String, BiConsumer<CommitHistoryAnalysisResult, String>> CustomEntryParsers = Map.ofEntries(
+            CommitHistoryAnalysisResult.storeAsCustomInfo(MetadataKeys.TREEFORMAT),
+            CommitHistoryAnalysisResult.storeAsCustomInfo(MetadataKeys.NODEFORMAT),
+            CommitHistoryAnalysisResult.storeAsCustomInfo(MetadataKeys.EDGEFORMAT),
+            CommitHistoryAnalysisResult.storeAsCustomInfo(MetadataKeys.TASKNAME),
             Map.entry("org/variantsync/diffdetective/analysis", (r, val) -> r.putCustomInfo(MetadataKeys.TASKNAME, val))
     );
 
     /**
-     * Finds all {@code AnalysisResult}s in {@code folderPath} recursively.
-     * All files having a {@link HistoryAnalysis#TOTAL_RESULTS_FILE_NAME} filename ending are
-     * parsed and associated with their filename.
+     * Finds all {@code CommitHistoryAnalysisResult}s in {@code folderPath} recursively.
+     * All files having a {@link Analysis#TOTAL_RESULTS_FILE_NAME} filename ending are parsed and
+     * associated with their filename.
      *
      * @param folderPath the folder which is scanned for analysis results recursively
      * @return an association between the parsed filenames and their parsed content
      */
-    public static Map<String, AnalysisResult> getAllTotalResultsIn(final Path folderPath) throws IOException {
+    public static Map<String, CommitHistoryAnalysisResult> getAllTotalResultsIn(final Path folderPath) throws IOException {
         // get all files in the directory which are outputs of DiffTreeMiningResult
         final List<Path> paths = Files.walk(folderPath)
                 .filter(Files::isRegularFile)
-                .filter(p -> p.toString().endsWith(HistoryAnalysis.TOTAL_RESULTS_FILE_NAME))
+                .filter(p -> p.toString().endsWith(Analysis.TOTAL_RESULTS_FILE_NAME))
                 .peek(path -> Logger.info("Processing file {}", path))
                 .toList();
 
-        final Map<String, AnalysisResult> results = new HashMap<>();
+        final Map<String, CommitHistoryAnalysisResult> results = new HashMap<>();
         for (final Path p : paths) {
-            results.put(p.getParent().getFileName().toString(), AnalysisResult.importFrom(p, CustomEntryParsers));
+            results.put(p.getParent().getFileName().toString(), CommitHistoryAnalysisResult.importFrom(p, CustomEntryParsers));
         }
         return results;
     }
 
 
     /**
-     * Computes a total {@link AnalysisResult} from multiple metadata outputs.
+     * Computes a total {@link CommitHistoryAnalysisResult} from multiple metadata outputs.
      *
      * @param results analysis results to be accumulated
-     * @return the total {@link AnalysisResult} of all {@code results}
+     * @return the total {@link CommitHistoryAnalysisResult} of all {@code results}
      */
-    public static AnalysisResult computeTotalMetadataResult(final Collection<AnalysisResult> results) {
-        return results.stream().collect(AnalysisResult.IMONOID);
+    public static CommitHistoryAnalysisResult computeTotalMetadataResult(final Collection<CommitHistoryAnalysisResult> results) {
+        return results.stream().collect(CommitHistoryAnalysisResult.IMONOID);
     }
 
     /**
@@ -113,9 +113,9 @@ public class MiningResultAccumulator {
             throw new IllegalArgumentException("Expected path to directory but the given path is not a directory!");
         }
 
-        final Map<String, AnalysisResult> allResults = getAllTotalResultsIn(inputPath);
-        final AnalysisResult ultimateResult = computeTotalMetadataResult(allResults.values());
-        HistoryAnalysis.exportMetadataToFile(inputPath.resolve("ultimateresult" + AnalysisResult.EXTENSION), ultimateResult);
+        final Map<String, CommitHistoryAnalysisResult> allResults = getAllTotalResultsIn(inputPath);
+        final CommitHistoryAnalysisResult ultimateResult = computeTotalMetadataResult(allResults.values());
+        Analysis.exportMetadataToFile(inputPath.resolve("ultimateresult" + CommitHistoryAnalysisResult.EXTENSION), ultimateResult);
 
         final Map<String, DatasetDescription> datasetByName;
         try {
@@ -131,7 +131,7 @@ public class MiningResultAccumulator {
 
         final List<ContentRow> datasetsWithResults = allResults.entrySet().stream().map(
                 entry -> {
-                    final AnalysisResult result = entry.getValue();
+                    final CommitHistoryAnalysisResult result = entry.getValue();
                     final DatasetDescription dataset = datasetByName.get(entry.getKey());
                     if (dataset == null) {
                         throw new RuntimeException("Could not find dataset for " + entry.getKey());

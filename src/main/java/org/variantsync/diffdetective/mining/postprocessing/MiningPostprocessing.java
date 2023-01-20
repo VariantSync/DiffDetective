@@ -1,6 +1,6 @@
 package org.variantsync.diffdetective.mining.postprocessing;
 
-import org.variantsync.diffdetective.analysis.AnalysisResult;
+import org.variantsync.diffdetective.analysis.CommitHistoryAnalysisResult;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
 import org.variantsync.diffdetective.diff.difftree.render.DiffTreeRenderer;
 import org.variantsync.diffdetective.diff.difftree.render.RenderOptions;
@@ -137,7 +137,7 @@ public class MiningPostprocessing {
                 ++patternNo;
             }
         } else {
-            final Pair<AnalysisResult, String> lineGraph = LineGraphExport.toLineGraphFormat(semanticPatterns, EXPORT_OPTIONS);
+            final Pair<CommitHistoryAnalysisResult, String> lineGraph = LineGraphExport.toLineGraphFormat(semanticPatterns, EXPORT_OPTIONS);
             IO.tryWrite(outputDir.resolve("candidates.lg"), lineGraph.second());
         }
     }

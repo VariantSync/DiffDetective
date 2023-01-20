@@ -23,7 +23,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Comparator;
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class ValidationFeatureSplit {
@@ -31,7 +30,7 @@ public class ValidationFeatureSplit {
     public static final boolean PRINT_LATEX_TABLE = true;
     public static final int PRINT_LARGEST_SUBJECTS = 3;
 
-    public static final FeatureSplitAnalysisTaskFactory VALIDATION_TASK_FACTORY =
+    public static final AnalysisTaskFactory<FeatureSplitResult> VALIDATION_TASK_FACTORY =
             (repo, differ, outputPath, commits) -> new FeatureSplitValidationTask(new FeatureSplitAnalysisTask.Options(
                     repo,
                     differ,
@@ -132,14 +131,13 @@ public class ValidationFeatureSplit {
         |      END OF ARGUMENTS      |
         \* ************************ */
 
-        final Consumer<Path> repoPostProcessing = p -> {};
-        final FeatureSplitHistoryAnalysis analysis = new FeatureSplitHistoryAnalysis(
-                repos,
-                outputDir,
-                FeatureSplitHistoryAnalysis.COMMITS_TO_PROCESS_PER_THREAD_DEFAULT,
+        Analysis.forEachRepository(repos, outputDir, (repo, repoOutputDir) ->
+            Analysis.forEachCommit(
+                repo,
+                repoOutputDir,
                 VALIDATION_TASK_FACTORY,
-                repoPostProcessing);
-        analysis.runAsync();
+                new FeatureSplitResult(repo.getRepositoryName())
+        ));
         Logger.info("Done");
 
         final String logFile = "log.txt";

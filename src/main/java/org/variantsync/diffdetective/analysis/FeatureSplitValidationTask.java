@@ -23,7 +23,7 @@ public class FeatureSplitValidationTask extends FeatureSplitAnalysisTask {
     public FeatureSplitResult call() throws Exception {
         final FeatureSplitResult miningResult = super.call();
         final DiffTreeLineGraphExportOptions exportOptions = options.exportOptions();
-        final List<CommitProcessTime> commitTimes = new ArrayList<>(HistoryAnalysis.COMMITS_TO_PROCESS_PER_THREAD_DEFAULT);
+        final List<CommitProcessTime> commitTimes = new ArrayList<>(Analysis.COMMITS_TO_PROCESS_PER_THREAD_DEFAULT);
         final Clock totalTime = new Clock();
         final Clock patchTime = new Clock();
         totalTime.start();

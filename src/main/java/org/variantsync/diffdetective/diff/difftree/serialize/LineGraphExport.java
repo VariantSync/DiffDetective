@@ -3,7 +3,7 @@ package org.variantsync.diffdetective.diff.difftree.serialize;
 import java.io.ByteArrayOutputStream;
 
 import org.tinylog.Logger;
-import org.variantsync.diffdetective.analysis.AnalysisResult;
+import org.variantsync.diffdetective.analysis.CommitHistoryAnalysisResult;
 import org.variantsync.diffdetective.diff.CommitDiff;
 import org.variantsync.diffdetective.diff.PatchDiff;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
@@ -47,8 +47,8 @@ public final class LineGraphExport {
      * @param options Configuration options for the export, such as the format used for node and edge labels.
      * @return A pair of (1) metadata about the exported DiffTrees, and (2) the produced linegraph as String.
      */
-    public static Pair<AnalysisResult, String> toLineGraphFormat(final String repoName, final Iterable<DiffTree> trees, final DiffTreeLineGraphExportOptions options) {
-        final AnalysisResult result = new AnalysisResult(repoName);
+    public static Pair<CommitHistoryAnalysisResult, String> toLineGraphFormat(final String repoName, final Iterable<DiffTree> trees, final DiffTreeLineGraphExportOptions options) {
+        final CommitHistoryAnalysisResult result = new CommitHistoryAnalysisResult(repoName);
 
         final StringBuilder lineGraph = new StringBuilder();
         for (final DiffTree t : trees) {
@@ -69,18 +69,18 @@ public final class LineGraphExport {
 
     /**
      * Same as {@link LineGraphExport#toLineGraphFormat(String, Iterable, DiffTreeLineGraphExportOptions)} but with an
-     * {@link AnalysisResult#NO_REPO unkown repository}.
+     * {@link CommitHistoryAnalysisResult#NO_REPO unkown repository}.
      */
-    public static Pair<AnalysisResult, String> toLineGraphFormat(final Iterable<DiffTree> trees, final DiffTreeLineGraphExportOptions options) {
-        return toLineGraphFormat(AnalysisResult.NO_REPO, trees, options);
+    public static Pair<CommitHistoryAnalysisResult, String> toLineGraphFormat(final Iterable<DiffTree> trees, final DiffTreeLineGraphExportOptions options) {
+        return toLineGraphFormat(CommitHistoryAnalysisResult.NO_REPO, trees, options);
     }
 
     /**
      * Same as {@link LineGraphExport#toLineGraphFormat(String, CommitDiff, StringBuilder, DiffTreeLineGraphExportOptions)}
-     * but with an {@link AnalysisResult#NO_REPO unkown repository}.
+     * but with an {@link CommitHistoryAnalysisResult#NO_REPO unkown repository}.
      */
-    public static AnalysisResult toLineGraphFormat(final CommitDiff commitDiff, final StringBuilder lineGraph, final DiffTreeLineGraphExportOptions options) {
-        return toLineGraphFormat(AnalysisResult.NO_REPO, commitDiff, lineGraph, options);
+    public static CommitHistoryAnalysisResult toLineGraphFormat(final CommitDiff commitDiff, final StringBuilder lineGraph, final DiffTreeLineGraphExportOptions options) {
+        return toLineGraphFormat(CommitHistoryAnalysisResult.NO_REPO, commitDiff, lineGraph, options);
     }
 
     /**
@@ -91,8 +91,8 @@ public final class LineGraphExport {
      * @param options Configuration options for the export, such as the format used for node and edge labels.
      * @return The number of the next diff tree to export (updated value of treeCounter).
      */
-    public static AnalysisResult toLineGraphFormat(final String repoName, final CommitDiff commitDiff, final StringBuilder lineGraph, final DiffTreeLineGraphExportOptions options) {
-        final AnalysisResult result = new AnalysisResult(repoName);
+    public static CommitHistoryAnalysisResult toLineGraphFormat(final String repoName, final CommitDiff commitDiff, final StringBuilder lineGraph, final DiffTreeLineGraphExportOptions options) {
+        final CommitHistoryAnalysisResult result = new CommitHistoryAnalysisResult(repoName);
 
         final String hash = commitDiff.getCommitHash();
         for (final PatchDiff patchDiff : commitDiff.getPatchDiffs()) {
