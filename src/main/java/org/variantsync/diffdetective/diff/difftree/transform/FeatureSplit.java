@@ -15,7 +15,6 @@ import org.variantsync.diffdetective.diff.difftree.AtomicDiffComparison;
 import org.variantsync.diffdetective.diff.difftree.DiffEdge;
 import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
-import org.variantsync.diffdetective.diff.difftree.Duplication;
 
 public class FeatureSplit {
     /**
@@ -86,8 +85,8 @@ public class FeatureSplit {
         composedTree.add(composeRoot);
 
         allEdges.forEach(edge -> {
-            if (!composedTree.contains(edge.parent())) composedTree.add(Duplication.shallowClone(edge.parent()));
-            if (!composedTree.contains(edge.child())) composedTree.add(Duplication.shallowClone(edge.child()));
+            if (!composedTree.contains(edge.parent())) composedTree.add(edge.parent().shallowClone());
+            if (!composedTree.contains(edge.child())) composedTree.add(edge.child().shallowClone());
 
             DiffNode cpParent = composedTree.stream().filter(node -> node.equals(edge.parent())).findFirst().orElseThrow();
             DiffNode cpChild = composedTree.stream().filter(node -> node.equals(edge.child())).findFirst().orElseThrow();
@@ -215,7 +214,7 @@ public class FeatureSplit {
 
         Set<Integer> allNodes = new HashSet<>(parentNodes.stream().flatMap(Set::stream).toList());
 
-        DiffTree copy = Duplication.deepClone(initDiffTree);
+        DiffTree copy = initDiffTree.deepClone();
         List<DiffNode> toDelete = copy.computeAllNodesThat(elem -> !allNodes.contains(elem.getID()));
         toDelete.forEach(DiffNode::drop);
 

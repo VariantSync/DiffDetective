@@ -4,6 +4,7 @@ import org.prop4j.And;
 import org.prop4j.Node;
 import org.variantsync.diffdetective.diff.DiffLineNumber;
 import org.variantsync.diffdetective.diff.Lines;
+import org.variantsync.diffdetective.diff.difftree.traverse.DiffTreeTraversal;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.util.StringUtils;
 import org.variantsync.diffdetective.util.fide.FixTrueFalse;
@@ -136,6 +137,48 @@ public class DiffNode {
      */
     public static DiffNode createArtifact(DiffType diffType, DiffLineNumber fromLines, DiffLineNumber toLines, List<String> lines) {
         return new DiffNode(diffType, NodeType.ARTIFACT, fromLines, toLines, null, lines);
+    }
+
+    /**
+     * Duplicates this node.
+     * No properties are cloned. Instead they are shared with this instance.
+     *
+     * @return a new instance of {@link DiffNode} without parent and child nodes
+     */
+    public DiffNode shallowClone() {
+        return new DiffNode(diffType, nodeType, from, to, featureMapping, lines);
+    }
+
+    /**
+     * Recursively duplicates this tree.
+     * All properties except for children and parents are shared between this subtree and the
+     * result.
+     *
+     * @return a new instance of {@link DiffNode} with the same structure as this subtree but
+     * different {@link DiffNode} instances
+     */
+    public DiffNode deepClone() {
+        var duplicatedNodes = new HashMap<DiffNode, DiffNode>();
+
+        DiffTreeTraversal.with((traversal, subtree) -> {
+            final DiffNode duplicatedSubtree = subtree.shallowClone();
+            duplicatedNodes.put(subtree, duplicatedSubtree);
+
+            for (var child : subtree.getAllChildren()) {
+                traversal.visit(child);
+                var duplicatedChild = duplicatedNodes.get(child);
+
+                if (subtree.isBeforeChild(child)) {
+                    duplicatedSubtree.addBeforeChild(duplicatedChild);
+                }
+
+                if (subtree.isAfterChild(child)) {
+                    duplicatedSubtree.addAfterChild(duplicatedChild);
+                }
+            }
+        }).visit(this);
+
+        return duplicatedNodes.get(this);
     }
 
     /**
