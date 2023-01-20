@@ -107,16 +107,6 @@ public class BooleanAbstraction {
     private static final Pattern CALL = Pattern.compile("(\\w+)\\((\\w*)\\)");
     private static final String CALL_REPLACEMENT = "$1__$2";
 
-    private static Map<Pattern, String> compile(final Map<String, String> regex_replace) {
-        return Functjonal.bimap(
-                regex_replace,
-                Pattern::compile,
-                Function.identity(),
-                // Use a linked hashmap here to ensure that regexes are always replaced in the same order.
-                LinkedHashMap::new
-        );
-    }
-
     private static String abstractAll(String formula, final List<Replacement> replacements) {
         for (var replacement : replacements) {
             formula = replacement.applyTo(formula);
