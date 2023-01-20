@@ -182,12 +182,11 @@ public class FeatureSplit {
     public static List<DiffTree> generateAllSubtrees(DiffTree initDiffTree) {
         List<DiffTree> allTrees = initDiffTree.computeAllNodesThat(elem -> !elem.isNon()).stream().map(elem -> generateSubtree(elem, initDiffTree)).toList();
         List<DiffTree> treeSet = new ArrayList<>();
-        AtomicDiffComparison comparison = new AtomicDiffComparison();
         // check for duplicates
         for (DiffTree tree : allTrees) {
             boolean detected = false;
             for (DiffTree setTree : treeSet) {
-                if (comparison.equals(tree, setTree)) detected = true;
+                if (AtomicDiffComparison.equals(tree, setTree)) detected = true;
             }
             if (!detected) treeSet.add(tree);
         }
