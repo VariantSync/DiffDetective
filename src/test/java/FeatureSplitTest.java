@@ -117,7 +117,7 @@ public class FeatureSplitTest {
     public void generateSubtreeTest() {
         DiffNode node = DIFF_TREES.get(0).getRoot().getAllChildren().get(1);
         DiffTree initDiffTree = DIFF_TREES.get(0);
-        DiffTree tree = new Duplication().deepClone(initDiffTree);
+        DiffTree tree = Duplication.deepClone(initDiffTree);
         DiffTree subtree = FeatureSplit.generateSubtree(node, initDiffTree);
 
         List<Integer> toRemove = new ArrayList<>(DIFF_TREES.get(0).getRoot().getAllChildren().get(0).getAllChildren().stream().map(DiffNode::getID).toList());
@@ -147,10 +147,14 @@ public class FeatureSplitTest {
     @Test
     public void deepCloneSubtreeTest() {
         DiffTree tree = DIFF_TREES.get(0);
+
         HashMap<Integer, DiffNode> originalHashmap = new HashMap<>();
         tree.forAll(node -> originalHashmap.put(node.getID(), node));
-        HashMap<Integer, DiffNode> duplication = new Duplication().deepCloneAsHashmap(tree.getRoot());
-        Assert.assertEquals(originalHashmap, duplication);
+
+        HashMap<Integer, DiffNode> duplicatedHashmap = new HashMap<>();
+        Duplication.deepClone(tree).forAll(node -> duplicatedHashmap.put(node.getID(), node));
+
+        Assert.assertEquals(originalHashmap, duplicatedHashmap);
     }
 }
 
