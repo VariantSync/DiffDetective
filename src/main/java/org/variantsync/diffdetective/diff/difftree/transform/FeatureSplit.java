@@ -1,13 +1,21 @@
 package org.variantsync.diffdetective.diff.difftree.transform;
 
-import org.prop4j.Node;
-import org.variantsync.diffdetective.analysis.logic.SAT;
-import org.variantsync.diffdetective.diff.difftree.*;
-import org.variantsync.diffdetective.feature.PropositionalFormulaParser;
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.prop4j.Node;
+import org.variantsync.diffdetective.analysis.logic.SAT;
+import org.variantsync.diffdetective.diff.difftree.AtomicDiffComparison;
+import org.variantsync.diffdetective.diff.difftree.DiffEdge;
+import org.variantsync.diffdetective.diff.difftree.DiffNode;
+import org.variantsync.diffdetective.diff.difftree.DiffTree;
+import org.variantsync.diffdetective.diff.difftree.Duplication;
 
 public class FeatureSplit {
     /**
