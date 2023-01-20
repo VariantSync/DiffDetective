@@ -86,11 +86,11 @@ public class FeatureSplit {
         composedTree.add(composeRoot);
 
         allEdges.forEach(edge -> {
-            if (!composedTree.contains(edge.parent)) composedTree.add(Duplication.shallowClone(edge.parent));
-            if (!composedTree.contains(edge.child)) composedTree.add(Duplication.shallowClone(edge.child));
+            if (!composedTree.contains(edge.parent())) composedTree.add(Duplication.shallowClone(edge.parent()));
+            if (!composedTree.contains(edge.child())) composedTree.add(Duplication.shallowClone(edge.child()));
 
-            DiffNode cpParent = composedTree.stream().filter(node -> node.equals(edge.parent)).findFirst().orElseThrow();
-            DiffNode cpChild = composedTree.stream().filter(node -> node.equals(edge.child)).findFirst().orElseThrow();
+            DiffNode cpParent = composedTree.stream().filter(node -> node.equals(edge.parent())).findFirst().orElseThrow();
+            DiffNode cpChild = composedTree.stream().filter(node -> node.equals(edge.child())).findFirst().orElseThrow();
 
             // Add all changes, unchanged node edges aren't added here
             if (cpChild.isAdd() || cpChild.isNon() && cpParent.isAdd()) cpParent.addAfterChild(cpChild);
@@ -99,10 +99,10 @@ public class FeatureSplit {
         DiffTree composeTree = new DiffTree(composeRoot, first.getSource());
 
         allEdges.forEach(edge -> {
-            if (!edge.child.isNon()) return;
+            if (!edge.child().isNon()) return;
 
-            DiffNode cpParent = composedTree.stream().filter(node -> node.equals(edge.parent)).findFirst().orElseThrow();
-            DiffNode cpChild = composedTree.stream().filter(node -> node.equals(edge.child)).findFirst().orElseThrow();
+            DiffNode cpParent = composedTree.stream().filter(node -> node.equals(edge.parent())).findFirst().orElseThrow();
+            DiffNode cpChild = composedTree.stream().filter(node -> node.equals(edge.child())).findFirst().orElseThrow();
 
             if (cpChild.getBeforeParent() == null && cpChild.getAfterParent() != null)
                 cpChild.getAfterParent().addBeforeChild(cpChild);
