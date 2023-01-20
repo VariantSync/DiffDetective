@@ -1,95 +1,64 @@
 package org.variantsync.diffdetective.diff.difftree;
 
 import org.variantsync.diffdetective.diff.difftree.traverse.DiffTreeTraversal;
-import org.variantsync.diffdetective.diff.difftree.traverse.DiffTreeVisitor;
 
 import java.util.HashMap;
 
-public class Duplication implements DiffTreeVisitor {
-
-    private HashMap<Integer, DiffNode> duplicatedNodes;
-    private boolean hasAllNodes;
+public class Duplication {
+    private Duplication() {
+    }
 
     /**
-     * Duplicates a given node
+     * Duplicates the given node.
+     * No properties of {@link DiffNode} are cloned, instead they are shared with {@code node}.
      *
-     * @return A duplication of the input node without parent and child notes
+     * @return a new instance of {@link DiffNode} without parent and child nodes
      */
     public static DiffNode shallowClone(DiffNode node) {
         return new DiffNode(node.diffType, node.nodeType, node.getFromLine(), node.getToLine(), node.getDirectFeatureMapping(), node.getLines());
     }
 
     /**
-     * Tree duplication
+     * Recursively duplicates the given tree.
+     * All properties except for children and parents are shared between {@code diffTree} and the
+     * result.
+     *
+     * @return a new instance of {@link DiffTree} with the same structure as {@code diffTree} but
+     * different {@link DiffNode} instances
      */
-    public DiffTree deepClone(DiffTree diffTree) {
+    public static DiffTree deepClone(DiffTree diffTree) {
         return new DiffTree(deepClone(diffTree.getRoot()), diffTree.getSource());
     }
 
     /**
-     * Subtree duplication
-     */
-    public DiffNode deepClone(DiffNode subtree) {
-        return deepCloneAsHashmap(subtree).get(subtree.getID());
-    }
-
-    /**
-     * Tree duplication which is returned as a hashmap for easier manipulation
-     */
-    public HashMap<Integer, DiffNode> deepCloneAsHashmap(DiffTree tree) {
-        return deepCloneAsHashmap(tree.getRoot());
-    }
-
-    /**
-     * Subtree duplication which is returned as a hashmap for easier manipulation
-     */
-    public HashMap<Integer, DiffNode> deepCloneAsHashmap(DiffNode subtree) {
-        this.duplicatedNodes = new HashMap<>();
-        this.hasAllNodes = false;
-        // fill hashmap
-        DiffTreeTraversal.with(this).visit(subtree);
-        this.hasAllNodes = true;
-        // Add connections
-        DiffTreeTraversal.with(this).visit(subtree);
-        return this.duplicatedNodes;
-    }
-
-    /**
-     * Create a shallow clone of every node
+     * Recursively duplicates the given tree.
+     * All properties except for children and parents are shared between {@code tree} and the
+     * result.
      *
-     * @param traversal
-     * @param subtree
+     * @return a new instance of {@link DiffNode} with the same structure as {@code tree} but
+     * different {@link DiffNode} instances
      */
-    @Override
-    public void visit(DiffTreeTraversal traversal, DiffNode subtree) {
-        // Generate nodes
-        if (!this.hasAllNodes) {
-            this.duplicatedNodes.put(subtree.getID(), shallowClone(subtree));
-            for (final DiffNode child : subtree.getAllChildren()) {
-                traversal.visit(child);
-            }
-            // create connections
-        } else {
-            for (final DiffNode child : subtree.getAllChildren()) {
-                Integer beforeParentId = child.getBeforeParent() != null ? child.getBeforeParent().getID() : null;
-                Integer afterParentId = child.getAfterParent() != null ? child.getAfterParent().getID() : null;
+    public static DiffNode deepClone(DiffNode tree) {
+        var duplicatedNodes = new HashMap<DiffNode, DiffNode>();
 
-                if (this.duplicatedNodes.get(child.getID()).getBeforeParent() != null || this.duplicatedNodes.get(child.getID()).getAfterParent() != null) {
-                    continue;
+        DiffTreeTraversal.with((traversal, subtree) -> {
+            final DiffNode duplicatedSubtree = shallowClone(subtree);
+            duplicatedNodes.put(subtree, duplicatedSubtree);
+
+            for (var child : subtree.getAllChildren()) {
+                traversal.visit(child);
+                var duplicatedChild = duplicatedNodes.get(child);
+
+                if (subtree.isBeforeChild(child)) {
+                    duplicatedSubtree.addBeforeChild(duplicatedChild);
                 }
 
-                this.duplicatedNodes.get(child.getID()).addBelow(
-                        this.duplicatedNodes.get(beforeParentId),
-                        this.duplicatedNodes.get(afterParentId));
-
-                traversal.visit(child);
+                if (subtree.isAfterChild(child)) {
+                    duplicatedSubtree.addAfterChild(duplicatedChild);
+                }
             }
+        }).visit(tree);
 
-        }
-
-    }
-
-    public String toString() {
-        return "DiffTreeDuplication";
+        return duplicatedNodes.get(tree);
     }
 }

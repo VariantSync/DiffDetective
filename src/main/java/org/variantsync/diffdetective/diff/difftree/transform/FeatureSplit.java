@@ -215,7 +215,7 @@ public class FeatureSplit {
 
         Set<Integer> allNodes = new HashSet<>(parentNodes.stream().flatMap(Set::stream).toList());
 
-        DiffTree copy = new Duplication().deepClone(initDiffTree);
+        DiffTree copy = Duplication.deepClone(initDiffTree);
         List<DiffNode> toDelete = copy.computeAllNodesThat(elem -> !allNodes.contains(elem.getID()));
         toDelete.forEach(DiffNode::drop);
 
