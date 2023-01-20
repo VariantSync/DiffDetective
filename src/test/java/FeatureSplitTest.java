@@ -9,7 +9,6 @@ import org.variantsync.diffdetective.diff.difftree.Duplication;
 import org.variantsync.diffdetective.diff.difftree.transform.FeatureSplit;
 import org.variantsync.diffdetective.feature.PropositionalFormulaParser;
 
-import java.awt.*;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
