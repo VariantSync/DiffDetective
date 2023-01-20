@@ -5,7 +5,6 @@ import org.tinylog.Logger;
 import org.variantsync.diffdetective.analysis.FeatureQueryGenerator;
 import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.diff.difftree.DiffTree;
-import org.variantsync.diffdetective.diff.difftree.Duplication;
 import org.variantsync.diffdetective.diff.difftree.transform.FeatureSplit;
 import org.variantsync.diffdetective.feature.PropositionalFormulaParser;
 
@@ -117,7 +116,7 @@ public class FeatureSplitTest {
     public void generateSubtreeTest() {
         DiffNode node = DIFF_TREES.get(0).getRoot().getAllChildren().get(1);
         DiffTree initDiffTree = DIFF_TREES.get(0);
-        DiffTree tree = Duplication.deepClone(initDiffTree);
+        DiffTree tree = initDiffTree.deepClone();
         DiffTree subtree = FeatureSplit.generateSubtree(node, initDiffTree);
 
         List<Integer> toRemove = new ArrayList<>(DIFF_TREES.get(0).getRoot().getAllChildren().get(0).getAllChildren().stream().map(DiffNode::getID).toList());
@@ -139,7 +138,7 @@ public class FeatureSplitTest {
     public void shallowCloneTest() {
         DiffNode node = DIFF_TREES.get(0).getRoot().getAllChildren().get(0);
         Logger.info(node.toString());
-        DiffNode duplication = Duplication.shallowClone(node);
+        DiffNode duplication = node.shallowClone();
         Logger.info(duplication.toString());
         Assert.assertEquals(node, duplication);
     }
@@ -152,7 +151,7 @@ public class FeatureSplitTest {
         tree.forAll(node -> originalHashmap.put(node.getID(), node));
 
         HashMap<Integer, DiffNode> duplicatedHashmap = new HashMap<>();
-        Duplication.deepClone(tree).forAll(node -> duplicatedHashmap.put(node.getID(), node));
+        tree.deepClone().forAll(node -> duplicatedHashmap.put(node.getID(), node));
 
         Assert.assertEquals(originalHashmap, duplicatedHashmap);
     }

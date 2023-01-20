@@ -146,6 +146,17 @@ public class DiffTree {
     }
 
     /**
+     * Recursively duplicates this tree.
+     * All properties except for children and parents are shared between this tree and the result.
+     *
+     * @return a new instance of {@link DiffTree} with the same structure as this tree but different
+     * {@link DiffNode} instances
+     */
+    public DiffTree deepClone() {
+        return new DiffTree(root.deepClone(), source);
+    }
+
+    /**
      * Invokes the given callback for each node in this DiffTree.
      * @param procedure callback
      * @return this
