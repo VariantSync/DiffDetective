@@ -6,7 +6,7 @@ if [ $1 == '' ] || [ $1 == '--help' ] || [ $1 == '-help' ]; then
   echo "-- Examples --"
   echo "Run replication: './execute.sh replication'"
   echo "Validate the setup: './execute.sh verification'"
-  echo "# See ./docs/verification/datasets.md for format details"
+  echo "# See ./docs/datasets/esecfse22-verification.md for format details"
   echo "Custom dataset: './execute.sh path/to/my_dataset.md'"
   exit
 fi
@@ -15,10 +15,10 @@ cd /home/sherlock || exit
 
 if [ "$1" == 'replication' ]; then
   echo "Running full replication. Depending on your system, this will require several hours or even a few days."
-  java -cp DiffDetective.jar org.variantsync.diffdetective.validation.Validation
+  java -cp DiffDetective.jar org.variantsync.diffdetective.validation.Validation docs/datasets/esecfse22-replication.md
 elif [ "$1" == 'verification' ]; then
   echo "Running a short verification."
-  java -cp DiffDetective.jar org.variantsync.diffdetective.validation.Validation docs/verification/datasets.md
+  java -cp DiffDetective.jar org.variantsync.diffdetective.validation.Validation docs/datasets/esecfse22-verification.md
 else
   echo ""
   echo "Running detection on a custom dataset with the input file $1"

@@ -16,7 +16,7 @@ This replication package consists of four parts:
 1. **DiffDetective**: For our validation, we built _DiffDetective_, a java library and command-line tool to classify edits to variability in git histories of preprocessor-based software product lines.
 2. **Appendix**: The appendix of our paper is given in PDF format in the file [appendix.pdf][appendix].
 3. **Haskell Formalization**: We provide an extended formalization in the Haskell programming language as described in our appendix. Its implementation can be found in the Haskell project in the [proofs](proofs) directory.
-4. **Dataset Overview**: We provide an overview of the 44 inspected datasets with updated links to their repositories in the file [docs/datasets.md][dataset].
+4. **Dataset Overview**: We provide an overview of the 44 inspected datasets with updated links to their repositories in the file [docs/datasets/all.md][dataset].
 
 ## 1. DiffDetective
 DiffDetective is a java library and command-line tool to parse and classify edits to variability in git histories of preprocessor-based software product lines by creating [variation diffs][difftree_class] and operating on them.
@@ -93,13 +93,13 @@ How to build our library and how to run the example is described in the [proofs/
 
 ## 4. Dataset Overview
 ### 4.1 Open-Source Repositories
-We provide an overview of the used 44 open-source preprocessor-based software product lines in the [docs/datasets.md][dataset] file.
+We provide an overview of the used 44 open-source preprocessor-based software product lines in the [docs/datasets/all.md][dataset] file.
 As described in our paper in Section 5.1, this list contains all systems that were studied by Liebig et al., extended by four new subject systems (Busybox, Marlin, LibSSH, Godot).
 We provide updated links for each system's repository.
 
 ### 4.2 Forked Repositories for Replication
 To guarantee the exact replication of our validation, we created forks of all 44 open-source repositories at the state we performed the validation for our paper.
-The forked repositories are listed in the [replication datasets](docs/replication/datasets.md) and are located at the Github user profile [DiffDetective](https://github.com/DiffDetective?tab=repositories).
+The forked repositories are listed in the [replication datasets](docs/datasets/esecfse22-replication.md.md) and are located at the Github user profile [DiffDetective](https://github.com/DiffDetective?tab=repositories).
 These repositories are used when running the replication as described under `1.2` and in the [INSTALL](INSTALL.md).
 
 ## 5. Running DiffDetective on Custom Datasets
@@ -110,11 +110,11 @@ You can also run DiffDetective on other datasets by providing the path to the da
 #### Linux/Mac (bash):
 `./execute.sh path/to/custom/dataset.md`
 
-The input file must have the same format as the other dataset files (i.e., repositories are listed in a Markdown table). You can find [dataset files](docs/datasets.md) in the [docs](docs) folder.
+The input file must have the same format as the other dataset files (i.e., repositories are listed in a Markdown table). You can find [dataset files](docs/datasets/all.md) in the [docs/datasets](docs/datasets) folder.
 
 [difftree_class]: https://variantsync.github.io/DiffDetective/docs/javadoc/org/variantsync/diffdetective/diff/difftree/DiffTree.html
 [haskell]: https://www.haskell.org/
-[dataset]: docs/datasets.md
+[dataset]: docs/datasets/all.md
 [appendix]: appendix.pdf
 
 [documentation]: https://variantsync.github.io/DiffDetective/docs/javadoc/
