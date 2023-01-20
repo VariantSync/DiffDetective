@@ -53,7 +53,7 @@ public record FACommitExtractionHistoryAnalysis(
 
         // Select desired features
         Set<String> randomFeatures = new HashSet<>();
-        List<String> rndFeatures = new ArrayList(totalResult.totalFeatures.stream().toList());
+        List<String> rndFeatures = new ArrayList(totalResult.totalFeatures);
         Collections.shuffle(rndFeatures);
         if(rndFeatures.size() >= numOfFeatures) randomFeatures.addAll(rndFeatures.subList(0, numOfFeatures));
 
