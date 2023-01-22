@@ -5,38 +5,31 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.function.BiFunction;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
+
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.tinylog.Logger;
-
-import org.variantsync.diffdetective.analysis.FilterAnalysis;
 import org.variantsync.diffdetective.analysis.Analysis;
-import org.variantsync.diffdetective.analysis.PreprocessingAnalysis;
-import org.variantsync.diffdetective.analysis.StatisticsAnalysis;
-import org.variantsync.diffdetective.datasets.*;
+import org.variantsync.diffdetective.datasets.DatasetDescription;
+import org.variantsync.diffdetective.datasets.DatasetFactory;
+import org.variantsync.diffdetective.datasets.DefaultDatasets;
+import org.variantsync.diffdetective.datasets.ParseOptions;
 import org.variantsync.diffdetective.datasets.Repository;
-import org.variantsync.diffdetective.editclass.proposed.ProposedEditClasses;
-import org.variantsync.diffdetective.metadata.EditClassCount;
 import org.variantsync.diffdetective.mining.formats.DirectedEdgeLabelFormat;
 import org.variantsync.diffdetective.mining.formats.MiningNodeFormat;
 import org.variantsync.diffdetective.mining.formats.ReleaseMiningDiffNodeFormat;
 import org.variantsync.diffdetective.util.Assert;
-import org.variantsync.diffdetective.variation.diff.filter.DiffTreeFilter;
 import org.variantsync.diffdetective.variation.diff.serialize.GraphFormat;
 import org.variantsync.diffdetective.variation.diff.serialize.LineGraphExportOptions;
 import org.variantsync.diffdetective.variation.diff.serialize.edgeformat.EdgeLabelFormat;
 import org.variantsync.diffdetective.variation.diff.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
-import org.variantsync.diffdetective.variation.diff.transform.CutNonEditedSubtrees;
 
-/**
- * This is the validation from our ESEC/FSE'22 paper.
- * It provides all configuration settings and facilities to setup the validation by
- * creating a {@link Analysis} and run it.
- * @author Paul Bittner
- */
-public class Validation implements Analysis.Hooks {
+public class Validation {
+    private Validation() {
+    }
+
     /**
      * Hardcoded configuration option that determines of all analyzed repositories should be updated
      * (i.e., <code>git pull</code>) before the validation.
@@ -48,19 +41,6 @@ public class Validation implements Analysis.Hooks {
 //     */
 //    public static final boolean PRINT_LATEX_TABLE = true;
 //    public static final int PRINT_LARGEST_SUBJECTS = 3;
-
-    // This is only needed for the `MarlinDebug` test.
-    public static final BiFunction<Repository, Path, Analysis> AnalysisFactory = (repo, repoOutputDir) -> new Analysis(
-        "EditClassValidation",
-        List.of(
-            new PreprocessingAnalysis(new CutNonEditedSubtrees()),
-            new FilterAnalysis(DiffTreeFilter.notEmpty()), // filters unwanted trees
-            new Validation(),
-            new StatisticsAnalysis()
-        ),
-        repo,
-        repoOutputDir
-    );
 
     /**
      * Returns the node format that should be used for DiffNode IO.
@@ -120,13 +100,10 @@ public class Validation implements Analysis.Hooks {
 
     /**
      * Main method to start the validation.
-     * @param args Command-line options. Currently ignored.
+     * @param args Command-line options.
      * @throws IOException When copying the log file fails.
      */
-    public static void main(String[] args) throws IOException {
-//        setupLogger(Level.INFO);
-//        setupLogger(Level.DEBUG);
-
+    public static void run(String[] args, BiConsumer<Repository, Path> validation) throws IOException {
         final Path datasetsFile;
         if (args.length < 1) {
             datasetsFile = DefaultDatasets.DEFAULT_DATASETS_FILE;
@@ -135,10 +112,10 @@ public class Validation implements Analysis.Hooks {
             return;
         } else {
             datasetsFile = Path.of(args[0]);
+        }
 
-            if (!Files.exists(datasetsFile)) {
-                Logger.error("The given datasets file \"" + datasetsFile + "\" does not exist.");
-            }
+        if (!Files.exists(datasetsFile)) {
+            Logger.error("The given datasets file \"" + datasetsFile + "\" does not exist.");
         }
 
         final ParseOptions.DiffStoragePolicy diffStoragePolicy = ParseOptions.DiffStoragePolicy.DO_NOT_REMEMBER;
@@ -187,30 +164,11 @@ public class Validation implements Analysis.Hooks {
         \* ************************ */
 
         Analysis.forEachRepository(repos, outputDir, (repo, repoOutputDir) ->
-            Analysis.forEachCommit(() -> AnalysisFactory.apply(repo, repoOutputDir))
+            validation.accept(repo, repoOutputDir)
         );
         Logger.info("Done");
 
         final String logFile = "log.txt";
         FileUtils.copyFile(Path.of(logFile).toFile(), outputDir.resolve(logFile).toFile());
-    }
-
-    @Override
-    public void initializeResults(Analysis analysis) {
-        analysis.append(EditClassCount.KEY, new EditClassCount());
-    }
-
-    @Override
-    public boolean analyzeDiffTree(Analysis analysis) throws Exception {
-        analysis.getCurrentDiffTree().forAll(node -> {
-            if (node.isArtifact()) {
-                analysis.get(EditClassCount.KEY).reportOccurrenceFor(
-                    ProposedEditClasses.Instance.match(node),
-                    analysis.getCurrentCommitDiff()
-                );
-            }
-        });
-
-        return true;
     }
 }
