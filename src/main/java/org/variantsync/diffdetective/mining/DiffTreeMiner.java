@@ -141,7 +141,7 @@ public class DiffTreeMiner {
             final List<DatasetDescription> datasets = DefaultDatasets.loadDatasets(DATASET_FILE);
 
 //            if (PRINT_LATEX_TABLE) {
-//                Validation.printLaTeXTableFor(datasets);
+//                EditClassValidation.printLaTeXTableFor(datasets);
 //            }
 
             final DatasetFactory miningDatasetFactory = new DatasetFactory(inputDir);

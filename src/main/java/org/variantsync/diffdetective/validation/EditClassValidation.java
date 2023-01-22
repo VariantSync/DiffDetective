@@ -34,7 +34,7 @@ import java.util.stream.Collectors;
  * creating a {@link Analysis} and run it.
  * @author Paul Bittner
  */
-public class Validation {
+public class EditClassValidation {
     /**
      * Hardcoded configuration option that determines of all analyzed repositories should be updated
      * (i.e., <code>git pull</code>) before the validation.

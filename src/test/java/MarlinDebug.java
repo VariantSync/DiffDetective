@@ -25,7 +25,7 @@ import org.variantsync.diffdetective.mining.DiffTreeMiner;
 import org.variantsync.diffdetective.mining.MiningTask;
 import org.variantsync.diffdetective.editclass.proposed.ProposedEditClasses;
 import org.variantsync.diffdetective.util.Clock;
-import org.variantsync.diffdetective.validation.Validation;
+import org.variantsync.diffdetective.validation.EditClassValidation;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -151,7 +151,7 @@ public class MarlinDebug {
         final RevWalk revWalk = new RevWalk(git.getRepository());
         final RevCommit childCommit = revWalk.parseCommit(ObjectId.fromString(commitHash));
 
-        Validation.VALIDATION_TASK_FACTORY.create(
+        EditClassValidation.VALIDATION_TASK_FACTORY.create(
                 repoInspection.repo,
                 new GitDiffer(repoInspection.repo),
                 repoInspection.outputPath,

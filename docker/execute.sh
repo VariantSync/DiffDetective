@@ -15,15 +15,15 @@ cd /home/sherlock || exit
 
 if [ "$1" == 'replication' ]; then
   echo "Running full replication. Depending on your system, this will require several hours or even a few days."
-  java -cp DiffDetective.jar org.variantsync.diffdetective.validation.Validation docs/datasets/esecfse-replication.md
+  java -cp DiffDetective.jar org.variantsync.diffdetective.validation.EditClassValidation docs/datasets/esecfse-replication.md
 elif [ "$1" == 'verification' ]; then
   echo "Running a short verification."
-  java -cp DiffDetective.jar org.variantsync.diffdetective.validation.Validation docs/datasets/esecfse-verification.md
+  java -cp DiffDetective.jar org.variantsync.diffdetective.validation.EditClassValidation docs/datasets/esecfse-verification.md
 else
   echo ""
   echo "Running detection on a custom dataset with the input file $1"
   echo ""
-  java -cp DiffDetective.jar org.variantsync.diffdetective.validation.Validation "$1"
+  java -cp DiffDetective.jar org.variantsync.diffdetective.validation.EditClassValidation "$1"
 fi
 echo "Collecting results."
 cp -r results/* ../results/
