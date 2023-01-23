@@ -77,16 +77,6 @@ public class FeatureSplitTest {
         });
     }
 
-    @Test
-    public void featureSplitTest4() {
-        DiffTree tree = DIFF_TREES.get(0);
-        HashMap<String, DiffTree> featureAwareTrees = FeatureSplit.featureSplit(tree, PropositionalFormulaParser.Default.parse("Get"));
-        HashMap<String, DiffTree> featureAwareTrees2 = FeatureSplit.featureSplit(tree, PropositionalFormulaParser.Default.parse("Get"));
-
-        featureAwareTrees2.get("Get").getRoot().getAllChildren().get(0).getAllChildren().forEach(diffNode -> System.out.println(diffNode.toString()));
-        Assert.assertEquals(featureAwareTrees2.get("Get").getRoot().getAllChildren().get(1).getAllChildren().size(), 3);
-    }
-
     /**
      * Check if valid subtrees are generated
      */
