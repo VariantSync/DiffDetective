@@ -23,9 +23,7 @@ public class FeatureSplit {
      * @return a Hashmap of features and its corresponding feature-aware DiffTrees
      */
     public static HashMap<String, DiffTree> featureSplit(DiffTree initDiffTree, Node query) {
-        ArrayList<Node> queries = new ArrayList<>();
-        queries.add(query);
-        return featureSplit(initDiffTree, queries);
+        return featureSplit(initDiffTree, List.of(query));
     }
 
     /**
@@ -62,13 +60,12 @@ public class FeatureSplit {
      */
     public static DiffTree generateFeatureAwareDiffTree(List<DiffTree> cluster) {
         if (cluster.size() == 0) return null;
-        if (cluster.size() == 1) return cluster.get(0);
-        return generateFeatureAwareDiffTree(
-                Stream.concat(
-                        Stream.of(composeDiffTrees(cluster.get(0), cluster.get(1))),
-                        cluster.subList(2, cluster.size()).stream()
-                ).collect(Collectors.toList())
-        );
+
+        DiffTree current = cluster.get(0);
+        for (var next : cluster.subList(1, cluster.size())) {
+            current = composeDiffTrees(current, next);
+        }
+        return current;
     }
 
     /**
@@ -95,7 +92,6 @@ public class FeatureSplit {
             if (cpChild.isAdd() || cpChild.isNon() && cpParent.isAdd()) cpParent.addAfterChild(cpChild);
             if (cpChild.isRem() || cpChild.isNon() && cpParent.isRem()) cpParent.addBeforeChild(cpChild);
         });
-        DiffTree composeTree = new DiffTree(composeRoot, first.getSource());
 
         allEdges.forEach(edge -> {
             if (!edge.child().isNon()) return;
@@ -110,6 +106,8 @@ public class FeatureSplit {
             if (cpChild.getBeforeParent() == null && cpChild.getAfterParent() == null)
                 cpChild.addBelow(cpParent, cpParent);
         });
+
+        DiffTree composeTree = new DiffTree(composeRoot, first.getSource());
         composeTree.assertConsistency();
         return composeTree;
     }
@@ -186,7 +184,10 @@ public class FeatureSplit {
         for (DiffTree tree : allTrees) {
             boolean detected = false;
             for (DiffTree setTree : treeSet) {
-                if (AtomicDiffComparison.equals(tree, setTree)) detected = true;
+                if (AtomicDiffComparison.equals(tree, setTree)) {
+                    detected = true;
+                    break;
+                }
             }
             if (!detected) treeSet.add(tree);
         }
@@ -203,20 +204,16 @@ public class FeatureSplit {
      */
     static public DiffTree generateSubtree(DiffNode node, DiffTree initDiffTree) {
         DiffTree subtree = new DiffTree(node, initDiffTree.getSource());
-        List<Integer> includedNodes = subtree.computeAllNodes().stream().map(DiffNode::getID).toList();
-        List<HashSet<Integer>> parentNodes = includedNodes.stream()
-                .map(elem -> findAncestors(
-                                initDiffTree.computeAllNodesThat(inspectedNode -> inspectedNode.getID() == elem).get(0)
-                        )
-                )
-                .toList();
-
-        Set<Integer> allNodes = new HashSet<>(parentNodes.stream().flatMap(Set::stream).toList());
+        Set<Integer> includedNodes = subtree
+            .computeAllNodes()
+            .stream()
+            .flatMap(elem -> findAncestors(elem).stream())
+            .map(DiffNode::getID)
+            .collect(Collectors.toSet());
 
         DiffTree copy = initDiffTree.deepClone();
-        List<DiffNode> toDelete = copy.computeAllNodesThat(elem -> !allNodes.contains(elem.getID()));
+        List<DiffNode> toDelete = copy.computeAllNodesThat(elem -> !includedNodes.contains(elem.getID()));
         toDelete.forEach(DiffNode::drop);
-
         copy.assertConsistency();
         return copy;
     }
@@ -227,9 +224,9 @@ public class FeatureSplit {
      * @param node a child node of a DiffTree
      * @return a list of parent ids
      */
-    static public HashSet<Integer> findAncestors(DiffNode node) {
-        HashSet<Integer> ancestorNodes = new HashSet<>();
-        ancestorNodes.add(node.getID());
+    static public HashSet<DiffNode> findAncestors(DiffNode node) {
+        var ancestorNodes = new HashSet<DiffNode>();
+        ancestorNodes.add(node);
         if (node.getBeforeParent() != null) ancestorNodes.addAll(findAncestors(node.getBeforeParent()));
         if (node.getAfterParent() != null) ancestorNodes.addAll(findAncestors(node.getAfterParent()));
         return ancestorNodes;
