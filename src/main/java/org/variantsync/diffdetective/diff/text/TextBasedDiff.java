@@ -1,4 +1,4 @@
-package org.variantsync.diffdetective.diff;
+package org.variantsync.diffdetective.diff.text;
 
 /**
  * Interface for diffs to text that allows accessing the diff as text.

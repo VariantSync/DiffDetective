@@ -4,7 +4,7 @@ import org.eclipse.jgit.revwalk.RevCommit;
 import org.tinylog.Logger;
 import org.variantsync.diffdetective.analysis.strategies.AnalysisStrategy;
 import org.variantsync.diffdetective.datasets.Repository;
-import org.variantsync.diffdetective.diff.GitDiffer;
+import org.variantsync.diffdetective.diff.git.GitDiffer;
 import org.variantsync.diffdetective.util.CSV;
 import org.variantsync.diffdetective.util.IO;
 import org.variantsync.diffdetective.util.StringUtils;

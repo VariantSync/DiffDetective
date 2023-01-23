@@ -5,8 +5,8 @@ import java.io.OutputStream;
 
 import org.tinylog.Logger;
 import org.variantsync.diffdetective.analysis.AnalysisResult;
-import org.variantsync.diffdetective.diff.CommitDiff;
-import org.variantsync.diffdetective.diff.PatchDiff;
+import org.variantsync.diffdetective.diff.git.CommitDiff;
+import org.variantsync.diffdetective.diff.git.PatchDiff;
 import org.variantsync.diffdetective.util.StringUtils;
 import org.variantsync.diffdetective.util.StringUtils;
 import org.variantsync.diffdetective.variation.diff.DiffTree;

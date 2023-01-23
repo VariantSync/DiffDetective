@@ -1,4 +1,4 @@
-package org.variantsync.diffdetective.diff;
+package org.variantsync.diffdetective.diff.git;
 
 /**
  * A unique reference to a diff of a file (patch) within an unspecified repository.

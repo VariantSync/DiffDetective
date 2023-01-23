@@ -1,4 +1,4 @@
-package org.variantsync.diffdetective.diff;
+package org.variantsync.diffdetective.diff.text;
 
 import org.variantsync.diffdetective.util.LineRange;
 import org.variantsync.diffdetective.variation.diff.DiffType;

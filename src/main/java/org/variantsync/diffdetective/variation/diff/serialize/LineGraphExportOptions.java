@@ -1,7 +1,7 @@
 package org.variantsync.diffdetective.variation.diff.serialize;
 
 import org.tinylog.Logger;
-import org.variantsync.diffdetective.diff.PatchDiff;
+import org.variantsync.diffdetective.diff.git.PatchDiff;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.variation.diff.render.DiffTreeRenderer;
 import org.variantsync.diffdetective.variation.diff.render.PatchDiffRenderer;

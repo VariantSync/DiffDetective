@@ -3,7 +3,7 @@ package org.variantsync.diffdetective.variation.diff.parse;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.variantsync.diffdetective.diff.DiffLineNumber;
+import org.variantsync.diffdetective.diff.text.DiffLineNumber;
 import org.variantsync.diffdetective.util.Assert;
 
 /**

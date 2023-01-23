@@ -1,6 +1,6 @@
 package org.variantsync.diffdetective.variation.diff.transform;
 
-import org.variantsync.diffdetective.diff.DiffLineNumber;
+import org.variantsync.diffdetective.diff.text.DiffLineNumber;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.variation.diff.DiffType;

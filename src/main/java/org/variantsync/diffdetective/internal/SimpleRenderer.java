@@ -3,7 +3,7 @@ package org.variantsync.diffdetective.internal;
 import org.tinylog.Logger;
 import org.variantsync.diffdetective.datasets.ParseOptions;
 import org.variantsync.diffdetective.datasets.Repository;
-import org.variantsync.diffdetective.diff.PatchDiff;
+import org.variantsync.diffdetective.diff.git.PatchDiff;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.feature.CPPAnnotationParser;
 import org.variantsync.diffdetective.mining.DiffTreeMiner;

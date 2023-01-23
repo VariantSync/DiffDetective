@@ -1,6 +1,6 @@
 package org.variantsync.diffdetective.variation.diff.source;
 
-import org.variantsync.diffdetective.diff.TextBasedDiff;
+import org.variantsync.diffdetective.diff.text.TextBasedDiff;
 
 /**
  * Source for DiffTrees that were created from a patch given as a String.

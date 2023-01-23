@@ -2,7 +2,7 @@ package org.variantsync.diffdetective.datasets.predefined;
 
 import org.eclipse.jgit.diff.DiffEntry;
 import org.variantsync.diffdetective.datasets.Repository;
-import org.variantsync.diffdetective.diff.DiffFilter;
+import org.variantsync.diffdetective.diff.git.DiffFilter;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
 
 import java.nio.file.Path;

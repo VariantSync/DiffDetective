@@ -1,6 +1,6 @@
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.variantsync.diffdetective.diff.DiffLineNumber;
+import org.variantsync.diffdetective.diff.text.DiffLineNumber;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.functjonal.Pair;

@@ -1,6 +1,6 @@
 package org.variantsync.diffdetective.mining.formats;
 
-import org.variantsync.diffdetective.diff.DiffLineNumber;
+import org.variantsync.diffdetective.diff.text.DiffLineNumber;
 import org.variantsync.diffdetective.util.fide.FixTrueFalse;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
 import org.variantsync.diffdetective.variation.diff.DiffType;

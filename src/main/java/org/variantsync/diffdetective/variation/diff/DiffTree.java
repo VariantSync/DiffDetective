@@ -2,10 +2,10 @@ package org.variantsync.diffdetective.variation.diff;
 
 import org.tinylog.Logger;
 import org.variantsync.diffdetective.datasets.Repository;
-import org.variantsync.diffdetective.diff.CommitDiff;
-import org.variantsync.diffdetective.diff.GitDiffer;
-import org.variantsync.diffdetective.diff.PatchDiff;
-import org.variantsync.diffdetective.diff.PatchReference;
+import org.variantsync.diffdetective.diff.git.CommitDiff;
+import org.variantsync.diffdetective.diff.git.GitDiffer;
+import org.variantsync.diffdetective.diff.git.PatchDiff;
+import org.variantsync.diffdetective.diff.git.PatchReference;
 import org.variantsync.diffdetective.diff.result.CommitDiffResult;
 import org.variantsync.diffdetective.diff.result.DiffError;
 import org.variantsync.diffdetective.diff.result.DiffParseException;

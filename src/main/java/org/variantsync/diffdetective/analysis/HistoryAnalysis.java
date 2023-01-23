@@ -5,7 +5,7 @@ import org.tinylog.Logger;
 import org.variantsync.diffdetective.analysis.monitoring.TaskCompletionMonitor;
 import org.variantsync.diffdetective.analysis.strategies.AnalysisStrategy;
 import org.variantsync.diffdetective.datasets.Repository;
-import org.variantsync.diffdetective.diff.GitDiffer;
+import org.variantsync.diffdetective.diff.git.GitDiffer;
 import org.variantsync.diffdetective.metadata.Metadata;
 import org.variantsync.diffdetective.mining.MiningTask;
 import org.variantsync.diffdetective.parallel.ScheduledTasksIterator;

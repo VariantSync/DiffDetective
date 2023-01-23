@@ -7,7 +7,7 @@ import java.nio.file.Path;
 import org.apache.commons.io.output.CloseShieldOutputStream;
 import org.tinylog.Logger;
 import org.variantsync.diffdetective.datasets.Repository;
-import org.variantsync.diffdetective.diff.CommitDiff;
+import org.variantsync.diffdetective.diff.git.CommitDiff;
 import org.variantsync.diffdetective.util.IO;
 
 /**

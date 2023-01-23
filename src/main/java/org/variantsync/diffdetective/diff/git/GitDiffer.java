@@ -1,4 +1,4 @@
-package org.variantsync.diffdetective.diff;
+package org.variantsync.diffdetective.diff.git;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;

@@ -1,4 +1,4 @@
-package org.variantsync.diffdetective.diff;
+package org.variantsync.diffdetective.diff.git;
 
 import org.eclipse.jgit.revwalk.RevCommit;
 

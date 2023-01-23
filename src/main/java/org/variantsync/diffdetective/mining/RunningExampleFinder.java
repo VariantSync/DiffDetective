@@ -2,8 +2,8 @@ package org.variantsync.diffdetective.mining;
 
 import org.prop4j.Literal;
 import org.prop4j.Node;
-import org.variantsync.diffdetective.diff.GitPatch;
-import org.variantsync.diffdetective.diff.TextBasedDiff;
+import org.variantsync.diffdetective.diff.git.GitPatch;
+import org.variantsync.diffdetective.diff.text.TextBasedDiff;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.feature.CPPAnnotationParser;
 import org.variantsync.diffdetective.util.Assert;

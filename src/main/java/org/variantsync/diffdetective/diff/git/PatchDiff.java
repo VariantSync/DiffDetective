@@ -1,4 +1,4 @@
-package org.variantsync.diffdetective.diff;
+package org.variantsync.diffdetective.diff.git;
 
 import org.apache.commons.io.FilenameUtils;
 import org.eclipse.jgit.diff.DiffEntry;
@@ -14,17 +14,17 @@ import org.variantsync.diffdetective.variation.diff.DiffTree;
 public class PatchDiff implements GitPatch {
     private final String fullDiff;
     private final DiffTree diffTree;
-    
+
     /**
      * The commit the patch belongs to.
      */
     private final CommitDiff commitDiff;
-    
+
     /**
      * The general change type of a single file. See {@link DiffEntry.ChangeType Type}.
      */
     private final DiffEntry.ChangeType changeType;
-    
+
     /**
      * Path of the file that has been modified.
      */

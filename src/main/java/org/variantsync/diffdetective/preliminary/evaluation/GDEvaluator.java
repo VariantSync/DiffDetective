@@ -6,7 +6,7 @@ import org.prop4j.Not;
 import org.prop4j.explain.solvers.SatSolver;
 import org.prop4j.explain.solvers.SatSolverFactory;
 import org.tinylog.Logger;
-import org.variantsync.diffdetective.diff.PatchDiff;
+import org.variantsync.diffdetective.diff.git.PatchDiff;
 import org.variantsync.diffdetective.preliminary.analysis.GDAnalyzer;
 import org.variantsync.diffdetective.preliminary.analysis.data.CommitDiffAnalysisResult;
 import org.variantsync.diffdetective.preliminary.analysis.data.GDAnalysisResult;

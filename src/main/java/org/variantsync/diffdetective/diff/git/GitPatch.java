@@ -1,6 +1,7 @@
-package org.variantsync.diffdetective.diff;
+package org.variantsync.diffdetective.diff.git;
 
 import org.eclipse.jgit.diff.DiffEntry;
+import org.variantsync.diffdetective.diff.text.TextBasedDiff;
 import org.variantsync.diffdetective.variation.diff.DiffTree; // For Javadoc
 import org.variantsync.diffdetective.variation.diff.source.DiffTreeSource;
 

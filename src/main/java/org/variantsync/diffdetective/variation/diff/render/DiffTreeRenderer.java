@@ -1,8 +1,8 @@
 package org.variantsync.diffdetective.variation.diff.render;
 
 import org.tinylog.Logger;
-import org.variantsync.diffdetective.diff.GitPatch;
-import org.variantsync.diffdetective.diff.PatchDiff;
+import org.variantsync.diffdetective.diff.git.GitPatch;
+import org.variantsync.diffdetective.diff.git.PatchDiff;
 import org.variantsync.diffdetective.shell.PythonCommand;
 import org.variantsync.diffdetective.shell.ShellException;
 import org.variantsync.diffdetective.shell.ShellExecutor;
