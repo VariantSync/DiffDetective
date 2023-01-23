@@ -1,7 +1,7 @@
 package org.variantsync.diffdetective.preliminary.pattern.semantic;
 
 import org.prop4j.Node;
-import org.variantsync.diffdetective.diff.LineRange;
+import org.variantsync.diffdetective.util.LineRange;
 import org.variantsync.diffdetective.preliminary.analysis.data.PatternMatch;
 import org.variantsync.diffdetective.preliminary.evaluation.FeatureContext;
 import org.variantsync.diffdetective.variation.diff.DiffNode;

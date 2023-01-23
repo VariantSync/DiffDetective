@@ -9,7 +9,7 @@ import java.util.function.Consumer;
 
 import org.prop4j.And;
 import org.prop4j.Node;
-import org.variantsync.diffdetective.diff.LineRange;
+import org.variantsync.diffdetective.util.LineRange;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.util.fide.FixTrueFalse;
 import org.variantsync.diffdetective.variation.diff.DiffNode; // For Javadoc

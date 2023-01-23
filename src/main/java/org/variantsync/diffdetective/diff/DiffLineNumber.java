@@ -1,5 +1,6 @@
 package org.variantsync.diffdetective.diff;
 
+import org.variantsync.diffdetective.util.LineRange;
 import org.variantsync.diffdetective.variation.diff.DiffType;
 import org.variantsync.diffdetective.variation.diff.Time;
 

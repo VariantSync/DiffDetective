@@ -1,4 +1,4 @@
-package org.variantsync.diffdetective.diff;
+package org.variantsync.diffdetective.util;
 
 /**
  * Class to hold a range of line numbers.

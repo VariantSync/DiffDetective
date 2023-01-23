@@ -1,6 +1,6 @@
 package org.variantsync.diffdetective.preliminary.pattern.elementary;
 
-import org.variantsync.diffdetective.diff.LineRange;
+import org.variantsync.diffdetective.util.LineRange;
 import org.variantsync.diffdetective.editclass.proposed.ProposedEditClasses;
 import org.variantsync.diffdetective.preliminary.analysis.data.PatternMatch;
 import org.variantsync.diffdetective.preliminary.evaluation.FeatureContext;
