@@ -70,7 +70,7 @@ public class IO {
 
     /**
      * Same as {@link Files#newOutputStream} but creates all parent directories of
-     * {@code file} and wraps the result in a {@link BuferedOutputStream}.
+     * {@code file} and wraps the result in a {@link BufferedOutputStream}.
      */
     public static BufferedOutputStream newBufferedOutputStream(Path file, OpenOption... openOptions) throws IOException {
         createParentDirectories(file);

@@ -101,6 +101,7 @@ public class GraphvizExporter implements Exporter {
      * Runs the Graphviz {@code dot} program returning its result.
      *
      * @param diffTree is the tree to be layouted by Graphviz.
+     * @param algorithm the layout algorithm used by Graphviz
      * @param outputFormat is the requested format which is passed to the {@code dot} program with
      * the {@code -T} flag.
      * @return a buffered {@code InputStream} of the Graphviz output
