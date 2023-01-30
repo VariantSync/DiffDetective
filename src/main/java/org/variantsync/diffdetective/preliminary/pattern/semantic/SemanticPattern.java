@@ -1,9 +1,9 @@
 package org.variantsync.diffdetective.preliminary.pattern.semantic;
 
-import org.variantsync.diffdetective.diff.difftree.DiffNode;
-import org.variantsync.diffdetective.preliminary.pattern.Pattern;
 import org.variantsync.diffdetective.preliminary.analysis.data.PatternMatch;
 import org.variantsync.diffdetective.preliminary.pattern.FeatureContextReverseEngineering;
+import org.variantsync.diffdetective.preliminary.pattern.Pattern;
+import org.variantsync.diffdetective.variation.diff.DiffNode;
 
 import java.util.List;
 import java.util.Optional;

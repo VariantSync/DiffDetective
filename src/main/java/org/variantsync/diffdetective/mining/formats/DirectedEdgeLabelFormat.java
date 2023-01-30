@@ -1,8 +1,8 @@
 package org.variantsync.diffdetective.mining.formats;
 
-import org.variantsync.diffdetective.diff.difftree.DiffNode;
-import org.variantsync.diffdetective.diff.difftree.serialize.StyledEdge;
-import org.variantsync.diffdetective.diff.difftree.serialize.edgeformat.EdgeLabelFormat;
+import org.variantsync.diffdetective.variation.diff.DiffNode;
+import org.variantsync.diffdetective.variation.diff.serialize.StyledEdge;
+import org.variantsync.diffdetective.variation.diff.serialize.edgeformat.EdgeLabelFormat;
 import org.variantsync.functjonal.Functjonal;
 
 public final class DirectedEdgeLabelFormat extends EdgeLabelFormat {

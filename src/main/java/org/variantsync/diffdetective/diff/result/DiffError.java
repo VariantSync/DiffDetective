@@ -2,6 +2,7 @@ package org.variantsync.diffdetective.diff.result;
 
 import java.util.Arrays;
 import java.util.Optional;
+import org.variantsync.diffdetective.variation.diff.DiffType; // For Javadoc
 
 /**
  * Describes an error that occurred when processing a text-based diff.
@@ -69,8 +70,7 @@ public enum DiffError {
 
     /**
      * Empty line in a diff.
-     * All lines in a diff need at least one symbol (the
-     * {@link org.variantsync.diffdetective.diff.difftree.DiffType}) in it.
+     * All lines in a diff need at least one symbol (the {@link DiffType}) in it.
      */
     INVALID_DIFF("missing diff symbol"),
 

@@ -1,7 +1,7 @@
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.variantsync.diffdetective.diff.DiffLineNumber;
-import org.variantsync.diffdetective.diff.difftree.DiffTree;
+import org.variantsync.diffdetective.diff.text.DiffLineNumber;
+import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.functjonal.Pair;
 
@@ -14,8 +14,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-import static org.variantsync.diffdetective.diff.difftree.Time.AFTER;
-import static org.variantsync.diffdetective.diff.difftree.Time.BEFORE;
+import static org.variantsync.diffdetective.variation.diff.Time.AFTER;
+import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
 
 public class TestLineNumbers {
     private static final Path resDir = Constants.RESOURCE_DIR.resolve("diffs/linenumbers");

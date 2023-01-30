@@ -1,6 +1,6 @@
 package org.variantsync.diffdetective.diff.result;
 
-import org.variantsync.diffdetective.diff.DiffLineNumber;
+import org.variantsync.diffdetective.diff.text.DiffLineNumber;
 
 /**
  * Describes an error that occurred when processing a text-based diff.

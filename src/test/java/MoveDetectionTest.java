@@ -1,6 +1,6 @@
-import org.variantsync.diffdetective.diff.difftree.DiffTree;
-import org.variantsync.diffdetective.diff.difftree.render.DiffTreeRenderer;
-import org.variantsync.diffdetective.diff.difftree.transform.NaiveMovedArtifactDetection;
+import org.variantsync.diffdetective.variation.diff.DiffTree;
+import org.variantsync.diffdetective.variation.diff.render.DiffTreeRenderer;
+import org.variantsync.diffdetective.variation.diff.transform.NaiveMovedArtifactDetection;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
 
 import java.io.IOException;

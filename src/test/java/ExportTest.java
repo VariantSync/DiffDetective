@@ -1,13 +1,12 @@
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
-import org.variantsync.diffdetective.diff.difftree.DiffTree;
-import org.variantsync.diffdetective.diff.difftree.serialize.*;
-import org.variantsync.diffdetective.diff.difftree.serialize.edgeformat.DefaultEdgeLabelFormat;
-import org.variantsync.diffdetective.diff.difftree.serialize.nodeformat.LabelOnlyDiffNodeFormat;
-import org.variantsync.diffdetective.diff.difftree.serialize.nodeformat.LineNumberFormat;
-import org.variantsync.diffdetective.diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
-import org.variantsync.diffdetective.diff.difftree.serialize.Format;
+import org.variantsync.diffdetective.variation.diff.DiffTree;
+import org.variantsync.diffdetective.variation.diff.serialize.*;
+import org.variantsync.diffdetective.variation.diff.serialize.edgeformat.DefaultEdgeLabelFormat;
+import org.variantsync.diffdetective.variation.diff.serialize.nodeformat.LabelOnlyDiffNodeFormat;
+import org.variantsync.diffdetective.variation.diff.serialize.nodeformat.LineNumberFormat;
+import org.variantsync.diffdetective.variation.diff.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
 
 import static org.junit.jupiter.api.Assertions.fail;
 

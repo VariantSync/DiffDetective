@@ -1,14 +1,14 @@
 package org.variantsync.diffdetective.mining.postprocessing;
 
 import org.tinylog.Logger;
-import org.variantsync.diffdetective.diff.difftree.DiffTree;
-import org.variantsync.diffdetective.diff.difftree.render.DiffTreeRenderer;
-import org.variantsync.diffdetective.diff.difftree.render.RenderOptions;
-import org.variantsync.diffdetective.diff.difftree.serialize.*;
-import org.variantsync.diffdetective.diff.difftree.serialize.treeformat.IndexedTreeFormat;
 import org.variantsync.diffdetective.mining.DiffTreeMiner;
 import org.variantsync.diffdetective.util.FileUtils;
 import org.variantsync.diffdetective.util.IO;
+import org.variantsync.diffdetective.variation.diff.DiffTree;
+import org.variantsync.diffdetective.variation.diff.render.DiffTreeRenderer;
+import org.variantsync.diffdetective.variation.diff.render.RenderOptions;
+import org.variantsync.diffdetective.variation.diff.serialize.*;
+import org.variantsync.diffdetective.variation.diff.serialize.treeformat.IndexedTreeFormat;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;

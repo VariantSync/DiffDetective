@@ -1,6 +1,6 @@
 package org.variantsync.diffdetective.metadata;
 
-import org.variantsync.diffdetective.diff.difftree.filter.ExplainedFilter;
+import org.variantsync.diffdetective.variation.diff.filter.ExplainedFilter;
 import org.variantsync.functjonal.Functjonal;
 import org.variantsync.functjonal.category.InplaceSemigroup;
 import org.variantsync.functjonal.map.MergeMap;

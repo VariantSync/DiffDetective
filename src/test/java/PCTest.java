@@ -5,7 +5,7 @@ import org.prop4j.Literal;
 import org.prop4j.Node;
 import org.tinylog.Logger;
 import org.variantsync.diffdetective.analysis.logic.SAT;
-import org.variantsync.diffdetective.diff.difftree.DiffTree;
+import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
 
 import java.io.IOException;
@@ -14,8 +14,8 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.variantsync.diffdetective.diff.difftree.Time.AFTER;
-import static org.variantsync.diffdetective.diff.difftree.Time.BEFORE;
+import static org.variantsync.diffdetective.variation.diff.Time.AFTER;
+import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
 import static org.variantsync.diffdetective.util.fide.FormulaUtils.negate;
 
 public class PCTest {

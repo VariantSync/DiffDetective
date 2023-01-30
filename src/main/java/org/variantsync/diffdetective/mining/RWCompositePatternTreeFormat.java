@@ -1,8 +1,8 @@
 package org.variantsync.diffdetective.mining;
 
-import org.variantsync.diffdetective.diff.difftree.DiffTreeSource;
-import org.variantsync.diffdetective.diff.difftree.serialize.treeformat.DiffTreeLabelFormat;
-import org.variantsync.diffdetective.diff.difftree.source.PatchFile;
+import org.variantsync.diffdetective.variation.diff.source.DiffTreeSource;
+import org.variantsync.diffdetective.variation.diff.serialize.treeformat.DiffTreeLabelFormat;
+import org.variantsync.diffdetective.variation.diff.source.PatchFile;
 
 public class RWCompositePatternTreeFormat implements DiffTreeLabelFormat {
     @Override

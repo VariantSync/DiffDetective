@@ -2,7 +2,7 @@ package org.variantsync.diffdetective.analysis.strategies;
 
 import java.io.OutputStream;
 
-import org.variantsync.diffdetective.diff.CommitDiff;
+import org.variantsync.diffdetective.diff.git.CommitDiff;
 
 /**
  * Empty strategy that does nothing.

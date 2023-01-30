@@ -1,6 +1,6 @@
 package org.variantsync.diffdetective.feature;
 
-import org.variantsync.diffdetective.diff.difftree.parse.IllFormedAnnotationException;
+import org.variantsync.diffdetective.variation.diff.parse.IllFormedAnnotationException;
 
 import java.util.function.Supplier;
 import java.util.regex.Matcher;

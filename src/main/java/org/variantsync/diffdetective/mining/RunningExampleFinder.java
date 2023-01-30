@@ -2,24 +2,24 @@ package org.variantsync.diffdetective.mining;
 
 import org.prop4j.Literal;
 import org.prop4j.Node;
-import org.variantsync.diffdetective.diff.GitPatch;
-import org.variantsync.diffdetective.diff.TextBasedDiff;
-import org.variantsync.diffdetective.diff.difftree.DiffNode;
-import org.variantsync.diffdetective.diff.difftree.DiffTree;
-import org.variantsync.diffdetective.diff.difftree.DiffTreeSource;
-import org.variantsync.diffdetective.diff.difftree.filter.DiffTreeFilter;
-import org.variantsync.diffdetective.diff.difftree.filter.ExplainedFilter;
-import org.variantsync.diffdetective.diff.difftree.filter.TaggedPredicate;
-import org.variantsync.diffdetective.diff.difftree.render.DiffTreeRenderer;
-import org.variantsync.diffdetective.diff.difftree.transform.ExampleFinder;
+import org.variantsync.diffdetective.diff.git.GitPatch;
+import org.variantsync.diffdetective.diff.text.TextBasedDiff;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.feature.CPPAnnotationParser;
 import org.variantsync.diffdetective.util.Assert;
+import org.variantsync.diffdetective.variation.diff.DiffNode;
+import org.variantsync.diffdetective.variation.diff.DiffTree;
+import org.variantsync.diffdetective.variation.diff.source.DiffTreeSource;
+import org.variantsync.diffdetective.variation.diff.filter.DiffTreeFilter;
+import org.variantsync.diffdetective.variation.diff.filter.ExplainedFilter;
+import org.variantsync.diffdetective.variation.diff.filter.TaggedPredicate;
+import org.variantsync.diffdetective.variation.diff.render.DiffTreeRenderer;
+import org.variantsync.diffdetective.variation.diff.transform.ExampleFinder;
 
 import java.nio.file.Path;
 import java.util.Optional;
 
-import static org.variantsync.diffdetective.diff.difftree.Time.BEFORE;
+import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
 
 public class RunningExampleFinder {
     public static final Path DefaultExamplesDirectory = Path.of("examples");

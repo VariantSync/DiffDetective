@@ -2,7 +2,7 @@ package org.variantsync.diffdetective.analysis.strategies;
 
 import org.apache.commons.io.output.TeeOutputStream;
 import org.variantsync.diffdetective.datasets.Repository;
-import org.variantsync.diffdetective.diff.CommitDiff;
+import org.variantsync.diffdetective.diff.git.CommitDiff;
 
 import java.io.OutputStream;
 import java.nio.file.Path;

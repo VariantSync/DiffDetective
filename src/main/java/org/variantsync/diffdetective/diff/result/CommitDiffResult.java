@@ -1,7 +1,7 @@
 package org.variantsync.diffdetective.diff.result;
 
 import org.tinylog.Logger;
-import org.variantsync.diffdetective.diff.CommitDiff;
+import org.variantsync.diffdetective.diff.git.CommitDiff;
 
 import java.util.List;
 import java.util.Optional;
