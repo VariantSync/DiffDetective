@@ -82,8 +82,9 @@ public final class TikzExporter implements Exporter {
                 edge.style().tikzStyle(),
                 edge.to().getID());
         });
-        output.println(";");
-        output.println("");
+        output.println();
+        output.format("%n\t;");
+        output.println();
 
         // Draw node labels. We do this last so that they are on top of edges and nodes.
         format.forEachNode(diffTree, (node) -> {
