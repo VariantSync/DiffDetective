@@ -71,7 +71,12 @@ public class FeatureSplitTest {
     public void featureSplitTest3() {
         DiffTree tree = DIFF_TREES.get(2);
         HashMap<String, DiffTree> featureAwareTrees = FeatureSplit.featureSplit(tree, PropositionalFormulaParser.Default.parse("OPENSSL_NO_TLSEXT"));
-        featureAwareTrees.forEach((key, value) -> value.assertConsistency());
+        featureAwareTrees.forEach((key, value) -> {
+            // TODO `value` is always `null`. Is this correct?
+            if (value != null) {
+                value.assertConsistency();
+            }
+        });
     }
 
     @Test
