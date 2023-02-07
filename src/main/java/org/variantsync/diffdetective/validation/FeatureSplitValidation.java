@@ -7,13 +7,13 @@ import org.variantsync.diffdetective.analysis.Analysis;
 import org.variantsync.diffdetective.analysis.AnalysisTask;
 import org.variantsync.diffdetective.analysis.AnalysisTaskFactory;
 import org.variantsync.diffdetective.analysis.FeatureSplitResult;
-import org.variantsync.diffdetective.analysis.FeatureSplitValidationTask;
 import org.variantsync.diffdetective.analysis.strategies.NullStrategy;
+import org.variantsync.diffdetective.validation.FeatureSplitValidationTask;
 import org.variantsync.diffdetective.variation.diff.filter.DiffTreeFilter;
 import org.variantsync.diffdetective.variation.diff.filter.ExplainedFilter;
 import org.variantsync.diffdetective.variation.diff.transform.CutNonEditedSubtrees;
 
-public class ValidationFeatureSplit {
+public class FeatureSplitValidation {
 
     public static final AnalysisTaskFactory<FeatureSplitResult> VALIDATION_TASK_FACTORY =
             (repo, differ, outputPath, commits) -> new FeatureSplitValidationTask(new AnalysisTask.Options(

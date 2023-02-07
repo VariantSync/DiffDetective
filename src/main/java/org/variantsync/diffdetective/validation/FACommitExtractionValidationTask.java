@@ -1,4 +1,4 @@
-package org.variantsync.diffdetective.analysis;
+package org.variantsync.diffdetective.validation;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -7,6 +7,10 @@ import java.util.Set;
 
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.tinylog.Logger;
+import org.variantsync.diffdetective.analysis.Analysis;
+import org.variantsync.diffdetective.analysis.AnalysisTask;
+import org.variantsync.diffdetective.analysis.CommitProcessTime;
+import org.variantsync.diffdetective.analysis.FeatureSplitResult;
 import org.variantsync.diffdetective.diff.git.CommitDiff;
 import org.variantsync.diffdetective.diff.git.PatchDiff;
 import org.variantsync.diffdetective.diff.result.CommitDiffResult;
