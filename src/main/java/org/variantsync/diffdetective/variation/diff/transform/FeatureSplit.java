@@ -17,6 +17,7 @@ import org.variantsync.diffdetective.variation.diff.AtomicDiffComparison;
 import org.variantsync.diffdetective.variation.diff.DiffEdge;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
+import org.variantsync.diffdetective.variation.diff.Time;
 
 public class FeatureSplit {
     /**
@@ -159,18 +160,21 @@ public class FeatureSplit {
      *
      * @return true if query is implied in a presence condition of a node
      */
-    private static Boolean evaluate(DiffTree subtree, Node query) {
-        return subtree.anyMatch(node -> (node.getParent(BEFORE) != null && satSolver(node.getPresenceCondition(BEFORE), query)) || node.getParent(AFTER) != null && satSolver(node.getPresenceCondition(AFTER), query));
+    private static boolean evaluate(DiffTree subtree, Node query) {
+        return subtree.anyMatch(node -> satSolver(node, query, BEFORE) || satSolver(node, query, AFTER));
     }
 
     /**
-     * Checks if the query and the presence condition intersect, by checking implication.
+     * Checks if {@code query} and the presence condition of {@code node} at {@code time}
+     * intersect by checking implication.
      *
-     * @param query: feature mapping which represents a query.
-     * @return true if query is implied in the presence condition
+     * @param node the node whose presence condition at {@code time} to check
+     * @param query feature mapping which represents a query.
+     * @param time which presence condition to check
+     * @return true if {@code query} is implied in the presence condition at {@code time}
      */
-    private static boolean satSolver(Node presenceCondition, Node query) {
-        return SAT.implies(presenceCondition, query);
+    private static boolean satSolver(DiffNode node, Node query, Time time) {
+        return node.getParent(time) != null && SAT.implies(node.getPresenceCondition(time), query);
     }
 
     /**
@@ -229,8 +233,11 @@ public class FeatureSplit {
     static public HashSet<DiffNode> findAncestors(DiffNode node) {
         var ancestorNodes = new HashSet<DiffNode>();
         ancestorNodes.add(node);
-        if (node.getParent(BEFORE) != null) ancestorNodes.addAll(findAncestors(node.getParent(BEFORE)));
-        if (node.getParent(AFTER) != null) ancestorNodes.addAll(findAncestors(node.getParent(AFTER)));
+        Time.forAll(time -> {
+            if (node.getParent(time) != null) {
+                ancestorNodes.addAll(findAncestors(node.getParent(time)));
+            }
+        });
         return ancestorNodes;
     }
 

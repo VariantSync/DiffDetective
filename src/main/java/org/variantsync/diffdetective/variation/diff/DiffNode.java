@@ -169,13 +169,11 @@ public class DiffNode implements HasNodeType {
                 traversal.visit(child);
                 var duplicatedChild = duplicatedNodes.get(child);
 
-                if (subtree.isChild(child, BEFORE)) {
-                    duplicatedSubtree.addChild(duplicatedChild, BEFORE);
-                }
-
-                if (subtree.isChild(child, AFTER)) {
-                    duplicatedSubtree.addChild(duplicatedChild, AFTER);
-                }
+                Time.forAll(time -> {
+                    if (subtree.isChild(child, time)) {
+                        duplicatedSubtree.addChild(duplicatedChild, time);
+                    }
+                });
             }
         }).visit(this);
 
