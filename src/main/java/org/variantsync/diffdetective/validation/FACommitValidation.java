@@ -16,6 +16,9 @@ import org.variantsync.diffdetective.analysis.FACommitExtractionValidationTask;
 import org.variantsync.diffdetective.analysis.FeatureSplitFeatureExtractionTask;
 import org.variantsync.diffdetective.analysis.FeatureSplitResult;
 import org.variantsync.diffdetective.analysis.strategies.NullStrategy;
+import org.variantsync.diffdetective.variation.diff.filter.DiffTreeFilter;
+import org.variantsync.diffdetective.variation.diff.filter.ExplainedFilter;
+import org.variantsync.diffdetective.variation.diff.transform.CutNonEditedSubtrees;
 
 public class FACommitValidation {
     public static final FACommitExtractionAnalysisTaskFactory VALIDATION_TASK_FACTORY =
@@ -23,7 +26,8 @@ public class FACommitValidation {
                     repo,
                     differ,
                     outputPath,
-                    Validation.ValidationExportOptions(repo),
+                    new ExplainedFilter<>(DiffTreeFilter.notEmpty()), // filters unwanted trees
+                    List.of(new CutNonEditedSubtrees()),
                     new NullStrategy(),
                     commits
             ),
@@ -34,7 +38,8 @@ public class FACommitValidation {
                     repo,
                     differ,
                     outputPath,
-                    Validation.ValidationExportOptions(repo),
+                    new ExplainedFilter<>(DiffTreeFilter.notEmpty()), // filters unwanted trees
+                    List.of(new CutNonEditedSubtrees()),
                     new NullStrategy(),
                     commits
             ));
@@ -60,7 +65,7 @@ public class FACommitValidation {
             Set<String> randomFeatures = new HashSet<>();
             List<String> rndFeatures = new ArrayList<>(extractedFeatures);
             Collections.shuffle(rndFeatures);
-            if (rndFeatures.size() >= numOfFeatures) {
+            if(rndFeatures.size() >= numOfFeatures) {
                 randomFeatures.addAll(rndFeatures.subList(0, numOfFeatures));
             } else {
                 randomFeatures.addAll(rndFeatures);

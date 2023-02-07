@@ -1,7 +1,7 @@
 package org.variantsync.diffdetective.preliminary.analysis.data;
 
-import org.variantsync.diffdetective.diff.PatchDiff;
-import org.variantsync.diffdetective.diff.difftree.DiffNode;
+import org.variantsync.diffdetective.diff.git.PatchDiff;
+import org.variantsync.diffdetective.variation.diff.DiffNode;
 
 import java.util.ArrayList;
 import java.util.List;

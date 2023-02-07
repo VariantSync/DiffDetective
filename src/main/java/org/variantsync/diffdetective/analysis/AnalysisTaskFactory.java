@@ -2,7 +2,7 @@ package org.variantsync.diffdetective.analysis;
 
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.variantsync.diffdetective.datasets.Repository;
-import org.variantsync.diffdetective.diff.GitDiffer;
+import org.variantsync.diffdetective.diff.git.GitDiffer;
 
 import java.nio.file.Path;
 import java.util.concurrent.Callable;

@@ -8,16 +8,15 @@ import java.util.Set;
 
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.tinylog.Logger;
-import org.variantsync.diffdetective.diff.CommitDiff;
-import org.variantsync.diffdetective.diff.PatchDiff;
-import org.variantsync.diffdetective.diff.difftree.DiffTree;
-import org.variantsync.diffdetective.diff.difftree.serialize.DiffTreeLineGraphExportOptions;
-import org.variantsync.diffdetective.diff.difftree.transform.DiffTreeTransformer;
-import org.variantsync.diffdetective.diff.difftree.transform.FeatureSplit;
+import org.variantsync.diffdetective.diff.git.CommitDiff;
+import org.variantsync.diffdetective.diff.git.PatchDiff;
 import org.variantsync.diffdetective.diff.result.CommitDiffResult;
 import org.variantsync.diffdetective.feature.PropositionalFormulaParser;
 import org.variantsync.diffdetective.util.Clock;
 import org.variantsync.diffdetective.util.FileUtils;
+import org.variantsync.diffdetective.variation.diff.DiffTree;
+import org.variantsync.diffdetective.variation.diff.transform.DiffTreeTransformer;
+import org.variantsync.diffdetective.variation.diff.transform.FeatureSplit;
 
 public class FeatureSplitValidationTask extends AnalysisTask<FeatureSplitResult> {
     public FeatureSplitValidationTask(Options options) {
@@ -29,7 +28,6 @@ public class FeatureSplitValidationTask extends AnalysisTask<FeatureSplitResult>
         final var miningResult = new FeatureSplitResult(options.repository().getRepositoryName());
         initializeResult(miningResult);
 
-        final DiffTreeLineGraphExportOptions exportOptions = options.exportOptions();
         final List<CommitProcessTime> commitTimes = new ArrayList<>(Analysis.COMMITS_TO_PROCESS_PER_THREAD_DEFAULT);
         final Clock totalTime = new Clock();
         final Clock patchTime = new Clock();
@@ -53,7 +51,7 @@ public class FeatureSplitValidationTask extends AnalysisTask<FeatureSplitResult>
                 ++miningResult.totalCommits;
 
                 final CommitDiff commitDiff = commitDiffResult.diff().get();
-                options.analysisStrategy().onCommit(commitDiff, "");
+                options.analysisStrategy().onCommit(commitDiff).close();
                 miningResult.totalPatches += commitDiff.getPatchAmount();
 
                 // inspect every patch
@@ -63,20 +61,20 @@ public class FeatureSplitValidationTask extends AnalysisTask<FeatureSplitResult>
 
                         // generate TreeDiff
                         final DiffTree t = patch.getDiffTree();
-                        DiffTreeTransformer.apply(exportOptions.treePreProcessing(), t);
+                        DiffTreeTransformer.apply(options.treePreProcessing(), t);
                         t.assertConsistency();
 
-                        if (!exportOptions.treeFilter().test(t)) {
+                        if (!options.treeFilter().test(t)) {
                             continue;
                         }
 
                         // calculate sizes of each patch
                         miningResult.initialTreeDiffSizes.put(patch.toString(), t.computeSize());
-                        
+
                         // Add features to results
                         Set<String> allFeatures = FeatureQueryGenerator.featureQueryGenerator(t);
                         miningResult.totalFeatures.addAll(allFeatures);
-                        
+
                         // validate FeatureSplit
                         allFeatures.forEach(feature -> {
 
@@ -92,7 +90,7 @@ public class FeatureSplitValidationTask extends AnalysisTask<FeatureSplitResult>
 
                             // generate feature-aware and remaining patches
                             HashMap<String, DiffTree> featureAware = FeatureSplit.featureSplit(t, PropositionalFormulaParser.Default.parse(feature));
-                            
+
                             //System.out.println("FeatureSplit");
 
                             // 1. get number of feature-aware patches for a patch
@@ -130,7 +128,7 @@ public class FeatureSplitValidationTask extends AnalysisTask<FeatureSplitResult>
                         ++numDiffTrees;
                     }
                 }
-                exportOptions.treeFilter().resetExplanations();
+                options.treeFilter().resetExplanations();
 
                 // Only consider non-empty commits
                 if (numDiffTrees > 0) {

@@ -1,8 +1,10 @@
 package org.variantsync.diffdetective.editclass.proposed;
 
-import org.variantsync.diffdetective.diff.difftree.DiffNode;
-import org.variantsync.diffdetective.diff.difftree.DiffType;
 import org.variantsync.diffdetective.editclass.EditClass;
+import org.variantsync.diffdetective.variation.diff.DiffNode;
+import org.variantsync.diffdetective.variation.diff.DiffType;
+
+import static org.variantsync.diffdetective.variation.diff.Time.AFTER;
 
 /**
  * Our AddWithMapping edit class from the ESEC/FSE'22 paper.
@@ -15,6 +17,6 @@ final class AddWithMapping extends EditClass {
 
     @Override
     protected boolean matchesArtifactNode(DiffNode artifactNode) {
-        return artifactNode.getAfterParent().isAdd();
+        return artifactNode.getParent(AFTER).isAdd();
     }
 }

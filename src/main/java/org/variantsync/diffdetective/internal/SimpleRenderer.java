@@ -3,19 +3,20 @@ package org.variantsync.diffdetective.internal;
 import org.tinylog.Logger;
 import org.variantsync.diffdetective.datasets.ParseOptions;
 import org.variantsync.diffdetective.datasets.Repository;
-import org.variantsync.diffdetective.diff.PatchDiff;
-import org.variantsync.diffdetective.diff.difftree.DiffTree;
-import org.variantsync.diffdetective.diff.difftree.parse.DiffNodeParser;
-import org.variantsync.diffdetective.diff.difftree.parse.DiffTreeParser;
-import org.variantsync.diffdetective.diff.difftree.render.DiffTreeRenderer;
-import org.variantsync.diffdetective.diff.difftree.render.RenderOptions;
-import org.variantsync.diffdetective.diff.difftree.serialize.nodeformat.MappingsDiffNodeFormat;
-import org.variantsync.diffdetective.diff.difftree.transform.DiffTreeTransformer;
+import org.variantsync.diffdetective.diff.git.PatchDiff;
+import org.variantsync.diffdetective.diff.result.DiffParseException;
+import org.variantsync.diffdetective.feature.CPPAnnotationParser;
 import org.variantsync.diffdetective.mining.DiffTreeMiner;
 import org.variantsync.diffdetective.mining.RWCompositePatternNodeFormat;
 import org.variantsync.diffdetective.mining.RWCompositePatternTreeFormat;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.util.FileUtils;
+import org.variantsync.diffdetective.variation.diff.DiffTree;
+import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParser;
+import org.variantsync.diffdetective.variation.diff.render.DiffTreeRenderer;
+import org.variantsync.diffdetective.variation.diff.render.RenderOptions;
+import org.variantsync.diffdetective.variation.diff.serialize.nodeformat.MappingsDiffNodeFormat;
+import org.variantsync.diffdetective.variation.diff.transform.DiffTreeTransformer;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -97,8 +98,8 @@ public class SimpleRenderer {
             Logger.info("Rendering {}", fileToRender);
             final DiffTree t;
             try {
-                t = DiffTree.fromFile(fileToRender, collapseMultipleCodeLines, ignoreEmptyLines, DiffNodeParser.Default).unwrap().getSuccess();
-            } catch (IOException e) {
+                t = DiffTree.fromFile(fileToRender, collapseMultipleCodeLines, ignoreEmptyLines, CPPAnnotationParser.Default);
+            } catch (IOException | DiffParseException e) {
                 Logger.error(e, "Could not read given file '{}'", fileToRender);
                 return;
             }

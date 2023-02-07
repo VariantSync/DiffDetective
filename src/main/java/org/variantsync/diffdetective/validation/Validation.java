@@ -18,17 +18,17 @@ import org.variantsync.diffdetective.datasets.DatasetFactory;
 import org.variantsync.diffdetective.datasets.DefaultDatasets;
 import org.variantsync.diffdetective.datasets.ParseOptions;
 import org.variantsync.diffdetective.datasets.Repository;
-import org.variantsync.diffdetective.diff.difftree.filter.DiffTreeFilter;
-import org.variantsync.diffdetective.diff.difftree.filter.ExplainedFilter;
-import org.variantsync.diffdetective.diff.difftree.serialize.DiffTreeLineGraphExportOptions;
-import org.variantsync.diffdetective.diff.difftree.serialize.GraphFormat;
-import org.variantsync.diffdetective.diff.difftree.serialize.edgeformat.EdgeLabelFormat;
-import org.variantsync.diffdetective.diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
-import org.variantsync.diffdetective.diff.difftree.transform.CutNonEditedSubtrees;
 import org.variantsync.diffdetective.mining.formats.DirectedEdgeLabelFormat;
 import org.variantsync.diffdetective.mining.formats.MiningNodeFormat;
 import org.variantsync.diffdetective.mining.formats.ReleaseMiningDiffNodeFormat;
 import org.variantsync.diffdetective.util.Assert;
+import org.variantsync.diffdetective.variation.diff.filter.DiffTreeFilter;
+import org.variantsync.diffdetective.variation.diff.filter.ExplainedFilter;
+import org.variantsync.diffdetective.variation.diff.serialize.GraphFormat;
+import org.variantsync.diffdetective.variation.diff.serialize.LineGraphExportOptions;
+import org.variantsync.diffdetective.variation.diff.serialize.edgeformat.EdgeLabelFormat;
+import org.variantsync.diffdetective.variation.diff.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
+import org.variantsync.diffdetective.variation.diff.transform.CutNonEditedSubtrees;
 
 public class Validation {
     private Validation() {
@@ -61,19 +61,17 @@ public class Validation {
     /**
      * Creates new export options for running the validation on the given repository.
      */
-    public static DiffTreeLineGraphExportOptions ValidationExportOptions(final Repository repository) {
+    public static LineGraphExportOptions ValidationExportOptions(final Repository repository) {
         final MiningNodeFormat nodeFormat = NodeFormat();
-        return new DiffTreeLineGraphExportOptions(
+        return new LineGraphExportOptions(
                 GraphFormat.DIFFTREE
                 // We have to ensure that all DiffTrees have unique IDs, so use name of changed file and commit hash.
                 , new CommitDiffDiffTreeLabelFormat()
                 , nodeFormat
                 , EdgeFormat(nodeFormat)
-                , new ExplainedFilter<>(DiffTreeFilter.notEmpty()) // filters unwanted trees
-                , List.of(new CutNonEditedSubtrees())
-                , DiffTreeLineGraphExportOptions.LogError()
-                .andThen(DiffTreeLineGraphExportOptions.RenderError())
-                .andThen(DiffTreeLineGraphExportOptions.SysExitOnError())
+                , LineGraphExportOptions.LogError()
+                .andThen(LineGraphExportOptions.RenderError())
+                .andThen(LineGraphExportOptions.SysExitOnError())
         );
     }
 

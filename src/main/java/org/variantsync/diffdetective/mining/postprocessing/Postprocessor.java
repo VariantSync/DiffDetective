@@ -1,12 +1,12 @@
 package org.variantsync.diffdetective.mining.postprocessing;
 
-import org.variantsync.diffdetective.diff.difftree.DiffTree;
-import org.variantsync.diffdetective.diff.difftree.filter.DiffTreeFilter;
-import org.variantsync.diffdetective.diff.difftree.filter.ExplainedFilter;
-import org.variantsync.diffdetective.diff.difftree.filter.TaggedPredicate;
-import org.variantsync.diffdetective.diff.difftree.transform.CutNonEditedSubtrees;
-import org.variantsync.diffdetective.diff.difftree.transform.DiffTreeTransformer;
 import org.variantsync.diffdetective.metadata.ExplainedFilterSummary;
+import org.variantsync.diffdetective.variation.diff.DiffTree;
+import org.variantsync.diffdetective.variation.diff.filter.DiffTreeFilter;
+import org.variantsync.diffdetective.variation.diff.filter.ExplainedFilter;
+import org.variantsync.diffdetective.variation.diff.filter.TaggedPredicate;
+import org.variantsync.diffdetective.variation.diff.transform.CutNonEditedSubtrees;
+import org.variantsync.diffdetective.variation.diff.transform.DiffTreeTransformer;
 
 import java.util.List;
 import java.util.Map;

@@ -6,8 +6,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
 
-import org.variantsync.diffdetective.diff.difftree.serialize.DiffTreeSerializeDebugData;
 import org.variantsync.diffdetective.diff.result.DiffError;
+import org.variantsync.diffdetective.variation.diff.serialize.DiffTreeSerializeDebugData;
 import org.variantsync.functjonal.category.InplaceMonoid;
 import org.variantsync.functjonal.category.InplaceSemigroup;
 

@@ -5,7 +5,7 @@ import org.eclipse.jgit.diff.DiffEntry;
 import org.tinylog.Logger;
 import org.variantsync.diffdetective.datasets.predefined.Marlin;
 import org.variantsync.diffdetective.datasets.predefined.StanciulescuMarlin;
-import org.variantsync.diffdetective.diff.DiffFilter;
+import org.variantsync.diffdetective.diff.git.DiffFilter;
 import org.variantsync.diffdetective.util.Assert;
 
 import java.nio.file.Path;

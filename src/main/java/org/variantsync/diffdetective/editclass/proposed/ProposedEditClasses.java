@@ -2,13 +2,16 @@ package org.variantsync.diffdetective.editclass.proposed;
 
 import org.prop4j.Node;
 import org.variantsync.diffdetective.analysis.logic.SAT;
-import org.variantsync.diffdetective.diff.difftree.DiffNode;
-import org.variantsync.diffdetective.diff.difftree.DiffType;
-import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.editclass.EditClass;
 import org.variantsync.diffdetective.editclass.EditClassCatalogue;
+import org.variantsync.diffdetective.util.Assert;
+import org.variantsync.diffdetective.variation.diff.DiffNode;
+import org.variantsync.diffdetective.variation.diff.DiffType;
 
 import java.util.*;
+
+import static org.variantsync.diffdetective.variation.diff.Time.AFTER;
+import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
 
 /**
  * The catalog of edit classes proposed in our ESEC/FSE'22 paper.
@@ -76,13 +79,13 @@ public class ProposedEditClasses implements EditClassCatalogue {
         }
 
         if (node.isAdd()) {
-            if (node.getAfterParent().isAdd()) {
+            if (node.getParent(AFTER).isAdd()) {
                 return AddWithMapping;
             } else {
                 return AddToPC;
             }
         } else if (node.isRem()) {
-            if (node.getBeforeParent().isRem()) {
+            if (node.getParent(BEFORE).isRem()) {
                 return RemWithMapping;
             } else {
                 return RemFromPC;
@@ -90,8 +93,8 @@ public class ProposedEditClasses implements EditClassCatalogue {
         } else {
             Assert.assertTrue(node.isNon());
 
-            final Node pcb = node.getBeforePresenceCondition();
-            final Node pca = node.getAfterPresenceCondition();
+            final Node pcb = node.getPresenceCondition(BEFORE);
+            final Node pca = node.getPresenceCondition(AFTER);
 
             final boolean beforeVariantsSubsetOfAfterVariants;
             final boolean afterVariantsSubsetOfBeforeVariants;

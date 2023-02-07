@@ -6,16 +6,15 @@ import org.variantsync.diffdetective.analysis.Analysis;
 import org.variantsync.diffdetective.analysis.AnalysisTask;
 import org.variantsync.diffdetective.analysis.CommitHistoryAnalysisResult;
 import org.variantsync.diffdetective.analysis.CommitProcessTime;
-import org.variantsync.diffdetective.diff.CommitDiff;
-import org.variantsync.diffdetective.diff.PatchDiff;
-import org.variantsync.diffdetective.diff.difftree.DiffTree;
-import org.variantsync.diffdetective.diff.difftree.serialize.DiffTreeLineGraphExportOptions;
-import org.variantsync.diffdetective.diff.difftree.transform.DiffTreeTransformer;
+import org.variantsync.diffdetective.diff.git.CommitDiff;
+import org.variantsync.diffdetective.diff.git.PatchDiff;
 import org.variantsync.diffdetective.diff.result.CommitDiffResult;
-import org.variantsync.diffdetective.metadata.ExplainedFilterSummary;
 import org.variantsync.diffdetective.editclass.proposed.ProposedEditClasses;
+import org.variantsync.diffdetective.metadata.ExplainedFilterSummary;
 import org.variantsync.diffdetective.util.Clock;
 import org.variantsync.diffdetective.util.FileUtils;
+import org.variantsync.diffdetective.variation.diff.DiffTree;
+import org.variantsync.diffdetective.variation.diff.transform.DiffTreeTransformer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +34,6 @@ public class EditClassValidationTask extends AnalysisTask<CommitHistoryAnalysisR
         final var miningResult = new CommitHistoryAnalysisResult(options.repository().getRepositoryName());
         initializeResult(miningResult);
 
-        final DiffTreeLineGraphExportOptions exportOptions = options.exportOptions();
         // List to store the process time of each commit.
         final List<CommitProcessTime> commitTimes = new ArrayList<>(Analysis.COMMITS_TO_PROCESS_PER_THREAD_DEFAULT);
         // Clock for runtime measurement.
@@ -61,17 +59,17 @@ public class EditClassValidationTask extends AnalysisTask<CommitHistoryAnalysisR
 
                 // extract the produced commit diff and inform the strategy
                 final CommitDiff commitDiff = commitDiffResult.diff().get();
-                options.analysisStrategy().onCommit(commitDiff, "");
+                options.analysisStrategy().onCommit(commitDiff).close();
 
                 // Count edit class matches
                 int numDiffTrees = 0;
                 for (final PatchDiff patch : commitDiff.getPatchDiffs()) {
                     if (patch.isValid()) {
                         final DiffTree t = patch.getDiffTree();
-                        DiffTreeTransformer.apply(exportOptions.treePreProcessing(), t);
+                        DiffTreeTransformer.apply(options.treePreProcessing(), t);
                         t.assertConsistency();
 
-                        if (!exportOptions.treeFilter().test(t)) {
+                        if (!options.treeFilter().test(t)) {
                             continue;
                         }
 
@@ -88,8 +86,8 @@ public class EditClassValidationTask extends AnalysisTask<CommitHistoryAnalysisR
                     }
                 }
                 miningResult.exportedTrees += numDiffTrees;
-                miningResult.filterHits.append(new ExplainedFilterSummary(exportOptions.treeFilter()));
-                exportOptions.treeFilter().resetExplanations();
+                miningResult.filterHits.append(new ExplainedFilterSummary(options.treeFilter()));
+                options.treeFilter().resetExplanations();
 
                 // Report the commit process time if the commit is not empty.
                 if (numDiffTrees > 0) {

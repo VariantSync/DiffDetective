@@ -7,16 +7,15 @@ import java.util.Set;
 
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.tinylog.Logger;
-import org.variantsync.diffdetective.diff.CommitDiff;
-import org.variantsync.diffdetective.diff.PatchDiff;
-import org.variantsync.diffdetective.diff.difftree.DiffTree;
-import org.variantsync.diffdetective.diff.difftree.serialize.DiffTreeLineGraphExportOptions;
-import org.variantsync.diffdetective.diff.difftree.transform.DiffTreeTransformer;
-import org.variantsync.diffdetective.diff.difftree.transform.FeatureSplit;
+import org.variantsync.diffdetective.diff.git.CommitDiff;
+import org.variantsync.diffdetective.diff.git.PatchDiff;
 import org.variantsync.diffdetective.diff.result.CommitDiffResult;
 import org.variantsync.diffdetective.feature.PropositionalFormulaParser;
 import org.variantsync.diffdetective.util.Clock;
 import org.variantsync.diffdetective.util.FileUtils;
+import org.variantsync.diffdetective.variation.diff.DiffTree;
+import org.variantsync.diffdetective.variation.diff.transform.DiffTreeTransformer;
+import org.variantsync.diffdetective.variation.diff.transform.FeatureSplit;
 
 public class FACommitExtractionValidationTask extends AnalysisTask<FeatureSplitResult> {
     Set<String> randomFeatures;
@@ -29,7 +28,6 @@ public class FACommitExtractionValidationTask extends AnalysisTask<FeatureSplitR
         final var miningResult = new FeatureSplitResult(options.repository().getRepositoryName());
         initializeResult(miningResult);
 
-        final DiffTreeLineGraphExportOptions exportOptions = options.exportOptions();
         final List<CommitProcessTime> commitTimes = new ArrayList<>(Analysis.COMMITS_TO_PROCESS_PER_THREAD_DEFAULT);
         final Clock totalTime = new Clock();
         totalTime.start();
@@ -52,7 +50,7 @@ public class FACommitExtractionValidationTask extends AnalysisTask<FeatureSplitR
                 ++miningResult.totalCommits;
 
                 final CommitDiff commitDiff = commitDiffResult.diff().get();
-                options.analysisStrategy().onCommit(commitDiff, "");
+                options.analysisStrategy().onCommit(commitDiff).close();
                 miningResult.totalPatches += commitDiff.getPatchAmount();
 
                 // inspect every patch
@@ -62,14 +60,14 @@ public class FACommitExtractionValidationTask extends AnalysisTask<FeatureSplitR
 
                         // generate TreeDiff
                         final DiffTree t = patch.getDiffTree();
-                        DiffTreeTransformer.apply(exportOptions.treePreProcessing(), t);
+                        DiffTreeTransformer.apply(options.treePreProcessing(), t);
                         t.assertConsistency();
                         //miningResult.treeDiffSizes = miningResult.treeDiffSizes >= t.computeSize() ? miningResult.treeDiffSizes : t.computeSize();
 
-                        if (!exportOptions.treeFilter().test(t)) {
+                        if (!options.treeFilter().test(t)) {
                             continue;
                         }
-                        
+
                         // Add features to results
                         randomFeatures.forEach(feature -> {
                             if (miningResult.totalFeatureAwarePatches.get(feature) == null) {
@@ -77,7 +75,7 @@ public class FACommitExtractionValidationTask extends AnalysisTask<FeatureSplitR
                                 miningResult.totalRemainderPatches.put(feature, 0);
                             }
                         });
-                        
+
                         // validate FeatureSplit
                         randomFeatures.forEach(feature -> {
 
@@ -91,7 +89,6 @@ public class FACommitExtractionValidationTask extends AnalysisTask<FeatureSplitR
                             // 1. get number of feature-aware patches for a patch
                             if(featureAware.get(feature) != null) miningResult.totalFeatureAwarePatches.replace(feature, miningResult.totalFeatureAwarePatches.get(feature) + 1);
                             if(featureAware.get("remains") != null) miningResult.totalRemainderPatches.replace(feature, miningResult.totalRemainderPatches.get(feature) + 1);
-                            
 
                             featureAware.forEach((key, value) -> {
                                 if (value == null) return;
@@ -112,7 +109,7 @@ public class FACommitExtractionValidationTask extends AnalysisTask<FeatureSplitR
                         ++numDiffTrees;
                     }
                 }
-                exportOptions.treeFilter().resetExplanations();
+                options.treeFilter().resetExplanations();
 
                 // Only consider non-empty commits
                 if (numDiffTrees > 0) {

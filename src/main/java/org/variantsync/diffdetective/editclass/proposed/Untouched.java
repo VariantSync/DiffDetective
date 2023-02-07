@@ -2,9 +2,12 @@ package org.variantsync.diffdetective.editclass.proposed;
 
 import org.prop4j.Node;
 import org.variantsync.diffdetective.analysis.logic.SAT;
-import org.variantsync.diffdetective.diff.difftree.DiffNode;
-import org.variantsync.diffdetective.diff.difftree.DiffType;
 import org.variantsync.diffdetective.editclass.EditClass;
+import org.variantsync.diffdetective.variation.diff.DiffNode;
+import org.variantsync.diffdetective.variation.diff.DiffType;
+
+import static org.variantsync.diffdetective.variation.diff.Time.AFTER;
+import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
 
 /**
  * Our Untouched edit class from the ESEC/FSE'22 paper.
@@ -17,8 +20,8 @@ final class Untouched extends EditClass {
 
     @Override
     protected boolean matchesArtifactNode(DiffNode artifactNode) {
-        final Node pcb = artifactNode.getBeforeFeatureMapping();
-        final Node pca = artifactNode.getAfterFeatureMapping();
+        final Node pcb = artifactNode.getFeatureMapping(BEFORE);
+        final Node pca = artifactNode.getFeatureMapping(AFTER);
         return SAT.equivalent(pcb, pca) && artifactNode.beforePathEqualsAfterPath();
     }
 }

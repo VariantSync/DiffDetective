@@ -1,7 +1,7 @@
 package org.variantsync.diffdetective.analysis;
 
 import org.prop4j.Node;
-import org.variantsync.diffdetective.diff.difftree.DiffTree;
+import org.variantsync.diffdetective.variation.diff.DiffTree;
 
 import java.util.HashSet;
 import java.util.Set;

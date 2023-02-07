@@ -1,7 +1,7 @@
 package org.variantsync.diffdetective.preliminary;
 
-import org.variantsync.diffdetective.diff.CommitDiff;
-import org.variantsync.diffdetective.diff.PatchDiff;
+import org.variantsync.diffdetective.diff.git.CommitDiff;
+import org.variantsync.diffdetective.diff.git.PatchDiff;
 
 import java.util.ArrayList;
 import java.util.List;

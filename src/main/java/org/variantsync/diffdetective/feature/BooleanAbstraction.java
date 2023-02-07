@@ -64,48 +64,83 @@ public class BooleanAbstraction {
 
         /**
          * @param original the literal string to be replaced if it matches a whole word
-         * @param the literal replacement
+         * @param replacement the replacement with special escape codes according to
+         * {@link Matcher#replaceAll}
          */
-        public Replacement(String original, String replacement) {
-            this.pattern = Pattern.compile("(?<=\\b|[()])" + Pattern.quote(original) + "(?=\\b|[()])");
-            this.replacement = Matcher.quoteReplacement(replacement);
+        private Replacement(Pattern pattern, String replacement) {
+            this.pattern = pattern;
+            this.replacement = replacement;
         }
 
+        /**
+         * Creates a new replacement matching {@code original} literally.
+         *
+         * @param original a string which is searched for literally (without any special
+         * characters)
+         * @param replacement the literal replacement for strings matched by {@code original}
+         */
+        public static Replacement literal(String original, String replacement) {
+            return new Replacement(
+                Pattern.compile(Pattern.quote(original)),
+                Matcher.quoteReplacement(replacement)
+            );
+        }
+
+        /**
+         * Creates a new replacement matching {@code original} literally but only on word
+         * boundaries.
+         *
+         * A word boundary is defined as the transition from a word character (alphanumerical
+         * characters) to a non-word character (everything else) or the transition from any
+         * character to a bracket (the characters {@code (} and {@code )}).
+         *
+         * @param original a string which is searched for as a whole word literally (without any
+         * special characters)
+         * @param replacement the literal replacement for strings matched by {@code original}
+         */
+        public static Replacement onlyFullWord(String original, String replacement) {
+            return new Replacement(
+                Pattern.compile("(?<=\\b|[()])" + Pattern.quote(original) + "(?=\\b|[()])"),
+                Matcher.quoteReplacement(replacement)
+            );
+        }
+
+        /**
+         * Replaces all patterns found in {@code value} by its replacement.
+         */
         public String applyTo(String value) {
             return pattern.matcher(value).replaceAll(replacement);
         }
     }
 
     private static final List<Replacement> ARITHMETICS = List.of(
-        new Replacement("==", EQ),
-        new Replacement("!=", NEQ),
-        new Replacement(">=", GEQ),
-        new Replacement("<=", LEQ),
-        new Replacement(">", GT),
-        new Replacement("<", LT),
-        new Replacement("+", ADD),
-        new Replacement("-", SUB),
-        new Replacement("*", MUL),
-        new Replacement("/", DIV),
-        new Replacement("%", MOD),
-        new Replacement("<<", LSHIFT),
-        new Replacement(">>", RSHIFT),
-        new Replacement("~", NOT),
-        new Replacement("&", AND),
-        new Replacement("^", XOR),
-        new Replacement("|", OR),
-        new Replacement("?", THEN),
-        new Replacement(":", ELSE)
+        // These replacements are carefully ordered by their length (longest first) to ensure that
+        // the longest match is replaced first.
+        Replacement.literal("<<", LSHIFT),
+        Replacement.literal(">>", RSHIFT),
+        Replacement.literal("==", EQ),
+        Replacement.literal("!=", NEQ),
+        Replacement.literal(">=", GEQ),
+        Replacement.literal("<=", LEQ),
+        Replacement.literal(">", GT),
+        Replacement.literal("<", LT),
+        Replacement.literal("+", ADD),
+        Replacement.literal("-", SUB),
+        Replacement.literal("*", MUL),
+        Replacement.literal("/", DIV),
+        Replacement.literal("%", MOD),
+        Replacement.literal("^", XOR),
+        Replacement.literal("~", NOT),
+        Replacement.literal("?", THEN),
+        Replacement.literal(":", ELSE),
+        Replacement.onlyFullWord("&", AND), // && has to be left untouched
+        Replacement.onlyFullWord("|", OR) // || has to be left untouched
     );
 
     private static final Pattern COMMA = Pattern.compile(",");
     private static final String COMMA_REPLACEMENT = "__";
-
-    private static final Pattern BRACKETS = Pattern.compile("\\((\\w*)\\)");
-    private static final String BRACKETS_REPLACEMENT = BRACKET_L + "$1" + BRACKET_R;
-
-    private static final Pattern CALL = Pattern.compile("(\\w+)\\((\\w*)\\)");
-    private static final String CALL_REPLACEMENT = "$1__$2";
+    private static final Pattern CALL = Pattern.compile("\\((\\w*)\\)");
+    private static final String CALL_REPLACEMENT = BRACKET_L + "$1" + BRACKET_R;
 
     private static String abstractAll(String formula, final List<Replacement> replacements) {
         for (var replacement : replacements) {
@@ -122,10 +157,7 @@ public class BooleanAbstraction {
      * @return A copy of the formula with abstracted arithmetics.
      */
     public static String arithmetics(final String formula) {
-        // TODO: The extra call for BRACKETS could be avoided by adding it to the ARITHMETICS map.
-        //       This requires a sorted map (e.g., LinkedHashMap) though which is not yet supported by the smart
-        //       constructor Map.of.
-        return BRACKETS.matcher(abstractAll(formula, ARITHMETICS)).replaceAll(BRACKETS_REPLACEMENT);
+        return abstractAll(formula, ARITHMETICS);
     }
 
     /**

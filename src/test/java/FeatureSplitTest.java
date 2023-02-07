@@ -1,48 +1,40 @@
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.tinylog.Logger;
-import org.variantsync.diffdetective.analysis.FeatureQueryGenerator;
-import org.variantsync.diffdetective.diff.difftree.DiffNode;
-import org.variantsync.diffdetective.diff.difftree.DiffTree;
-import org.variantsync.diffdetective.diff.difftree.transform.FeatureSplit;
-import org.variantsync.diffdetective.feature.PropositionalFormulaParser;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.tinylog.Logger;
+import org.variantsync.diffdetective.diff.result.DiffParseException;
+import org.variantsync.diffdetective.feature.PropositionalFormulaParser;
+import org.variantsync.diffdetective.variation.diff.DiffNode;
+import org.variantsync.diffdetective.variation.diff.DiffTree;
+import org.variantsync.diffdetective.variation.diff.transform.FeatureSplit;
 
 public class FeatureSplitTest {
 
     private static final List<DiffTree> DIFF_TREES = new ArrayList<>();
 
-    @BeforeClass
-    public static void init() throws IOException {
+    @BeforeAll
+    public static void init() throws IOException, DiffParseException {
         // Generate DiffTrees based on the TEST_FILES
         List<Path> TEST_FILES = Files.list(Paths.get("src/test/resources/feature_split/")).toList();
         for (final Path testFile : TEST_FILES) {
             Logger.info("Testing {}", testFile);
             // create variation tree diff
-            final DiffTree diffTree = DiffTree.fromFile(testFile, false, true).unwrap().getSuccess();
+            final DiffTree diffTree = DiffTree.fromFile(testFile, false, true);
             Logger.info("Gathered diff \n {}", diffTree.toString());
 
             DIFF_TREES.add(diffTree);
         }
     }
-
-    /**
-     * test feature Query Generator
-     */
-    @Test
-    public void featureQueryGenerator() {
-        DiffTree tree = DIFF_TREES.get(1);
-        Set<String> queries = FeatureQueryGenerator.featureQueryGenerator(tree);
-        //Assert.assertEquals(queries, "");
-    }
-
 
     /**
      * test the operator featureSplit
@@ -52,8 +44,8 @@ public class FeatureSplitTest {
         DiffTree tree = DIFF_TREES.get(0);
         HashMap<String, DiffTree> featureAwareTrees = FeatureSplit.featureSplit(tree, Arrays.asList(PropositionalFormulaParser.Default.parse("Unix"), PropositionalFormulaParser.Default.parse("Get")));
 
-        Assert.assertEquals(featureAwareTrees.get("Get").getRoot().getAllChildren().get(0).getAllChildren().size(), 2);
-        Assert.assertEquals(featureAwareTrees.get("Unix").getRoot().getAllChildren().get(0).getAllChildren().size(), 1);
+        assertEquals(featureAwareTrees.get("Get").getRoot().getAllChildren().get(0).getAllChildren().size(), 2);
+        assertEquals(featureAwareTrees.get("Unix").getRoot().getAllChildren().get(0).getAllChildren().size(), 1);
     }
 
     @Test
@@ -62,12 +54,12 @@ public class FeatureSplitTest {
         HashMap<String, DiffTree> featureAwareTrees = FeatureSplit.featureSplit(tree, PropositionalFormulaParser.Default.parse("Get"));
 
         featureAwareTrees.get("Get").getRoot().getAllChildren().get(0).getAllChildren().forEach(diffNode -> System.out.println(diffNode.toString()));
-        Assert.assertEquals(featureAwareTrees.get("Get").getRoot().getAllChildren().get(1).getAllChildren().size(), 3);
+        assertEquals(featureAwareTrees.get("Get").getRoot().getAllChildren().get(1).getAllChildren().size(), 3);
     }
 
     @Test
     public void featureSplitTest3() {
-        DiffTree tree = DIFF_TREES.get(2);
+        DiffTree tree = DIFF_TREES.get(1);
         HashMap<String, DiffTree> featureAwareTrees = FeatureSplit.featureSplit(tree, PropositionalFormulaParser.Default.parse("OPENSSL_NO_TLSEXT"));
         featureAwareTrees.forEach((key, value) -> {
             // TODO `value` is always `null`. Is this correct?
@@ -86,9 +78,9 @@ public class FeatureSplitTest {
         List<DiffTree> subtrees = FeatureSplit.generateAllSubtrees(tree);
         HashMap<String, List<DiffTree>> clusters = FeatureSplit.generateClusters(subtrees, Arrays.asList(PropositionalFormulaParser.Default.parse("Unix"), PropositionalFormulaParser.Default.parse("Get")));
 
-        Assert.assertEquals(clusters.get("Unix").size(), 1);
-        Assert.assertEquals(clusters.get("Get").size(), 2);
-        Assert.assertEquals(clusters.get("remains").size(), 0);
+        assertEquals(clusters.get("Unix").size(), 1);
+        assertEquals(clusters.get("Get").size(), 2);
+        assertEquals(clusters.get("remains").size(), 0);
     }
 
     /**
@@ -99,7 +91,7 @@ public class FeatureSplitTest {
         DiffTree tree = DIFF_TREES.get(0);
         List<DiffTree> subtrees = FeatureSplit.generateAllSubtrees(tree);
 
-        Assert.assertEquals(subtrees.size(), 3);
+        assertEquals(subtrees.size(), 3);
     }
 
     @Test
@@ -121,7 +113,7 @@ public class FeatureSplitTest {
         HashMap<Integer, DiffNode> duplicatedHashmap = new HashMap<>();
         subtree.forAll(elem -> duplicatedHashmap.put(elem.getID(), elem));
 
-        Assert.assertEquals(originalHashmap, duplicatedHashmap);
+        assertEquals(originalHashmap, duplicatedHashmap);
     }
 
     @Test
@@ -130,7 +122,7 @@ public class FeatureSplitTest {
         Logger.info(node.toString());
         DiffNode duplication = node.shallowClone();
         Logger.info(duplication.toString());
-        Assert.assertEquals(node, duplication);
+        assertEquals(node, duplication);
     }
 
     @Test
@@ -143,7 +135,7 @@ public class FeatureSplitTest {
         HashMap<Integer, DiffNode> duplicatedHashmap = new HashMap<>();
         tree.deepClone().forAll(node -> duplicatedHashmap.put(node.getID(), node));
 
-        Assert.assertEquals(originalHashmap, duplicatedHashmap);
+        assertEquals(originalHashmap, duplicatedHashmap);
     }
 }
 

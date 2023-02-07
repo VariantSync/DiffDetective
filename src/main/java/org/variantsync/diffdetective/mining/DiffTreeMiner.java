@@ -10,21 +10,21 @@ import org.variantsync.diffdetective.analysis.strategies.AnalysisStrategy;
 import org.variantsync.diffdetective.analysis.strategies.AnalyzeAllThenExport;
 import org.variantsync.diffdetective.datasets.*;
 import org.variantsync.diffdetective.datasets.predefined.StanciulescuMarlin;
-import org.variantsync.diffdetective.diff.difftree.filter.DiffTreeFilter;
-import org.variantsync.diffdetective.diff.difftree.filter.ExplainedFilter;
-import org.variantsync.diffdetective.diff.difftree.parse.DiffNodeParser;
-import org.variantsync.diffdetective.diff.difftree.serialize.DiffTreeLineGraphExportOptions;
-import org.variantsync.diffdetective.diff.difftree.serialize.GraphFormat;
-import org.variantsync.diffdetective.diff.difftree.serialize.edgeformat.EdgeLabelFormat;
-import org.variantsync.diffdetective.diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
-import org.variantsync.diffdetective.diff.difftree.transform.CollapseNestedNonEditedAnnotations;
-import org.variantsync.diffdetective.diff.difftree.transform.CutNonEditedSubtrees;
-import org.variantsync.diffdetective.diff.difftree.transform.DiffTreeTransformer;
-import org.variantsync.diffdetective.diff.difftree.transform.Starfold;
+import org.variantsync.diffdetective.feature.CPPAnnotationParser;
 import org.variantsync.diffdetective.metadata.ExplainedFilterSummary;
 import org.variantsync.diffdetective.mining.formats.DirectedEdgeLabelFormat;
 import org.variantsync.diffdetective.mining.formats.MiningNodeFormat;
 import org.variantsync.diffdetective.mining.formats.ReleaseMiningDiffNodeFormat;
+import org.variantsync.diffdetective.variation.diff.filter.DiffTreeFilter;
+import org.variantsync.diffdetective.variation.diff.filter.ExplainedFilter;
+import org.variantsync.diffdetective.variation.diff.serialize.GraphFormat;
+import org.variantsync.diffdetective.variation.diff.serialize.LineGraphExportOptions;
+import org.variantsync.diffdetective.variation.diff.serialize.edgeformat.EdgeLabelFormat;
+import org.variantsync.diffdetective.variation.diff.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
+import org.variantsync.diffdetective.variation.diff.transform.CollapseNestedNonEditedAnnotations;
+import org.variantsync.diffdetective.variation.diff.transform.CutNonEditedSubtrees;
+import org.variantsync.diffdetective.variation.diff.transform.DiffTreeTransformer;
+import org.variantsync.diffdetective.variation.diff.transform.Starfold;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -45,7 +45,7 @@ public class DiffTreeMiner {
         final List<DiffTreeTransformer> processing = new ArrayList<>();
         processing.add(new CutNonEditedSubtrees());
         if (SEARCH_FOR_GOOD_RUNNING_EXAMPLES) {
-            processing.add(new RunningExampleFinder(repository == null ? DiffNodeParser.Default : repository.getParseOptions().annotationParser()).
+            processing.add(new RunningExampleFinder(repository == null ? CPPAnnotationParser.Default : repository.getParseOptions().annotationParser()).
                     The_Diff_Itself_Is_A_Valid_DiffTree_And(
                             RunningExampleFinder.DefaultExampleConditions,
                             RunningExampleFinder.DefaultExamplesDirectory.resolve(repository == null ? "unknown" : repository.getRepositoryName())
@@ -73,28 +73,17 @@ public class DiffTreeMiner {
                 new DirectedEdgeLabelFormat(nodeFormat, false, direction);
     }
 
-    public static DiffTreeLineGraphExportOptions MiningExportOptions(final Repository repository) {
+    public static LineGraphExportOptions MiningExportOptions(final Repository repository) {
         final MiningNodeFormat nodeFormat = NodeFormat();
-        return new DiffTreeLineGraphExportOptions(
+        return new LineGraphExportOptions(
                   GraphFormat.DIFFTREE
                 // We have to ensure that all DiffTrees have unique IDs, so use name of changed file and commit hash.
                 , new CommitDiffDiffTreeLabelFormat()
                 , nodeFormat
                 , EdgeFormat(nodeFormat)
-                , new ExplainedFilter<>(
-                        DiffTreeFilter.notEmpty(),
-                        DiffTreeFilter.moreThanOneArtifactNode(),
-                        /// We want to exclude patches that do not edit variability.
-                        /// In particular, we noticed that most edits just insert or delete artifacts (or replace it).
-                        /// This is reasonable and was also observed in previous studies: Edits to artifacts are more frequent than edits to variability.
-                        /// Yet, such edits cannot reveal compositions of more complex edits to variability.
-                        /// We thus filter them.
-                        DiffTreeFilter.hasAtLeastOneEditToVariability()
-                )
-                , Postprocessing(repository)
-                , DiffTreeLineGraphExportOptions.LogError()
-                .andThen(DiffTreeLineGraphExportOptions.RenderError())
-                .andThen(DiffTreeLineGraphExportOptions.SysExitOnError())
+                , LineGraphExportOptions.LogError()
+                .andThen(LineGraphExportOptions.RenderError())
+                .andThen(LineGraphExportOptions.SysExitOnError())
         );
     }
 
@@ -111,10 +100,20 @@ public class DiffTreeMiner {
                 repo,
                 differ,
                 outputPath,
-                MiningExportOptions(repo),
+                new ExplainedFilter<>(
+                        DiffTreeFilter.notEmpty(),
+                        DiffTreeFilter.moreThanOneArtifactNode(),
+                        /// We want to exclude patches that do not edit variability.
+                        /// In particular, we noticed that most edits just insert or delete artifacts (or replace it).
+                        /// This is reasonable and was also observed in previous studies: Edits to artifacts are more frequent than edits to variability.
+                        /// Yet, such edits cannot reveal compositions of more complex edits to variability.
+                        /// We thus filter them.
+                        DiffTreeFilter.hasAtLeastOneEditToVariability()
+                ),
+                Postprocessing(repo),
                 MiningStrategy(),
                 commits
-        ));
+        ), MiningExportOptions(repo));
     }
 
     public static void main(String[] args) throws IOException {

@@ -2,7 +2,7 @@ package org.variantsync.diffdetective.datasets;
 
 import org.eclipse.jgit.api.Git;
 import org.tinylog.Logger;
-import org.variantsync.diffdetective.diff.DiffFilter;
+import org.variantsync.diffdetective.diff.git.DiffFilter;
 import org.variantsync.diffdetective.load.GitLoader;
 import org.variantsync.diffdetective.util.IO;
 import org.variantsync.functjonal.Lazy;

@@ -10,9 +10,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
-import org.variantsync.diffdetective.metadata.EditClassCount;
 import org.variantsync.diffdetective.diff.result.DiffError;
 import org.variantsync.diffdetective.editclass.proposed.ProposedEditClasses;
+import org.variantsync.diffdetective.metadata.EditClassCount;
 import org.variantsync.diffdetective.metadata.ExplainedFilterSummary;
 import org.variantsync.functjonal.category.InplaceMonoid;
 import org.variantsync.functjonal.category.InplaceSemigroup;
@@ -131,9 +131,13 @@ public class CommitHistoryAnalysisResult extends AnalysisResult<CommitHistoryAna
                         } else if (key.startsWith(ExplainedFilterSummary.FILTERED_MESSAGE_BEGIN)) {
                             filterHitsLines.add(line);
                         } else if (key.startsWith(ERROR_BEGIN)) {
-                            DiffError e = new DiffError(key.substring(ERROR_BEGIN.length(), key.length() - ERROR_END.length()));
+                            var errorId = key.substring(ERROR_BEGIN.length(), key.length() - ERROR_END.length());
+                            var e = DiffError.fromMessage(errorId);
+                            if (e.isEmpty()) {
+                                throw new RuntimeException("Invalid error id " + errorId + " while importing " + p);
+                            }
                             // add DiffError
-                            result.diffErrors.put(e, Integer.parseInt(value));
+                            result.diffErrors.put(e.get(), Integer.parseInt(value));
                         } else {
                             final BiConsumer<CommitHistoryAnalysisResult, String> customParser = customParsers.get(key);
                             if (customParser == null) {

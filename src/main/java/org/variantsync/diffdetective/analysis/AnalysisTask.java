@@ -4,11 +4,13 @@ import org.eclipse.jgit.revwalk.RevCommit;
 import org.tinylog.Logger;
 import org.variantsync.diffdetective.analysis.strategies.AnalysisStrategy;
 import org.variantsync.diffdetective.datasets.Repository;
-import org.variantsync.diffdetective.diff.GitDiffer;
-import org.variantsync.diffdetective.diff.difftree.serialize.DiffTreeLineGraphExportOptions;
+import org.variantsync.diffdetective.diff.git.GitDiffer;
 import org.variantsync.diffdetective.util.CSV;
 import org.variantsync.diffdetective.util.IO;
 import org.variantsync.diffdetective.util.StringUtils;
+import org.variantsync.diffdetective.variation.diff.DiffTree;
+import org.variantsync.diffdetective.variation.diff.filter.ExplainedFilter;
+import org.variantsync.diffdetective.variation.diff.transform.DiffTreeTransformer;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -25,19 +27,21 @@ public abstract class AnalysisTask<T extends AnalysisResult<T>> implements Calla
     public static final String PATCH_STATISTICS_EXTENSION = ".patchStatistics.csv";
 
     /**
-    * Options that may be specified for processing a set of commits.
-    * @param repository The repository that is analyzed.
-    * @param differ The differ that should be used to obtain diffs.
-    * @param outputPath The path to which any output should be written on disk.
-    * @param exportOptions Options for exporting DiffTrees.
-    * @param analysisStrategy A callback that is invoked for each commit.
-    * @param commits The set of commits to process in this task.
-    */
+     * Options that may be specified for processing a set of commits.
+     * @param repository The repository that is analyzed.
+     * @param differ The differ that should be used to obtain diffs.
+     * @param outputPath The path to which any output should be written on disk.
+     * @param treeFilter filters commits before processing them
+     * @param treePreProcessing applies a processing function after filtering, but before processing
+     * @param analysisStrategy A callback that is invoked for each commit.
+     * @param commits The set of commits to process in this task.
+     */
     public record Options(
         Repository repository,
         GitDiffer differ,
         Path outputPath,
-        DiffTreeLineGraphExportOptions exportOptions,
+        ExplainedFilter<DiffTree> treeFilter,
+        List<DiffTreeTransformer> treePreProcessing,
         AnalysisStrategy analysisStrategy,
         Iterable<RevCommit> commits
     ) {}
@@ -49,13 +53,7 @@ public abstract class AnalysisTask<T extends AnalysisResult<T>> implements Calla
     }
 
     protected void initializeResult(T initialResult) throws Exception {
-        options.analysisStrategy().start(options.repository(), options.outputPath(), options.exportOptions());
-
-        final DiffTreeLineGraphExportOptions exportOptions = options.exportOptions();
-
-        initialResult.putCustomInfo(MetadataKeys.TREEFORMAT, exportOptions.treeFormat().getName());
-        initialResult.putCustomInfo(MetadataKeys.NODEFORMAT, exportOptions.nodeFormat().getName());
-        initialResult.putCustomInfo(MetadataKeys.EDGEFORMAT, exportOptions.edgeFormat().getName());
+        options.analysisStrategy().start(options.repository(), options.outputPath());
         initialResult.putCustomInfo(MetadataKeys.TASKNAME, this.getClass().getName());
     }
 
@@ -75,7 +73,7 @@ public abstract class AnalysisTask<T extends AnalysisResult<T>> implements Calla
             IO.write(pathToOutputFile, times.toString());
         } catch (IOException e) {
             Logger.error(e);
-            System.exit(0);
+            System.exit(1);
         }
     }
 
@@ -91,7 +89,7 @@ public abstract class AnalysisTask<T extends AnalysisResult<T>> implements Calla
             IO.write(pathToOutputFile, csv);
         } catch (IOException e) {
             Logger.error(e);
-            System.exit(0);
+            System.exit(1);
         }
     }
 }

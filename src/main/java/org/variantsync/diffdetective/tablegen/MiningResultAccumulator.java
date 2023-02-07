@@ -143,7 +143,7 @@ public class MiningResultAccumulator {
                          automationResult = FindMedianCommitTime.getResultOfDirectory(automationResultDir);
                     } catch (IOException e) {
                         Logger.error("Could not load automation results for dataset {} in {}", dataset.name(), automationResultDir);
-                        System.exit(0);
+                        System.exit(1);
                         return null;
                     }
 

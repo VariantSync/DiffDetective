@@ -1,14 +1,16 @@
 package org.variantsync.diffdetective.preliminary.pattern.semantic;
 
 import org.prop4j.Node;
-import org.variantsync.diffdetective.diff.Lines;
-import org.variantsync.diffdetective.diff.difftree.DiffNode;
+import org.variantsync.diffdetective.util.LineRange;
 import org.variantsync.diffdetective.preliminary.analysis.data.PatternMatch;
 import org.variantsync.diffdetective.preliminary.evaluation.FeatureContext;
+import org.variantsync.diffdetective.variation.diff.DiffNode;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import static org.variantsync.diffdetective.variation.diff.Time.AFTER;
 
 @Deprecated
 class AddIfdefElif extends SemanticPattern {
@@ -40,12 +42,12 @@ class AddIfdefElif extends SemanticPattern {
             }
 
             List<Node> mappings = new ArrayList<>();
-            mappings.add(annotationNode.getAfterFeatureMapping());
+            mappings.add(annotationNode.getFeatureMapping(AFTER));
             if(elifNode == null || !addedCodeInIf || !isValidElif(elifNode, mappings)){
                 return Optional.empty();
             }
 
-            final Lines diffLines = annotationNode.getLinesInDiff();
+            final LineRange diffLines = annotationNode.getLinesInDiff();
             return Optional.of(new PatternMatch<>(this,
                     diffLines.getFromInclusive(), diffLines.getToExclusive(),
                     mappings.toArray(new Node[0])
@@ -68,7 +70,7 @@ class AddIfdefElif extends SemanticPattern {
             }
         }
         if(addedCode && nextNode != null){
-            mappings.add(elifNode.getAfterFeatureMapping());
+            mappings.add(elifNode.getFeatureMapping(AFTER));
             return isValidElif(nextNode, mappings);
         }
 

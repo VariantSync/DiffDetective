@@ -1,6 +1,7 @@
 package org.variantsync.diffdetective.validation;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.variantsync.diffdetective.analysis.Analysis;
 import org.variantsync.diffdetective.analysis.AnalysisTask;
@@ -8,6 +9,9 @@ import org.variantsync.diffdetective.analysis.AnalysisTaskFactory;
 import org.variantsync.diffdetective.analysis.FeatureSplitResult;
 import org.variantsync.diffdetective.analysis.FeatureSplitValidationTask;
 import org.variantsync.diffdetective.analysis.strategies.NullStrategy;
+import org.variantsync.diffdetective.variation.diff.filter.DiffTreeFilter;
+import org.variantsync.diffdetective.variation.diff.filter.ExplainedFilter;
+import org.variantsync.diffdetective.variation.diff.transform.CutNonEditedSubtrees;
 
 public class ValidationFeatureSplit {
 
@@ -16,7 +20,8 @@ public class ValidationFeatureSplit {
                     repo,
                     differ,
                     outputPath,
-                    Validation.ValidationExportOptions(repo),
+                    new ExplainedFilter<>(DiffTreeFilter.notEmpty()), // filters unwanted trees
+                    List.of(new CutNonEditedSubtrees()),
                     new NullStrategy(),
                     commits
             ));

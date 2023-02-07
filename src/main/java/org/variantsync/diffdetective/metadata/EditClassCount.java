@@ -1,6 +1,6 @@
 package org.variantsync.diffdetective.metadata;
 
-import org.variantsync.diffdetective.diff.CommitDiff;
+import org.variantsync.diffdetective.diff.git.CommitDiff;
 import org.variantsync.diffdetective.editclass.EditClass;
 import org.variantsync.diffdetective.editclass.EditClassCatalogue;
 import org.variantsync.diffdetective.editclass.proposed.ProposedEditClasses;

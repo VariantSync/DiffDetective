@@ -4,9 +4,9 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-import org.variantsync.diffdetective.diff.difftree.serialize.DiffTreeSerializeDebugData;
 import org.variantsync.diffdetective.diff.result.DiffError;
 import org.variantsync.diffdetective.metadata.Metadata;
+import org.variantsync.diffdetective.variation.diff.serialize.DiffTreeSerializeDebugData;
 import org.variantsync.functjonal.Functjonal;
 import org.variantsync.functjonal.category.InplaceSemigroup;
 import org.variantsync.functjonal.category.Semigroup;

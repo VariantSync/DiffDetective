@@ -1,6 +1,6 @@
 package org.variantsync.diffdetective.analysis;
 
-import org.variantsync.diffdetective.diff.PatchDiff;
+import org.variantsync.diffdetective.diff.git.PatchDiff;
 import org.variantsync.diffdetective.editclass.EditClassCatalogue;
 import org.variantsync.diffdetective.util.CSV;
 
