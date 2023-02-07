@@ -11,7 +11,6 @@ import org.tinylog.Logger;
 import org.variantsync.diffdetective.analysis.Analysis;
 import org.variantsync.diffdetective.analysis.AnalysisTask;
 import org.variantsync.diffdetective.analysis.AnalysisTaskFactory;
-import org.variantsync.diffdetective.analysis.FACommitExtractionAnalysisTaskFactory;
 import org.variantsync.diffdetective.analysis.FACommitExtractionValidationTask;
 import org.variantsync.diffdetective.analysis.FeatureSplitFeatureExtractionTask;
 import org.variantsync.diffdetective.analysis.FeatureSplitResult;
@@ -21,17 +20,21 @@ import org.variantsync.diffdetective.variation.diff.filter.ExplainedFilter;
 import org.variantsync.diffdetective.variation.diff.transform.CutNonEditedSubtrees;
 
 public class FACommitValidation {
-    public static final FACommitExtractionAnalysisTaskFactory VALIDATION_TASK_FACTORY =
-            (repo, differ, outputPath, commits, randomFeatures) -> new FACommitExtractionValidationTask(new AnalysisTask.Options(
-                    repo,
-                    differ,
-                    outputPath,
-                    new ExplainedFilter<>(DiffTreeFilter.notEmpty()), // filters unwanted trees
-                    List.of(new CutNonEditedSubtrees()),
-                    new NullStrategy(),
-                    commits
-            ),
-            randomFeatures);
+    public static final AnalysisTaskFactory<FeatureSplitResult> VALIDATION_TASK_FACTORY(Set<String> randomFeatures) {
+            return (repo, differ, outputPath, commits) ->
+                new FACommitExtractionValidationTask(
+                    new AnalysisTask.Options(
+                        repo,
+                        differ,
+                        outputPath,
+                        new ExplainedFilter<>(DiffTreeFilter.notEmpty()), // filters unwanted trees
+                        List.of(new CutNonEditedSubtrees()),
+                        new NullStrategy(),
+                        commits
+                    ),
+                    randomFeatures
+                );
+    }
 
     public static final AnalysisTaskFactory<FeatureSplitResult> FEATURE_EXTRACTION_TASK_FACTORY =
             (repo, differ, outputPath, commits) -> new FeatureSplitFeatureExtractionTask(new AnalysisTask.Options(
@@ -74,8 +77,7 @@ public class FACommitValidation {
             Analysis.forEachCommit(
                 repo,
                 repoOutputDir,
-                (repository, differ, outputFile, commitList) ->
-                    VALIDATION_TASK_FACTORY.create(repository, differ, outputFile, commitList, randomFeatures),
+                VALIDATION_TASK_FACTORY(randomFeatures),
                 new FeatureSplitResult(repo.getRepositoryName(), randomFeatures)
             );
         });
