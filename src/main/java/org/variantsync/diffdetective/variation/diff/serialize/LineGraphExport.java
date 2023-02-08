@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 import org.tinylog.Logger;
-import org.variantsync.diffdetective.analysis.CommitHistoryAnalysisResult;
+import org.variantsync.diffdetective.analysis.EditClassAnalysisResult;
 import org.variantsync.diffdetective.diff.git.CommitDiff;
 import org.variantsync.diffdetective.diff.git.PatchDiff;
 import org.variantsync.diffdetective.util.StringUtils;
@@ -38,8 +38,8 @@ public final class LineGraphExport {
      * @param options Configuration options for the export, such as the format used for node and edge labels.
      * @return A pair of (1) metadata about the exported DiffTrees, and (2) the produced linegraph as String.
      */
-    public static CommitHistoryAnalysisResult toLineGraphFormat(final String repoName, final Iterable<DiffTree> trees, final LineGraphExportOptions options, OutputStream destination) throws IOException {
-        final CommitHistoryAnalysisResult result = new CommitHistoryAnalysisResult(repoName);
+    public static EditClassAnalysisResult toLineGraphFormat(final String repoName, final Iterable<DiffTree> trees, final LineGraphExportOptions options, OutputStream destination) throws IOException {
+        final EditClassAnalysisResult result = new EditClassAnalysisResult(repoName);
 
         for (final DiffTree t : trees) {
             destination.write(lineGraphHeader(t.getSource(), options).getBytes());
@@ -55,18 +55,18 @@ public final class LineGraphExport {
 
     /**
      * Same as {@link LineGraphExport#toLineGraphFormat(String, Iterable, LineGraphExportOptions, OutputStream)} but with an
-     * {@link CommitHistoryAnalysisResult#NO_REPO unkown repository}.
+     * {@link EditClassAnalysisResult#NO_REPO unkown repository}.
      */
-    public static CommitHistoryAnalysisResult toLineGraphFormat(final Iterable<DiffTree> trees, final LineGraphExportOptions options, OutputStream destination) throws IOException {
-        return toLineGraphFormat(CommitHistoryAnalysisResult.NO_REPO, trees, options, destination);
+    public static EditClassAnalysisResult toLineGraphFormat(final Iterable<DiffTree> trees, final LineGraphExportOptions options, OutputStream destination) throws IOException {
+        return toLineGraphFormat(EditClassAnalysisResult.NO_REPO, trees, options, destination);
     }
 
     /**
      * Same as {@link LineGraphExport#toLineGraphFormat(String, CommitDiff, LineGraphExportOptions, OutputStream)}
-     * but with an {@link CommitHistoryAnalysisResult#NO_REPO unkown repository}.
+     * but with an {@link EditClassAnalysisResult#NO_REPO unkown repository}.
      */
-    public static CommitHistoryAnalysisResult toLineGraphFormat(final CommitDiff commitDiff, final LineGraphExportOptions options, OutputStream destination) throws IOException {
-        return toLineGraphFormat(CommitHistoryAnalysisResult.NO_REPO, commitDiff, options, destination);
+    public static EditClassAnalysisResult toLineGraphFormat(final CommitDiff commitDiff, final LineGraphExportOptions options, OutputStream destination) throws IOException {
+        return toLineGraphFormat(EditClassAnalysisResult.NO_REPO, commitDiff, options, destination);
     }
 
     /**
@@ -77,8 +77,8 @@ public final class LineGraphExport {
      * @param destination where the resulting line graph is written
      * @return The number of the next diff tree to export (updated value of treeCounter).
      */
-    public static CommitHistoryAnalysisResult toLineGraphFormat(final String repoName, final CommitDiff commitDiff, LineGraphExportOptions options, OutputStream destination) throws IOException {
-        final CommitHistoryAnalysisResult result = new CommitHistoryAnalysisResult(repoName);
+    public static EditClassAnalysisResult toLineGraphFormat(final String repoName, final CommitDiff commitDiff, LineGraphExportOptions options, OutputStream destination) throws IOException {
+        final EditClassAnalysisResult result = new EditClassAnalysisResult(repoName);
 
         for (final PatchDiff patchDiff : commitDiff.getPatchDiffs()) {
             try {
@@ -101,8 +101,8 @@ public final class LineGraphExport {
      * @param destination where the resulting line graph is written
      * @return The number of the next diff tree to export (updated value of treeCounter).
      */
-    public static CommitHistoryAnalysisResult toLineGraphFormat(final String repoName, final PatchDiff patch, final LineGraphExportOptions options, OutputStream destination) throws IOException {
-        final CommitHistoryAnalysisResult result = new CommitHistoryAnalysisResult(repoName);
+    public static EditClassAnalysisResult toLineGraphFormat(final String repoName, final PatchDiff patch, final LineGraphExportOptions options, OutputStream destination) throws IOException {
+        final EditClassAnalysisResult result = new EditClassAnalysisResult(repoName);
 
         if (patch.isValid()) {
             //Logger.info("  Exporting DiffTree #{}", treeCounter);

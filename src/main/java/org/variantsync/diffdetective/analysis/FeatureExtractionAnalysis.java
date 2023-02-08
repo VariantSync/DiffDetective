@@ -5,7 +5,7 @@ import org.variantsync.diffdetective.util.Clock;
 /**
  * Generate a list of all features contained in a repo
  */
-public class FeatureSplitFeatureExtraction implements Analysis.Hooks<FeatureSplitResult> {
+public class FeatureExtractionAnalysis implements Analysis.Hooks<FeatureSplitResult> {
     private final Clock featureExtractTime = new Clock();
 
     @Override

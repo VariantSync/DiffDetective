@@ -10,10 +10,10 @@ import org.variantsync.diffdetective.feature.PropositionalFormulaParser;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.variation.diff.transform.FeatureSplit;
 
-public class FACommitExtractionValidationAnalysis implements Analysis.Hooks<FeatureSplitResult> {
+public class FACommitValidationAnalysis implements Analysis.Hooks<FeatureSplitResult> {
     private Set<String> randomFeatures;
 
-    public FACommitExtractionValidationAnalysis(Set<String> randomFeatures) {
+    public FACommitValidationAnalysis(Set<String> randomFeatures) {
         this.randomFeatures = randomFeatures;
     }
 

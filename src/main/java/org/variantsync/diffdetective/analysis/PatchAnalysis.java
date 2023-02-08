@@ -12,25 +12,25 @@ import org.variantsync.diffdetective.util.CSV;
 import org.variantsync.diffdetective.util.FileUtils;
 import org.variantsync.diffdetective.util.IO;
 
-public class PatchAnalysis implements Analysis.Hooks<CommitHistoryAnalysisResult> {
+public class PatchAnalysis implements Analysis.Hooks<EditClassAnalysisResult> {
     public static final String PATCH_STATISTICS_EXTENSION = ".patchStatistics.csv";
 
     private List<PatchStatistics> patchStatistics;
     private PatchStatistics thisPatchesStatistics;
 
     @Override
-    public void beginBatch(Analysis<CommitHistoryAnalysisResult> analysis) {
+    public void beginBatch(Analysis<EditClassAnalysisResult> analysis) {
         patchStatistics = new ArrayList<>(Analysis.COMMITS_TO_PROCESS_PER_THREAD_DEFAULT);
     }
 
     @Override
-    public boolean beginPatch(Analysis<CommitHistoryAnalysisResult> analysis) {
+    public boolean beginPatch(Analysis<EditClassAnalysisResult> analysis) {
         thisPatchesStatistics = new PatchStatistics(analysis.getPatch(), ProposedEditClasses.Instance);
         return true;
     }
 
     @Override
-    public boolean analyzeDiffTree(Analysis<CommitHistoryAnalysisResult> analysis) {
+    public boolean analyzeDiffTree(Analysis<EditClassAnalysisResult> analysis) {
         analysis.getDiffTree().forAll(node -> {
             if (node.isArtifact()) {
                 final EditClass editClass = ProposedEditClasses.Instance.match(node);
@@ -46,12 +46,12 @@ public class PatchAnalysis implements Analysis.Hooks<CommitHistoryAnalysisResult
     }
 
     @Override
-    public void endPatch(Analysis<CommitHistoryAnalysisResult> analysis) {
+    public void endPatch(Analysis<EditClassAnalysisResult> analysis) {
         patchStatistics.add(thisPatchesStatistics);
     }
 
     @Override
-    public void endBatch(Analysis<CommitHistoryAnalysisResult> analysis) {
+    public void endBatch(Analysis<EditClassAnalysisResult> analysis) {
         exportPatchStatistics(patchStatistics, FileUtils.addExtension(analysis.getOutputFile(), PATCH_STATISTICS_EXTENSION));
     }
 

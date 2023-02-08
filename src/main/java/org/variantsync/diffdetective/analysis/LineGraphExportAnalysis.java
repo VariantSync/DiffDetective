@@ -6,7 +6,7 @@ import org.variantsync.diffdetective.analysis.strategies.AnalysisStrategy;
 import org.variantsync.diffdetective.variation.diff.serialize.LineGraphExport;
 import org.variantsync.diffdetective.variation.diff.serialize.LineGraphExportOptions;
 
-public class LineGraphExportAnalysis implements Analysis.Hooks<CommitHistoryAnalysisResult> {
+public class LineGraphExportAnalysis implements Analysis.Hooks<EditClassAnalysisResult> {
     private final AnalysisStrategy analysisStrategy;
     private final LineGraphExportOptions exportOptions;
     private OutputStream lineGraphDestination;
@@ -17,7 +17,7 @@ public class LineGraphExportAnalysis implements Analysis.Hooks<CommitHistoryAnal
     }
 
     @Override
-    public void beginBatch(Analysis<CommitHistoryAnalysisResult> analysis) {
+    public void beginBatch(Analysis<EditClassAnalysisResult> analysis) {
         analysis.getResult().putCustomInfo(MetadataKeys.TREEFORMAT, exportOptions.treeFormat().getName());
         analysis.getResult().putCustomInfo(MetadataKeys.NODEFORMAT, exportOptions.nodeFormat().getName());
         analysis.getResult().putCustomInfo(MetadataKeys.EDGEFORMAT, exportOptions.edgeFormat().getName());
@@ -26,24 +26,24 @@ public class LineGraphExportAnalysis implements Analysis.Hooks<CommitHistoryAnal
     }
 
     @Override
-    public boolean onParsedCommit(Analysis<CommitHistoryAnalysisResult> analysis) {
+    public boolean onParsedCommit(Analysis<EditClassAnalysisResult> analysis) {
         lineGraphDestination = analysisStrategy.onCommit(analysis.getCommitDiff());
         return true;
     }
 
     @Override
-    public boolean analyzeDiffTree(Analysis<CommitHistoryAnalysisResult> analysis) throws Exception {
+    public boolean analyzeDiffTree(Analysis<EditClassAnalysisResult> analysis) throws Exception {
         analysis.getResult().append(LineGraphExport.toLineGraphFormat(analysis.getResult().repoName, analysis.getPatch(), exportOptions, lineGraphDestination));
         return true;
     }
 
     @Override
-    public void endCommit(Analysis<CommitHistoryAnalysisResult> analysis) throws Exception {
+    public void endCommit(Analysis<EditClassAnalysisResult> analysis) throws Exception {
         lineGraphDestination.close();
     }
 
     @Override
-    public void endBatch(Analysis<CommitHistoryAnalysisResult> analysis) {
+    public void endBatch(Analysis<EditClassAnalysisResult> analysis) {
         analysisStrategy.end();
     }
 }

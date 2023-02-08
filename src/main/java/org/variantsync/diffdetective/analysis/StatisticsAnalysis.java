@@ -72,7 +72,7 @@ public class StatisticsAnalysis<T extends AnalysisResult<T>> implements Analysis
     public void endBatch(Analysis<T> analysis) {
         // shutdown; report total time; export results
         analysis.getResult().runtimeInSeconds = totalTime.getPassedSeconds();
-        analysis.getResult().exportTo(FileUtils.addExtension(analysis.getOutputFile(), CommitHistoryAnalysisResult.EXTENSION));
+        analysis.getResult().exportTo(FileUtils.addExtension(analysis.getOutputFile(),EditClassAnalysisResult.EXTENSION));
         exportCommitTimes(commitTimes, FileUtils.addExtension(analysis.getOutputFile(), COMMIT_TIME_FILE_EXTENSION));
     }
 

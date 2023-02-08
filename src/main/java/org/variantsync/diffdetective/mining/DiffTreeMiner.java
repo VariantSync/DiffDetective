@@ -11,7 +11,7 @@ import java.util.function.Consumer;
 import org.apache.commons.io.FileUtils;
 import org.tinylog.Logger;
 import org.variantsync.diffdetective.analysis.Analysis;
-import org.variantsync.diffdetective.analysis.CommitHistoryAnalysisResult;
+import org.variantsync.diffdetective.analysis.EditClassAnalysisResult;
 import org.variantsync.diffdetective.analysis.FilterAnalysis;
 import org.variantsync.diffdetective.analysis.LineGraphExportAnalysis;
 import org.variantsync.diffdetective.analysis.PatchAnalysis;
@@ -122,7 +122,7 @@ public class DiffTreeMiner {
             ),
             repo,
             repoOutputDir,
-            new CommitHistoryAnalysisResult()
+            new EditClassAnalysisResult()
         );
 
     public static void main(String[] args) throws IOException {

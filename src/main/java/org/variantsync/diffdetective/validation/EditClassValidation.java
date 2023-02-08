@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.function.BiFunction;
 
 import org.variantsync.diffdetective.analysis.Analysis;
-import org.variantsync.diffdetective.analysis.CommitHistoryAnalysisResult;
+import org.variantsync.diffdetective.analysis.EditClassAnalysisResult;
 import org.variantsync.diffdetective.analysis.FilterAnalysis;
 import org.variantsync.diffdetective.analysis.PreprocessingAnalysis;
 import org.variantsync.diffdetective.analysis.StatisticsAnalysis;
@@ -31,7 +31,7 @@ public class EditClassValidation {
         ),
         repo,
         repoOutputDir,
-        new CommitHistoryAnalysisResult()
+        new EditClassAnalysisResult()
     );
 
     /**

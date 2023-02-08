@@ -2,7 +2,7 @@ package org.variantsync.diffdetective.tablegen;
 
 import org.tinylog.Logger;
 import org.variantsync.diffdetective.analysis.Analysis;
-import org.variantsync.diffdetective.analysis.CommitHistoryAnalysisResult;
+import org.variantsync.diffdetective.analysis.EditClassAnalysisResult;
 import org.variantsync.diffdetective.analysis.AutomationResult;
 import org.variantsync.diffdetective.analysis.MetadataKeys;
 import org.variantsync.diffdetective.datasets.DatasetDescription;
@@ -26,26 +26,26 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-/** Accumulates multiple {@link CommitHistoryAnalysisResult}s of several datasets. */
+/** Accumulates multiple {@link EditClassAnalysisResult}s of several datasets. */
 public class MiningResultAccumulator {
     /** Specification of the information loaded by {@link getAllTotalResultsIn}. */
-    private final static Map<String, BiConsumer<CommitHistoryAnalysisResult, String>> CustomEntryParsers = Map.ofEntries(
-            CommitHistoryAnalysisResult.storeAsCustomInfo(MetadataKeys.TREEFORMAT),
-            CommitHistoryAnalysisResult.storeAsCustomInfo(MetadataKeys.NODEFORMAT),
-            CommitHistoryAnalysisResult.storeAsCustomInfo(MetadataKeys.EDGEFORMAT),
-            CommitHistoryAnalysisResult.storeAsCustomInfo(MetadataKeys.TASKNAME),
+    private final static Map<String, BiConsumer<EditClassAnalysisResult, String>> CustomEntryParsers = Map.ofEntries(
+            EditClassAnalysisResult.storeAsCustomInfo(MetadataKeys.TREEFORMAT),
+            EditClassAnalysisResult.storeAsCustomInfo(MetadataKeys.NODEFORMAT),
+            EditClassAnalysisResult.storeAsCustomInfo(MetadataKeys.EDGEFORMAT),
+            EditClassAnalysisResult.storeAsCustomInfo(MetadataKeys.TASKNAME),
             Map.entry("org/variantsync/diffdetective/analysis", (r, val) -> r.putCustomInfo(MetadataKeys.TASKNAME, val))
     );
 
     /**
-     * Finds all {@code CommitHistoryAnalysisResult}s in {@code folderPath} recursively.
+     * Finds all {@code EditClassAnalysisResult}s in {@code folderPath} recursively.
      * All files having a {@link Analysis#TOTAL_RESULTS_FILE_NAME} filename ending are parsed and
      * associated with their filename.
      *
      * @param folderPath the folder which is scanned for analysis results recursively
      * @return an association between the parsed filenames and their parsed content
      */
-    public static Map<String, CommitHistoryAnalysisResult> getAllTotalResultsIn(final Path folderPath) throws IOException {
+    public static Map<String, EditClassAnalysisResult> getAllTotalResultsIn(final Path folderPath) throws IOException {
         // get all files in the directory which are outputs of DiffTreeMiningResult
         final List<Path> paths = Files.walk(folderPath)
                 .filter(Files::isRegularFile)
@@ -53,22 +53,22 @@ public class MiningResultAccumulator {
                 .peek(path -> Logger.info("Processing file {}", path))
                 .toList();
 
-        final Map<String, CommitHistoryAnalysisResult> results = new HashMap<>();
+        final Map<String, EditClassAnalysisResult> results = new HashMap<>();
         for (final Path p : paths) {
-            results.put(p.getParent().getFileName().toString(), CommitHistoryAnalysisResult.importFrom(p, CustomEntryParsers));
+            results.put(p.getParent().getFileName().toString(), EditClassAnalysisResult.importFrom(p, CustomEntryParsers));
         }
         return results;
     }
 
 
     /**
-     * Computes a total {@link CommitHistoryAnalysisResult} from multiple metadata outputs.
+     * Computes a total {@link EditClassAnalysisResult} from multiple metadata outputs.
      *
      * @param results analysis results to be accumulated
-     * @return the total {@link CommitHistoryAnalysisResult} of all {@code results}
+     * @return the total {@link EditClassAnalysisResult} of all {@code results}
      */
-    public static CommitHistoryAnalysisResult computeTotalMetadataResult(final Collection<CommitHistoryAnalysisResult> results) {
-        return results.stream().collect(CommitHistoryAnalysisResult.IMONOID);
+    public static EditClassAnalysisResult computeTotalMetadataResult(final Collection<EditClassAnalysisResult> results) {
+        return results.stream().collect(EditClassAnalysisResult.IMONOID);
     }
 
     /**
@@ -113,9 +113,9 @@ public class MiningResultAccumulator {
             throw new IllegalArgumentException("Expected path to directory but the given path is not a directory!");
         }
 
-        final Map<String, CommitHistoryAnalysisResult> allResults = getAllTotalResultsIn(inputPath);
-        final CommitHistoryAnalysisResult ultimateResult = computeTotalMetadataResult(allResults.values());
-        Analysis.exportMetadataToFile(inputPath.resolve("ultimateresult" + CommitHistoryAnalysisResult.EXTENSION), ultimateResult);
+        final Map<String, EditClassAnalysisResult> allResults = getAllTotalResultsIn(inputPath);
+        final EditClassAnalysisResult ultimateResult = computeTotalMetadataResult(allResults.values());
+        Analysis.exportMetadataToFile(inputPath.resolve("ultimateresult" + EditClassAnalysisResult.EXTENSION), ultimateResult);
 
         final Map<String, DatasetDescription> datasetByName;
         try {
@@ -131,7 +131,7 @@ public class MiningResultAccumulator {
 
         final List<ContentRow> datasetsWithResults = allResults.entrySet().stream().map(
                 entry -> {
-                    final CommitHistoryAnalysisResult result = entry.getValue();
+                    final EditClassAnalysisResult result = entry.getValue();
                     final DatasetDescription dataset = datasetByName.get(entry.getKey());
                     if (dataset == null) {
                         throw new RuntimeException("Could not find dataset for " + entry.getKey());

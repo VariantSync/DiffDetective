@@ -9,7 +9,7 @@ import java.util.Set;
 
 import org.tinylog.Logger;
 import org.variantsync.diffdetective.analysis.Analysis;
-import org.variantsync.diffdetective.analysis.FeatureSplitFeatureExtraction;
+import org.variantsync.diffdetective.analysis.FeatureExtractionAnalysis;
 import org.variantsync.diffdetective.analysis.FeatureSplitResult;
 import org.variantsync.diffdetective.analysis.FilterAnalysis;
 import org.variantsync.diffdetective.analysis.PreprocessingAnalysis;
@@ -27,7 +27,7 @@ public class FACommitValidation {
                         List.of(
                             new PreprocessingAnalysis<>(new CutNonEditedSubtrees()),
                             new FilterAnalysis<>(DiffTreeFilter.notEmpty()), // filters unwanted trees
-                            new FeatureSplitFeatureExtraction()
+                            new FeatureExtractionAnalysis()
                         ),
                         repo,
                         repoOutputDir,
@@ -55,7 +55,7 @@ public class FACommitValidation {
                 List.of(
                     new PreprocessingAnalysis<>(new CutNonEditedSubtrees()),
                     new FilterAnalysis<>(DiffTreeFilter.notEmpty()), // filters unwanted trees
-                    new FACommitExtractionValidationAnalysis(randomFeatures),
+                    new FACommitValidationAnalysis(randomFeatures),
                     new StatisticsAnalysis<>()
                 ),
                 repo,

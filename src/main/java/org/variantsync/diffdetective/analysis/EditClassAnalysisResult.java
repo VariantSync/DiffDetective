@@ -17,30 +17,30 @@ import org.variantsync.diffdetective.metadata.ExplainedFilterSummary;
 import org.variantsync.functjonal.category.InplaceMonoid;
 import org.variantsync.functjonal.category.InplaceSemigroup;
 
-public class CommitHistoryAnalysisResult extends AnalysisResult<CommitHistoryAnalysisResult> {
-    public static InplaceSemigroup<CommitHistoryAnalysisResult> ISEMIGROUP =
-        (a, b) -> AnalysisResult.<CommitHistoryAnalysisResult>ISEMIGROUP().append(a, b);
+public class EditClassAnalysisResult extends AnalysisResult<EditClassAnalysisResult> {
+    public static InplaceSemigroup<EditClassAnalysisResult> ISEMIGROUP =
+        (a, b) -> AnalysisResult.<EditClassAnalysisResult>ISEMIGROUP().append(a, b);
 
     /**
-     * Inplace monoid for CommitHistoryAnalysisResult.
-     * @see CommitHistoryAnalysisResult#ISEMIGROUP
+     * Inplace monoid for EditClassAnalysisResult.
+     * @see EditClassAnalysisResult#ISEMIGROUP
      */
-    public static InplaceMonoid<CommitHistoryAnalysisResult> IMONOID = InplaceMonoid.From(
-            CommitHistoryAnalysisResult::new,
+    public static InplaceMonoid<EditClassAnalysisResult> IMONOID = InplaceMonoid.From(
+            EditClassAnalysisResult::new,
             ISEMIGROUP
     );
 
     @Override
-    public InplaceSemigroup<CommitHistoryAnalysisResult> semigroup() {
+    public InplaceSemigroup<EditClassAnalysisResult> semigroup() {
         return ISEMIGROUP;
     }
 
     public EditClassCount editClassCounts = new EditClassCount();
 
-    public CommitHistoryAnalysisResult() {
+    public EditClassAnalysisResult() {
     }
 
-    public CommitHistoryAnalysisResult(String repoName) {
+    public EditClassAnalysisResult(String repoName) {
         super(repoName);
     }
 
@@ -54,16 +54,16 @@ public class CommitHistoryAnalysisResult extends AnalysisResult<CommitHistoryAna
     }
 
     /**
-     * Imports a metadata file, which is an output of a {@link CommitHistoryAnalysisResult}, and saves back to {@link CommitHistoryAnalysisResult}.
+     * Imports a metadata file, which is an output of a {@link EditClassAnalysisResult}, and saves back to {@link EditClassAnalysisResult}.
      *
      * @param p {@link Path} to the metadata file
-     * @param customParsers A list of parsers to handle custom values that were stored with {@link CommitHistoryAnalysisResult#putCustomInfo(String, String)}.
-     *                      Each parser parses the value (second argument) of a given key (first entry in the map) and stores it in the given CommitHistoryAnalysisResult (first argument).
-     * @return The reconstructed {@link CommitHistoryAnalysisResult}
+     * @param customParsers A list of parsers to handle custom values that were stored with {@link EditClassAnalysisResult#putCustomInfo(String, String)}.
+     *                      Each parser parses the value (second argument) of a given key (first entry in the map) and stores it in the given EditClassAnalysisResult (first argument).
+     * @return The reconstructed {@link EditClassAnalysisResult}
      * @throws IOException when the file could not be read.
      */
-    public static CommitHistoryAnalysisResult importFrom(final Path p, final Map<String, BiConsumer<CommitHistoryAnalysisResult, String>> customParsers) throws IOException {
-        var result = new CommitHistoryAnalysisResult();
+    public static EditClassAnalysisResult importFrom(final Path p, final Map<String, BiConsumer<EditClassAnalysisResult, String>> customParsers) throws IOException {
+        var result = new EditClassAnalysisResult();
 
         final List<String> filterHitsLines = new ArrayList<>();
         final List<String> editClassCountsLines = new ArrayList<>();
@@ -124,7 +124,7 @@ public class CommitHistoryAnalysisResult extends AnalysisResult<CommitHistoryAna
                             // add DiffError
                             result.diffErrors.put(e.get(), Integer.parseInt(value));
                         } else {
-                            final BiConsumer<CommitHistoryAnalysisResult, String> customParser = customParsers.get(key);
+                            final BiConsumer<EditClassAnalysisResult, String> customParser = customParsers.get(key);
                             if (customParser == null) {
                                 final String errorMessage = "Unknown entry \"" + line + "\"!";
                                 throw new IOException(errorMessage);
@@ -144,12 +144,12 @@ public class CommitHistoryAnalysisResult extends AnalysisResult<CommitHistoryAna
     }
 
     /**
-     * Helper method to construct custom parsers for {@link CommitHistoryAnalysisResult#importFrom(Path, Map)}.
+     * Helper method to construct custom parsers for {@link EditClassAnalysisResult#importFrom(Path, Map)}.
      * This method creates a parser for custom values that just stores the parsed values as string values for the given key.
      * @param key The key whose values should be stored as unparsed strings.
-     * @return A custom parser for {@link CommitHistoryAnalysisResult#importFrom(Path, Map)}.
+     * @return A custom parser for {@link EditClassAnalysisResult#importFrom(Path, Map)}.
      */
-    public static Map.Entry<String, BiConsumer<CommitHistoryAnalysisResult, String>> storeAsCustomInfo(String key) {
+    public static Map.Entry<String, BiConsumer<EditClassAnalysisResult, String>> storeAsCustomInfo(String key) {
         return Map.entry(key, (r, val) -> r.putCustomInfo(key, val));
     }
 }

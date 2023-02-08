@@ -1,6 +1,6 @@
 package org.variantsync.diffdetective.tablegen.rows;
 
-import org.variantsync.diffdetective.analysis.CommitHistoryAnalysisResult;
+import org.variantsync.diffdetective.analysis.EditClassAnalysisResult;
 import org.variantsync.diffdetective.analysis.AutomationResult;
 import org.variantsync.diffdetective.datasets.DatasetDescription;
 import org.variantsync.diffdetective.tablegen.ColumnDefinition;
@@ -18,7 +18,7 @@ import java.util.List;
  */
 public record ContentRow(
         DatasetDescription dataset,
-        CommitHistoryAnalysisResult results,
+        EditClassAnalysisResult results,
         AutomationResult automationResult
 ) implements Row {
     @Override
