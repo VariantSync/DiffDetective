@@ -11,6 +11,7 @@ import org.variantsync.diffdetective.analysis.FilterAnalysis;
 import org.variantsync.diffdetective.analysis.PreprocessingAnalysis;
 import org.variantsync.diffdetective.analysis.StatisticsAnalysis;
 import org.variantsync.diffdetective.datasets.Repository;
+import org.variantsync.diffdetective.editclass.proposed.ProposedEditClasses;
 import org.variantsync.diffdetective.variation.diff.filter.DiffTreeFilter;
 import org.variantsync.diffdetective.variation.diff.transform.CutNonEditedSubtrees;
 
@@ -20,13 +21,13 @@ import org.variantsync.diffdetective.variation.diff.transform.CutNonEditedSubtre
  * creating a {@link Analysis} and run it.
  * @author Paul Bittner
  */
-public class EditClassValidation {
+public class EditClassValidation implements Analysis.Hooks<EditClassAnalysisResult> {
     // This is only needed for the `MarlinDebug` test.
     public static final BiFunction<Repository, Path, Analysis> AnalysisFactory = (repo, repoOutputDir) -> new Analysis(
         List.of(
             new PreprocessingAnalysis<>(new CutNonEditedSubtrees()),
             new FilterAnalysis<>(DiffTreeFilter.notEmpty()), // filters unwanted trees
-            new EditClassValidationAnalysis(),
+            new EditClassValidation(),
             new StatisticsAnalysis<>()
         ),
         repo,
@@ -46,5 +47,19 @@ public class EditClassValidation {
         Validation.run(args, (repo, repoOutputDir) ->
             Analysis.forEachCommit(() -> AnalysisFactory.apply(repo, repoOutputDir))
         );
+    }
+
+    @Override
+    public boolean analyzeDiffTree(Analysis<EditClassAnalysisResult> analysis) throws Exception {
+        analysis.getDiffTree().forAll(node -> {
+            if (node.isArtifact()) {
+                analysis.getResult().editClassCounts.reportOccurrenceFor(
+                    ProposedEditClasses.Instance.match(node),
+                    analysis.getCommitDiff()
+                );
+            }
+        });
+
+        return true;
     }
 }
