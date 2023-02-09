@@ -136,12 +136,10 @@ public class MarlinDebug {
         final RevWalk revWalk = new RevWalk(git.getRepository());
         final RevCommit childCommit = revWalk.parseCommit(ObjectId.fromString(commitHash));
 
-        DiffTreeMiner.Mine().create(
+        DiffTreeMiner.AnalysisFactory.apply(
             repoInspection.repo,
-            new GitDiffer(repoInspection.repo),
-            repoInspection.outputPath,
-            List.of(childCommit)
-        ).call();
+            repoInspection.outputPath
+        ).processCommits(List.of(childCommit));
     }
 
     public static void asValidationTask(final RepoInspection repoInspection, final String commitHash) throws Exception {
@@ -150,12 +148,10 @@ public class MarlinDebug {
         final RevWalk revWalk = new RevWalk(git.getRepository());
         final RevCommit childCommit = revWalk.parseCommit(ObjectId.fromString(commitHash));
 
-        Validation.VALIDATION_TASK_FACTORY.create(
-                repoInspection.repo,
-                new GitDiffer(repoInspection.repo),
-                repoInspection.outputPath,
-                List.of(childCommit)
-        ).call();
+        Validation.AnalysisFactory.apply(
+            repoInspection.repo,
+            repoInspection.outputPath
+        ).processCommits(List.of(childCommit));
     }
 
     public static void test(final RepoInspection repoInspection) throws Exception {

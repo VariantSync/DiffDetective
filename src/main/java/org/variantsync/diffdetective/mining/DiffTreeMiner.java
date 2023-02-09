@@ -1,13 +1,28 @@
 package org.variantsync.diffdetective.mining;
 
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
+
 import org.apache.commons.io.FileUtils;
 import org.tinylog.Logger;
-import org.variantsync.diffdetective.analysis.CommitHistoryAnalysisTask;
-import org.variantsync.diffdetective.analysis.CommitHistoryAnalysisTaskFactory;
+import org.variantsync.diffdetective.analysis.FilterAnalysis;
 import org.variantsync.diffdetective.analysis.HistoryAnalysis;
+import org.variantsync.diffdetective.analysis.LineGraphExportAnalysis;
+import org.variantsync.diffdetective.analysis.PatchAnalysis;
+import org.variantsync.diffdetective.analysis.PreprocessingAnalysis;
+import org.variantsync.diffdetective.analysis.StatisticsAnalysis;
 import org.variantsync.diffdetective.analysis.strategies.AnalysisStrategy;
 import org.variantsync.diffdetective.analysis.strategies.AnalyzeAllThenExport;
-import org.variantsync.diffdetective.datasets.*;
+import org.variantsync.diffdetective.datasets.DatasetDescription;
+import org.variantsync.diffdetective.datasets.DatasetFactory;
+import org.variantsync.diffdetective.datasets.DefaultDatasets;
+import org.variantsync.diffdetective.datasets.ParseOptions;
+import org.variantsync.diffdetective.datasets.Repository;
 import org.variantsync.diffdetective.datasets.predefined.StanciulescuMarlin;
 import org.variantsync.diffdetective.feature.CPPAnnotationParser;
 import org.variantsync.diffdetective.metadata.ExplainedFilterSummary;
@@ -15,7 +30,6 @@ import org.variantsync.diffdetective.mining.formats.DirectedEdgeLabelFormat;
 import org.variantsync.diffdetective.mining.formats.MiningNodeFormat;
 import org.variantsync.diffdetective.mining.formats.ReleaseMiningDiffNodeFormat;
 import org.variantsync.diffdetective.variation.diff.filter.DiffTreeFilter;
-import org.variantsync.diffdetective.variation.diff.filter.ExplainedFilter;
 import org.variantsync.diffdetective.variation.diff.serialize.GraphFormat;
 import org.variantsync.diffdetective.variation.diff.serialize.LineGraphExportOptions;
 import org.variantsync.diffdetective.variation.diff.serialize.edgeformat.EdgeLabelFormat;
@@ -24,13 +38,6 @@ import org.variantsync.diffdetective.variation.diff.transform.CollapseNestedNonE
 import org.variantsync.diffdetective.variation.diff.transform.CutNonEditedSubtrees;
 import org.variantsync.diffdetective.variation.diff.transform.DiffTreeTransformer;
 import org.variantsync.diffdetective.variation.diff.transform.Starfold;
-
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Consumer;
 
 public class DiffTreeMiner {
     public static final Path DATASET_FILE = DefaultDatasets.EMACS;
@@ -94,12 +101,11 @@ public class DiffTreeMiner {
 //                );
     }
 
-    public static CommitHistoryAnalysisTaskFactory Mine() {
-        return (repo, differ, outputPath, commits) -> new MiningTask(new CommitHistoryAnalysisTask.Options(
-                repo,
-                differ,
-                outputPath,
-                new ExplainedFilter<>(
+    public static BiFunction<Repository, Path, HistoryAnalysis> AnalysisFactory =
+        (repo, repoOutputDir) -> new HistoryAnalysis(
+            List.of(
+                new PreprocessingAnalysis(Postprocessing(repo)),
+                new FilterAnalysis(
                         DiffTreeFilter.notEmpty(),
                         DiffTreeFilter.moreThanOneArtifactNode(),
                         /// We want to exclude patches that do not edit variability.
@@ -109,11 +115,13 @@ public class DiffTreeMiner {
                         /// We thus filter them.
                         DiffTreeFilter.hasAtLeastOneEditToVariability()
                 ),
-                Postprocessing(repo),
-                MiningStrategy(),
-                commits
-        ), MiningExportOptions(repo));
-    }
+                new LineGraphExportAnalysis(MiningStrategy(), MiningExportOptions(repo)),
+                new PatchAnalysis(),
+                new StatisticsAnalysis()
+            ),
+            repo,
+            repoOutputDir
+        );
 
     public static void main(String[] args) throws IOException {
 //        setupLogger(Level.INFO);
@@ -166,13 +174,10 @@ public class DiffTreeMiner {
             repoPostProcessing = p -> {};
         }
 
-        final HistoryAnalysis analysis = new HistoryAnalysis(
-                repos,
-                outputDir,
-                HistoryAnalysis.COMMITS_TO_PROCESS_PER_THREAD_DEFAULT,
-                Mine(),
-                repoPostProcessing);
-        analysis.runAsync();
+        HistoryAnalysis.forEachRepository(repos, outputDir, (repo, repoOutputDir) -> {
+            HistoryAnalysis.forEachCommit(() -> AnalysisFactory.apply(repo, repoOutputDir));
+            repoPostProcessing.accept(repoOutputDir);
+        });
         Logger.info("Done");
 
         final String logFile = "log.txt";

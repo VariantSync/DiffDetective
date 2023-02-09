@@ -1,32 +1,34 @@
 package org.variantsync.diffdetective.validation;
 
-import org.apache.commons.io.FileUtils;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.tinylog.Logger;
-import org.variantsync.diffdetective.analysis.CommitHistoryAnalysisTask;
-import org.variantsync.diffdetective.analysis.CommitHistoryAnalysisTaskFactory;
-import org.variantsync.diffdetective.analysis.HistoryAnalysis;
-import org.variantsync.diffdetective.analysis.strategies.NullStrategy;
-import org.variantsync.diffdetective.datasets.*;
-import org.variantsync.diffdetective.mining.formats.DirectedEdgeLabelFormat;
-import org.variantsync.diffdetective.mining.formats.MiningNodeFormat;
-import org.variantsync.diffdetective.mining.formats.ReleaseMiningDiffNodeFormat;
-import org.variantsync.diffdetective.util.Assert;
-import org.variantsync.diffdetective.variation.diff.filter.DiffTreeFilter;
-import org.variantsync.diffdetective.variation.diff.filter.ExplainedFilter;
-import org.variantsync.diffdetective.variation.diff.serialize.GraphFormat;
-import org.variantsync.diffdetective.variation.diff.serialize.LineGraphExportOptions;
-import org.variantsync.diffdetective.variation.diff.serialize.edgeformat.EdgeLabelFormat;
-import org.variantsync.diffdetective.variation.diff.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
-import org.variantsync.diffdetective.variation.diff.transform.CutNonEditedSubtrees;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.function.Consumer;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
+import org.apache.commons.io.FileUtils;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.tinylog.Logger;
+
+import org.variantsync.diffdetective.analysis.AnalysisResult;
+import org.variantsync.diffdetective.analysis.FilterAnalysis;
+import org.variantsync.diffdetective.analysis.HistoryAnalysis;
+import org.variantsync.diffdetective.analysis.PreprocessingAnalysis;
+import org.variantsync.diffdetective.analysis.StatisticsAnalysis;
+import org.variantsync.diffdetective.datasets.*;
+import org.variantsync.diffdetective.datasets.Repository;
+import org.variantsync.diffdetective.editclass.proposed.ProposedEditClasses;
+import org.variantsync.diffdetective.mining.formats.DirectedEdgeLabelFormat;
+import org.variantsync.diffdetective.mining.formats.MiningNodeFormat;
+import org.variantsync.diffdetective.mining.formats.ReleaseMiningDiffNodeFormat;
+import org.variantsync.diffdetective.util.Assert;
+import org.variantsync.diffdetective.variation.diff.filter.DiffTreeFilter;
+import org.variantsync.diffdetective.variation.diff.serialize.GraphFormat;
+import org.variantsync.diffdetective.variation.diff.serialize.LineGraphExportOptions;
+import org.variantsync.diffdetective.variation.diff.serialize.edgeformat.EdgeLabelFormat;
+import org.variantsync.diffdetective.variation.diff.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
+import org.variantsync.diffdetective.variation.diff.transform.CutNonEditedSubtrees;
 
 /**
  * This is the validation from our ESEC/FSE'22 paper.
@@ -34,7 +36,7 @@ import java.util.stream.Collectors;
  * creating a {@link HistoryAnalysis} and run it.
  * @author Paul Bittner
  */
-public class Validation {
+public class Validation implements HistoryAnalysis.Hooks {
     /**
      * Hardcoded configuration option that determines of all analyzed repositories should be updated
      * (i.e., <code>git pull</code>) before the validation.
@@ -47,20 +49,17 @@ public class Validation {
 //    public static final boolean PRINT_LATEX_TABLE = true;
 //    public static final int PRINT_LARGEST_SUBJECTS = 3;
 
-    /**
-     * The {@link CommitHistoryAnalysisTaskFactory} for the {@link HistoryAnalysis} that will run our validation.
-     * This factory creates {@link EditClassValidationTask}s with the respective settings.
-     */
-    public static final CommitHistoryAnalysisTaskFactory VALIDATION_TASK_FACTORY =
-            (repo, differ, outputPath, commits) -> new EditClassValidationTask(new CommitHistoryAnalysisTask.Options(
-                    repo,
-                    differ,
-                    outputPath,
-                    new ExplainedFilter<>(DiffTreeFilter.notEmpty()),
-                    List.of(new CutNonEditedSubtrees()),
-                    new NullStrategy(),
-                    commits
-            ));
+    // This is only needed for the `MarlinDebug` test.
+    public static final BiFunction<Repository, Path, HistoryAnalysis> AnalysisFactory = (repo, repoOutputDir) -> new HistoryAnalysis(
+        List.of(
+            new PreprocessingAnalysis(new CutNonEditedSubtrees()),
+            new FilterAnalysis(DiffTreeFilter.notEmpty()), // filters unwanted trees
+            new Validation(),
+            new StatisticsAnalysis()
+        ),
+        repo,
+        repoOutputDir
+    );
 
     /**
      * Returns the node format that should be used for DiffNode IO.
@@ -186,17 +185,26 @@ public class Validation {
         |      END OF ARGUMENTS      |
         \* ************************ */
 
-        final Consumer<Path> repoPostProcessing = p -> {};
-        final HistoryAnalysis analysis = new HistoryAnalysis(
-                repos,
-                outputDir,
-                HistoryAnalysis.COMMITS_TO_PROCESS_PER_THREAD_DEFAULT,
-                VALIDATION_TASK_FACTORY,
-                repoPostProcessing);
-        analysis.runAsync();
+        HistoryAnalysis.forEachRepository(repos, outputDir, (repo, repoOutputDir) ->
+            HistoryAnalysis.forEachCommit(() -> AnalysisFactory.apply(repo, repoOutputDir))
+        );
         Logger.info("Done");
 
         final String logFile = "log.txt";
         FileUtils.copyFile(Path.of(logFile).toFile(), outputDir.resolve(logFile).toFile());
+    }
+
+    @Override
+    public boolean analyzeDiffTree(HistoryAnalysis analysis) throws Exception {
+        analysis.getCurrentDiffTree().forAll(node -> {
+            if (node.isArtifact()) {
+                analysis.getResult().editClassCounts.reportOccurrenceFor(
+                    ProposedEditClasses.Instance.match(node),
+                    analysis.getCurrentCommitDiff()
+                );
+            }
+        });
+
+        return true;
     }
 }

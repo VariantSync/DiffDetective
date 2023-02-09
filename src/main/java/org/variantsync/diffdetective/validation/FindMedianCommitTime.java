@@ -3,8 +3,8 @@ package org.variantsync.diffdetective.validation;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.tinylog.Logger;
 import org.variantsync.diffdetective.analysis.AutomationResult;
-import org.variantsync.diffdetective.analysis.CommitHistoryAnalysisTask;
 import org.variantsync.diffdetective.analysis.CommitProcessTime;
+import org.variantsync.diffdetective.analysis.StatisticsAnalysis;
 import org.variantsync.diffdetective.util.FileUtils;
 
 import java.io.IOException;
@@ -72,7 +72,7 @@ public class FindMedianCommitTime {
         try (Stream<Path> paths = Files.walk(directory)) {
             result = paths
                 .parallel()
-                .filter(p -> FileUtils.hasExtension(p, CommitHistoryAnalysisTask.COMMIT_TIME_FILE_EXTENSION))
+                .filter(p -> FileUtils.hasExtension(p, StatisticsAnalysis.COMMIT_TIME_FILE_EXTENSION))
                 .filter(Files::isRegularFile)
 //                .peek(path -> Logger.info("Processing file {}", path))
                 .flatMap(FindMedianCommitTime::parse)
