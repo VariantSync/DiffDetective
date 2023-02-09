@@ -36,22 +36,22 @@ public class Analysis {
         BiConsumer<Repository, Path> analyzeRepository
     ) {
         for (final Repository repository : repositories) {
-            Logger.info(" === Begin Processing {} ===", repository.getRepositoryName());
-            final Clock clock = new Clock();
-            clock.start();
-
             final Path repositoryOutputDir = outputDir.resolve(repository.getRepositoryName());
             // Don't repeat work we already did:
-            if (!Files.exists(repositoryOutputDir.resolve(TOTAL_RESULTS_FILE_NAME))) {
-                analyzeRepository.accept(repository, repositoryOutputDir);
-            } else {
+            if (Files.exists(repositoryOutputDir.resolve(TOTAL_RESULTS_FILE_NAME))) {
                 Logger.info("  Skipping repository {} because it has already been processed.",
                     repository.getRepositoryName());
-            }
+            } else {
+                Logger.info(" === Begin Processing {} ===", repository.getRepositoryName());
+                final Clock clock = new Clock();
+                clock.start();
 
-            Logger.info(" === End Processing {} after {} ===",
-                repository.getRepositoryName(),
-                clock.printPassedSeconds());
+                analyzeRepository.accept(repository, repositoryOutputDir);
+
+                Logger.info(" === End Processing {} after {} ===",
+                    repository.getRepositoryName(),
+                    clock.printPassedSeconds());
+            }
         }
     }
 
