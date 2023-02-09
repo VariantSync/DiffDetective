@@ -15,44 +15,55 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-public abstract class FeatureSplitAnalysisTask implements Callable<FeatureSplitResult> {
+/**
+ * Abstract base class for tasks to run during a {@link Analysis}.
+ * A <code>AnalysisTask</code>s purpose is to process a given set of commits with a specific analysis.
+ * @author Paul Bittner
+ */
+public abstract class AnalysisTask<T extends AnalysisResult<T>> implements Callable<T> {
     public static final String COMMIT_TIME_FILE_EXTENSION = ".committimes.txt";
     public static final String PATCH_STATISTICS_EXTENSION = ".patchStatistics.csv";
 
+    /**
+    * Options that may be specified for processing a set of commits.
+    * @param repository The repository that is analyzed.
+    * @param differ The differ that should be used to obtain diffs.
+    * @param outputPath The path to which any output should be written on disk.
+    * @param exportOptions Options for exporting DiffTrees.
+    * @param analysisStrategy A callback that is invoked for each commit.
+    * @param commits The set of commits to process in this task.
+    */
     public record Options(
         Repository repository,
         GitDiffer differ,
         Path outputPath,
         DiffTreeLineGraphExportOptions exportOptions,
-        AnalysisStrategy miningStrategy,
+        AnalysisStrategy analysisStrategy,
         Iterable<RevCommit> commits
     ) {}
 
-    protected final Options options;
+    public final Options options;
 
-    protected FeatureSplitAnalysisTask(final Options options) {
+    public AnalysisTask(Options options) {
         this.options = options;
     }
 
-    public FeatureSplitAnalysisTask.Options getOptions() {
-        return options;
-    }
+    protected void initializeResult(T initialResult) throws Exception {
+        options.analysisStrategy().start(options.repository(), options.outputPath(), options.exportOptions());
 
-    @Override
-    public FeatureSplitResult call() throws Exception {
-        options.miningStrategy().start(options.repository(), options.outputPath(), options.exportOptions());
-
-        final FeatureSplitResult miningResult = new FeatureSplitResult(options.repository.getRepositoryName());
         final DiffTreeLineGraphExportOptions exportOptions = options.exportOptions();
 
-        miningResult.putCustomInfo(MetadataKeys.TREEFORMAT, exportOptions.treeFormat().getName());
-        miningResult.putCustomInfo(MetadataKeys.NODEFORMAT, exportOptions.nodeFormat().getName());
-        miningResult.putCustomInfo(MetadataKeys.EDGEFORMAT, exportOptions.edgeFormat().getName());
-        miningResult.putCustomInfo(MetadataKeys.TASKNAME, this.getClass().getName());
-
-        return miningResult;
+        initialResult.putCustomInfo(MetadataKeys.TREEFORMAT, exportOptions.treeFormat().getName());
+        initialResult.putCustomInfo(MetadataKeys.NODEFORMAT, exportOptions.nodeFormat().getName());
+        initialResult.putCustomInfo(MetadataKeys.EDGEFORMAT, exportOptions.edgeFormat().getName());
+        initialResult.putCustomInfo(MetadataKeys.TASKNAME, this.getClass().getName());
     }
 
+    /**
+     * Exports the given commit times to the given file. Overwrites existing files.
+     * @param commitTimes List of all CommitProcessTimes to write into a single file.
+     * @param pathToOutputFile Output file to write.
+     */
     public static void exportCommitTimes(final List<CommitProcessTime> commitTimes, final Path pathToOutputFile) {
         final StringBuilder times = new StringBuilder();
 
@@ -68,6 +79,11 @@ public abstract class FeatureSplitAnalysisTask implements Callable<FeatureSplitR
         }
     }
 
+    /**
+     * Exports the given patch statistics to the given file. Overwrites existing files.
+     * @param commitTimes List of all PatchStatistics to write into a single file.
+     * @param pathToOutputFile Output file to write.
+     */
     public static void exportPatchStatistics(final List<PatchStatistics> commitTimes, final Path pathToOutputFile) {
         final String csv = CSV.toCSV(commitTimes);
 

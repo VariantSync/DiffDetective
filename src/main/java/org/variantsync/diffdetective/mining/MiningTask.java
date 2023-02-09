@@ -19,14 +19,16 @@ import org.variantsync.diffdetective.util.FileUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MiningTask extends CommitHistoryAnalysisTask {
+public class MiningTask extends AnalysisTask<CommitHistoryAnalysisResult> {
     public MiningTask(final Options options) {
         super(options);
     }
 
     @Override
     public CommitHistoryAnalysisResult call() throws Exception {
-        final CommitHistoryAnalysisResult miningResult = super.call();
+        final var miningResult = new CommitHistoryAnalysisResult(options.repository().getRepositoryName());
+        initializeResult(miningResult);
+
         final DiffTreeLineGraphExportOptions exportOptions = options.exportOptions();
 
         final Clock totalTime = new Clock();
@@ -109,9 +111,9 @@ public class MiningTask extends CommitHistoryAnalysisTask {
 
         options.analysisStrategy().end();
         miningResult.runtimeInSeconds = totalTime.getPassedSeconds();
-        miningResult.exportTo(FileUtils.addExtension(options.outputDir(), CommitHistoryAnalysisResult.EXTENSION));
-        exportCommitTimes(commitTimes, FileUtils.addExtension(options.outputDir(), COMMIT_TIME_FILE_EXTENSION));
-        exportPatchStatistics(patchStatistics, FileUtils.addExtension(options.outputDir(), PATCH_STATISTICS_EXTENSION));
+        miningResult.exportTo(FileUtils.addExtension(options.outputPath(), CommitHistoryAnalysisResult.EXTENSION));
+        exportCommitTimes(commitTimes, FileUtils.addExtension(options.outputPath(), COMMIT_TIME_FILE_EXTENSION));
+        exportPatchStatistics(patchStatistics, FileUtils.addExtension(options.outputPath(), PATCH_STATISTICS_EXTENSION));
         return miningResult;
     }
 }

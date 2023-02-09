@@ -1,5 +1,11 @@
 package org.variantsync.diffdetective.analysis;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.tinylog.Logger;
 import org.variantsync.diffdetective.diff.CommitDiff;
@@ -10,18 +16,19 @@ import org.variantsync.diffdetective.diff.difftree.transform.DiffTreeTransformer
 import org.variantsync.diffdetective.diff.difftree.transform.FeatureSplit;
 import org.variantsync.diffdetective.diff.result.CommitDiffResult;
 import org.variantsync.diffdetective.feature.PropositionalFormulaParser;
-import org.variantsync.diffdetective.util.*;
+import org.variantsync.diffdetective.util.Clock;
+import org.variantsync.diffdetective.util.FileUtils;
 
-import java.util.*;
-
-public class FeatureSplitValidationTask extends FeatureSplitAnalysisTask {
-    public FeatureSplitValidationTask(FeatureSplitAnalysisTask.Options options) {
+public class FeatureSplitValidationTask extends AnalysisTask<FeatureSplitResult> {
+    public FeatureSplitValidationTask(Options options) {
         super(options);
     }
 
     @Override
     public FeatureSplitResult call() throws Exception {
-        final FeatureSplitResult miningResult = super.call();
+        final var miningResult = new FeatureSplitResult(options.repository().getRepositoryName());
+        initializeResult(miningResult);
+
         final DiffTreeLineGraphExportOptions exportOptions = options.exportOptions();
         final List<CommitProcessTime> commitTimes = new ArrayList<>(Analysis.COMMITS_TO_PROCESS_PER_THREAD_DEFAULT);
         final Clock totalTime = new Clock();
@@ -46,7 +53,7 @@ public class FeatureSplitValidationTask extends FeatureSplitAnalysisTask {
                 ++miningResult.totalCommits;
 
                 final CommitDiff commitDiff = commitDiffResult.diff().get();
-                options.miningStrategy().onCommit(commitDiff, "");
+                options.analysisStrategy().onCommit(commitDiff, "");
                 miningResult.totalPatches += commitDiff.getPatchAmount();
 
                 // inspect every patch
@@ -141,12 +148,12 @@ public class FeatureSplitValidationTask extends FeatureSplitAnalysisTask {
                 }
 
             } catch (Exception e) {
-                Logger.error(e, "An unexpected error occurred at {} in {}", commit.getId().getName(), getOptions().repository().getRepositoryName());
+                Logger.error(e, "An unexpected error occurred at {} in {}", commit.getId().getName(), options.repository().getRepositoryName());
                 throw e;
             }
         }
 
-        options.miningStrategy().end();
+        options.analysisStrategy().end();
         miningResult.runtimeInSeconds = totalTime.getPassedSeconds();
         miningResult.exportTo(FileUtils.addExtension(options.outputPath(), FeatureSplitResult.EXTENSION));
         exportCommitTimes(commitTimes, FileUtils.addExtension(options.outputPath(), COMMIT_TIME_FILE_EXTENSION));

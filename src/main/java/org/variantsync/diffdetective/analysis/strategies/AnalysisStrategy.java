@@ -1,5 +1,6 @@
 package org.variantsync.diffdetective.analysis.strategies;
 
+import org.variantsync.diffdetective.analysis.AnalysisTask; // For Javadoc
 import org.variantsync.diffdetective.datasets.Repository;
 import org.variantsync.diffdetective.diff.CommitDiff;
 import org.variantsync.diffdetective.diff.difftree.serialize.DiffTreeLineGraphExportOptions;
@@ -7,7 +8,7 @@ import org.variantsync.diffdetective.diff.difftree.serialize.DiffTreeLineGraphEx
 import java.nio.file.Path;
 
 /**
- * Callbacks for {@link org.variantsync.diffdetective.analysis.CommitHistoryAnalysisTask}.
+ * Callbacks for {@link AnalysisTask}.
  * A strategy may perform arbitrary additional tasks upon the execution of a task.
  * The strategy is notified about the start and end of a task as well after each processed commit.
  * @author Paul Bittner

@@ -10,8 +10,8 @@ import org.variantsync.diffdetective.diff.difftree.transform.DiffTreeTransformer
 import org.variantsync.diffdetective.diff.result.CommitDiffResult;
 import org.variantsync.diffdetective.util.Clock;
 
-public class FeatureSplitFeatureExtractionTask extends FeatureSplitAnalysisTask {
-    public FeatureSplitFeatureExtractionTask(FeatureSplitAnalysisTask.Options options) {
+public class FeatureSplitFeatureExtractionTask extends AnalysisTask<FeatureSplitResult> {
+    public FeatureSplitFeatureExtractionTask(Options options) {
         super(options);
     }
 
@@ -20,7 +20,9 @@ public class FeatureSplitFeatureExtractionTask extends FeatureSplitAnalysisTask 
      */
     @Override
     public FeatureSplitResult call() throws Exception {
-        final FeatureSplitResult miningResult = super.call();
+        final var miningResult = new FeatureSplitResult(options.repository().getRepositoryName());
+        initializeResult(miningResult);
+
         final DiffTreeLineGraphExportOptions exportOptions = options.exportOptions();
         final Clock featureExtractTime = new Clock();
         featureExtractTime.start();
@@ -35,7 +37,7 @@ public class FeatureSplitFeatureExtractionTask extends FeatureSplitAnalysisTask 
                 }
 
                 final CommitDiff commitDiff = commitDiffResult.diff().get();
-                options.miningStrategy().onCommit(commitDiff, "");
+                options.analysisStrategy().onCommit(commitDiff, "");
                 // inspect every patch
                 for (final PatchDiff patch : commitDiff.getPatchDiffs()) {
                     if (patch.isValid()) {
@@ -55,7 +57,7 @@ public class FeatureSplitFeatureExtractionTask extends FeatureSplitAnalysisTask 
                 }
                 exportOptions.treeFilter().resetExplanations();                
             } catch (Exception e) { 
-                Logger.error(e, "An unexpected error occurred at {} in {}", commit.getId().getName(), getOptions().repository().getRepositoryName());
+                Logger.error(e, "An unexpected error occurred at {} in {}", commit.getId().getName(), options.repository().getRepositoryName());
                 throw e;
             }
         }

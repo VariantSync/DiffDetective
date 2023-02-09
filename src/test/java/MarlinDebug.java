@@ -7,7 +7,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.prop4j.Node;
 import org.tinylog.Logger;
-import org.variantsync.diffdetective.analysis.CommitHistoryAnalysisTask;
+import org.variantsync.diffdetective.analysis.AnalysisTask;
 import org.variantsync.diffdetective.datasets.DatasetDescription;
 import org.variantsync.diffdetective.datasets.DatasetFactory;
 import org.variantsync.diffdetective.datasets.ParseOptions;
@@ -135,7 +135,7 @@ public class MarlinDebug {
         final RevWalk revWalk = new RevWalk(git.getRepository());
         final RevCommit childCommit = revWalk.parseCommit(ObjectId.fromString(commitHash));
 
-        MiningTask m = new MiningTask(new CommitHistoryAnalysisTask.Options(
+        MiningTask m = new MiningTask(new AnalysisTask.Options(
                 repoInspection.repo,
                 new GitDiffer(repoInspection.repo),
                 repoInspection.outputPath,

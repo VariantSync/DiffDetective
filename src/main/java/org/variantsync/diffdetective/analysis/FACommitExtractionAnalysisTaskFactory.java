@@ -10,7 +10,7 @@ import java.util.Set;
 @FunctionalInterface
 public interface FACommitExtractionAnalysisTaskFactory {
 
-    FeatureSplitAnalysisTask create(
+    AnalysisTask<FeatureSplitResult> create(
             final Repository repository,
             final GitDiffer differ,
             final Path outputPath,

@@ -18,15 +18,17 @@ import org.variantsync.diffdetective.feature.PropositionalFormulaParser;
 import org.variantsync.diffdetective.util.Clock;
 import org.variantsync.diffdetective.util.FileUtils;
 
-public class FACommitExtractionValidationTask extends FeatureSplitAnalysisTask {
+public class FACommitExtractionValidationTask extends AnalysisTask<FeatureSplitResult> {
     Set<String> randomFeatures;
-    public FACommitExtractionValidationTask(FeatureSplitAnalysisTask.Options options, Set<String> randomFeatures) {
+    public FACommitExtractionValidationTask(Options options, Set<String> randomFeatures) {
         super(options);
     }
 
     @Override
     public FeatureSplitResult call() throws Exception {
-        final FeatureSplitResult miningResult = super.call();
+        final var miningResult = new FeatureSplitResult(options.repository().getRepositoryName());
+        initializeResult(miningResult);
+
         final DiffTreeLineGraphExportOptions exportOptions = options.exportOptions();
         final List<CommitProcessTime> commitTimes = new ArrayList<>(Analysis.COMMITS_TO_PROCESS_PER_THREAD_DEFAULT);
         final Clock totalTime = new Clock();
@@ -50,7 +52,7 @@ public class FACommitExtractionValidationTask extends FeatureSplitAnalysisTask {
                 ++miningResult.totalCommits;
 
                 final CommitDiff commitDiff = commitDiffResult.diff().get();
-                options.miningStrategy().onCommit(commitDiff, "");
+                options.analysisStrategy().onCommit(commitDiff, "");
                 miningResult.totalPatches += commitDiff.getPatchAmount();
 
                 // inspect every patch
@@ -128,12 +130,12 @@ public class FACommitExtractionValidationTask extends FeatureSplitAnalysisTask {
                 }
 
             } catch (Exception e) {
-                Logger.error(e, "An unexpected error occurred at {} in {}", commit.getId().getName(), getOptions().repository().getRepositoryName());
+                Logger.error(e, "An unexpected error occurred at {} in {}", commit.getId().getName(), options.repository().getRepositoryName());
                 throw e;
             }
         }
 
-        options.miningStrategy().end();
+        options.analysisStrategy().end();
         miningResult.runtimeInSeconds = totalTime.getPassedSeconds();
         miningResult.exportTo(FileUtils.addExtension(options.outputPath(), FeatureSplitResult.EXTENSION));
         exportCommitTimes(commitTimes, FileUtils.addExtension(options.outputPath(), COMMIT_TIME_FILE_EXTENSION));

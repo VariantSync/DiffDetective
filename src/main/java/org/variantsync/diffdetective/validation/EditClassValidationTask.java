@@ -3,8 +3,8 @@ package org.variantsync.diffdetective.validation;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.tinylog.Logger;
 import org.variantsync.diffdetective.analysis.Analysis;
+import org.variantsync.diffdetective.analysis.AnalysisTask;
 import org.variantsync.diffdetective.analysis.CommitHistoryAnalysisResult;
-import org.variantsync.diffdetective.analysis.CommitHistoryAnalysisTask;
 import org.variantsync.diffdetective.analysis.CommitProcessTime;
 import org.variantsync.diffdetective.diff.CommitDiff;
 import org.variantsync.diffdetective.diff.PatchDiff;
@@ -24,7 +24,7 @@ import java.util.List;
  * Task for performing the ESEC/FSE'22 validation on a set of commits from a given repository.
  * @author Paul Bittner
  */
-public class EditClassValidationTask extends CommitHistoryAnalysisTask {
+public class EditClassValidationTask extends AnalysisTask<CommitHistoryAnalysisResult> {
     public EditClassValidationTask(Options options) {
         super(options);
     }
@@ -32,7 +32,9 @@ public class EditClassValidationTask extends CommitHistoryAnalysisTask {
     @Override
     public CommitHistoryAnalysisResult call() throws Exception {
         // Setup. Obtain the result from the initial setup in the super class.
-        final CommitHistoryAnalysisResult miningResult = super.call();
+        final var miningResult = new CommitHistoryAnalysisResult(options.repository().getRepositoryName());
+        initializeResult(miningResult);
+
         final DiffTreeLineGraphExportOptions exportOptions = options.exportOptions();
         // List to store the process time of each commit.
         final List<CommitProcessTime> commitTimes = new ArrayList<>(Analysis.COMMITS_TO_PROCESS_PER_THREAD_DEFAULT);
@@ -108,7 +110,7 @@ public class EditClassValidationTask extends CommitHistoryAnalysisTask {
                 }
 
             } catch (Exception e) {
-                Logger.error(e, "An unexpected error occurred at {} in {}", commit.getId().getName(), getOptions().repository().getRepositoryName());
+                Logger.error(e, "An unexpected error occurred at {} in {}", commit.getId().getName(), options.repository().getRepositoryName());
                 throw e;
             }
         }
@@ -116,8 +118,8 @@ public class EditClassValidationTask extends CommitHistoryAnalysisTask {
         // shutdown; report total time; export results
         options.analysisStrategy().end();
         miningResult.runtimeInSeconds = totalTime.getPassedSeconds();
-        miningResult.exportTo(FileUtils.addExtension(options.outputDir(), CommitHistoryAnalysisResult.EXTENSION));
-        exportCommitTimes(commitTimes, FileUtils.addExtension(options.outputDir(), COMMIT_TIME_FILE_EXTENSION));
+        miningResult.exportTo(FileUtils.addExtension(options.outputPath(), CommitHistoryAnalysisResult.EXTENSION));
+        exportCommitTimes(commitTimes, FileUtils.addExtension(options.outputPath(), COMMIT_TIME_FILE_EXTENSION));
         return miningResult;
     }
 }

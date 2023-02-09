@@ -3,8 +3,8 @@ package org.variantsync.diffdetective.mining;
 import org.apache.commons.io.FileUtils;
 import org.tinylog.Logger;
 import org.variantsync.diffdetective.analysis.Analysis;
+import org.variantsync.diffdetective.analysis.AnalysisTask;
 import org.variantsync.diffdetective.analysis.AnalysisTaskFactory;
-import org.variantsync.diffdetective.analysis.CommitHistoryAnalysisTask;
 import org.variantsync.diffdetective.analysis.CommitHistoryAnalysisResult;
 import org.variantsync.diffdetective.analysis.strategies.AnalysisStrategy;
 import org.variantsync.diffdetective.analysis.strategies.AnalyzeAllThenExport;
@@ -107,7 +107,7 @@ public class DiffTreeMiner {
     }
 
     public static AnalysisTaskFactory<CommitHistoryAnalysisResult> Mine() {
-        return (repo, differ, outputPath, commits) -> new MiningTask(new CommitHistoryAnalysisTask.Options(
+        return (repo, differ, outputPath, commits) -> new MiningTask(new AnalysisTask.Options(
                 repo,
                 differ,
                 outputPath,

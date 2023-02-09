@@ -31,7 +31,7 @@ public class ValidationFeatureSplit {
     public static final int PRINT_LARGEST_SUBJECTS = 3;
 
     public static final AnalysisTaskFactory<FeatureSplitResult> VALIDATION_TASK_FACTORY =
-            (repo, differ, outputPath, commits) -> new FeatureSplitValidationTask(new FeatureSplitAnalysisTask.Options(
+            (repo, differ, outputPath, commits) -> new FeatureSplitValidationTask(new AnalysisTask.Options(
                     repo,
                     differ,
                     outputPath,

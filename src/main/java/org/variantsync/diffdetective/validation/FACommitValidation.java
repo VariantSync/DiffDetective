@@ -1,11 +1,32 @@
 package org.variantsync.diffdetective.validation;
 
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.tinylog.Logger;
-import org.variantsync.diffdetective.analysis.*;
+import org.variantsync.diffdetective.analysis.Analysis;
+import org.variantsync.diffdetective.analysis.AnalysisTask;
+import org.variantsync.diffdetective.analysis.AnalysisTaskFactory;
+import org.variantsync.diffdetective.analysis.FACommitExtractionAnalysisTaskFactory;
+import org.variantsync.diffdetective.analysis.FACommitExtractionValidationTask;
+import org.variantsync.diffdetective.analysis.FeatureSplitFeatureExtractionTask;
+import org.variantsync.diffdetective.analysis.FeatureSplitResult;
 import org.variantsync.diffdetective.analysis.strategies.NullStrategy;
-import org.variantsync.diffdetective.datasets.*;
+import org.variantsync.diffdetective.datasets.DatasetDescription;
+import org.variantsync.diffdetective.datasets.DatasetFactory;
+import org.variantsync.diffdetective.datasets.DefaultDatasets;
+import org.variantsync.diffdetective.datasets.ParseOptions;
+import org.variantsync.diffdetective.datasets.Repository;
 import org.variantsync.diffdetective.diff.difftree.filter.DiffTreeFilter;
 import org.variantsync.diffdetective.diff.difftree.filter.ExplainedFilter;
 import org.variantsync.diffdetective.diff.difftree.serialize.DiffTreeLineGraphExportOptions;
@@ -18,24 +39,13 @@ import org.variantsync.diffdetective.mining.formats.MiningNodeFormat;
 import org.variantsync.diffdetective.mining.formats.ReleaseMiningDiffNodeFormat;
 import org.variantsync.diffdetective.util.Assert;
 
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 public class FACommitValidation {
     public static final boolean UPDATE_REPOS_BEFORE_VALIDATION = false;
     public static final boolean PRINT_LATEX_TABLE = true;
     public static final int PRINT_LARGEST_SUBJECTS = 3;
 
     public static final FACommitExtractionAnalysisTaskFactory VALIDATION_TASK_FACTORY =
-            (repo, differ, outputPath, commits, randomFeatures) -> new FACommitExtractionValidationTask(new FeatureSplitAnalysisTask.Options(
+            (repo, differ, outputPath, commits, randomFeatures) -> new FACommitExtractionValidationTask(new AnalysisTask.Options(
                     repo,
                     differ,
                     outputPath,
@@ -46,7 +56,7 @@ public class FACommitValidation {
             randomFeatures);
 
     public static final AnalysisTaskFactory<FeatureSplitResult> FEATURE_EXTRACTION_TASK_FACTORY =
-            (repo, differ, outputPath, commits) -> new FeatureSplitFeatureExtractionTask(new FeatureSplitFeatureExtractionTask.Options(
+            (repo, differ, outputPath, commits) -> new FeatureSplitFeatureExtractionTask(new AnalysisTask.Options(
                     repo,
                     differ,
                     outputPath,

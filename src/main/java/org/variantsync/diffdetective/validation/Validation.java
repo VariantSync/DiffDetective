@@ -4,8 +4,8 @@ import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.tinylog.Logger;
 import org.variantsync.diffdetective.analysis.Analysis;
+import org.variantsync.diffdetective.analysis.AnalysisTask;
 import org.variantsync.diffdetective.analysis.AnalysisTaskFactory;
-import org.variantsync.diffdetective.analysis.CommitHistoryAnalysisTask;
 import org.variantsync.diffdetective.analysis.CommitHistoryAnalysisResult;
 import org.variantsync.diffdetective.analysis.strategies.NullStrategy;
 import org.variantsync.diffdetective.datasets.*;
@@ -52,7 +52,7 @@ public class Validation {
      * This factory creates {@link EditClassValidationTask}s with the respective settings.
      */
     public static final AnalysisTaskFactory<CommitHistoryAnalysisResult> VALIDATION_TASK_FACTORY =
-            (repo, differ, outputPath, commits) -> new EditClassValidationTask(new CommitHistoryAnalysisTask.Options(
+            (repo, differ, outputPath, commits) -> new EditClassValidationTask(new AnalysisTask.Options(
                     repo,
                     differ,
                     outputPath,
