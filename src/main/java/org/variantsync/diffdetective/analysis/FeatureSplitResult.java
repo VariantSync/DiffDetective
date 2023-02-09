@@ -36,86 +36,23 @@ public class FeatureSplitResult extends AnalysisResult<FeatureSplitResult> {
             ISEMIGROUP
     );
 
-    public double featureExtractTime;
-
-    public int invalidFADiff;
-
-    public int totalPatches;
-    public Set<String> totalFeatures;
-    public HashMap<String, Integer> totalFeatureAwarePatches;
-    public HashMap<String, Integer> totalRemainderPatches;
-    public HashMap<String, Integer> initialTreeDiffSizes;
-    public HashMap<String, List<Integer>> FAtreeDiffSizes;
-    public HashMap<String, List<Long>> patchTimes;
-    public double ratioNodes;
-    public double ratioOfFAPatches;
+    public int totalPatches = 0;
+    public double featureExtractTime = 0;
+    public int invalidFADiff = 0;
+    public Set<String> totalFeatures = new HashSet<>();
+    public HashMap<String, Integer> totalFeatureAwarePatches = new HashMap<>();
+    public HashMap<String, Integer> totalRemainderPatches = new HashMap<>();
+    public HashMap<String, Integer> initialTreeDiffSizes = new HashMap<>();
+    public HashMap<String, List<Integer>> FAtreeDiffSizes = new HashMap<>();
+    public HashMap<String, List<Long>> patchTimes = new HashMap<>();
+    public double ratioNodes = 0.0;
+    public double ratioOfFAPatches = 1.0;
 
     public FeatureSplitResult() {
-        this(NO_REPO);
     }
 
-    public FeatureSplitResult(final String repoName) {
-        this(repoName, new HashSet<>());
-    }
-
-    public FeatureSplitResult(final String repoName, Set<String> totalFeatures) {
-        this(
-                repoName,
-                0, 0, 0, 0, 0,
-                0,
-                0,
-                CommitProcessTime.Unknown(repoName, Long.MAX_VALUE),
-                CommitProcessTime.Unknown(repoName, Long.MIN_VALUE),
-                0,0, new HashMap<>(), new HashMap<>(), totalFeatures,
-                new HashMap<>(), new HashMap<>(), new HashMap<>(), 0.0, 1.0, new DiffTreeSerializeDebugData());
-    }
-
-    public FeatureSplitResult(
-            final String repoName,
-            int totalCommits,
-            int exportedCommits,
-            int emptyCommits,
-            int failedCommits,
-            double runtimeInSeconds,
-            double runtimeWithMultithreadingInSeconds,
-            double featureExtractTime,
-            final CommitProcessTime min,
-            final CommitProcessTime max,
-            int invalidFADiff,
-            int totalPatches,
-            HashMap<String, Integer> totalFeatureAwarePatches,
-            HashMap<String, Integer> totalRemainderPatches,
-            Set<String> totalFeatures,
-            HashMap<String, Integer> initialTreeDiffSizes,
-            HashMap<String, List<Integer>> FAtreeDiffSizes,
-            HashMap<String, List<Long>> patchTimes,
-            double ratioNodes,
-            double ratioOfFAPatches,
-            final DiffTreeSerializeDebugData debugData)
-    {
-        super(
-            repoName,
-            totalCommits,
-            exportedCommits,
-            emptyCommits,
-            failedCommits,
-            totalPatches,
-            runtimeInSeconds,
-            runtimeWithMultithreadingInSeconds,
-            min,
-            max,
-            debugData
-        );
-        this.featureExtractTime = featureExtractTime;
-        this.totalPatches = totalPatches;
-        this.totalFeatureAwarePatches = totalFeatureAwarePatches;
-        this.totalRemainderPatches = totalRemainderPatches;
+    public FeatureSplitResult(Set<String> totalFeatures) {
         this.totalFeatures = totalFeatures;
-        this.FAtreeDiffSizes = FAtreeDiffSizes;
-        this.initialTreeDiffSizes = initialTreeDiffSizes;
-        this.patchTimes = patchTimes;
-        this.ratioNodes = ratioNodes;
-        this.ratioOfFAPatches = ratioOfFAPatches;
     }
 
     public void reportDiffErrors(final List<DiffError> errors) {

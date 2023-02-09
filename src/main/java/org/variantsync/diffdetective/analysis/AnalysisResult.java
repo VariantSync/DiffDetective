@@ -53,16 +53,19 @@ public abstract class AnalysisResult<T> implements Metadata<T> {
         };
     };
 
-    public String repoName;
     /**
-     * Total number of commits in the observed history.
+     * The repo from which the results where collected.
      */
-    public int totalCommits;
+    public String repoName = NO_REPO;
     /**
-     * Number of processed commits in the observed history.
+     * The total number of commits in the observed history of the given repository.
+     */
+    public int totalCommits = 0;
+    /**
+     * The number of commits that were processed.
      * {@code exportedCommits <= totalCommits}
      */
-    public int exportedCommits;
+    public int exportedCommits = 0;
     /**
      * Number of commits that were not processed because they had no DiffTrees.
      * A commit is empty iff at least of one of the following conditions is met for every of its patches:
@@ -70,88 +73,50 @@ public abstract class AnalysisResult<T> implements Metadata<T> {
      * - the DiffTree became empty after transformations (this can happen if there are only whitespace changes),
      * - or the patch had syntax errors in its annotations, so the DiffTree could not be parsed.
      */
-    public int emptyCommits;
+    public int emptyCommits = 0;
     /**
      * Number of commits that could not be parsed at all because of exceptions when operating JGit.
      *
      * The number of commits that were filtered because they are a merge commit is thus given as
-     * totalCommits - exportedCommits - emptyCommits - failedCommits
+     * {@code totalCommits - exportedCommits - emptyCommits - failedCommits}
      */
-    public int failedCommits;
-    public int exportedTrees;
-    public double runtimeInSeconds;
-    public double runtimeWithMultithreadingInSeconds;
-    public final CommitProcessTime min, max;
-    public final DiffTreeSerializeDebugData debugData;
+    public int failedCommits = 0;
+    /**
+     * Number of DiffTrees that were processed.
+     */
+    public int exportedTrees = 0;
+    /**
+     * The total runtime in seconds (irrespective of multithreading).
+     */
+    public double runtimeInSeconds = 0;
+    /**
+     * The effective runtime in seconds that we have when using multithreading.
+     */
+    public double runtimeWithMultithreadingInSeconds = 0;
+    /**
+     * The commit that was processed the fastest.
+     */
+    public final CommitProcessTime min;
+    /**
+     * The commit that was processed the slowest.
+     */
+    public final CommitProcessTime max;
+    /**
+     * Debug data for DiffTree serialization.
+     */
+    public final DiffTreeSerializeDebugData debugData = new DiffTreeSerializeDebugData();
     private final LinkedHashMap<String, String> customInfo = new LinkedHashMap<>();
     public final MergeMap<DiffError, Integer> diffErrors = new MergeMap<>(new HashMap<>(), Integer::sum);
 
-    /**
-     * Creates an empty analysis result.
-     */
     public AnalysisResult() {
         this(NO_REPO);
     }
 
-    /**
-     * Creates an empty analysis result for the given repo.
-     * @param repoName The repo for which to collect results.
-     */
-    public AnalysisResult(final String repoName) {
-        this(
-                repoName,
-                0, 0, 0, 0,
-                0,
-                0, 0,
-                CommitProcessTime.Unknown(repoName, Long.MAX_VALUE),
-                CommitProcessTime.Unknown(repoName, Long.MIN_VALUE),
-                new DiffTreeSerializeDebugData());
-    }
-
-    /**
-     * Creates am analysis result with the given inital values.
-     * @param repoName The repo from which the results where collected.
-     * @param totalCommits The total number of commits in the observed history of the given repository.
-     * @param exportedCommits The number of commits that were processed. exportedCommits &lt;= totalCommits
-     * @param emptyCommits Number of commits that were not processed because they had no DiffTrees.
-     *                     A commit is empty iff at least of one of the following conditions is met for every of its patches:
-     *                       - the patch did not edit a C file,
-     *                       - the DiffTree became empty after transformations (this can happen if there are only whitespace changes),
-     *                       - or the patch had syntax errors in its annotations, so the DiffTree could not be parsed.
-     * @param failedCommits Number of commits that could not be parsed at all because of exceptions when operating JGit.
-     *                      The number of commits that were filtered because they are a merge commit is thus given as
-     *                      totalCommits - exportedCommits - emptyCommits - failedCommits
-     * @param exportedTrees Number of DiffTrees that were processed.
-     * @param runtimeInSeconds The total runtime in seconds (irrespective of multithreading).
-     * @param runtimeWithMultithreadingInSeconds The effective runtime in seconds that we have when using multithreading.
-     * @param min The commit that was processed the fastest.
-     * @param max The commit that was processed the slowest.
-     * @param debugData Debug data for DiffTree serialization.
-     */
-    public AnalysisResult(
-            final String repoName,
-            int totalCommits,
-            int exportedCommits,
-            int emptyCommits,
-            int failedCommits,
-            int exportedTrees,
-            double runtimeInSeconds,
-            double runtimeWithMultithreadingInSeconds,
-            final CommitProcessTime min,
-            final CommitProcessTime max,
-            final DiffTreeSerializeDebugData debugData)
-    {
+    public AnalysisResult(String repoName) {
         this.repoName = repoName;
-        this.totalCommits = totalCommits;
-        this.exportedCommits = exportedCommits;
-        this.emptyCommits = emptyCommits;
-        this.failedCommits = failedCommits;
-        this.exportedTrees = exportedTrees;
-        this.runtimeInSeconds = runtimeInSeconds;
-        this.runtimeWithMultithreadingInSeconds = runtimeWithMultithreadingInSeconds;
-        this.debugData = debugData;
-        this.min = min;
-        this.max = max;
+
+        this.min = CommitProcessTime.Unknown(repoName, Long.MAX_VALUE);
+        this.max = CommitProcessTime.Unknown(repoName, Long.MIN_VALUE);
     }
 
     /**

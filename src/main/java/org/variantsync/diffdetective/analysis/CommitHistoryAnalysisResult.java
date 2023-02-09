@@ -35,27 +35,14 @@ public class CommitHistoryAnalysisResult extends AnalysisResult<CommitHistoryAna
         return ISEMIGROUP;
     }
 
-    public ExplainedFilterSummary filterHits;
-    public EditClassCount editClassCounts;
+    public ExplainedFilterSummary filterHits = new ExplainedFilterSummary();
+    public EditClassCount editClassCounts = new EditClassCount();
 
     public CommitHistoryAnalysisResult() {
-        this(NO_REPO);
     }
 
-    public CommitHistoryAnalysisResult(final String repoName) {
-        this(
-            repoName,
-            new ExplainedFilterSummary()
-        );
-    }
-
-    public CommitHistoryAnalysisResult(
-        final String repoName,
-        final ExplainedFilterSummary filterHits
-    ) {
+    public CommitHistoryAnalysisResult(String repoName) {
         super(repoName);
-        this.filterHits = filterHits;
-        this.editClassCounts = new EditClassCount();
     }
 
     @Override
