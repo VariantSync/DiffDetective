@@ -21,6 +21,7 @@ public final class MetadataKeys {
     public final static String FAILED_COMMITS = "failed commits";
     public final static String EMPTY_COMMITS = "empty commits";
     public final static String PROCESSED_COMMITS = "processed commits";
+    public static final String TOTAL_PATCHES = "total patches";
 
     public final static String RUNTIME = "runtime in seconds";
     public final static String RUNTIME_WITH_MULTITHREADING = "runtime with multithreading in seconds";

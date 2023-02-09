@@ -35,7 +35,6 @@ public class CommitHistoryAnalysisResult extends AnalysisResult<CommitHistoryAna
         return ISEMIGROUP;
     }
 
-    public ExplainedFilterSummary filterHits = new ExplainedFilterSummary();
     public EditClassCount editClassCounts = new EditClassCount();
 
     public CommitHistoryAnalysisResult() {
@@ -49,7 +48,6 @@ public class CommitHistoryAnalysisResult extends AnalysisResult<CommitHistoryAna
     public LinkedHashMap<String, Object> snapshot() {
         LinkedHashMap<String, Object> snap = super.snapshot();
 
-        snap.putAll(filterHits.snapshot());
         snap.putAll(editClassCounts.snapshot());
 
         return snap;

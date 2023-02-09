@@ -4,7 +4,6 @@ public final class FeatureSplitMetadataKeys {
 
     public static final String FEATURE_EXTRACTION_TIME = "Feature extraction time";
 
-    public static final String TOTAL_PATCHES = "total patches";
     public static final String TOTAL_FEATURES = "total features";
     public static final String TOTAL_FEATURE_AWARE_PATCHES = "total feature-aware patches from a feature";
     public static final String TOTAL_REMAINDER_PATCHES = "total remainder patches from a feature";

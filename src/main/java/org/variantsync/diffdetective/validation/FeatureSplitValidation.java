@@ -4,28 +4,14 @@ import java.io.IOException;
 import java.util.List;
 
 import org.variantsync.diffdetective.analysis.Analysis;
-import org.variantsync.diffdetective.analysis.AnalysisTask;
-import org.variantsync.diffdetective.analysis.AnalysisTaskFactory;
 import org.variantsync.diffdetective.analysis.FeatureSplitResult;
-import org.variantsync.diffdetective.analysis.strategies.NullStrategy;
-import org.variantsync.diffdetective.validation.FeatureSplitValidationTask;
+import org.variantsync.diffdetective.analysis.FilterAnalysis;
+import org.variantsync.diffdetective.analysis.PreprocessingAnalysis;
+import org.variantsync.diffdetective.analysis.StatisticsAnalysis;
 import org.variantsync.diffdetective.variation.diff.filter.DiffTreeFilter;
-import org.variantsync.diffdetective.variation.diff.filter.ExplainedFilter;
 import org.variantsync.diffdetective.variation.diff.transform.CutNonEditedSubtrees;
 
 public class FeatureSplitValidation {
-
-    public static final AnalysisTaskFactory<FeatureSplitResult> VALIDATION_TASK_FACTORY =
-            (repo, differ, outputPath, commits) -> new FeatureSplitValidationTask(new AnalysisTask.Options(
-                    repo,
-                    differ,
-                    outputPath,
-                    new ExplainedFilter<>(DiffTreeFilter.notEmpty()), // filters unwanted trees
-                    List.of(new CutNonEditedSubtrees()),
-                    new NullStrategy(),
-                    commits
-            ));
-
     /**
      * Main method to start the validation.
      * @param args Command-line options.
@@ -33,11 +19,17 @@ public class FeatureSplitValidation {
      */
     public static void main(String[] args) throws IOException {
         Validation.run(args, (repo, repoOutputDir) ->
-            Analysis.forEachCommit(
+            Analysis.forEachCommit(() -> new Analysis<>(
+                List.of(
+                    new PreprocessingAnalysis<>(new CutNonEditedSubtrees()),
+                    new FilterAnalysis<>(DiffTreeFilter.notEmpty()), // filters unwanted trees
+                    new FeatureSplitValidationAnalysis(),
+                    new StatisticsAnalysis<>()
+                ),
                 repo,
                 repoOutputDir,
-                VALIDATION_TASK_FACTORY,
-                new FeatureSplitResult(repo.getRepositoryName())
-        ));
+                new FeatureSplitResult()
+            ))
+        );
     }
 }

@@ -5,6 +5,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 import org.variantsync.diffdetective.diff.result.DiffError;
+import org.variantsync.diffdetective.metadata.ExplainedFilterSummary;
 import org.variantsync.diffdetective.metadata.Metadata;
 import org.variantsync.diffdetective.variation.diff.serialize.DiffTreeSerializeDebugData;
 import org.variantsync.functjonal.Functjonal;
@@ -42,11 +43,13 @@ public abstract class AnalysisResult<T> implements Metadata<T> {
             a.exportedCommits += b.exportedCommits;
             a.emptyCommits += b.emptyCommits;
             a.failedCommits += b.failedCommits;
+            a.totalPatches += b.totalPatches;
             a.exportedTrees += b.exportedTrees;
             a.runtimeInSeconds += b.runtimeInSeconds;
             a.runtimeWithMultithreadingInSeconds += b.runtimeWithMultithreadingInSeconds;
             a.min.set(CommitProcessTime.min(a.min, b.min));
             a.max.set(CommitProcessTime.max(a.max, b.max));
+            a.filterHits.append(b.filterHits);
             a.debugData.append(b.debugData);
             MergeMap.putAllValues(a.customInfo, b.customInfo, Semigroup.assertEquals());
             a.diffErrors.append(b.diffErrors);
@@ -81,6 +84,7 @@ public abstract class AnalysisResult<T> implements Metadata<T> {
      * {@code totalCommits - exportedCommits - emptyCommits - failedCommits}
      */
     public int failedCommits = 0;
+    public int totalPatches = 0;
     /**
      * Number of DiffTrees that were processed.
      */
@@ -101,6 +105,7 @@ public abstract class AnalysisResult<T> implements Metadata<T> {
      * The commit that was processed the slowest.
      */
     public final CommitProcessTime max;
+    public ExplainedFilterSummary filterHits = new ExplainedFilterSummary();
     /**
      * Debug data for DiffTree serialization.
      */
@@ -147,11 +152,13 @@ public abstract class AnalysisResult<T> implements Metadata<T> {
         snap.put(MetadataKeys.FAILED_COMMITS, failedCommits);
         snap.put(MetadataKeys.EMPTY_COMMITS, emptyCommits);
         snap.put(MetadataKeys.PROCESSED_COMMITS, exportedCommits);
+        snap.put(MetadataKeys.TOTAL_PATCHES, totalPatches);
         snap.put(MetadataKeys.TREES, exportedTrees);
         snap.put(MetadataKeys.MINCOMMIT, min.toString());
         snap.put(MetadataKeys.MAXCOMMIT, max.toString());
         snap.put(MetadataKeys.RUNTIME, runtimeInSeconds);
         snap.put(MetadataKeys.RUNTIME_WITH_MULTITHREADING, runtimeWithMultithreadingInSeconds);
+        snap.putAll(filterHits.snapshot());
         snap.putAll(customInfo);
         snap.putAll(debugData.snapshot());
         snap.putAll(Functjonal.bimap(diffErrors, error -> ERROR_BEGIN + error + ERROR_END, Object::toString));

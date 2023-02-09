@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.variantsync.diffdetective.diff.result.DiffError;
-import org.variantsync.diffdetective.variation.diff.serialize.DiffTreeSerializeDebugData;
 import org.variantsync.functjonal.category.InplaceMonoid;
 import org.variantsync.functjonal.category.InplaceSemigroup;
 
@@ -17,7 +16,6 @@ public class FeatureSplitResult extends AnalysisResult<FeatureSplitResult> {
      */
     public final static InplaceSemigroup<FeatureSplitResult> ISEMIGROUP = (a, b) -> {
         a.featureExtractTime += b.featureExtractTime;
-        a.totalPatches += b.totalPatches;
         a.totalFeatureAwarePatches.putAll(b.totalFeatureAwarePatches);
         a.totalRemainderPatches.putAll(b.totalRemainderPatches);
         a.totalFeatures.addAll(b.totalFeatures);
@@ -36,7 +34,6 @@ public class FeatureSplitResult extends AnalysisResult<FeatureSplitResult> {
             ISEMIGROUP
     );
 
-    public int totalPatches = 0;
     public double featureExtractTime = 0;
     public int invalidFADiff = 0;
     public Set<String> totalFeatures = new HashSet<>();
@@ -68,7 +65,6 @@ public class FeatureSplitResult extends AnalysisResult<FeatureSplitResult> {
     @Override
     public LinkedHashMap<String, Object> snapshot() {
         LinkedHashMap<String, Object> snap = super.snapshot();
-        snap.put(FeatureSplitMetadataKeys.TOTAL_PATCHES, totalPatches);
         snap.put(FeatureSplitMetadataKeys.TOTAL_FEATURES, totalFeatures);
         // RQ1.1
         snap.put(FeatureSplitMetadataKeys.RATIO_OF_FA_PATCHES, ratioOfFAPatches);

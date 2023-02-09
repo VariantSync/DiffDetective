@@ -9,55 +9,32 @@ import java.util.Set;
 
 import org.tinylog.Logger;
 import org.variantsync.diffdetective.analysis.Analysis;
-import org.variantsync.diffdetective.analysis.AnalysisTask;
-import org.variantsync.diffdetective.analysis.AnalysisTaskFactory;
-import org.variantsync.diffdetective.analysis.FeatureSplitFeatureExtractionTask;
+import org.variantsync.diffdetective.analysis.FeatureSplitFeatureExtraction;
 import org.variantsync.diffdetective.analysis.FeatureSplitResult;
-import org.variantsync.diffdetective.analysis.strategies.NullStrategy;
-import org.variantsync.diffdetective.validation.FACommitExtractionValidationTask;
+import org.variantsync.diffdetective.analysis.FilterAnalysis;
+import org.variantsync.diffdetective.analysis.PreprocessingAnalysis;
+import org.variantsync.diffdetective.analysis.StatisticsAnalysis;
 import org.variantsync.diffdetective.variation.diff.filter.DiffTreeFilter;
-import org.variantsync.diffdetective.variation.diff.filter.ExplainedFilter;
 import org.variantsync.diffdetective.variation.diff.transform.CutNonEditedSubtrees;
 
 public class FACommitValidation {
-    public static final AnalysisTaskFactory<FeatureSplitResult> VALIDATION_TASK_FACTORY(Set<String> randomFeatures) {
-            return (repo, differ, outputPath, commits) ->
-                new FACommitExtractionValidationTask(
-                    new AnalysisTask.Options(
-                        repo,
-                        differ,
-                        outputPath,
-                        new ExplainedFilter<>(DiffTreeFilter.notEmpty()), // filters unwanted trees
-                        List.of(new CutNonEditedSubtrees()),
-                        new NullStrategy(),
-                        commits
-                    ),
-                    randomFeatures
-                );
-    }
-
-    public static final AnalysisTaskFactory<FeatureSplitResult> FEATURE_EXTRACTION_TASK_FACTORY =
-            (repo, differ, outputPath, commits) -> new FeatureSplitFeatureExtractionTask(new AnalysisTask.Options(
-                    repo,
-                    differ,
-                    outputPath,
-                    new ExplainedFilter<>(DiffTreeFilter.notEmpty()), // filters unwanted trees
-                    List.of(new CutNonEditedSubtrees()),
-                    new NullStrategy(),
-                    commits
-            ));
-
-
     public static void main(String[] args) throws IOException {
         Validation.run(args, (repo, repoOutputDir) -> {
             Logger.info(" === Begin Feature Extraction {} ===", repo.getRepositoryName());
-            var featureExtrationResult = (FeatureSplitResult)Analysis.forEachCommit(
-                repo,
-                repoOutputDir,
-                FEATURE_EXTRACTION_TASK_FACTORY,
-                new FeatureSplitResult(repo.getRepositoryName()),
-                1
-            );
+            var featureExtrationResult =
+                Analysis.forEachCommit(
+                    () -> new Analysis<>(
+                        List.of(
+                            new PreprocessingAnalysis<>(new CutNonEditedSubtrees()),
+                            new FilterAnalysis<>(DiffTreeFilter.notEmpty()), // filters unwanted trees
+                            new FeatureSplitFeatureExtraction()
+                        ),
+                        repo,
+                        repoOutputDir,
+                        new FeatureSplitResult()
+                    ),
+                    1
+                );
             Set<String> extractedFeatures = featureExtrationResult.totalFeatures;
 
             Logger.info(" === Begin Evaluation {} ===", repo.getRepositoryName());
@@ -74,12 +51,17 @@ public class FACommitValidation {
                 randomFeatures.addAll(rndFeatures);
             }
 
-            Analysis.forEachCommit(
+            Analysis.forEachCommit(() -> new Analysis<>(
+                List.of(
+                    new PreprocessingAnalysis<>(new CutNonEditedSubtrees()),
+                    new FilterAnalysis<>(DiffTreeFilter.notEmpty()), // filters unwanted trees
+                    new FACommitExtractionValidationAnalysis(randomFeatures),
+                    new StatisticsAnalysis<>()
+                ),
                 repo,
                 repoOutputDir,
-                VALIDATION_TASK_FACTORY(randomFeatures),
-                new FeatureSplitResult(repo.getRepositoryName(), randomFeatures)
-            );
+                new FeatureSplitResult(randomFeatures)
+            ));
         });
     }
 }
