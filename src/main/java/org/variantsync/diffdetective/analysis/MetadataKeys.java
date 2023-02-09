@@ -28,4 +28,7 @@ public final class MetadataKeys {
     public static final String MINCOMMIT = "fastestCommit";
     public static final String MAXCOMMIT = "slowestCommit";
     public final static String TREES = "tree diffs";
+
+    public final static String EXPORTED_COMMITS = "exported commits";
+    public final static String EXPORTED_TREES = "exported trees";
 }

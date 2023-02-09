@@ -22,6 +22,8 @@ public interface Metadata<T> {
      */
     LinkedHashMap<String, ?> snapshot();
 
+    void setFromSnapshot(LinkedHashMap<String, String> snapshot);
+
     /**
      * Metadata should be composable.
      * Composition should be inplace to optimize performance.

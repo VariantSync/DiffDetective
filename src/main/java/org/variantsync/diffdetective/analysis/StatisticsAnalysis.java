@@ -3,16 +3,110 @@ package org.variantsync.diffdetective.analysis;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import org.tinylog.Logger;
+import org.variantsync.diffdetective.analysis.AnalysisResult.ResultKey;
+import org.variantsync.diffdetective.metadata.Metadata;
 import org.variantsync.diffdetective.util.Clock;
 import org.variantsync.diffdetective.util.FileUtils;
 import org.variantsync.diffdetective.util.IO;
 import org.variantsync.diffdetective.util.StringUtils;
+import org.variantsync.functjonal.category.InplaceSemigroup;
 
-public class StatisticsAnalysis<T extends AnalysisResult<T>> implements Analysis.Hooks<T> {
+public class StatisticsAnalysis implements Analysis.Hooks {
     public static final String COMMIT_TIME_FILE_EXTENSION = ".committimes.txt";
+
+    public static final ResultKey<Result> RESULT = new ResultKey<>("StatisticsAnalysis");
+    public static final class Result implements Metadata<Result> {
+        /**
+         * Number of commits that were not processed because they had no DiffTrees.
+         * A commit is empty iff at least of one of the following conditions is met for every of its patches:
+         * - the patch did not edit a C file,
+         * - the DiffTree became empty after transformations (this can happen if there are only whitespace changes),
+         * - or the patch had syntax errors in its annotations, so the DiffTree could not be parsed.
+         */
+        public int emptyCommits = 0;
+        /**
+         * Number of commits that could not be parsed at all because of exceptions when operating JGit.
+         *
+         * The number of commits that were filtered because they are a merge commit is thus given as
+         * {@code totalCommits - processedCommits - emptyCommits - failedCommits}
+         */
+        public int failedCommits = 0;
+        public int processedCommits = 0;
+        public int totalTrees = 0;
+        public int processedTrees = 0;
+        /**
+         * The total runtime in seconds (irrespective of multithreading).
+         */
+        public double runtimeInSeconds = 0;
+        /**
+         * The commit that was processed the fastest.
+         */
+        public final CommitProcessTime min;
+        /**
+         * The commit that was processed the slowest.
+         */
+        public final CommitProcessTime max;
+
+        public Result() {
+            this(AnalysisResult.NO_REPO);
+        }
+
+        public Result(String repoName) {
+            this.min = CommitProcessTime.Unknown(repoName, Long.MAX_VALUE);
+            this.max = CommitProcessTime.Unknown(repoName, Long.MIN_VALUE);
+        }
+
+        public static final InplaceSemigroup<Result> ISEMIGROUP = (a, b) -> {
+            a.emptyCommits += b.emptyCommits;
+            a.failedCommits += b.failedCommits;
+            a.processedCommits += b.processedCommits;
+            a.totalTrees += b.totalTrees;
+            a.processedTrees += b.processedTrees;
+            a.runtimeInSeconds += b.runtimeInSeconds;
+            a.min.set(CommitProcessTime.min(a.min, b.min));
+            a.max.set(CommitProcessTime.max(a.max, b.max));
+        };
+
+        @Override
+        public InplaceSemigroup<Result> semigroup() {
+            return ISEMIGROUP;
+        }
+
+        @Override
+        public LinkedHashMap<String, Object> snapshot() {
+            LinkedHashMap<String, Object> snap = new LinkedHashMap<>();
+            snap.put(MetadataKeys.FAILED_COMMITS, failedCommits);
+            snap.put(MetadataKeys.EMPTY_COMMITS, emptyCommits);
+            snap.put(MetadataKeys.PROCESSED_COMMITS, processedCommits);
+            snap.put(MetadataKeys.TOTAL_PATCHES, totalTrees);
+            snap.put(MetadataKeys.TREES, processedTrees);
+            snap.put(MetadataKeys.MINCOMMIT, min.toString());
+            snap.put(MetadataKeys.MAXCOMMIT, max.toString());
+            snap.put(MetadataKeys.RUNTIME, runtimeInSeconds);
+            return snap;
+        }
+
+        @Override
+        public void setFromSnapshot(LinkedHashMap<String, String> snap) {
+            failedCommits = Integer.parseInt(snap.get(MetadataKeys.FAILED_COMMITS));
+            emptyCommits = Integer.parseInt(snap.get(MetadataKeys.EMPTY_COMMITS));
+            processedCommits = Integer.parseInt(snap.get(MetadataKeys.PROCESSED_COMMITS));
+            totalTrees = Integer.parseInt(snap.get(MetadataKeys.TOTAL_PATCHES));
+            min.set(CommitProcessTime.fromString(snap.get(MetadataKeys.MINCOMMIT)));
+            max.set(CommitProcessTime.fromString(snap.get(MetadataKeys.MAXCOMMIT)));
+            processedTrees = Integer.parseInt(snap.get(MetadataKeys.TREES));
+
+            String runtime = snap.get(MetadataKeys.RUNTIME);
+            if (runtime.endsWith("s")) {
+                runtime = runtime.substring(0, runtime.length() - 1);
+            }
+            runtimeInSeconds = Double.parseDouble(runtime);
+        }
+    }
 
     // List to store the process time of each commit.
     private final List<CommitProcessTime> commitTimes = new ArrayList<>(Analysis.COMMITS_TO_PROCESS_PER_THREAD_DEFAULT);
@@ -22,57 +116,67 @@ public class StatisticsAnalysis<T extends AnalysisResult<T>> implements Analysis
     private int numDiffTrees = 0;
 
     @Override
-    public void beginBatch(Analysis<T> analysis) {
+    public void initializeResults(Analysis analysis) {
+        analysis.append(RESULT, new Result(analysis.getRepository().getRepositoryName()));
+    }
+
+    @Override
+    public void beginBatch(Analysis analysis) {
         totalTime.start();
     }
 
     @Override
-    public boolean beginCommit(Analysis<T> analysis) {
+    public boolean beginCommit(Analysis analysis) {
         commitProcessTimer.start();
         numDiffTrees = 0;
         return true;
     }
 
     @Override
-    public boolean onParsedCommit(Analysis<T> analysis) {
-        analysis.getResult().totalPatches += analysis.getCommitDiff().getPatchAmount();
+    public boolean onParsedCommit(Analysis analysis) {
+        analysis.get(RESULT).totalTrees += analysis.getCommitDiff().getPatchAmount();
         return true;
     }
 
     @Override
-    public boolean analyzeDiffTree(Analysis<T> analysis) {
+    public void onFailedCommit(Analysis analysis) {
+        analysis.get(RESULT).failedCommits += 1;
+    }
+
+    @Override
+    public boolean analyzeDiffTree(Analysis analysis) {
         ++numDiffTrees;
         return true;
     }
 
     @Override
-    public void endCommit(Analysis<T> analysis) {
-        analysis.getResult().exportedTrees += numDiffTrees;
+    public void endCommit(Analysis analysis) {
+        analysis.get(RESULT).processedTrees += numDiffTrees;
 
         // Report the commit process time if the commit is not empty.
         if (numDiffTrees > 0) {
             final long commitTimeMS = commitProcessTimer.getPassedMilliseconds();
             // find max commit time
-            if (commitTimeMS > analysis.getResult().max.milliseconds()) {
-                analysis.getResult().max.set(analysis.getCommitDiff().getCommitHash(), commitTimeMS);
+            if (commitTimeMS > analysis.get(RESULT).max.milliseconds()) {
+                analysis.get(RESULT).max.set(analysis.getCommitDiff().getCommitHash(), commitTimeMS);
             }
             // find min commit time
-            if (commitTimeMS < analysis.getResult().min.milliseconds()) {
-                analysis.getResult().min.set(analysis.getCommitDiff().getCommitHash(), commitTimeMS);
+            if (commitTimeMS < analysis.get(RESULT).min.milliseconds()) {
+                analysis.get(RESULT).min.set(analysis.getCommitDiff().getCommitHash(), commitTimeMS);
             }
             // report time
             commitTimes.add(new CommitProcessTime(analysis.getCommitDiff().getCommitHash(), analysis.getRepository().getRepositoryName(), commitTimeMS));
-            ++analysis.getResult().exportedCommits;
+            analysis.get(RESULT).processedCommits += 1;
         } else {
-            ++analysis.getResult().emptyCommits;
+            analysis.get(RESULT).emptyCommits += 1;
         }
     }
 
     @Override
-    public void endBatch(Analysis<T> analysis) {
+    public void endBatch(Analysis analysis) {
         // shutdown; report total time; export results
-        analysis.getResult().runtimeInSeconds = totalTime.getPassedSeconds();
-        analysis.getResult().exportTo(FileUtils.addExtension(analysis.getOutputFile(),EditClassAnalysisResult.EXTENSION));
+        analysis.get(RESULT).runtimeInSeconds = totalTime.getPassedSeconds();
+        analysis.get(RESULT).exportTo(FileUtils.addExtension(analysis.getOutputFile(), Analysis.EXTENSION));
         exportCommitTimes(commitTimes, FileUtils.addExtension(analysis.getOutputFile(), COMMIT_TIME_FILE_EXTENSION));
     }
 

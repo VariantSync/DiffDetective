@@ -1,9 +1,19 @@
 package org.variantsync.diffdetective.analysis;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.concurrent.Callable;
+import java.util.function.BiConsumer;
+import java.util.function.Supplier;
+
 import org.apache.commons.lang3.function.FailableBiConsumer;
 import org.apache.commons.lang3.function.FailableBiFunction;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.tinylog.Logger;
+import org.variantsync.diffdetective.analysis.AnalysisResult.ResultKey;
 import org.variantsync.diffdetective.analysis.monitoring.TaskCompletionMonitor;
 import org.variantsync.diffdetective.datasets.Repository;
 import org.variantsync.diffdetective.diff.git.CommitDiff;
@@ -19,23 +29,18 @@ import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.functjonal.iteration.ClusteredIterator;
 import org.variantsync.functjonal.iteration.MappedIterator;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Iterator;
-import java.util.ListIterator;
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.function.BiConsumer;
-import java.util.function.Supplier;
-
 /**
  * @author Paul Bittner, Benjamin Moosherr
  */
-public class Analysis<T extends AnalysisResult<T>> {
+public class Analysis {
     public static final int COMMITS_TO_PROCESS_PER_THREAD_DEFAULT = 1000;
-    public static final String TOTAL_RESULTS_FILE_NAME = "totalresult" + AnalysisResult.EXTENSION;
+    /**
+     * File extension that is used when writing AnalysisResults to disk.
+     */
+    public static final String EXTENSION = ".metadata.txt";
+    public static final String TOTAL_RESULTS_FILE_NAME = "totalresult" + EXTENSION;
 
-    protected final List<Hooks<T>> hooks;
+    protected final List<Hooks> hooks;
     protected final Repository repository;
 
     protected GitDiffer differ;
@@ -46,7 +51,7 @@ public class Analysis<T extends AnalysisResult<T>> {
 
     protected final Path outputDir;
     protected Path outputFile;
-    protected final T result;
+    protected final AnalysisResult result;
 
     public Repository getRepository() {
         return repository;
@@ -76,19 +81,29 @@ public class Analysis<T extends AnalysisResult<T>> {
         return outputFile;
     }
 
-    public T getResult() {
+    public AnalysisResult getResult() {
         return result;
     }
 
-    public interface Hooks<T extends AnalysisResult<T>> {
-        default void beginBatch(Analysis<T> analysis) throws Exception {}
-        default boolean beginCommit(Analysis<T> analysis) throws Exception { return true; }
-        default boolean onParsedCommit(Analysis<T> analysis) throws Exception { return true; }
-        default boolean beginPatch(Analysis<T> analysis) throws Exception { return true; }
-        default boolean analyzeDiffTree(Analysis<T> analysis) throws Exception { return true; }
-        default void endPatch(Analysis<T> analysis) throws Exception {}
-        default void endCommit(Analysis<T> analysis) throws Exception {}
-        default void endBatch(Analysis<T> analysis) throws Exception {}
+    public <T extends Metadata<T>> T get(ResultKey<T> resultKey) {
+        return result.get(resultKey);
+    }
+
+    public <T extends Metadata<T>> void append(ResultKey<T> resultKey, T value) {
+        result.append(resultKey, value);
+    }
+
+    public interface Hooks {
+        default void initializeResults(Analysis analysis) {}
+        default void beginBatch(Analysis analysis) throws Exception {}
+        default boolean beginCommit(Analysis analysis) throws Exception { return true; }
+        default boolean onParsedCommit(Analysis analysis) throws Exception { return true; }
+        default void onFailedCommit(Analysis analysis) throws Exception {}
+        default boolean beginPatch(Analysis analysis) throws Exception { return true; }
+        default boolean analyzeDiffTree(Analysis analysis) throws Exception { return true; }
+        default void endPatch(Analysis analysis) throws Exception {}
+        default void endCommit(Analysis analysis) throws Exception {}
+        default void endBatch(Analysis analysis) throws Exception {}
     }
 
     public static void forEachRepository(
@@ -116,15 +131,15 @@ public class Analysis<T extends AnalysisResult<T>> {
         }
     }
 
-    public static <T extends AnalysisResult<T>> T forEachCommit(Supplier<Analysis<T>> analysis) {
+    public static AnalysisResult forEachCommit(Supplier<Analysis> analysis) {
         return forEachCommit(
             analysis,
             Diagnostics.INSTANCE.run().getNumberOfAvailableProcessors()
         );
     }
 
-    public static <T extends AnalysisResult<T>> T forEachCommit(
-        Supplier<Analysis<T>> analysisFactory,
+    public static AnalysisResult forEachCommit(
+        Supplier<Analysis> analysisFactory,
         final int nThreads
     ) {
         var analysis = analysisFactory.get();
@@ -136,7 +151,7 @@ public class Analysis<T extends AnalysisResult<T>> {
         Logger.info(">>> Scheduling asynchronous analysis on {} threads.", nThreads);
         clock.start();
         final InvocationCounter<RevCommit, RevCommit> numberOfTotalCommits = InvocationCounter.justCount();
-        final Iterator<Callable<T>> tasks = new MappedIterator<>(
+        final Iterator<Callable<AnalysisResult>> tasks = new MappedIterator<>(
                 /// 1.) Retrieve COMMITS_TO_PROCESS_PER_THREAD commits from the differ and cluster them into one list.
                 new ClusteredIterator<>(
                         analysis.differ.yieldRevCommitsAfter(numberOfTotalCommits),
@@ -147,7 +162,8 @@ public class Analysis<T extends AnalysisResult<T>> {
                 commitList -> () -> {
                     var threadAnalysis = analysisFactory.get();
                     threadAnalysis.differ = analysis.differ;
-                    return threadAnalysis.processCommitBatch(commitList);
+                    threadAnalysis.processCommitBatch(commitList);
+                    return threadAnalysis.getResult();
                 }
         );
         Logger.info("<<< done in {}", clock.printPassedSeconds());
@@ -156,11 +172,15 @@ public class Analysis<T extends AnalysisResult<T>> {
         Logger.info(">>> Run Analysis");
         clock.start();
         commitSpeedMonitor.start();
-        try (final ScheduledTasksIterator<T> threads = new ScheduledTasksIterator<>(tasks, nThreads)) {
+        try (final ScheduledTasksIterator<AnalysisResult> threads = new ScheduledTasksIterator<>(tasks, nThreads)) {
             while (threads.hasNext()) {
-                final T threadsResult = threads.next();
+                final AnalysisResult threadsResult = threads.next();
                 analysis.getResult().append(threadsResult);
-                commitSpeedMonitor.addFinishedTasks(threadsResult.exportedCommits);
+
+                var statistics = threadsResult.get(StatisticsAnalysis.RESULT);
+                if (statistics != null) {
+                    commitSpeedMonitor.addFinishedTasks(statistics.processedCommits);
+                }
             }
         } catch (Exception e) {
             Logger.error(e, "Failed to run all mining task");
@@ -183,32 +203,35 @@ public class Analysis<T extends AnalysisResult<T>> {
     }
 
     public Analysis(
-        List<Hooks<T>> hooks,
+        String taskName,
+        List<Hooks> hooks,
         Repository repository,
-        Path outputDir,
-        T initialResult
+        Path outputDir
     ) {
         this.hooks = hooks;
         this.repository = repository;
         this.outputDir = outputDir;
-        this.result = initialResult;
+        this.result = new AnalysisResult();
 
         this.result.repoName = repository.getRepositoryName();
+        this.result.taskName = taskName;
+        for (var hook : hooks) {
+            hook.initializeResults(this);
+        }
     }
 
-    protected T processCommitBatch(List<RevCommit> commits) throws Exception {
+    protected void processCommitBatch(List<RevCommit> commits) throws Exception {
         outputFile = outputDir.resolve(commits.get(0).getId().getName() + ".lg");
 
-        ListIterator<Hooks<T>> batchHook = hooks.listIterator();
+        ListIterator<Hooks> batchHook = hooks.listIterator();
         try {
-            result.putCustomInfo(MetadataKeys.TASKNAME, this.getClass().getName());
             runHook(batchHook, Hooks::beginBatch);
 
             // For each commit
             for (final RevCommit finalCommit : commits) {
                 commit = finalCommit;
 
-                ListIterator<Hooks<T>> commitHook = hooks.listIterator();
+                ListIterator<Hooks> commitHook = hooks.listIterator();
                 try {
                     if (!runFilterHook(commitHook, Hooks::beginCommit)) {
                         continue;
@@ -225,8 +248,6 @@ public class Analysis<T extends AnalysisResult<T>> {
         } finally {
             runReverseHook(batchHook, Hooks::endBatch);
         }
-
-        return result;
     }
 
     protected void processCommit() throws Exception {
@@ -234,10 +255,10 @@ public class Analysis<T extends AnalysisResult<T>> {
         final CommitDiffResult commitDiffResult = differ.createCommitDiff(commit);
 
         // report any errors that occurred and exit in case no DiffTree could be parsed.
-        result.reportDiffErrors(commitDiffResult.errors());
+        getResult().reportDiffErrors(commitDiffResult.errors());
         if (commitDiffResult.diff().isEmpty()) {
             Logger.debug("found commit that failed entirely because:\n{}", commitDiffResult.errors());
-            ++result.failedCommits;
+            runHook(hooks.listIterator(), Hooks::onFailedCommit);
             return;
         }
 
@@ -251,7 +272,7 @@ public class Analysis<T extends AnalysisResult<T>> {
         for (final PatchDiff finalPatch : commitDiff.getPatchDiffs()) {
             patch = finalPatch;
 
-            ListIterator<Hooks<T>> patchHook = hooks.listIterator();
+            ListIterator<Hooks> patchHook = hooks.listIterator();
             try {
                 if (!runFilterHook(patchHook, Hooks::beginPatch)) {
                     continue;
@@ -274,13 +295,13 @@ public class Analysis<T extends AnalysisResult<T>> {
         }
     }
 
-    protected <Hook> void runHook(ListIterator<Hook> hook, FailableBiConsumer<Hook, Analysis<T>, Exception> callHook) throws Exception {
+    protected <Hook> void runHook(ListIterator<Hook> hook, FailableBiConsumer<Hook, Analysis, Exception> callHook) throws Exception {
         while (hook.hasNext()) {
             callHook.accept(hook.next(), this);
         }
     }
 
-    protected <Hook> boolean runFilterHook(ListIterator<Hook> hook, FailableBiFunction<Hook, Analysis<T>, Boolean, Exception> callHook) throws Exception {
+    protected <Hook> boolean runFilterHook(ListIterator<Hook> hook, FailableBiFunction<Hook, Analysis, Boolean, Exception> callHook) throws Exception {
         while (hook.hasNext()) {
             if (!callHook.apply(hook.next(), this)) {
                 return false;
@@ -290,7 +311,7 @@ public class Analysis<T extends AnalysisResult<T>> {
         return true;
     }
 
-    protected <Hook> void runReverseHook(ListIterator<Hook> hook, FailableBiConsumer<Hook, Analysis<T>, Exception> callHook) throws Exception {
+    protected <Hook> void runReverseHook(ListIterator<Hook> hook, FailableBiConsumer<Hook, Analysis, Exception> callHook) throws Exception {
         Exception catchedException = null;
         while (hook.hasPrevious()) {
             try {

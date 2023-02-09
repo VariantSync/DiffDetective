@@ -2,11 +2,13 @@ package org.variantsync.diffdetective.tablegen;
 
 import org.tinylog.Logger;
 import org.variantsync.diffdetective.analysis.Analysis;
-import org.variantsync.diffdetective.analysis.EditClassAnalysisResult;
+import org.variantsync.diffdetective.analysis.AnalysisResult;
 import org.variantsync.diffdetective.analysis.AutomationResult;
-import org.variantsync.diffdetective.analysis.MetadataKeys;
+import org.variantsync.diffdetective.analysis.StatisticsAnalysis;
 import org.variantsync.diffdetective.datasets.DatasetDescription;
 import org.variantsync.diffdetective.datasets.DefaultDatasets;
+import org.variantsync.diffdetective.metadata.EditClassCount;
+import org.variantsync.diffdetective.metadata.ExplainedFilterSummary;
 import org.variantsync.diffdetective.tablegen.rows.ContentRow;
 import org.variantsync.diffdetective.tablegen.styles.ShortTable;
 import org.variantsync.diffdetective.tablegen.styles.VariabilityShare;
@@ -21,31 +23,21 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-/** Accumulates multiple {@link EditClassAnalysisResult}s of several datasets. */
+/** Accumulates multiple {@link AnalysisResult}s of several datasets. */
 public class MiningResultAccumulator {
-    /** Specification of the information loaded by {@link getAllTotalResultsIn}. */
-    private final static Map<String, BiConsumer<EditClassAnalysisResult, String>> CustomEntryParsers = Map.ofEntries(
-            EditClassAnalysisResult.storeAsCustomInfo(MetadataKeys.TREEFORMAT),
-            EditClassAnalysisResult.storeAsCustomInfo(MetadataKeys.NODEFORMAT),
-            EditClassAnalysisResult.storeAsCustomInfo(MetadataKeys.EDGEFORMAT),
-            EditClassAnalysisResult.storeAsCustomInfo(MetadataKeys.TASKNAME),
-            Map.entry("org/variantsync/diffdetective/analysis", (r, val) -> r.putCustomInfo(MetadataKeys.TASKNAME, val))
-    );
-
     /**
-     * Finds all {@code EditClassAnalysisResult}s in {@code folderPath} recursively.
+     * Finds all {@code AnalysisResult}s in {@code folderPath} recursively.
      * All files having a {@link Analysis#TOTAL_RESULTS_FILE_NAME} filename ending are parsed and
      * associated with their filename.
      *
      * @param folderPath the folder which is scanned for analysis results recursively
      * @return an association between the parsed filenames and their parsed content
      */
-    public static Map<String, EditClassAnalysisResult> getAllTotalResultsIn(final Path folderPath) throws IOException {
+    public static Map<String, AnalysisResult> getAllTotalResultsIn(final Path folderPath) throws IOException {
         // get all files in the directory which are outputs of DiffTreeMiningResult
         final List<Path> paths = Files.walk(folderPath)
                 .filter(Files::isRegularFile)
@@ -53,22 +45,27 @@ public class MiningResultAccumulator {
                 .peek(path -> Logger.info("Processing file {}", path))
                 .toList();
 
-        final Map<String, EditClassAnalysisResult> results = new HashMap<>();
+        final Map<String, AnalysisResult> results = new HashMap<>();
         for (final Path p : paths) {
-            results.put(p.getParent().getFileName().toString(), EditClassAnalysisResult.importFrom(p, CustomEntryParsers));
+            var result = new AnalysisResult();
+            result.append(ExplainedFilterSummary.KEY, new ExplainedFilterSummary());
+            result.append(EditClassCount.KEY, new EditClassCount());
+            result.append(StatisticsAnalysis.RESULT, new StatisticsAnalysis.Result());
+            result.setFrom(p);
+            results.put(p.getParent().getFileName().toString(), result);
         }
         return results;
     }
 
 
     /**
-     * Computes a total {@link EditClassAnalysisResult} from multiple metadata outputs.
+     * Computes a total {@link AnalysisResult} from multiple metadata outputs.
      *
      * @param results analysis results to be accumulated
-     * @return the total {@link EditClassAnalysisResult} of all {@code results}
+     * @return the total {@link AnalysisResult} of all {@code results}
      */
-    public static EditClassAnalysisResult computeTotalMetadataResult(final Collection<EditClassAnalysisResult> results) {
-        return results.stream().collect(EditClassAnalysisResult.IMONOID);
+    public static AnalysisResult computeTotalMetadataResult(final Collection<AnalysisResult> results) {
+        return results.stream().collect(AnalysisResult.IMONOID);
     }
 
     /**
@@ -113,9 +110,9 @@ public class MiningResultAccumulator {
             throw new IllegalArgumentException("Expected path to directory but the given path is not a directory!");
         }
 
-        final Map<String, EditClassAnalysisResult> allResults = getAllTotalResultsIn(inputPath);
-        final EditClassAnalysisResult ultimateResult = computeTotalMetadataResult(allResults.values());
-        Analysis.exportMetadataToFile(inputPath.resolve("ultimateresult" + EditClassAnalysisResult.EXTENSION), ultimateResult);
+        final Map<String, AnalysisResult> allResults = getAllTotalResultsIn(inputPath);
+        final AnalysisResult ultimateResult = computeTotalMetadataResult(allResults.values());
+        Analysis.exportMetadataToFile(inputPath.resolve("ultimateresult" + Analysis.EXTENSION), ultimateResult);
 
         final Map<String, DatasetDescription> datasetByName;
         try {
@@ -131,7 +128,7 @@ public class MiningResultAccumulator {
 
         final List<ContentRow> datasetsWithResults = allResults.entrySet().stream().map(
                 entry -> {
-                    final EditClassAnalysisResult result = entry.getValue();
+                    final AnalysisResult result = entry.getValue();
                     final DatasetDescription dataset = datasetByName.get(entry.getKey());
                     if (dataset == null) {
                         throw new RuntimeException("Could not find dataset for " + entry.getKey());

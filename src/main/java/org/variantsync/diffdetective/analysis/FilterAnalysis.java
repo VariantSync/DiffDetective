@@ -7,7 +7,7 @@ import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.variation.diff.filter.ExplainedFilter;
 import org.variantsync.diffdetective.variation.diff.filter.TaggedPredicate;
 
-public class FilterAnalysis<T extends AnalysisResult<T>> implements Analysis.Hooks<T> {
+public class FilterAnalysis implements Analysis.Hooks {
     private ExplainedFilter<DiffTree> treeFilter;
 
     public FilterAnalysis(ExplainedFilter<DiffTree> treeFilter) {
@@ -20,13 +20,18 @@ public class FilterAnalysis<T extends AnalysisResult<T>> implements Analysis.Hoo
     }
 
     @Override
-    public boolean analyzeDiffTree(Analysis<T> analysis) throws Exception {
+    public void initializeResults(Analysis analysis) {
+        analysis.append(ExplainedFilterSummary.KEY, new ExplainedFilterSummary());
+    }
+
+    @Override
+    public boolean analyzeDiffTree(Analysis analysis) throws Exception {
         return treeFilter.test(analysis.getDiffTree());
     }
 
     @Override
-    public void endCommit(Analysis<T> analysis) {
-        analysis.getResult().filterHits.append(new ExplainedFilterSummary(treeFilter));
+    public void endCommit(Analysis analysis) {
+        analysis.append(ExplainedFilterSummary.KEY, new ExplainedFilterSummary(treeFilter));
         treeFilter.resetExplanations();
     }
 }

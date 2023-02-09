@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.variantsync.diffdetective.variation.diff.transform.DiffTreeTransformer;
 
-public class PreprocessingAnalysis<T extends AnalysisResult<T>> implements Analysis.Hooks<T> {
+public class PreprocessingAnalysis implements Analysis.Hooks {
     private List<DiffTreeTransformer> preprocessors;
 
     public PreprocessingAnalysis(List<DiffTreeTransformer> preprocessors) {
@@ -17,7 +17,7 @@ public class PreprocessingAnalysis<T extends AnalysisResult<T>> implements Analy
     }
 
     @Override
-    public boolean analyzeDiffTree(Analysis<T> analysis) throws Exception {
+    public boolean analyzeDiffTree(Analysis analysis) throws Exception {
         DiffTreeTransformer.apply(preprocessors, analysis.getDiffTree());
         analysis.getDiffTree().assertConsistency();
         return true;

@@ -53,6 +53,11 @@ public record AutomationResult(
     }
 
     @Override
+    public void setFromSnapshot(LinkedHashMap<String, String> snap) {
+        throw new UnsupportedOperationException("TODO Not implemented yet");
+    }
+
+    @Override
     public InplaceSemigroup<AutomationResult> semigroup() {
         return null;
     }

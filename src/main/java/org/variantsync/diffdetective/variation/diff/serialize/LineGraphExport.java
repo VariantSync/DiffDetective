@@ -2,15 +2,18 @@ package org.variantsync.diffdetective.variation.diff.serialize;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.LinkedHashMap;
 
 import org.tinylog.Logger;
-import org.variantsync.diffdetective.analysis.EditClassAnalysisResult;
+import org.variantsync.diffdetective.analysis.MetadataKeys;
+import org.variantsync.diffdetective.analysis.AnalysisResult.ResultKey;
 import org.variantsync.diffdetective.diff.git.CommitDiff;
 import org.variantsync.diffdetective.diff.git.PatchDiff;
-import org.variantsync.diffdetective.util.StringUtils;
+import org.variantsync.diffdetective.metadata.Metadata;
 import org.variantsync.diffdetective.util.StringUtils;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.variation.diff.source.DiffTreeSource;
+import org.variantsync.functjonal.category.InplaceSemigroup;
 
 /**
  * Class that contains functions for writing {@link CommitDiff}s and (sets of) {@link DiffTree}s to a linegraph file.
@@ -18,6 +21,50 @@ import org.variantsync.diffdetective.variation.diff.source.DiffTreeSource;
  */
 public final class LineGraphExport {
     private LineGraphExport() {}
+
+    public static final ResultKey<Statistic> STATISTIC = new ResultKey<>("LineGraphExporter");
+    public static final class Statistic implements Metadata<Statistic> {
+        /**
+        * The number of commits that were processed.
+        * {@code exportedCommits <= totalCommits}
+        */
+        public int exportedCommits = 0;
+        /**
+        * Number of DiffTrees that were processed.
+        */
+        public int exportedTrees = 0;
+        /**
+         * Debug data for DiffTree serialization.
+         */
+        public final DiffTreeSerializeDebugData debugData = new DiffTreeSerializeDebugData();
+
+        public static final InplaceSemigroup<Statistic> ISEMIGROUP = (a, b) -> {
+            a.exportedCommits += b.exportedCommits;
+            a.exportedTrees += b.exportedTrees;
+            a.debugData.append(b.debugData);
+        };
+
+        @Override
+        public InplaceSemigroup<Statistic> semigroup() {
+            return ISEMIGROUP;
+        }
+
+        @Override
+        public LinkedHashMap<String, Object> snapshot() {
+            var snap = new LinkedHashMap<String, Object>();
+            snap.put(MetadataKeys.EXPORTED_COMMITS, exportedCommits);
+            snap.put(MetadataKeys.EXPORTED_TREES, exportedTrees);
+            snap.putAll(debugData.snapshot());
+            return snap;
+        }
+
+        @Override
+        public void setFromSnapshot(LinkedHashMap<String, String> snap) {
+            exportedCommits = Integer.parseInt(snap.get(MetadataKeys.EXPORTED_COMMITS));
+            exportedTrees = Integer.parseInt(snap.get(MetadataKeys.EXPORTED_TREES));
+            debugData.setFromSnapshot(snap);
+        }
+    }
 
     /**
      * Exports the given DiffTree to a linegraph String. No file will be written.
@@ -33,13 +80,12 @@ public final class LineGraphExport {
 
     /**
      * Exports the given DiffTrees that originated from a repository with the given name.
-     * @param repoName The name of the repository, the given DiffTrees originated from.
      * @param trees The set of trees to export.
      * @param options Configuration options for the export, such as the format used for node and edge labels.
      * @return A pair of (1) metadata about the exported DiffTrees, and (2) the produced linegraph as String.
      */
-    public static EditClassAnalysisResult toLineGraphFormat(final String repoName, final Iterable<DiffTree> trees, final LineGraphExportOptions options, OutputStream destination) throws IOException {
-        final EditClassAnalysisResult result = new EditClassAnalysisResult(repoName);
+    public static Statistic toLineGraphFormat(final Iterable<DiffTree> trees, final LineGraphExportOptions options, OutputStream destination) throws IOException {
+        final var result = new Statistic();
 
         for (final DiffTree t : trees) {
             destination.write(lineGraphHeader(t.getSource(), options).getBytes());
@@ -54,35 +100,18 @@ public final class LineGraphExport {
     }
 
     /**
-     * Same as {@link LineGraphExport#toLineGraphFormat(String, Iterable, LineGraphExportOptions, OutputStream)} but with an
-     * {@link EditClassAnalysisResult#NO_REPO unkown repository}.
-     */
-    public static EditClassAnalysisResult toLineGraphFormat(final Iterable<DiffTree> trees, final LineGraphExportOptions options, OutputStream destination) throws IOException {
-        return toLineGraphFormat(EditClassAnalysisResult.NO_REPO, trees, options, destination);
-    }
-
-    /**
-     * Same as {@link LineGraphExport#toLineGraphFormat(String, CommitDiff, LineGraphExportOptions, OutputStream)}
-     * but with an {@link EditClassAnalysisResult#NO_REPO unkown repository}.
-     */
-    public static EditClassAnalysisResult toLineGraphFormat(final CommitDiff commitDiff, final LineGraphExportOptions options, OutputStream destination) throws IOException {
-        return toLineGraphFormat(EditClassAnalysisResult.NO_REPO, commitDiff, options, destination);
-    }
-
-    /**
      * Writes the given commitDiff in linegraph format to the given StringBuilder.
-     * @param repoName The name of the repository from which the given CommitDiff originated.
      * @param commitDiff The diff to convert to line graph format.
      * @param options Configuration options for the export, such as the format used for node and edge labels.
      * @param destination where the resulting line graph is written
      * @return The number of the next diff tree to export (updated value of treeCounter).
      */
-    public static EditClassAnalysisResult toLineGraphFormat(final String repoName, final CommitDiff commitDiff, LineGraphExportOptions options, OutputStream destination) throws IOException {
-        final EditClassAnalysisResult result = new EditClassAnalysisResult(repoName);
+    public static Statistic toLineGraphFormat(final CommitDiff commitDiff, LineGraphExportOptions options, OutputStream destination) throws IOException {
+        final var result = new Statistic();
 
         for (final PatchDiff patchDiff : commitDiff.getPatchDiffs()) {
             try {
-                result.append(toLineGraphFormat(repoName, patchDiff, options, destination));
+                result.append(toLineGraphFormat(patchDiff, options, destination));
             } catch (Exception e) {
                 options.onError().accept(patchDiff, e);
                 break;
@@ -101,8 +130,8 @@ public final class LineGraphExport {
      * @param destination where the resulting line graph is written
      * @return The number of the next diff tree to export (updated value of treeCounter).
      */
-    public static EditClassAnalysisResult toLineGraphFormat(final String repoName, final PatchDiff patch, final LineGraphExportOptions options, OutputStream destination) throws IOException {
-        final EditClassAnalysisResult result = new EditClassAnalysisResult(repoName);
+    public static Statistic toLineGraphFormat(final PatchDiff patch, final LineGraphExportOptions options, OutputStream destination) throws IOException {
+        final var result = new Statistic();
 
         if (patch.isValid()) {
             //Logger.info("  Exporting DiffTree #{}", treeCounter);

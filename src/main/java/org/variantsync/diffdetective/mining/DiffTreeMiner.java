@@ -11,7 +11,6 @@ import java.util.function.Consumer;
 import org.apache.commons.io.FileUtils;
 import org.tinylog.Logger;
 import org.variantsync.diffdetective.analysis.Analysis;
-import org.variantsync.diffdetective.analysis.EditClassAnalysisResult;
 import org.variantsync.diffdetective.analysis.FilterAnalysis;
 import org.variantsync.diffdetective.analysis.LineGraphExportAnalysis;
 import org.variantsync.diffdetective.analysis.PatchAnalysis;
@@ -104,9 +103,10 @@ public class DiffTreeMiner {
 
     public static BiFunction<Repository, Path, Analysis> AnalysisFactory =
         (repo, repoOutputDir) -> new Analysis(
+            "DiffTreeMiner",
             List.of(
-                new PreprocessingAnalysis<>(Postprocessing(repo)),
-                new FilterAnalysis<>(
+                new PreprocessingAnalysis(Postprocessing(repo)),
+                new FilterAnalysis(
                         DiffTreeFilter.notEmpty(),
                         DiffTreeFilter.moreThanOneArtifactNode(),
                         /// We want to exclude patches that do not edit variability.
@@ -118,11 +118,10 @@ public class DiffTreeMiner {
                 ),
                 new LineGraphExportAnalysis(MiningStrategy(), MiningExportOptions(repo)),
                 new PatchAnalysis(),
-                new StatisticsAnalysis<>()
+                new StatisticsAnalysis()
             ),
             repo,
-            repoOutputDir,
-            new EditClassAnalysisResult()
+            repoOutputDir
         );
 
     public static void main(String[] args) throws IOException {
