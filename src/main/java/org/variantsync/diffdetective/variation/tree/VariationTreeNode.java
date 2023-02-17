@@ -247,7 +247,7 @@ public class VariationTreeNode extends VariationNode<VariationTreeNode> {
     }
 
     @Override
-    public Node getDirectFeatureMapping() {
+    public Node getFormula() {
         return featureMapping;
     }
 

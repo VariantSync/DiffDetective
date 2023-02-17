@@ -471,8 +471,17 @@ public class DiffNode implements HasNodeType {
      * The formula is not null for mapping nodes
      * @see NodeType#isAnnotation
      */
-    public Node getDirectFeatureMapping() {
+    public Node getFormula() {
         return featureMapping;
+    }
+
+    public boolean setFormula(Node featureMapping) {
+        if (this.nodeType.isConditionalAnnotation()) {
+            this.featureMapping = featureMapping;
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -675,9 +684,9 @@ public class DiffNode implements HasNodeType {
 
         // Only if and elif nodes have a formula
         if (this.isIf() || this.isElif()) {
-            Assert.assertTrue(this.getDirectFeatureMapping() != null, "If or elif without feature mapping!");
+            Assert.assertTrue(this.getFormula() != null, "If or elif without feature mapping!");
         } else {
-            Assert.assertTrue(this.getDirectFeatureMapping() == null, "Node with type " + nodeType + " has a non null feature mapping");
+            Assert.assertTrue(this.getFormula() == null, "Node with type " + nodeType + " has a non null feature mapping");
         }
     }
 
@@ -762,7 +771,7 @@ public class DiffNode implements HasNodeType {
             variationNode.getNodeType(),
             new DiffLineNumber(from, from, from),
             new DiffLineNumber(to, to, to),
-            variationNode.getDirectFeatureMapping(),
+            variationNode.getFormula(),
             variationNode.getLabelLines()
         );
 

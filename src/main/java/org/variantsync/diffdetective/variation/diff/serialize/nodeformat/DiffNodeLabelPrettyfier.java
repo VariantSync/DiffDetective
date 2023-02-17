@@ -17,7 +17,7 @@ public abstract class DiffNodeLabelPrettyfier {
 	 */
     private static String prettyPrintTypeAndMapping(final DiffNode node) {
         String result = node.nodeType.name;
-        final Node fm = node.getDirectFeatureMapping();
+        final Node fm = node.getFormula();
         if (fm != null) {
             result += " " + fm;
         }

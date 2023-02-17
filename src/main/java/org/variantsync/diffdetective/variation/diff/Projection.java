@@ -140,8 +140,8 @@ public class Projection extends VariationNode<Projection> {
     }
 
     @Override
-    public Node getDirectFeatureMapping() {
-        return getBackingNode().getDirectFeatureMapping();
+    public Node getFormula() {
+        return getBackingNode().getFormula();
     }
 
     @Override

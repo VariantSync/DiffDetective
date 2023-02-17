@@ -30,7 +30,7 @@ public class FullNodeFormat implements DiffNodeLabelFormat {
         lines.add(node.nodeType.toString());
         lines.add(node.getFromLine().toString());
         lines.add(node.getToLine().toString());
-        lines.add(node.getDirectFeatureMapping() == null ? "" : node.getDirectFeatureMapping().toString());
+        lines.add(node.getFormula() == null ? "" : node.getFormula().toString());
         lines.addAll(node.getLabelLines());
 
         return lines;
