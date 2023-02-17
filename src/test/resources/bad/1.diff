@@ -1,0 +1,7 @@
+-#if A
++#if B
+ #if X
++#endif
+ y
+-#endif
+ #endif
