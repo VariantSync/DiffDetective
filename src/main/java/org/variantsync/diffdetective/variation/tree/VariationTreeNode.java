@@ -338,11 +338,11 @@ public class VariationTreeNode extends VariationNode<VariationTreeNode> {
     public String toString() {
         String s;
         if (isArtifact()) {
-            s = String.format("%s in the lines %d", nodeType, lineRange);
+            s = String.format("%s in the lines %s", nodeType, lineRange);
         } else if (isRoot()) {
             s = "ROOT";
         } else {
-            s = String.format("%s in the lines %d with \"%s\"", nodeType,
+            s = String.format("%s in the lines %s with \"%s\"", nodeType,
                     lineRange, featureMapping);
         }
         return s;
