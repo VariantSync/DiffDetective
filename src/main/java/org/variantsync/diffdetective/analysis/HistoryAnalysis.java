@@ -192,20 +192,23 @@ public record HistoryAnalysis(
      */
     public void runAsync() {
         for (final Repository repo : repositoriesToAnalyze) {
-            Logger.info(" === Begin Processing {} ===", repo.getRepositoryName());
-            final Clock clock = new Clock();
-            clock.start();
-
             final Path repoOutputDir = outputDir.resolve(repo.getRepositoryName());
             /// Don't repeat work we already did:
-            if (!Files.exists(repoOutputDir.resolve(TOTAL_RESULTS_FILE_NAME))) {
+            if (Files.exists(repoOutputDir.resolve(TOTAL_RESULTS_FILE_NAME))) {
+                Logger.info("  Skipping repository {} because it has already been processed.",
+                    repo.getRepositoryName());
+            } else {
+                Logger.info(" === Begin Processing {} ===", repo.getRepositoryName());
+                final Clock clock = new Clock();
+                clock.start();
+
                 analyzeAsync(repo, repoOutputDir, whatToDo, commitsToProcessPerThread);
                 postProcessingOnRepositoryOutputDir.accept(repoOutputDir);
-            } else {
-                Logger.info("  Skipping repository {} because it has already been processed.", repo.getRepositoryName());
-            }
 
-            Logger.info(" === End Processing {} after {} ===", repo.getRepositoryName(), clock.printPassedSeconds());
+                Logger.info(" === End Processing {} after {} ===",
+                    repo.getRepositoryName(),
+                    clock.printPassedSeconds());
+            }
         }
     }
 }
