@@ -55,50 +55,6 @@ public record HistoryAnalysis(
      */
     public static final int COMMITS_TO_PROCESS_PER_THREAD_DEFAULT = 1000;
 
-    @Deprecated
-    public static void analyze(
-            final Repository repo,
-            final Path outputDir,
-            final ExplainedFilter<DiffTree> treeFilter,
-            final List<DiffTreeTransformer> treePreProcessing,
-            final LineGraphExportOptions exportOptions,
-            final AnalysisStrategy strategy)
-    {
-        AnalysisResult totalResult;
-        final GitDiffer differ = new GitDiffer(repo);
-        final Clock clock = new Clock();
-
-        // prepare tasks
-        Logger.info(">>> Scheduling synchronous mining");
-        clock.start();
-        List<RevCommit> commitsToProcess = differ.yieldRevCommits().toList();
-        final CommitHistoryAnalysisTask task = new MiningTask(new CommitHistoryAnalysisTask.Options(
-                repo,
-                differ,
-                outputDir.resolve(repo.getRepositoryName() + ".lg"),
-                treeFilter,
-                treePreProcessing,
-                strategy,
-                commitsToProcess
-        ), exportOptions);
-        Logger.info("Scheduled {} commits.", commitsToProcess.size());
-        commitsToProcess = null; // free reference to enable garbage collection
-        Logger.info("<<< done after {}", clock.printPassedSeconds());
-
-        Logger.info(">>> Run mining");
-        clock.start();
-        try {
-            totalResult = task.call();
-        } catch (Exception e) {
-            Logger.error(e);
-            Logger.info("<<< aborted after {}", clock.printPassedSeconds());
-            return;
-        }
-        Logger.info("<<< done after {}", clock.printPassedSeconds());
-
-        exportMetadata(outputDir, totalResult);
-    }
-
     /**
      * Static analysis method that can be used without creating an HistoryAnalysis object first.
      * Analyzes the history of the given repository with the given parameters.
