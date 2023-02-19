@@ -26,6 +26,8 @@ public final class MetadataKeys {
     public final static String RUNTIME_WITH_MULTITHREADING = "runtime with multithreading in seconds";
     public static final String MINCOMMIT = "fastestCommit";
     public static final String MAXCOMMIT = "slowestCommit";
+
+    public final static String TOTAL_PATCHES = "total patches";
     public final static String TREES = "tree diffs";
 
     public final static String EXPORTED_COMMITS = "exported commits";

@@ -37,6 +37,7 @@ public class StatisticsAnalysis implements Analysis.Hooks {
          */
         public int failedCommits = 0;
         public int processedCommits = 0;
+        public int totalTrees = 0;
         public int processedTrees = 0;
         /**
          * The total runtime in seconds (irrespective of multithreading).
@@ -64,6 +65,7 @@ public class StatisticsAnalysis implements Analysis.Hooks {
             a.emptyCommits += b.emptyCommits;
             a.failedCommits += b.failedCommits;
             a.processedCommits += b.processedCommits;
+            a.totalTrees += b.totalTrees;
             a.processedTrees += b.processedTrees;
             a.runtimeInSeconds += b.runtimeInSeconds;
             a.min.set(CommitProcessTime.min(a.min, b.min));
@@ -81,6 +83,7 @@ public class StatisticsAnalysis implements Analysis.Hooks {
             snap.put(MetadataKeys.FAILED_COMMITS, failedCommits);
             snap.put(MetadataKeys.EMPTY_COMMITS, emptyCommits);
             snap.put(MetadataKeys.PROCESSED_COMMITS, processedCommits);
+            snap.put(MetadataKeys.TOTAL_PATCHES, totalTrees);
             snap.put(MetadataKeys.TREES, processedTrees);
             snap.put(MetadataKeys.MINCOMMIT, min.toString());
             snap.put(MetadataKeys.MAXCOMMIT, max.toString());
@@ -93,6 +96,7 @@ public class StatisticsAnalysis implements Analysis.Hooks {
             failedCommits = Integer.parseInt(snap.get(MetadataKeys.FAILED_COMMITS));
             emptyCommits = Integer.parseInt(snap.get(MetadataKeys.EMPTY_COMMITS));
             processedCommits = Integer.parseInt(snap.get(MetadataKeys.PROCESSED_COMMITS));
+            totalTrees = Integer.parseInt(snap.get(MetadataKeys.TOTAL_PATCHES));
             min.set(CommitProcessTime.fromString(snap.get(MetadataKeys.MINCOMMIT)));
             max.set(CommitProcessTime.fromString(snap.get(MetadataKeys.MAXCOMMIT)));
             processedTrees = Integer.parseInt(snap.get(MetadataKeys.TREES));
@@ -126,6 +130,12 @@ public class StatisticsAnalysis implements Analysis.Hooks {
     public boolean beginCommit(Analysis analysis) {
         commitProcessTimer.start();
         numDiffTrees = 0;
+        return true;
+    }
+
+    @Override
+    public boolean onParsedCommit(Analysis analysis) {
+        analysis.get(RESULT).totalTrees += analysis.getCurrentCommitDiff().getPatchAmount();
         return true;
     }
 
