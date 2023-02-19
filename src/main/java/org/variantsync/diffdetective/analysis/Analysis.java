@@ -113,6 +113,31 @@ public class Analysis {
         default void endBatch(Analysis analysis) throws Exception {}
     }
 
+    public static void forEachRepository(
+        List<Repository> repositoriesToAnalyze,
+        Path outputDir,
+        BiConsumer<Repository, Path> analyzeRepository
+    ) {
+        for (final Repository repo : repositoriesToAnalyze) {
+            final Path repoOutputDir = outputDir.resolve(repo.getRepositoryName());
+            // Don't repeat work we already did:
+            if (Files.exists(repoOutputDir.resolve(TOTAL_RESULTS_FILE_NAME))) {
+                Logger.info("  Skipping repository {} because it has already been processed.",
+                    repo.getRepositoryName());
+            } else {
+                Logger.info(" === Begin Processing {} ===", repo.getRepositoryName());
+                final Clock clock = new Clock();
+                clock.start();
+
+                analyzeRepository.accept(repo, repoOutputDir);
+
+                Logger.info(" === End Processing {} after {} ===",
+                    repo.getRepositoryName(),
+                    clock.printPassedSeconds());
+            }
+        }
+    }
+
     public static AnalysisResult forEachCommit(Supplier<Analysis> analysis) {
         return forEachCommit(
             analysis,
@@ -335,30 +360,5 @@ public class Analysis {
     public static <T> void exportMetadataToFile(final Path outputFile, final Metadata<T> metadata) {
         final String prettyMetadata = metadata.exportTo(outputFile);
         Logger.info("Metadata:\n{}", prettyMetadata);
-    }
-
-    public static void forEachRepository(
-        List<Repository> repositoriesToAnalyze,
-        Path outputDir,
-        BiConsumer<Repository, Path> analyzeRepository
-    ) {
-        for (final Repository repo : repositoriesToAnalyze) {
-            final Path repoOutputDir = outputDir.resolve(repo.getRepositoryName());
-            /// Don't repeat work we already did:
-            if (Files.exists(repoOutputDir.resolve(TOTAL_RESULTS_FILE_NAME))) {
-                Logger.info("  Skipping repository {} because it has already been processed.",
-                    repo.getRepositoryName());
-            } else {
-                Logger.info(" === Begin Processing {} ===", repo.getRepositoryName());
-                final Clock clock = new Clock();
-                clock.start();
-
-                analyzeRepository.accept(repo, repoOutputDir);
-
-                Logger.info(" === End Processing {} after {} ===",
-                    repo.getRepositoryName(),
-                    clock.printPassedSeconds());
-            }
-        }
     }
 }
