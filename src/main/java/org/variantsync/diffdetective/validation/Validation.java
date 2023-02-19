@@ -11,7 +11,6 @@ import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.tinylog.Logger;
 
-import org.variantsync.diffdetective.analysis.AnalysisResult;
 import org.variantsync.diffdetective.analysis.FilterAnalysis;
 import org.variantsync.diffdetective.analysis.Analysis;
 import org.variantsync.diffdetective.analysis.PreprocessingAnalysis;
@@ -19,6 +18,7 @@ import org.variantsync.diffdetective.analysis.StatisticsAnalysis;
 import org.variantsync.diffdetective.datasets.*;
 import org.variantsync.diffdetective.datasets.Repository;
 import org.variantsync.diffdetective.editclass.proposed.ProposedEditClasses;
+import org.variantsync.diffdetective.metadata.EditClassCount;
 import org.variantsync.diffdetective.mining.formats.DirectedEdgeLabelFormat;
 import org.variantsync.diffdetective.mining.formats.MiningNodeFormat;
 import org.variantsync.diffdetective.mining.formats.ReleaseMiningDiffNodeFormat;
@@ -51,6 +51,7 @@ public class Validation implements Analysis.Hooks {
 
     // This is only needed for the `MarlinDebug` test.
     public static final BiFunction<Repository, Path, Analysis> AnalysisFactory = (repo, repoOutputDir) -> new Analysis(
+        "EditClassValidation",
         List.of(
             new PreprocessingAnalysis(new CutNonEditedSubtrees()),
             new FilterAnalysis(DiffTreeFilter.notEmpty()), // filters unwanted trees
@@ -195,10 +196,15 @@ public class Validation implements Analysis.Hooks {
     }
 
     @Override
+    public void initializeResults(Analysis analysis) {
+        analysis.append(EditClassCount.KEY, new EditClassCount());
+    }
+
+    @Override
     public boolean analyzeDiffTree(Analysis analysis) throws Exception {
         analysis.getCurrentDiffTree().forAll(node -> {
             if (node.isArtifact()) {
-                analysis.getResult().editClassCounts.reportOccurrenceFor(
+                analysis.get(EditClassCount.KEY).reportOccurrenceFor(
                     ProposedEditClasses.Instance.match(node),
                     analysis.getCurrentCommitDiff()
                 );

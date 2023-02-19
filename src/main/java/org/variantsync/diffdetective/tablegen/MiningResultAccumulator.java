@@ -1,18 +1,5 @@
 package org.variantsync.diffdetective.tablegen;
 
-import org.tinylog.Logger;
-import org.variantsync.diffdetective.analysis.AnalysisResult;
-import org.variantsync.diffdetective.analysis.AutomationResult;
-import org.variantsync.diffdetective.analysis.Analysis;
-import org.variantsync.diffdetective.analysis.MetadataKeys;
-import org.variantsync.diffdetective.datasets.DatasetDescription;
-import org.variantsync.diffdetective.datasets.DefaultDatasets;
-import org.variantsync.diffdetective.tablegen.rows.ContentRow;
-import org.variantsync.diffdetective.tablegen.styles.ShortTable;
-import org.variantsync.diffdetective.tablegen.styles.VariabilityShare;
-import org.variantsync.diffdetective.util.IO;
-import org.variantsync.diffdetective.validation.FindMedianCommitTime;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -21,22 +8,27 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import org.tinylog.Logger;
+import org.variantsync.diffdetective.analysis.Analysis;
+import org.variantsync.diffdetective.analysis.AnalysisResult;
+import org.variantsync.diffdetective.analysis.AutomationResult;
+import org.variantsync.diffdetective.analysis.StatisticsAnalysis;
+import org.variantsync.diffdetective.datasets.DatasetDescription;
+import org.variantsync.diffdetective.datasets.DefaultDatasets;
+import org.variantsync.diffdetective.metadata.EditClassCount;
+import org.variantsync.diffdetective.metadata.ExplainedFilterSummary;
+import org.variantsync.diffdetective.tablegen.rows.ContentRow;
+import org.variantsync.diffdetective.tablegen.styles.ShortTable;
+import org.variantsync.diffdetective.tablegen.styles.VariabilityShare;
+import org.variantsync.diffdetective.util.IO;
+import org.variantsync.diffdetective.validation.FindMedianCommitTime;
+
 /** Accumulates multiple {@link AnalysisResult}s of several datasets. */
 public class MiningResultAccumulator {
-    /** Specification of the information loaded by {@link getAllTotalResultsIn}. */
-    private final static Map<String, BiConsumer<AnalysisResult, String>> CustomEntryParsers = Map.ofEntries(
-            AnalysisResult.storeAsCustomInfo(MetadataKeys.TREEFORMAT),
-            AnalysisResult.storeAsCustomInfo(MetadataKeys.NODEFORMAT),
-            AnalysisResult.storeAsCustomInfo(MetadataKeys.EDGEFORMAT),
-            AnalysisResult.storeAsCustomInfo(MetadataKeys.TASKNAME),
-            Map.entry("org/variantsync/diffdetective/analysis", (r, val) -> r.putCustomInfo(MetadataKeys.TASKNAME, val))
-    );
-
     /**
      * Finds all {@code AnalysisResult}s in {@code folderPath} recursively.
      * All files having a {@link Analysis#TOTAL_RESULTS_FILE_NAME} filename ending are
@@ -55,7 +47,12 @@ public class MiningResultAccumulator {
 
         final Map<String, AnalysisResult> results = new HashMap<>();
         for (final Path p : paths) {
-            results.put(p.getParent().getFileName().toString(), AnalysisResult.importFrom(p, CustomEntryParsers));
+            var result = new AnalysisResult();
+            result.append(ExplainedFilterSummary.KEY, new ExplainedFilterSummary());
+            result.append(EditClassCount.KEY, new EditClassCount());
+            result.append(StatisticsAnalysis.RESULT, new StatisticsAnalysis.Result());
+            result.setFrom(p);
+            results.put(p.getParent().getFileName().toString(), result);
         }
         return results;
     }
@@ -115,7 +112,7 @@ public class MiningResultAccumulator {
 
         final Map<String, AnalysisResult> allResults = getAllTotalResultsIn(inputPath);
         final AnalysisResult ultimateResult = computeTotalMetadataResult(allResults.values());
-        Analysis.exportMetadataToFile(inputPath.resolve("ultimateresult" + AnalysisResult.EXTENSION), ultimateResult);
+        Analysis.exportMetadataToFile(inputPath.resolve("ultimateresult" + Analysis.EXTENSION), ultimateResult);
 
         final Map<String, DatasetDescription> datasetByName;
         try {

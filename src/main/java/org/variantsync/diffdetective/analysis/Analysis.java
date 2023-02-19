@@ -1,9 +1,19 @@
 package org.variantsync.diffdetective.analysis;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.concurrent.Callable;
+import java.util.function.BiConsumer;
+import java.util.function.Supplier;
+
 import org.apache.commons.lang3.function.FailableBiConsumer;
 import org.apache.commons.lang3.function.FailableBiFunction;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.tinylog.Logger;
+import org.variantsync.diffdetective.analysis.AnalysisResult.ResultKey;
 import org.variantsync.diffdetective.analysis.monitoring.TaskCompletionMonitor;
 import org.variantsync.diffdetective.datasets.Repository;
 import org.variantsync.diffdetective.diff.git.CommitDiff;
@@ -19,23 +29,18 @@ import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.functjonal.iteration.ClusteredIterator;
 import org.variantsync.functjonal.iteration.MappedIterator;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Iterator;
-import java.util.ListIterator;
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.function.BiConsumer;
-import java.util.function.Supplier;
-
 /**
  * @author Paul Bittner, Benjamin Moosherr
  */
 public class Analysis {
     /**
+     * File extension that is used when writing AnalysisResults to disk.
+     */
+    public static final String EXTENSION = ".metadata.txt";
+    /**
      * File name that is used to store the analysis results for each repository.
      */
-    public static final String TOTAL_RESULTS_FILE_NAME = "totalresult" + AnalysisResult.EXTENSION;
+    public static final String TOTAL_RESULTS_FILE_NAME = "totalresult" + EXTENSION;
     /**
      * Default value for <code>commitsToProcessPerThread</code>
      * @see forEachCommit(Supplier<HistoryAnalysis>, int, int)
@@ -87,9 +92,19 @@ public class Analysis {
         return result;
     }
 
+    public <T extends Metadata<T>> T get(ResultKey<T> resultKey) {
+        return result.get(resultKey);
+    }
+
+    public <T extends Metadata<T>> void append(ResultKey<T> resultKey, T value) {
+        result.append(resultKey, value);
+    }
+
     public interface Hooks {
+        default void initializeResults(Analysis analysis) {}
         default void beginBatch(Analysis analysis) throws Exception {}
         default boolean beginCommit(Analysis analysis) throws Exception { return true; }
+        default void onFailedCommit(Analysis analysis) throws Exception {}
         default boolean onParsedCommit(Analysis analysis) throws Exception { return true; }
         default boolean beginPatch(Analysis analysis) throws Exception { return true; }
         default boolean analyzeDiffTree(Analysis analysis) throws Exception { return true; }
@@ -98,7 +113,7 @@ public class Analysis {
         default void endBatch(Analysis analysis) throws Exception {}
     }
 
-    public static <T extends AnalysisResult> AnalysisResult forEachCommit(Supplier<Analysis> analysis) {
+    public static AnalysisResult forEachCommit(Supplier<Analysis> analysis) {
         return forEachCommit(
             analysis,
             COMMITS_TO_PROCESS_PER_THREAD_DEFAULT,
@@ -106,7 +121,7 @@ public class Analysis {
         );
     }
 
-    public static <T extends AnalysisResult> AnalysisResult forEachCommit(
+    public static AnalysisResult forEachCommit(
         Supplier<Analysis> analysisFactory,
         final int commitsToProcessPerThread,
         final int nThreads
@@ -140,7 +155,11 @@ public class Analysis {
             while (threads.hasNext()) {
                 final AnalysisResult threadsResult = threads.next();
                 analysis.getResult().append(threadsResult);
-                commitSpeedMonitor.addFinishedTasks(threadsResult.exportedCommits);
+
+                var statistics = threadsResult.get(StatisticsAnalysis.RESULT);
+                if (statistics != null) {
+                    commitSpeedMonitor.addFinishedTasks(statistics.processedCommits);
+                }
             }
         } catch (Exception e) {
             Logger.error(e, "Failed to run all mining task");
@@ -158,6 +177,7 @@ public class Analysis {
     }
 
     public Analysis(
+        String taskName,
         List<Hooks> hooks,
         Repository repository,
         Path outputDir
@@ -165,7 +185,13 @@ public class Analysis {
         this.hooks = hooks;
         this.repository = repository;
         this.outputDir = outputDir;
-        this.result = new AnalysisResult(repository.getRepositoryName());
+        this.result = new AnalysisResult();
+
+        this.result.repoName = repository.getRepositoryName();
+        this.result.taskName = taskName;
+        for (var hook : hooks) {
+            hook.initializeResults(this);
+        }
     }
 
     public AnalysisResult processCommits(List<RevCommit> commits) throws Exception {
@@ -178,12 +204,11 @@ public class Analysis {
         return getResult();
     }
 
-    protected AnalysisResult processCommitBatch(List<RevCommit> commits) throws Exception {
+    protected void processCommitBatch(List<RevCommit> commits) throws Exception {
         outputFile = outputDir.resolve(commits.get(0).getId().getName() + ".lg");
 
         ListIterator<Hooks> batchHook = hooks.listIterator();
         try {
-            result.putCustomInfo(MetadataKeys.TASKNAME, this.getClass().getName());
             runHook(batchHook, Hooks::beginBatch);
 
             // For each commit
@@ -207,8 +232,6 @@ public class Analysis {
         } finally {
             runReverseHook(batchHook, Hooks::endBatch);
         }
-
-        return result;
     }
 
     protected void processCommit() throws Exception {
@@ -216,10 +239,10 @@ public class Analysis {
         final CommitDiffResult commitDiffResult = differ.createCommitDiff(currentCommit);
 
         // report any errors that occurred and exit in case no DiffTree could be parsed.
-        result.reportDiffErrors(commitDiffResult.errors());
+        getResult().reportDiffErrors(commitDiffResult.errors());
         if (commitDiffResult.diff().isEmpty()) {
             Logger.debug("found commit that failed entirely because:\n{}", commitDiffResult.errors());
-            ++result.failedCommits;
+            runHook(hooks.listIterator(), Hooks::onFailedCommit);
             return;
         }
 

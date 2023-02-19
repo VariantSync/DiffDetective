@@ -20,13 +20,18 @@ public class FilterAnalysis implements Analysis.Hooks {
     }
 
     @Override
+    public void initializeResults(Analysis analysis) {
+        analysis.append(ExplainedFilterSummary.KEY, new ExplainedFilterSummary());
+    }
+
+    @Override
     public boolean analyzeDiffTree(Analysis analysis) throws Exception {
         return treeFilter.test(analysis.getCurrentDiffTree());
     }
 
     @Override
     public void endCommit(Analysis analysis) {
-        analysis.getResult().filterHits.append(new ExplainedFilterSummary(treeFilter));
+        analysis.append(ExplainedFilterSummary.KEY, new ExplainedFilterSummary(treeFilter));
         treeFilter.resetExplanations();
     }
 }

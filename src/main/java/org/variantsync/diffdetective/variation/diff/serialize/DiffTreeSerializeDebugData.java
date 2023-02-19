@@ -46,6 +46,13 @@ public class DiffTreeSerializeDebugData implements Metadata<DiffTreeSerializeDeb
     }
 
     @Override
+    public void setFromSnapshot(LinkedHashMap<String, String> snap) {
+        numExportedNonNodes = Integer.parseInt(snap.get(MetadataKeys.NON_NODE_COUNT));
+        numExportedAddNodes = Integer.parseInt(snap.get(MetadataKeys.ADD_NODE_COUNT));
+        numExportedRemNodes = Integer.parseInt(snap.get(MetadataKeys.REM_NODE_COUNT));
+    }
+
+    @Override
     public InplaceSemigroup<DiffTreeSerializeDebugData> semigroup() {
         return ISEMIGROUP;
     }

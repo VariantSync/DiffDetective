@@ -1,5 +1,6 @@
 package org.variantsync.diffdetective.metadata;
 
+import org.variantsync.diffdetective.analysis.AnalysisResult.ResultKey;
 import org.variantsync.diffdetective.diff.git.CommitDiff;
 import org.variantsync.diffdetective.editclass.EditClass;
 import org.variantsync.diffdetective.editclass.EditClassCatalogue;
@@ -19,6 +20,8 @@ import java.util.stream.Collectors;
  * @author Paul Bittner
  */
 public class EditClassCount implements Metadata<EditClassCount> {
+    public static final ResultKey<EditClassCount> KEY = new ResultKey<>("EditClassCount");
+
     /**
      * Counts the occurrences of a data point across commits.
      */
@@ -170,6 +173,37 @@ public class EditClassCount implements Metadata<EditClassCount> {
                 Occurrences::toString,
                 LinkedHashMap::new
         );
+    }
+
+    @Override
+    public void setFromSnapshot(LinkedHashMap<String, String> snap) {
+        for (var entry : snap.entrySet()) {
+            if (ProposedEditClasses.All.stream().anyMatch(editClass -> editClass.getName().equals(entry.getKey()))) {
+                var key = entry.getKey(); // edit class
+                var value = entry.getValue(); // key value content
+                value = value.replaceAll("[{} ]", ""); // remove unnecessary symbols
+                var innerKeyValuePair = value.split(";");
+                var total = Integer.parseInt(innerKeyValuePair[0].split("=")[1]); // total count
+                var commits = Integer.parseInt(innerKeyValuePair[1].split("=")[1]);
+
+                // get edit class from key
+                final String finalKey = key;
+                EditClass editClass = ProposedEditClasses.Instance.fromName(key).orElseThrow(
+                        () -> new RuntimeException("Could not find EditClass with name " + finalKey)
+                );
+
+                Occurrences occurence = new Occurrences();
+                occurence.totalAmount = total;
+
+                // add fake commits
+                for (int i = 0; i < commits; ++i) {
+                    occurence.uniqueCommits.add(String.valueOf(i));
+                }
+
+                // add occurrence
+                occurences.put(editClass, occurence);
+            }
+        }
     }
 
     /**

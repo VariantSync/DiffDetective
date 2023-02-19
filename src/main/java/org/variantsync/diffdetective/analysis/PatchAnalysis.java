@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.variantsync.diffdetective.editclass.EditClass;
 import org.variantsync.diffdetective.editclass.proposed.ProposedEditClasses;
+import org.variantsync.diffdetective.metadata.EditClassCount;
 import org.variantsync.diffdetective.util.CSV;
 import org.variantsync.diffdetective.util.FileUtils;
 import org.variantsync.diffdetective.util.IO;
@@ -16,6 +17,11 @@ public class PatchAnalysis implements Analysis.Hooks {
 
     private List<PatchStatistics> patchStatistics;
     private PatchStatistics thisPatchesStatistics;
+
+    @Override
+    public void initializeResults(Analysis analysis) {
+        analysis.append(EditClassCount.KEY, new EditClassCount());
+    }
 
     @Override
     public void beginBatch(Analysis analysis) {
@@ -33,7 +39,7 @@ public class PatchAnalysis implements Analysis.Hooks {
         analysis.getCurrentDiffTree().forAll(node -> {
             if (node.isArtifact()) {
                 final EditClass editClass = ProposedEditClasses.Instance.match(node);
-                analysis.getResult().editClassCounts.reportOccurrenceFor(
+                analysis.get(EditClassCount.KEY).reportOccurrenceFor(
                         editClass,
                         analysis.getCurrentCommitDiff()
                 );

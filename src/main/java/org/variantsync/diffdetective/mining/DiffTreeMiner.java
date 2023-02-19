@@ -103,6 +103,7 @@ public class DiffTreeMiner {
 
     public static BiFunction<Repository, Path, Analysis> AnalysisFactory =
         (repo, repoOutputDir) -> new Analysis(
+            "DiffTreeMiner",
             List.of(
                 new PreprocessingAnalysis(Postprocessing(repo)),
                 new FilterAnalysis(
