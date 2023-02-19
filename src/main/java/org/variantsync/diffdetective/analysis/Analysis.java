@@ -30,6 +30,16 @@ import org.variantsync.functjonal.iteration.ClusteredIterator;
 import org.variantsync.functjonal.iteration.MappedIterator;
 
 /**
+ * Encapsulates the state and control flow during an analysis of the commit history of multiple
+ * repositories using {@link DiffTree}s. Each repository is processed sequentially but the commits
+ * of each repository can be processed in parallel.
+ *
+ * <p>For thread safety, each thread receives its own instance of {@code Analysis}. The getters
+ * provides access to the current state of the analysis in one thread. Depending on the current
+ * {@link Hooks phase} only a subset of the state accessible via getters may be valid.
+ *
+ * @see forEachRepository
+ * @see forEachCommit
  * @author Paul Bittner, Benjamin Moosherr
  */
 public class Analysis {
@@ -43,7 +53,7 @@ public class Analysis {
     public static final String TOTAL_RESULTS_FILE_NAME = "totalresult" + EXTENSION;
     /**
      * Default value for <code>commitsToProcessPerThread</code>
-     * @see forEachCommit(Supplier<HistoryAnalysis>, int, int)
+     * @see forEachCommit(Supplier, int, int)
      */
     public static final int COMMITS_TO_PROCESS_PER_THREAD_DEFAULT = 1000;
 
@@ -60,59 +70,172 @@ public class Analysis {
     protected Path outputFile;
     protected final AnalysisResult result;
 
+    /**
+     * The repository this analysis is run on.
+     * Always valid.
+     */
     public Repository getRepository() {
         return repository;
     }
 
+    /**
+     * The currently processed commit.
+     * Valid during the commit {@link Hooks phase}.
+     */
     public RevCommit getCurrentCommit() {
         return currentCommit;
     }
 
+    /**
+     * The currently processed commit diff.
+     * Valid when {@link Hooks#onParsedCommit} is called until the end of the commit phase.
+     */
     public CommitDiff getCurrentCommitDiff() {
         return currentCommitDiff;
     }
 
+    /**
+     * The currently processed patch.
+     * Valid during the patch {@link Hooks phase}.
+     */
     public PatchDiff getCurrentPatch() {
         return currentPatch;
     }
 
+    /**
+     * The currently processed patch.
+     * Valid only during {@link Hooks#analyzeDiffTree}.
+     */
     public DiffTree getCurrentDiffTree() {
         return currentDiffTree;
     }
 
+    /**
+     * The destination for results which are written to disk.
+     * Always valid.
+     */
     public Path getOutputDir() {
         return outputDir;
     }
 
+    /**
+     * The destination for results which are written to disk and specific to the currently processed
+     * commit batch.
+     * Valid during the batch {@link Hooks phase}.
+     */
     public Path getOutputFile() {
         return outputFile;
     }
 
+    /**
+     * The results of the analysis. This may be modified by any hook and should be initialized in
+     * {@link Hooks#initializeResults} (e.g. by using {@link append}).
+     * Always valid.
+     */
     public AnalysisResult getResult() {
         return result;
     }
 
+    /**
+     * Convenience getter for {@link AnalysisResult#get} on {@link getResult}.
+     * Always valid.
+     */
     public <T extends Metadata<T>> T get(ResultKey<T> resultKey) {
         return result.get(resultKey);
     }
 
+    /**
+     * Convenience function for {@link AnalysisResult#append} on {@link getResult}.
+     * Always valid.
+     */
     public <T extends Metadata<T>> void append(ResultKey<T> resultKey, T value) {
         result.append(resultKey, value);
     }
 
+    /**
+     * Hooks for analyzing commits using {@link DiffTree}s.
+     *
+     * <p>In general the hooks of different {@code Hook} instances are called in sequence according
+     * to the order specified in {@link Analysis#Analysis} (except end hooks). Hooks are separated
+     * into two categories: phases and events.
+     *
+     * <p>A phase consists of two hooks with the prefix {@code begin} and {@code end}. It is
+     * guaranteed that the end hook is called if and only if the begin hook was called, even in the
+     * presence of exceptions, so they are safe to use for resource management. For this purpose,
+     * end hooks are called in reverse order as specified in {@link Analysis#Analysis}.
+     *
+     * <p>Phases can be called an arbitrary number of times but are nested in the following order
+     * (from outer to inner):
+     * <ul>
+     * <li>batch
+     * <li>commit
+     * <li>patch
+     * </ul>
+     * An inner phase is only executed while an outer phase runs (in between the phase's begin and
+     * end hooks).
+     *
+     * <p>An analysis implementing {@code Hooks} can perform various actions during each hook. This
+     * includes the {@link append creation} and {@link get modification} of {@link getResult
+     * analysis results}, modifying their internal state, performing IO operations and throwing
+     * exceptions. In contrast, the only analysis state hooks are allowed to modify is the {@link
+     * getResult result} of an {@link Analysis}. All other state (e.g. {@link getCurrentCommit})
+     * must not be modified. Care must be taken to avoid the reliance of the internal state on a
+     * specific commit batch being processed as only the {@link getResult results} of each commit
+     * batch are merged and returned by {@link forEachCommit}.
+     *
+     * <p>Hooks that return a {@code boolean} are called filter hooks and can, in addition to the
+     * above, skip any further processing in the current phase (including following inner phases) by
+     * returning {@code false}. If a hook starts skipping, any invocations of the same filter hook
+     * of following {@code Hook} instances won't be executed. Processing continues (after calling
+     * missing end hooks of the current phase) in the next outer phase after the skipped phase.
+     *
+     * <p>Hooks without a {@code begin} or {@code end} prefix are events emitted during some
+     * specified conditions. See their respective documentation for details.
+     */
     public interface Hooks {
+        /**
+         * Initialization hook for {@link getResult}. All result types should be appended with a
+         * neutral value using {@link append}. No other side effects should be performed during this
+         * methods as it might be called an arbitrary amount of times.
+         */
         default void initializeResults(Analysis analysis) {}
         default void beginBatch(Analysis analysis) throws Exception {}
         default boolean beginCommit(Analysis analysis) throws Exception { return true; }
+        /**
+         * Signals a parsing failure of some patch in the current commit.
+         * Called at most once during the commit phase. If this hook is called {@link
+         * onParsedCommit} and the following patch phase invocations are skipped.
+         */
         default void onFailedCommit(Analysis analysis) throws Exception {}
+        /**
+         * Signals the completion of the commit diff extraction.
+         * Called exactly once during the commit phase before the patch phase begins.
+         */
         default boolean onParsedCommit(Analysis analysis) throws Exception { return true; }
         default boolean beginPatch(Analysis analysis) throws Exception { return true; }
+        /**
+         * The main hook for analyzing non-empty diff trees.
+         * Called at most once during the patch phase.
+         */
         default boolean analyzeDiffTree(Analysis analysis) throws Exception { return true; }
         default void endPatch(Analysis analysis) throws Exception {}
         default void endCommit(Analysis analysis) throws Exception {}
         default void endBatch(Analysis analysis) throws Exception {}
     }
 
+    /**
+     * Runs {@code analyzeRepository} on each repository, skipping repositories where an analysis
+     * was already run. This skipping mechanism doesn't distinguish between different analyses as it
+     * only checks for the existence of {@link TOTAL_RESULTS_FILE_NAME}. Delete this file to rerun
+     * the analysis.
+     *
+     * For each repository a directory in {@code outputDir} is passed to {@code analyzeRepository}
+     * where the results of the given repository should be written.
+     *
+     * @param repositoriesToAnalyze the repositories for which {@code analyzeRepository} is run
+     * @param outputDir the directory where all repositories will save their results
+     * @param analyzeRepository the callback which is invoked for each repository
+     */
     public static void forEachRepository(
         List<Repository> repositoriesToAnalyze,
         Path outputDir,
@@ -138,6 +261,11 @@ public class Analysis {
         }
     }
 
+    /**
+     * Same as {@link forEachCommit(Supplier<Analysis>, int, int)}.
+     * Defaults to {@link COMMITS_TO_PROCESS_PER_THREAD_DEFAULT} and a machine dependent number of
+     * {@link Diagnostics#getNumberOfAvailableProcessors}.
+     */
     public static AnalysisResult forEachCommit(Supplier<Analysis> analysis) {
         return forEachCommit(
             analysis,
@@ -146,6 +274,18 @@ public class Analysis {
         );
     }
 
+    /**
+     * Runs the analysis for the repository given in {@link Analysis#Analysis}. The repository
+     * history is processed in batches of {@code commitsToProcessPerThread} on {@code nThreads} in
+     * parallel. {@link Hooks} passed to {@link Analysis#Analysis} are the main customization point
+     * for executing different analyses. By default only the total number of commits and the total
+     * runtime with multithreading of the {@link DiffTree} parsing is recorded.
+     *
+     * @param analysisFactory creates independent (at least thread safe) instances the analysis
+     * state
+     * @param commitsToProcessPerThread the commit batch size
+     * @param nThreads the number of parallel processed commit batches
+     */
     public static AnalysisResult forEachCommit(
         Supplier<Analysis> analysisFactory,
         final int commitsToProcessPerThread,
@@ -201,6 +341,14 @@ public class Analysis {
         return analysis.getResult();
     }
 
+    /**
+     * Constructs the state used during an analysis.
+     *
+     * @param taskName the name of the overall analysis task
+     * @param hooks the hooks to be run for analysis
+     * @param repository the repository to analyze
+     * @param outputDir the directory where all results are saved
+     */
     public Analysis(
         String taskName,
         List<Hooks> hooks,
@@ -219,10 +367,24 @@ public class Analysis {
         }
     }
 
+    /**
+     * Entry point into a sequential analysis of {@code commits} as one batch.
+     * Same as {@link processCommits(List<RevCommit>, GitDiffer)} with a default {@link GitDiffer}.
+     *
+     * @param commits the commit batch to be processed
+     * @see forEachCommit
+     */
     public AnalysisResult processCommits(List<RevCommit> commits) throws Exception {
         return processCommits(commits, new GitDiffer(getRepository()));
     }
 
+    /**
+     * Entry point into a sequential analysis of {@code commits} as one batch.
+     *
+     * @param commits the commit batch to be processed
+     * @param differ the differ to use
+     * @see forEachCommit
+     */
     public AnalysisResult processCommits(List<RevCommit> commits, GitDiffer differ) throws Exception {
         this.differ = differ;
         processCommitBatch(commits);
@@ -342,9 +504,9 @@ public class Analysis {
 
     /**
      * Exports the given metadata object to a file named according
-     * {@link org.variantsync.diffdetective.analysis.Analysis#TOTAL_RESULTS_FILE_NAME} in the given directory.
+     * {@link TOTAL_RESULTS_FILE_NAME} in the given directory.
      * @param outputDir The directory into which the metadata object file should be written.
-     * @param metadata The metadata to serialize 
+     * @param metadata The metadata to serialize
      * @param <T> Type of the metadata.
      */
     public static <T> void exportMetadata(final Path outputDir, final Metadata<T> metadata) {
@@ -354,7 +516,7 @@ public class Analysis {
     /**
      * Exports the given metadata object to the given file. Overwrites existing files.
      * @param outputFile The file to write.
-     * @param metadata The metadata to serialize 
+     * @param metadata The metadata to serialize
      * @param <T> Type of the metadata.
      */
     public static <T> void exportMetadataToFile(final Path outputFile, final Metadata<T> metadata) {
