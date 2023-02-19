@@ -31,7 +31,7 @@ import java.util.function.Supplier;
 /**
  * @author Paul Bittner, Benjamin Moosherr
  */
-public class HistoryAnalysis {
+public class Analysis {
     /**
      * File name that is used to store the analysis results for each repository.
      */
@@ -88,17 +88,17 @@ public class HistoryAnalysis {
     }
 
     public interface Hooks {
-        default void beginBatch(HistoryAnalysis analysis) throws Exception {}
-        default boolean beginCommit(HistoryAnalysis analysis) throws Exception { return true; }
-        default boolean onParsedCommit(HistoryAnalysis analysis) throws Exception { return true; }
-        default boolean beginPatch(HistoryAnalysis analysis) throws Exception { return true; }
-        default boolean analyzeDiffTree(HistoryAnalysis analysis) throws Exception { return true; }
-        default void endPatch(HistoryAnalysis analysis) throws Exception {}
-        default void endCommit(HistoryAnalysis analysis) throws Exception {}
-        default void endBatch(HistoryAnalysis analysis) throws Exception {}
+        default void beginBatch(Analysis analysis) throws Exception {}
+        default boolean beginCommit(Analysis analysis) throws Exception { return true; }
+        default boolean onParsedCommit(Analysis analysis) throws Exception { return true; }
+        default boolean beginPatch(Analysis analysis) throws Exception { return true; }
+        default boolean analyzeDiffTree(Analysis analysis) throws Exception { return true; }
+        default void endPatch(Analysis analysis) throws Exception {}
+        default void endCommit(Analysis analysis) throws Exception {}
+        default void endBatch(Analysis analysis) throws Exception {}
     }
 
-    public static <T extends AnalysisResult> AnalysisResult forEachCommit(Supplier<HistoryAnalysis> analysis) {
+    public static <T extends AnalysisResult> AnalysisResult forEachCommit(Supplier<Analysis> analysis) {
         return forEachCommit(
             analysis,
             COMMITS_TO_PROCESS_PER_THREAD_DEFAULT,
@@ -107,7 +107,7 @@ public class HistoryAnalysis {
     }
 
     public static <T extends AnalysisResult> AnalysisResult forEachCommit(
-        Supplier<HistoryAnalysis> analysisFactory,
+        Supplier<Analysis> analysisFactory,
         final int commitsToProcessPerThread,
         final int nThreads
     ) {
@@ -157,7 +157,7 @@ public class HistoryAnalysis {
         return analysis.getResult();
     }
 
-    public HistoryAnalysis(
+    public Analysis(
         List<Hooks> hooks,
         Repository repository,
         Path outputDir
@@ -256,13 +256,13 @@ public class HistoryAnalysis {
         }
     }
 
-    protected <Hook> void runHook(ListIterator<Hook> hook, FailableBiConsumer<Hook, HistoryAnalysis, Exception> callHook) throws Exception {
+    protected <Hook> void runHook(ListIterator<Hook> hook, FailableBiConsumer<Hook, Analysis, Exception> callHook) throws Exception {
         while (hook.hasNext()) {
             callHook.accept(hook.next(), this);
         }
     }
 
-    protected <Hook> boolean runFilterHook(ListIterator<Hook> hook, FailableBiFunction<Hook, HistoryAnalysis, Boolean, Exception> callHook) throws Exception {
+    protected <Hook> boolean runFilterHook(ListIterator<Hook> hook, FailableBiFunction<Hook, Analysis, Boolean, Exception> callHook) throws Exception {
         while (hook.hasNext()) {
             if (!callHook.apply(hook.next(), this)) {
                 return false;
@@ -272,13 +272,13 @@ public class HistoryAnalysis {
         return true;
     }
 
-    protected <Hook> void runReverseHook(ListIterator<Hook> hook, FailableBiConsumer<Hook, HistoryAnalysis, Exception> callHook) throws Exception {
+    protected <Hook> void runReverseHook(ListIterator<Hook> hook, FailableBiConsumer<Hook, Analysis, Exception> callHook) throws Exception {
         Exception catchedException = null;
         while (hook.hasPrevious()) {
             try {
                 callHook.accept(hook.previous(), this);
             } catch (Exception e) {
-                Logger.error(e, "An exception thrown in an end hooks of HistoryAnalysis will be rethrown later");
+                Logger.error(e, "An exception thrown in an end hooks of Analysis will be rethrown later");
                 if (catchedException == null) {
                     catchedException = e;
                 } else {
@@ -294,7 +294,7 @@ public class HistoryAnalysis {
 
     /**
      * Exports the given metadata object to a file named according
-     * {@link org.variantsync.diffdetective.analysis.HistoryAnalysis#TOTAL_RESULTS_FILE_NAME} in the given directory.
+     * {@link org.variantsync.diffdetective.analysis.Analysis#TOTAL_RESULTS_FILE_NAME} in the given directory.
      * @param outputDir The directory into which the metadata object file should be written.
      * @param metadata The metadata to serialize 
      * @param <T> Type of the metadata.

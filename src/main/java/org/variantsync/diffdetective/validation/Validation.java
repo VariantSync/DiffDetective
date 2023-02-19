@@ -13,7 +13,7 @@ import org.tinylog.Logger;
 
 import org.variantsync.diffdetective.analysis.AnalysisResult;
 import org.variantsync.diffdetective.analysis.FilterAnalysis;
-import org.variantsync.diffdetective.analysis.HistoryAnalysis;
+import org.variantsync.diffdetective.analysis.Analysis;
 import org.variantsync.diffdetective.analysis.PreprocessingAnalysis;
 import org.variantsync.diffdetective.analysis.StatisticsAnalysis;
 import org.variantsync.diffdetective.datasets.*;
@@ -33,10 +33,10 @@ import org.variantsync.diffdetective.variation.diff.transform.CutNonEditedSubtre
 /**
  * This is the validation from our ESEC/FSE'22 paper.
  * It provides all configuration settings and facilities to setup the validation by
- * creating a {@link HistoryAnalysis} and run it.
+ * creating a {@link Analysis} and run it.
  * @author Paul Bittner
  */
-public class Validation implements HistoryAnalysis.Hooks {
+public class Validation implements Analysis.Hooks {
     /**
      * Hardcoded configuration option that determines of all analyzed repositories should be updated
      * (i.e., <code>git pull</code>) before the validation.
@@ -50,7 +50,7 @@ public class Validation implements HistoryAnalysis.Hooks {
 //    public static final int PRINT_LARGEST_SUBJECTS = 3;
 
     // This is only needed for the `MarlinDebug` test.
-    public static final BiFunction<Repository, Path, HistoryAnalysis> AnalysisFactory = (repo, repoOutputDir) -> new HistoryAnalysis(
+    public static final BiFunction<Repository, Path, Analysis> AnalysisFactory = (repo, repoOutputDir) -> new Analysis(
         List.of(
             new PreprocessingAnalysis(new CutNonEditedSubtrees()),
             new FilterAnalysis(DiffTreeFilter.notEmpty()), // filters unwanted trees
@@ -185,8 +185,8 @@ public class Validation implements HistoryAnalysis.Hooks {
         |      END OF ARGUMENTS      |
         \* ************************ */
 
-        HistoryAnalysis.forEachRepository(repos, outputDir, (repo, repoOutputDir) ->
-            HistoryAnalysis.forEachCommit(() -> AnalysisFactory.apply(repo, repoOutputDir))
+        Analysis.forEachRepository(repos, outputDir, (repo, repoOutputDir) ->
+            Analysis.forEachCommit(() -> AnalysisFactory.apply(repo, repoOutputDir))
         );
         Logger.info("Done");
 
@@ -195,7 +195,7 @@ public class Validation implements HistoryAnalysis.Hooks {
     }
 
     @Override
-    public boolean analyzeDiffTree(HistoryAnalysis analysis) throws Exception {
+    public boolean analyzeDiffTree(Analysis analysis) throws Exception {
         analysis.getCurrentDiffTree().forAll(node -> {
             if (node.isArtifact()) {
                 analysis.getResult().editClassCounts.reportOccurrenceFor(

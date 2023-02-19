@@ -11,25 +11,25 @@ import org.variantsync.diffdetective.util.CSV;
 import org.variantsync.diffdetective.util.FileUtils;
 import org.variantsync.diffdetective.util.IO;
 
-public class PatchAnalysis implements HistoryAnalysis.Hooks {
+public class PatchAnalysis implements Analysis.Hooks {
     public static final String PATCH_STATISTICS_EXTENSION = ".patchStatistics.csv";
 
     private List<PatchStatistics> patchStatistics;
     private PatchStatistics thisPatchesStatistics;
 
     @Override
-    public void beginBatch(HistoryAnalysis analysis) {
-        patchStatistics = new ArrayList<>(HistoryAnalysis.COMMITS_TO_PROCESS_PER_THREAD_DEFAULT);
+    public void beginBatch(Analysis analysis) {
+        patchStatistics = new ArrayList<>(Analysis.COMMITS_TO_PROCESS_PER_THREAD_DEFAULT);
     }
 
     @Override
-    public boolean beginPatch(HistoryAnalysis analysis) {
+    public boolean beginPatch(Analysis analysis) {
         thisPatchesStatistics = new PatchStatistics(analysis.getCurrentPatch(), ProposedEditClasses.Instance);
         return true;
     }
 
     @Override
-    public boolean analyzeDiffTree(HistoryAnalysis analysis) {
+    public boolean analyzeDiffTree(Analysis analysis) {
         analysis.getCurrentDiffTree().forAll(node -> {
             if (node.isArtifact()) {
                 final EditClass editClass = ProposedEditClasses.Instance.match(node);
@@ -45,12 +45,12 @@ public class PatchAnalysis implements HistoryAnalysis.Hooks {
     }
 
     @Override
-    public void endPatch(HistoryAnalysis analysis) {
+    public void endPatch(Analysis analysis) {
         patchStatistics.add(thisPatchesStatistics);
     }
 
     @Override
-    public void endBatch(HistoryAnalysis analysis) throws IOException {
+    public void endBatch(Analysis analysis) throws IOException {
         exportPatchStatistics(patchStatistics, FileUtils.addExtension(analysis.getOutputFile(), PATCH_STATISTICS_EXTENSION));
     }
 

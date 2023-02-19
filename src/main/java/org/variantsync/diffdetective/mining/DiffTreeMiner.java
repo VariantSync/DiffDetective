@@ -11,7 +11,7 @@ import java.util.function.Consumer;
 import org.apache.commons.io.FileUtils;
 import org.tinylog.Logger;
 import org.variantsync.diffdetective.analysis.FilterAnalysis;
-import org.variantsync.diffdetective.analysis.HistoryAnalysis;
+import org.variantsync.diffdetective.analysis.Analysis;
 import org.variantsync.diffdetective.analysis.LineGraphExportAnalysis;
 import org.variantsync.diffdetective.analysis.PatchAnalysis;
 import org.variantsync.diffdetective.analysis.PreprocessingAnalysis;
@@ -101,8 +101,8 @@ public class DiffTreeMiner {
 //                );
     }
 
-    public static BiFunction<Repository, Path, HistoryAnalysis> AnalysisFactory =
-        (repo, repoOutputDir) -> new HistoryAnalysis(
+    public static BiFunction<Repository, Path, Analysis> AnalysisFactory =
+        (repo, repoOutputDir) -> new Analysis(
             List.of(
                 new PreprocessingAnalysis(Postprocessing(repo)),
                 new FilterAnalysis(
@@ -174,8 +174,8 @@ public class DiffTreeMiner {
             repoPostProcessing = p -> {};
         }
 
-        HistoryAnalysis.forEachRepository(repos, outputDir, (repo, repoOutputDir) -> {
-            HistoryAnalysis.forEachCommit(() -> AnalysisFactory.apply(repo, repoOutputDir));
+        Analysis.forEachRepository(repos, outputDir, (repo, repoOutputDir) -> {
+            Analysis.forEachCommit(() -> AnalysisFactory.apply(repo, repoOutputDir));
             repoPostProcessing.accept(repoOutputDir);
         });
         Logger.info("Done");

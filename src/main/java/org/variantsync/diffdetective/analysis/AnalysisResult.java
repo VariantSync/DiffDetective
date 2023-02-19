@@ -20,7 +20,7 @@ import java.util.*;
 import java.util.function.BiConsumer;
 
 /**
- * The result of a {@link HistoryAnalysis}.
+ * The result of a {@link Analysis}.
  * This result stores various metadata and statistics that we use for the validation of our ESEC/FSE paper.
  * An AnalysisResult also allows to store any custom metadata or information.
  * @author Paul Bittner

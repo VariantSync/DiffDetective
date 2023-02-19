@@ -3,7 +3,7 @@ package org.variantsync.diffdetective.tablegen;
 import org.tinylog.Logger;
 import org.variantsync.diffdetective.analysis.AnalysisResult;
 import org.variantsync.diffdetective.analysis.AutomationResult;
-import org.variantsync.diffdetective.analysis.HistoryAnalysis;
+import org.variantsync.diffdetective.analysis.Analysis;
 import org.variantsync.diffdetective.analysis.MetadataKeys;
 import org.variantsync.diffdetective.datasets.DatasetDescription;
 import org.variantsync.diffdetective.datasets.DefaultDatasets;
@@ -39,7 +39,7 @@ public class MiningResultAccumulator {
 
     /**
      * Finds all {@code AnalysisResult}s in {@code folderPath} recursively.
-     * All files having a {@link HistoryAnalysis#TOTAL_RESULTS_FILE_NAME} filename ending are
+     * All files having a {@link Analysis#TOTAL_RESULTS_FILE_NAME} filename ending are
      * parsed and associated with their filename.
      *
      * @param folderPath the folder which is scanned for analysis results recursively
@@ -49,7 +49,7 @@ public class MiningResultAccumulator {
         // get all files in the directory which are outputs of DiffTreeMiningResult
         final List<Path> paths = Files.walk(folderPath)
                 .filter(Files::isRegularFile)
-                .filter(p -> p.toString().endsWith(HistoryAnalysis.TOTAL_RESULTS_FILE_NAME))
+                .filter(p -> p.toString().endsWith(Analysis.TOTAL_RESULTS_FILE_NAME))
                 .peek(path -> Logger.info("Processing file {}", path))
                 .toList();
 
@@ -115,7 +115,7 @@ public class MiningResultAccumulator {
 
         final Map<String, AnalysisResult> allResults = getAllTotalResultsIn(inputPath);
         final AnalysisResult ultimateResult = computeTotalMetadataResult(allResults.values());
-        HistoryAnalysis.exportMetadataToFile(inputPath.resolve("ultimateresult" + AnalysisResult.EXTENSION), ultimateResult);
+        Analysis.exportMetadataToFile(inputPath.resolve("ultimateresult" + AnalysisResult.EXTENSION), ultimateResult);
 
         final Map<String, DatasetDescription> datasetByName;
         try {
