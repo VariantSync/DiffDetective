@@ -10,10 +10,10 @@ import java.util.function.Consumer;
 
 import org.apache.commons.io.FileUtils;
 import org.tinylog.Logger;
-import org.variantsync.diffdetective.analysis.FilterAnalysis;
 import org.variantsync.diffdetective.analysis.Analysis;
+import org.variantsync.diffdetective.analysis.EditClassOccurenceAnalysis;
+import org.variantsync.diffdetective.analysis.FilterAnalysis;
 import org.variantsync.diffdetective.analysis.LineGraphExportAnalysis;
-import org.variantsync.diffdetective.analysis.PatchAnalysis;
 import org.variantsync.diffdetective.analysis.PreprocessingAnalysis;
 import org.variantsync.diffdetective.analysis.StatisticsAnalysis;
 import org.variantsync.diffdetective.analysis.strategies.AnalysisStrategy;
@@ -117,7 +117,7 @@ public class DiffTreeMiner {
                         DiffTreeFilter.hasAtLeastOneEditToVariability()
                 ),
                 new LineGraphExportAnalysis(MiningStrategy(), MiningExportOptions(repo)),
-                new PatchAnalysis(),
+                new EditClassOccurenceAnalysis(),
                 new StatisticsAnalysis()
             ),
             repo,

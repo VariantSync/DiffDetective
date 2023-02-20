@@ -12,7 +12,7 @@ import org.variantsync.diffdetective.util.CSV;
 import org.variantsync.diffdetective.util.FileUtils;
 import org.variantsync.diffdetective.util.IO;
 
-public class PatchAnalysis implements Analysis.Hooks {
+public class EditClassOccurenceAnalysis implements Analysis.Hooks {
     public static final String PATCH_STATISTICS_EXTENSION = ".patchStatistics.csv";
 
     private List<PatchStatistics> patchStatistics;
