@@ -60,7 +60,7 @@ public class CPPDiffLineFormulaExtractor {
         fm = COMMENT_PATTERN.matcher(fm).replaceAll("");
 
         // remove defined()
-        fm = DEFINED_PATTERN.matcher(fm).replaceAll("$2");
+        fm = DEFINED_PATTERN.matcher(fm).replaceAll("DEFINED_$2");
 
         // remove whitespace
         fm = fm.replaceAll("\\s", "");
