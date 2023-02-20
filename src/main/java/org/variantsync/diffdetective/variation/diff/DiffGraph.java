@@ -36,7 +36,7 @@ public final class DiffGraph {
         nodes.stream()
                 .filter(DiffNode::isRoot)
                 .forEach(n ->
-                        n.diffType.matchBeforeAfter(
+                        n.diffType.forAllTimesOfExistence(
                                 () -> newRoot.addChild(n, BEFORE),
                                 () -> newRoot.addChild(n, AFTER)
                         ));

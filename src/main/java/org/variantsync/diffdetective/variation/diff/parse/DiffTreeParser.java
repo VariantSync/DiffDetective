@@ -281,7 +281,7 @@ public class DiffTreeParser {
 
             // Add the physical line to the logical line.
             final DiffLineNumber lineNumberFinal = lineNumber;
-            diffType.matchBeforeAfter(beforeLine, afterLine,
+            diffType.forAllTimesOfExistence(beforeLine, afterLine,
                 node -> node.consume(currentLine, lineNumberFinal)
             );
 
@@ -360,7 +360,7 @@ public class DiffTreeParser {
 
             // Do not create a node for ENDIF, but update the line numbers of the closed if-chain
             // and remove that if-chain from the relevant stacks.
-            diffType.matchBeforeAfter(beforeStack, afterStack, stack ->
+            diffType.forAllTimesOfExistence(beforeStack, afterStack, stack ->
                 popIfChain(stack, fromLine)
             );
         } else if (collapseMultipleCodeLines
@@ -450,7 +450,7 @@ public class DiffTreeParser {
 
         if (newNode.isAnnotation()) {
             // newNode is IF, ELIF or ELSE, so push it to the relevant stacks.
-            newNode.diffType.matchBeforeAfter(beforeStack, afterStack, stack -> {
+            newNode.diffType.forAllTimesOfExistence(beforeStack, afterStack, stack -> {
                 if (newNode.isElif() || newNode.isElse()) {
                     if (stack.size() == 1) {
                         throw new DiffParseException(
