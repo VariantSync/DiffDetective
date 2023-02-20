@@ -51,6 +51,18 @@ public enum DiffType {
     }
 
     /**
+     * Runs the given procedure for any time at which elements with this diff type, with the time of existence as argument.
+     * The consumer will be invoked at least once and at most twice.
+     * @param t Procedure to run if for each time of existence.
+     */
+    public void forAllTimesOfExistence(final Consumer<Time> t) {
+        forAllTimesOfExistence(
+                () -> t.accept(Time.BEFORE),
+                () -> t.accept(Time.AFTER)
+        );
+    }
+
+    /**
      * Runs the given task once for each argument that would exist at a certain time if it had this diff type.
      * Runs task on ifExistsBefore if the value existed before the edit (DiffType != ADD).
      * Runs task on ifExistsAfter if the value exists after the edit (DiffType != ADD).
