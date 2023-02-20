@@ -714,7 +714,10 @@ public class DiffNode implements HasNodeType {
      * This will return the diff of the entire subgraph starting with this node as root.
      * Recursively invokes {@link DiffNode#toTextDiffLine()} on this node and all its descendants.
      * @return The diff from which this subgraph was parsed, reconstructed as accurately as possible.
+     *
+     * @deprecated because buggy
      */
+    @Deprecated
     public String toTextDiff(final String indent) {
         final StringBuilder diff = new StringBuilder();
 

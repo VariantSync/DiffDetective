@@ -354,7 +354,10 @@ public class DiffTree {
     /**
      * Unparses this DiffTree into a text-based diff.
      * @return A text-based diff.
+     *
+     * @deprecated because buggy
      */
+    @Deprecated
     public String toTextDiff() {
         return root.toTextDiff("");
     }
