@@ -117,7 +117,7 @@ public class DiffTreeMiner {
                         DiffTreeFilter.hasAtLeastOneEditToVariability()
                 ),
                 new LineGraphExportAnalysis(MiningStrategy(), MiningExportOptions(repo)),
-                new EditClassOccurenceAnalysis(),
+                new EditClassOccurenceAnalysis(MiningStrategy()),
                 new StatisticsAnalysis()
             ),
             repo,
