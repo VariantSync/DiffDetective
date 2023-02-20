@@ -356,7 +356,7 @@ public class DiffTree {
      * @return A text-based diff.
      */
     public String toTextDiff() {
-        return root.toTextDiff();
+        return root.toTextDiff("");
     }
 
     /**

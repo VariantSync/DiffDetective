@@ -715,22 +715,24 @@ public class DiffNode implements HasNodeType {
      * Recursively invokes {@link DiffNode#toTextDiffLine()} on this node and all its descendants.
      * @return The diff from which this subgraph was parsed, reconstructed as accurately as possible.
      */
-    public String toTextDiff() {
+    public String toTextDiff(final String indent) {
         final StringBuilder diff = new StringBuilder();
 
         if (!this.isRoot()) {
             diff
+                    .append(indent)
                     .append(this.toTextDiffLine())
                     .append(StringUtils.LINEBREAK);
         }
 
         for (final DiffNode child : childOrder) {
-            diff.append(child.toTextDiff());
+            diff.append(child.toTextDiff("  " + indent));
         }
 
         // Add endif after macro
         if (isAnnotation() && !isRoot()) {
             diff
+                    .append(indent)
                     .append(toTextDiffLine(this.diffType, List.of("#endif")))
                     .append(StringUtils.LINEBREAK);
         }
