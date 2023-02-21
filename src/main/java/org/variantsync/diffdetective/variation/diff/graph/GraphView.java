@@ -7,6 +7,16 @@ import org.variantsync.diffdetective.variation.diff.Time;
 
 import java.util.*;
 
+/**
+ * A view on a DiffTree that shows the DiffTree as a list of nodes and edges.
+ * The view invalidates as soon as the viewed DiffTree is altered as the view
+ * will not update itself.
+ *
+ * @param nodes The set of all nodes in a DiffTree.
+ * @param edges The set of all edges in a DiffTree.
+ *
+ * @author Paul Bittner
+ */
 public record GraphView(
         Set<DiffNode> nodes,
         Set<Edge> edges
@@ -14,6 +24,14 @@ public record GraphView(
     public record Edge (DiffNode child, DiffNode parent, Time time) {
     }
 
+    /**
+     * Creates a GraphView for a given VariationDiff.
+     * The produced view reflects the state of the given DiffTree as is.
+     * This means, the view is invalid as soon as the given DiffTree gets
+     * modified elsewhere.
+     * @param d The DiffTree to view as a list of nodes and edges.
+     * @return the graph view
+     */
     public static GraphView fromDiffTree(final DiffTree d) {
         final Set<DiffNode> nodes = new HashSet<>();
         final Set<Edge> edges = new HashSet<>();
