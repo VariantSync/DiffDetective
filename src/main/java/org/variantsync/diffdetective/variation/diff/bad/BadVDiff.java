@@ -9,11 +9,10 @@ import org.variantsync.diffdetective.variation.diff.Time;
 import org.variantsync.diffdetective.variation.tree.VariationTree;
 import org.variantsync.diffdetective.variation.tree.VariationTreeNode;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
+import static org.variantsync.diffdetective.variation.diff.DiffType.*;
 import static org.variantsync.diffdetective.variation.diff.Time.AFTER;
 import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
 
@@ -123,7 +122,7 @@ public record BadVDiff
         final DiffLineNumberRange nlines = lines.get(before);
 
         return new DiffNode(
-                DiffType.NON,
+                NON,
                 before.getNodeType(),
                 nlines.from(),
                 nlines.to(),
@@ -144,6 +143,7 @@ public record BadVDiff
         final Map<VariationTreeNode, VariationTreeNode>   matching = new HashMap<>();
         final Map<VariationTreeNode, DiffType>            coloring = new HashMap<>();
         final Map<VariationTreeNode, DiffLineNumberRange> lines    = new HashMap<>();
+        final Set<DiffNode> splittedNodes = new HashSet<>();
 
         final List<EdgeToConstruct> edgesToConstruct = new ArrayList<>();
 
@@ -155,49 +155,71 @@ public record BadVDiff
             }
 
             final DiffNode pbefore = diffNode.getParent(BEFORE);
-            final DiffNode pafter  = diffNode.getParent(AFTER);
+            final DiffNode pafter = diffNode.getParent(AFTER);
 
-            switch (diffNode.getDiffType()) {
-                case ADD, REM -> {
-                    Assert.assertTrue(pbefore == null || pafter == null);
+            final DiffType color = diffNode.getDiffType();
 
-                    final VariationTreeNode self = fromGood(diffNode, nodeTranslation, coloring, lines);
+            final boolean unchanged = color == NON;
+            final boolean hasUnsplitUnchangedParent =
+                       pbefore == pafter
+                    && pbefore != null
+                    && pbefore.isNon()
+                    && !splittedNodes.contains(pbefore);
+            /*
+             * We split every node that is unchanged and whose parent was also splitted.
+             * In fact, we only have to split unchanged nodes but the second clause makes the bad diff
+             * a bit less bad by splitting unchanged nodes only when necessary.
+             * Basically, a variation tree can represent unchanged nodes when there were no changes
+             * above the unchanged node.
+             * By removing the second clause, we obtain a bad diff that splits in exactly the two
+             * projections of the variation diff.
+             */
+            final boolean split = unchanged && !hasUnsplitUnchangedParent;
+            if (split) {
+                Assert.assertTrue(pbefore != null && pafter != null);
 
-                    if (pbefore != null) {
-                        edgesToConstruct.add(new EdgeToConstruct(
-                                self, pbefore, BEFORE
-                        ));
-                    }
-                    if (pafter != null) {
-                        edgesToConstruct.add(new EdgeToConstruct(
-                                self, pafter, AFTER
-                        ));
-                    }
-                }
-                case NON -> {
-                    Assert.assertTrue(pbefore != null && pafter != null);
+                final VariationTreeNode selfBefore = plain(diffNode);
+                final VariationTreeNode selfAfter  = plain(diffNode);
 
-                    final VariationTreeNode selfBefore = plain(diffNode);
-                    final VariationTreeNode selfAfter  = plain(diffNode);
+                nodeTranslation.put(diffNode, BEFORE, selfBefore);
+                nodeTranslation.put(diffNode, AFTER,  selfAfter);
 
-                    nodeTranslation.put(diffNode, BEFORE, selfBefore);
-                    nodeTranslation.put(diffNode,  AFTER, selfAfter);
+                edgesToConstruct.add(new EdgeToConstruct(
+                        selfBefore, pbefore, BEFORE
+                ));
+                edgesToConstruct.add(new EdgeToConstruct(
+                        selfAfter, pafter, AFTER
+                ));
 
+                // further metadata to copy
+                final DiffLineNumberRange dRange = new DiffLineNumberRange(diffNode.getFromLine(), diffNode.getToLine());
+                lines.put(selfBefore, dRange);
+                lines.put(selfAfter,  dRange);
+                coloring.put(selfBefore, REM);
+                coloring.put(selfAfter,  ADD);
+                matching.put(selfBefore, selfAfter);
+                matching.put(selfAfter,  selfBefore);
+
+                splittedNodes.add(diffNode);
+            } else {
+                final VariationTreeNode self = fromGood(diffNode, nodeTranslation, coloring, lines);
+
+                /*
+                 * Else is important in the following branching:
+                 * - It does not affect added or removed nodes as these will have only one parent anyway.
+                 * - For unchanged nodes, we want to construct only one parent edge in the resulting
+                 *   variation tree. In a variation tree, every node has only one parent and when we would
+                 *   issue two parallel edges to be constructed here, then we variation tree construction would
+                 *   fail since every node can have only one parent.
+                 */
+                if (pbefore != null) {
                     edgesToConstruct.add(new EdgeToConstruct(
-                            selfBefore, pbefore, BEFORE
+                            self, pbefore, BEFORE
                     ));
+                } else if (pafter != null) {
                     edgesToConstruct.add(new EdgeToConstruct(
-                            selfAfter,  pafter,  AFTER
+                            self, pafter, AFTER
                     ));
-
-                    // further metadata to copy
-                    final DiffLineNumberRange dRange = new DiffLineNumberRange(diffNode.getFromLine(), diffNode.getToLine());
-                    lines.put(selfBefore, dRange);
-                    lines.put(selfAfter,  dRange);
-                    coloring.put(selfBefore, DiffType.REM);
-                    coloring.put(selfAfter,  DiffType.ADD);
-                    matching.put(selfBefore, selfAfter);
-                    matching.put(selfAfter, selfBefore);
                 }
             }
         });
@@ -281,9 +303,9 @@ public record BadVDiff
     private void prettyPrint(final String indent, StringBuilder b, VariationTreeNode n) {
         if (!n.isRoot()) {
             b
-                    .append(indent)
                     .append(coloring.get(n).symbol)
-                    .append(String.join(" \\n ", n.getLabelLines()))
+                    .append(indent)
+                    .append(n.getLabelLines().stream().map(String::trim).collect(Collectors.joining(" \\n ")))
                     .append(StringUtils.LINEBREAK);
         }
 
@@ -293,8 +315,8 @@ public record BadVDiff
 
         if (n.getNodeType().isAnnotation() && !n.isRoot()) {
             b
-                    .append(indent)
                     .append(coloring.get(n).symbol)
+                    .append(indent)
                     .append("#endif")
                     .append(StringUtils.LINEBREAK);
         }
