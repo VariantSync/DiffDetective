@@ -11,6 +11,7 @@ import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
  * The DiffGraph class currently does not model a graph itself but rather
  * turns a given graph into a DiffTree by equipping it with a synthetic root.
  */
+@Deprecated
 public final class DiffGraph {
     private static final String DIFFGRAPH_LABEL = "DiffGraph";
 
