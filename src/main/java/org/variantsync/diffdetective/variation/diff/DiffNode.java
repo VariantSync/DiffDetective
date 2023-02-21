@@ -661,16 +661,25 @@ public class DiffNode implements HasNodeType {
             });
         }
 
+        final DiffNode pb = getParent(BEFORE);
+        final DiffNode pa = getParent(AFTER);
+
         // a node with exactly one parent was edited
-        if (getParent(BEFORE) == null && getParent(AFTER) != null) {
+        if (pb == null && pa != null) {
             Assert.assertTrue(isAdd());
         }
-        if (getParent(BEFORE) != null && getParent(AFTER) == null) {
+        if (pb != null && pa == null) {
             Assert.assertTrue(isRem());
         }
         // a node with exactly two parents was not edited
-        if (getParent(BEFORE) != null && getParent(AFTER) != null) {
+        if (pb != null && pa != null) {
             Assert.assertTrue(isNon());
+
+            // If the parents are the same node, then the parent also has
+            // to be non-edited.
+            if (pb == pa) {
+                Assert.assertTrue(pb.isNon());
+            }
         }
 
         // Else and Elif nodes have an If or Elif as parent.
