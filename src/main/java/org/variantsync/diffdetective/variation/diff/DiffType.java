@@ -98,7 +98,7 @@ public enum DiffType {
             case ADD -> REM;
             case REM -> ADD;
             // Should this probably just be NON?
-            case NON -> throw new RuntimeException("DiffType NON does not have an inverse!");
+            case NON -> throw new AssertionError("DiffType NON does not have an inverse!");
         };
     }
 

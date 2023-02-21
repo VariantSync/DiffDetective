@@ -8,13 +8,11 @@ import org.variantsync.diffdetective.variation.diff.DiffType;
 import org.variantsync.diffdetective.variation.diff.Time;
 import org.variantsync.diffdetective.variation.tree.VariationTree;
 import org.variantsync.diffdetective.variation.tree.VariationTreeNode;
-import org.variantsync.functjonal.error.NotImplementedException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static org.variantsync.diffdetective.variation.diff.Time.AFTER;
 import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
@@ -83,12 +81,6 @@ public record BadVDiff
         }
     }
 
-    private record EdgeToConstruct(
-            VariationTreeNode child,
-            DiffNode parent,
-            Time t
-    ) {}
-
     private static VariationTreeNode plain(final DiffNode n) {
         return new VariationTreeNode(
                 n.getNodeType(),
@@ -110,7 +102,43 @@ public record BadVDiff
         return result;
     }
 
+    private DiffNode toGood(final VariationTreeNode n) {
+        final DiffLineNumberRange nlines = lines.get(n);
+        return new DiffNode(
+                coloring.get(n),
+                n.getNodeType(),
+                nlines.from(),
+                nlines.to(),
+                n.getFormula(),
+                n.getLabelLines()
+        );
+    }
+
+    private DiffNode mergeToGood(final VariationTreeNode before, final VariationTreeNode after) {
+        Assert.assertEquals(before.getNodeType(), after.getNodeType());
+        Assert.assertEquals(lines.get(before), lines.get(after));
+        Assert.assertEquals(before.getFormula(), after.getFormula());
+        Assert.assertEquals(before.getLabelLines(), after.getLabelLines());
+
+        final DiffLineNumberRange nlines = lines.get(before);
+
+        return new DiffNode(
+                DiffType.NON,
+                before.getNodeType(),
+                nlines.from(),
+                nlines.to(),
+                before.getFormula(),
+                before.getLabelLines()
+        );
+    }
+
     public static BadVDiff fromGood(DiffTree d) {
+        record EdgeToConstruct(
+                VariationTreeNode child,
+                DiffNode parent,
+                Time t
+        ) {}
+
         final NodeTranslation nodeTranslation = new NodeTranslation();
 
         final Map<VariationTreeNode, VariationTreeNode>   matching = new HashMap<>();
@@ -150,7 +178,7 @@ public record BadVDiff
                     Assert.assertTrue(pbefore != null && pafter != null);
 
                     final VariationTreeNode selfBefore = plain(diffNode);
-                    final VariationTreeNode selfAfter = plain(diffNode);
+                    final VariationTreeNode selfAfter  = plain(diffNode);
 
                     nodeTranslation.put(diffNode, BEFORE, selfBefore);
                     nodeTranslation.put(diffNode,  AFTER, selfAfter);
@@ -159,7 +187,7 @@ public record BadVDiff
                             selfBefore, pbefore, BEFORE
                     ));
                     edgesToConstruct.add(new EdgeToConstruct(
-                            selfAfter, pafter, AFTER
+                            selfAfter,  pafter,  AFTER
                     ));
 
                     // further metadata to copy
@@ -169,6 +197,7 @@ public record BadVDiff
                     coloring.put(selfBefore, DiffType.REM);
                     coloring.put(selfAfter,  DiffType.ADD);
                     matching.put(selfBefore, selfAfter);
+                    matching.put(selfAfter, selfBefore);
                 }
             }
         });
@@ -186,13 +215,88 @@ public record BadVDiff
     }
 
     public DiffTree toGood() {
-        throw new NotImplementedException();
+        record EdgeToConstruct(
+                DiffNode child,
+                VariationTreeNode parent,
+                Time time
+        ) {}
+
+        final List<EdgeToConstruct>            edgesToConstruct = new ArrayList<>();
+        final Map<VariationTreeNode, DiffNode> nodeTranslation  = new HashMap<>();
+
+        final DiffNode root = toGood(diff.root());
+        nodeTranslation.put(diff.root(), root);
+
+        diff.forAll(v -> {
+            // If a node was already translated (because it was merged), it does not have to be translated anymore.
+            // We already translated the root, so we can skip it.
+            if (nodeTranslation.containsKey(v) || v == diff.root()) {
+                return;
+            }
+
+            final VariationTreeNode parent = v.getParent();
+            Assert.assertNotNull(parent);
+
+            final VariationTreeNode badBuddy = matching.get(v);
+            if (badBuddy == null) {
+                // v was not cloned.
+                // We can just directly convert it to a DiffNode.
+                final DiffNode vGood = toGood(v);
+
+                nodeTranslation.put(v, vGood);
+                coloring.get(v).forAllTimesOfExistence(
+                        t -> edgesToConstruct.add(new EdgeToConstruct(vGood, parent, t))
+                );
+            } else {
+                // v was cloned.
+                // We have to merge it with its cloning partner.
+                final DiffNode vGood = mergeToGood(v, badBuddy);
+
+                final DiffType vColor = coloring.get(v);
+                final DiffType badBuddyColor = coloring.get(badBuddy);
+                Assert.assertTrue(vColor.inverse() == badBuddyColor);
+
+                nodeTranslation.put(v, vGood);
+                nodeTranslation.put(badBuddy, vGood);
+
+                // Since the colors are ADD and REM, both following calls will only
+                // invoke the callback for a single time:
+                // BEFORE for REM and AFTER for ADD.
+                vColor.forAllTimesOfExistence(
+                        t -> edgesToConstruct.add(new EdgeToConstruct(vGood, parent, t))
+                );
+                badBuddyColor.forAllTimesOfExistence(
+                        t -> edgesToConstruct.add(new EdgeToConstruct(vGood, badBuddy.getParent(), t))
+                );
+            }
+        });
+
+        for (final EdgeToConstruct e : edgesToConstruct) {
+            nodeTranslation.get(e.parent()).addChild(e.child(), e.time());
+        }
+
+        return new DiffTree(root);
     }
 
     private void prettyPrint(final String indent, StringBuilder b, VariationTreeNode n) {
-        b.append(indent).append(coloring.get(n).symbol).append(String.join(" \\n ", n.getLabelLines())).append(StringUtils.LINEBREAK);
+        if (!n.isRoot()) {
+            b
+                    .append(indent)
+                    .append(coloring.get(n).symbol)
+                    .append(String.join(" \\n ", n.getLabelLines()))
+                    .append(StringUtils.LINEBREAK);
+        }
+
         for (VariationTreeNode child : n.getChildren()) {
             prettyPrint("  " + indent, b, child);
+        }
+
+        if (n.getNodeType().isAnnotation() && !n.isRoot()) {
+            b
+                    .append(indent)
+                    .append(coloring.get(n).symbol)
+                    .append("#endif")
+                    .append(StringUtils.LINEBREAK);
         }
     }
 
