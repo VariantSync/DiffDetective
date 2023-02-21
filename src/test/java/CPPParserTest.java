@@ -45,6 +45,7 @@ public class CPPParserTest {
             new TestCase("#if defined A", "DEFINED_A"),
             new TestCase("#if defined(A)", "DEFINED_A"),
             new TestCase("#if defined (A)", "DEFINED_A"),
+            new TestCase("#if defined ( A )", "DEFINED_A"),
             new TestCase("#if (defined A)", "__LB__DEFINED_A__RB__"),
             new TestCase("#if MACRO (A)", "MACRO__LB__A__RB__"),
             new TestCase("#if MACRO (A, B)", "MACRO__LB__A__B__RB__"),
