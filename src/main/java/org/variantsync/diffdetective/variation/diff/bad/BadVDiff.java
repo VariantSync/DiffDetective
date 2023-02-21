@@ -6,6 +6,7 @@ import org.variantsync.diffdetective.variation.diff.DiffNode;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.variation.diff.DiffType;
 import org.variantsync.diffdetective.variation.diff.Time;
+import org.variantsync.diffdetective.variation.diff.source.DiffTreeSource;
 import org.variantsync.diffdetective.variation.tree.VariationTree;
 import org.variantsync.diffdetective.variation.tree.VariationTreeNode;
 
@@ -297,7 +298,12 @@ public record BadVDiff
             nodeTranslation.get(e.parent()).addChild(e.child(), e.time());
         }
 
-        return new DiffTree(root);
+        DiffTreeSource source = DiffTreeSource.Unknown;
+        if (diff.source() instanceof BadVDiffFromDiffTreeSource s) {
+            source = s.initialDiffTree();
+        }
+
+        return new DiffTree(root, source);
     }
 
     private void prettyPrint(final String indent, StringBuilder b, VariationTreeNode n) {
