@@ -1,11 +1,9 @@
 package org.variantsync.diffdetective.variation.diff.bad;
 
+import org.variantsync.diffdetective.diff.text.DiffLineNumberRange;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.util.StringUtils;
-import org.variantsync.diffdetective.variation.diff.DiffNode;
-import org.variantsync.diffdetective.variation.diff.DiffTree;
-import org.variantsync.diffdetective.variation.diff.DiffType;
-import org.variantsync.diffdetective.variation.diff.Time;
+import org.variantsync.diffdetective.variation.diff.*;
 import org.variantsync.diffdetective.variation.diff.source.DiffTreeSource;
 import org.variantsync.diffdetective.variation.tree.VariationTree;
 import org.variantsync.diffdetective.variation.tree.VariationTreeNode;
