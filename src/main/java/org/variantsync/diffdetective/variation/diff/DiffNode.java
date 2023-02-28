@@ -706,59 +706,6 @@ public class DiffNode implements HasNodeType {
     }
 
     /**
-     * Prepends the {@link DiffType#symbol} of the given diffType to all given lines and
-     * joins all lines with {@link StringUtils#LINEBREAK linebreaks} to a single text.
-     * @param diffType The change type of the given diff hunk.
-     * @param lines The lines to turn into a text-based diff.
-     * @return A diff in which all given lines have the given diff type.
-     */
-    public static String toTextDiffLine(final DiffType diffType, final List<String> lines) {
-        return lines.stream().collect(Collectors.joining(StringUtils.LINEBREAK + diffType.symbol, diffType.symbol, ""));
-    }
-
-    /**
-     * Unparses this node's lines into its original text-based diff.
-     * @return The diff from which this node was parsed, reconstructed as accurately as possible.
-     */
-    public String toTextDiffLine() {
-        return toTextDiffLine(diffType, lines);
-    }
-
-    /**
-     * Unparses this subgraph into its original text-based diff.
-     * This will return the diff of the entire subgraph starting with this node as root.
-     * Recursively invokes {@link DiffNode#toTextDiffLine()} on this node and all its descendants.
-     * @return The diff from which this subgraph was parsed, reconstructed as accurately as possible.
-     *
-     * @deprecated because buggy
-     */
-    @Deprecated
-    public String toTextDiff(final String indent) {
-        final StringBuilder diff = new StringBuilder();
-
-        if (!this.isRoot()) {
-            diff
-                    .append(indent)
-                    .append(this.toTextDiffLine())
-                    .append(StringUtils.LINEBREAK);
-        }
-
-        for (final DiffNode child : childOrder) {
-            diff.append(child.toTextDiff("  " + indent));
-        }
-
-        // Add endif after macro
-        if (isAnnotation() && !isRoot()) {
-            diff
-                    .append(indent)
-                    .append(toTextDiffLine(this.diffType, List.of("#endif")))
-                    .append(StringUtils.LINEBREAK);
-        }
-
-        return diff.toString();
-    }
-
-    /**
      * Returns a view of this {@code DiffNode} as a variation node at the time {@code time}.
      *
      * <p>See the {@code project} function in section 3.1 of
