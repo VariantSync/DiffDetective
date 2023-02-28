@@ -116,20 +116,13 @@ public record VariationTree(
         return new VariationTree(tree, source);
     }
 
-    private void forAll(final VariationTreeNode v, final Consumer<VariationTreeNode> procedure) {
-        procedure.accept(v);
-        for (final VariationTreeNode c : v.getChildren()) {
-            forAll(c, procedure);
-        }
-    }
-
     /**
      * Invokes the given callback for each node in this Variation Tree in depth-first order.
-     * @param procedure callback
+     * @param action callback
      * @return this
      */
-    public VariationTree forAll(final Consumer<VariationTreeNode> procedure) {
-        forAll(root, procedure);
+    public VariationTree forAllPreorder(final Consumer<VariationTreeNode> action) {
+        root.forAllPreorder(action);
         return this;
     }
 
