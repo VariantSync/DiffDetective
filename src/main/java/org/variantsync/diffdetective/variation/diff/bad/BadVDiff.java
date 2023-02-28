@@ -315,36 +315,36 @@ public record BadVDiff
         final DiffNode root = toGood(diff.root());
         nodeTranslation.put(diff.root(), root);
 
-        diff.forAll(v -> {
+        diff.forAll(vtnode -> {
             // If a node was already translated (because it was merged), it does not have to be translated anymore.
             // We already translated the root, so we can skip it.
-            if (nodeTranslation.containsKey(v) || v == diff.root()) {
+            if (nodeTranslation.containsKey(vtnode) || vtnode == diff.root()) {
                 return;
             }
 
-            final VariationTreeNode parent = v.getParent();
+            final VariationTreeNode parent = vtnode.getParent();
             Assert.assertNotNull(parent);
 
-            final VariationTreeNode badBuddy = matching.get(v);
+            final VariationTreeNode badBuddy = matching.get(vtnode);
             if (badBuddy == null) {
                 // v was not cloned.
                 // We can just directly convert it to a DiffNode.
-                final DiffNode vGood = toGood(v);
+                final DiffNode vGood = toGood(vtnode);
 
-                nodeTranslation.put(v, vGood);
-                coloring.get(v).forAllTimesOfExistence(
+                nodeTranslation.put(vtnode, vGood);
+                coloring.get(vtnode).forAllTimesOfExistence(
                         t -> edgesToConstruct.add(new EdgeToConstruct(vGood, parent, t))
                 );
             } else {
                 // v was cloned.
                 // We have to merge it with its cloning partner.
-                final DiffNode vGood = mergeToGood(v, badBuddy);
+                final DiffNode vGood = mergeToGood(vtnode, badBuddy);
 
-                final DiffType vColor = coloring.get(v);
+                final DiffType vColor = coloring.get(vtnode);
                 final DiffType badBuddyColor = coloring.get(badBuddy);
                 Assert.assertTrue(vColor.inverse() == badBuddyColor);
 
-                nodeTranslation.put(v, vGood);
+                nodeTranslation.put(vtnode, vGood);
                 nodeTranslation.put(badBuddy, vGood);
 
                 // Since the colors are ADD and REM, both following calls will only
