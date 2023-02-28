@@ -61,8 +61,8 @@ public record BadVDiff
          )
 {
     /**
-     * Map that remembers to the VariationTreeNode a DiffNode was
-     * converted to in {@link BadVDiff::fromGood(DiffTree)}.
+     * Memoization of the VariationTreeNodes a DiffNode was
+     * converted to in {@link #fromGood(DiffTree)}.
      */
     private static class FromGoodNodeTranslation {
         private final Map<DiffNode, Map<Time, VariationTreeNode>> translate = new HashMap<>();
@@ -81,7 +81,7 @@ public record BadVDiff
 
         /**
          * Remember that the given DiffNode d was translated to the given
-         * VariationTreeNode v at all times d exists.
+         * VariationTreeNode v at time t.
          * @param d The DiffNode from the initial good DiffTree.
          * @param t The time at which the translated node v represents the initial DiffNode d.
          * @param v The VariationTreeNode d was translated to.
@@ -93,7 +93,7 @@ public record BadVDiff
 
         /**
          * Returns the VariationTreeNode that represents the given DiffNode d
-         * at the given t in the produced bad diff.
+         * at the given time t in the produced bad diff.
          *
          * @param d The DiffNode from the initial good DiffTree.
          * @param t The time for which we seek the node that represents the initial DiffNode d.
@@ -106,9 +106,9 @@ public record BadVDiff
     /**
      * Plain conversion of DiffNodes to VariationTree nodes.
      * Copies {@link org.variantsync.diffdetective.variation.NodeType node type},
-     *        {@link DiffNode::getFormula() formula},
-     *        {@link DiffNode::getLinesInDiff() line numbers in the diff},
-     *        and {@link DiffNode::getLabelLines() label} but no edge information.
+     *        {@link DiffNode#getFormula() formula},
+     *        {@link DiffNode#getLinesInDiff() line numbers in the diff},
+     *        and {@link DiffNode#getLabelLines() label} but no edge information.
      * @param n The node to convert to a plain VariationTreeNode.
      */
     private static VariationTreeNode plain(final DiffNode n) {
@@ -121,7 +121,7 @@ public record BadVDiff
     }
 
     /**
-     * Performs a {@link ::plain plain} conversion of the given DiffNode n
+     * Performs a {@link #plain(DiffNode) plain} conversion of the given DiffNode n
      * to a VariationTreeNode.
      * Additionally, stores metadata to invert this operation in the given maps.
      * For further information on these maps,
@@ -142,7 +142,7 @@ public record BadVDiff
     }
 
     /**
-     * Inverse of {@link ::fromGood(DiffNode)}.
+     * Inverse of {@link #fromGood(DiffNode, FromGoodNodeTranslation, Map, Map)}.
      */
     private DiffNode toGood(final VariationTreeNode n) {
         final DiffLineNumberRange nlines = lines.get(n);
@@ -157,8 +157,8 @@ public record BadVDiff
     }
 
     /**
-     * Merges two VariationTreeNodes that represent the same element to a single unchanged DiffNode.
-     * It is assumed that both given nodes have the same {@link org.variantsync.diffdetective.variation.NodeType},
+     * Merges two VariationTreeNodes that represent the same node to a single unchanged DiffNode.
+     * It is asserted that both given nodes have the same {@link org.variantsync.diffdetective.variation.NodeType},
      * label, formula, and line numbers.
      */
     private DiffNode mergeToGood(final VariationTreeNode before, final VariationTreeNode after) {
@@ -181,7 +181,7 @@ public record BadVDiff
 
     /**
      * Creates a bad diff from a DiffTree.
-     * @param d The DiffTree to convert to a bad but tree diff.
+     * @param d The DiffTree to convert to a bad diff.
      * @see BadVDiff
      */
     public static BadVDiff fromGood(DiffTree d) {
@@ -290,7 +290,7 @@ public record BadVDiff
     }
 
     /**
-     * Inverse of {@link ::fromGood(DiffTree)}.
+     * Inverse of {@link #fromGood(DiffTree)}.
      * Restores the DiffTree that is represented by this bad tree diff.
      */
     public DiffTree toGood() {
