@@ -51,9 +51,9 @@ public enum DiffType {
     }
 
     /**
-     * Runs the given procedure for any time at which elements with this diff type, with the time of existence as argument.
+     * Runs the given procedure for any time at which elements with this diff type exist.
      * The consumer will be invoked at least once and at most twice.
-     * @param t Procedure to run if for each time of existence.
+     * @param t Procedure to run for each time elements with this diff type exist.
      */
     public void forAllTimesOfExistence(final Consumer<Time> t) {
         forAllTimesOfExistence(
