@@ -507,7 +507,7 @@ public class DiffNode implements HasNodeType {
 
     /**
      * Returns the full feature mapping formula of this node.
-     * The feature mapping of an {@link NodeType#IF} node is its {@link DiffNode#getDirectFeatureMapping direct feature mapping}.
+     * The feature mapping of an {@link NodeType#IF} node is its {@link DiffNode#getFormula() direct feature mapping}.
      * The feature mapping of {@link NodeType#ELSE} and {@link NodeType#ELIF} nodes is determined by all formulas in the respective if-elif-else chain.
      * The feature mapping of an {@link NodeType#ARTIFACT artifact} node is the feature mapping of its parent.
      * See Equation (1) in our paper (+ its extension to time for variation tree diffs described in Section 3.1).

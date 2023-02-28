@@ -73,9 +73,9 @@ public abstract class VariationNode<T extends VariationNode<T>> implements HasNo
     /**
      * Returns the label of this node as an unmodifiable list of lines.
      *
-     * <p>If {@link isArtifact} is {@code true} this may represent the source code of this artifact.
+     * <p>If {@link #isArtifact()} is {@code true} this may represent the source code of this artifact.
      * Otherwise it may represent the preprocessor expression which was parsed to obtain
-     * {@link getDirectFeatureMapping}. In either case, this label may be an arbitrary value,
+     * {@link #getFormula()}. In either case, this label may be an arbitrary value,
      * selected according to the needs of the user of this class.
      */
     public abstract List<String> getLabelLines();
@@ -83,7 +83,7 @@ public abstract class VariationNode<T extends VariationNode<T>> implements HasNo
     /**
      * Returns the range of line numbers of this node's corresponding source code.
      *
-     * @see setLineRange
+     * @see #setLineRange(LineRange)
      */
     public abstract LineRange getLineRange();
 
@@ -342,7 +342,7 @@ public abstract class VariationNode<T extends VariationNode<T>> implements HasNo
     /**
      * Returns the full feature mapping formula of this node.
      *
-     * <p>The feature mapping of an {@link NodeType#IF} node is its {@link getDirectFeatureMapping
+     * <p>The feature mapping of an {@link NodeType#IF} node is its {@link #getFormula()
      * direct feature mapping}. The feature mapping of {@link NodeType#ELSE} and {@link
      * NodeType#ELIF} nodes is determined by all formulas in the respective if-elif-else chain. The
      * feature mapping of an {@link NodeType#ARTIFACT artifact} node is the feature mapping of its
