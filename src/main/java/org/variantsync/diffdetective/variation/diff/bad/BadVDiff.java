@@ -303,6 +303,17 @@ public record BadVDiff
      * Restores the DiffTree that is represented by this bad tree diff.
      */
     public DiffTree toGood() {
+        /*
+        Store the command to construct an edge from the given child to the
+        given parent at the given time.
+
+        We cannot construct edges in place and have to use this indirect command.
+        Constructing edges requires both nodes of the edge to already have
+        been translated.
+        When finding a node x that has to be merged, the parent p of the merge target y
+        (i.e., another node in the tree with which x has to be merged) has not yet been translated.
+        Thus, we cannot construct an edge from the translation of x to the translation of p in place.
+         */
         record EdgeToConstruct(
                 DiffNode child,
                 VariationTreeNode parent,
