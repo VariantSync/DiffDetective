@@ -213,11 +213,20 @@ public record BadVDiff
             final DiffType color = diffNode.getDiffType();
 
             final boolean unchanged = color == NON;
+
+            /*
+             * The parent of a node was not split if this node has
+             * a single parent and that parent is unchanged.
+             */
             final boolean hasUnsplitUnchangedParent =
                        pbefore == pafter
-                    && pbefore != null
-                    && pbefore.isNon()
                     && !splittedNodes.contains(pbefore);
+            if (hasUnsplitUnchangedParent) {
+                // Assert that the variation diff is not ill-formed.
+                Assert.assertTrue(pbefore != null);
+                Assert.assertTrue(pbefore.isNon());
+            }
+
             /*
              * We split every node that is unchanged and whose parent was also splitted.
              * In fact, we only have to split unchanged nodes but the second clause makes the bad diff
