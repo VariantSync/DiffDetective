@@ -2,7 +2,9 @@ package org.variantsync.diffdetective.tablegen.rows;
 
 import org.variantsync.diffdetective.analysis.AnalysisResult;
 import org.variantsync.diffdetective.analysis.AutomationResult;
+import org.variantsync.diffdetective.analysis.AnalysisResult.ResultKey;
 import org.variantsync.diffdetective.datasets.DatasetDescription;
+import org.variantsync.diffdetective.metadata.Metadata;
 import org.variantsync.diffdetective.tablegen.ColumnDefinition;
 import org.variantsync.diffdetective.tablegen.Row;
 import org.variantsync.diffdetective.tablegen.TableGenerator;
@@ -21,6 +23,10 @@ public record ContentRow(
         AnalysisResult results,
         AutomationResult automationResult
 ) implements Row {
+    public <T extends Metadata<T>> T get(ResultKey<T> resultKey) {
+        return results.get(resultKey);
+    }
+
     @Override
     public String toLaTeXRow(final List<ColumnDefinition> columns) {
         final StringBuilder lineBuilder = new StringBuilder();

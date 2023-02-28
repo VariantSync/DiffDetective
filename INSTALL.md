@@ -133,7 +133,7 @@ You can also run DiffDetective on other datasets by providing the path to the da
 #### Linux/Mac (bash):
 `./execute.sh path/to/custom/dataset.md`
 
-The input file must have the same format as the other dataset files (i.e., repositories are listed in a Markdown table). You can find [dataset files](docs/datasets.md) in the [docs](docs) folder.
+The input file must have the same format as the other dataset files (i.e., repositories are listed in a Markdown table). You can find [dataset files](docs/datasets/all.md) in the [docs/datasets](docs/datasets) folder.
 
 ## Troubleshooting
 

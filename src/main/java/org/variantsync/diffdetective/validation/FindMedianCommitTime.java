@@ -3,8 +3,8 @@ package org.variantsync.diffdetective.validation;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.tinylog.Logger;
 import org.variantsync.diffdetective.analysis.AutomationResult;
-import org.variantsync.diffdetective.analysis.CommitHistoryAnalysisTask;
 import org.variantsync.diffdetective.analysis.CommitProcessTime;
+import org.variantsync.diffdetective.analysis.StatisticsAnalysis;
 import org.variantsync.diffdetective.util.FileUtils;
 
 import java.io.IOException;
@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * Program to find the median commit time after the {@link Validation} has been performed.
+ * Program to find the median commit time after the {@link EditClassValidation} has been performed.
  * This program will iterate through all commit times reported by the validation, load them,
  * and find average time, median time, the fastest, and the slowest commit.
  * @author Paul Bittner
@@ -54,7 +54,7 @@ public class FindMedianCommitTime {
     /**
      * Summarizes the commit time results found in the given validation output directory.
      * The directory should point to the root of the directory in which the results of an execution
-     * of the {@link Validation} can be found.
+     * of the {@link EditClassValidation} can be found.
      * @param directory Validation output directory.
      * @return Summary of commit process times with various speed statistics.
      * @throws IOException when iterating the files in the given directory fails for some reason.
@@ -72,7 +72,7 @@ public class FindMedianCommitTime {
         try (Stream<Path> paths = Files.walk(directory)) {
             result = paths
                 .parallel()
-                .filter(p -> FileUtils.hasExtension(p, CommitHistoryAnalysisTask.COMMIT_TIME_FILE_EXTENSION))
+                .filter(p -> FileUtils.hasExtension(p, StatisticsAnalysis.COMMIT_TIME_FILE_EXTENSION))
                 .filter(Files::isRegularFile)
 //                .peek(path -> Logger.info("Processing file {}", path))
                 .flatMap(FindMedianCommitTime::parse)

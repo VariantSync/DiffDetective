@@ -22,7 +22,7 @@ import org.variantsync.diffdetective.feature.CPPAnnotationParser;
 import org.variantsync.diffdetective.mining.DiffTreeMiner;
 import org.variantsync.diffdetective.editclass.proposed.ProposedEditClasses;
 import org.variantsync.diffdetective.util.Clock;
-import org.variantsync.diffdetective.validation.Validation;
+import org.variantsync.diffdetective.validation.EditClassValidation;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -136,12 +136,10 @@ public class MarlinDebug {
         final RevWalk revWalk = new RevWalk(git.getRepository());
         final RevCommit childCommit = revWalk.parseCommit(ObjectId.fromString(commitHash));
 
-        DiffTreeMiner.Mine().create(
+        DiffTreeMiner.AnalysisFactory.apply(
             repoInspection.repo,
-            new GitDiffer(repoInspection.repo),
-            repoInspection.outputPath,
-            List.of(childCommit)
-        ).call();
+            repoInspection.outputPath
+        ).processCommits(List.of(childCommit));
     }
 
     public static void asValidationTask(final RepoInspection repoInspection, final String commitHash) throws Exception {
@@ -150,12 +148,10 @@ public class MarlinDebug {
         final RevWalk revWalk = new RevWalk(git.getRepository());
         final RevCommit childCommit = revWalk.parseCommit(ObjectId.fromString(commitHash));
 
-        Validation.VALIDATION_TASK_FACTORY.create(
-                repoInspection.repo,
-                new GitDiffer(repoInspection.repo),
-                repoInspection.outputPath,
-                List.of(childCommit)
-        ).call();
+        EditClassValidation.AnalysisFactory.apply(
+            repoInspection.repo,
+            repoInspection.outputPath
+        ).processCommits(List.of(childCommit));
     }
 
     public static void test(final RepoInspection repoInspection) throws Exception {

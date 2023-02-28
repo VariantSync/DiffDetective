@@ -1,5 +1,6 @@
 package org.variantsync.diffdetective.analysis;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.variantsync.diffdetective.metadata.Metadata;
 import org.variantsync.functjonal.category.InplaceSemigroup;
 
@@ -53,7 +54,12 @@ public record AutomationResult(
     }
 
     @Override
+    public void setFromSnapshot(LinkedHashMap<String, String> snap) {
+        throw new NotImplementedException();
+    }
+
+    @Override
     public InplaceSemigroup<AutomationResult> semigroup() {
-        return null;
+        throw new NotImplementedException();
     }
 }

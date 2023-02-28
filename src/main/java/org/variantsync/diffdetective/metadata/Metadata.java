@@ -1,6 +1,7 @@
 package org.variantsync.diffdetective.metadata;
 
 import org.tinylog.Logger;
+import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.util.IO;
 import org.variantsync.functjonal.Cast;
 import org.variantsync.functjonal.category.InplaceSemigroup;
@@ -22,6 +23,8 @@ public interface Metadata<T> {
      */
     LinkedHashMap<String, ?> snapshot();
 
+    void setFromSnapshot(LinkedHashMap<String, String> snapshot);
+
     /**
      * Metadata should be composable.
      * Composition should be inplace to optimize performance.
@@ -35,6 +38,33 @@ public interface Metadata<T> {
      */
     default void append(T other) {
         semigroup().appendToFirst(Cast.unchecked(this), other);
+    }
+
+    /**
+     * Composes two equal values by returning that value unmodified.
+     * This method is intended to be used to implement a semigroup for objects which can't be merged
+     * but should always be the same anyway. If {@code !a.equals(b)} then an {@code AssertionError}
+     * is thrown.
+     *
+     * <p>The value {@code null} is treated as the neutral element in the sense that no exception is
+     * thrown if an element is {@code null}. In this case return value is defined by {@code
+     * mergeEqual(a, null) == a} and {@code mergeEqual(b, null) == b}.
+     *
+     * @param a the first element to merge
+     * @param b the second element to merge
+     * @param <T> the type of the objects to be merged
+     * @return {@code a} or {@code b}
+     */
+    static <T> T mergeEqual(T a, T b) {
+        if (b == null) {
+            return a;
+        }
+
+        if (a != null) {
+            Assert.assertTrue(a.equals(b));
+        }
+
+        return b;
     }
 
     /**

@@ -1,40 +1,35 @@
 package org.variantsync.diffdetective.validation;
 
-import org.apache.commons.io.FileUtils;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.tinylog.Logger;
-import org.variantsync.diffdetective.analysis.CommitHistoryAnalysisTask;
-import org.variantsync.diffdetective.analysis.CommitHistoryAnalysisTaskFactory;
-import org.variantsync.diffdetective.analysis.HistoryAnalysis;
-import org.variantsync.diffdetective.analysis.strategies.NullStrategy;
-import org.variantsync.diffdetective.datasets.*;
-import org.variantsync.diffdetective.mining.formats.DirectedEdgeLabelFormat;
-import org.variantsync.diffdetective.mining.formats.MiningNodeFormat;
-import org.variantsync.diffdetective.mining.formats.ReleaseMiningDiffNodeFormat;
-import org.variantsync.diffdetective.util.Assert;
-import org.variantsync.diffdetective.variation.diff.filter.DiffTreeFilter;
-import org.variantsync.diffdetective.variation.diff.filter.ExplainedFilter;
-import org.variantsync.diffdetective.variation.diff.serialize.GraphFormat;
-import org.variantsync.diffdetective.variation.diff.serialize.LineGraphExportOptions;
-import org.variantsync.diffdetective.variation.diff.serialize.edgeformat.EdgeLabelFormat;
-import org.variantsync.diffdetective.variation.diff.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
-import org.variantsync.diffdetective.variation.diff.transform.CutNonEditedSubtrees;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
-/**
- * This is the validation from our ESEC/FSE'22 paper.
- * It provides all configuration settings and facilities to setup the validation by
- * creating a {@link HistoryAnalysis} and run it.
- * @author Paul Bittner
- */
+import org.apache.commons.io.FileUtils;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.tinylog.Logger;
+import org.variantsync.diffdetective.analysis.Analysis;
+import org.variantsync.diffdetective.datasets.DatasetDescription;
+import org.variantsync.diffdetective.datasets.DatasetFactory;
+import org.variantsync.diffdetective.datasets.DefaultDatasets;
+import org.variantsync.diffdetective.datasets.ParseOptions;
+import org.variantsync.diffdetective.datasets.Repository;
+import org.variantsync.diffdetective.mining.formats.DirectedEdgeLabelFormat;
+import org.variantsync.diffdetective.mining.formats.MiningNodeFormat;
+import org.variantsync.diffdetective.mining.formats.ReleaseMiningDiffNodeFormat;
+import org.variantsync.diffdetective.util.Assert;
+import org.variantsync.diffdetective.variation.diff.serialize.GraphFormat;
+import org.variantsync.diffdetective.variation.diff.serialize.LineGraphExportOptions;
+import org.variantsync.diffdetective.variation.diff.serialize.edgeformat.EdgeLabelFormat;
+import org.variantsync.diffdetective.variation.diff.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
+
 public class Validation {
+    private Validation() {
+    }
+
     /**
      * Hardcoded configuration option that determines of all analyzed repositories should be updated
      * (i.e., <code>git pull</code>) before the validation.
@@ -46,21 +41,6 @@ public class Validation {
 //     */
 //    public static final boolean PRINT_LATEX_TABLE = true;
 //    public static final int PRINT_LARGEST_SUBJECTS = 3;
-
-    /**
-     * The {@link CommitHistoryAnalysisTaskFactory} for the {@link HistoryAnalysis} that will run our validation.
-     * This factory creates {@link EditClassValidationTask}s with the respective settings.
-     */
-    public static final CommitHistoryAnalysisTaskFactory VALIDATION_TASK_FACTORY =
-            (repo, differ, outputPath, commits) -> new EditClassValidationTask(new CommitHistoryAnalysisTask.Options(
-                    repo,
-                    differ,
-                    outputPath,
-                    new ExplainedFilter<>(DiffTreeFilter.notEmpty()),
-                    List.of(new CutNonEditedSubtrees()),
-                    new NullStrategy(),
-                    commits
-            ));
 
     /**
      * Returns the node format that should be used for DiffNode IO.
@@ -120,13 +100,10 @@ public class Validation {
 
     /**
      * Main method to start the validation.
-     * @param args Command-line options. Currently ignored.
+     * @param args Command-line options.
      * @throws IOException When copying the log file fails.
      */
-    public static void main(String[] args) throws IOException {
-//        setupLogger(Level.INFO);
-//        setupLogger(Level.DEBUG);
-
+    public static void run(String[] args, BiConsumer<Repository, Path> validation) throws IOException {
         final Path datasetsFile;
         if (args.length < 1) {
             datasetsFile = DefaultDatasets.DEFAULT_DATASETS_FILE;
@@ -135,10 +112,10 @@ public class Validation {
             return;
         } else {
             datasetsFile = Path.of(args[0]);
+        }
 
-            if (!Files.exists(datasetsFile)) {
-                Logger.error("The given datasets file \"" + datasetsFile + "\" does not exist.");
-            }
+        if (!Files.exists(datasetsFile)) {
+            Logger.error("The given datasets file \"" + datasetsFile + "\" does not exist.");
         }
 
         final ParseOptions.DiffStoragePolicy diffStoragePolicy = ParseOptions.DiffStoragePolicy.DO_NOT_REMEMBER;
@@ -186,14 +163,9 @@ public class Validation {
         |      END OF ARGUMENTS      |
         \* ************************ */
 
-        final Consumer<Path> repoPostProcessing = p -> {};
-        final HistoryAnalysis analysis = new HistoryAnalysis(
-                repos,
-                outputDir,
-                HistoryAnalysis.COMMITS_TO_PROCESS_PER_THREAD_DEFAULT,
-                VALIDATION_TASK_FACTORY,
-                repoPostProcessing);
-        analysis.runAsync();
+        Analysis.forEachRepository(repos, outputDir, (repo, repoOutputDir) ->
+            validation.accept(repo, repoOutputDir)
+        );
         Logger.info("Done");
 
         final String logFile = "log.txt";
