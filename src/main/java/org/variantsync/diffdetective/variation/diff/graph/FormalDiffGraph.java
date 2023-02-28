@@ -57,7 +57,13 @@ public record FormalDiffGraph(
         }
 
         for (final Edge e : edges) {
-            b.append(e.child.getID()).append(" --").append(e.time).append("--> ").append(e.parent.getID()).append(StringUtils.LINEBREAK);
+            b
+                    .append(e.child().getID())
+                    .append(" --")
+                    .append(e.time())
+                    .append("--> ")
+                    .append(e.parent().getID())
+                    .append(StringUtils.LINEBREAK);
         }
 
         return b.toString();
