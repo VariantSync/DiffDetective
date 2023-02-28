@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 public class BadVDiffTest {
-    private static final Path resDir = Constants.RESOURCE_DIR.resolve("bad");
+    private static final Path resDir = Constants.RESOURCE_DIR.resolve("badvdiff");
 
     @ParameterizedTest
     @ValueSource(strings = {
