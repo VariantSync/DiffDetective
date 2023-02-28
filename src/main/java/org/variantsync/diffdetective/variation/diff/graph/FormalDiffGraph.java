@@ -17,7 +17,7 @@ import java.util.*;
  *
  * @author Paul Bittner
  */
-public record GraphView(
+public record FormalDiffGraph(
         Set<DiffNode> nodes,
         Set<Edge> edges
 ) {
@@ -32,7 +32,7 @@ public record GraphView(
      * @param d The DiffTree to view as a list of nodes and edges.
      * @return the graph view
      */
-    public static GraphView fromDiffTree(final DiffTree d) {
+    public static FormalDiffGraph fromDiffTree(final DiffTree d) {
         final Set<DiffNode> nodes = new HashSet<>();
         final Set<Edge> edges = new HashSet<>();
 
@@ -45,7 +45,7 @@ public record GraphView(
            }
         });
 
-        return new GraphView(nodes, edges);
+        return new FormalDiffGraph(nodes, edges);
     }
 
     @Override
@@ -67,7 +67,7 @@ public record GraphView(
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        final GraphView graph = (GraphView) o;
+        final FormalDiffGraph graph = (FormalDiffGraph) o;
 
         return     nodes.equals(graph.nodes)
                 && edges.equals(graph.edges);

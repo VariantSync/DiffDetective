@@ -6,7 +6,7 @@ import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.util.StringUtils;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.variation.diff.bad.BadVDiff;
-import org.variantsync.diffdetective.variation.diff.graph.GraphView;
+import org.variantsync.diffdetective.variation.diff.graph.FormalDiffGraph;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -26,7 +26,7 @@ public class BadVDiffTest {
         Logger.debug("Testing " + testfile);
 
         final DiffTree initialVDiff = DiffTree.fromFile(testfile, false, false);
-        final GraphView initialVDiffAsGraph = GraphView.fromDiffTree(initialVDiff);
+        final FormalDiffGraph initialVDiffAsGraph = FormalDiffGraph.fromDiffTree(initialVDiff);
         Logger.debug("Initial:" + StringUtils.LINEBREAK + initialVDiffAsGraph);
         initialVDiff.assertConsistency();
 
@@ -34,7 +34,7 @@ public class BadVDiffTest {
         Logger.debug("Bad:" + StringUtils.LINEBREAK + badDiff.prettyPrint());
 
         final DiffTree goodDiff = badDiff.toGood();
-        final GraphView goodDiffAsGraph = GraphView.fromDiffTree(goodDiff);
+        final FormalDiffGraph goodDiffAsGraph = FormalDiffGraph.fromDiffTree(goodDiff);
         Logger.debug("Good:" + StringUtils.LINEBREAK + goodDiffAsGraph);
         goodDiff.assertConsistency();
 
