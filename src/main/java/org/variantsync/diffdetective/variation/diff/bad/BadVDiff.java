@@ -24,6 +24,7 @@ import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
  * This allows us to prove the variation diff being a tree at the type level.
  * <p>
  * When converting a variation diff to a bad one, cycles
+ * <pre>
  *    .
  *   / \
  *  /   \
@@ -31,7 +32,9 @@ import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
  * \    /
  *  \  /
  *   x
+ * </pre>
  * are resolved by cloning the deepest subtree x in the cycle.
+ * <pre>
  *    .
  *   / \
  *  /   \
@@ -39,6 +42,7 @@ import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
  * |     |
  * |     |
  * x     x
+ * </pre>
  * The matching in a bad variation diff stores which nodes have been cloned.
  * <p>
  * As variation trees do not store any diff-specific information, we remember the
