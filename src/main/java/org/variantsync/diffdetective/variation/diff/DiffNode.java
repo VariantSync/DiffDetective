@@ -475,13 +475,19 @@ public class DiffNode implements HasNodeType {
         return featureMapping;
     }
 
-    public boolean setFormula(Node featureMapping) {
-        if (this.nodeType.isConditionalAnnotation()) {
-            this.featureMapping = featureMapping;
-            return true;
-        }
+    public void setFormula(Node featureMapping) {
+        Assert.assertTrue(
+                (featureMapping != null) == this.isConditionalAnnotation(),
+                () -> {
+                    String s = "Given formula " + featureMapping;
+                    if (this.isConditionalAnnotation()) {
+                        return s + " should not be null!";
+                    }
+                    return s + " must be null but is not!";
+                }
+        );
 
-        return false;
+        this.featureMapping = featureMapping;
     }
 
     /**
