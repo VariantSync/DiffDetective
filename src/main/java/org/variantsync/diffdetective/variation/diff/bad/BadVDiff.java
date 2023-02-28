@@ -55,14 +55,15 @@ import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
  * @param matching Memorization of which nodes are clones and can be safely merged when converting back
  *                 to a variation diff.
  * @param coloring Memorization of the diff types of all nodes.
+ * @param lines Memorization of line ranges within text diffs.
  * @author Paul Bittner
  */
-public record BadVDiff
-        (VariationTree diff,
-         Map<VariationTreeNode, VariationTreeNode> matching,
-         Map<VariationTreeNode, DiffType> coloring,
-         Map<VariationTreeNode, DiffLineNumberRange> lines
-         )
+public record BadVDiff(
+        VariationTree diff,
+        Map<VariationTreeNode, VariationTreeNode> matching,
+        Map<VariationTreeNode, DiffType> coloring,
+        Map<VariationTreeNode, DiffLineNumberRange> lines
+)
 {
     /**
      * Memoization of the VariationTreeNodes a DiffNode was
