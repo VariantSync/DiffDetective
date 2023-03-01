@@ -243,27 +243,24 @@ public record BadVDiff(
             if (split) {
                 Assert.assertTrue(pbefore != null && pafter != null);
 
-                final VariationTreeNode selfBefore = plain(diffNode);
-                final VariationTreeNode selfAfter  = plain(diffNode);
-
-                nodeTranslation.put(diffNode, BEFORE, selfBefore);
-                nodeTranslation.put(diffNode, AFTER,  selfAfter);
-
-                edgesToConstruct.add(new EdgeToConstruct(
-                        selfBefore, pbefore, BEFORE
-                ));
-                edgesToConstruct.add(new EdgeToConstruct(
-                        selfAfter, pafter, AFTER
-                ));
-
-                // further metadata to copy
                 final DiffLineNumberRange dRange = new DiffLineNumberRange(diffNode.getFromLine(), diffNode.getToLine());
-                lines.put(selfBefore, dRange);
-                lines.put(selfAfter,  dRange);
-                coloring.put(selfBefore, REM);
-                coloring.put(selfAfter,  ADD);
-                matching.put(selfBefore, selfAfter);
-                matching.put(selfAfter,  selfBefore);
+
+                var selfs = new VariationTreeNode[2];
+                Time.forAll(time -> {
+                    final VariationTreeNode self = plain(diffNode);
+                    selfs[time.ordinal()] = self;
+
+                    nodeTranslation.put(diffNode, time, self);
+
+                    edgesToConstruct.add(new EdgeToConstruct(self, diffNode.getParent(time), time));
+
+                    // further metadata to copy
+                    lines.put(self, dRange);
+                    coloring.put(self, DiffType.thatExistsOnlyAt(time));
+                });
+
+                matching.put(selfs[0], selfs[1]);
+                matching.put(selfs[1], selfs[0]);
 
                 splittedNodes.add(diffNode);
             } else {
