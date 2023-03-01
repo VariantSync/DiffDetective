@@ -170,7 +170,7 @@ public class ThesisValidationTask extends CommitHistoryAnalysisTask {
                             if(edgeTypedDiff.calculateAdditionalComplexity() != 0) patch.setEdgeTypedDiff(edgeTypedDiff);
                             var time = additionalTime.getPassedMilliseconds();
                             miningResult.edgeAddingRuntimeInMilliseconds += time;
-                            patchDetails.add(new PatchProcessDetails(commitDiff.getCommitHash(), patch.getFileName(), options.repository().getRepositoryName(), time, addedComplexityPercents, t.computeSize(), ifNodes.size()));
+                            patchDetails.add(new PatchProcessDetails(commitDiff.getCommitHash(), patch.getFileName(), options.repository().getRepositoryName(), time, addedComplexityPercents, implicationEdges.size(), alternativeEdges.size(), t.computeSize(), ifNodes.size()));
                         }
                     }
 
@@ -199,9 +199,10 @@ public class ThesisValidationTask extends CommitHistoryAnalysisTask {
                     ++miningResult.emptyCommits;
                 }
 
-                final StringBuilder lineGraph = new StringBuilder();
                 var lineGraphDestination = options.analysisStrategy().onCommit(commitDiff);
-                miningResult.append(LineGraphExport.toLineGraphFormatEdgeTyped(commitDiff, ValidationExportOptions(options.repository()), lineGraphDestination));
+                var exportAnalysisResult = LineGraphExport.toLineGraphFormatEdgeTyped(commitDiff, ValidationExportOptions(options.repository()), lineGraphDestination);
+                exportAnalysisResult.exportedCommits = 0; // workaround for wrong exportedCommits numbers after semigroup appending
+                miningResult.append(exportAnalysisResult);
 
 
             } catch (Exception e) {
