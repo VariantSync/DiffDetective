@@ -11,6 +11,7 @@ import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
  * The DiffGraph class currently does not model a graph itself but rather
  * turns a given graph into a DiffTree by equipping it with a synthetic root.
  */
+@Deprecated
 public final class DiffGraph {
     private static final String DIFFGRAPH_LABEL = "DiffGraph";
 
@@ -36,7 +37,7 @@ public final class DiffGraph {
         nodes.stream()
                 .filter(DiffNode::isRoot)
                 .forEach(n ->
-                        n.diffType.matchBeforeAfter(
+                        n.diffType.forAllTimesOfExistence(
                                 () -> newRoot.addChild(n, BEFORE),
                                 () -> newRoot.addChild(n, AFTER)
                         ));

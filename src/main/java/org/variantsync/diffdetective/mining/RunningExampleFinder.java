@@ -89,7 +89,7 @@ public class RunningExampleFinder {
         return diffTree.anyMatch(n -> {
             // and the formula should be visible before the edit
             if (n.isAnnotation() && !n.isAdd()) {
-                return isComplexFormula(n.getDirectFeatureMapping());
+                return isComplexFormula(n.getFormula());
             }
 
             return false;

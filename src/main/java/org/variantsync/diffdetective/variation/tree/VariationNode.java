@@ -73,9 +73,9 @@ public abstract class VariationNode<T extends VariationNode<T>> implements HasNo
     /**
      * Returns the label of this node as an unmodifiable list of lines.
      *
-     * <p>If {@link isArtifact} is {@code true} this may represent the source code of this artifact.
+     * <p>If {@link #isArtifact()} is {@code true} this may represent the source code of this artifact.
      * Otherwise it may represent the preprocessor expression which was parsed to obtain
-     * {@link getDirectFeatureMapping}. In either case, this label may be an arbitrary value,
+     * {@link #getFormula()}. In either case, this label may be an arbitrary value,
      * selected according to the needs of the user of this class.
      */
     public abstract List<String> getLabelLines();
@@ -83,7 +83,7 @@ public abstract class VariationNode<T extends VariationNode<T>> implements HasNo
     /**
      * Returns the range of line numbers of this node's corresponding source code.
      *
-     * @see setLineRange
+     * @see #setLineRange(LineRange)
      */
     public abstract LineRange getLineRange();
 
@@ -303,7 +303,7 @@ public abstract class VariationNode<T extends VariationNode<T>> implements HasNo
      * returned {@link Node formula} should be treated as unmodifiable to prevent undesired side
      * effects (e.g., to {@link DiffNode}s).
      */
-    public abstract Node getDirectFeatureMapping();
+    public abstract Node getFormula();
 
     /**
      * Same as {@link getFeatureMapping} but returns a list of formulas representing a conjunction.
@@ -315,34 +315,34 @@ public abstract class VariationNode<T extends VariationNode<T>> implements HasNo
             List<Node> and = new ArrayList<>();
 
             if (isElif()) {
-                and.add(getDirectFeatureMapping());
+                and.add(getFormula());
             }
 
             // Negate all previous cases
             var ancestor = parent;
             while (!ancestor.isIf()) {
                 if (ancestor.isElif()) {
-                    and.add(negate(ancestor.getDirectFeatureMapping()));
+                    and.add(negate(ancestor.getFormula()));
                 } else {
                     throw new RuntimeException("Expected If or Elif above Else or Elif but got " + ancestor.getNodeType() + " from " + ancestor);
                     // Assert.assertTrue(ancestor.isArtifact());
                 }
                 ancestor = ancestor.getParent();
             }
-            and.add(negate(ancestor.getDirectFeatureMapping()));
+            and.add(negate(ancestor.getFormula()));
 
             return and;
         } else if (isArtifact()) {
             return parent.downCast().getFeatureMappingClauses();
         }
 
-        return List.of(getDirectFeatureMapping());
+        return List.of(getFormula());
     }
 
     /**
      * Returns the full feature mapping formula of this node.
      *
-     * <p>The feature mapping of an {@link NodeType#IF} node is its {@link getDirectFeatureMapping
+     * <p>The feature mapping of an {@link NodeType#IF} node is its {@link #getFormula()
      * direct feature mapping}. The feature mapping of {@link NodeType#ELSE} and {@link
      * NodeType#ELIF} nodes is determined by all formulas in the respective if-elif-else chain. The
      * feature mapping of an {@link NodeType#ARTIFACT artifact} node is the feature mapping of its
@@ -397,7 +397,7 @@ public abstract class VariationNode<T extends VariationNode<T>> implements HasNo
         } else {
             clauses = parent.downCast().getPresenceConditionClauses();
         }
-        clauses.add(getDirectFeatureMapping());
+        clauses.add(getFormula());
         return clauses;
     }
 
@@ -435,7 +435,7 @@ public abstract class VariationNode<T extends VariationNode<T>> implements HasNo
         // Copy mutable attributes to allow modifications of the new node.
         var newNode = new VariationTreeNode(
             getNodeType(),
-            getDirectFeatureMapping().clone(),
+            getFormula().clone(),
             getLineRange(),
             new ArrayList<String>(getLabelLines())
         );
@@ -479,11 +479,11 @@ public abstract class VariationNode<T extends VariationNode<T>> implements HasNo
         // Presence/absence of the direct feature mapping
         if (isConditionalAnnotation()) {
             Assert.assertTrue(
-                getDirectFeatureMapping() != null,
+                getFormula() != null,
                 "The conditional annotation " + this + " doesn't have a direct feature mapping");
         } else {
             Assert.assertTrue(
-                getDirectFeatureMapping() == null,
+                getFormula() == null,
                 "The node " + this + " shouldn't have a direct feature mapping");
         }
 
@@ -494,7 +494,7 @@ public abstract class VariationNode<T extends VariationNode<T>> implements HasNo
                 "The root has to be an IF");
 
             Assert.assertTrue(
-                getDirectFeatureMapping().equals(FixTrueFalse.True),
+                getFormula().equals(FixTrueFalse.True),
                 "The root has to have the feature mapping 'true'");
         }
 

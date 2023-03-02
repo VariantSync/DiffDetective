@@ -3,8 +3,8 @@ package org.variantsync.diffdetective.variation.tree;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.feature.CPPAnnotationParser;
 import org.variantsync.diffdetective.util.Assert;
-import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParser;
 import org.variantsync.diffdetective.variation.NodeType; // For Javadoc
+import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParser;
 import org.variantsync.diffdetective.variation.tree.source.LocalFileSource;
 import org.variantsync.diffdetective.variation.tree.source.VariationTreeSource;
 
@@ -12,6 +12,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.function.Consumer;
 
 import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
 
@@ -113,6 +114,16 @@ public record VariationTree(
             .toVariationTree();
 
         return new VariationTree(tree, source);
+    }
+
+    /**
+     * Invokes the given callback for each node in this Variation Tree in depth-first order.
+     * @param action callback
+     * @return this
+     */
+    public VariationTree forAllPreorder(final Consumer<VariationTreeNode> action) {
+        root.forAllPreorder(action);
+        return this;
     }
 
     @Override

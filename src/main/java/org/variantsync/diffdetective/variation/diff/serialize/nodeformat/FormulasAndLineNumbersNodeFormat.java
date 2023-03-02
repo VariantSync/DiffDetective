@@ -16,7 +16,7 @@ public class FormulasAndLineNumbersNodeFormat implements DiffNodeLabelFormat {
     public String toLabel(DiffNode node) {
         final String lineNumbers = node.getFromLine().inDiff() + "-" + node.getToLine().inDiff() + ": " + node.nodeType;
         if (node.isAnnotation()) {
-            return lineNumbers + " " + node.getDirectFeatureMapping();
+            return lineNumbers + " " + node.getFormula();
         }
         return lineNumbers;
     }

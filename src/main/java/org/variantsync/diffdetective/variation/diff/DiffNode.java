@@ -471,8 +471,23 @@ public class DiffNode implements HasNodeType {
      * The formula is not null for mapping nodes
      * @see NodeType#isAnnotation
      */
-    public Node getDirectFeatureMapping() {
+    public Node getFormula() {
         return featureMapping;
+    }
+
+    public void setFormula(Node featureMapping) {
+        Assert.assertTrue(
+                (featureMapping != null) == this.isConditionalAnnotation(),
+                () -> {
+                    String s = "Given formula " + featureMapping;
+                    if (this.isConditionalAnnotation()) {
+                        return s + " should not be null!";
+                    }
+                    return s + " must be null but is not!";
+                }
+        );
+
+        this.featureMapping = featureMapping;
     }
 
     /**
@@ -492,7 +507,7 @@ public class DiffNode implements HasNodeType {
 
     /**
      * Returns the full feature mapping formula of this node.
-     * The feature mapping of an {@link NodeType#IF} node is its {@link DiffNode#getDirectFeatureMapping direct feature mapping}.
+     * The feature mapping of an {@link NodeType#IF} node is its {@link DiffNode#getFormula() direct feature mapping}.
      * The feature mapping of {@link NodeType#ELSE} and {@link NodeType#ELIF} nodes is determined by all formulas in the respective if-elif-else chain.
      * The feature mapping of an {@link NodeType#ARTIFACT artifact} node is the feature mapping of its parent.
      * See Equation (1) in our paper (+ its extension to time for variation tree diffs described in Section 3.1).
@@ -652,16 +667,25 @@ public class DiffNode implements HasNodeType {
             });
         }
 
+        final DiffNode pb = getParent(BEFORE);
+        final DiffNode pa = getParent(AFTER);
+
         // a node with exactly one parent was edited
-        if (getParent(BEFORE) == null && getParent(AFTER) != null) {
+        if (pb == null && pa != null) {
             Assert.assertTrue(isAdd());
         }
-        if (getParent(BEFORE) != null && getParent(AFTER) == null) {
+        if (pb != null && pa == null) {
             Assert.assertTrue(isRem());
         }
         // a node with exactly two parents was not edited
-        if (getParent(BEFORE) != null && getParent(AFTER) != null) {
+        if (pb != null && pa != null) {
             Assert.assertTrue(isNon());
+
+            // If the parents are the same node, then the parent also has
+            // to be non-edited.
+            if (pb == pa) {
+                Assert.assertTrue(pb.isNon());
+            }
         }
 
         // Else and Elif nodes have an If or Elif as parent.
@@ -675,58 +699,10 @@ public class DiffNode implements HasNodeType {
 
         // Only if and elif nodes have a formula
         if (this.isIf() || this.isElif()) {
-            Assert.assertTrue(this.getDirectFeatureMapping() != null, "If or elif without feature mapping!");
+            Assert.assertTrue(this.getFormula() != null, "If or elif without feature mapping!");
         } else {
-            Assert.assertTrue(this.getDirectFeatureMapping() == null, "Node with type " + nodeType + " has a non null feature mapping");
+            Assert.assertTrue(this.getFormula() == null, "Node with type " + nodeType + " has a non null feature mapping");
         }
-    }
-
-    /**
-     * Prepends the {@link DiffType#symbol} of the given diffType to all given lines and
-     * joins all lines with {@link StringUtils#LINEBREAK linebreaks} to a single text.
-     * @param diffType The change type of the given diff hunk.
-     * @param lines The lines to turn into a text-based diff.
-     * @return A diff in which all given lines have the given diff type.
-     */
-    public static String toTextDiffLine(final DiffType diffType, final List<String> lines) {
-        return lines.stream().collect(Collectors.joining(StringUtils.LINEBREAK + diffType.symbol, diffType.symbol, ""));
-    }
-
-    /**
-     * Unparses this node's lines into its original text-based diff.
-     * @return The diff from which this node was parsed, reconstructed as accurately as possible.
-     */
-    public String toTextDiffLine() {
-        return toTextDiffLine(diffType, lines);
-    }
-
-    /**
-     * Unparses this subgraph into its original text-based diff.
-     * This will return the diff of the entire subgraph starting with this node as root.
-     * Recursively invokes {@link DiffNode#toTextDiffLine()} on this node and all its descendants.
-     * @return The diff from which this subgraph was parsed, reconstructed as accurately as possible.
-     */
-    public String toTextDiff() {
-        final StringBuilder diff = new StringBuilder();
-
-        if (!this.isRoot()) {
-            diff
-                    .append(this.toTextDiffLine())
-                    .append(StringUtils.LINEBREAK);
-        }
-
-        for (final DiffNode child : childOrder) {
-            diff.append(child.toTextDiff());
-        }
-
-        // Add endif after macro
-        if (isAnnotation() && !isRoot()) {
-            diff
-                    .append(toTextDiffLine(this.diffType, List.of("#endif")))
-                    .append(StringUtils.LINEBREAK);
-        }
-
-        return diff.toString();
     }
 
     /**
@@ -762,7 +738,7 @@ public class DiffNode implements HasNodeType {
             variationNode.getNodeType(),
             new DiffLineNumber(from, from, from),
             new DiffLineNumber(to, to, to),
-            variationNode.getDirectFeatureMapping(),
+            variationNode.getFormula(),
             variationNode.getLabelLines()
         );
 

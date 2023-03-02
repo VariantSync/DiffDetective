@@ -352,14 +352,6 @@ public class DiffTree {
     }
 
     /**
-     * Unparses this DiffTree into a text-based diff.
-     * @return A text-based diff.
-     */
-    public String toTextDiff() {
-        return root.toTextDiff();
-    }
-
-    /**
      * Helper class to check for cycles in DiffTrees.
      * When traversing the tree, an object of this class remembers visited nodes to see
      * if it walks in cycles.

@@ -77,6 +77,12 @@ public class Assert {
     }
 
     public static <T> void assertEquals(T expected, T actual) {
-        assertTrue(expected.equals(actual));
+        if (expected == null) {
+            if (actual != null) {
+                fail("expected is null but actual is not!");
+            }
+        } else {
+            assertTrue(expected.equals(actual));
+        }
     }
 }

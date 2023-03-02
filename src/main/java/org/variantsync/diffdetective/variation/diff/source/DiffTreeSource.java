@@ -7,7 +7,7 @@ package org.variantsync.diffdetective.variation.diff.source;
 public interface DiffTreeSource {
     /**
      * Constant to use when the source of a DiffTree is unknown
-     * or if it was created artifically.
+     * or if it was created artificially.
      */
     DiffTreeSource Unknown = new DiffTreeSource() {
         @Override
