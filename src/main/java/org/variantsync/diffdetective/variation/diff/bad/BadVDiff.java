@@ -387,11 +387,12 @@ public record BadVDiff(
 
     private void prettyPrint(final String indent, StringBuilder b, VariationTreeNode n) {
         if (!n.isRoot()) {
-            b
-                    .append(coloring.get(n).symbol)
-                    .append(indent)
-                    .append(n.getLabelLines().stream().map(String::trim).collect(Collectors.joining(" \\n ")))
-                    .append(StringUtils.LINEBREAK);
+            final String prefix = coloring.get(n).symbol + indent;
+            b.append(n.getLabelLines().stream().collect(Collectors.joining(
+                    StringUtils.LINEBREAK + prefix,
+                            prefix,
+                            StringUtils.LINEBREAK)
+            ));
         }
 
         for (VariationTreeNode child : n.getChildren()) {
