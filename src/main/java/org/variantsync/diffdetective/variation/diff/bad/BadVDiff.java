@@ -331,8 +331,8 @@ public record BadVDiff(
 
         diff.forAllPreorder(vtnode -> {
             // If a node was already translated (because it was merged), it does not have to be translated anymore.
-            // We already translated the root, so we can skip it.
-            if (nodeTranslation.containsKey(vtnode) || vtnode == diff.root()) {
+            // We already translated the root, so we can skip it (which we do since it is already a key on nodeTranslation).
+            if (nodeTranslation.containsKey(vtnode)) {
                 return;
             }
 
