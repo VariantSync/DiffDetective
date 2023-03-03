@@ -23,7 +23,6 @@ import org.variantsync.diffdetective.variation.diff.DiffTree;
  * directory. This particular style is used by {@link exportFullLatexExample}.
  */
 public final class TikzExporter implements Exporter {
-    private static final Pattern graphvizNodePattern = Pattern.compile("^node (\\w+) ([0-9.]+) ([0-9.]+) .*$");
     private Format format;
 
     public TikzExporter(Format format) {
@@ -61,30 +60,9 @@ public final class TikzExporter implements Exporter {
         output.println("\\begin{tikzpicture}");
 
         // Convert the layout information received by Graphviz to coordinates used by TikZ.
-        try (
-                var graphvizExporter = new GraphvizExporter(format)
-                    .computeGraphvizLayout(
-                        diffTree,
-                        algorithm,
-                        GraphvizExporter.OutputFormat.PLAIN);
-                var unbufferedGraphvizOutput = new InputStreamReader(graphvizExporter);
-                var graphizOutput = new BufferedReader(unbufferedGraphvizOutput
-        )) {
-            // Skip scale and dimensions
-            graphizOutput.readLine();
-
-            String line;
-            while ((line = graphizOutput.readLine()) != null) {
-                var nodeMatcher = graphvizNodePattern.matcher(line);
-                if (nodeMatcher.matches()) {
-                    var id = nodeMatcher.group(1);
-                    var x = nodeMatcher.group(2);
-                    var y = nodeMatcher.group(3);
-
-                    output.format("\t\\coordinate (%s) at (%s,%s);%n", id, x, y);
-                }
-            }
-        }
+        GraphvizExporter.layoutNodesIn(diffTree, format, algorithm, (id, x, y) -> {
+            output.format("\t\\coordinate (%s) at (%s,%s);%n", id, x, y);
+        });
 
         // Add all TikZ nodes positioned at the Graphviz coordinates.
         format.forEachNode(diffTree, (node) -> {
