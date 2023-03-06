@@ -4,10 +4,18 @@ import java.awt.event.*;
 import java.awt.geom.Point2D;
 
 public class InputHandler implements MouseListener, MouseMotionListener, MouseWheelListener {
-    private Window window;
+    private final Window window;
+
+    private double camDeltaXOnPress, camDeltaYOnPress;
+    private int buttonHold;
 
     public InputHandler(Window window) {
         this.window = window;
+        buttonHold = -1;
+    }
+
+    private void cancelButtonHoldAction() {
+        buttonHold = -1;
     }
 
     @Override
@@ -17,12 +25,32 @@ public class InputHandler implements MouseListener, MouseMotionListener, MouseWh
 
     @Override
     public void mousePressed(MouseEvent e) {
+        if (buttonHold == -1 || buttonHold == e.getButton())
+            buttonHold = e.getButton();
+        else
+            cancelButtonHoldAction();
 
+        // Drag nodes with LMB
+        if (buttonHold == MouseEvent.BUTTON1) {
+            Camera c = window.getWorld().getCamera();
+            camDeltaXOnPress = e.getX() - c.getX();
+            camDeltaYOnPress = e.getY() - c.getY();
+        }
+
+        // Move camera by holding RMB
+        if (buttonHold == MouseEvent.BUTTON3) {
+            Camera c = window.getWorld().getCamera();
+            camDeltaXOnPress = e.getX() - c.getX();
+            camDeltaYOnPress = e.getY() - c.getY();
+        }
     }
 
     @Override
     public void mouseReleased(MouseEvent e) {
-
+        if (buttonHold == e.getButton()) {
+            buttonHold = -1;
+            window.refresh();
+        }
     }
 
     @Override
@@ -37,7 +65,14 @@ public class InputHandler implements MouseListener, MouseMotionListener, MouseWh
 
     @Override
     public void mouseDragged(MouseEvent e) {
+        // Move camera by holding RMB
+        if (buttonHold == MouseEvent.BUTTON3) {
+            window.getWorld().getCamera().setLocation(
+                    e.getX() - camDeltaXOnPress,
+                    e.getY() - camDeltaYOnPress);
+        }
 
+        window.refresh();
     }
 
     @Override
