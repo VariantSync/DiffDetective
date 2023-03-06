@@ -1,6 +1,5 @@
 package org.variantsync.diffdetective.show.engine;
 
-import org.tinylog.Logger;
 import org.variantsync.diffdetective.show.engine.geom.Vec2;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.functjonal.Cast;
@@ -8,6 +7,7 @@ import org.variantsync.functjonal.Cast;
 import java.awt.geom.AffineTransform;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 
 public final class Entity {
     private Vec2 location;
@@ -39,6 +39,16 @@ public final class Entity {
 
     public <T extends EntityComponent> T get(final Class<T> type) {
         return Cast.unchecked(components.get(type));
+    }
+
+    public <T extends EntityComponent> void forComponent(
+            final Class<T> type,
+            Consumer<T> ifPresent
+    ) {
+        final T component = get(type);
+        if (component != null) {
+            ifPresent.accept(component);
+        }
     }
 
     public AffineTransform getRelativeTransform() {
