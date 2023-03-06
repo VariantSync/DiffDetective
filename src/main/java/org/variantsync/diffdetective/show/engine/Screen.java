@@ -1,6 +1,7 @@
 package org.variantsync.diffdetective.show.engine;
 
 import org.tinylog.Logger;
+import org.variantsync.diffdetective.show.engine.entity.EntityGraphics;
 import org.w3c.dom.Text;
 
 import javax.swing.*;
@@ -36,7 +37,7 @@ public class Screen extends JPanel {
     protected void paintComponent(Graphics gc) {
         super.paintComponent(gc);
 
-        World w = window.getWorld();
+        World w = window.getApp().getWorld();
 
         updateViewTransform(w.getCamera());
 
@@ -49,7 +50,10 @@ public class Screen extends JPanel {
 
         // draw all WorkingElements
         for (Entity e : w.getEntities()) {
-            e.getGraphics().draw(g2, viewTransform);
+            final EntityGraphics eGraphics = e.get(EntityGraphics.class);
+            if (eGraphics != null) {
+                eGraphics.draw(g2, viewTransform);
+            }
         }
     }
 
@@ -59,7 +63,7 @@ public class Screen extends JPanel {
 
     public Point2D screenToLocalCoord(double x, double y) {
         try {
-            updateViewTransform(window.getWorld().getCamera());
+            updateViewTransform(window.getApp().getWorld().getCamera());
             return viewTransform.inverseTransform(
                     new Point2D.Double(x, y),
                     null);

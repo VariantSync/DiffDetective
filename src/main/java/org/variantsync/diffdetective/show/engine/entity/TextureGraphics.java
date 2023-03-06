@@ -1,7 +1,7 @@
 package org.variantsync.diffdetective.show.engine.entity;
 
 import org.variantsync.diffdetective.show.engine.Texture;
-import org.variantsync.diffdetective.show.engine.Transform;
+import org.variantsync.diffdetective.show.engine.geom.Transform;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;

@@ -4,13 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class World {
-    private final Window window;
+    private final App app;
     private final Camera camera;
 
     private final List<Entity> entities;
 
-    public World(Window frame) {
-        this.window = frame;
+    public World(App app) {
+        this.app = app;
 
         entities = new ArrayList<>();
         camera = new Camera();
@@ -20,18 +20,18 @@ public class World {
 
     public void spawn(Entity element) {
         entities.add(element);
-        window.refresh();
+        app.refresh();
     }
 
     public void despawn(Entity element) {
         entities.remove(element);
-        window.refresh();
+        app.refresh();
     }
 
     /** GET AND SET **/
 
-    public Window getWindow() {
-        return window;
+    public App getApp() {
+        return app;
     }
 
     public Camera getCamera() {

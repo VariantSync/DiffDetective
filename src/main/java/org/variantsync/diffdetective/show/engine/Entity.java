@@ -1,23 +1,42 @@
 package org.variantsync.diffdetective.show.engine;
 
-import org.variantsync.diffdetective.show.engine.entity.EntityGraphics;
+import org.tinylog.Logger;
+import org.variantsync.diffdetective.show.engine.geom.Vec2;
+import org.variantsync.diffdetective.util.Assert;
+import org.variantsync.functjonal.Cast;
 
-import java.awt.*;
 import java.awt.geom.AffineTransform;
+import java.util.HashMap;
+import java.util.Map;
 
 public final class Entity {
-    private double x, y;
+    private Vec2 location;
     private final AffineTransform relativeTransform;
-    private final EntityGraphics graphics;
+    private final Map<Class<?>, EntityComponent> components;
 
-    public Entity(EntityGraphics graphics) {
-        x = 0;
-        y = 0;
+    public Entity() {
+        location = Vec2.all(0);
         relativeTransform = new AffineTransform();
+        this.components = new HashMap<>();
+    }
 
-        assert graphics.getEntity() == null;
-        this.graphics = graphics;
-        this.graphics.setEntity(this);
+    public void add(EntityComponent component) {
+        Assert.assertNull(component.getEntity());
+
+        Class<?> cls = component.getClass();
+        do {
+            final EntityComponent old = components.put(cls, component);
+            if (old != null) {
+                throw new RuntimeException("This entity has already a component of type " + cls.getSimpleName() + " registered!");
+            }
+            cls = cls.getSuperclass();
+        } while (cls != null && !cls.equals(EntityComponent.class));
+
+        component.setEntity(this);
+    }
+
+    public <T extends EntityComponent> T get(final Class<T> type) {
+        return Cast.unchecked(components.get(type));
     }
 
     public AffineTransform getRelativeTransform() {
@@ -28,20 +47,16 @@ public final class Entity {
         relativeTransform.setTransform(
                 1, 0,
                 0, 1,
-                x, y);
+                location.x(), location.y());
     }
 
-    public void setLocation(double x, double y) {
-        this.x = x;
-        this.y = y;
+    public void setLocation(final Vec2 location) {
+        Assert.assertNotNull(location);
+        this.location = location;
         updateTransform();
     }
 
-    public double getX() { return x; }
-
-    public double getY() { return y; }
-
-    public EntityGraphics getGraphics() {
-        return graphics;
+    public Vec2 getLocation() {
+        return location;
     }
 }

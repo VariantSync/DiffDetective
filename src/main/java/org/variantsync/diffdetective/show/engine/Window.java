@@ -4,12 +4,11 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
-import java.awt.event.MouseListener;
 
 public class Window extends JDialog {
-    private final World world;
     private final InputHandler inputHandler;
     private final Screen screen;
+    private App app;
 
     public Window(String title, int resolutionWidth, int resolutionHeight) {
         super((Frame) null, title, true);
@@ -19,7 +18,6 @@ public class Window extends JDialog {
         setSize(resolutionWidth, resolutionHeight);
         setLocationRelativeTo(null);
 
-        this.world = new World(this);
         this.inputHandler = new InputHandler(this);
         this.screen = new Screen(this);
 
@@ -49,16 +47,20 @@ public class Window extends JDialog {
         });
     }
 
+    public void setApp(App app) {
+        this.app = app;
+    }
+
+    public App getApp() {
+        return app;
+    }
+
     public void refresh() {
         screen.repaint();
     }
 
     public InputHandler getInputHandler() {
         return inputHandler;
-    }
-
-    public World getWorld() {
-        return world;
     }
 
     public Screen getScreen() {

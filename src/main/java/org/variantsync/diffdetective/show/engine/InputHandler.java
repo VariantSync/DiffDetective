@@ -31,15 +31,15 @@ public class InputHandler implements MouseListener, MouseMotionListener, MouseWh
             cancelButtonHoldAction();
 
         // Drag nodes with LMB
-        if (buttonHold == MouseEvent.BUTTON1) {
-            Camera c = window.getWorld().getCamera();
-            camDeltaXOnPress = e.getX() - c.getX();
-            camDeltaYOnPress = e.getY() - c.getY();
-        }
+//        if (buttonHold == MouseEvent.BUTTON1) {
+//            Camera c = window.getWorld().getCamera();
+//            camDeltaXOnPress = e.getX() - c.getX();
+//            camDeltaYOnPress = e.getY() - c.getY();
+//        }
 
         // Move camera by holding RMB
         if (buttonHold == MouseEvent.BUTTON3) {
-            Camera c = window.getWorld().getCamera();
+            Camera c = window.getApp().getWorld().getCamera();
             camDeltaXOnPress = e.getX() - c.getX();
             camDeltaYOnPress = e.getY() - c.getY();
         }
@@ -67,7 +67,7 @@ public class InputHandler implements MouseListener, MouseMotionListener, MouseWh
     public void mouseDragged(MouseEvent e) {
         // Move camera by holding RMB
         if (buttonHold == MouseEvent.BUTTON3) {
-            window.getWorld().getCamera().setLocation(
+            window.getApp().getWorld().getCamera().setLocation(
                     e.getX() - camDeltaXOnPress,
                     e.getY() - camDeltaYOnPress);
         }
@@ -81,7 +81,7 @@ public class InputHandler implements MouseListener, MouseMotionListener, MouseWh
 
     @Override
     public void mouseWheelMoved(MouseWheelEvent e) {
-        Camera c = window.getWorld().getCamera();
+        Camera c = window.getApp().getWorld().getCamera();
         Point2D p = window.getScreen().screenToLocalCoord(e.getX(), e.getY());
         c.zoom(
                 -e.getWheelRotation(),
