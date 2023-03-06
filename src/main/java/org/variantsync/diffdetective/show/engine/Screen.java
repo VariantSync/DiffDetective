@@ -2,12 +2,11 @@ package org.variantsync.diffdetective.show.engine;
 
 import org.tinylog.Logger;
 import org.variantsync.diffdetective.show.engine.entity.EntityGraphics;
-import org.w3c.dom.Text;
+import org.variantsync.diffdetective.show.engine.geom.Vec2;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
-import java.awt.geom.Point2D;
 
 public class Screen extends JPanel {
     AffineTransform viewTransform;
@@ -25,13 +24,14 @@ public class Screen extends JPanel {
     }
 
     private void updateViewTransform(Camera camera) {
-        double zoom = camera.getZoom();
+        final double zoom = camera.getZoom();
+        final Vec2 camPos = camera.getLocation();
 
         viewTransform.setTransform(
                 zoom, 0,
                 0, zoom,
-                camera.getX() + getWidth() / 2.0,
-                camera.getY() + getHeight() / 2.0);
+                camPos.x() + getWidth()  / 2.0,
+                camPos.y() + getHeight() / 2.0);
     }
 
     protected void paintComponent(Graphics gc) {
@@ -58,16 +58,12 @@ public class Screen extends JPanel {
         }
     }
 
-    public Point2D screenToLocalCoord(int x, int y) {
-        return screenToLocalCoord((double)x, (double)y);
-    }
-
-    public Point2D screenToLocalCoord(double x, double y) {
+    public Vec2 screenToLocalCoord(Vec2 pos) {
         try {
             updateViewTransform(window.getApp().getWorld().getCamera());
-            return viewTransform.inverseTransform(
-                    new Point2D.Double(x, y),
-                    null);
+            return Vec2.from(viewTransform.inverseTransform(
+                    pos.toPoint2D(),
+                    null));
         } catch (java.awt.geom.NoninvertibleTransformException e) {
             Logger.error(e.getMessage());
         }

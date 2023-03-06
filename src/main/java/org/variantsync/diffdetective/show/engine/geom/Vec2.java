@@ -23,6 +23,13 @@ public record Vec2(double x, double y) {
         );
     }
 
+    public Vec2 scale(Vec2 s) {
+        return new Vec2(
+                s.x() * x(),
+                s.y() * y()
+        );
+    }
+
     public Vec2 add(Vec2 b) {
         return new Vec2(
                 x() + b.x(),
