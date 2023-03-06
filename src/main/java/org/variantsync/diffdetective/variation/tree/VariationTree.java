@@ -15,6 +15,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -139,6 +140,16 @@ public record VariationTree(
     public VariationTree forAllPreorder(final Consumer<VariationTreeNode> action) {
         root.forAllPreorder(action);
         return this;
+    }
+
+
+    /**
+     * Returns the number of nodes in this Variation Tree.
+     */
+    public int computeSize() {
+        AtomicInteger size = new AtomicInteger();
+        forAllPreorder(n -> size.incrementAndGet());
+        return size.get();
     }
 
     @Override
