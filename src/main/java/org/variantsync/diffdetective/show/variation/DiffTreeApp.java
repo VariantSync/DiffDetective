@@ -2,7 +2,9 @@ package org.variantsync.diffdetective.show.variation;
 
 import org.tinylog.Logger;
 import org.variantsync.diffdetective.show.engine.*;
+import org.variantsync.diffdetective.show.engine.geom.Circle;
 import org.variantsync.diffdetective.show.engine.geom.Vec2;
+import org.variantsync.diffdetective.show.engine.hitbox.CircleHitbox;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.variation.diff.DiffType;
@@ -20,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 public class DiffTreeApp extends App {
+    private final static double DEFAULT_NODE_RADIUS = 50;
     private final static Format DEFAULT_FORMAT =
             new Format(
                     new ShowNodeFormat(),
@@ -30,7 +33,81 @@ public class DiffTreeApp extends App {
     private final int resy;
     private final DiffTree diffTree;
 
-    protected final Map<DiffNode, GraphNodeGraphics<DiffNode>> nodeGraphics = new HashMap<>();
+    protected final Map<DiffNode, Entity> nodes = new HashMap<>();
+
+    public DiffTreeApp(final String name, final DiffTree diffTree, int resx, int resy) {
+        super(new Window(name, resx, resy));
+        this.diffTree = diffTree;
+        this.resx = resx;
+        this.resy = resy;
+    }
+
+    @Override
+    public void initialize(final World world) {
+        // If desired, this would be the point to insert a game loop.
+        // For now, we redraw after every action.
+
+        // compute node locations
+        final Map<DiffNode, Vec2> locations;
+        try {
+            locations = layout(
+                    diffTree,
+                    GraphvizExporter.LayoutAlgorithm.DOT,
+                    DEFAULT_FORMAT);
+        } catch (IOException e) {
+            Logger.error(e);
+            return;
+        }
+        alignInBox(resx, resy, locations);
+
+        for (final Map.Entry<DiffNode, Vec2> entry : locations.entrySet()) {
+            final Entity e = new Entity();
+            e.add(new CircleHitbox(new Circle(DEFAULT_NODE_RADIUS)));
+            e.add(new GraphNodeGraphics<>(new DiffNodeView(entry.getKey(), DEFAULT_FORMAT.getNodeFormat())));
+            e.setLocation(entry.getValue());
+            nodes.put(entry.getKey(), e);
+            world.spawn(e);
+        }
+
+        final List<EdgeGraphics> edges = new ArrayList<>();
+        getDiffTree().forAll(node -> {
+            final DiffNode pbefore = node.getParent(Time.BEFORE);
+            final DiffNode pafter = node.getParent(Time.AFTER);
+
+            if (pbefore != null && pbefore == pafter) {
+                edges.add(new EdgeGraphics(
+                        nodes.get(node),
+                        nodes.get(pbefore),
+                        Colors.ofDiffType.get(DiffType.NON)
+                ));
+            } else {
+                if (pbefore != null) {
+                    edges.add(new EdgeGraphics(
+                            nodes.get(node),
+                            nodes.get(pbefore),
+                            Colors.ofDiffType.get(DiffType.REM)
+                    ));
+                }
+                if (pafter != null) {
+                    edges.add(new EdgeGraphics(
+                            nodes.get(node),
+                            nodes.get(pafter),
+                            Colors.ofDiffType.get(DiffType.ADD)
+                    ));
+                }
+            }
+        });
+
+        for (final EdgeGraphics edge : edges) {
+            Entity e = new Entity();
+            e.add(edge);
+            world.spawn(e);
+        }
+    }
+
+    public DiffTree getDiffTree() {
+        return diffTree;
+    }
 
     public static Map<DiffNode, Vec2> layout(
             DiffTree d,
@@ -83,84 +160,9 @@ public class DiffTreeApp extends App {
         for (final Map.Entry<V, Vec2> entry : locations.entrySet()) {
             final Vec2 graphvizpos = entry.getValue();
             entry.setValue(new Vec2(
-                     0.7 * (scale_x * (graphvizpos.x() - xmin) - width / 2.0),
+                    0.7 * (scale_x * (graphvizpos.x() - xmin) - width / 2.0),
                     -0.7 * (scale_y * (graphvizpos.y() - ymin) - height / 2.0)
             ));
         }
-    }
-
-    public DiffTreeApp(final String name, final DiffTree diffTree, int resx, int resy) {
-        super(new Window(name, resx, resy));
-        this.diffTree = diffTree;
-        this.resx = resx;
-        this.resy = resy;
-    }
-
-    @Override
-    public void initialize(final World world) {
-        // If desired, this would be the point to insert a game loop.
-        // For now, we redraw after every action.
-
-        // compute node locations
-        final Map<DiffNode, Vec2> locations;
-        try {
-            locations = layout(
-                    diffTree,
-                    GraphvizExporter.LayoutAlgorithm.DOT,
-                    DEFAULT_FORMAT);
-        } catch (IOException e) {
-            Logger.error(e);
-            return;
-        }
-        alignInBox(resx, resy, locations);
-
-        for (final Map.Entry<DiffNode, Vec2> entry : locations.entrySet()) {
-            final GraphNodeGraphics<DiffNode> graphics =
-                    new GraphNodeGraphics<>(new DiffNodeView(entry.getKey(), DEFAULT_FORMAT.getNodeFormat()));
-            nodeGraphics.put(entry.getKey(), graphics);
-            final Entity e = new Entity();
-            e.add(graphics);
-            e.setLocation(entry.getValue());
-            world.spawn(e);
-        }
-
-        final List<EdgeGraphics<DiffNode>> edges = new ArrayList<>();
-        getDiffTree().forAll(node -> {
-            final DiffNode pbefore = node.getParent(Time.BEFORE);
-            final DiffNode pafter = node.getParent(Time.AFTER);
-
-            if (pbefore != null && pbefore == pafter) {
-                edges.add(new EdgeGraphics<>(
-                        nodeGraphics.get(node),
-                        nodeGraphics.get(pbefore),
-                        Colors.ofDiffType.get(DiffType.NON)
-                ));
-            } else {
-                if (pbefore != null) {
-                    edges.add(new EdgeGraphics<>(
-                            nodeGraphics.get(node),
-                            nodeGraphics.get(pbefore),
-                            Colors.ofDiffType.get(DiffType.REM)
-                    ));
-                }
-                if (pafter != null) {
-                    edges.add(new EdgeGraphics<>(
-                            nodeGraphics.get(node),
-                            nodeGraphics.get(pafter),
-                            Colors.ofDiffType.get(DiffType.ADD)
-                    ));
-                }
-            }
-        });
-
-        for (final EdgeGraphics<DiffNode> edge : edges) {
-            Entity e = new Entity();
-            e.add(edge);
-            world.spawn(e);
-        }
-    }
-
-    public DiffTree getDiffTree() {
-        return diffTree;
     }
 }

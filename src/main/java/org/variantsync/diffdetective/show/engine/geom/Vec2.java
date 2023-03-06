@@ -41,12 +41,34 @@ public record Vec2(double x, double y) {
         return this.add(b.flip());
     }
 
+    public Vec2 normalize() {
+        final double l = length();
+        return new Vec2(
+                x() / l,
+                y() / l
+        );
+    }
+
     public double length() {
         return Math.sqrt(x() * x() + y() * y());
     }
 
     public double distanceTo(Vec2 b) {
         return this.minus(b).length();
+    }
+
+    public Vec2 rotate90DegreesClockwise() {
+        return new Vec2(
+                y(),
+                -x()
+        );
+    }
+
+    public Vec2 rotate90DegreesCounterClockwise() {
+        return new Vec2(
+                -y(),
+                x()
+        );
     }
 
     public Vec2 transform(final AffineTransform t) {

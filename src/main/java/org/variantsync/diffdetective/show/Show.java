@@ -11,7 +11,6 @@ public class Show {
     /**
      * Todos
      * - node drag and drop
-     * - edge tips
      * - menu for layout algo. selection
      * - menu for node format selection
      */
