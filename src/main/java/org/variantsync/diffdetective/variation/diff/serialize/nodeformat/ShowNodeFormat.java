@@ -5,9 +5,10 @@ import org.variantsync.diffdetective.util.StringUtils;
 import org.variantsync.diffdetective.variation.NodeType;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
 
+import java.util.function.Function;
+
 public class ShowNodeFormat implements DiffNodeLabelFormat {
-    @Override
-    public String toLabel(DiffNode node) {
+    public static String toLabel(DiffNode node, Function<DiffNode, String> artifactPrinter) {
         if (node.isRoot()) {
             return "⊤";
         }
@@ -20,9 +21,17 @@ public class ShowNodeFormat implements DiffNodeLabelFormat {
                 s += " " + node.getFormula().toString(NodeWriter.logicalSymbols);
             }
         } else {
-            s += StringUtils.clamp(10, node.getLabel().trim());
+            s += artifactPrinter.apply(node);
         }
 
         return s;
+    }
+
+    @Override
+    public String toLabel(DiffNode node) {
+        return toLabel(
+                node,
+                n -> StringUtils.clamp(10, n.getLabel().trim())
+        );
     }
 }

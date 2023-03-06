@@ -1,17 +1,36 @@
 package org.variantsync.diffdetective.show.variation;
 
+import org.variantsync.diffdetective.variation.diff.DiffNode;
+import org.variantsync.diffdetective.variation.diff.serialize.nodeformat.DiffNodeLabelFormat;
+
 import java.awt.*;
 
-public abstract class NodeView<N> {
-    protected final N node;
+public class NodeView {
+    protected final DiffNode node;
+    private DiffNodeLabelFormat labelFormat;
 
-    protected NodeView(N node) {
+    protected NodeView(DiffNode node, DiffNodeLabelFormat format) {
         this.node = node;
+        this.labelFormat = format;
     }
 
-    public abstract Color borderColor();
+    public Color borderColor() {
+        return Colors.ofNodeType(node.getNodeType());
+    }
 
-    public abstract Color nodeColor();
+    public Color nodeColor() {
+        return Colors.ofDiffType.get(node.getDiffType());
+    }
 
-    public abstract String nodeLabel();
+    public String nodeLabel() {
+        return labelFormat.toLabel(node);
+    }
+
+    public DiffNodeLabelFormat getLabelFormat() {
+        return labelFormat;
+    }
+
+    public void setLabelFormat(DiffNodeLabelFormat labelFormat) {
+        this.labelFormat = labelFormat;
+    }
 }

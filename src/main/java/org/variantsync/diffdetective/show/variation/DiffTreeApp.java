@@ -13,7 +13,7 @@ import org.variantsync.diffdetective.variation.diff.serialize.Format;
 import org.variantsync.diffdetective.variation.diff.serialize.GraphvizExporter;
 import org.variantsync.diffdetective.variation.diff.serialize.edgeformat.DefaultEdgeLabelFormat;
 import org.variantsync.diffdetective.variation.diff.serialize.edgeformat.EdgeLabelFormat;
-import org.variantsync.diffdetective.variation.diff.serialize.nodeformat.ShowNodeFormat;
+import org.variantsync.diffdetective.variation.diff.serialize.nodeformat.*;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -32,19 +32,57 @@ public class DiffTreeApp extends App {
                     // There is a bug in the exporter currently that accidentally switches direction so as a workaround we revert it here.
                     new DefaultEdgeLabelFormat(EdgeLabelFormat.Direction.ParentToChild)
             );
-    private final int resx;
-    private final int resy;
+
+    private final static List<DiffNodeLabelFormat> AVAILABLE_FORMATS = List.of(
+            new ShowNodeFormat(),
+            new LabelOnlyDiffNodeFormat(),
+            new EditClassesDiffNodeFormat(),
+            new LineNumberFormat(),
+            new FormulasAndLineNumbersNodeFormat()
+    );
+    private final Vec2 resolution;
     private final DiffTree diffTree;
 
     protected final Map<DiffNode, Entity> nodes = new HashMap<>();
 
-    private JMenuBar menuBar;
-
-    public DiffTreeApp(final String name, final DiffTree diffTree, int resx, int resy) {
-        super(new Window(name, resx, resy));
+    public DiffTreeApp(final String name, final DiffTree diffTree, Vec2 resolution) {
+        super(new Window(name, (int)resolution.x(), (int)resolution.y()));
         this.diffTree = diffTree;
-        this.resx = resx;
-        this.resy = resy;
+        this.resolution = resolution;
+    }
+
+    private void setupMenu() {
+        final Window w = getWindow();
+        JMenuBar menuBar = new JMenuBar();
+        //w.add(menuBar);
+        w.setJMenuBar(menuBar);
+
+        JMenu fileMenu = new JMenu("File");
+        JMenu layoutMenu = new JMenu("Layout");
+        JMenu labelMenu = new JMenu("Labels");
+        menuBar.add(fileMenu);
+        menuBar.add(layoutMenu);
+        menuBar.add(labelMenu);
+
+        // Screenshot
+        final JMenuItem saveScreenshotMenuItem = new JMenuItem("Save Screenshot");
+        saveScreenshotMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
+        saveScreenshotMenuItem.addActionListener(event -> saveScreenshot());
+        fileMenu.add(saveScreenshotMenuItem);
+
+        // Switch layout
+        for (final GraphvizExporter.LayoutAlgorithm layoutAlgorithm : GraphvizExporter.LayoutAlgorithm.values()) {
+            final JMenuItem setLayoutMenuItem = new JMenuItem(layoutAlgorithm.getExecutableName());
+            setLayoutMenuItem.addActionListener(event -> layoutNodes(layoutAlgorithm));
+            layoutMenu.add(setLayoutMenuItem);
+        }
+
+        // Switch labels
+        for (final DiffNodeLabelFormat labelFormat : AVAILABLE_FORMATS) {
+            final JMenuItem setLabelFormatMenuItem = new JMenuItem(labelFormat.getShortName());
+            setLabelFormatMenuItem.addActionListener(event -> setLabelFormat(labelFormat));
+            labelMenu.add(setLabelFormatMenuItem);
+        }
     }
 
     private void saveScreenshot() {
@@ -65,29 +103,14 @@ public class DiffTreeApp extends App {
         }
     }
 
-    private void setupMenu() {
-        final Window w = getWindow();
-        menuBar = new JMenuBar();
-        //w.add(menuBar);
-        w.setJMenuBar(menuBar);
-
-        JMenu fileMenu = new JMenu("File");
-        JMenu layoutMenu = new JMenu("Layout");
-        menuBar.add(fileMenu);
-        menuBar.add(layoutMenu);
-
-        // Switch layout
-        for (final GraphvizExporter.LayoutAlgorithm layoutAlgorithm : GraphvizExporter.LayoutAlgorithm.values()) {
-            final JMenuItem setLayoutMenuItem = new JMenuItem(layoutAlgorithm.getExecutableName());
-            setLayoutMenuItem.addActionListener(event -> layoutNodes(layoutAlgorithm));
-            layoutMenu.add(setLayoutMenuItem);
+    private void setLabelFormat(DiffNodeLabelFormat labelFormat) {
+        for (Entity e : nodes.values()) {
+            e.forComponent(GraphNodeGraphics.class,
+                    graphNodeGraphics -> graphNodeGraphics.node.setLabelFormat(labelFormat)
+            );
         }
 
-        // Screenshot
-        final JMenuItem saveScreenshotMenuItem = new JMenuItem("Save Screenshot");
-        saveScreenshotMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
-        saveScreenshotMenuItem.addActionListener(event -> saveScreenshot());
-        fileMenu.add(saveScreenshotMenuItem);
+        refresh();
     }
 
     private void layoutNodes(GraphvizExporter.LayoutAlgorithm layoutAlgorithm) {
@@ -101,7 +124,8 @@ public class DiffTreeApp extends App {
             Logger.error(e);
             return;
         }
-        alignInBox(resx, resy, locations);
+
+        alignInBox(resolution, locations);
         locateDiffTreeNodesAt(locations);
         refresh();
     }
@@ -111,7 +135,12 @@ public class DiffTreeApp extends App {
         diffTree.forAll(diffNode -> {
             final Entity e = new Entity();
             e.add(new CircleHitbox(new Circle(DEFAULT_NODE_RADIUS)));
-            e.add(new GraphNodeGraphics<>(new DiffNodeView(diffNode, DEFAULT_FORMAT.getNodeFormat())));
+            e.add(new GraphNodeGraphics(
+                    new NodeView(
+                            diffNode,
+                            DEFAULT_FORMAT.getNodeFormat()
+                    )
+            ));
             nodes.put(diffNode, e);
             world.spawn(e);
         });
@@ -189,7 +218,7 @@ public class DiffTreeApp extends App {
         }
     }
 
-    public static <V> void alignInBox(int width, int height, final Map<V, Vec2> locations) {
+    public static <V> void alignInBox(Vec2 resolution, final Map<V, Vec2> locations) {
         double xmin = Double.MAX_VALUE;
         double xmax = Double.MIN_VALUE;
         double ymin = Double.MAX_VALUE;
@@ -206,24 +235,24 @@ public class DiffTreeApp extends App {
 
         double layout_width  = xmax - xmin;
         double layout_height = ymax - ymin;
-        double scale_x = width / layout_width;
-        double scale_y = height / layout_height;
+        double scale_x = resolution.x() / layout_width;
+        double scale_y = resolution.y() / layout_height;
 
         if (xmin == xmax) {
             scale_x = 1;
-            xmin -= width / 2.0;
+            xmin -= resolution.x() / 2.0;
         }
         if (ymin == ymax) {
             scale_y = 1;
-            ymin -= height / 2.0;
+            ymin -= resolution.y() / 2.0;
         }
 
         // TODO: Use vector arithmetics here instead of operating on individual components
         for (final Map.Entry<V, Vec2> entry : locations.entrySet()) {
             final Vec2 graphvizpos = entry.getValue();
             entry.setValue(new Vec2(
-                    0.7 * (scale_x * (graphvizpos.x() - xmin) - width / 2.0),
-                    -0.7 * (scale_y * (graphvizpos.y() - ymin) - height / 2.0)
+                     0.7 * (scale_x * (graphvizpos.x() - xmin) - resolution.x() / 2.0),
+                    -0.7 * (scale_y * (graphvizpos.y() - ymin) - resolution.y() / 2.0)
             ));
         }
     }

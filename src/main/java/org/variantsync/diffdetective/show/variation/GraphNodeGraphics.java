@@ -9,17 +9,18 @@ import org.variantsync.diffdetective.show.engine.hitbox.CircleHitbox;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 
-public class GraphNodeGraphics<N> extends EntityGraphics {
+public class GraphNodeGraphics extends EntityGraphics {
     //// Represented content
-    final NodeView<N> node;
+    final NodeView node;
 
     //// Rendering values
     double circle_borderwidth_relative = 0.05;
-    double textbox_borderwidth_absolute = 3;
+    double textbox_borderwidth_absolute = 2;
+    double textbox_insets_absolute = 12;
     int textbox_borderarcwidth_absolute = 7;
     Font basic = new Font(null, Font.PLAIN, 20);
 
-    public GraphNodeGraphics(NodeView<N> node) {
+    public GraphNodeGraphics(NodeView node) {
         this.node = node;
     }
 
@@ -31,7 +32,7 @@ public class GraphNodeGraphics<N> extends EntityGraphics {
         final AffineTransform t = Transform.mult(parentTransform, getEntity().getRelativeTransform());
         final double radius = getEntity().get(CircleHitbox.class).getCircle().radius();
         final double width  = 2 * radius;
-        final double height = width;
+        @SuppressWarnings("SuspiciousNameCombination") final double height = width;
 
         // Draw circle
         Draw.borderedShapeRelative(
@@ -51,7 +52,7 @@ public class GraphNodeGraphics<N> extends EntityGraphics {
 
         Draw.borderedShapeAbsolute(
                 screen, t,
-                textwidth + 2 * textbox_borderwidth_absolute, textheight + 2 * textbox_borderwidth_absolute,
+                textwidth + textbox_insets_absolute, textheight + textbox_insets_absolute,
                 textbox_borderwidth_absolute,
                 Color.WHITE, Color.BLACK,
                 box -> {
