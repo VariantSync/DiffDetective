@@ -11,10 +11,12 @@ import java.util.Map;
 
 public final class Entity {
     private Vec2 location;
+    private double z;
     private final AffineTransform relativeTransform;
     private final Map<Class<?>, EntityComponent> components;
 
     public Entity() {
+        z = 0;
         location = Vec2.all(0);
         relativeTransform = new AffineTransform();
         this.components = new HashMap<>();
@@ -58,5 +60,13 @@ public final class Entity {
 
     public Vec2 getLocation() {
         return location;
+    }
+
+    public void setZ(double z) {
+        this.z = z;
+    }
+
+    public double getZ() {
+        return z;
     }
 }

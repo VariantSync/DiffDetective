@@ -1,6 +1,7 @@
 package org.variantsync.diffdetective.show.engine;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class World {
@@ -59,5 +60,9 @@ public class World {
 
     public Iterable<? extends Entity> getEntities() {
         return entities;
+    }
+
+    public void sortEntities() {
+        entities.sort(Comparator.comparingDouble(Entity::getZ));
     }
 }

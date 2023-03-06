@@ -49,6 +49,7 @@ public class Screen extends JPanel {
         g2.setColor(Color.BLACK);
 
         // draw all WorkingElements
+        w.sortEntities();
         for (Entity e : w.getEntities()) {
             final EntityGraphics eGraphics = e.get(EntityGraphics.class);
             if (eGraphics != null) {
