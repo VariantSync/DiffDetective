@@ -9,13 +9,13 @@ import java.awt.*;
 import java.awt.geom.AffineTransform;
 
 public class EdgeGraphics<N> extends EntityGraphics {
-    private final GraphNodeGraphics<N> fromGraphics, toGraphics;
+    private final Entity from, to;
     private final Color color;
     private final double thickness = 4;
 
-    public EdgeGraphics(GraphNodeGraphics<N> fromGraphics, GraphNodeGraphics<N> toGraphics, Color color) {
-        this.fromGraphics = fromGraphics;
-        this.toGraphics = toGraphics;
+    public EdgeGraphics(Entity from, Entity to, Color color) {
+        this.from = from;
+        this.to = to;
         this.color = color;
     }
     @Override
@@ -23,19 +23,13 @@ public class EdgeGraphics<N> extends EntityGraphics {
         final AffineTransform t = Transform.mult(parentTransform, getEntity().getRelativeTransform());
         final Stroke oldStroke = screen.getStroke();
 
-        Entity fromEntity = fromGraphics.getEntity();
-        Entity toEntity = toGraphics.getEntity();
-
         final Stroke stroke = new BasicStroke((float)Vec2.all(thickness).deltaTransform(t).x());
         screen.setStroke(stroke);
 
         screen.setColor(color);
-        Transform.transformed2(t,
-                fromEntity.getLocation(),
-                toEntity.getLocation(),
-                (from, to) -> {
-                    screen.drawLine((int)from.x(), (int)from.y(), (int)to.x(), (int)to.y());
-                });
+        final Vec2 fromPos = from.getLocation().transform(t);
+        final Vec2 toPos = to.getLocation().transform(t);
+        screen.drawLine((int)fromPos.x(), (int)fromPos.y(), (int)toPos.x(), (int)toPos.y());
 
         screen.setStroke(oldStroke);
     }

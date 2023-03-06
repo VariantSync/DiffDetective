@@ -3,6 +3,7 @@ package org.variantsync.diffdetective.show.variation;
 import org.variantsync.diffdetective.show.engine.Draw;
 import org.variantsync.diffdetective.show.engine.entity.EntityGraphics;
 import org.variantsync.diffdetective.show.engine.geom.Transform;
+import org.variantsync.diffdetective.show.engine.geom.Vec2;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -52,16 +53,17 @@ public class GraphNodeGraphics<N> extends EntityGraphics {
                 textwidth + 2 * textbox_borderwidth_absolute, textheight + 2 * textbox_borderwidth_absolute,
                 textbox_borderwidth_absolute,
                 Color.WHITE, Color.BLACK,
-                box -> Transform.deltaTransformed(t, textbox_borderarcwidth_absolute, textbox_borderarcwidth_absolute,
-                        arc -> screen.fillRoundRect(
-                                (int) box.upperLeft().x(),
-                                (int) box.upperLeft().y(),
-                                (int) box.getWidth(),
-                                (int) box.getHeight(),
-                                (int) arc.getX(),
-                                (int) arc.getY()
-                        )
-                )
+                box -> {
+                    final Vec2 arcSize = Vec2.all(textbox_borderarcwidth_absolute).deltaTransform(t);
+                    screen.fillRoundRect(
+                            (int) box.upperLeft().x(),
+                            (int) box.upperLeft().y(),
+                            (int) box.getWidth(),
+                            (int) box.getHeight(),
+                            (int) arcSize.x(),
+                            (int) arcSize.y()
+                    );
+                }
         );
 
         // Draw text
