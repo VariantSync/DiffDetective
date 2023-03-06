@@ -1,4 +1,4 @@
-package org.variantsync.diffdetective.show.engine;
+package org.variantsync.diffdetective.show.engine.geom;
 
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
@@ -18,12 +18,6 @@ public final class Transform {
             result = mult(rs[i], result);
         }
         return result;
-    }
-
-    public static void renderTransformed(AffineTransform t, double x, double y, BiConsumer<Double, Double> action) {
-        Point2D.Double dest = new Point2D.Double();
-        t.transform(new Point2D.Double(x, y), dest);
-        action.accept(dest.x, dest.y);
     }
 
     public static void transformed(AffineTransform t, Point2D.Double p, Consumer<Point2D> action) {
@@ -46,35 +40,21 @@ public final class Transform {
         deltaTransformed(t, new Point2D.Double(x, y), action);
     }
 
-    public static void transformed2(AffineTransform t, Point2D.Double a, Point2D.Double b, BiConsumer<Point2D, Point2D> action) {
-        Point2D[] pts = new Point2D[]{
-                new Point2D.Double(a.x, a.y),
-                new Point2D.Double(b.x, b.y),
-        };
-
+    public static void transformed2(AffineTransform t, Point2D a, Point2D b, BiConsumer<Point2D, Point2D> action) {
+        Point2D[] pts = new Point2D[]{a, b};
         t.transform(pts, 0, pts, 0, pts.length);
         action.accept(pts[0], pts[1]);
     }
 
-    public static void transformed2(AffineTransform t, double ax, double ay, double bx, double by, BiConsumer<Point2D, Point2D> action) {
-        transformed2(
-                t,
-                new Point2D.Double(ax, ay),
-                new Point2D.Double(bx, by),
-                action);
+    public static void transformed2(AffineTransform t, Vec2 a, Vec2 b, BiConsumer<Vec2, Vec2> action) {
+        transformed2(t, a.toPoint2D(), b.toPoint2D(), (at, bt) -> action.accept(Vec2.from(at), Vec2.from(bt)));
     }
 
-    public static void boxed(AffineTransform t, double width, double height,
-                             BiConsumer<
-                                     Point2D, // upper left corner
-                                     Point2D  // lower right corner
-                                     > action)
+    public static Box box(AffineTransform t, double width, double height)
     {
-        transformed2(
-                t,
-                -width / 2.0, -height / 2.0,
-                 width / 2.0,  height / 2.0,
-                action
+        return new Box(
+                new Vec2(-width / 2.0, -height / 2.0).transform(t),
+                new Vec2( width / 2.0,  height / 2.0).transform(t)
         );
     }
 }
