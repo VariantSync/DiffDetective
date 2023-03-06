@@ -10,7 +10,6 @@ import org.variantsync.diffdetective.variation.tree.VariationTree;
 public class Show {
     /**
      * Todos
-     * - menu for layout algo. selection
      * - menu for node format selection
      */
     

@@ -72,38 +72,54 @@ public class DiffTreeApp extends App {
         w.setJMenuBar(menuBar);
 
         JMenu fileMenu = new JMenu("File");
+        JMenu layoutMenu = new JMenu("Layout");
         menuBar.add(fileMenu);
+        menuBar.add(layoutMenu);
+
+        // Switch layout
+        for (final GraphvizExporter.LayoutAlgorithm layoutAlgorithm : GraphvizExporter.LayoutAlgorithm.values()) {
+            final JMenuItem setLayoutMenuItem = new JMenuItem(layoutAlgorithm.getExecutableName());
+            setLayoutMenuItem.addActionListener(event -> layoutNodes(layoutAlgorithm));
+            layoutMenu.add(setLayoutMenuItem);
+        }
 
         // Screenshot
-        JMenuItem saveScreenshotMenuItem = new JMenuItem("Save Screenshot");
+        final JMenuItem saveScreenshotMenuItem = new JMenuItem("Save Screenshot");
         saveScreenshotMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
         saveScreenshotMenuItem.addActionListener(event -> saveScreenshot());
         fileMenu.add(saveScreenshotMenuItem);
     }
 
-    private void spawnDiffTree(final World world) {
-        // compute node locations
+    private void layoutNodes(GraphvizExporter.LayoutAlgorithm layoutAlgorithm) {
         final Map<DiffNode, Vec2> locations;
         try {
-            locations = layout(
+            locations = calculateLayout(
                     diffTree,
-                    GraphvizExporter.LayoutAlgorithm.DOT,
+                    layoutAlgorithm,
                     DEFAULT_FORMAT);
         } catch (IOException e) {
             Logger.error(e);
             return;
         }
         alignInBox(resx, resy, locations);
+        locateDiffTreeNodesAt(locations);
+        refresh();
+    }
 
-        for (final Map.Entry<DiffNode, Vec2> entry : locations.entrySet()) {
+    private void spawnDiffTree(final World world) {
+        // Create entities for all nodes
+        diffTree.forAll(diffNode -> {
             final Entity e = new Entity();
             e.add(new CircleHitbox(new Circle(DEFAULT_NODE_RADIUS)));
-            e.add(new GraphNodeGraphics<>(new DiffNodeView(entry.getKey(), DEFAULT_FORMAT.getNodeFormat())));
-            e.setLocation(entry.getValue());
-            nodes.put(entry.getKey(), e);
+            e.add(new GraphNodeGraphics<>(new DiffNodeView(diffNode, DEFAULT_FORMAT.getNodeFormat())));
+            nodes.put(diffNode, e);
             world.spawn(e);
-        }
+        });
 
+        // layout the nodes
+        layoutNodes(GraphvizExporter.LayoutAlgorithm.DOT);
+
+        // spawn the edges
         final List<EdgeGraphics> edges = new ArrayList<>();
         getDiffTree().forAll(node -> {
             final DiffNode pbefore = node.getParent(Time.BEFORE);
@@ -150,7 +166,7 @@ public class DiffTreeApp extends App {
         return diffTree;
     }
 
-    public static Map<DiffNode, Vec2> layout(
+    public static Map<DiffNode, Vec2> calculateLayout(
             DiffTree d,
             GraphvizExporter.LayoutAlgorithm layout,
             Format format
@@ -158,14 +174,19 @@ public class DiffTreeApp extends App {
         final Map<DiffNode, Vec2> locations = new HashMap<>();
 
         GraphvizExporter.layoutNodesIn(d, format, layout,
-                (id, x, y) -> {
-                    locations.put(
-                            d.getNodeWithID(id),
-                            new Vec2(x, y)
-                    );
-                });
+                (id, x, y) -> locations.put(
+                        d.getNodeWithID(id),
+                        new Vec2(x, y)
+                ));
 
         return locations;
+    }
+
+    public void locateDiffTreeNodesAt(final Map<DiffNode, Vec2> locations) {
+        for (final Map.Entry<DiffNode, Vec2> entry : locations.entrySet()) {
+            final Entity e = nodes.get(entry.getKey());
+            e.setLocation(entry.getValue());
+        }
     }
 
     public static <V> void alignInBox(int width, int height, final Map<V, Vec2> locations) {
