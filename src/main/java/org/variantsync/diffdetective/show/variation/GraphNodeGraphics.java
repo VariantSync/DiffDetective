@@ -1,26 +1,25 @@
-package org.variantsync.diffdetective.show.diff;
+package org.variantsync.diffdetective.show.variation;
 
 import org.variantsync.diffdetective.show.engine.Draw;
-import org.variantsync.diffdetective.show.engine.geom.Transform;
 import org.variantsync.diffdetective.show.engine.entity.EntityGraphics;
-import org.variantsync.diffdetective.variation.diff.DiffNode;
-import org.variantsync.diffdetective.variation.diff.serialize.nodeformat.*;
+import org.variantsync.diffdetective.show.engine.geom.Transform;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 
-public class DiffNodeGraphics extends EntityGraphics {
-    final DiffNode d;
-    final DiffNodeLabelFormat f;
+public class GraphNodeGraphics<N> extends EntityGraphics {
+    //// Represented content
+    final NodeView<N> node;
+
+    //// Rendering values
     int width, height;
     double circle_borderwidth_relative = 0.05;
     double textbox_borderwidth_absolute = 3;
     int textbox_borderarcwidth_absolute = 7;
     Font basic = new Font(null, Font.PLAIN, 20);
 
-    public DiffNodeGraphics(DiffNode d, DiffNodeLabelFormat format) {
-        this.d = d;
-        this.f = format;
+    public GraphNodeGraphics(NodeView<N> node) {
+        this.node = node;
         width = 100;
         height = 100;
     }
@@ -37,12 +36,12 @@ public class DiffNodeGraphics extends EntityGraphics {
                 screen, t,
                 width, height,
                 circle_borderwidth_relative,
-                Colors.ofDiffType.get(d.getDiffType()), Colors.ofNodeType(d.nodeType),
+                node.nodeColor(), node.borderColor(),
                 box -> Draw.fillOval(screen, box)
         );
 
         // Draw label box
-        final String text = f.toLabel(d);
+        final String text = node.nodeLabel();
         screen.setFont(basic);
         FontMetrics fm = screen.getFontMetrics();
         int textwidth  = fm.stringWidth(text);

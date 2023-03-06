@@ -1,10 +1,9 @@
-package org.variantsync.diffdetective.show.diff;
+package org.variantsync.diffdetective.show.variation;
 
 import org.variantsync.diffdetective.variation.NodeType;
 import org.variantsync.diffdetective.variation.diff.DiffType;
 
 import java.awt.*;
-import java.util.HashMap;
 import java.util.Map;
 
 public class Colors {

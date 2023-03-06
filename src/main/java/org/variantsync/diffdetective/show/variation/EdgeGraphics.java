@@ -1,24 +1,22 @@
-package org.variantsync.diffdetective.show.diff;
+package org.variantsync.diffdetective.show.variation;
 
 import org.variantsync.diffdetective.show.engine.Entity;
 import org.variantsync.diffdetective.show.engine.geom.Transform;
 import org.variantsync.diffdetective.show.engine.entity.EntityGraphics;
 import org.variantsync.diffdetective.show.engine.geom.Vec2;
-import org.variantsync.diffdetective.variation.diff.DiffType;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 
-public class DiffEdgeGraphics extends EntityGraphics {
-    private DiffNodeGraphics fromGraphics;
-    private DiffNodeGraphics toGraphics;
-    private DiffType diffType;
-    private double thickness = 4;
+public class EdgeGraphics<N> extends EntityGraphics {
+    private final GraphNodeGraphics<N> fromGraphics, toGraphics;
+    private final Color color;
+    private final double thickness = 4;
 
-    public DiffEdgeGraphics(DiffNodeGraphics fromGraphics, DiffNodeGraphics toGraphics, DiffType diffType) {
+    public EdgeGraphics(GraphNodeGraphics<N> fromGraphics, GraphNodeGraphics<N> toGraphics, Color color) {
         this.fromGraphics = fromGraphics;
         this.toGraphics = toGraphics;
-        this.diffType = diffType;
+        this.color = color;
     }
     @Override
     public void draw(Graphics2D screen, AffineTransform parentTransform) {
@@ -31,7 +29,7 @@ public class DiffEdgeGraphics extends EntityGraphics {
         final Stroke stroke = new BasicStroke((float)Vec2.all(thickness).deltaTransform(t).x());
         screen.setStroke(stroke);
 
-        screen.setColor(Colors.ofDiffType.get(diffType));
+        screen.setColor(color);
         Transform.transformed2(t,
                 fromEntity.getLocation(),
                 toEntity.getLocation(),
