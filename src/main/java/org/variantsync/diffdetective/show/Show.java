@@ -10,10 +10,6 @@ import org.variantsync.diffdetective.variation.tree.VariationTree;
 
 public class Show {
     public static Vec2 DEFAULT_RESOLUTION = new Vec2(800, 600);
-    /**
-     * Todos
-     * - menu for node format selection
-     */
     
     public static void show(final DiffTree d) {
         new DiffTreeApp(
@@ -48,7 +44,6 @@ public class Show {
             }
         );
 
-//        new VariationTreeApp(t, resx, resy).run();
         new DiffTreeApp(
                 badVDiff.diff().source().toString(),
                 d,
