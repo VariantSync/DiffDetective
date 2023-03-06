@@ -767,26 +767,13 @@ public class Texture implements Serializable
     /**
      * The texture will be saved with the given name as a png-file
      * into the screenshots folder.
-     * @param texture the texture, that should be saved
-     * @param name the name the file, in which the texture is saved, should have
-     */
-    public static void saveAsPng(Texture texture, String name){
-        try {
-            File outputfile = new File(name + ".png");
-            ImageIO.write(texture.getAwtImage(), "png", outputfile);
-        } catch (IOException e) {}
-    }
-
-    /**
-     * The texture will be saved with the given name as a png-file
-     * into the screenshots folder.
-     * @param texture the texture, that should be saved
      * @param file the file, in which the texture is saved
      */
-    public static void saveAsPng(Texture texture, File file){
-        try {
-            ImageIO.write(texture.getAwtImage(), "png", file);
-        } catch (IOException e) {}
+    public void saveAsPng(File file) throws IOException {
+        if (!file.getName().endsWith(".png")) {
+            file = new File(file.getAbsolutePath() + ".png");
+        }
+        ImageIO.write(getAwtImage(), "png", file);
     }
 
     public boolean inHeight(int y) {

@@ -6,11 +6,13 @@ import org.variantsync.diffdetective.show.engine.geom.Vec2;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.geom.AffineTransform;
 
 public class Screen extends JPanel {
-    AffineTransform viewTransform;
-    Window window;
+    private final AffineTransform viewTransform;
+    private final Window window;
 
     public Screen(Window window) {
         super(true);
@@ -38,22 +40,21 @@ public class Screen extends JPanel {
         super.paintComponent(gc);
 
         World w = window.getApp().getWorld();
-
         updateViewTransform(w.getCamera());
 
-        Graphics2D g2 = (Graphics2D) gc;
+        Graphics2D renderTarget = (Graphics2D) gc;
 
         // draw Background
-        g2.setColor(Color.WHITE);
-        g2.fillRect(0, 0, window.getWidth(), window.getHeight());
-        g2.setColor(Color.BLACK);
+        renderTarget.setColor(Color.WHITE);
+        renderTarget.fillRect(0, 0, window.getWidth(), window.getHeight());
+        renderTarget.setColor(Color.BLACK);
 
         // draw all WorkingElements
         w.sortEntities();
         for (Entity e : w.getEntities()) {
             final EntityGraphics eGraphics = e.get(EntityGraphics.class);
             if (eGraphics != null) {
-                eGraphics.draw(g2, viewTransform);
+                eGraphics.draw(renderTarget, viewTransform);
             }
         }
     }
@@ -69,5 +70,11 @@ public class Screen extends JPanel {
         }
 
         return null;
+    }
+
+    public Texture screenshot() {
+        final Texture screenshot = new Texture(getWidth(), getHeight());
+        this.paint(screenshot.getAwtImage().getGraphics());
+        return screenshot;
     }
 }

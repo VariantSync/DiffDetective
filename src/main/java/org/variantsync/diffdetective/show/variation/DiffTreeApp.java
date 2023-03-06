@@ -15,6 +15,9 @@ import org.variantsync.diffdetective.variation.diff.serialize.edgeformat.Default
 import org.variantsync.diffdetective.variation.diff.serialize.edgeformat.EdgeLabelFormat;
 import org.variantsync.diffdetective.variation.diff.serialize.nodeformat.ShowNodeFormat;
 
+import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,6 +38,8 @@ public class DiffTreeApp extends App {
 
     protected final Map<DiffNode, Entity> nodes = new HashMap<>();
 
+    private JMenuBar menuBar;
+
     public DiffTreeApp(final String name, final DiffTree diffTree, int resx, int resy) {
         super(new Window(name, resx, resy));
         this.diffTree = diffTree;
@@ -42,11 +47,41 @@ public class DiffTreeApp extends App {
         this.resy = resy;
     }
 
-    @Override
-    public void initialize(final World world) {
-        // If desired, this would be the point to insert a game loop.
-        // For now, we redraw after every action.
+    private void saveScreenshot() {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setFileFilter(
+                new FileNameExtensionFilter("Image Files", javax.imageio.ImageIO.getReaderFileSuffixes())
+        );
 
+        int result = fileChooser.showSaveDialog(getWindow());
+        if (result == JFileChooser.APPROVE_OPTION) {
+            final File targetFile = fileChooser.getSelectedFile();
+            final Texture screenshot = getWindow().getScreen().screenshot();
+            try {
+                screenshot.saveAsPng(targetFile);
+            } catch (IOException e) {
+                Logger.error(e, "Could not save screenshot.");
+            }
+        }
+    }
+
+    private void setupMenu() {
+        final Window w = getWindow();
+        menuBar = new JMenuBar();
+        //w.add(menuBar);
+        w.setJMenuBar(menuBar);
+
+        JMenu fileMenu = new JMenu("File");
+        menuBar.add(fileMenu);
+
+        // Screenshot
+        JMenuItem saveScreenshotMenuItem = new JMenuItem("Save Screenshot");
+        saveScreenshotMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
+        saveScreenshotMenuItem.addActionListener(event -> saveScreenshot());
+        fileMenu.add(saveScreenshotMenuItem);
+    }
+
+    private void spawnDiffTree(final World world) {
         // compute node locations
         final Map<DiffNode, Vec2> locations;
         try {
@@ -103,6 +138,12 @@ public class DiffTreeApp extends App {
             e.add(edge);
             world.spawn(e);
         }
+    }
+
+    @Override
+    public void initialize(final World world) {
+        setupMenu();
+        spawnDiffTree(world);
     }
 
     public DiffTree getDiffTree() {
