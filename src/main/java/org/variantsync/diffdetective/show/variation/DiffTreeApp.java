@@ -141,6 +141,7 @@ public class DiffTreeApp extends App {
                             DEFAULT_FORMAT.getNodeFormat()
                     )
             ));
+            e.setZ(Z.FOR_NODES);
             nodes.put(diffNode, e);
             world.spawn(e);
         });
@@ -181,6 +182,7 @@ public class DiffTreeApp extends App {
         for (final EdgeGraphics edge : edges) {
             Entity e = new Entity();
             e.add(edge);
+            e.setZ(Z.FOR_EDGES);
             world.spawn(e);
         }
     }
