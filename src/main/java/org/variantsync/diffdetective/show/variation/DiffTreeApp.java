@@ -1,7 +1,6 @@
 package org.variantsync.diffdetective.show.variation;
 
 import org.tinylog.Logger;
-import org.variantsync.diffdetective.show.engine.App;
 import org.variantsync.diffdetective.show.engine.*;
 import org.variantsync.diffdetective.show.engine.geom.Circle;
 import org.variantsync.diffdetective.show.engine.geom.Vec2;
@@ -49,10 +48,14 @@ public class DiffTreeApp extends App {
 
     protected final Map<DiffNode, Entity> nodes = new HashMap<>();
 
+    private boolean rootDancing = false;
+    private Dance rootDance;
+
     public DiffTreeApp(final String name, final DiffTree diffTree, Vec2 resolution) {
         super(new Window(name, (int)resolution.x(), (int)resolution.y()));
         this.diffTree = diffTree;
         this.resolution = resolution;
+        this.rootDance = new Dance();
     }
 
     private void setupMenu() {
@@ -64,9 +67,11 @@ public class DiffTreeApp extends App {
         JMenu fileMenu = new JMenu("File");
         JMenu layoutMenu = new JMenu("Layout");
         JMenu labelMenu = new JMenu("Labels");
+        JMenu helpMenu = new JMenu("Help");
         menuBar.add(fileMenu);
         menuBar.add(layoutMenu);
         menuBar.add(labelMenu);
+        menuBar.add(helpMenu);
 
         // Screenshot
         final JMenuItem saveScreenshotMenuItem = new JMenuItem("Save Screenshot");
@@ -87,13 +92,35 @@ public class DiffTreeApp extends App {
             setLabelFormatMenuItem.addActionListener(event -> setLabelFormat(labelFormat));
             labelMenu.add(setLabelFormatMenuItem);
         }
+
+        // show root
+        {
+            final JMenuItem showRootMenuItem = new JMenuItem("Show Root");
+            showRootMenuItem.setAccelerator(KeyStroke.getKeyStroke('r'));
+            showRootMenuItem.addActionListener(event -> this.toggleRootDance());
+            helpMenu.add(showRootMenuItem);
+        }
     }
 
     private void setupInput() {
         getWindow().addInputListener(new CameraDragAndDrop(MouseEvent.BUTTON3));
         getWindow().addInputListener(new ZoomViaMouseWheel());
         getWindow().addInputListener(new NodeDragAndDrop(MouseEvent.BUTTON1));
-        getWindow().addInputListener(new MakeRootDance(this));
+    }
+
+    private void toggleRootDance() {
+        final Entity rootNode = getEntityOf(getDiffTree().getRoot());
+        if (rootDancing) {
+            rootNode.remove(rootDance);
+            removeUpdateable(rootDance);
+        } else {
+            rootDance.setCenter(rootNode.getLocation());
+            rootDance.resetTime();
+            rootNode.add(rootDance);
+            addUpdateable(rootDance);
+        }
+
+        rootDancing = !rootDancing;
     }
 
     private void saveScreenshot() {
