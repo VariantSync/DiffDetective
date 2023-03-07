@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import org.prop4j.And;
 import org.prop4j.Node;
@@ -439,6 +440,26 @@ public abstract class VariationNode<T extends VariationNode<T>> implements HasNo
         for (var child : getChildren()) {
             child.forAllPreorder(action);
         }
+    }
+
+    /**
+     * Checks whether any node in this subtree satisfies the given condition.
+     * The condition might not be invoked on every node in case a node is found.
+     * @param condition A condition to check on each node.
+     * @return True iff the given condition returns true for at least one node in this tree.
+     */
+    public boolean anyMatch(final Predicate<? super T> condition) {
+        if (condition.test(this.upCast())) {
+            return true;
+        }
+
+        for (var child : getChildren()) {
+            if (child.anyMatch(condition)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

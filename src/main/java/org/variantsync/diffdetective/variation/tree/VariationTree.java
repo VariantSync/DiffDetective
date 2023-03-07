@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
 
@@ -123,6 +124,25 @@ public record VariationTree(
         return this;
     }
 
+    /**
+     * Checks whether any node in this tree satisfies the given condition.
+     * The condition might not be invoked on every node in case a node is found.
+     * @param condition A condition to check on each node.
+     * @return True iff the given condition returns true for at least one node in this tree.
+     */
+    public boolean anyMatch(final Predicate<VariationTreeNode> condition) {
+        return root().anyMatch(condition);
+    }
+
+    /**
+     * Returns true iff this tree contains the given node.
+     * Containment check is done on referential and not on textual
+     * equality (i.e., nodes are compared using ==).
+     * @param node The node to check for containment.
+     */
+    public boolean contains(VariationTreeNode node) {
+        return anyMatch(n -> n == node);
+    }
 
     /**
      * Returns the number of nodes in this Variation Tree.

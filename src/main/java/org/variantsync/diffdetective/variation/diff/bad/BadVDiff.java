@@ -342,7 +342,7 @@ public record BadVDiff(
             Assert.assertNotNull(parent);
 
             final VariationTreeNode badBuddy = matching.get(vtnode);
-            if (badBuddy == null) {
+            if (badBuddy == null || !diff.contains(badBuddy)) {
                 // v was not cloned.
                 // We can just directly convert it to a DiffNode.
                 final DiffNode vGood = toGood(vtnode);
