@@ -12,23 +12,31 @@ import org.variantsync.diffdetective.variation.tree.VariationTree;
 public class Show {
     public static Vec2 DEFAULT_RESOLUTION = new Vec2(800, 600);
     
-    public static GameEngine diff(final DiffTree d) {
+    public static GameEngine diff(final DiffTree d, final String title) {
         return new GameEngine(new DiffTreeApp(
-                d.getSource().toString(),
+                title,
                 d,
                 DEFAULT_RESOLUTION
         ));
     }
 
-    public static GameEngine tree(final VariationTree t) {
+    public static GameEngine diff(final DiffTree d) {
+        return diff(d, d.getSource().toString());
+    }
+
+    public static GameEngine tree(final VariationTree t, final String title) {
         return new GameEngine(new DiffTreeApp(
-                t.source().toString(),
+                title,
                 t.toCompletelyUnchangedDiffTree(),
                 DEFAULT_RESOLUTION
         ));
     }
 
-    public static GameEngine baddiff(final BadVDiff badVDiff) {
+    public static GameEngine tree(final VariationTree t) {
+        return tree(t, t.source().toString());
+    }
+
+    public static GameEngine baddiff(final BadVDiff badVDiff, final String title) {
         final DiffTree d = badVDiff.diff().toDiffTree(
             v -> {
                 int from = v.getLineRange().getFromInclusive();
@@ -46,9 +54,13 @@ public class Show {
         );
 
         return new GameEngine(new DiffTreeApp(
-                badVDiff.diff().source().toString(),
+                title,
                 d,
                 DEFAULT_RESOLUTION
         ));
+    }
+
+    public static GameEngine baddiff(final BadVDiff badVDiff) {
+        return baddiff(badVDiff, badVDiff.diff().source().toString());
     }
 }
