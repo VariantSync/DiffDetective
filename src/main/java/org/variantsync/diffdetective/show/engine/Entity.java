@@ -37,6 +37,18 @@ public final class Entity {
         component.setEntity(this);
     }
 
+    public void remove(EntityComponent component) {
+        Assert.assertTrue(component.getEntity() == this);
+
+        Class<?> cls = component.getClass();
+        do {
+            components.remove(cls, component);
+            cls = cls.getSuperclass();
+        } while (cls != null && !cls.equals(EntityComponent.class));
+
+        component.setEntity(null);
+    }
+
     public <T extends EntityComponent> T get(final Class<T> type) {
         return Cast.unchecked(components.get(type));
     }
