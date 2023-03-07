@@ -9,4 +9,8 @@ public interface Query extends Predicate<VariationTreeNode> {
     default boolean isInteresting(final VariationTreeNode v) {
         return test(v);
     }
+
+    default String getName() {
+        return getClass().getSimpleName();
+    }
 }

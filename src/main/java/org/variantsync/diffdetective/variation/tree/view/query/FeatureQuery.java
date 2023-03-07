@@ -9,4 +9,9 @@ public record FeatureQuery(String featureName) implements Query {
                 literal -> featureName().equals(literal.var)
         );
     }
+
+    @Override
+    public String getName() {
+        return "feature(" + featureName() + ")";
+    }
 }
