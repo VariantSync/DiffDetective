@@ -6,8 +6,6 @@ import org.variantsync.diffdetective.show.engine.geom.Vec2;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 import java.awt.geom.AffineTransform;
 
 public class Screen extends JPanel {
@@ -19,10 +17,6 @@ public class Screen extends JPanel {
 
         this.window = window;
         viewTransform = new AffineTransform();
-
-        this.addMouseListener(window.getInputHandler());
-        this.addMouseMotionListener(window.getInputHandler());
-        this.addMouseWheelListener(window.getInputHandler());
     }
 
     private void updateViewTransform(Camera camera) {
@@ -59,9 +53,8 @@ public class Screen extends JPanel {
         }
     }
 
-    public Vec2 screenToLocalCoord(Vec2 pos) {
+    public Vec2 screenToViewportCoord(Vec2 pos) {
         try {
-            updateViewTransform(window.getApp().getWorld().getCamera());
             return Vec2.from(viewTransform.inverseTransform(
                     pos.toPoint2D(),
                     null));
@@ -70,6 +63,10 @@ public class Screen extends JPanel {
         }
 
         return null;
+    }
+
+    public AffineTransform getViewTransform() {
+        return viewTransform;
     }
 
     public Texture screenshot() {

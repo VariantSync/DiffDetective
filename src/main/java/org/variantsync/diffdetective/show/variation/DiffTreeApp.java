@@ -6,6 +6,8 @@ import org.variantsync.diffdetective.show.engine.*;
 import org.variantsync.diffdetective.show.engine.geom.Circle;
 import org.variantsync.diffdetective.show.engine.geom.Vec2;
 import org.variantsync.diffdetective.show.engine.hitbox.CircleHitbox;
+import org.variantsync.diffdetective.show.engine.input.CameraDragAndDrop;
+import org.variantsync.diffdetective.show.engine.input.ZoomViaMouseWheel;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.variation.diff.DiffType;
@@ -18,6 +20,7 @@ import org.variantsync.diffdetective.variation.diff.serialize.nodeformat.*;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -84,6 +87,12 @@ public class DiffTreeApp extends App {
             setLabelFormatMenuItem.addActionListener(event -> setLabelFormat(labelFormat));
             labelMenu.add(setLabelFormatMenuItem);
         }
+    }
+
+    private void setupInput() {
+        getWindow().addInputListener(new CameraDragAndDrop(MouseEvent.BUTTON3));
+        getWindow().addInputListener(new ZoomViaMouseWheel());
+        getWindow().addInputListener(new NodeDragAndDrop(MouseEvent.BUTTON1));
     }
 
     private void saveScreenshot() {
@@ -188,6 +197,7 @@ public class DiffTreeApp extends App {
     @Override
     public void initialize(final World world) {
         setupMenu();
+        setupInput();
         spawnDiffTree(world);
     }
 

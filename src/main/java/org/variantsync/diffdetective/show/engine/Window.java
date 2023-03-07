@@ -2,11 +2,8 @@ package org.variantsync.diffdetective.show.engine;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 
 public class Window extends JFrame {
-    private final InputHandler inputHandler;
     private final Screen screen;
     private App app;
 
@@ -18,7 +15,6 @@ public class Window extends JFrame {
         setSize(resolutionWidth, resolutionHeight);
         setLocationRelativeTo(null);
 
-        this.inputHandler = new InputHandler(this);
         this.screen = new Screen(this);
 
         Container contentPane = getContentPane();
@@ -37,11 +33,21 @@ public class Window extends JFrame {
         screen.repaint();
     }
 
-    public InputHandler getInputHandler() {
-        return inputHandler;
-    }
-
     public Screen getScreen() {
         return screen;
+    }
+
+    public void addInputListener(final InputListener inputListener) {
+        inputListener.setWindow(this);
+        screen.addMouseListener(inputListener);
+        screen.addMouseMotionListener(inputListener);
+        screen.addMouseWheelListener(inputListener);
+    }
+
+    public void removeInputListener(final InputListener inputListener) {
+        screen.removeMouseListener(inputListener);
+        screen.removeMouseMotionListener(inputListener);
+        screen.removeMouseWheelListener(inputListener);
+        inputListener.setWindow(null);
     }
 }
