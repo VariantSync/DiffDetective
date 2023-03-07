@@ -14,21 +14,11 @@ public abstract class App {
 
     protected abstract void initialize(final World world);
 
-    protected void gameloop() {
+    protected void start() {
         world = new World(this);
         initialize(world);
         initialized = true;
         window.setVisible(true);
-
-        while(window.isShowing()) {
-            update();
-            render();
-            try{
-                Thread.sleep(20);
-            } catch (InterruptedException e) {
-                Logger.error(e);
-            }
-        }
     }
 
     protected void update() {
