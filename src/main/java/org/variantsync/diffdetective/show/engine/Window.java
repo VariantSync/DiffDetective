@@ -5,13 +5,13 @@ import java.awt.*;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 
-public class Window extends JDialog {
+public class Window extends JFrame {
     private final InputHandler inputHandler;
     private final Screen screen;
     private App app;
 
     public Window(String title, int resolutionWidth, int resolutionHeight) {
-        super((Frame) null, title, true);
+        super(title);
 
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setResizable(true);
@@ -23,28 +23,6 @@ public class Window extends JDialog {
 
         Container contentPane = getContentPane();
         contentPane.add(screen);
-
-        this.addComponentListener(new ComponentListener() {
-            @Override
-            public void componentResized(ComponentEvent e) {
-                refresh();
-            }
-
-            @Override
-            public void componentMoved(ComponentEvent e) {
-
-            }
-
-            @Override
-            public void componentShown(ComponentEvent e) {
-
-            }
-
-            @Override
-            public void componentHidden(ComponentEvent e) {
-
-            }
-        });
     }
 
     public void setApp(App app) {
@@ -55,7 +33,7 @@ public class Window extends JDialog {
         return app;
     }
 
-    public void refresh() {
+    public void render() {
         screen.repaint();
     }
 

@@ -1,5 +1,7 @@
 package org.variantsync.diffdetective.show.engine;
 
+import org.tinylog.Logger;
+
 public abstract class App {
     private final Window window;
     private World world;
@@ -12,23 +14,35 @@ public abstract class App {
 
     protected abstract void initialize(final World world);
 
-    public final void run() {
+    protected void gameloop() {
         world = new World(this);
         initialize(world);
         initialized = true;
         window.setVisible(true);
-        refresh();
+
+        while(window.isShowing()) {
+            update();
+            render();
+            try{
+                Thread.sleep(20);
+            } catch (InterruptedException e) {
+                Logger.error(e);
+            }
+        }
     }
 
-    public void refresh() {
+    protected void update() {
+
+    }
+
+    protected void render() {
         if (initialized) {
-            window.refresh();
+            window.render();
         }
     }
 
     public void setWorld(final World world) {
         this.world = world;
-        refresh();
     }
 
     public World getWorld() {

@@ -1,6 +1,7 @@
 package org.variantsync.diffdetective.show.variation;
 
 import org.tinylog.Logger;
+import org.variantsync.diffdetective.show.engine.App;
 import org.variantsync.diffdetective.show.engine.*;
 import org.variantsync.diffdetective.show.engine.geom.Circle;
 import org.variantsync.diffdetective.show.engine.geom.Vec2;
@@ -109,8 +110,6 @@ public class DiffTreeApp extends App {
                     graphNodeGraphics -> graphNodeGraphics.node.setLabelFormat(labelFormat)
             );
         }
-
-        refresh();
     }
 
     private void layoutNodes(GraphvizExporter.LayoutAlgorithm layoutAlgorithm) {
@@ -127,7 +126,6 @@ public class DiffTreeApp extends App {
 
         alignInBox(resolution, locations);
         locateDiffTreeNodesAt(locations);
-        refresh();
     }
 
     private void spawnDiffTree(final World world) {

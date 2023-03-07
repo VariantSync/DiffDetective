@@ -63,7 +63,6 @@ public class InputHandler implements MouseListener, MouseMotionListener, MouseWh
     public void mouseReleased(MouseEvent e) {
         if (buttonHold == e.getButton()) {
             cancelButtonHoldAction();
-            window.refresh();
         }
     }
 
@@ -93,8 +92,6 @@ public class InputHandler implements MouseListener, MouseMotionListener, MouseWh
         if (buttonHold == MouseEvent.BUTTON3) {
             window.getApp().getWorld().getCamera().setLocation(clickPos.minus(camDelta));
         }
-
-        window.refresh();
     }
 
     @Override
@@ -108,6 +105,5 @@ public class InputHandler implements MouseListener, MouseMotionListener, MouseWh
                 -e.getWheelRotation(),
                 window.getScreen().screenToLocalCoord(new Vec2(e.getX(), e.getY()))
         );
-        window.refresh();
     }
 }

@@ -21,12 +21,10 @@ public class World {
 
     public void spawn(Entity element) {
         entities.add(element);
-        app.refresh();
     }
 
     public void despawn(Entity element) {
         entities.remove(element);
-        app.refresh();
     }
 
     /** GET AND SET **/
