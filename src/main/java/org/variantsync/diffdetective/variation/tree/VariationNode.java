@@ -4,7 +4,9 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
 import org.prop4j.And;
@@ -445,6 +447,23 @@ public abstract class VariationNode<T extends VariationNode<T>> implements HasNo
      * effectively a deep copy.
      */
     public VariationTreeNode toVariationTree() {
+        return toVariationTree(new HashMap<>());
+    }
+
+    /**
+     * Returns a copy of this variation tree in a {@link VariationTreeNode concrete variation tree implementation}.
+     * If the type parameter {@code T} of this class is {@link VariationTreeNode} then this is
+     * effectively a deep copy.
+     *
+     * <p>The map {@code oldToNew} should be empty as it will be filled by this method. After the
+     * method call, the map keys will contain all nodes in this node's subtree (including this
+     * node). The corresponding values will be the nodes in the returned node's subtree (including
+     * the returned node), where each pair (k, v) denotes that v was cloned from k.
+     *
+     * @param oldToNew A map that memorizes the translation of individual nodes.
+     * @return A deep copy of this tree.
+     */
+    public VariationTreeNode toVariationTree(final Map<? super T, VariationTreeNode> oldToNew) {
         Node formula = getFormula();
         if (formula != null) {
             formula = formula.clone();
@@ -457,6 +476,7 @@ public abstract class VariationNode<T extends VariationNode<T>> implements HasNo
             getLineRange(),
             new ArrayList<>(getLabel().lines())
         );
+        oldToNew.put(this.upCast(), newNode);
 
         for (var child : getChildren()) {
             newNode.addChild(child.toVariationTree());

@@ -17,6 +17,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -129,6 +131,24 @@ public record VariationTree(
         AtomicInteger size = new AtomicInteger();
         forAllPreorder(n -> size.incrementAndGet());
         return size.get();
+    }
+
+    public VariationTree deepCopy() {
+        return deepCopy(new HashMap<>());
+    }
+
+    /**
+     * Creates a deep copy of this variation tree.
+     *
+     * <p>The map {@code oldToNew} should be empty as it will be filled by this method. After the
+     * method call, the map keys will contain all nodes in this tree. The corresponding values will
+     * be the nodes in the returned tree, where each pair (k, v) denotes that v was cloned from k.
+     *
+     * @param oldToNew A map that memorizes the translation of individual nodes.
+     * @return A deep copy of this tree.
+     */
+    public VariationTree deepCopy(final Map<VariationTreeNode, VariationTreeNode> oldToNew) {
+        return new VariationTree(root.deepCopy(oldToNew), this.source);
     }
 
     @Override
