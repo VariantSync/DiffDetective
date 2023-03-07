@@ -4,7 +4,6 @@ import org.variantsync.diffdetective.show.engine.geom.Vec2;
 
 public class Camera {
     private final static double zoomMin = 0.5, zoomMax = 50;
-
     private Vec2 location = Vec2.all(0);
     private double zoom = 1;
 

@@ -1,5 +1,7 @@
 package org.variantsync.diffdetective.show.engine;
 
+import org.variantsync.diffdetective.show.engine.geom.Vec2;
+
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -39,22 +41,9 @@ public class World {
 
     ///////////// MATH /////////////////
 
-//    public Point2D screenToTextureCoord(int x, int y) {
-//        return screenToTextureCoord((double)x, (double)y);
-//    }
-//
-//    public Point2D screenToTextureCoord(double x, double y) {
-//        try {
-//            return mainImage.getAbsoluteTransform(viewTransform).inverseTransform(
-//                    new Point2D.Double(x, y),
-//                    null);
-//        } catch (java.awt.geom.NoninvertibleTransformException e) {System.out.println(e);}
-//        return null;
-//    }
-
-//    public Point2D textureToScreenCoord(int x, int y) {
-//        return mainImage.getAbsoluteTransform(viewTransform).transform(new Point(x, y), null);
-//    }
+    public Vec2 worldToViewportCoord(final Vec2 pos) {
+        return pos.transform(getApp().getWindow().getScreen().getViewTransform());
+    }
 
     public Iterable<? extends Entity> getEntities() {
         return entities;
