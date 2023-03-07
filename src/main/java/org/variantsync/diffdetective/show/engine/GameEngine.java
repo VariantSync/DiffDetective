@@ -34,7 +34,7 @@ public class GameEngine {
         while (window.isShowing()) {
             frametimeClock.start();
 
-            app.update(secondsOfLastFrame);
+            app.update(targetSecondsPerFrame);
             app.render();
 
             secondsOfLastFrame = frametimeClock.getPassedSeconds();
