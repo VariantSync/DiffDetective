@@ -1,15 +1,18 @@
 package org.variantsync.diffdetective.show.engine;
 
-import org.tinylog.Logger;
+import java.util.ArrayList;
+import java.util.List;
 
-public abstract class App {
+public abstract class App implements Updateable {
     private final Window window;
     private World world;
+    private final List<Updateable> updateables;
     private boolean initialized = false;
 
     protected App(Window window) {
         this.window = window;
         this.window.setApp(this);
+        this.updateables = new ArrayList<>();
     }
 
     protected abstract void initialize(final World world);
@@ -21,14 +24,25 @@ public abstract class App {
         window.setVisible(true);
     }
 
-    protected void update() {
-
+    @Override
+    public void update(double deltaSeconds) {
+        for (Updateable u : updateables) {
+            u.update(deltaSeconds);
+        }
     }
 
     protected void render() {
         if (initialized) {
             window.render();
         }
+    }
+
+    public void addUpdateable(final Updateable updateable) {
+        updateables.add(updateable);
+    }
+
+    public void removeUpdateable(final Updateable updateable) {
+        updateables.remove(updateable);
     }
 
     public void setWorld(final World world) {

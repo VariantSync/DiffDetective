@@ -30,15 +30,15 @@ public class GameEngine {
         final Clock frametimeClock = new Clock();
 
         final double targetSecondsPerFrame = 1.0 / targetFPS;
-
+        double secondsOfLastFrame = targetSecondsPerFrame;
         while (window.isShowing()) {
             frametimeClock.start();
 
-            app.update();
+            app.update(secondsOfLastFrame);
             app.render();
 
-            final double secondsPerFrame = frametimeClock.getPassedSeconds();
-            final double secondsToWait = targetSecondsPerFrame - secondsPerFrame;
+            secondsOfLastFrame = frametimeClock.getPassedSeconds();
+            final double secondsToWait = targetSecondsPerFrame - secondsOfLastFrame;
 
             if (secondsToWait > 0) {
                 try {
