@@ -31,9 +31,13 @@ public record Vec2(double x, double y) {
     }
 
     public Vec2 add(Vec2 b) {
+        return add(b.x(), b.y());
+    }
+
+    public Vec2 add(double x, double y) {
         return new Vec2(
-                x() + b.x(),
-                y() + b.y()
+                x() + x,
+                y() + y
         );
     }
 

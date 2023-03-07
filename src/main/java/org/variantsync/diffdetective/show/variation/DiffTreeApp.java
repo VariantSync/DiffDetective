@@ -93,6 +93,7 @@ public class DiffTreeApp extends App {
         getWindow().addInputListener(new CameraDragAndDrop(MouseEvent.BUTTON3));
         getWindow().addInputListener(new ZoomViaMouseWheel());
         getWindow().addInputListener(new NodeDragAndDrop(MouseEvent.BUTTON1));
+        getWindow().addInputListener(new MakeRootDance(this));
     }
 
     private void saveScreenshot() {
@@ -199,6 +200,10 @@ public class DiffTreeApp extends App {
         setupMenu();
         setupInput();
         spawnDiffTree(world);
+    }
+
+    public Entity getEntityOf(DiffNode diffNode) {
+        return nodes.get(diffNode);
     }
 
     public DiffTree getDiffTree() {
