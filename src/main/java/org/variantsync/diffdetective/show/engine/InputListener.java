@@ -2,7 +2,7 @@ package org.variantsync.diffdetective.show.engine;
 
 import java.awt.event.*;
 
-public abstract class InputListener implements MouseListener, MouseMotionListener, MouseWheelListener {
+public abstract class InputListener implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener {
     private Window window;
 
     void setWindow(Window window) {
@@ -12,6 +12,15 @@ public abstract class InputListener implements MouseListener, MouseMotionListene
     public Window getWindow() {
         return window;
     }
+
+    @Override
+    public void keyTyped(KeyEvent e) {}
+
+    @Override
+    public void keyPressed(KeyEvent e) {}
+
+    @Override
+    public void keyReleased(KeyEvent e) {}
 
     @Override
     public void mouseClicked(MouseEvent e) {}

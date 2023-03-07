@@ -39,12 +39,14 @@ public class Window extends JFrame {
 
     public void addInputListener(final InputListener inputListener) {
         inputListener.setWindow(this);
+        this.addKeyListener(inputListener);
         screen.addMouseListener(inputListener);
         screen.addMouseMotionListener(inputListener);
         screen.addMouseWheelListener(inputListener);
     }
 
     public void removeInputListener(final InputListener inputListener) {
+        this.removeKeyListener(inputListener);
         screen.removeMouseListener(inputListener);
         screen.removeMouseMotionListener(inputListener);
         screen.removeMouseWheelListener(inputListener);
