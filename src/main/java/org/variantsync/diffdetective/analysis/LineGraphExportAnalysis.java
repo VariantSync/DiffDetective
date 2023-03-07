@@ -60,9 +60,9 @@ public class LineGraphExportAnalysis implements Analysis.Hooks {
 
     @Override
     public void beginBatch(Analysis analysis) {
-        analysis.get(RESULT).treeFormat = exportOptions.treeFormat().getName();
-        analysis.get(RESULT).nodeFormat = exportOptions.nodeFormat().getName();
-        analysis.get(RESULT).edgeFormat = exportOptions.edgeFormat().getName();
+        analysis.get(RESULT).treeFormat = exportOptions.treeFormat().getIdentifier();
+        analysis.get(RESULT).nodeFormat = exportOptions.nodeFormat().getIdentifier();
+        analysis.get(RESULT).edgeFormat = exportOptions.edgeFormat().getIdentifier();
 
         analysisStrategy.start(analysis.getRepository(), analysis.getOutputFile());
     }
