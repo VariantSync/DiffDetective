@@ -93,4 +93,9 @@ public record Vec2(double x, double y) {
         t.deltaTransform(this.toPoint2D(), dest);
         return from(dest);
     }
+
+    @Override
+    public String toString() {
+        return "(" + x + ", " + y + ")";
+    }
 }
