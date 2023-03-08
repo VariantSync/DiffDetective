@@ -1,6 +1,10 @@
 package org.variantsync.diffdetective.show.engine.geom;
 
 public record Box(Vec2 upperLeft, Vec2 lowerRight) {
+    public Box(Vec2 upperLeft, double width, double height) {
+        this(upperLeft, upperLeft.add(width, height));
+    }
+
     public double getWidth() {
         return lowerRight.x() - upperLeft().x();
     }
@@ -18,5 +22,13 @@ public record Box(Vec2 upperLeft, Vec2 lowerRight) {
 
     public Box shrink(double delta) {
         return shrink(new Vec2(delta, delta));
+    }
+
+    @Override
+    public String toString() {
+        return "Box{" +
+                "upperLeft=" + upperLeft +
+                ", lowerRight=" + lowerRight +
+                '}';
     }
 }

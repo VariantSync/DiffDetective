@@ -43,13 +43,13 @@ public class DiffTreeApp extends App {
             new LineNumberFormat(),
             new FormulasAndLineNumbersNodeFormat()
     );
-    private final Vec2 resolution;
+    private Vec2 resolution;
     private final DiffTree diffTree;
 
     protected final Map<DiffNode, Entity> nodes = new HashMap<>();
 
     private boolean rootDancing = false;
-    private Dance rootDance;
+    private final Dance rootDance;
 
     public DiffTreeApp(final String name, final DiffTree diffTree, Vec2 resolution) {
         super(new Window(name, (int)resolution.x(), (int)resolution.y()));
@@ -224,6 +224,7 @@ public class DiffTreeApp extends App {
 
     @Override
     public void initialize(final World world) {
+        resolution = new Vec2(getWindow().getWidth(), getWindow().getHeight());
         setupMenu();
         setupInput();
         spawnDiffTree(world);

@@ -1,7 +1,13 @@
 package org.variantsync.diffdetective.show.engine;
 
 import org.tinylog.Logger;
+import org.variantsync.diffdetective.show.engine.windowlayout.Fullscreen;
+import org.variantsync.diffdetective.show.engine.windowlayout.SideBySide;
+import org.variantsync.diffdetective.show.engine.windowlayout.TwoRows;
 import org.variantsync.diffdetective.util.Clock;
+
+import java.util.Arrays;
+import java.util.List;
 
 public class GameEngine {
     public static final int DEFAULT_TARGET_FPS = 60;
@@ -16,6 +22,10 @@ public class GameEngine {
     public GameEngine(int targetFPS, App app) {
         this.app = app;
         this.targetFPS = targetFPS;
+    }
+
+    public App getApp() {
+        return app;
     }
 
     public void show() {
@@ -65,6 +75,22 @@ public class GameEngine {
     }
 
     public static void showAndAwaitAll(GameEngine... engines) {
+        WindowLayout layout;
+        if (engines.length == 1) {
+            layout = new Fullscreen();
+        } else if (engines.length == 2) {
+            layout = new SideBySide();
+        } else {
+            layout = new TwoRows();
+        }
+
+        showAndAwaitAll(layout, engines);
+    }
+
+    public static void showAndAwaitAll(WindowLayout windowLayout, GameEngine... engines) {
+        final List<Window> windows = Arrays.stream(engines).map(GameEngine::getApp).map(App::getWindow).toList();
+        windowLayout.layout(windows);
+
         for (final GameEngine e : engines) {
             e.show();
         }
