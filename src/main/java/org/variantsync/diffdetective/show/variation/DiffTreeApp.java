@@ -7,6 +7,8 @@ import org.variantsync.diffdetective.show.engine.geom.Vec2;
 import org.variantsync.diffdetective.show.engine.hitbox.CircleHitbox;
 import org.variantsync.diffdetective.show.engine.input.CameraDragAndDrop;
 import org.variantsync.diffdetective.show.engine.input.ZoomViaMouseWheel;
+import org.variantsync.diffdetective.show.variation.input.ExitOnEscape;
+import org.variantsync.diffdetective.show.variation.input.NodeDragAndDrop;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.variation.diff.DiffType;
@@ -106,6 +108,7 @@ public class DiffTreeApp extends App {
         getWindow().addInputListener(new CameraDragAndDrop(MouseEvent.BUTTON3));
         getWindow().addInputListener(new ZoomViaMouseWheel());
         getWindow().addInputListener(new NodeDragAndDrop(MouseEvent.BUTTON1));
+        getWindow().addInputListener(new ExitOnEscape());
     }
 
     private void toggleRootDance() {

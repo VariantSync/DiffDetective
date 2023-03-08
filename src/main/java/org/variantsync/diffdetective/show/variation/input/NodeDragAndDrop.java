@@ -1,4 +1,4 @@
-package org.variantsync.diffdetective.show.variation;
+package org.variantsync.diffdetective.show.variation.input;
 
 import org.variantsync.diffdetective.show.engine.*;
 import org.variantsync.diffdetective.show.engine.geom.Vec2;
