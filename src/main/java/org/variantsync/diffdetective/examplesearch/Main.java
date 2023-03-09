@@ -13,6 +13,9 @@ import java.nio.file.Path;
 import java.util.List;
 
 public class Main {
+    /**
+     * Modify this list to your requirements on a suitable example.
+     */
     private static final ExplainedFilter<DiffTree> EXAMPLE_CRITERIONS = new ExplainedFilter<>(
             ExampleCriterions.MAX_LINE_COUNT(ExampleCriterions.DefaultMaxDiffLineCount),
             ExampleCriterions.HAS_EDITED_ARTIFACTS,
