@@ -1,0 +1,3 @@
+ Project name | Domain        | Source code available (**y**es/**n**o)? | Is it a git repository (**y**es/**n**o)? | Repository URL                                   | Clone URL                                        | Estimated number of commits 
+--------------|---------------|-----------------------------------------|------------------------------------------|--------------------------------------------------|--------------------------------------------------|-----------------------------
+ test-spl     | for debugging | y                                       | y                                        | https://github.com/AlexanderSchultheiss/test-spl | https://github.com/AlexanderSchultheiss/test-spl | 24,396                      
