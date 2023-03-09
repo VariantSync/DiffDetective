@@ -7,7 +7,7 @@ import org.variantsync.diffdetective.analysis.strategies.AnalysisStrategy;
 import org.variantsync.diffdetective.analysis.strategies.AnalyzeAllThenExport;
 import org.variantsync.diffdetective.datasets.*;
 import org.variantsync.diffdetective.datasets.predefined.StanciulescuMarlin;
-import org.variantsync.diffdetective.examples.find.ExampleCriterions;
+import org.variantsync.diffdetective.examplesearch.ExampleCriterions;
 import org.variantsync.diffdetective.metadata.ExplainedFilterSummary;
 import org.variantsync.diffdetective.mining.formats.DirectedEdgeLabelFormat;
 import org.variantsync.diffdetective.mining.formats.MiningNodeFormat;
