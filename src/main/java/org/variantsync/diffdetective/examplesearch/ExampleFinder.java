@@ -8,6 +8,7 @@ import org.variantsync.diffdetective.diff.git.GitPatch;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.diff.text.TextBasedDiff;
 import org.variantsync.diffdetective.feature.CPPAnnotationParser;
+import org.variantsync.diffdetective.show.Show;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.util.IO;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
@@ -22,6 +23,7 @@ import org.variantsync.diffdetective.variation.diff.serialize.nodeformat.Mapping
 import org.variantsync.diffdetective.variation.diff.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
 import org.variantsync.diffdetective.variation.diff.source.DiffTreeSource;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
@@ -105,7 +107,13 @@ public class ExampleFinder implements Analysis.Hooks {
         final Path treeDir = outputDir.resolve(Path.of(patch.getCommitHash()));
 
         Logger.info("Exporting example candidate: {}", patch);
-        exampleExport.render(example, patch, treeDir);
+        //exampleExport.render(example, patch, treeDir);
+
+        try {
+            Show.diff(example).dontShowButRenderToTexture().saveAsPng(treeDir.resolve(patch.getFileName() + ".png").toFile());
+        } catch (IOException e) {
+            Logger.error("Could not render example");
+        }
 
         String metadata = "";
         metadata += "Child commit: " + patch.getCommitHash() + "\n";
