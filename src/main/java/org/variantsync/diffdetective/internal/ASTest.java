@@ -35,6 +35,18 @@ public class ASTest implements Analysis.Hooks {
 
     }
 
+    @Override
+    public boolean beginCommit(Analysis analysis) throws Exception {
+        Logger.info(analysis.getCurrentCommit());
+        return true;
+    }
+
+    @Override
+    public boolean beginPatch(Analysis analysis) throws Exception {
+        Logger.info("  " + analysis.getCurrentPatch());
+        return true;
+    }
+
     /**
      * Main method to start the analysis.
      *
@@ -67,10 +79,8 @@ public class ASTest implements Analysis.Hooks {
     public boolean analyzeDiffTree(Analysis analysis) {
         // Get the ground truth for this file
         final DiffTree d = analysis.getCurrentDiffTree();
-        Logger.info("Processing {}", d.getSource());
-
-        Show.diff(d).show();
-
+        Logger.info("    VDiff: {}", d.getSource());
+        Show.diff(d).showAndAwait();
         return true;
     }
 }
