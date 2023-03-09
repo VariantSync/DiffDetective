@@ -1,17 +1,13 @@
 package org.variantsync.diffdetective.variation.diff.serialize;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintStream;
+import org.variantsync.diffdetective.util.TriConsumer;
+import org.variantsync.diffdetective.variation.diff.DiffTree;
+
+import java.io.*;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-
-import org.variantsync.diffdetective.variation.diff.DiffTree;
 
 /**
  * Exporter for the Graphviz dot format.
@@ -22,6 +18,7 @@ import org.variantsync.diffdetective.variation.diff.DiffTree;
  */
 public class GraphvizExporter implements Exporter {
     private static final Pattern quotePattern = Pattern.compile("[\"\\\\]");
+    public static final Pattern graphvizNodePattern = Pattern.compile("^node (\\w+) ([0-9.]+) ([0-9.]+) .*$");
     private Format format;
 
     public enum LayoutAlgorithm {
@@ -150,5 +147,36 @@ public class GraphvizExporter implements Exporter {
                 Matcher.quoteReplacement("\\" + match.group())
             ))
             .collect(Collectors.joining("\\n"));
+    }
+
+    public static void layoutNodesIn(
+            final DiffTree diffTree,
+            Format format,
+            GraphvizExporter.LayoutAlgorithm algorithm,
+            TriConsumer<Integer, Double, Double> positionNode) throws IOException {
+        // Convert the layout information received by Graphviz to coordinates used by TikZ.
+        try (
+                var graphvizExporter = new GraphvizExporter(format)
+                        .computeGraphvizLayout(
+                                diffTree,
+                                algorithm,
+                                GraphvizExporter.OutputFormat.PLAIN);
+                var unbufferedGraphvizOutput = new InputStreamReader(graphvizExporter);
+                var graphizOutput = new BufferedReader(unbufferedGraphvizOutput
+                )) {
+            // Skip scale and dimensions
+            graphizOutput.readLine();
+
+            String line;
+            while ((line = graphizOutput.readLine()) != null) {
+                var nodeMatcher = graphvizNodePattern.matcher(line);
+                if (nodeMatcher.matches()) {
+                    var id = Integer.parseInt(nodeMatcher.group(1));
+                    var x  = Double.parseDouble(nodeMatcher.group(2));
+                    var y  = Double.parseDouble(nodeMatcher.group(3));
+                    positionNode.accept(id, x, y);
+                }
+            }
+        }
     }
 }

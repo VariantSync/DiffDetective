@@ -62,7 +62,7 @@ public final class DirectedEdgeLabelFormat extends EdgeLabelFormat {
     }
 
     @Override
-    public String getName() {
-        return this.getClass().getName() + " with " + nodeFormatter.getName();
+    public String getIdentifier() {
+        return this.getClass().getName() + " with " + nodeFormatter.getIdentifier();
     }
 }

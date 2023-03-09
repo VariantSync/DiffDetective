@@ -2,24 +2,24 @@
 <metadata modelVersion="1.1.0">
   <groupId>org.variantsync</groupId>
   <artifactId>functjonal</artifactId>
+  <version>1.0-SNAPSHOT</version>
   <versioning>
-    <lastUpdated>20221108155446</lastUpdated>
     <snapshot>
-      <timestamp>20221108.155446</timestamp>
+      <timestamp>20230308.125347</timestamp>
       <buildNumber>1</buildNumber>
     </snapshot>
+    <lastUpdated>20230308125347</lastUpdated>
     <snapshotVersions>
       <snapshotVersion>
         <extension>jar</extension>
-        <value>1.0-20221108.155446-1</value>
-        <updated>20221108155446</updated>
+        <value>1.0-20230308.125347-1</value>
+        <updated>20230308125347</updated>
       </snapshotVersion>
       <snapshotVersion>
         <extension>pom</extension>
-        <value>1.0-20221108.155446-1</value>
-        <updated>20221108155446</updated>
+        <value>1.0-20230308.125347-1</value>
+        <updated>20230308125347</updated>
       </snapshotVersion>
     </snapshotVersions>
   </versioning>
-  <version>1.0-SNAPSHOT</version>
 </metadata>

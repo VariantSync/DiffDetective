@@ -76,6 +76,13 @@ public class Assert {
         }
     }
 
+    /** Abort program execution if {@code o} is not {@code null}. */
+    public static void assertNull(Object o) {
+        if (o != null) {
+            fail("Given object is not null but assumed to be null.");
+        }
+    }
+
     public static <T> void assertEquals(T expected, T actual) {
         if (expected == null) {
             if (actual != null) {
