@@ -1,4 +1,4 @@
-package org.variantsync.diffdetective.validation;
+package org.variantsync.diffdetective;
 
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.errors.GitAPIException;
