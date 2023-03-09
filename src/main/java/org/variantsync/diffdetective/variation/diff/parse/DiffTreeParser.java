@@ -170,10 +170,11 @@ public class DiffTreeParser {
             String line = fullDiff.readLine();
             if (line == null) {
                 return null;
-            } else if (line.length() == 0) {
-                return new DiffLine(null, "");
             } else {
-                return new DiffLine(DiffType.ofDiffLine(line), line.substring(1));
+                return new DiffLine(
+                        DiffType.ofDiffLine(line),
+                        line.isEmpty() ? line : line.substring(1)
+                );
             }
         });
     }
