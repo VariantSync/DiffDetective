@@ -41,6 +41,9 @@ public class GameEngine {
 
         final double targetSecondsPerFrame = 1.0 / targetFPS;
         double secondsOfLastFrame = targetSecondsPerFrame;
+
+        window.setVisible(true);
+
         while (window.isShowing()) {
             frametimeClock.start();
 
@@ -72,6 +75,23 @@ public class GameEngine {
     public void showAndAwait() {
         show();
         await();
+    }
+
+    public Texture dontShowButRenderToTexture() {
+        app.start();
+
+        final Window w = app.getWindow();
+        final Screen screen = w.getScreen();
+
+        w.setMinimumSize(w.getSize());
+        w.setUndecorated(true);
+        w.pack();
+
+        final Texture t = screen.screenshot();
+
+        w.dispose();
+
+        return t;
     }
 
     public static void showAndAwaitAll(GameEngine... engines) {

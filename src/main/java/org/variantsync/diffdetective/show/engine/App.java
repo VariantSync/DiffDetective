@@ -21,7 +21,6 @@ public abstract class App implements Updateable {
         world = new World(this);
         initialize(world);
         initialized = true;
-        window.setVisible(true);
     }
 
     @Override
