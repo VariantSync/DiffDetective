@@ -1,10 +1,16 @@
-package org.variantsync.diffdetective.variation.diff.transform;
+package org.variantsync.diffdetective.examplesearch;
 
 import org.tinylog.Logger;
+import org.variantsync.diffdetective.analysis.Analysis;
+import org.variantsync.diffdetective.datasets.Repository;
 import org.variantsync.diffdetective.diff.git.GitPatch;
+import org.variantsync.diffdetective.diff.result.DiffParseException;
+import org.variantsync.diffdetective.diff.text.TextBasedDiff;
+import org.variantsync.diffdetective.feature.CPPAnnotationParser;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.util.IO;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
+import org.variantsync.diffdetective.variation.diff.filter.ExplainedFilter;
 import org.variantsync.diffdetective.variation.diff.render.DiffTreeRenderer;
 import org.variantsync.diffdetective.variation.diff.render.PatchDiffRenderer;
 import org.variantsync.diffdetective.variation.diff.render.RenderOptions;
@@ -12,6 +18,7 @@ import org.variantsync.diffdetective.variation.diff.serialize.GraphFormat;
 import org.variantsync.diffdetective.variation.diff.serialize.edgeformat.DefaultEdgeLabelFormat;
 import org.variantsync.diffdetective.variation.diff.serialize.nodeformat.MappingsDiffNodeFormat;
 import org.variantsync.diffdetective.variation.diff.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
+import org.variantsync.diffdetective.variation.diff.source.DiffTreeSource;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -24,7 +31,7 @@ import java.util.function.Function;
  * desired running example and writes candidates to a file and renders them.
  * An example finder should be side-effect free (i.e., it does not alter or transform the given DiffTree, just observes it).
  */
-public class ExampleFinder implements DiffTreeTransformer {
+public class ExampleFinder implements Analysis.Hooks {
     /**
      * Default render options for exporting example candidates.
      */
@@ -43,9 +50,8 @@ public class ExampleFinder implements DiffTreeTransformer {
             List.of()
     );
 
-    private final Function<DiffTree, Optional<DiffTree>> isGoodExample;
+    private final ExplainedFilter<DiffTree> isGoodExample;
     private final PatchDiffRenderer exampleExport;
-    private final Path outputDir;
 
     /**
      * Creates a new ExampleFinder.
@@ -53,21 +59,46 @@ public class ExampleFinder implements DiffTreeTransformer {
      *                      Should return {@link Optional#empty()} when the given tree is not a good example and thus, should not be considered.
      *                      Should return a Difftree when the given tree is a good example candidate and should be exported.
      *                      The returned DiffTree might be the exact same DiffTree or a subtree (e.g., to only export a certain subtree that is relevant).
-     * @param outDir The directory to which all example candidates should be written and rendered to.
      * @param renderer The renderer to use for rendering example candidates.
      */
-    public ExampleFinder(final Function<DiffTree, Optional<DiffTree>> isGoodExample, final Path outDir, DiffTreeRenderer renderer) {
+    public ExampleFinder(final ExplainedFilter<DiffTree> isGoodExample, DiffTreeRenderer renderer) {
         this.isGoodExample = isGoodExample;
         this.exampleExport = new PatchDiffRenderer(renderer, ExportOptions);
-        this.outputDir = outDir;
     }
 
     @Override
-    public void transform(DiffTree diffTree) {
-        isGoodExample.apply(diffTree).ifPresent(this::exportExample);
+    public boolean analyzeDiffTree(Analysis analysis) {
+        final Repository currentRepo = analysis.getRepository();
+        final DiffTree diffTree = analysis.getCurrentDiffTree();
+        final CPPAnnotationParser annotationParser = analysis.getRepository().getParseOptions().annotationParser();
+
+        // We do not want a difftree for the entire file but only for the local change to have a small example.
+        final DiffTree localTree;
+        try {
+            final String localDiff = getDiff(diffTree);
+            localTree = DiffTree.fromDiff(localDiff, true, true, annotationParser);
+            // Not every local diff can be parsed to a difftree because diffs are unaware of the underlying language (i.e., CPP).
+            // We want only running examples whose diffs describe entire diff trees for easier understanding.
+            if (isGoodExample.test(localTree)) {
+                Assert.assertTrue(diffTree.getSource() instanceof GitPatch);
+                final GitPatch diffTreeSource = (GitPatch) diffTree.getSource();
+                localTree.setSource(diffTreeSource.shallowClone());
+            } else {
+                return false;
+            }
+        } catch (DiffParseException e) {
+            return false;
+        }
+
+        exportExample(
+                localTree,
+                analysis.getOutputDir().resolve(currentRepo.getRepositoryName())
+        );
+
+        return true;
     }
 
-    private void exportExample(final DiffTree example) {
+    private void exportExample(final DiffTree example, final Path outputDir) {
         Assert.assertTrue(example.getSource() instanceof GitPatch);
         final GitPatch patch = (GitPatch) example.getSource();
         final Path treeDir = outputDir.resolve(Path.of(patch.getCommitHash()));
@@ -80,5 +111,11 @@ public class ExampleFinder implements DiffTreeTransformer {
         metadata += "Parent commit: " + patch.getParentCommitHash() + "\n";
         metadata += "File: " + patch.getFileName() + "\n";
         IO.tryWrite(treeDir.resolve(patch.getFileName() + ".metadata.txt"), metadata);
+    }
+
+    static String getDiff(final DiffTree tree) {
+        final DiffTreeSource source = tree.getSource();
+        Assert.assertTrue(source instanceof TextBasedDiff);
+        return ((TextBasedDiff) source).getDiff();
     }
 }

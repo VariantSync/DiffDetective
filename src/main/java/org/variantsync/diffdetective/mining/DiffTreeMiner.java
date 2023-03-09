@@ -1,30 +1,13 @@
 package org.variantsync.diffdetective.mining;
 
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.BiFunction;
-import java.util.function.Consumer;
-
 import org.apache.commons.io.FileUtils;
 import org.tinylog.Logger;
-import org.variantsync.diffdetective.analysis.Analysis;
-import org.variantsync.diffdetective.analysis.EditClassOccurenceAnalysis;
-import org.variantsync.diffdetective.analysis.FilterAnalysis;
-import org.variantsync.diffdetective.analysis.LineGraphExportAnalysis;
-import org.variantsync.diffdetective.analysis.PreprocessingAnalysis;
-import org.variantsync.diffdetective.analysis.StatisticsAnalysis;
+import org.variantsync.diffdetective.analysis.*;
 import org.variantsync.diffdetective.analysis.strategies.AnalysisStrategy;
 import org.variantsync.diffdetective.analysis.strategies.AnalyzeAllThenExport;
-import org.variantsync.diffdetective.datasets.DatasetDescription;
-import org.variantsync.diffdetective.datasets.DatasetFactory;
-import org.variantsync.diffdetective.datasets.DefaultDatasets;
-import org.variantsync.diffdetective.datasets.ParseOptions;
-import org.variantsync.diffdetective.datasets.Repository;
+import org.variantsync.diffdetective.datasets.*;
 import org.variantsync.diffdetective.datasets.predefined.StanciulescuMarlin;
-import org.variantsync.diffdetective.feature.CPPAnnotationParser;
+import org.variantsync.diffdetective.examplesearch.ExampleCriterions;
 import org.variantsync.diffdetective.metadata.ExplainedFilterSummary;
 import org.variantsync.diffdetective.mining.formats.DirectedEdgeLabelFormat;
 import org.variantsync.diffdetective.mining.formats.MiningNodeFormat;
@@ -39,6 +22,14 @@ import org.variantsync.diffdetective.variation.diff.transform.CutNonEditedSubtre
 import org.variantsync.diffdetective.variation.diff.transform.DiffTreeTransformer;
 import org.variantsync.diffdetective.variation.diff.transform.Starfold;
 
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
+
 public class DiffTreeMiner {
     public static final Path DATASET_FILE = DefaultDatasets.EMACS;
     public static final boolean SEARCH_FOR_GOOD_RUNNING_EXAMPLES = false;
@@ -50,13 +41,6 @@ public class DiffTreeMiner {
     public static List<DiffTreeTransformer> Postprocessing(final Repository repository) {
         final List<DiffTreeTransformer> processing = new ArrayList<>();
         processing.add(new CutNonEditedSubtrees());
-        if (SEARCH_FOR_GOOD_RUNNING_EXAMPLES) {
-            processing.add(new RunningExampleFinder(repository == null ? CPPAnnotationParser.Default : repository.getParseOptions().annotationParser()).
-                    The_Diff_Itself_Is_A_Valid_DiffTree_And(
-                            RunningExampleFinder.DefaultExampleConditions,
-                            RunningExampleFinder.DefaultExamplesDirectory.resolve(repository == null ? "unknown" : repository.getRepositoryName())
-                    ));
-        }
         processing.add(new CollapseNestedNonEditedAnnotations());
         processing.add(Starfold.IgnoreNodeOrder());
         return processing;
@@ -168,8 +152,8 @@ public class DiffTreeMiner {
         final Consumer<Path> repoPostProcessing;
         if (SEARCH_FOR_GOOD_RUNNING_EXAMPLES) {
             repoPostProcessing = repoOutputDir -> {
-                new ExplainedFilterSummary(RunningExampleFinder.DefaultExampleConditions).exportTo(repoOutputDir.resolve("runningExampleFilterReasons.txt"));
-                RunningExampleFinder.DefaultExampleConditions.resetExplanations();
+                new ExplainedFilterSummary(ExampleCriterions.DefaultExampleConditions).exportTo(repoOutputDir.resolve("runningExampleFilterReasons.txt"));
+                ExampleCriterions.DefaultExampleConditions.resetExplanations();
             };
         } else {
             repoPostProcessing = p -> {};
