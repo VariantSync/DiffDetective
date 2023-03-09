@@ -24,15 +24,40 @@ import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
 public class RunningExampleFinder {
     public static final Path DefaultExamplesDirectory = Path.of("examples");
     public static final int DefaultMaxDiffLineCount = 20;
+
+    public static final TaggedPredicate<String, DiffTree> HAS_A_COMPLEX_FORMULA_BEFORE_THE_EDIT = new TaggedPredicate<>("has a complex formula before edit", RunningExampleFinder::hasAtLeastOneComplexFormulaBeforeTheEdit);
+    public static final TaggedPredicate<String, DiffTree> DOES_NOT_CONTAIN_ANNOTATED_MACROS = new TaggedPredicate<>("has no annotated macros", t -> !RunningExampleFinder.hasAnnotatedMacros(t));
+    public static final TaggedPredicate<String, DiffTree> HAS_EDITED_ARTIFACTS = new TaggedPredicate<>("an artifact was edited", t -> t.anyMatch(n -> n.isArtifact() && !n.isNon()));
+    public static final TaggedPredicate<String, DiffTree> HAS_ADDITIONS = new TaggedPredicate<>("has additions", t -> t.anyMatch(DiffNode::isAdd));
+    public static final TaggedPredicate<String, DiffTree> HAS_NESTING_BEFORE_EDIT = new TaggedPredicate<>("has nesting before the edit", RunningExampleFinder::hasNestingBeforeEdit);
+
+    public static final TaggedPredicate<String, DiffTree> HAS_ELSE = new TaggedPredicate<>(
+            "has at least one ELSE node",
+            t -> t.anyMatch(DiffNode::isElse)
+    );
+    public static TaggedPredicate<String, DiffTree> MAX_LINE_COUNT(int n) {
+        return new TaggedPredicate<>(
+                "diff length <= " + n,
+                t -> diffIsNotLongerThan(t, n)
+        );
+    }
+
+    public static TaggedPredicate<String, DiffTree> MIN_ANNOTATIONS(int n) {
+        return new TaggedPredicate<>(
+                "has at least " + n + " annotations",
+                t -> t.computeAnnotationNodes().size() >= n
+        );
+    }
+
     public static final ExplainedFilter<DiffTree> DefaultExampleConditions = new ExplainedFilter<>(
-            new TaggedPredicate<>("diff length <= " + DefaultMaxDiffLineCount, t -> diffIsNotLongerThan(t, DefaultMaxDiffLineCount)),
-            new TaggedPredicate<>("has nesting before the edit", RunningExampleFinder::hasNestingBeforeEdit),
-            new TaggedPredicate<>("has additions", t -> t.anyMatch(DiffNode::isAdd)),
-            new TaggedPredicate<>("an artifact was edited", t -> t.anyMatch(n -> n.isArtifact() && !n.isNon())),
+            MAX_LINE_COUNT(DefaultMaxDiffLineCount),
+            HAS_NESTING_BEFORE_EDIT,
+            HAS_ADDITIONS,
+            HAS_EDITED_ARTIFACTS,
             DiffTreeFilter.hasAtLeastOneEditToVariability(),
             DiffTreeFilter.moreThanOneArtifactNode(),
-            new TaggedPredicate<>("has no annotated macros", t -> !RunningExampleFinder.hasAnnotatedMacros(t)),
-            new TaggedPredicate<>("has a complex formula", RunningExampleFinder::hasAtLeastOneComplexFormulaBeforeTheEdit)
+            DOES_NOT_CONTAIN_ANNOTATED_MACROS,
+            HAS_A_COMPLEX_FORMULA_BEFORE_THE_EDIT
     );
 
     private final CPPAnnotationParser annotationParser;
