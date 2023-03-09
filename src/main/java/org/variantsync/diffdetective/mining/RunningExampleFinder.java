@@ -3,17 +3,17 @@ package org.variantsync.diffdetective.mining;
 import org.prop4j.Literal;
 import org.prop4j.Node;
 import org.variantsync.diffdetective.diff.git.GitPatch;
-import org.variantsync.diffdetective.diff.text.TextBasedDiff;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
+import org.variantsync.diffdetective.diff.text.TextBasedDiff;
 import org.variantsync.diffdetective.feature.CPPAnnotationParser;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
-import org.variantsync.diffdetective.variation.diff.source.DiffTreeSource;
 import org.variantsync.diffdetective.variation.diff.filter.DiffTreeFilter;
 import org.variantsync.diffdetective.variation.diff.filter.ExplainedFilter;
 import org.variantsync.diffdetective.variation.diff.filter.TaggedPredicate;
 import org.variantsync.diffdetective.variation.diff.render.DiffTreeRenderer;
+import org.variantsync.diffdetective.variation.diff.source.DiffTreeSource;
 import org.variantsync.diffdetective.variation.diff.transform.ExampleFinder;
 
 import java.nio.file.Path;
@@ -66,9 +66,7 @@ public class RunningExampleFinder {
         this.annotationParser = annotationParser;
     }
 
-    public ExampleFinder The_Diff_Itself_Is_A_Valid_DiffTree_And(
-            final ExplainedFilter<DiffTree> treeConditions,
-            final Path exportDirectory)
+    public ExampleFinder The_Diff_Itself_Is_A_Valid_DiffTree_And(final ExplainedFilter<DiffTree> treeConditions)
     {
         return new ExampleFinder(
                 diffTree -> {
@@ -88,7 +86,6 @@ public class RunningExampleFinder {
                         return Optional.empty();
                     }
                 },
-                exportDirectory,
                 DiffTreeRenderer.WithinDiffDetective()
         );
     }

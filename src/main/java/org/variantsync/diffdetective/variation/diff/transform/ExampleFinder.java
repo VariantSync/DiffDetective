@@ -1,6 +1,7 @@
 package org.variantsync.diffdetective.variation.diff.transform;
 
 import org.tinylog.Logger;
+import org.variantsync.diffdetective.analysis.Analysis;
 import org.variantsync.diffdetective.diff.git.GitPatch;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.util.IO;
@@ -24,7 +25,7 @@ import java.util.function.Function;
  * desired running example and writes candidates to a file and renders them.
  * An example finder should be side-effect free (i.e., it does not alter or transform the given DiffTree, just observes it).
  */
-public class ExampleFinder implements DiffTreeTransformer {
+public class ExampleFinder implements Analysis.Hooks {
     /**
      * Default render options for exporting example candidates.
      */
@@ -45,7 +46,6 @@ public class ExampleFinder implements DiffTreeTransformer {
 
     private final Function<DiffTree, Optional<DiffTree>> isGoodExample;
     private final PatchDiffRenderer exampleExport;
-    private final Path outputDir;
 
     /**
      * Creates a new ExampleFinder.
@@ -53,21 +53,22 @@ public class ExampleFinder implements DiffTreeTransformer {
      *                      Should return {@link Optional#empty()} when the given tree is not a good example and thus, should not be considered.
      *                      Should return a Difftree when the given tree is a good example candidate and should be exported.
      *                      The returned DiffTree might be the exact same DiffTree or a subtree (e.g., to only export a certain subtree that is relevant).
-     * @param outDir The directory to which all example candidates should be written and rendered to.
      * @param renderer The renderer to use for rendering example candidates.
      */
-    public ExampleFinder(final Function<DiffTree, Optional<DiffTree>> isGoodExample, final Path outDir, DiffTreeRenderer renderer) {
+    public ExampleFinder(final Function<DiffTree, Optional<DiffTree>> isGoodExample, DiffTreeRenderer renderer) {
         this.isGoodExample = isGoodExample;
         this.exampleExport = new PatchDiffRenderer(renderer, ExportOptions);
-        this.outputDir = outDir;
     }
 
     @Override
-    public void transform(DiffTree diffTree) {
-        isGoodExample.apply(diffTree).ifPresent(this::exportExample);
+    public boolean analyzeDiffTree(Analysis analysis) {
+        isGoodExample
+                .apply(analysis.getCurrentDiffTree())
+                .ifPresent(d -> exportExample(d, analysis.getOutputDir()));
+        return true;
     }
 
-    private void exportExample(final DiffTree example) {
+    private void exportExample(final DiffTree example, final Path outputDir) {
         Assert.assertTrue(example.getSource() instanceof GitPatch);
         final GitPatch patch = (GitPatch) example.getSource();
         final Path treeDir = outputDir.resolve(Path.of(patch.getCommitHash()));
