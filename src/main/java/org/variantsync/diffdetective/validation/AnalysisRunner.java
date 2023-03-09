@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
  *
  * @author Paul Bittner, Benjamin Moosherr
  */
-public class Validation {
+public class AnalysisRunner {
     /**
      *
      * @param repositoriesDirectory The directory to which all git repositories will be cloned to.
@@ -74,7 +74,7 @@ public class Validation {
         }
     }
 
-    private Validation() {
+    private AnalysisRunner() {
     }
 
     /**

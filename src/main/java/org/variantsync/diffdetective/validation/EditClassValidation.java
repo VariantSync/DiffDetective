@@ -80,7 +80,7 @@ public class EditClassValidation implements Analysis.Hooks {
      * @throws IOException When copying the log file fails.
      */
     public static void main(String[] args) throws IOException {
-        Validation.run(Validation.Options.DEFAULT(args), (repo, repoOutputDir) ->
+        AnalysisRunner.run(AnalysisRunner.Options.DEFAULT(args), (repo, repoOutputDir) ->
             Analysis.forEachCommit(() -> AnalysisFactory.apply(repo, repoOutputDir))
         );
     }
