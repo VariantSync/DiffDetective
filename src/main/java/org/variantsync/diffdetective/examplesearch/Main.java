@@ -39,7 +39,7 @@ public class Main {
                 defaultOptions.repositoriesDirectory(),
                 ExampleCriterions.DefaultExamplesDirectory,
                 defaultOptions.datasetsFile(),
-                ParseOptions.DiffStoragePolicy.REMEMBER_DIFF,
+                ParseOptions.DiffStoragePolicy.REMEMBER_STRIPPED_DIFF,
                 false,
                 false
         );
