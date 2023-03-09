@@ -263,18 +263,18 @@ public class DiffTreeParser {
         while ((currentDiffLine = lines.get()) != null) {
             final String currentLine = currentDiffLine.content();
 
-            // Ignore line if it is empty.
-            if (ignoreEmptyLines && currentLine.isBlank()) {
-                // discard empty lines
-                continue;
-            }
-
             final DiffType diffType = currentDiffLine.diffType();
             if (diffType == null) {
                 throw new DiffParseException(DiffError.INVALID_DIFF, lineNumber.add(1));
             }
 
             lineNumber = lineNumber.add(1, diffType);
+
+            // Ignore line if it is empty.
+            if (ignoreEmptyLines && currentLine.isBlank()) {
+                // discard empty lines
+                continue;
+            }
 
             // Do beforeLine and afterLine represent the same unchanged diff line?
             isNon = diffType == DiffType.NON &&
