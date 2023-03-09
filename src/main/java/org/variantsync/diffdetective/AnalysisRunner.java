@@ -5,6 +5,7 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.tinylog.Logger;
 import org.variantsync.diffdetective.analysis.Analysis;
 import org.variantsync.diffdetective.datasets.*;
+import org.variantsync.diffdetective.diff.git.DiffFilter;
 import org.variantsync.diffdetective.util.Assert;
 
 import java.io.IOException;
@@ -13,6 +14,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -33,6 +35,7 @@ public class AnalysisRunner {
      *                          {@link ParseOptions.DiffStoragePolicy#DO_NOT_REMEMBER} as storing all
      *                          the text-diffs as strings can cause a big memory footprint that can be
      *                          avoided when the text-diffs are not used anyway.
+     * @param getFilterForRepo Determines which filter to use for parsing diffs in given repository that is about to be analyzed.
      * @param preloadReposBeforeAnalysis Decides whether all repositories should be cloned once before the analysis.
      *                                   If a repository does not have a local clone in {@link #repositoriesDirectory}
      *                                   it will be cloned before the analysis if preloadReposBeforeAnalysis is set to
@@ -46,6 +49,7 @@ public class AnalysisRunner {
             Path outputDirectory,
             Path datasetsFile,
             ParseOptions.DiffStoragePolicy diffStoragePolicy,
+            Function<Repository, DiffFilter> getFilterForRepo,
             boolean preloadReposBeforeAnalysis,
             /* Determines whether all analyzed repositories should be updated
              * (i.e., <code>git pull</code>) before the analysis.
@@ -68,6 +72,7 @@ public class AnalysisRunner {
                     Paths.get("results", "validation", "current"),
                     datasetsFile,
                     ParseOptions.DiffStoragePolicy.DO_NOT_REMEMBER,
+                    repo -> DatasetFactory.getDefaultDiffFilterFor(repo.getRepositoryName()),
                     true,
                     false
             );
@@ -103,6 +108,7 @@ public class AnalysisRunner {
         Logger.info("Performing validation on the following repositories:");
         for (final Repository repo : repos) {
             repo.setParseOptions(repo.getParseOptions().withDiffStoragePolicy(options.diffStoragePolicy()));
+            repo.setDiffFilter(options.getFilterForRepo().apply(repo));
             Logger.info("  - {} from {}", repo.getRepositoryName(), repo.getRemoteURI());
         }
 

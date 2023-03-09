@@ -43,6 +43,7 @@ public class Main {
                 ExampleCriterions.DefaultExamplesDirectory,
                 defaultOptions.datasetsFile(),
                 ParseOptions.DiffStoragePolicy.REMEMBER_STRIPPED_DIFF,
+                defaultOptions.getFilterForRepo(),
                 false,
                 false
         );
