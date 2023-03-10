@@ -82,7 +82,7 @@ public class ShellExecutor {
      */
     public List<String> execute(ShellCommand command, Path executionDir) throws ShellException {
         if (System.getProperty("os.name").toLowerCase().startsWith("windows")) {
-            throw new SetupError("The synchronization study can only be executed under Linux!");
+            throw new SetupError("Shell commands can only be executed under Linux!");
         }
 
         ProcessBuilder builder = new ProcessBuilder();
