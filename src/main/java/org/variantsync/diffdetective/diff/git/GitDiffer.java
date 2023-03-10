@@ -10,10 +10,7 @@ import org.eclipse.jgit.lib.ObjectReader;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevTree;
 import org.eclipse.jgit.revwalk.RevWalk;
-import org.eclipse.jgit.treewalk.AbstractTreeIterator;
-import org.eclipse.jgit.treewalk.CanonicalTreeParser;
-import org.eclipse.jgit.treewalk.FileTreeIterator;
-import org.eclipse.jgit.treewalk.TreeWalk;
+import org.eclipse.jgit.treewalk.*;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.tinylog.Logger;
 import org.variantsync.diffdetective.datasets.PatchDiffParseOptions;
@@ -157,11 +154,6 @@ public class GitDiffer {
                             continue;
                         }
 
-                        if (c.getParentCount() == 0) {
-//                            Logger.debug("Warning: Cannot create CommitDiff for commit {} because it does not have parents!", c.getId().getName());
-                            continue;
-                        }
-
                         return c;
                     }
 
@@ -197,17 +189,17 @@ public class GitDiffer {
             DiffFilter diffFilter,
             RevCommit currentCommit,
             final PatchDiffParseOptions parseOptions) {
-        if (currentCommit.getParentCount() == 0) {
-            return CommitDiffResult.Failure(
-                    DiffError.COMMIT_HAS_NO_PARENTS, "Commit " + currentCommit.getId().getName() + " does not have parents");
+        final RevCommit parent;
+        if (currentCommit.getParentCount() > 0) {
+            try (var revWalk = new RevWalk(git.getRepository())) {
+                parent = revWalk.parseCommit(currentCommit.getParent(0).getId());
+            } catch (IOException e) {
+                return CommitDiffResult.Failure(DiffError.JGIT_ERROR, "Could not parse parent commit of " + currentCommit.getId().getName() + "!");
+            }
+        } else {
+            parent = null;
         }
 
-        final RevCommit parent;
-        try (var revWalk = new RevWalk(git.getRepository())) {
-            parent = revWalk.parseCommit(currentCommit.getParent(0).getId());
-        } catch (IOException e) {
-            return CommitDiffResult.Failure(DiffError.JGIT_ERROR, "Could not parse parent commit of " + currentCommit.getId().getName() + "!");
-        }
         return createCommitDiff(git, diffFilter, parent, currentCommit, parseOptions);
     }
 
@@ -224,26 +216,43 @@ public class GitDiffer {
             RevCommit parentCommit,
             RevCommit childCommit,
             final PatchDiffParseOptions parseOptions) {
+        if (childCommit.getTree() == null) {
+            return CommitDiffResult.Failure(DiffError.JGIT_ERROR, "Could not obtain RevTree from child commit " + childCommit.getId());
+        }
+        if (parentCommit != null && parentCommit.getTree() == null) {
+            return CommitDiffResult.Failure(DiffError.JGIT_ERROR, "Could not obtain RevTree from parent commit " + parentCommit.getId());
+        }
+
         // get TreeParsers
         final CanonicalTreeParser currentTreeParser = new CanonicalTreeParser();
         final CanonicalTreeParser prevTreeParser = new CanonicalTreeParser();
         try (ObjectReader reader = git.getRepository().newObjectReader()) {
-            if (childCommit.getTree() == null) {
-                return CommitDiffResult.Failure(DiffError.JGIT_ERROR, "Could not obtain RevTree from child commit " + childCommit.getId());
-            }
-            if (parentCommit.getTree() == null) {
-                return CommitDiffResult.Failure(DiffError.JGIT_ERROR, "Could not obtain RevTree from parent commit " + parentCommit.getId());
-            }
-
             try {
                 currentTreeParser.reset(reader, childCommit.getTree());
-                prevTreeParser.reset(reader, parentCommit.getTree());
+                if (parentCommit != null) {
+                    prevTreeParser.reset(reader, parentCommit.getTree());
+                }
             } catch (IOException e) {
                 return CommitDiffResult.Failure(DiffError.JGIT_ERROR, e.toString());
             }
         }
 
-        return getPatchDiffs(git, diffFilter, parseOptions, prevTreeParser, currentTreeParser, parentCommit, childCommit);
+        final AbstractTreeIterator parentTreeIterator;
+        if (parentCommit == null) {
+            parentTreeIterator = new EmptyTreeIterator();
+        } else {
+            parentTreeIterator = prevTreeParser;
+        }
+
+        return getPatchDiffs(
+                git,
+                diffFilter,
+                parseOptions,
+                parentTreeIterator,
+                currentTreeParser,
+                parentCommit,
+                childCommit
+        );
     }
 
     /**
@@ -260,22 +269,22 @@ public class GitDiffer {
     		DiffFilter diffFilter,
     		RevCommit commit,
     		final PatchDiffParseOptions parseOptions) {
-		// get TreeParsers
-        final AbstractTreeIterator workingTreeParser = new FileTreeIterator(git.getRepository());
-        final CanonicalTreeParser prevTreeParser = new CanonicalTreeParser();
-        try (ObjectReader reader = git.getRepository().newObjectReader()) {
-            if (commit.getTree() == null) {
-                return CommitDiffResult.Failure(DiffError.JGIT_ERROR, "Could not obtain RevTree from child commit " + commit.getId());
-            }
-
-            try {
-                prevTreeParser.reset(reader, commit.getTree());
-            } catch (IOException e) {
-                return CommitDiffResult.Failure(DiffError.JGIT_ERROR, e.toString());
-            }
+        if (commit != null && commit.getTree() == null) {
+            return CommitDiffResult.Failure(DiffError.JGIT_ERROR, "Could not obtain RevTree from child commit " + commit.getId());
         }
-        
-        return getPatchDiffs(git, diffFilter, parseOptions, prevTreeParser, workingTreeParser, commit, commit);
+
+		// get TreeParsers
+        final AbstractTreeIterator workingTreeIterator = new FileTreeIterator(git.getRepository());
+        final AbstractTreeIterator prevTreeIterator;
+        if (commit == null) {
+            prevTreeIterator = new EmptyTreeIterator();
+        } else try (ObjectReader reader = git.getRepository().newObjectReader()) {
+            prevTreeIterator = new CanonicalTreeParser(null, reader, commit.getTree());
+        } catch (IOException e) {
+            return CommitDiffResult.Failure(DiffError.JGIT_ERROR, e.toString());
+        }
+
+        return getPatchDiffs(git, diffFilter, parseOptions, prevTreeIterator, workingTreeIterator, commit, commit);
     }
     
     /**
