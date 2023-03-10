@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Validation" type="Application" factoryName="Application" nameIsGenerated="true">
-    <option name="MAIN_CLASS_NAME" value="org.variantsync.diffdetective.validation.Validation" />
+    <option name="MAIN_CLASS_NAME" value="org.variantsync.diffdetective.AnalysisRunner" />
     <module name="diffdetective" />
     <method v="2">
       <option name="Make" enabled="true" />
