@@ -42,7 +42,9 @@ public class Main {
                 defaultOptions.repositoriesDirectory(),
                 ExampleCriterions.DefaultExamplesDirectory,
                 defaultOptions.datasetsFile(),
-                PatchDiffParseOptions.DiffStoragePolicy.REMEMBER_STRIPPED_DIFF,
+                repo -> repo.getParseOptions().withDiffStoragePolicy(
+                        PatchDiffParseOptions.DiffStoragePolicy.REMEMBER_STRIPPED_DIFF
+                ),
                 defaultOptions.getFilterForRepo(),
                 false,
                 false
