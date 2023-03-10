@@ -6,20 +6,18 @@ import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.tinylog.Logger;
-import org.variantsync.diffdetective.datasets.PatchDiffParseOptions;
 import org.variantsync.diffdetective.datasets.Repository;
 import org.variantsync.diffdetective.diff.git.CommitDiff;
-import org.variantsync.diffdetective.diff.text.DiffLineNumber;
 import org.variantsync.diffdetective.diff.git.GitDiffer;
 import org.variantsync.diffdetective.diff.git.PatchDiff;
 import org.variantsync.diffdetective.diff.result.DiffError;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
-import org.variantsync.diffdetective.feature.CPPAnnotationParser;
+import org.variantsync.diffdetective.diff.text.DiffLineNumber;
 import org.variantsync.diffdetective.util.Assert;
+import org.variantsync.diffdetective.variation.NodeType;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.variation.diff.DiffType;
-import org.variantsync.diffdetective.variation.NodeType;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -29,7 +27,7 @@ import java.util.regex.Pattern;
 
 /**
  * Parser that parses {@link DiffTree}s from text-based diffs.
- *
+ * <p>
  * Note: Weird line continuations and comments can cause misidentification of conditional macros.
  * The following examples are all correct according to the C11 standard: (comment end is marked by
  * {@code *\/}):
@@ -66,7 +64,7 @@ public class DiffTreeParser {
      * Matches the beginning of conditional macros.
      * It doesn't match the whole macro name, for example for {@code #ifdef} only {@code "#if"} is
      * matched and only {@code "if"} is captured.
-     *
+     * <p>
      * Note that this pattern doesn't handle comments between {@code #} and the macro name.
      */
     private final static Pattern macroPattern =
@@ -82,7 +80,7 @@ public class DiffTreeParser {
     /**
      * A stack containing the current path before the edit from the root of the currently parsed
      * {@link DiffTree} to the currently parsed {@link DiffNode}.
-     *
+     * <p>
      * The granularity of the {@link DiffTree}s parsed by this class is always lines because line
      * diffs can't represent different granularities. This implies that there are no nested artifact
      * nodes in the resulting {@link DiffTree} and therefore {@code beforeStack} will never contain
@@ -92,22 +90,22 @@ public class DiffTreeParser {
     /**
      * A stack containing the current path after the edit from the root of the currently parsed
      * {@link DiffTree} to the currently parsed {@link DiffNode}.
-     *
-     * See {@link beforeStack} for more explanations.
+     * <p>
+     * See {@link #beforeStack} for more explanations.
      */
     private final Stack<DiffNode> afterStack = new Stack<>();
 
     /**
-     * The last artifact node which was parsed by {@link parseLine}.
+     * The last artifact node which was parsed by {@link #parseLine}.
      * If the last parsed {@code DiffNode} was not an artifact, {@code lastArtifact} is {@code null}.
-     *
-     * This state is used to implement {@link collapseMultipleCodeLines}.
+     * <p>
+     * This state is used to implement {@link DiffTreeParseOptions#collapseMultipleCodeLines()}.
      */
     private DiffNode lastArtifact = null;
 
 
     /**
-     * The same as {@link DiffTreeParser#createDiffTree(BufferedReader, boolean, boolean, CPPAnnotationParser)}
+     * The same as {@link DiffTreeParser#createDiffTree(BufferedReader, DiffTreeParseOptions)}
      * but with the diff given as a single string with line breaks instead of a {@link BufferedReader}.
      *
      * @throws DiffParseException if {@code fullDiff} couldn't be parsed
@@ -156,7 +154,7 @@ public class DiffTreeParser {
 
     /**
      * Parses a variation tree from a source file.
-     * This method is similar to {@link createDiffTree(BufferedReader, boolean, boolean, CPPAnnotationParser)}
+     * This method is similar to {@link #createDiffTree(BufferedReader, DiffTreeParseOptions)}
      * but acts as if all lines where unmodified.
      *
      * @param file The source code file (not a diff) to be parsed.
@@ -192,7 +190,7 @@ public class DiffTreeParser {
     /**
      * Initializes the parse state.
      *
-     * @see createDiffTree(BufferedReader, boolean, boolean, CPPAnnotationParser)
+     * @see #createDiffTree(BufferedReader, DiffTreeParseOptions)
      */
     private DiffTreeParser(
             DiffTreeParseOptions options
