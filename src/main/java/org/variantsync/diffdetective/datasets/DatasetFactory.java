@@ -41,6 +41,7 @@ public class DatasetFactory {
     public static final DiffFilter DEFAULT_DIFF_FILTER =
             new DiffFilter.Builder()
                     .allowMerge(false)
+                    .allowCommitsWithoutParents(false)
                     .allowedChangeTypes(DiffEntry.ChangeType.MODIFY)
                     .allowedFileExtensions("h", "hpp", "c", "cpp")
                     .build();
