@@ -1,6 +1,7 @@
 package org.variantsync.diffdetective.variation.diff;
 
 import org.tinylog.Logger;
+import org.variantsync.diffdetective.datasets.PatchDiffParseOptions;
 import org.variantsync.diffdetective.datasets.Repository;
 import org.variantsync.diffdetective.diff.git.CommitDiff;
 import org.variantsync.diffdetective.diff.git.GitDiffer;
@@ -9,15 +10,14 @@ import org.variantsync.diffdetective.diff.git.PatchReference;
 import org.variantsync.diffdetective.diff.result.CommitDiffResult;
 import org.variantsync.diffdetective.diff.result.DiffError;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
-import org.variantsync.diffdetective.feature.CPPAnnotationParser;
 import org.variantsync.diffdetective.util.Assert;
+import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParseOptions;
 import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParser;
 import org.variantsync.diffdetective.variation.diff.source.DiffTreeSource;
 import org.variantsync.diffdetective.variation.diff.source.PatchFile;
 import org.variantsync.diffdetective.variation.diff.source.PatchString;
 import org.variantsync.diffdetective.variation.diff.traverse.DiffTreeTraversal;
 import org.variantsync.diffdetective.variation.diff.traverse.DiffTreeVisitor;
-import org.variantsync.diffdetective.variation.NodeType;
 import org.variantsync.functjonal.Result;
 
 import java.io.BufferedReader;
@@ -68,40 +68,17 @@ public class DiffTree {
     }
 
     /**
-     * Same as {@link DiffTree#fromFile(Path, boolean, boolean, CPPAnnotationParser)} but with
-     * the {@link CPPAnnotationParser#Default default parser} for the lines in the diff.
-     */
-    public static DiffTree fromFile(final Path p, boolean collapseMultipleCodeLines, boolean ignoreEmptyLines) throws IOException, DiffParseException {
-        return fromFile(p, collapseMultipleCodeLines, ignoreEmptyLines, CPPAnnotationParser.Default);
-    }
-
-    /**
-     * Same as {@link DiffTree#fromDiff(String, boolean, boolean, CPPAnnotationParser)} but with
-     * the {@link CPPAnnotationParser#Default default parser} for the lines in the diff.
-     *
-     * @throws DiffParseException if {@code diff} couldn't be parsed
-     */
-    public static DiffTree fromDiff(final String diff, boolean collapseMultipleCodeLines, boolean ignoreEmptyLines) throws DiffParseException {
-        return fromDiff(diff, collapseMultipleCodeLines, ignoreEmptyLines, CPPAnnotationParser.Default);
-    }
-
-    /**
      * Parses a DiffTree from the given file.
      * The file should contain a text-based diff without any meta information.
      * So just lines preceded by "+", "-", or " " are expected.
      * @param p Path to a diff file.
-     * @param collapseMultipleCodeLines Set to true if subsequent lines of source code with
-     *                                  the same {@link NodeType type of change} should be
-     *                                  collapsed into a single source code node representing
-     *                                  all lines at once.
-     * @param ignoreEmptyLines Set to true if empty lines should not be included in the DiffTree.
-     * @param annotationParser The parser that is used to parse lines in the diff to {@link DiffNode}s.
+     * @param parseOptions {@link DiffTreeParseOptions} for the parsing process.
      * @return A result either containing the parsed DiffTree or an error message in case of failure.
      * @throws IOException when the given file could not be read for some reason.
      */
-    public static DiffTree fromFile(final Path p, boolean collapseMultipleCodeLines, boolean ignoreEmptyLines, final CPPAnnotationParser annotationParser) throws IOException, DiffParseException {
+    public static DiffTree fromFile(final Path p, DiffTreeParseOptions parseOptions) throws IOException, DiffParseException {
         try (BufferedReader file = Files.newBufferedReader(p)) {
-            final DiffTree tree = DiffTreeParser.createDiffTree(file, collapseMultipleCodeLines, ignoreEmptyLines, annotationParser);
+            final DiffTree tree = DiffTreeParser.createDiffTree(file, parseOptions);
             tree.setSource(new PatchFile(p));
             return tree;
         }
@@ -112,17 +89,12 @@ public class DiffTree {
      * The file should contain a text-based diff without any meta information.
      * So just lines preceded by "+", "-", or " " are expected.
      * @param diff The diff as text. Lines should be separated by a newline character. Each line should be preceded by either "+", "-", or " ".
-     * @param collapseMultipleCodeLines Set to true if subsequent lines of source code with
-     *                                  the same {@link NodeType type of change} should be
-     *                                  collapsed into a single source code node representing
-     *                                  all lines at once.
-     * @param ignoreEmptyLines Set to true if empty lines should not be included in the DiffTree.
-     * @param annotationParser The parser that is used to parse lines in the diff to {@link DiffNode}s.
+     * @param parseOptions {@link DiffTreeParseOptions} for the parsing process.
      * @return A result either containing the parsed DiffTree or an error message in case of failure.
      * @throws DiffParseException if {@code diff} couldn't be parsed
      */
-    public static DiffTree fromDiff(final String diff, boolean collapseMultipleCodeLines, boolean ignoreEmptyLines, final CPPAnnotationParser annotationParser) throws DiffParseException {
-        final DiffTree tree = DiffTreeParser.createDiffTree(diff, collapseMultipleCodeLines, ignoreEmptyLines, annotationParser);
+    public static DiffTree fromDiff(final String diff, final DiffTreeParseOptions parseOptions) throws DiffParseException {
+        final DiffTree tree = DiffTreeParser.createDiffTree(diff, parseOptions);
         tree.setSource(new PatchString(diff));
         return tree;
     }

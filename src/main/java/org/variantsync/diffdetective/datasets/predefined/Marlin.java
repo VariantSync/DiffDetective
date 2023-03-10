@@ -1,6 +1,6 @@
 package org.variantsync.diffdetective.datasets.predefined;
 
-import org.variantsync.diffdetective.datasets.ParseOptions;
+import org.variantsync.diffdetective.datasets.PatchDiffParseOptions;
 import org.variantsync.diffdetective.datasets.Repository;
 import org.variantsync.diffdetective.feature.CPPAnnotationParser;
 import org.variantsync.diffdetective.feature.PropositionalFormulaParser;
@@ -29,6 +29,6 @@ public class Marlin {
                 .tryFromRemote(localDir, "https://github.com/MarlinFirmware/Marlin.git", "Marlin")
                 .orElseThrow()
                 .setDiffFilter(StanciulescuMarlin.DIFF_FILTER)
-                .setParseOptions(new ParseOptions(ANNOTATION_PARSER));
+                .setParseOptions(PatchDiffParseOptions.Default.withAnnotationParser(ANNOTATION_PARSER));
     }
 }

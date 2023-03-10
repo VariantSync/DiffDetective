@@ -6,6 +6,7 @@ import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.tinylog.Logger;
+import org.variantsync.diffdetective.datasets.PatchDiffParseOptions;
 import org.variantsync.diffdetective.datasets.Repository;
 import org.variantsync.diffdetective.diff.git.CommitDiff;
 import org.variantsync.diffdetective.diff.text.DiffLineNumber;
@@ -73,22 +74,7 @@ public class DiffTreeParser {
 
 
     /* Settings */
-
-    /**
-     * Whether to collapse multiple adjacent lines with the same {@code DiffType} to one artifact
-     * node.
-     */
-    final boolean collapseMultipleCodeLines;
-    /**
-     * Whether to add {@code DiffNode}s for empty lines (regardless of their {@code DiffType}).
-     * If {@link collapseMultipleCodeLines} is {@code true} empty lines are also not added to
-     * existing {@code DiffNode}s.
-     */
-    final boolean ignoreEmptyLines;
-    /**
-     * Customization point for how conditional macros are parsed.
-     */
-    final CPPAnnotationParser annotationParser;
+    final DiffTreeParseOptions options;
 
 
     /* State */
@@ -127,13 +113,11 @@ public class DiffTreeParser {
      * @throws DiffParseException if {@code fullDiff} couldn't be parsed
      */
     public static DiffTree createDiffTree(
-            String fullDiff,
-            boolean collapseMultipleCodeLines,
-            boolean ignoreEmptyLines,
-            CPPAnnotationParser annotationParser
+            final String fullDiff,
+            final DiffTreeParseOptions parseOptions
     ) throws DiffParseException {
         try {
-            return createDiffTree(new BufferedReader(new StringReader(fullDiff)), collapseMultipleCodeLines, ignoreEmptyLines, annotationParser);
+            return createDiffTree(new BufferedReader(new StringReader(fullDiff)), parseOptions);
         } catch (IOException e) {
             throw new AssertionError("No actual IO should be performed because only a StringReader is used");
         }
@@ -146,26 +130,17 @@ public class DiffTreeParser {
      * This parsing algorithm is described in detail in Sören Viegener's bachelor's thesis.
      *
      * @param fullDiff The full diff of a patch obtained from a buffered reader.
-     * @param collapseMultipleCodeLines Whether multiple consecutive code lines with the same diff
-     * type should be collapsed into a single artifact node.
-     * @param ignoreEmptyLines Whether empty lines (no matter if they are added removed or remained
-     * unchanged) should be ignored.
-     * @param annotationParser The parser to parse conditional macros lines in the diff to
-     * {@link DiffNode}s.
+     * @param options {@link DiffTreeParseOptions} for the parsing process.
      * @return A parsed {@link DiffTree} upon success or an error indicating why parsing failed.
      * @throws IOException when reading from {@code fullDiff} fails.
      * @throws DiffParseException if an error in the diff or macro syntax is detected
      */
     public static DiffTree createDiffTree(
             BufferedReader fullDiff,
-            boolean collapseMultipleCodeLines,
-            boolean ignoreEmptyLines,
-            CPPAnnotationParser annotationParser
+            final DiffTreeParseOptions options
     ) throws IOException, DiffParseException {
         return new DiffTreeParser(
-            collapseMultipleCodeLines,
-            ignoreEmptyLines,
-            annotationParser
+            options
         ).parse(() -> {
             String line = fullDiff.readLine();
             if (line == null) {
@@ -185,25 +160,17 @@ public class DiffTreeParser {
      * but acts as if all lines where unmodified.
      *
      * @param file The source code file (not a diff) to be parsed.
-     * @param collapseMultipleCodeLines Whether multiple consecutive artifact lines should be
-     * collapsed into a single artifact node.
-     * @param ignoreEmptyLines Whether empty lines (no matter if they are added removed or remained
-     * unchanged) should be ignored.
-     * @param annotationParser The parser to parse conditional macros.
+     * @param options {@link DiffTreeParseOptions} for the parsing process.
      * @return A parsed {@link DiffTree}.
      * @throws IOException iff {@code file} throws an {@code IOException}
      * @throws DiffParseException if an error in the diff or macro syntax is detected
      */
     public static DiffTree createVariationTree(
             BufferedReader file,
-            boolean collapseMultipleCodeLines,
-            boolean ignoreEmptyLines,
-            CPPAnnotationParser annotationParser
+            DiffTreeParseOptions options
     ) throws IOException, DiffParseException {
         return new DiffTreeParser(
-            collapseMultipleCodeLines,
-            ignoreEmptyLines,
-            annotationParser
+            options
         ).parse(() -> {
             String line = file.readLine();
             if (line == null) {
@@ -228,13 +195,9 @@ public class DiffTreeParser {
      * @see createDiffTree(BufferedReader, boolean, boolean, CPPAnnotationParser)
      */
     private DiffTreeParser(
-            boolean collapseMultipleCodeLines,
-            boolean ignoreEmptyLines,
-            CPPAnnotationParser annotationParser
+            DiffTreeParseOptions options
     ) {
-        this.collapseMultipleCodeLines = collapseMultipleCodeLines;
-        this.ignoreEmptyLines = ignoreEmptyLines;
-        this.annotationParser = annotationParser;
+        this.options = options;
     }
 
     /**
@@ -271,7 +234,7 @@ public class DiffTreeParser {
             lineNumber = lineNumber.add(1, diffType);
 
             // Ignore line if it is empty.
-            if (ignoreEmptyLines && currentLine.isBlank()) {
+            if (options.ignoreEmptyLines() && currentLine.isBlank()) {
                 // discard empty lines
                 continue;
             }
@@ -364,7 +327,7 @@ public class DiffTreeParser {
             diffType.forAllTimesOfExistence(beforeStack, afterStack, stack ->
                 popIfChain(stack, fromLine)
             );
-        } else if (collapseMultipleCodeLines
+        } else if (options.collapseMultipleCodeLines()
                 && conditionalMacroName == null
                 && lastArtifact != null
                 && lastArtifact.diffType.equals(diffType)
@@ -390,7 +353,7 @@ public class DiffTreeParser {
                     toLine,
                     nodeType == NodeType.ARTIFACT || nodeType == NodeType.ELSE
                         ? null
-                        : annotationParser.parseDiffLines(line.getLines()),
+                        : options.annotationParser().parseDiffLines(line.getLines()),
                     line.getLines()
                 );
 
