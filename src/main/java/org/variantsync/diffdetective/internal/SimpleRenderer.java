@@ -1,7 +1,7 @@
 package org.variantsync.diffdetective.internal;
 
 import org.tinylog.Logger;
-import org.variantsync.diffdetective.datasets.ParseOptions;
+import org.variantsync.diffdetective.datasets.PatchDiffParseOptions;
 import org.variantsync.diffdetective.datasets.Repository;
 import org.variantsync.diffdetective.diff.git.PatchDiff;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
@@ -12,6 +12,7 @@ import org.variantsync.diffdetective.mining.RWCompositePatternTreeFormat;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.util.FileUtils;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
+import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParseOptions;
 import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParser;
 import org.variantsync.diffdetective.variation.diff.render.DiffTreeRenderer;
 import org.variantsync.diffdetective.variation.diff.render.RenderOptions;
@@ -98,7 +99,10 @@ public class SimpleRenderer {
             Logger.info("Rendering {}", fileToRender);
             final DiffTree t;
             try {
-                t = DiffTree.fromFile(fileToRender, collapseMultipleCodeLines, ignoreEmptyLines, CPPAnnotationParser.Default);
+                t = DiffTree.fromFile(fileToRender,
+                        new DiffTreeParseOptions(
+                                CPPAnnotationParser.Default, collapseMultipleCodeLines, ignoreEmptyLines
+                        ));
             } catch (IOException | DiffParseException e) {
                 Logger.error(e, "Could not read given file '{}'", fileToRender);
                 return;
@@ -154,7 +158,7 @@ public class SimpleRenderer {
             final String file = args[2];
 
             final Repository repository = Repository.fromDirectory(repoPath, repoName);
-            repository.setParseOptions(repository.getParseOptions().withDiffStoragePolicy(ParseOptions.DiffStoragePolicy.REMEMBER_STRIPPED_DIFF));
+            repository.setParseOptions(repository.getParseOptions().withDiffStoragePolicy(PatchDiffParseOptions.DiffStoragePolicy.REMEMBER_STRIPPED_DIFF));
 
             final List<DiffTreeTransformer> transform = DiffTreeMiner.Postprocessing(repository);
             final PatchDiff patch = DiffTreeParser.parsePatch(repository, file, commit);

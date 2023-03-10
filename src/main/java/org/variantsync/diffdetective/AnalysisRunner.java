@@ -32,7 +32,7 @@ public class AnalysisRunner {
      * @param datasetsFile Path to a markdown file containing a table of git repositories to analyze.
      * @param diffStoragePolicy Policy that decides whether and how the text-based diffs from git should
      *                          be stored in any parsed DiffTrees during the analyses. The default is
-     *                          {@link ParseOptions.DiffStoragePolicy#DO_NOT_REMEMBER} as storing all
+     *                          {@link PatchDiffParseOptions.DiffStoragePolicy#DO_NOT_REMEMBER} as storing all
      *                          the text-diffs as strings can cause a big memory footprint that can be
      *                          avoided when the text-diffs are not used anyway.
      * @param getFilterForRepo Determines which filter to use for parsing diffs in given repository that is about to be analyzed.
@@ -48,7 +48,7 @@ public class AnalysisRunner {
             Path repositoriesDirectory,
             Path outputDirectory,
             Path datasetsFile,
-            ParseOptions.DiffStoragePolicy diffStoragePolicy,
+            PatchDiffParseOptions.DiffStoragePolicy diffStoragePolicy,
             Function<Repository, DiffFilter> getFilterForRepo,
             boolean preloadReposBeforeAnalysis,
             /* Determines whether all analyzed repositories should be updated
@@ -71,7 +71,7 @@ public class AnalysisRunner {
                     Paths.get("..", "DiffDetectiveMining"),
                     Paths.get("results", "validation", "current"),
                     datasetsFile,
-                    ParseOptions.DiffStoragePolicy.DO_NOT_REMEMBER,
+                    PatchDiffParseOptions.DiffStoragePolicy.DO_NOT_REMEMBER,
                     repo -> DatasetFactory.getDefaultDiffFilterFor(repo.getRepositoryName()),
                     true,
                     false

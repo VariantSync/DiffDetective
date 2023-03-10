@@ -2,6 +2,7 @@ import org.junit.jupiter.api.Test;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.editclass.proposed.ProposedEditClasses;
+import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParseOptions;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -14,7 +15,7 @@ public class EditClassesTest {
     @Test
     public void testAtomics() throws IOException, DiffParseException {
         final Path path = testDir.resolve("elementary.diff");
-        final DiffTree t = DiffTree.fromFile(path, false, true);
+        final DiffTree t = DiffTree.fromFile(path, new DiffTreeParseOptions(false, true));
         t.forAll(node -> {
             if (node.isArtifact()) {
                 assertEquals(

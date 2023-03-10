@@ -2,10 +2,11 @@ import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.variantsync.diffdetective.datasets.PatchDiffParseOptions;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
-import org.variantsync.diffdetective.feature.CPPAnnotationParser;
 import org.variantsync.diffdetective.util.IO;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
+import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParseOptions;
 import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParser;
 import org.variantsync.diffdetective.variation.diff.serialize.Format;
 import org.variantsync.diffdetective.variation.diff.serialize.LineGraphExporter;
@@ -62,9 +63,10 @@ public class DiffTreeParserTest {
         try (var inputFile = Files.newBufferedReader(testCasePath)) {
             diffTree = DiffTreeParser.createDiffTree(
                 inputFile,
-                false,
-                false,
-                CPPAnnotationParser.Default
+                new DiffTreeParseOptions(
+                        false,
+                        false
+                )
             );
         }
 
