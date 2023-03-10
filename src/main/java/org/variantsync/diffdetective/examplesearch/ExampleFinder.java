@@ -11,6 +11,7 @@ import org.variantsync.diffdetective.feature.CPPAnnotationParser;
 import org.variantsync.diffdetective.show.Show;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.util.IO;
+import org.variantsync.diffdetective.util.StringUtils;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.variation.diff.filter.ExplainedFilter;
 import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParseOptions;
@@ -25,8 +26,10 @@ import org.variantsync.diffdetective.variation.diff.source.DiffTreeSource;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 /**
  * Helper class to find suitable running examples.
@@ -69,8 +72,31 @@ public class ExampleFinder implements Analysis.Hooks {
         this.exampleExport = new PatchDiffRenderer(renderer, ExportOptions);
     }
 
-    @Override
-    public boolean analyzeDiffTree(Analysis analysis) {
+    public static <T> List<List<T>> split(List<T> elements, Predicate<T> split) {
+        final List<List<T>> result = new ArrayList<>();
+        List<T> current = new ArrayList<>();
+
+        for (final T t : elements) {
+            if (split.test(t)) {
+                if (!current.isEmpty()) {
+                    result.add(current);
+                    current = new ArrayList<>();
+                }
+            } else {
+                current.add(t);
+            }
+        }
+
+        if (!current.isEmpty()) {
+            result.add(current);
+        }
+
+        return result;
+    }
+
+    private boolean checkIfExample(Analysis analysis, String localDiff) {
+//        Logger.info(localDiff);
+
         final Repository currentRepo = analysis.getRepository();
         final DiffTree diffTree = analysis.getCurrentDiffTree();
         final CPPAnnotationParser annotationParser = analysis.getRepository().getParseOptions().diffTreeParseOptions().annotationParser();
@@ -78,7 +104,6 @@ public class ExampleFinder implements Analysis.Hooks {
         // We do not want a difftree for the entire file but only for the local change to have a small example.
         final DiffTree localTree;
         try {
-            final String localDiff = getDiff(diffTree);
             localTree = DiffTree.fromDiff(localDiff, new DiffTreeParseOptions(annotationParser, true, true));
             // Not every local diff can be parsed to a difftree because diffs are unaware of the underlying language (i.e., CPP).
             // We want only running examples whose diffs describe entire diff trees for easier understanding.
@@ -94,32 +119,67 @@ public class ExampleFinder implements Analysis.Hooks {
         }
 
         exportExample(
+                analysis,
+                localDiff,
                 localTree,
-                analysis.getOutputDir().resolve(currentRepo.getRepositoryName())
+                analysis.getOutputDir()
         );
 
         return true;
     }
 
-    private void exportExample(final DiffTree example, final Path outputDir) {
-        Assert.assertTrue(example.getSource() instanceof GitPatch);
-        final GitPatch patch = (GitPatch) example.getSource();
-        final Path treeDir = outputDir.resolve(Path.of(patch.getCommitHash()));
+    @Override
+    public void initializeResults(Analysis analysis) {
+        Assert.assertEquals(analysis.getRepository().getParseOptions().diffStoragePolicy(), PatchDiffParseOptions.DiffStoragePolicy.REMEMBER_STRIPPED_DIFF);
+    }
+
+    @Override
+    public boolean analyzeDiffTree(Analysis analysis) {
+        // We do not want a difftree for the entire file but only for the local change to have a small example.
+        // Analyze all patches individually
+        final String localDiffs = getDiff(analysis.getCurrentDiffTree());
+
+        boolean exampleFound = false;
+        for (List<String> diffLines : split(localDiffs.lines().toList(), s -> s.startsWith("@"))) {
+            exampleFound |= checkIfExample(analysis, String.join(StringUtils.LINEBREAK, diffLines));
+        }
+        return exampleFound;
+    }
+
+    private void exportExample(final Analysis analysis, final String tdiff, final DiffTree vdiff, Path outputDir) {
+        Assert.assertTrue(vdiff.getSource() instanceof GitPatch);
+        final Repository repo = analysis.getRepository();
+        final GitPatch patch = (GitPatch) vdiff.getSource();
+        outputDir = outputDir.resolve(Path.of(repo.getRepositoryName() + "_" + patch.getCommitHash()));
+        final String filename = patch.getFileName();
 
         Logger.info("Exporting example candidate: {}", patch);
-        //exampleExport.render(example, patch, treeDir);
 
+        // export metadata
+        String metadata = "";
+        metadata += "Repository Name: " + repo.getRepositoryName() + StringUtils.LINEBREAK;
+        metadata += "Repository URL: " + repo.getRemoteURI() + StringUtils.LINEBREAK;
+        metadata += "Child commit: " + patch.getCommitHash() + StringUtils.LINEBREAK;
+        metadata += "Parent commit: " + patch.getParentCommitHash() + StringUtils.LINEBREAK;
+        metadata += "File: " + patch.getFileName() + StringUtils.LINEBREAK;
+        String githubLink = repo.getRemoteURI().toString();
+        if (githubLink.endsWith(".git")) {
+            githubLink = githubLink.substring(0, githubLink.length() - ".git".length());
+        }
+        githubLink += "/commit/" + patch.getCommitHash();
+        metadata += "Github: " + githubLink + StringUtils.LINEBREAK;
+        IO.tryWrite(outputDir.resolve(filename + ".metadata.txt"), metadata);
+
+        // export tdiff
+        IO.tryWrite(outputDir.resolve(filename + ".diff"), tdiff);
+
+        // export vdiff
+        //exampleExport.render(example, patch, treeDir);
         try {
-            Show.diff(example).dontShowButRenderToTexture().saveAsPng(treeDir.resolve(patch.getFileName() + ".png").toFile());
+            Show.diff(vdiff).dontShowButRenderToTexture().saveAsPng(outputDir.resolve(patch.getFileName() + ".png").toFile());
         } catch (IOException e) {
             Logger.error("Could not render example");
         }
-
-        String metadata = "";
-        metadata += "Child commit: " + patch.getCommitHash() + "\n";
-        metadata += "Parent commit: " + patch.getParentCommitHash() + "\n";
-        metadata += "File: " + patch.getFileName() + "\n";
-        IO.tryWrite(treeDir.resolve(patch.getFileName() + ".metadata.txt"), metadata);
     }
 
     static String getDiff(final DiffTree tree) {
