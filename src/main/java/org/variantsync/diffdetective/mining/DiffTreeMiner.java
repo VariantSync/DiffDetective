@@ -112,7 +112,7 @@ public class DiffTreeMiner {
 //        setupLogger(Level.INFO);
 //        setupLogger(Level.DEBUG);
 
-        final ParseOptions.DiffStoragePolicy diffStoragePolicy = ParseOptions.DiffStoragePolicy.DO_NOT_REMEMBER;
+        final PatchDiffParseOptions.DiffStoragePolicy diffStoragePolicy = PatchDiffParseOptions.DiffStoragePolicy.DO_NOT_REMEMBER;
 
         final Path inputDir = Paths.get("..", "DiffDetectiveMining");
         final Path outputDir = Paths.get("results", "difftrees");

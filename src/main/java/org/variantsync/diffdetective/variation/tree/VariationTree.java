@@ -1,9 +1,9 @@
 package org.variantsync.diffdetective.variation.tree;
 
+import org.variantsync.diffdetective.datasets.PatchDiffParseOptions;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
-import org.variantsync.diffdetective.feature.CPPAnnotationParser;
 import org.variantsync.diffdetective.util.Assert;
-import org.variantsync.diffdetective.variation.NodeType; // For Javadoc
+import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParseOptions;
 import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParser;
 import org.variantsync.diffdetective.variation.tree.source.LocalFileSource;
 import org.variantsync.diffdetective.variation.tree.source.VariationTreeSource;
@@ -42,72 +42,38 @@ public record VariationTree(
     }
 
     /**
-     * Same as {@link fromFile(Path, boolean, CPPAnnotationParser)} but with
-     * a {@link CPPAnnotationParser#Default default annotation parser}.
-     */
-    public static VariationTree fromFile(
-        final Path p,
-        final boolean collapseMultipleCodeLines
-    ) throws IOException, DiffParseException {
-        return fromFile(p, collapseMultipleCodeLines, CPPAnnotationParser.Default);
-    }
-
-    /**
-     * Same as {@link fromFile(BufferedReader, VariationTreeSource, boolean, CPPAnnotationParser)}
+     * Same as {@link #fromFile(BufferedReader, VariationTreeSource, DiffTreeParseOptions)}
      * but registers {@code path} as source.
      */
     public static VariationTree fromFile(
         final Path path,
-        final boolean collapseMultipleCodeLines,
-        final CPPAnnotationParser annotationParser
+        final DiffTreeParseOptions parseOptions
     ) throws IOException, DiffParseException {
         try (BufferedReader file = Files.newBufferedReader(path)) {
             return fromFile(
                 file,
                 new LocalFileSource(path),
-                collapseMultipleCodeLines,
-                annotationParser
+                    parseOptions
             );
         }
-    }
-
-    /**
-     * Same as {@link fromFile(BufferedReader, VariationTreeSource, boolean, CPPAnnotationParser)}
-     * but with a {@link CPPAnnotationParser#Default default annotation parser}.
-     */
-    public static VariationTree fromFile(
-        final BufferedReader input,
-        final VariationTreeSource source,
-        final boolean collapseMultipleCodeLines
-    ) throws IOException, DiffParseException {
-        return fromFile(
-            input,
-            source,
-            collapseMultipleCodeLines,
-            CPPAnnotationParser.Default
-        );
     }
 
     /**
      * Parses a {@code VariationTree} from source code with C preprocessor annotations.
      *
      * @param input the source code to be parsed
-     * @param collapseMultipleCodeLines Set to true if subsequent lines of source code with the same
-     * {@link NodeType type} should be collapsed into a single artifact node representing all lines
-     * at once.
-     * @param annotationParser the parser that is used to parse preprocessor expressions
+     * @param parseOptions {@link PatchDiffParseOptions} for the parsing process.
      * @return a new {@code VariationTree} representing {@code input}
      * @throws IOException if {@code input} throws {@code IOException}
      * @throws DiffParseException if some preprocessor annotations can't be parsed
      */
     public static VariationTree fromFile(
-        final BufferedReader input,
-        final VariationTreeSource source,
-        final boolean collapseMultipleCodeLines,
-        final CPPAnnotationParser annotationParser
-    ) throws IOException, DiffParseException {
+            final BufferedReader input,
+            final VariationTreeSource source,
+            final DiffTreeParseOptions parseOptions
+            ) throws IOException, DiffParseException {
         VariationTreeNode tree = DiffTreeParser
-            .createVariationTree(input, collapseMultipleCodeLines, false, annotationParser)
+            .createVariationTree(input, parseOptions)
             .getRoot()
             // Arbitrarily choose the BEFORE projection as both should be equal.
             .projection(BEFORE)

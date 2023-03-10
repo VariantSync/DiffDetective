@@ -3,7 +3,7 @@ import org.eclipse.jgit.api.errors.NoHeadException;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.variantsync.diffdetective.datasets.ParseOptions.DiffStoragePolicy;
+import org.variantsync.diffdetective.datasets.PatchDiffParseOptions.DiffStoragePolicy;
 import org.variantsync.diffdetective.datasets.Repository;
 import org.variantsync.diffdetective.diff.git.CommitDiff;
 import org.variantsync.diffdetective.diff.git.GitDiffer;
