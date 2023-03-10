@@ -39,6 +39,7 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * This class creates a GitDiff-object from a git repository (Git-object).
@@ -317,18 +318,48 @@ public class GitDiffer {
                 diffFormatter.format(diffEntry);
                 final String gitDiff = outputStream.toString(StandardCharsets.UTF_8);
                 final String filename = diffEntry.getOldPath();
+
+                final Matcher matcher = DIFF_HEADER_PATTERN.matcher(gitDiff);
+                final String strippedDiff;
+                if (matcher.find()) {
+                    strippedDiff = gitDiff.substring(matcher.end() + 1);
+                } else {
+                    strippedDiff = gitDiff;
+                }
+
                 try {
-                    final BufferedReader file = getBeforeFullFile(git, parentCommit, filename);
-                    final PatchDiff patchDiff =
-                        createPatchDiff(
+                    final String fullDiff = switch (diffEntry.getChangeType()) {
+                        case ADD, DELETE -> {
+                            // The first lines contains meta information "@@ ... " that we want to skip.
+                            final String[] hunkBeginAndRest = StringUtils.LINEBREAK_REGEX.split(strippedDiff, 2);
+                            Assert.assertTrue(hunkBeginAndRest.length == 2, "Hunk is only one line. Is it a hunk? Hunk: " + strippedDiff);
+                            yield hunkBeginAndRest[1];
+                        }
+                        case RENAME, COPY, MODIFY -> {
+                            final BufferedReader beforeFullFile = getBeforeFullFile(git, parentCommit, filename);
+                            yield getFullDiff(beforeFullFile, new BufferedReader(new StringReader(strippedDiff)));
+                        }
+                    };
+
+                    final DiffTree diffTree = DiffTreeParser.createDiffTree(
+                            fullDiff,
+                            parseOptions.diffTreeParseOptions()
+                    );
+
+                    // not storing the full diff reduces memory usage by around 40-50%
+                    final String diffToRemember = switch (parseOptions.diffStoragePolicy()) {
+                        case DO_NOT_REMEMBER -> "";
+                        case REMEMBER_DIFF -> gitDiff;
+                        case REMEMBER_FULL_DIFF -> fullDiff;
+                        case REMEMBER_STRIPPED_DIFF -> strippedDiff;
+                    };
+
+                    commitDiff.addPatchDiff(new PatchDiff(
                             commitDiff,
                             diffEntry,
-                            gitDiff,
-                            file,
-                            parseOptions
-                        );
-
-                    commitDiff.addPatchDiff(patchDiff);
+                            diffToRemember,
+                            diffTree
+                    ));
                 } catch (IOException e) {
                     Logger.debug(e, "Could not obtain full diff of file " + filename + " before commit " + parentCommit + "!");
                     errors.add(DiffError.COULD_NOT_OBTAIN_FULLDIFF);
@@ -343,48 +374,6 @@ public class GitDiffer {
         }
 
         return new CommitDiffResult(Optional.of(commitDiff), errors);
-    }
-    
-    /**
-     * Creates a PatchDiff from a given DiffEntry of a commit.
-     *
-     * @param commitDiff     The CommitDiff the created PatchDiff belongs to
-     * @param diffEntry      The DiffEntry of the file that was changed in the commit
-     * @param gitDiff        The git diff of the file that was changed
-     * @param beforeFullFile The full file before the change
-     * @return The PatchDiff of the given DiffEntry
-     * @throws DiffParseException if {@code gitDiff} couldn't be parsed
-     */
-    private static PatchDiff createPatchDiff(
-            final CommitDiff commitDiff,
-            final DiffEntry diffEntry,
-            final String gitDiff,
-            final BufferedReader beforeFullFile,
-            final PatchDiffParseOptions parseOptions
-    ) throws DiffParseException {
-        final Matcher matcher = DIFF_HEADER_PATTERN.matcher(gitDiff);
-        final String strippedDiff;
-        if (matcher.find()) {
-            strippedDiff = gitDiff.substring(matcher.end() + 1);
-        } else {
-            strippedDiff = gitDiff;
-        }
-
-        final String fullDiff = getFullDiff(beforeFullFile, new BufferedReader(new StringReader(strippedDiff)));
-        DiffTree diffTree = DiffTreeParser.createDiffTree(
-                fullDiff,
-                parseOptions.diffTreeParseOptions()
-        );
-
-        // not storing the full diff reduces memory usage by around 40-50%
-        final String diffToRemember = switch (parseOptions.diffStoragePolicy()) {
-            case DO_NOT_REMEMBER -> "";
-            case REMEMBER_DIFF -> gitDiff;
-            case REMEMBER_FULL_DIFF -> fullDiff;
-            case REMEMBER_STRIPPED_DIFF -> strippedDiff;
-        };
-
-        return new PatchDiff(commitDiff, diffEntry, diffToRemember, diffTree);
     }
 
     /**
@@ -472,6 +461,6 @@ public class GitDiffer {
      * Returns the internal representation of this differs repository.
      */
     public Git getJGitRepo() {
-    	return git;
+        return git;
     }
 }
