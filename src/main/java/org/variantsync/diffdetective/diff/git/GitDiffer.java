@@ -371,25 +371,17 @@ public class GitDiffer {
         }
 
         final String fullDiff = getFullDiff(beforeFullFile, new BufferedReader(new StringReader(strippedDiff)));
-        try {
-            DiffTree diffTree = DiffTreeParser.createDiffTree(fullDiff, true, true, parseOptions.annotationParser());
+        DiffTree diffTree = DiffTreeParser.createDiffTree(fullDiff, true, true, parseOptions.annotationParser());
 
-            // not storing the full diff reduces memory usage by around 40-50%
-            final String diffToRemember = switch (parseOptions.diffStoragePolicy()) {
-                case DO_NOT_REMEMBER -> "";
-                case REMEMBER_DIFF -> gitDiff;
-                case REMEMBER_FULL_DIFF -> fullDiff;
-                case REMEMBER_STRIPPED_DIFF -> strippedDiff;
-            };
+        // not storing the full diff reduces memory usage by around 40-50%
+        final String diffToRemember = switch (parseOptions.diffStoragePolicy()) {
+            case DO_NOT_REMEMBER -> "";
+            case REMEMBER_DIFF -> gitDiff;
+            case REMEMBER_FULL_DIFF -> fullDiff;
+            case REMEMBER_STRIPPED_DIFF -> strippedDiff;
+        };
 
-            return new PatchDiff(commitDiff, diffEntry, diffToRemember, diffTree);
-        } catch (DiffParseException e) {
-            // if (diffTree.isFailure()) {
-            //     Logger.debug(e, "Something went wrong parsing patch for file {} at commit {}!",
-            //             diffEntry.getOldPath(), commitDiff.getAbbreviatedCommitHash());
-            // }
-            throw e;
-        }
+        return new PatchDiff(commitDiff, diffEntry, diffToRemember, diffTree);
     }
 
     /**
