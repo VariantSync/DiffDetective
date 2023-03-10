@@ -11,6 +11,7 @@ import org.variantsync.diffdetective.datasets.PatchDiffParseOptions;
 import org.variantsync.diffdetective.datasets.Repository;
 import org.variantsync.diffdetective.diff.git.DiffFilter;
 import org.variantsync.diffdetective.diff.git.PatchDiff;
+import org.variantsync.diffdetective.show.Show;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.variation.diff.filter.DiffTreeFilter;
 import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParseOptions;
@@ -49,7 +50,7 @@ public class ASTest implements Analysis.Hooks {
                 repo -> {
                     final PatchDiffParseOptions repoDefault = repo.getParseOptions();
                     return new PatchDiffParseOptions(
-                            PatchDiffParseOptions.DiffStoragePolicy.DO_NOT_REMEMBER,
+                            PatchDiffParseOptions.DiffStoragePolicy.REMEMBER_STRIPPED_DIFF,
                             new DiffTreeParseOptions(
                                     repoDefault.diffTreeParseOptions().annotationParser(),
                                     false,
@@ -82,7 +83,7 @@ public class ASTest implements Analysis.Hooks {
     @Override
     public boolean beginPatch(Analysis analysis) {
         final PatchDiff patch = analysis.getCurrentPatch();
-        Logger.info("  " + patch.getFileName());
+        Logger.info("  " + patch.getFileName() + "\n" + patch.getDiff());
         return true;
     }
 
@@ -91,7 +92,7 @@ public class ASTest implements Analysis.Hooks {
         // Get the ground truth for this file
         final DiffTree d = analysis.getCurrentDiffTree();
         Logger.info("    has VDiff");
-//        Show.diff(d).showAndAwait();
+        Show.diff(d).showAndAwait();
         return true;
     }
 }
