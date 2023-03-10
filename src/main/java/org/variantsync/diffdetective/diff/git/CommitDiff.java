@@ -16,6 +16,8 @@ import java.util.List;
  * @author Sören Viegener, Paul Bittner
  */
 public class CommitDiff {
+    public final static String INVALID_COMMIT_HASH = "none";
+
 	/**
 	 * A list of all {@link PatchDiff PatchDiffs} of a {@link CommitDiff}.
 	 */
@@ -42,7 +44,11 @@ public class CommitDiff {
      */
     public CommitDiff(RevCommit commit, RevCommit parent) {
         this.commitHash = commit.getId().getName();
-        this.parentCommitHash = parent.getId().getName();
+        if (parent == null) {
+            this.parentCommitHash = INVALID_COMMIT_HASH;
+        } else {
+            this.parentCommitHash = parent.getId().getName();
+        }
         this.merge = commit.getParentCount() > 1;
         this.patchDiffs = new ArrayList<>();
     }
