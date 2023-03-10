@@ -1,17 +1,19 @@
 package org.variantsync.diffdetective.internal;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.function.TriFunction;
 import org.tinylog.Logger;
 import org.variantsync.diffdetective.AnalysisRunner;
 import org.variantsync.diffdetective.analysis.Analysis;
 import org.variantsync.diffdetective.analysis.FilterAnalysis;
 import org.variantsync.diffdetective.analysis.PreprocessingAnalysis;
-import org.variantsync.diffdetective.datasets.ParseOptions;
+import org.variantsync.diffdetective.datasets.PatchDiffParseOptions;
 import org.variantsync.diffdetective.datasets.Repository;
 import org.variantsync.diffdetective.diff.git.DiffFilter;
-import org.variantsync.diffdetective.show.Show;
+import org.variantsync.diffdetective.diff.git.PatchDiff;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.variation.diff.filter.DiffTreeFilter;
+import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParseOptions;
 import org.variantsync.diffdetective.variation.diff.transform.CutNonEditedSubtrees;
 
 import java.io.IOException;
@@ -31,22 +33,6 @@ public class ASTest implements Analysis.Hooks {
             repoOutputDir
     );
 
-    public ASTest() {
-
-    }
-
-    @Override
-    public boolean beginCommit(Analysis analysis) throws Exception {
-        Logger.info(analysis.getCurrentCommit());
-        return true;
-    }
-
-    @Override
-    public boolean beginPatch(Analysis analysis) throws Exception {
-        Logger.info("  " + analysis.getCurrentPatch());
-        return true;
-    }
-
     /**
      * Main method to start the analysis.
      *
@@ -60,7 +46,17 @@ public class ASTest implements Analysis.Hooks {
                 defaultOptions.repositoriesDirectory(),
                 Paths.get("results", "astest"),
                 defaultOptions.datasetsFile(),
-                ParseOptions.DiffStoragePolicy.DO_NOT_REMEMBER,
+                repo -> {
+                    final PatchDiffParseOptions repoDefault = repo.getParseOptions();
+                    return new PatchDiffParseOptions(
+                            PatchDiffParseOptions.DiffStoragePolicy.DO_NOT_REMEMBER,
+                            new DiffTreeParseOptions(
+                                    repoDefault.diffTreeParseOptions().annotationParser(),
+                                    false,
+                                    false
+                            )
+                    );
+                },
                 repo -> new DiffFilter.Builder()
                         .allowMerge(false)
                         .allowAllChangeTypes()
@@ -70,17 +66,32 @@ public class ASTest implements Analysis.Hooks {
                 false
         );
 
+        FileUtils.deleteDirectory(options.outputDirectory().toFile());
+
         AnalysisRunner.run(options, (repo, repoOutputDir) ->
                 Analysis.forEachCommit(() -> AnalysisFactory.apply(repo, repoOutputDir, analysis))
         );
     }
 
     @Override
+    public boolean beginCommit(Analysis analysis) {
+        Logger.info(analysis.getCurrentCommit());
+        return true;
+    }
+
+    @Override
+    public boolean beginPatch(Analysis analysis) {
+        final PatchDiff patch = analysis.getCurrentPatch();
+        Logger.info("  " + patch.getFileName());
+        return true;
+    }
+
+    @Override
     public boolean analyzeDiffTree(Analysis analysis) {
         // Get the ground truth for this file
         final DiffTree d = analysis.getCurrentDiffTree();
-        Logger.info("    VDiff: {}", d.getSource());
-        Show.diff(d).showAndAwait();
+        Logger.info("    has VDiff");
+//        Show.diff(d).showAndAwait();
         return true;
     }
 }
