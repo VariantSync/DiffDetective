@@ -11,7 +11,9 @@ import org.variantsync.diffdetective.datasets.PatchDiffParseOptions;
 import org.variantsync.diffdetective.datasets.Repository;
 import org.variantsync.diffdetective.diff.git.DiffFilter;
 import org.variantsync.diffdetective.diff.git.PatchDiff;
+import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.show.Show;
+import org.variantsync.diffdetective.show.engine.GameEngine;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.variation.diff.filter.DiffTreeFilter;
 import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParseOptions;
@@ -33,6 +35,10 @@ public class ASTest implements Analysis.Hooks {
             repo,
             repoOutputDir
     );
+
+    private static GameEngine inspect(final Path p) throws IOException, DiffParseException {
+        return Show.diff(DiffTree.fromFile(p, new DiffTreeParseOptions(false, false)));
+    }
 
     /**
      * Main method to start the analysis.
