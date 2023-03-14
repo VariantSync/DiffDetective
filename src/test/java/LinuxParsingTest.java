@@ -21,7 +21,7 @@ public class LinuxParsingTest {
 
         t.forAll(n -> {
             if (n.isAnnotation()) {
-                Assert.assertTrue(n.getLabel().contains("CONFIG_"), () -> "Macro node " + n + " is not a feature annotation!");
+                Assert.assertTrue(n.getLabel().toString().contains("CONFIG_"), () -> "Macro node " + n + " is not a feature annotation!");
             }
         });
 

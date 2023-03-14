@@ -43,6 +43,10 @@ import static org.variantsync.diffdetective.util.fide.FormulaUtils.negate;
  * @author Benjamin Moosherr
  */
 public abstract class VariationNode<T extends VariationNode<T>> implements HasNodeType {
+    public interface Label {
+        public List<String> lines();
+    }
+
     /**
      * Returns this instance as the derived class type {@code T}.
      * The deriving class will only have to return {@code this} here but this can't be implemented
@@ -71,14 +75,23 @@ public abstract class VariationNode<T extends VariationNode<T>> implements HasNo
     public abstract NodeType getNodeType();
 
     /**
-     * Returns the label of this node as an unmodifiable list of lines.
+     * Returns the label of this node.
      *
      * <p>If {@link #isArtifact()} is {@code true} this may represent the source code of this artifact.
      * Otherwise it may represent the preprocessor expression which was parsed to obtain
      * {@link #getFormula()}. In either case, this label may be an arbitrary value,
      * selected according to the needs of the user of this class.
      */
-    public abstract List<String> getLabelLines();
+    public abstract Label getLabel();
+
+    /**
+     * Returns the label of this node as an unmodifiable list of lines.
+     *
+     * @see getLabel
+     */
+    public List<String> getLabelLines() {
+        return getLabel().lines();
+    }
 
     /**
      * Returns the range of line numbers of this node's corresponding source code.
@@ -437,7 +450,7 @@ public abstract class VariationNode<T extends VariationNode<T>> implements HasNo
             getNodeType(),
             getFormula().clone(),
             getLineRange(),
-            new ArrayList<String>(getLabelLines())
+            getLabel().lines()
         );
 
         for (var child : getChildren()) {

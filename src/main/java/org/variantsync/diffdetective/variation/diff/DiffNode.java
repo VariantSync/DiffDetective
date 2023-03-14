@@ -9,9 +9,11 @@ import org.variantsync.diffdetective.util.fide.FixTrueFalse;
 import org.variantsync.diffdetective.variation.NodeType;
 import org.variantsync.diffdetective.variation.tree.HasNodeType;
 import org.variantsync.diffdetective.variation.tree.VariationNode;
+import org.variantsync.functjonal.list.FilteredMappedListView;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static org.variantsync.diffdetective.variation.diff.Time.AFTER;
 import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
@@ -26,6 +28,39 @@ import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
  * @author Paul Bittner, Sören Viegener, Benjamin Moosherr
  */
 public class DiffNode implements HasNodeType {
+    public record Label(List<Line> diffLines) implements VariationNode.Label {
+        public record Line(String content, DiffLineNumber lineNumber) {
+            public static Line withInvalidLineNumber(String content) {
+                return new Line(content, DiffLineNumber.Invalid());
+            }
+        }
+
+        public Label() {
+            this(new ArrayList<>());
+        }
+
+        public static Label withInvalidLineNumbers(List<String> lines) {
+            return new Label(lines.stream().map(Line::withInvalidLineNumber).toList());
+        }
+
+        public static Label ofCodeBlock(String codeBlock) {
+            return withInvalidLineNumbers(Arrays.asList(StringUtils.LINEBREAK_REGEX.split(codeBlock, -1)));
+        }
+
+        @Override
+        public List<String> lines() {
+            return FilteredMappedListView.map(diffLines, line -> line.content);
+        }
+
+        @Override
+        public String toString() {
+            return diffLines
+                .stream()
+                .map(Line::content)
+                .collect(Collectors.joining(StringUtils.LINEBREAK));
+        }
+    }
+
     /**
      * The diff type of this node, which determines if this node represents
      * an inserted, removed, or unchanged element in a diff.
@@ -42,7 +77,7 @@ public class DiffNode implements HasNodeType {
     private DiffLineNumber to = DiffLineNumber.Invalid();
 
     private Node featureMapping;
-    private List<String> lines;
+    private Label label;
 
     /**
      * The parents {@link DiffNode} before and after the edit.
@@ -75,28 +110,37 @@ public class DiffNode implements HasNodeType {
     private Projection[] projections = new Projection[2];
 
     /**
+     * The same as {@link DiffNode#DiffNode(DiffType, NodeType, DiffLineNumber, DiffLineNumber, Node, List<String>)}
+     * but a minimum label consisting of the lines of {@code label}.
+     */
+    public DiffNode(DiffType diffType, NodeType nodeType,
+                    DiffLineNumber fromLines, DiffLineNumber toLines,
+                    Node featureMapping, String label) {
+        this(diffType, nodeType, fromLines, toLines, featureMapping, Label.ofCodeBlock(label));
+    }
+
+    /**
+     * The same as {@link DiffNode#DiffNode(DiffType, NodeType, DiffLineNumber, DiffLineNumber, Node, Label)}
+     * but a minimum label only storing a list of lines.
+     */
+    public DiffNode(DiffType diffType, NodeType nodeType,
+                    DiffLineNumber fromLines, DiffLineNumber toLines,
+                    Node featureMapping, List<String> label) {
+        this(diffType, nodeType, fromLines, toLines, featureMapping, Label.withInvalidLineNumbers(label));
+    }
+
+    /**
      * Creates a DiffNode with the given parameters.
      * @param diffType The type of change made to this node.
      * @param nodeType The type of this node (i.e., mapping or artifact).
      * @param fromLines The starting line number of the corresponding text.
      * @param toLines The ending line number of the corresponding text.
      * @param featureMapping The formula stored in this node. Should be null for artifact nodes.
-     * @param label A text label containing information to identify the node (such as the corresponding source code).
+     * @param label The label of this node.
      */
     public DiffNode(DiffType diffType, NodeType nodeType,
                     DiffLineNumber fromLines, DiffLineNumber toLines,
-                    Node featureMapping, String label) {
-        this(diffType, nodeType, fromLines, toLines, featureMapping,
-                new ArrayList<String>(Arrays.asList(StringUtils.LINEBREAK_REGEX.split(label, -1))));
-    }
-
-    /**
-     * The same as {@link DiffNode#DiffNode(DiffType, NodeType, DiffLineNumber, DiffLineNumber, Node, String)}
-     * but with the label separated into different lines of text instead of as a single String with newlines.
-     */
-    public DiffNode(DiffType diffType, NodeType nodeType,
-                    DiffLineNumber fromLines, DiffLineNumber toLines,
-                    Node featureMapping, List<String> lines) {
+                    Node featureMapping, Label label) {
         this.childOrder = new ArrayList<>();
 
         this.diffType = diffType;
@@ -104,7 +148,7 @@ public class DiffNode implements HasNodeType {
         this.from = fromLines;
         this.to = toLines;
         this.featureMapping = featureMapping;
-        this.lines = lines;
+        this.label = label;
     }
 
     /**
@@ -118,58 +162,64 @@ public class DiffNode implements HasNodeType {
                 DiffLineNumber.Invalid(),
                 DiffLineNumber.Invalid(),
                 FixTrueFalse.True,
-                new ArrayList<>()
+                new Label()
         );
     }
 
     /**
      * Creates an artifact node with the given parameters.
      * For parameter descriptions, see {@link DiffNode#DiffNode(DiffType, NodeType, DiffLineNumber, DiffLineNumber, Node, String)}.
-     * The <code>code</code> parameter will be set as the node's label.
+     * The <code>code</code> parameter will be set as the node's label by splitting it into lines.
      */
     public static DiffNode createArtifact(DiffType diffType, DiffLineNumber fromLines, DiffLineNumber toLines, String code) {
-        return new DiffNode(diffType, NodeType.ARTIFACT, fromLines, toLines, null, code);
+        return new DiffNode(diffType, NodeType.ARTIFACT, fromLines, toLines, null, Label.ofCodeBlock(code));
     }
 
     /**
-     * The same as {@link DiffNode#createArtifact(DiffType, DiffLineNumber, DiffLineNumber, String)} but with the code for the label
-     * given as a list of individual lines instead of a single String with linebreaks to identify newlines.
+     * The same as {@link DiffNode#createArtifact(DiffType, DiffLineNumber, DiffLineNumber, String)} but with a generic label.
      */
-    public static DiffNode createArtifact(DiffType diffType, DiffLineNumber fromLines, DiffLineNumber toLines, List<String> lines) {
-        return new DiffNode(diffType, NodeType.ARTIFACT, fromLines, toLines, null, lines);
+    public static DiffNode createArtifact(DiffType diffType, DiffLineNumber fromLines, DiffLineNumber toLines, Label label) {
+        return new DiffNode(diffType, NodeType.ARTIFACT, fromLines, toLines, null, label);
+    }
+
+    /**
+     * The same as {@link DiffNode#addDiffLines(List<Label.Line>)} with an invalid line number for each line.
+     */
+    public void addLines(final List<String> lines) {
+        this.label.diffLines().addAll(FilteredMappedListView.map(lines, Label.Line::withInvalidLineNumber));
     }
 
     /**
      * Adds the given lines to the source code lines of this node.
      * @param lines Lines to add.
      */
-    public void addLines(final List<String> lines) {
-        this.lines.addAll(lines);
+    public void addDiffLines(final List<Label.Line> lines) {
+        this.label.diffLines().addAll(lines);
     }
+
 
     /**
      * Returns the lines in the diff that are represented by this DiffNode.
      * The returned list is unmodifiable.
      */
     public List<String> getLabelLines() {
-        return Collections.unmodifiableList(lines);
+        return label.lines();
     }
 
     /**
      * Returns the lines in the diff that are represented by this DiffNode as a single text.
      * @see DiffNode#getLabelLines
      */
-    public String getLabel() {
-        return String.join(StringUtils.LINEBREAK, lines);
+    public Label getLabel() {
+        return label;
     }
 
     /**
-     * Sets the the lines in the diff that are represented by this DiffNode to the given code.
+     * Sets the lines in the diff that are represented by this DiffNode to the given code.
      * Lines are identified by linebreak characters.
      */
-    public void setLabel(String label) {
-        lines.clear();
-        Collections.addAll(lines, StringUtils.LINEBREAK_REGEX.split(label, -1));
+    public void setLabel(String code) {
+        label = Label.ofCodeBlock(code);
     }
 
     /**
@@ -645,7 +695,7 @@ public class DiffNode implements HasNodeType {
                 new DiffLineNumber(fromInDiff, DiffLineNumber.InvalidLineNumber, DiffLineNumber.InvalidLineNumber),
                 DiffLineNumber.Invalid(),
                 nodeType.isConditionalAnnotation() ? FixTrueFalse.True : null,
-                label
+                Label.ofCodeBlock(label)
         );
     }
 
@@ -736,7 +786,7 @@ public class DiffNode implements HasNodeType {
                 new DiffLineNumber(from, from, from),
                 new DiffLineNumber(to, to, to),
                 variationNode.getFormula(),
-                variationNode.getLabelLines()
+                Label.withInvalidLineNumbers(variationNode.getLabel().lines())
         );
     }
 
@@ -793,7 +843,7 @@ public class DiffNode implements HasNodeType {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         DiffNode diffNode = (DiffNode) o;
-        return diffType == diffNode.diffType && nodeType == diffNode.nodeType && from.equals(diffNode.from) && to.equals(diffNode.to) && Objects.equals(featureMapping, diffNode.featureMapping) && lines.equals(diffNode.lines);
+        return diffType == diffNode.diffType && nodeType == diffNode.nodeType && from.equals(diffNode.from) && to.equals(diffNode.to) && Objects.equals(featureMapping, diffNode.featureMapping) && label.equals(diffNode.label);
     }
 
     /**
@@ -806,6 +856,6 @@ public class DiffNode implements HasNodeType {
      */
     @Override
     public int hashCode() {
-        return Objects.hash(diffType, nodeType, from, to, featureMapping, lines);
+        return Objects.hash(diffType, nodeType, from, to, featureMapping, label);
     }
 }

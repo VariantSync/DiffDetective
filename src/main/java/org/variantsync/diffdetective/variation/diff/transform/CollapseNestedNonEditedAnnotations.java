@@ -2,6 +2,7 @@ package org.variantsync.diffdetective.variation.diff.transform;
 
 import org.prop4j.And;
 import org.prop4j.Node;
+import org.variantsync.diffdetective.diff.text.DiffLineNumber;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
@@ -126,13 +127,13 @@ public class CollapseNestedNonEditedAnnotations implements DiffTreeTransformer {
         final DiffNode beforeParent = head.getParent(BEFORE);
         final DiffNode afterParent = head.getParent(AFTER);
 
-        ArrayList lines = new ArrayList();
-        lines.add("$Collapsed Nested Annotations$");
+        var lines = new ArrayList<DiffNode.Label.Line>();
+        lines.add(DiffNode.Label.Line.withInvalidLineNumber("$Collapsed Nested Annotations$"));
         final DiffNode merged = new DiffNode(
                 DiffType.NON, NodeType.IF,
                 head.getFromLine(), head.getToLine(),
                 new And(featureMappings.toArray()),
-                lines);
+                new DiffNode.Label(lines));
 
         head.drop();
         merged.stealChildrenOf(end);
