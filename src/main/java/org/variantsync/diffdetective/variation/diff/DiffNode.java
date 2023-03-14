@@ -2,8 +2,8 @@ package org.variantsync.diffdetective.variation.diff;
 
 import org.prop4j.Node;
 import org.variantsync.diffdetective.diff.text.DiffLineNumber;
-import org.variantsync.diffdetective.util.LineRange;
 import org.variantsync.diffdetective.util.Assert;
+import org.variantsync.diffdetective.util.LineRange;
 import org.variantsync.diffdetective.util.StringUtils;
 import org.variantsync.diffdetective.util.fide.FixTrueFalse;
 import org.variantsync.diffdetective.variation.NodeType;
@@ -11,7 +11,7 @@ import org.variantsync.diffdetective.variation.tree.HasNodeType;
 import org.variantsync.diffdetective.variation.tree.VariationNode;
 
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.function.Function;
 
 import static org.variantsync.diffdetective.variation.diff.Time.AFTER;
 import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
@@ -724,30 +724,54 @@ public class DiffNode implements HasNodeType {
 
     /**
      * Transforms a {@code VariationNode} into a {@code DiffNode} by diffing {@code variationNode}
-     * to itself.
-     *
-     * This is the inverse of {@link projection} iff the original {@link DiffNode} wasn't modified
-     * (all node had a {@link getDiffType diff type} of {@link DiffType#NON}).
+     * to itself. Acts on only the given node and does not perform recursive translations.
      */
-    public static <T extends VariationNode<T>> DiffNode unchanged(VariationNode<T> variationNode) {
+    public static <T extends VariationNode<T>> DiffNode unchangedFlat(T variationNode) {
         int from = variationNode.getLineRange().getFromInclusive();
         int to = variationNode.getLineRange().getToExclusive();
 
-        var diffNode = new DiffNode(
-            DiffType.NON,
-            variationNode.getNodeType(),
-            new DiffLineNumber(from, from, from),
-            new DiffLineNumber(to, to, to),
-            variationNode.getFormula(),
-            variationNode.getLabelLines()
+        return new DiffNode(
+                DiffType.NON,
+                variationNode.getNodeType(),
+                new DiffLineNumber(from, from, from),
+                new DiffLineNumber(to, to, to),
+                variationNode.getFormula(),
+                variationNode.getLabelLines()
         );
+    }
+
+    /**
+     * Transforms a {@code VariationNode} into a {@code DiffNode} by diffing {@code variationNode}
+     * to itself. Recursively translates all children.
+     *
+     * This is the inverse of {@link projection} iff the original {@link DiffNode} wasn't modified
+     * (all node had a {@link getDiffType diff type} of {@link DiffType#NON}).
+     *
+     * @param convert A function to translate single nodes (without their hierarchy).
+     */
+    public static <T extends VariationNode<T>> DiffNode unchanged(
+            final Function<T, DiffNode> convert,
+            T variationNode) {
+
+        var diffNode = convert.apply(variationNode.upCast());
 
         for (var variationChildNode : variationNode.getChildren()) {
-            var diffChildNode = unchanged(variationChildNode);
+            var diffChildNode = unchanged(convert, variationChildNode);
             Time.forAll(time -> diffNode.addChild(diffChildNode, time));
         }
 
         return diffNode;
+    }
+
+    /**
+     * Transforms a {@code VariationNode} into a {@code DiffNode} by diffing {@code variationNode}
+     * to itself. Recursively translates all children.
+     *
+     * This is the inverse of {@link projection} iff the original {@link DiffNode} wasn't modified
+     * (all node had a {@link getDiffType diff type} of {@link DiffType#NON}).
+     */
+    public static <T extends VariationNode<T>> DiffNode unchanged(T variationNode) {
+        return unchanged(DiffNode::unchangedFlat, variationNode);
     }
 
     @Override

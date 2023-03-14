@@ -4,7 +4,10 @@ import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.feature.CPPAnnotationParser;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.variation.NodeType; // For Javadoc
+import org.variantsync.diffdetective.variation.diff.DiffNode;
+import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParser;
+import org.variantsync.diffdetective.variation.diff.source.FromVariationTreeSource;
 import org.variantsync.diffdetective.variation.tree.source.LocalFileSource;
 import org.variantsync.diffdetective.variation.tree.source.VariationTreeSource;
 
@@ -12,7 +15,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
 
@@ -116,6 +121,17 @@ public record VariationTree(
         return new VariationTree(tree, source);
     }
 
+    public DiffTree toDiffTree(final Function<VariationTreeNode, DiffNode> nodeConverter) {
+        return new DiffTree(
+                DiffNode.unchanged(nodeConverter, root()),
+                new FromVariationTreeSource(source())
+        );
+    }
+
+    public DiffTree toCompletelyUnchangedDiffTree() {
+        return toDiffTree(DiffNode::unchangedFlat);
+    }
+
     /**
      * Invokes the given callback for each node in this Variation Tree in depth-first order.
      * @param action callback
@@ -124,6 +140,16 @@ public record VariationTree(
     public VariationTree forAllPreorder(final Consumer<VariationTreeNode> action) {
         root.forAllPreorder(action);
         return this;
+    }
+
+
+    /**
+     * Returns the number of nodes in this Variation Tree.
+     */
+    public int computeSize() {
+        AtomicInteger size = new AtomicInteger();
+        forAllPreorder(n -> size.incrementAndGet());
+        return size.get();
     }
 
     @Override

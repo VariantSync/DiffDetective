@@ -248,6 +248,29 @@ public class DiffTree {
     }
 
     /**
+     * Obtain the DiffNode with the given id in this DiffTree.
+     * @param id The id of the node to search.
+     * @return The node with the given id if existing, null otherwise.
+     */
+    public DiffNode getNodeWithID(int id) {
+        final DiffNode[] d = {null};
+
+        traverse((traversal, subtree) -> {
+            if (subtree.getID() == id) {
+                d[0] = subtree;
+            } else {
+                for (final DiffNode child : subtree.getAllChildren()) {
+                    if (d[0] == null) {
+                        traversal.visit(child);
+                    }
+                }
+            }
+        });
+
+        return d[0];
+    }
+
+    /**
      * Returns all nodes that satisfy the given predicate.
      * Traverses the DiffTree once.
      * @param property Filter for nodes. Should return true if a node should be included.

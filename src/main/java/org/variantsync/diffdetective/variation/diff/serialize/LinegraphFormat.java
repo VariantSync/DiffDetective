@@ -7,7 +7,11 @@ public interface LinegraphFormat {
     /**
      * Name of the format that uniquely identifies the format.
      */
-    default String getName() {
+    default String getIdentifier() {
         return this.getClass().getName();
+    }
+
+    default String getShortName() {
+        return this.getClass().getSimpleName();
     }
 }

@@ -60,9 +60,9 @@ public class LineGraphExportAnalysis implements Analysis.Hooks {
 
     @Override
     public void beginBatch(Analysis analysis) {
-        analysis.get(RESULT).treeFormat = exportOptions.treeFormat().getName();
-        analysis.get(RESULT).nodeFormat = exportOptions.nodeFormat().getName();
-        analysis.get(RESULT).edgeFormat = exportOptions.edgeFormat().getName();
+        analysis.get(RESULT).treeFormat = exportOptions.treeFormat().getIdentifier();
+        analysis.get(RESULT).nodeFormat = exportOptions.nodeFormat().getIdentifier();
+        analysis.get(RESULT).edgeFormat = exportOptions.edgeFormat().getIdentifier();
 
         analysisStrategy.start(analysis.getRepository(), analysis.getOutputFile());
     }
@@ -75,6 +75,9 @@ public class LineGraphExportAnalysis implements Analysis.Hooks {
 
     @Override
     public boolean analyzeDiffTree(Analysis analysis) throws Exception {
+        // BUG? All linegraphs are aggregated in the result but actually, we want to export them to a separate file
+        //      linegraphs should be aggregated somewhere else and then exported, for example, at the end of a thread's
+        //      job.
         analysis.append(
             LineGraphExport.STATISTIC,
             LineGraphExport.toLineGraphFormat(analysis.getCurrentPatch(), exportOptions, lineGraphDestination)
