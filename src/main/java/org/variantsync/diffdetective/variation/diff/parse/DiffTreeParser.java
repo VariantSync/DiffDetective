@@ -311,7 +311,7 @@ public class DiffTreeParser {
 
         // Is this line a conditional macro?
         // Note: The following line doesn't handle comments and line continuations correctly.
-        var matcher = macroPattern.matcher(line.getLines().get(0));
+        var matcher = macroPattern.matcher(line.toString());
         var conditionalMacroName = matcher.find()
             ? matcher.group(1)
             : null;
@@ -330,7 +330,7 @@ public class DiffTreeParser {
                 && lastArtifact.diffType.equals(diffType)
                 && lastArtifact.getToLine().inDiff() == fromLine.inDiff()) {
             // Collapse consecutive lines if possible.
-            lastArtifact.addLines(line.getLines());
+            lastArtifact.addDiffLines(line.getLines());
             lastArtifact.setToLine(toLine);
         } else {
             try {
@@ -350,8 +350,8 @@ public class DiffTreeParser {
                     toLine,
                     nodeType == NodeType.ARTIFACT || nodeType == NodeType.ELSE
                         ? null
-                        : options.annotationParser().parseDiffLines(line.getLines()),
-                    line.getLines()
+                        : options.annotationParser().parseDiffLine(line.toString()),
+                    new DiffNode.Label(line.getLines())
                 );
 
                 addNode(newNode);

@@ -74,7 +74,7 @@ public class NaiveMovedArtifactDetection implements DiffTreeTransformer {
 
     private static DiffNode findTwinOf(final DiffNode artifact, final List<DiffNode> artifactNodes) {
         final DiffType weAreLookingFor = artifact.diffType.inverse();
-        final String text = artifact.getLabel().trim();
+        final String text = artifact.getLabel().toString().trim();
 
         if (text.isEmpty()) {
             return null;
@@ -83,7 +83,7 @@ public class NaiveMovedArtifactDetection implements DiffTreeTransformer {
         // We assert the following as we removed the artifact node in transform.
         // assert(!artifactNodes.contains(artifact));
         for (final DiffNode other : artifactNodes) {
-            if (other.diffType == weAreLookingFor && text.equals(other.getLabel().trim())) {
+            if (other.diffType == weAreLookingFor && text.equals(other.getLabel().toString().trim())) {
                 return other;
             }
         }

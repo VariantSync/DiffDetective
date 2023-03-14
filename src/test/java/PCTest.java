@@ -75,7 +75,7 @@ public class PCTest {
         final DiffTree t = DiffTree.fromFile(path, new DiffTreeParseOptions(false, true));
         t.forAll(node -> {
            if (node.isArtifact()) {
-               final String text = node.getLabel().trim();
+               final String text = node.getLabel().toString().trim();
                final ExpectedPC expectedPC = testCase.expectedResult.getOrDefault(text, null);
                if (expectedPC != null) {
                    Node pc = node.getPresenceCondition(BEFORE);

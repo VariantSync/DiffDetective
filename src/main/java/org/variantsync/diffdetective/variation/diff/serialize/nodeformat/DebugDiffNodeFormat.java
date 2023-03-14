@@ -13,7 +13,7 @@ public class DebugDiffNodeFormat implements DiffNodeLabelFormat {
 		return node.diffType + "_" + node.nodeType + "_\"" +
 				DiffNodeLabelPrettyfier.prettyPrintIfAnnotationOr(
 						node,
-						FileUtils.replaceLineEndings(node.getLabel().trim().replaceAll("\t", "  "), "<br>"))
+						FileUtils.replaceLineEndings(node.getLabel().toString().trim().replaceAll("\t", "  "), "<br>"))
 				+ "\"";
 	}
 }

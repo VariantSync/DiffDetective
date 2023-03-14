@@ -31,7 +31,7 @@ public class ShowNodeFormat implements DiffNodeLabelFormat {
     public String toLabel(DiffNode node) {
         return toLabel(
                 node,
-                n -> StringUtils.clamp(10, n.getLabel().trim())
+                n -> StringUtils.clamp(10, n.getLabel().toString().trim())
         );
     }
 }
