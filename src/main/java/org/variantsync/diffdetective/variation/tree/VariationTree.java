@@ -6,6 +6,7 @@ import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.variation.NodeType; // For Javadoc
 import org.variantsync.diffdetective.variation.diff.DiffNode;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
+import org.variantsync.diffdetective.variation.diff.Projection;
 import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParseOptions;
 import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParser;
 import org.variantsync.diffdetective.variation.diff.source.FromVariationTreeSource;
@@ -86,6 +87,17 @@ public record VariationTree(
             .toVariationTree();
 
         return new VariationTree(tree, source);
+    }
+
+    public static VariationTree fromProjection(final Projection projection, final VariationTreeSource source) {
+        return fromVariationNode(projection, source);
+    }
+
+    public static <T extends VariationNode<T>> VariationTree fromVariationNode(final VariationNode<T> node, final VariationTreeSource source) {
+        return new VariationTree(
+                node.toVariationTree(),
+                source
+        );
     }
 
     public DiffTree toDiffTree(final Function<VariationTreeNode, DiffNode> nodeConverter) {
