@@ -1,5 +1,6 @@
 package org.variantsync.diffdetective.show.engine.geom;
 
+import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 
@@ -10,6 +11,13 @@ public record Vec2(double x, double y) {
 
     public static Vec2 from(final Point2D p) {
         return new Vec2(p.getX(), p.getY());
+    }
+
+    public static Vec2 from(Dimension d) {
+        return new Vec2(
+                d.width,
+                d.height
+        );
     }
 
     public Point2D.Double toPoint2D() {

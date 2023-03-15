@@ -23,6 +23,9 @@ import org.variantsync.diffdetective.variation.diff.serialize.nodeformat.*;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -289,6 +292,15 @@ public class DiffTreeApp extends App {
         setupMenu();
         setupInput();
         spawnDiffTree(world);
+
+        getWindow().addComponentListener(new ComponentAdapter() {
+                                             @Override
+                                             public void componentResized(ComponentEvent e) {
+                                                 super.componentResized(e);
+                                                 resolution = Vec2.from(getWindow().getScreen().getSize());
+                                             }
+                                         }
+        );
     }
 
     public Entity getEntityOf(DiffNode diffNode) {
