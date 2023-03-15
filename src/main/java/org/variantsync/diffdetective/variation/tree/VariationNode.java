@@ -445,10 +445,15 @@ public abstract class VariationNode<T extends VariationNode<T>> implements HasNo
      * effectively a deep copy.
      */
     public VariationTreeNode toVariationTree() {
+        Node formula = getFormula();
+        if (formula != null) {
+            formula = formula.clone();
+        }
+
         // Copy mutable attributes to allow modifications of the new node.
         var newNode = new VariationTreeNode(
             getNodeType(),
-            getFormula().clone(),
+            formula,
             getLineRange(),
             new ArrayList<>(getLabel().lines())
         );
