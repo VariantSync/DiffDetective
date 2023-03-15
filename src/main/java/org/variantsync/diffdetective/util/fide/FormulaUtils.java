@@ -1,5 +1,6 @@
 package org.variantsync.diffdetective.util.fide;
 
+import org.prop4j.And;
 import org.prop4j.Literal;
 import org.prop4j.Node;
 import org.prop4j.Not;
@@ -29,6 +30,14 @@ public class FormulaUtils {
             return FixTrueFalse.True;
         }
         return new Literal(lit.var, !lit.positive);
+    }
+
+    public static Literal var(final String name) {
+        return new Literal(name, true);
+    }
+
+    public static And and(Node... nodes) {
+        return new And(nodes);
     }
 
     /** Recursively counts the number of instances of {@link Literal} in {@code formula}. */
