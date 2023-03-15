@@ -30,6 +30,13 @@ public record Vec2(double x, double y) {
         );
     }
 
+    public Vec2 dividedBy(Vec2 divisor) {
+        return new Vec2(
+                this.x() / divisor.x(),
+                this.y() / divisor.y()
+        );
+    }
+
     public Vec2 add(Vec2 b) {
         return add(b.x(), b.y());
     }
