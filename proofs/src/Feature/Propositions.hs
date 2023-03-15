@@ -83,13 +83,22 @@ isLiteral (PNot f) = isLiteral f
 isLiteral _ = False
 
 -- | UTF-8 characters for printing propositional operators.
+-- instance Show a => Show (PropositionalFormula a) where
+--     show PTrue = "⊤"
+--     show PFalse = "⊥"
+--     show (PVariable v) = show v
+--     show (PNot p) = "¬"++show p
+--     show (PAnd cs) = "("++(intercalate " ∧ " $ map show cs)++")"
+--     show (POr cs) = "("++(intercalate " ∨ " $ map show cs)++")"
+
+-- | ASCII characters for printing propositional operators.
 instance Show a => Show (PropositionalFormula a) where
-    show PTrue = "⊤"
-    show PFalse = "⊥"
+    show PTrue = "true"
+    show PFalse = "false"
     show (PVariable v) = show v
-    show (PNot p) = "¬"++show p
-    show (PAnd cs) = "("++(intercalate " ∧ " $ map show cs)++")"
-    show (POr cs) = "("++(intercalate " ∨ " $ map show cs)++")"
+    show (PNot p) = "!"++show p
+    show (PAnd cs) = "("++(intercalate " & " $ map show cs)++")"
+    show (POr cs) = "("++(intercalate " | " $ map show cs)++")"
 
 -- -- | This visualisation is for debugging as it shows the exact expression tree.
 -- instance Show a => Show (PropositionalFormula a) where

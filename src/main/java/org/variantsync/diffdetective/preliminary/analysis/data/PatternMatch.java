@@ -1,7 +1,7 @@
 package org.variantsync.diffdetective.preliminary.analysis.data;
 
 import org.prop4j.Node;
-import org.variantsync.diffdetective.pattern.EditPattern;
+import org.variantsync.diffdetective.preliminary.pattern.Pattern;
 import org.variantsync.diffdetective.preliminary.evaluation.FeatureContext;
 import org.variantsync.diffdetective.preliminary.pattern.FeatureContextReverseEngineering;
 
@@ -50,7 +50,7 @@ public class PatternMatch<E> {
         return pattern.getPattern().getName();
     }
 
-    public EditPattern<E> getPattern() {
+    public Pattern<E> getPattern() {
         return pattern.getPattern();
     }
 

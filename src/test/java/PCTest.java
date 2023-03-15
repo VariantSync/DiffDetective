@@ -57,7 +57,7 @@ public class PCTest {
         final Path path = testDir.resolve(testCase.file);
         final DiffTree t = DiffTree.fromFile(path, false, true).unwrap().getSuccess();
         t.forAll(node -> {
-           if (node.isCode()) {
+           if (node.isArtifact()) {
                final String text = node.getLabel().trim();
                final ExpectedPC expectedPC = testCase.expectedResult.getOrDefault(text, null);
                if (expectedPC != null) {

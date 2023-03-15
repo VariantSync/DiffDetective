@@ -1,8 +1,7 @@
 package org.variantsync.diffdetective.diff.difftree.serialize.edgeformat;
 
 import org.variantsync.diffdetective.diff.difftree.DiffNode;
-import org.variantsync.diffdetective.diff.difftree.LineGraphConstants;
-import org.variantsync.functjonal.Functjonal;
+import org.variantsync.diffdetective.diff.difftree.serialize.StyledEdge;
 
 /**
  * Default implementation of {@link EdgeLabelFormat}.
@@ -26,7 +25,7 @@ public class DefaultEdgeLabelFormat extends EdgeLabelFormat {
     }
 
     @Override
-    public String edgeToLineGraph(DiffNode from, DiffNode to, String labelPrefix) {
-        return Functjonal.unwords(LineGraphConstants.LG_EDGE, from.getID(), to.getID(), labelPrefix);
+    public String labelOf(StyledEdge edge) {
+        return "";
     }
 }

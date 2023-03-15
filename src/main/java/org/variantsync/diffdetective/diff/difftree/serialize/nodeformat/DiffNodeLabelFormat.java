@@ -1,5 +1,7 @@
 package org.variantsync.diffdetective.diff.difftree.serialize.nodeformat;
 
+import java.util.List;
+
 import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.diff.difftree.DiffTreeSource;
 import org.variantsync.diffdetective.diff.difftree.LineGraphConstants;
@@ -21,14 +23,27 @@ public interface DiffNodeLabelFormat extends LinegraphFormat {
 	default DiffNode fromLabelAndId(final String lineGraphNodeLabel, final int nodeId) {
 	    return DiffNode.fromID(nodeId, lineGraphNodeLabel);
 	}
-	
-	/**
-	 * Converts a {@link DiffNode} into a {@link DiffNode} label of line graph.
-	 * 
-	 * @param node The {@link DiffNode} to be converted
-	 * @return The corresponding line graph line
-	 */
-	String toLabel(final DiffNode node);
+
+    /**
+     * Converts a {@link DiffNode} into a label suitable for exporting.
+     * This may be human readable text or machine parseable metadata.
+     *
+     * @param node The {@link DiffNode} to be labeled
+     * @return a label for {@code node}
+     */
+    String toLabel(DiffNode node);
+
+    /**
+     * Converts a {@link DiffNode} into a multi line label suitable for exporting.
+     * This should be human readable text. Use a single line for machine parseable metadata
+     * ({@link toLabel}).
+     *
+     * @param node The {@link DiffNode} to be labeled
+     * @return a list of lines of the label for {@code node}
+     */
+    default List<String> toMultilineLabel(DiffNode node) {
+        return List.of(toLabel(node));
+    }
 
     /**
      * Converts a line describing a graph (starting with "t # ") in line graph format into a {@link DiffTreeSource}.
@@ -52,15 +67,5 @@ public interface DiffNodeLabelFormat extends LinegraphFormat {
 
         final String label = lineGraphLine.substring(idEnd + 1);
         return new Pair<>(nodeId, fromLabelAndId(label, nodeId));
-    }
-
-    /**
-     * Serializes the given node to a line in linegraph format.
-     *
-     * @param node The {@link DiffNode} to be converted
-     * @return The entire line graph line of a {@link DiffNode}.
-     */
-    default String toLineGraphLine(final DiffNode node) {
-        return LineGraphConstants.LG_NODE + " " + node.getID() + " " + toLabel(node);
     }
 }

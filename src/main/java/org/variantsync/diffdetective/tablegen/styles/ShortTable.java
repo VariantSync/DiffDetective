@@ -1,9 +1,9 @@
 package org.variantsync.diffdetective.tablegen.styles;
 
 import org.apache.commons.lang3.function.TriFunction;
-import org.variantsync.diffdetective.metadata.ElementaryPatternCount;
-import org.variantsync.diffdetective.pattern.elementary.ElementaryPattern;
-import org.variantsync.diffdetective.pattern.elementary.proposed.ProposedElementaryPatterns;
+import org.variantsync.diffdetective.metadata.EditClassCount;
+import org.variantsync.diffdetective.editclass.EditClass;
+import org.variantsync.diffdetective.editclass.proposed.ProposedEditClasses;
 import org.variantsync.diffdetective.tablegen.ColumnDefinition;
 import org.variantsync.diffdetective.tablegen.Row;
 import org.variantsync.diffdetective.tablegen.TableDefinition;
@@ -24,8 +24,8 @@ import static org.variantsync.diffdetective.tablegen.Alignment.*;
  *   <li>a dataset description
  *   <li>commit counts
  *   <li>diff counts
- *   <li>the number of artefact nodes
- *   <li>elementary pattern counts, either absolute or relative to the total count of all patterns
+ *   <li>the number of artifact nodes
+ *   <li>edit class counts, either absolute or relative to the total count of all edit classes
  *   <li>processing time
  * </ul>
  *
@@ -43,7 +43,7 @@ public class ShortTable extends TableDefinition {
     }
 
     /**
-     * Constructs a table template with absolute pattern counts.
+     * Constructs a table template with absolute edit class counts.
      *
      * @param filtered if {@code true}, the rows will be filtered to only contain the biggest
      * datasets
@@ -55,7 +55,7 @@ public class ShortTable extends TableDefinition {
     }
 
     /**
-     * Constructs a table template with relative pattern counts.
+     * Constructs a table template with relative edit class counts.
      *
      * @param filtered if {@code true}, the rows will be filtered to only contain the biggest
      * datasets
@@ -70,9 +70,9 @@ public class ShortTable extends TableDefinition {
      * Returns a list of all columns contained in this table.
      *
      * @param t instance to this class, used for formatting with {@link makeReadable}
-     * @param getPatternCount function to extract the pattern count of a row
+     * @param getEditClassCount function to extract the edit class count of a row
      */
-    private static List<ColumnDefinition> columns(final ShortTable t, final TriFunction<ShortTable, ElementaryPattern, ContentRow, String> getPatternCount) {
+    private static List<ColumnDefinition> columns(final ShortTable t, final TriFunction<ShortTable, EditClass, ContentRow, String> getEditClassCount) {
         final List<ColumnDefinition> cols = new ArrayList<>(List.of(
                 col("Name", LEFT, row -> row.dataset().name().toLowerCase(Locale.US)),
                 col("Domain", LEFT_DASH, row -> row.dataset().domain()),
@@ -81,61 +81,61 @@ public class ShortTable extends TableDefinition {
                 col("\\#diffs", RIGHT, row -> t.makeReadable(row.results().exportedTrees)),
                 col("\\#artifact nodes", RIGHT_DASH, row -> t.makeReadable(row
                         .results()
-                        .elementaryPatternCounts
+                        .editClassCounts
                         .getOccurences()
                         .values().stream()
-                        .map(ElementaryPatternCount.Occurrences::getTotalAmount)
+                        .map(EditClassCount.Occurrences::getTotalAmount)
                         .reduce(0, Integer::sum)
                 ))
         ));
 
-        for (final ElementaryPattern a : ProposedElementaryPatterns.Instance.all()) {
-            if (a != ProposedElementaryPatterns.Untouched) {
-                cols.add(col(a.getName(), RIGHT, row -> getPatternCount.apply(t, a, row)));
+        for (final EditClass a : ProposedEditClasses.Instance.all()) {
+            if (a != ProposedEditClasses.Untouched) {
+                cols.add(col(a.getName(), RIGHT, row -> getEditClassCount.apply(t, a, row)));
             }
         }
 
         cols.add(col("runtime", DASH_RIGHT, row -> t.makeReadable(row.results().runtimeInSeconds) + "s"));
-        cols.add(col("avg. runtime per\\\\ processed commit", RIGHT, row -> t.makeReadable(row.automationResult().avgTimeMS()) + "ms"));
-        cols.add(col("median runtime per\\\\ processed commit", RIGHT, row -> t.makeReadable(row.automationResult().median().milliseconds()) + "ms"));
+        cols.add(col("avg. runtime~/\\\\ processed commit", RIGHT, row -> t.makeReadable(row.automationResult().avgTimeMS()) + "ms"));
+        cols.add(col("median runtime~/\\\\ processed commit", RIGHT, row -> t.makeReadable(row.automationResult().median().milliseconds()) + "ms"));
 
         return cols;
     }
 
     /**
-     * Returns a formatted string of the absolute number of occurrences of {@code pattern} in
+     * Returns a formatted string of the absolute number of occurrences of {@code editClass} in
      * {@code row}.
      * The signature of this method is suitable to be passed to {@link column}.
      *
      * @param t an instance of this class contained in the column definition
-     * @param pattern the pattern to count
-     * @param row the data to count {@code pattern} in
+     * @param editClass the edit class to count
+     * @param row the data to count {@code editClass} in
      * @see column
      */
-    private static String absoluteCountOf(final ShortTable t, final ElementaryPattern pattern, final ContentRow row) {
-        return t.makeReadable(row.results().elementaryPatternCounts.getOccurences().get(pattern).getTotalAmount());
+    private static String absoluteCountOf(final ShortTable t, final EditClass editClass, final ContentRow row) {
+        return t.makeReadable(row.results().editClassCounts.getOccurences().get(editClass).getTotalAmount());
     }
 
     /**
-     * Returns a formatted string of the relative number of occurrences of {@code pattern} in
+     * Returns a formatted string of the relative number of occurrences of {@code editClass} in
      * {@code row}.
      * The signature of this method is suitable to be passed to {@link column}.
      *
      * @param t an instance of this class contained in the column definition
-     * @param pattern the pattern to count
-     * @param row the data to count {@code pattern} in
+     * @param editClass the edit class to count
+     * @param row the data to count {@code editClass} in
      * @see column
      */
-    private static String relativeCountOf(final ShortTable t, final ElementaryPattern pattern, final ContentRow row) {
-        final LinkedHashMap<ElementaryPattern, ElementaryPatternCount.Occurrences> patternOccurrences =
-                row.results().elementaryPatternCounts.getOccurences();
+    private static String relativeCountOf(final ShortTable t, final EditClass editClass, final ContentRow row) {
+        final LinkedHashMap<EditClass, EditClassCount.Occurrences> editClassOccurrences =
+                row.results().editClassCounts.getOccurences();
 
         int numTotalMatches = 0;
-        for (final Map.Entry<ElementaryPattern, ElementaryPatternCount.Occurrences> occurrence : patternOccurrences.entrySet()) {
+        for (final Map.Entry<EditClass, EditClassCount.Occurrences> occurrence : editClassOccurrences.entrySet()) {
             numTotalMatches += occurrence.getValue().getTotalAmount();
         }
 
-        return t.makeReadable(100.0 * ((double) patternOccurrences.get(pattern).getTotalAmount()) / ((double) numTotalMatches)) + "\\%";
+        return t.makeReadable(100.0 * ((double) editClassOccurrences.get(editClass).getTotalAmount()) / ((double) numTotalMatches)) + "\\%";
     }
 
     /**

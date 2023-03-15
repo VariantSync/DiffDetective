@@ -25,7 +25,10 @@ import java.util.function.Predicate;
 import static org.variantsync.functjonal.Functjonal.when;
 
 /**
- * Implementation of the diff tree.
+ * Implementation of variation tree diffs from our ESEC/FSE'22 paper.
+ * An instance of this class represents a variation tree diff. It stores the root of the graph as a {@link DiffNode}.
+ * It optionally holds a {@link DiffTreeSource} that describes how the variation tree diff was obtained.
+ * The graph structure is implemented by the {@link DiffNode} class.
  * @author Paul Bittner, Sören Viegener
  */
 public class DiffTree {
@@ -73,7 +76,7 @@ public class DiffTree {
      * So just lines preceded by "+", "-", or " " are expected.
      * @param p Path to a diff file.
      * @param collapseMultipleCodeLines Set to true if subsequent lines of source code with
-     *                                  the same {@link CodeType type of change} should be
+     *                                  the same {@link NodeType type of change} should be
      *                                  collapsed into a single source code node representing
      *                                  all lines at once.
      * @param ignoreEmptyLines Set to true if empty lines should not be included in the DiffTree.
@@ -95,7 +98,7 @@ public class DiffTree {
      * So just lines preceded by "+", "-", or " " are expected.
      * @param diff The diff as text. Lines should be separated by a newline character. Each line should be preceded by either "+", "-", or " ".
      * @param collapseMultipleCodeLines Set to true if subsequent lines of source code with
-     *                                  the same {@link CodeType type of change} should be
+     *                                  the same {@link NodeType type of change} should be
      *                                  collapsed into a single source code node representing
      *                                  all lines at once.
      * @param ignoreEmptyLines Set to true if empty lines should not be included in the DiffTree.
@@ -205,8 +208,8 @@ public class DiffTree {
      * Returns all artifact nodes of this DiffTree.
      * @see DiffTree#computeAllNodesThat
      */
-    public List<DiffNode> computeCodeNodes() {
-        return computeAllNodesThat(DiffNode::isCode);
+    public List<DiffNode> computeArtifactNodes() {
+        return computeAllNodesThat(DiffNode::isArtifact);
     }
 
     /**
@@ -214,7 +217,7 @@ public class DiffTree {
      * @see DiffTree#computeAllNodesThat
      */
     public List<DiffNode> computeAnnotationNodes() {
-        return computeAllNodesThat(DiffNode::isMacro);
+        return computeAllNodesThat(DiffNode::isAnnotation);
     }
 
     /**

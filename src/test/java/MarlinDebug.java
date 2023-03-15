@@ -23,7 +23,7 @@ import org.variantsync.diffdetective.diff.difftree.transform.DiffTreeTransformer
 import org.variantsync.diffdetective.feature.CPPAnnotationParser;
 import org.variantsync.diffdetective.mining.DiffTreeMiner;
 import org.variantsync.diffdetective.mining.MiningTask;
-import org.variantsync.diffdetective.pattern.elementary.proposed.ProposedElementaryPatterns;
+import org.variantsync.diffdetective.editclass.proposed.ProposedEditClasses;
 import org.variantsync.diffdetective.util.Clock;
 import org.variantsync.diffdetective.validation.Validation;
 
@@ -102,9 +102,9 @@ public class MarlinDebug {
                 Logger.info("    Begin elementary pattern matching");
                 clock.start();
                 t.forAll(node -> {
-                    if (node.isCode()) {
+                    if (node.isArtifact()) {
                         try {
-                            Logger.info(ProposedElementaryPatterns.Instance.match(node));
+                            Logger.info(ProposedEditClasses.Instance.match(node));
                         } catch (Exception e) {
                             //DiffTreeLineGraphExportOptions.RenderError().accept(patch, e);
                             Logger.error(e);
@@ -114,7 +114,7 @@ public class MarlinDebug {
                             Logger.info("isAdd: {}", node.isAdd());
                             Logger.info("isRem: {}", node.isRem());
                             Logger.info("isNon: {}", node.isNon());
-                            Logger.info("isCode: {}", node.isCode());
+                            Logger.info("isArtifact: {}", node.isArtifact());
 //                            throw e;
                             System.exit(0);
                         }
