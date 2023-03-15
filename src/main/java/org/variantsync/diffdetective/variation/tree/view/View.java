@@ -1,5 +1,7 @@
 package org.variantsync.diffdetective.variation.tree.view;
 
+import org.variantsync.diffdetective.variation.diff.DiffTree;
+import org.variantsync.diffdetective.variation.diff.bad.BadVDiff;
 import org.variantsync.diffdetective.variation.tree.VariationTree;
 import org.variantsync.diffdetective.variation.tree.VariationTreeNode;
 import org.variantsync.diffdetective.variation.tree.view.query.Query;
@@ -10,12 +12,12 @@ import java.util.List;
 import java.util.Set;
 
 public class View {
-    private static void filterInline(final VariationTreeNode v, final Set<VariationTreeNode> view) {
+    private static void treeInline(final VariationTreeNode v, final Set<VariationTreeNode> view) {
         /// We assume that d is interesting for q.
         final List<VariationTreeNode> boringChildren = new ArrayList<>(v.getChildren().size());
         for (final VariationTreeNode child : v.getChildren()) {
             if (view.contains(child)) {
-                filterInline(child, view);
+                treeInline(child, view);
             } else {
                 boringChildren.add(child);
             }
@@ -34,7 +36,7 @@ public class View {
         }
     }
 
-    public static void inline(final VariationTree t, final Query q) {
+    public static void treeInline(final VariationTree t, final Query q) {
         final Set<VariationTreeNode> interestingNodes = new HashSet<>();
 
         t.forAllPreorder(node -> {
@@ -43,6 +45,19 @@ public class View {
             }
         });
 
-        filterInline(t.root(), interestingNodes);
+        treeInline(t.root(), interestingNodes);
+    }
+
+    public static DiffTree diff(final DiffTree d, final Query q) {
+        // treeify
+        final BadVDiff badDiff = BadVDiff.fromGood(d);
+
+        // create view
+        View.treeInline(badDiff.diff(), q);
+
+        // unify
+        final DiffTree goodDiff = badDiff.toGood();
+        goodDiff.assertConsistency();
+        return goodDiff;
     }
 }
