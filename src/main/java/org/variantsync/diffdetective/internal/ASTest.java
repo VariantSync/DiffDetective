@@ -15,6 +15,7 @@ import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.show.Show;
 import org.variantsync.diffdetective.show.engine.GameEngine;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
+import org.variantsync.diffdetective.variation.diff.Time;
 import org.variantsync.diffdetective.variation.diff.filter.DiffTreeFilter;
 import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParseOptions;
 import org.variantsync.diffdetective.variation.diff.transform.CutNonEditedSubtrees;
@@ -89,7 +90,7 @@ public class ASTest implements Analysis.Hooks {
     @Override
     public boolean beginPatch(Analysis analysis) {
         final PatchDiff patch = analysis.getCurrentPatch();
-        Logger.info("  " + patch.getFileName() + "\n" + patch.getDiff());
+        Logger.info("  " + patch.getFileName(Time.BEFORE) + " -> " + patch.getFileName(Time.AFTER) + "\n" + patch.getDiff());
         return true;
     }
 

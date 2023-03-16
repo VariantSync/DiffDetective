@@ -11,6 +11,7 @@ import org.variantsync.diffdetective.feature.CPPAnnotationParser;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.util.IO;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
+import org.variantsync.diffdetective.variation.diff.Time;
 import org.variantsync.diffdetective.variation.diff.filter.ExplainedFilter;
 import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParseOptions;
 import org.variantsync.diffdetective.variation.diff.render.DiffTreeRenderer;
@@ -110,8 +111,8 @@ public class ExampleFinder implements Analysis.Hooks {
         String metadata = "";
         metadata += "Child commit: " + patch.getCommitHash() + "\n";
         metadata += "Parent commit: " + patch.getParentCommitHash() + "\n";
-        metadata += "File: " + patch.getFileName() + "\n";
-        IO.tryWrite(treeDir.resolve(patch.getFileName() + ".metadata.txt"), metadata);
+        metadata += "File: " + patch.getFileName(Time.AFTER) + "\n";
+        IO.tryWrite(treeDir.resolve(patch.getFileName(Time.AFTER) + ".metadata.txt"), metadata);
     }
 
     static String getDiff(final DiffTree tree) {

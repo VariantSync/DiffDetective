@@ -8,6 +8,7 @@ import org.variantsync.diffdetective.preliminary.analysis.data.PatchDiffAnalysis
 import org.variantsync.diffdetective.preliminary.analysis.data.PatternMatch;
 import org.variantsync.diffdetective.util.IO;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
+import org.variantsync.diffdetective.variation.diff.Time;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -45,7 +46,7 @@ public class GDAnalysisUtils {
                     commitResult.getPatchDiffAnalysisResults()) {
                 for (PatternMatch<DiffNode> patternMatch : patchResult.getPatternMatches()) {
                     commits.add(commitResult.getCommitDiff().getCommitHash());
-                    patches.add(patchResult.getPatchDiff().getFileName());
+                    patches.add(patchResult.getPatchDiff().getFileName(Time.AFTER));
                     patterns.add(patternMatch.getPatternName());
                     if (patternMatch.hasFeatureMappings()) {
                         StringJoiner sj = new StringJoiner(";");

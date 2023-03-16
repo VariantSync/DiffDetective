@@ -5,6 +5,7 @@ import org.variantsync.diffdetective.diff.git.GitPatch;
 import org.variantsync.diffdetective.diff.git.PatchDiff;
 import org.variantsync.diffdetective.util.IO;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
+import org.variantsync.diffdetective.variation.diff.Time;
 import org.variantsync.diffdetective.variation.diff.serialize.LineGraphConstants;
 import org.variantsync.diffdetective.variation.diff.serialize.LineGraphExportOptions;
 import org.variantsync.diffdetective.variation.diff.serialize.nodeformat.TypeDiffNodeFormat;
@@ -80,7 +81,7 @@ public class PatchDiffRenderer {
         renderer.render(diffTree, patch, outputDirectory, options);
         try {
             IO.write(outputDirectory.resolve(
-                    patch.getFileName() + LineGraphConstants.TREE_NAME_SEPARATOR + patch.getCommitHash() + ".diff"
+                    patch.getFileName(Time.AFTER) + LineGraphConstants.TREE_NAME_SEPARATOR + patch.getCommitHash() + ".diff"
                     ),
                     patch.getDiff());
         } catch (IOException e) {

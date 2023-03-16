@@ -12,6 +12,7 @@ import org.variantsync.diffdetective.diff.git.PatchDiff;
 import org.variantsync.diffdetective.metadata.Metadata;
 import org.variantsync.diffdetective.util.StringUtils;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
+import org.variantsync.diffdetective.variation.diff.Time;
 import org.variantsync.diffdetective.variation.diff.source.DiffTreeSource;
 import org.variantsync.functjonal.category.InplaceSemigroup;
 
@@ -143,7 +144,7 @@ public final class LineGraphExport {
 
             ++result.exportedTrees;
         } else {
-            Logger.debug("  Skipping invalid patch for file {} at commit {}", patch.getFileName(), patch.getCommitHash());
+            Logger.debug("  Skipping invalid patch for file {} at commit {}", patch.getFileName(Time.AFTER), patch.getCommitHash());
         }
 
         return result;

@@ -117,7 +117,7 @@ public class DiffTree {
         if (result.diff().isPresent()) {
             final CommitDiff commit = result.diff().get();
             for (final PatchDiff patch : commit.getPatchDiffs()) {
-                if (changedFile.equals(Path.of(patch.getFileName()))) {
+                if (changedFile.equals(Path.of(patch.getFileName(AFTER)))) {
                     return Result.Success(patch.getDiffTree());
                 }
             }

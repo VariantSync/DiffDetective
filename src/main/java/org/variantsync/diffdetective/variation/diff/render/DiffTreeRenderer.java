@@ -10,6 +10,7 @@ import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.util.IO;
 import org.variantsync.diffdetective.util.StringUtils;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
+import org.variantsync.diffdetective.variation.diff.Time;
 import org.variantsync.diffdetective.variation.diff.serialize.DiffTreeSerializeDebugData;
 import org.variantsync.diffdetective.variation.diff.serialize.LineGraphConstants;
 import org.variantsync.diffdetective.variation.diff.serialize.LineGraphExport;
@@ -124,7 +125,7 @@ public class DiffTreeRenderer {
      */
     public boolean render(final DiffTree tree, final GitPatch patch, final Path directory, final RenderOptions options, final LineGraphExportOptions exportOptions) {
         final String treeAndFileName =
-                patch.getFileName()
+                patch.getFileName(Time.AFTER)
                         + LineGraphConstants.TREE_NAME_SEPARATOR
                         + patch.getCommitHash();
         return render(tree, treeAndFileName, directory, options, exportOptions);

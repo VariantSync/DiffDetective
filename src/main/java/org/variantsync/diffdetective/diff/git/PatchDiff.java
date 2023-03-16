@@ -3,6 +3,7 @@ package org.variantsync.diffdetective.diff.git;
 import org.apache.commons.io.FilenameUtils;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
+import org.variantsync.diffdetective.variation.diff.Time;
 
 /**
  * Data class containing information about a single patch (i.e., the differences in a single file).
@@ -26,9 +27,13 @@ public class PatchDiff implements GitPatch {
     private final DiffEntry.ChangeType changeType;
 
     /**
-     * Path of the file that has been modified.
+     * Path of the file before modification.
      */
-    private final String path;
+    private final String oldPath;
+    /**
+     * Path of the file after modification.
+     */
+    private final String newPath;
 
     /**
      * Creates a new PatchDiff.
@@ -41,7 +46,8 @@ public class PatchDiff implements GitPatch {
                      DiffTree diffTree) {
         this.commitDiff = commitDiff;
         this.changeType = diffEntry.getChangeType();
-        this.path = diffEntry.getNewPath();
+        this.oldPath = diffEntry.getOldPath();
+        this.newPath = diffEntry.getNewPath();
         this.fullDiff = fullDiff;
         this.diffTree = diffTree;
         if (this.diffTree != null) {
@@ -59,8 +65,8 @@ public class PatchDiff implements GitPatch {
     /**
      * Returns the extension of the file this patch is modifying.
      */
-    public String getFileExtension() {
-        return FilenameUtils.getExtension(getFileName()).toLowerCase();
+    public String getFileExtension(Time time) {
+        return FilenameUtils.getExtension(getFileName(time)).toLowerCase();
     }
 
     @Override
@@ -69,8 +75,12 @@ public class PatchDiff implements GitPatch {
     }
 
     @Override
-    public String getFileName() {
-        return path;
+    public String getFileName(Time time) {
+        if (time == Time.BEFORE) {
+            return oldPath;
+        }else {
+            return newPath;
+        }
     }
 
     @Override
@@ -105,11 +115,11 @@ public class PatchDiff implements GitPatch {
 
     @Override
     public String toString() {
-        return path + "@ " + commitDiff;
+        return newPath + "@ " + commitDiff;
     }
 
     @Override
     public GitPatch shallowClone() {
-        return new GitPatch.SimpleGitPatch(getDiff(), getChangeType(), getFileName(), getCommitHash(), getParentCommitHash());
+        return new GitPatch.SimpleGitPatch(getDiff(), getChangeType(), getFileName(Time.BEFORE), getFileName(Time.AFTER), getCommitHash(), getParentCommitHash());
     }
 }

@@ -3,6 +3,7 @@ package org.variantsync.diffdetective.diff.git;
 import org.apache.commons.io.FilenameUtils;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.revwalk.RevCommit;
+import org.variantsync.diffdetective.variation.diff.Time;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,9 +13,8 @@ import java.util.List;
  * A filter for commits and patches.
  * Can only be created using a DiffFilter.Builder.
  *
- * @see Builder
- *
  * @author Sören Viegener, Paul Bittner
+ * @see Builder
  */
 public class DiffFilter {
     /**
@@ -69,8 +69,9 @@ public class DiffFilter {
 
     /**
      * Builder for a DiffFilter.
-     *
+     * <p>
      * See field descriptions of DiffFilter for more details.
+     *
      * @author Sören Viegener
      */
     public static class Builder {
@@ -97,6 +98,7 @@ public class DiffFilter {
 
         /**
          * Create a new builder that is initialized to the values of the given DiffFilter.
+         *
          * @param other The DiffFilter whose values to copy.
          */
         public Builder(final DiffFilter other) {
@@ -112,6 +114,7 @@ public class DiffFilter {
         /**
          * Adds a regex of allowed file paths for patches.
          * All paths that do not match any set regex will be filtered.
+         *
          * @param regex Java regex that describes desired paths.
          * @return this
          */
@@ -123,6 +126,7 @@ public class DiffFilter {
         /**
          * Adds a regex of blocked file paths for patches.
          * All paths that match at least one blocked regex will be filtered.
+         *
          * @param regex Java regex that describes undesired paths.
          * @return this
          */
@@ -134,6 +138,7 @@ public class DiffFilter {
         /**
          * Same as {@link Builder#allowedPaths} but with file extensions instead of regexes.
          * Extensions should be given without preceding dot <code>.</code>.
+         *
          * @param fileExtensions A list of file extensions that should be considered only.
          * @return this
          */
@@ -145,6 +150,7 @@ public class DiffFilter {
         /**
          * Same as {@link Builder#allowedPaths} but with file extensions instead of regexes.
          * Extensions should be given without preceding dot <code>.</code>.
+         *
          * @param fileExtensions A list of file extensions that should be ignored.
          * @return this
          */
@@ -156,6 +162,7 @@ public class DiffFilter {
         /**
          * Only allow the given change types for patches.
          * If a patch does not have any of the specified change types, it will be discarded.
+         *
          * @param changeTypes The change types to consider only.
          * @return this
          */
@@ -166,6 +173,7 @@ public class DiffFilter {
 
         /**
          * Specifies whether merge commits should be considered or not.
+         *
          * @param allowMerge True iff merge commits should be included.
          * @return this
          */
@@ -178,6 +186,7 @@ public class DiffFilter {
          * Specifies whether commits without parents should be considered or not.
          * In particular, this setting affects whether the initial commit should
          * be considered or not.
+         *
          * @param allowNoParents True iff commits without parents should be included.
          * @return this
          */
@@ -188,6 +197,7 @@ public class DiffFilter {
 
         /**
          * Resets the list of allowed change types to allow all change types.
+         *
          * @return this
          */
         public Builder allowAllChangeTypes() {
@@ -197,6 +207,7 @@ public class DiffFilter {
 
         /**
          * Resets the list of allowed file extensions to allow all file extensions.
+         *
          * @return this
          */
         public Builder allowAllFileExtensions() {
@@ -228,23 +239,33 @@ public class DiffFilter {
     /**
      * Applies this filter to the given PatchDiff.
      * The given PatchDiff remains unmodifed.
+     *
      * @param patchDiff The PatchDiff whose inclusion should be checked.
      * @return True iff the given patch should be considered w.r.t. this filter. False iff it should be ignored.
      */
     public boolean filter(PatchDiff patchDiff) {
-        if (!allowedPaths.isEmpty() && !isAllowedPath(patchDiff.getFileName())) {
+        if (!allowedPaths.isEmpty()
+                && !isAllowedPath(patchDiff.getFileName(Time.BEFORE))
+                && !isAllowedPath(patchDiff.getFileName(Time.AFTER))) {
             return false;
         }
-        if (!blockedPaths.isEmpty() && isBlockedPath(patchDiff.getFileName())) {
+        if (!blockedPaths.isEmpty()
+                && isBlockedPath(patchDiff.getFileName(Time.BEFORE))
+                && isBlockedPath(patchDiff.getFileName(Time.AFTER))) {
             return false;
         }
-        if (!allowedChangeTypes.isEmpty() && !allowedChangeTypes.contains(patchDiff.getChangeType())) {
+        if (!allowedChangeTypes.isEmpty()
+                && !allowedChangeTypes.contains(patchDiff.getChangeType())) {
             return false;
         }
-        if (!allowedFileExtensions.isEmpty() && !allowedFileExtensions.contains(patchDiff.getFileExtension())) {
+        if (!allowedFileExtensions.isEmpty()
+                && !allowedFileExtensions.contains(patchDiff.getFileExtension(Time.BEFORE))
+                && !allowedFileExtensions.contains(patchDiff.getFileExtension(Time.AFTER))) {
             return false;
         }
-        if (!blockedFileExtensions.isEmpty() && blockedFileExtensions.contains(patchDiff.getFileExtension())) {
+        if (!blockedFileExtensions.isEmpty()
+                && blockedFileExtensions.contains(patchDiff.getFileExtension(Time.BEFORE))
+                && blockedFileExtensions.contains(patchDiff.getFileExtension(Time.AFTER))) {
             return false;
         }
         return true;
@@ -253,33 +274,29 @@ public class DiffFilter {
     /**
      * Applies this filter to the given DiffEntry.
      * The given DiffEntry remains unmodifed.
+     *
      * @param diffEntry The DiffEntry whose inclusion should be checked.
      * @return True iff the given entry should be considered w.r.t. this filter. False iff it should be ignored.
      */
     public boolean filter(DiffEntry diffEntry) {
         if (!allowedPaths.isEmpty() &&
-                !(isAllowedPath(diffEntry.getOldPath()) && isAllowedPath(diffEntry.getNewPath())))
-        {
+                !(isAllowedPath(diffEntry.getOldPath()) && isAllowedPath(diffEntry.getNewPath()))) {
             return false;
         }
         if (!blockedPaths.isEmpty() &&
-                (isBlockedPath(diffEntry.getOldPath()) || isBlockedPath(diffEntry.getNewPath())))
-        {
+                (isBlockedPath(diffEntry.getOldPath()) || isBlockedPath(diffEntry.getNewPath()))) {
             return false;
         }
         if (!allowedChangeTypes.isEmpty() &&
-                !allowedChangeTypes.contains(diffEntry.getChangeType()))
-        {
+                !allowedChangeTypes.contains(diffEntry.getChangeType())) {
             return false;
         }
         if (!allowedFileExtensions.isEmpty() &&
-                !(hasAllowedExtension(diffEntry.getOldPath()) && hasAllowedExtension(diffEntry.getNewPath())))
-        {
+                !(hasAllowedExtension(diffEntry.getOldPath()) && hasAllowedExtension(diffEntry.getNewPath()))) {
             return false;
         }
         if (!blockedFileExtensions.isEmpty() &&
-                (hasBlockedExtension(diffEntry.getOldPath()) || hasBlockedExtension(diffEntry.getNewPath())))
-        {
+                (hasBlockedExtension(diffEntry.getOldPath()) || hasBlockedExtension(diffEntry.getNewPath()))) {
             return false;
         }
         return true;
@@ -288,15 +305,16 @@ public class DiffFilter {
     /**
      * Applies this filter to the given commit.
      * The given RevCommit remains unmodifed.
+     *
      * @param commit The commit whose inclusion should be checked.
      * @return True iff the given commit should be considered w.r.t. this filter. False iff it should be ignored.
      */
     public boolean filter(RevCommit commit) {
         return
                 // merge
-                   (this.allowMerge || commit.getParentCount() <= 1)
-                // no parents
-                && (this.allowCommitsWithoutParents || commit.getParentCount() > 0)
+                (this.allowMerge || commit.getParentCount() <= 1)
+                        // no parents
+                        && (this.allowCommitsWithoutParents || commit.getParentCount() > 0)
                 ;
     }
 
@@ -316,7 +334,7 @@ public class DiffFilter {
         return blockedFileExtensions.contains(getFileExtension(filename));
     }
 
-    private String getFileExtension(String path){
+    private String getFileExtension(String path) {
         return FilenameUtils.getExtension(path).toLowerCase();
     }
 }
