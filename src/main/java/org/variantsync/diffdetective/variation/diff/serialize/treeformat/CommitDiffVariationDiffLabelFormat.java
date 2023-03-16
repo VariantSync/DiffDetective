@@ -3,6 +3,7 @@ package org.variantsync.diffdetective.variation.diff.serialize.treeformat;
 import org.apache.commons.io.FilenameUtils;
 import org.variantsync.diffdetective.diff.git.CommitDiff;
 import org.variantsync.diffdetective.diff.git.PatchDiff;
+import org.variantsync.diffdetective.variation.diff.Time;
 import org.variantsync.diffdetective.variation.diff.serialize.LineGraphConstants;
 import org.variantsync.diffdetective.variation.diff.source.CommitDiffVariationDiffSource;
 import org.variantsync.diffdetective.variation.diff.source.VariationDiffSource;
@@ -36,7 +37,7 @@ public class CommitDiffVariationDiffLabelFormat implements VariationDiffLabelFor
             return FilenameUtils.separatorsToUnix(commitDiffVariationDiffSource.getFileName().toString()) + LineGraphConstants.TREE_NAME_SEPARATOR + commitDiffVariationDiffSource.getCommitHash();
         } else if (variationDiffSource instanceof PatchDiff patchDiff) {
             // write for instances of PatchDiffs
-            return FilenameUtils.separatorsToUnix(patchDiff.getFileName()) + LineGraphConstants.TREE_NAME_SEPARATOR + patchDiff.getCommitDiff().getCommitHash();
+            return FilenameUtils.separatorsToUnix(patchDiff.getFileName(Time.AFTER)) + LineGraphConstants.TREE_NAME_SEPARATOR + patchDiff.getCommitDiff().getCommitHash();
         } else {
             throw new UnsupportedOperationException("There is no implementation for this VariationDiffSource type: " + variationDiffSource);
         }

@@ -27,6 +27,7 @@ import org.variantsync.diffdetective.util.Clock;
 import org.variantsync.diffdetective.util.Diagnostics;
 import org.variantsync.diffdetective.util.InvocationCounter;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
+import org.variantsync.diffdetective.variation.diff.Time;
 import org.variantsync.diffdetective.variation.diff.VariationDiff;
 import org.variantsync.functjonal.iteration.ClusteredIterator;
 import org.variantsync.functjonal.iteration.MappedIterator;
@@ -316,7 +317,7 @@ public class Analysis {
         final Hooks filterPatchHook = new Hooks() {
             @Override
             public boolean beginPatch(Analysis analysis) {
-                return fileName.equals(analysis.getCurrentPatch().getFileName());
+                return fileName.equals(analysis.getCurrentPatch().getFileName(Time.AFTER));
             }
         };
 
@@ -520,7 +521,7 @@ public class Analysis {
 
                 processPatch();
             } catch (Throwable t) {
-                Logger.error("error during {} {}", currentPatch.getFileName(), currentPatch.getCommitHash());
+                Logger.error("error during {} {}", currentPatch.getFileName(Time.AFTER), currentPatch.getCommitHash());
                 throw t;
             } finally {
                 runReverseHook(patchHook, Hooks::endPatch);

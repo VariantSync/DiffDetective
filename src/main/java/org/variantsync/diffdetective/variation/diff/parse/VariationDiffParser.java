@@ -19,6 +19,7 @@ import org.variantsync.diffdetective.variation.NodeType;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
 import org.variantsync.diffdetective.variation.diff.VariationDiff;
 import org.variantsync.diffdetective.variation.diff.DiffType;
+import org.variantsync.diffdetective.variation.diff.Time;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -473,7 +474,7 @@ public class VariationDiffParser {
         final CommitDiff commitDiff = parseCommit(repo, commitHash);
 
         for (final PatchDiff pd : commitDiff.getPatchDiffs()) {
-            if (file.equals(pd.getFileName())) {
+            if (file.equals(pd.getFileName(Time.AFTER))) {
                 return pd;
             }
         }

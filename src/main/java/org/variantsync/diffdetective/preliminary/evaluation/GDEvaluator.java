@@ -16,6 +16,7 @@ import org.variantsync.diffdetective.preliminary.pattern.FeatureContextReverseEn
 import org.variantsync.diffdetective.preliminary.pattern.Pattern;
 import org.variantsync.diffdetective.util.IO;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
+import org.variantsync.diffdetective.variation.diff.Time;
 
 import java.io.*;
 import java.util.*;
@@ -417,7 +418,7 @@ public class GDEvaluator {
 
         for (PatternMatchEvaluation<DiffNode<?>> pme : pmEvaluations) {
             commits.add(pme.getCommit().getCommitDiff().getCommitHash());
-            patches.add(pme.getPatch().getPatchDiff().getFileName());
+            patches.add(pme.getPatch().getPatchDiff().getFileName(Time.AFTER));
             patterns.add(pme.getPatternMatch().getPatternName());
             if (pme.getPatternMatch().hasFeatureMappings()) {
                 StringJoiner sj = new StringJoiner(";");
@@ -496,7 +497,7 @@ public class GDEvaluator {
      */
     public void exportPatch(PatchDiff patchDiff, String fileName){
         try(BufferedWriter writer = new BufferedWriter(new FileWriter(fileName))){
-            writer.write(patchDiff.getCommitDiff().getCommitHash() + ", " + patchDiff.getFileName());
+            writer.write(patchDiff.getCommitDiff().getCommitHash() + ", " + patchDiff.getFileName(Time.AFTER));
             writer.newLine();
             writer.write(patchDiff.getDiff());
             writer.flush();
@@ -609,7 +610,7 @@ public class GDEvaluator {
             System.out.println("######################################");
 
             System.out.printf("patch (%s, %s)%n",
-                    patchDiff.getCommitDiff().getAbbreviatedCommitHash(), patchDiff.getFileName());
+                    patchDiff.getCommitDiff().getAbbreviatedCommitHash(), patchDiff.getFileName(Time.AFTER));
             System.out.println(patchDiff.getDiff());
 
             System.out.println("######################################");

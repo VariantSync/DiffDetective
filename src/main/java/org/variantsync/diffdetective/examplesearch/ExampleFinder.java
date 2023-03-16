@@ -13,6 +13,7 @@ import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.util.IO;
 import org.variantsync.diffdetective.util.StringUtils;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
+import org.variantsync.diffdetective.variation.diff.Time;
 import org.variantsync.diffdetective.variation.diff.VariationDiff;
 import org.variantsync.diffdetective.variation.diff.filter.ExplainedFilter;
 import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParseOptions;
@@ -22,7 +23,6 @@ import org.variantsync.diffdetective.variation.diff.render.VariationDiffRenderer
 import org.variantsync.diffdetective.variation.diff.serialize.GraphFormat;
 import org.variantsync.diffdetective.variation.diff.serialize.edgeformat.DefaultEdgeLabelFormat;
 import org.variantsync.diffdetective.variation.diff.serialize.nodeformat.MappingsDiffNodeFormat;
-import org.variantsync.diffdetective.variation.diff.serialize.treeformat.CommitDiffVariationDiffLabelFormat;
 import org.variantsync.diffdetective.variation.diff.source.VariationDiffSource;
 
 import java.io.IOException;
@@ -152,7 +152,7 @@ public class ExampleFinder implements Analysis.Hooks {
         final Repository repo = analysis.getRepository();
         final GitPatch patch = (GitPatch) vdiff.getSource();
         outputDir = outputDir.resolve(Path.of(repo.getRepositoryName() + "_" + patch.getCommitHash()));
-        final String filename = patch.getFileName();
+        final String filename = patch.getFileName(Time.AFTER);
 
         Logger.info("Exporting example candidate: {}", patch);
 
@@ -162,7 +162,7 @@ public class ExampleFinder implements Analysis.Hooks {
         metadata += "Repository URL: " + repo.getRemoteURI() + StringUtils.LINEBREAK;
         metadata += "Child commit: " + patch.getCommitHash() + StringUtils.LINEBREAK;
         metadata += "Parent commit: " + patch.getParentCommitHash() + StringUtils.LINEBREAK;
-        metadata += "File: " + patch.getFileName() + StringUtils.LINEBREAK;
+        metadata += "File: " + patch.getFileName(Time.AFTER) + StringUtils.LINEBREAK;
         String githubLink = repo.getRemoteURI().toString();
         if (githubLink.endsWith(".git")) {
             githubLink = githubLink.substring(0, githubLink.length() - ".git".length());
@@ -177,7 +177,7 @@ public class ExampleFinder implements Analysis.Hooks {
         // export vdiff
         //exampleExport.render(example, patch, treeDir);
         try {
-            Show.diff(vdiff).dontShowButRenderToTexture().saveAsPng(outputDir.resolve(patch.getFileName() + ".png").toFile());
+            Show.diff(vdiff).dontShowButRenderToTexture().saveAsPng(outputDir.resolve(patch.getFileName(Time.AFTER) + ".png").toFile());
         } catch (IOException e) {
             Logger.error("Could not render example");
         }

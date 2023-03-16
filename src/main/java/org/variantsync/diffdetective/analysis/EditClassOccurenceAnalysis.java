@@ -14,6 +14,7 @@ import org.variantsync.diffdetective.metadata.EditClassCount;
 import org.variantsync.diffdetective.util.CSV;
 import org.variantsync.diffdetective.util.FileUtils;
 import org.variantsync.diffdetective.util.StringUtils;
+import org.variantsync.diffdetective.variation.diff.Time;
 
 public class EditClassOccurenceAnalysis implements Analysis.Hooks {
     public static final String PATCH_STATISTICS_EXTENSION = ".patchStatistics.csv";
@@ -66,7 +67,7 @@ public class EditClassOccurenceAnalysis implements Analysis.Hooks {
             Stream.concat(
                 Stream.of(
                     analysis.getCurrentPatch().getCommitHash(),
-                    analysis.getCurrentPatch().getFileName()
+                    analysis.getCurrentPatch().getFileName(Time.AFTER)
                 ),
                 editClassCounts.values().stream())
             .map(Object::toString)
