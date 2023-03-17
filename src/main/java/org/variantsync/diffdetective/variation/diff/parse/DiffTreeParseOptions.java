@@ -49,7 +49,7 @@ public record DiffTreeParseOptions(
      */
     public static final DiffTreeParseOptions Default = new DiffTreeParseOptions(
             CPPAnnotationParser.Default,
-            true,
-            true
+            false,
+            false
     );
 }

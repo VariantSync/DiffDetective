@@ -8,7 +8,8 @@ public class StringUtils {
     /** An operating system independent line break used in almost all internal strings. */
     public final static String LINEBREAK = "\r\n";
     /** A regex to identify line breaks of any operating system .*/
-    public final static Pattern LINEBREAK_REGEX = Pattern.compile("\\r\\n|\\r|\\n");
+    public final static String LINEBREAK_REGEX_RAW = "\\r\\n|\\r|\\n";
+    public final static Pattern LINEBREAK_REGEX = Pattern.compile(LINEBREAK_REGEX_RAW);
 
     /** Remove the content {@code builder} so it can be reused for a new string. */
     public static void clear(final StringBuilder builder) {

@@ -7,6 +7,8 @@ import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParseOptions;
  * Parse options that should be used when parsing commits and patches within a commit history.
  * @param diffStoragePolicy Decides if and how unix diffs should be remembered in a parsed
  *                          {@link org.variantsync.diffdetective.diff.git.PatchDiff} when parsing commits.
+ * @param diffTreeParseOptions Options for parsing a patch to a {@link org.variantsync.diffdetective.variation.diff.DiffTree}.
+ *                             For more information, see {@link DiffTreeParseOptions}.
  * @author Paul Bittner
  */
 public record PatchDiffParseOptions(

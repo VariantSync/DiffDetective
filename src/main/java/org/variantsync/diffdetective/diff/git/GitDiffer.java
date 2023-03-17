@@ -52,6 +52,7 @@ import java.util.stream.Collectors;
 public class GitDiffer {
     private static final Pattern BOM_PATTERN = Pattern.compile("\\x{FEFF}");
     private static final Pattern DIFF_HUNK_PATTERN = Pattern.compile( "^@@\\s-(\\d+).*\\+(\\d+).*@@$");
+    private static final Pattern GIT_HEADER_PATTERN = Pattern.compile( "^diff --git .*$", Pattern.MULTILINE);
     private static final Pattern DIFF_HEADER_PATTERN = Pattern.compile( "^\\+\\+\\+.*$", Pattern.MULTILINE);
     private static final String NO_NEW_LINE = "\\ No newline at end of file";
 
@@ -278,19 +279,12 @@ public class GitDiffer {
         final AbstractTreeIterator prevTreeIterator;
         if (commit == null) {
             prevTreeIterator = new EmptyTreeIterator();
-        } else {
-            final CanonicalTreeParser prevTreeParser = new CanonicalTreeParser();
-            try (ObjectReader reader = git.getRepository().newObjectReader()) {
-                try {
-                    prevTreeParser.reset(reader, commit.getTree());
-                } catch (IOException e) {
-                    return CommitDiffResult.Failure(DiffError.JGIT_ERROR, e.toString());
-                }
-            }
-
-            prevTreeIterator = prevTreeParser;
+        } else try (ObjectReader reader = git.getRepository().newObjectReader()) {
+            prevTreeIterator = new CanonicalTreeParser(null, reader, commit.getTree());
+        } catch (IOException e) {
+            return CommitDiffResult.Failure(DiffError.JGIT_ERROR, e.toString());
         }
-        
+
         return getPatchDiffs(git, diffFilter, parseOptions, prevTreeIterator, workingTreeIterator, commit, commit);
     }
     
@@ -339,15 +333,23 @@ public class GitDiffer {
                 final String strippedDiff;
                 if (matcher.find()) {
                     strippedDiff = gitDiff.substring(matcher.end() + 1);
+                } else if (GIT_HEADER_PATTERN.matcher(gitDiff).find()) {
+                    // Check whether it is a diff returned by `git diff` and not one created by some other means
+                    strippedDiff = "";
                 } else {
+                    // It is a diff from another source (e.g., manually created or copy-pasted from GitHub)
                     strippedDiff = gitDiff;
                 }
 
+
                 try {
                     final String fullDiff = switch (diffEntry.getChangeType()) {
-                        case ADD, DELETE ->
+                        case ADD, DELETE -> {
                             // The first lines contains meta information "@@ ... " that we want to skip.
-                                strippedDiff.lines().skip(1).collect(Collectors.joining(StringUtils.LINEBREAK));
+                            final String[] hunkBeginAndRest = strippedDiff.split(StringUtils.LINEBREAK_REGEX_RAW, 2);
+                            Assert.assertTrue(hunkBeginAndRest.length == 2, "Hunk is only one line. Is it a hunk? Hunk: " + strippedDiff);
+                            yield hunkBeginAndRest[1];
+                        }
                         case RENAME, COPY, MODIFY -> {
                             final BufferedReader beforeFullFile = getBeforeFullFile(git, parentCommit, filename);
                             yield getFullDiff(beforeFullFile, new BufferedReader(new StringReader(strippedDiff)));

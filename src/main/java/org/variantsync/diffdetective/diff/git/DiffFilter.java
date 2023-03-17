@@ -186,7 +186,6 @@ public class DiffFilter {
          * Specifies whether commits without parents should be considered or not.
          * In particular, this setting affects whether the initial commit should
          * be considered or not.
-         *
          * @param allowNoParents True iff commits without parents should be included.
          * @return this
          */
