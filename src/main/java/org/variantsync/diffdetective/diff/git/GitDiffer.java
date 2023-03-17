@@ -52,6 +52,7 @@ import java.util.stream.Collectors;
 public class GitDiffer {
     private static final Pattern BOM_PATTERN = Pattern.compile("\\x{FEFF}");
     private static final Pattern DIFF_HUNK_PATTERN = Pattern.compile( "^@@\\s-(\\d+).*\\+(\\d+).*@@$");
+    private static final Pattern GIT_HEADER_PATTERN = Pattern.compile( "^diff --git .*$", Pattern.MULTILINE);
     private static final Pattern DIFF_HEADER_PATTERN = Pattern.compile( "^\\+\\+\\+.*$", Pattern.MULTILINE);
     private static final String NO_NEW_LINE = "\\ No newline at end of file";
 
@@ -333,7 +334,13 @@ public class GitDiffer {
                 if (matcher.find()) {
                     strippedDiff = gitDiff.substring(matcher.end() + 1);
                 } else {
-                    strippedDiff = gitDiff;
+                    // Check whether it is a diff returned by `git diff` and not one created by some other means
+                    if (GIT_HEADER_PATTERN.matcher(gitDiff).find()) {
+                        strippedDiff = "";
+                    } else {
+                        // It is a diff from another source (e.g., manually created or copy-pasted from GitHub)
+                        strippedDiff = gitDiff;
+                    }
                 }
 
                 try {
