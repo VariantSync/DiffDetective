@@ -31,30 +31,13 @@ public class GitDifferTest {
 
     private static final String[] commitIDs = new String[] {"a032346092e47048becb36a7cb183b4739547370", "4a4c1db1b192e221d8e25460d6d1128d1bdd0c0d", "d7eeba1b94f3d0c0ebed3457eea8fa8537143348"};
 
-    public static Stream<String> testCommits() throws IOException {
+    public static Stream<String> testCommits() {
         return Arrays.stream(commitIDs);
     }
 
     @ParameterizedTest
     @MethodSource("testCommits")
-    public void test(String basename) throws IOException, DiffParseException {
-        testCase(basename);
-    }
-
-    private static Repository repo() {
-        final Path marlinPath = Path.of(".")
-                .resolve(REPOS_DIR)
-                .resolve("test-spl.zip");
-        return Repository
-                .fromZip(marlinPath, "test-spl")
-                .setDiffFilter(DiffFilter.ALLOW_ALL)
-                .setParseOptions(new PatchDiffParseOptions(PatchDiffParseOptions.DiffStoragePolicy.REMEMBER_FULL_DIFF, new DiffTreeParseOptions(
-                        false,
-                        false
-                )));
-    }
-
-    public void testCase(String commitHash) throws IOException {
+    public void test(String commitHash) throws IOException, DiffParseException {
         Repository repo = repo();
         final CommitDiff commitDiff = DiffTreeParser.parseCommit(repo, commitHash);
 
@@ -85,4 +68,18 @@ public class GitDifferTest {
             }
         }
     }
+
+    private static Repository repo() {
+        final Path repoPath = Path.of(".")
+                .resolve(REPOS_DIR)
+                .resolve("test-spl.zip");
+        return Repository
+                .fromZip(repoPath, "test-spl")
+                .setDiffFilter(DiffFilter.ALLOW_ALL)
+                .setParseOptions(new PatchDiffParseOptions(PatchDiffParseOptions.DiffStoragePolicy.REMEMBER_FULL_DIFF, new DiffTreeParseOptions(
+                        false,
+                        false
+                )));
+    }
+
 }
