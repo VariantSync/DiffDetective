@@ -29,7 +29,7 @@ public class GitDifferTest {
     private final static Path testDir = Constants.RESOURCE_DIR.resolve("diffs").resolve("differ");
     private final static Path REPOS_DIR = Path.of("src").resolve("test").resolve("resources").resolve("repos");
 
-    private static final String[] commitIDs = new String[] {"4a4c1db1b192e221d8e25460d6d1128d1bdd0c0d", "d7eeba1b94f3d0c0ebed3457eea8fa8537143348"};
+    private static final String[] commitIDs = new String[] {"a032346092e47048becb36a7cb183b4739547370", "4a4c1db1b192e221d8e25460d6d1128d1bdd0c0d", "d7eeba1b94f3d0c0ebed3457eea8fa8537143348"};
 
     public static Stream<String> testCommits() throws IOException {
         return Arrays.stream(commitIDs);
