@@ -333,15 +333,14 @@ public class GitDiffer {
                 final String strippedDiff;
                 if (matcher.find()) {
                     strippedDiff = gitDiff.substring(matcher.end() + 1);
-                } else {
+                } else if (GIT_HEADER_PATTERN.matcher(gitDiff).find()) {
                     // Check whether it is a diff returned by `git diff` and not one created by some other means
-                    if (GIT_HEADER_PATTERN.matcher(gitDiff).find()) {
-                        strippedDiff = "";
-                    } else {
-                        // It is a diff from another source (e.g., manually created or copy-pasted from GitHub)
-                        strippedDiff = gitDiff;
-                    }
+                    strippedDiff = "";
+                } else {
+                    // It is a diff from another source (e.g., manually created or copy-pasted from GitHub)
+                    strippedDiff = gitDiff;
                 }
+
 
                 try {
                     final String fullDiff = switch (diffEntry.getChangeType()) {
