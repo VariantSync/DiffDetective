@@ -345,6 +345,10 @@ public class GitDiffer {
                 try {
                     final String fullDiff = switch (diffEntry.getChangeType()) {
                         case ADD, DELETE -> {
+                            if (strippedDiff.isEmpty()) {
+                                // Addition or deletion of an empty file
+                                yield "";
+                            }
                             // The first lines contains meta information "@@ ... " that we want to skip.
                             final String[] hunkBeginAndRest = StringUtils.LINEBREAK_REGEX.split(strippedDiff, 2);
                             Assert.assertTrue(hunkBeginAndRest.length == 2, "Hunk is only one line. Is it a hunk? Hunk: " + strippedDiff);
