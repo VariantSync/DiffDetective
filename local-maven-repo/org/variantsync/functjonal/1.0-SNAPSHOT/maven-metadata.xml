@@ -3,21 +3,21 @@
   <groupId>org.variantsync</groupId>
   <artifactId>functjonal</artifactId>
   <versioning>
-    <lastUpdated>20230316180100</lastUpdated>
+    <lastUpdated>20230317133520</lastUpdated>
     <snapshot>
-      <timestamp>20230316.180100</timestamp>
-      <buildNumber>2</buildNumber>
+      <timestamp>20230317.133520</timestamp>
+      <buildNumber>3</buildNumber>
     </snapshot>
     <snapshotVersions>
       <snapshotVersion>
         <extension>jar</extension>
-        <value>1.0-20230316.180100-2</value>
-        <updated>20230316180100</updated>
+        <value>1.0-20230317.133520-3</value>
+        <updated>20230317133520</updated>
       </snapshotVersion>
       <snapshotVersion>
         <extension>pom</extension>
-        <value>1.0-20230316.180100-2</value>
-        <updated>20230316180100</updated>
+        <value>1.0-20230317.133520-3</value>
+        <updated>20230317133520</updated>
       </snapshotVersion>
     </snapshotVersions>
   </versioning>
