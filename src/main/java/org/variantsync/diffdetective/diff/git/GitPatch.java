@@ -16,7 +16,8 @@ public interface GitPatch extends VariationDiffSource, TextBasedDiff {
      * Minimal default implementation of {@link GitPatch}
      * @param getDiff The diff in text form.
      * @param getChangeType The change type of this patch (e.g., file insertion or modification).
-     * @param getFileName The name of the patched file.
+     * @param oldFileName The name of the patched file before the edit.
+     * @param newFileName The name of the patched file after the edit.
      * @param getCommitHash The hash of the commit introducing the change.
      * @param getParentCommitHash The hash of the parent commit regarding which the diff was created.
      */
