@@ -56,7 +56,7 @@ public class ExampleCriterions {
     }
 
     private static boolean hasAnnotatedMacros(final DiffTree diffTree) {
-        return diffTree.anyMatch(n -> n.isArtifact() && n.getLabel().trim().startsWith("#"));
+        return diffTree.anyMatch(n -> n.isArtifact() && n.getLabel().toString().trim().startsWith("#"));
     }
 
     private static boolean hasNestingBeforeEdit(final DiffTree diffTree) {

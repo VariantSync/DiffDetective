@@ -19,7 +19,7 @@ public class EditClassesTest {
         t.forAll(node -> {
             if (node.isArtifact()) {
                 assertEquals(
-                        node.getLabel(),
+                        node.getLabel().toString(),
                         ProposedEditClasses.Instance.match(node).getName()
                 );
             }

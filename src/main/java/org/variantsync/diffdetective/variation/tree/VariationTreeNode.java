@@ -3,6 +3,7 @@ package org.variantsync.diffdetective.variation.tree;
 import org.prop4j.Node;
 import org.variantsync.diffdetective.diff.text.DiffLineNumber;
 import org.variantsync.diffdetective.util.LineRange;
+import org.variantsync.diffdetective.util.StringUtils;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.util.fide.FixTrueFalse;
 import org.variantsync.diffdetective.variation.diff.DiffNode; // For Javdoc
@@ -11,6 +12,7 @@ import org.variantsync.diffdetective.variation.diff.DiffType;
 import org.variantsync.diffdetective.variation.NodeType;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * A single node in a variation tree.
@@ -48,6 +50,15 @@ import java.util.*;
  * @author Benjamin Moosherr
  */
 public class VariationTreeNode extends VariationNode<VariationTreeNode> {
+    private record Lines(List<String> lines) implements Label {
+        @Override
+        public String toString() {
+            return lines
+                .stream()
+                .collect(Collectors.joining(StringUtils.LINEBREAK));
+        }
+    }
+
     /**
      * The node type of this node, which determines the type of the represented
      * element in the diff (e.g., mapping or artifact).
@@ -62,7 +73,7 @@ public class VariationTreeNode extends VariationNode<VariationTreeNode> {
     /**
      * A list of lines representing the label of this node.
      */
-    private List<String> label;
+    private Label label;
 
     /**
      * The direct feature mapping of this node.
@@ -105,7 +116,7 @@ public class VariationTreeNode extends VariationNode<VariationTreeNode> {
         NodeType nodeType,
         Node featureMapping,
         LineRange lineRange,
-        List<String> label
+        Label label
     ) {
         super();
 
@@ -115,6 +126,24 @@ public class VariationTreeNode extends VariationNode<VariationTreeNode> {
         this.featureMapping = featureMapping;
 
         this.childOrder = new ArrayList<>();
+    }
+
+    /**
+     * The same as {@link VariationTreeNode(NodeType, Node, LineRange, Label)} but with a minimal
+     * default implementation of {@link Label}.
+     */
+    public VariationTreeNode(
+        NodeType nodeType,
+        Node featureMapping,
+        LineRange lineRange,
+        List<String> label
+    ) {
+        this(
+            nodeType,
+            featureMapping,
+            lineRange,
+            new Lines(label)
+        );
     }
 
     /**
@@ -159,20 +188,18 @@ public class VariationTreeNode extends VariationNode<VariationTreeNode> {
     }
 
     @Override
-    public List<String> getLabelLines() {
-        return Collections.unmodifiableList(label);
+    public Label getLabel() {
+        return label;
     }
 
     /**
      * Replaces the current label by {@code newLabelLines}.
      *
-     * <p>The given list is not copied, so modifications of {@code newLabelLines} will be visible by
-     * {@link getLabelLines}.
-     *
      * @see getLabelLines
      */
     public void setLabelLines(List<String> newLabelLines) {
-        label = newLabelLines;
+        label.lines().clear();
+        addLines(newLabelLines);
     }
 
     /**
@@ -182,7 +209,7 @@ public class VariationTreeNode extends VariationNode<VariationTreeNode> {
      * @see getLabelLines
      */
     public void addLines(final List<String> lines) {
-        this.label.addAll(lines);
+        this.label.lines().addAll(lines);
     }
 
     @Override

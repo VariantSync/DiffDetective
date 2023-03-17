@@ -64,8 +64,8 @@ public class Projection extends VariationNode<Projection> {
     }
 
     @Override
-    public List<String> getLabelLines() {
-        return getBackingNode().getLabelLines();
+    public Label getLabel() {
+        return getBackingNode().getLabel();
     }
 
     @Override
