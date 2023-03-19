@@ -51,7 +51,7 @@ public class CutNonEditedSubtrees implements DiffTreeTransformer, DiffTreeVisito
              *        => s.isNon()
              */
             if (
-                    child.getAllChildren().isEmpty()
+                    child.isLeaf()
                             && child.getParent(AFTER) == subtree
                             && child.getParent(BEFORE) == subtree)
             {

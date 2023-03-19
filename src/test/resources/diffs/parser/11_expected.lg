@@ -5,4 +5,4 @@ v 192 ADD;IF;(old: -1, diff: 2, new:1);(old: -1, diff: 5, new:3);B;#ifdef B
 e 136 16 b;0
 e 275 136 b;0
 e 275 192 a;0
-e 192 16 a;1
+e 192 16 a;0

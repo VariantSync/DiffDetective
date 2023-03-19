@@ -12,6 +12,7 @@ import org.variantsync.diffdetective.variation.tree.VariationNode;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 import static org.variantsync.diffdetective.variation.diff.Time.AFTER;
 import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
@@ -49,20 +50,19 @@ public class DiffNode implements HasNodeType {
      * This array has to be indexed by {@code Time.ordinal()}
      *
      * Invariant: Iff {@code getParent(time) != null} then
-     * {@code getParent(time).childOrder.contains(this)}.
+     * {@code getParent(time).getChildOrder(time).contains(this)}.
      */
     private DiffNode[] parents = new DiffNode[2];
 
     /**
-     * We use a list for children to maintain order.
+     * The children before and after the edit.
+     * This array has to be indexed by {@code Time.ordinal()}
      *
-     * Invariant: Iff {@code childOrder.contains(child)} then
-     * {@code child.getParent(BEFORE) == this || child.getParent(AFTER) == this}.
-     *
-     * Note that it's explicitly allowed to have
-     * {@code child.getParent(BEFORE) == this && child.getParent(AFTER) == this}.
+     * Invariant: Iff {@code getChildOrder(time).contains(child)} then
+     * {@code child.getParent(time) == this}.
      */
-    private final List<DiffNode> childOrder;
+    @SuppressWarnings("unchecked")
+    private final List<DiffNode>[] children = new ArrayList[2];
 
     /**
      * Cache for before and after projections.
@@ -97,7 +97,8 @@ public class DiffNode implements HasNodeType {
     public DiffNode(DiffType diffType, NodeType nodeType,
                     DiffLineNumber fromLines, DiffLineNumber toLines,
                     Node featureMapping, List<String> lines) {
-        this.childOrder = new ArrayList<>();
+        children[BEFORE.ordinal()] = new ArrayList<>();
+        children[AFTER.ordinal()] = new ArrayList<>();
 
         this.diffType = diffType;
         this.nodeType = nodeType;
@@ -207,13 +208,6 @@ public class DiffNode implements HasNodeType {
     }
 
     /**
-     * Returns the number of unique child nodes.
-     */
-    public int getTotalNumberOfChildren() {
-        return childOrder.size();
-    }
-
-    /**
      * Gets the amount of nodes on the path from the root to this node which only exist at the time
      * {@code time}.
      */
@@ -277,7 +271,7 @@ public class DiffNode implements HasNodeType {
     }
 
     /**
-     * Remove this node as the parent of {@code child} but it doesn't change {@link childOrder}.
+     * Remove this node as the parent of {@code child} but it doesn't change {@link children}.
      */
     private void dropChild(final DiffNode child, Time time) {
         Assert.assertTrue(child.getParent(time) == this);
@@ -285,11 +279,11 @@ public class DiffNode implements HasNodeType {
     }
 
     /**
-     * Returns the index of the given child in the list of children of thus node.
+     * Returns the index of the given child in the list of children of this node.
      * Returns -1 if the given node is not a child of this node.
      */
-    public int indexOfChild(final DiffNode child) {
-        return childOrder.indexOf(child);
+    public int indexOfChild(final DiffNode child, Time time) {
+        return children[time.ordinal()].indexOf(child);
     }
 
     /**
@@ -297,9 +291,11 @@ public class DiffNode implements HasNodeType {
      */
     public boolean insertChild(final DiffNode child, int index, Time time) {
         if (child.getDiffType().existsAtTime(time)) {
-            if (!isChild(child)) {
-                childOrder.add(index, child);
+            if (child.getParent(time) != null) {
+                throw new IllegalArgumentException("Given child " + child + " already has a " + time + " parent (" + child.getParent(time) + ")!");
             }
+
+            children[time.ordinal()].add(index, child);
             child.setParent(this, time);
             return true;
         }
@@ -313,12 +309,10 @@ public class DiffNode implements HasNodeType {
     public boolean addChild(final DiffNode child, Time time) {
         if (child.getDiffType().existsAtTime(time)) {
             if (child.getParent(time) != null) {
-                throw new IllegalArgumentException("Given child " + child + " already has a before parent (" + child.getParent(time) + ")!");
+                throw new IllegalArgumentException("Given child " + child + " already has a " + time + " parent (" + child.getParent(time) + ")!");
             }
 
-            if (!isChild(child)) {
-                childOrder.add(child);
-            }
+            children[time.ordinal()].add(child);
             child.setParent(this, time);
             return true;
         }
@@ -346,7 +340,7 @@ public class DiffNode implements HasNodeType {
     public boolean removeChild(final DiffNode child, Time time) {
         if (isChild(child, time)) {
             dropChild(child, time);
-            removeFromCache(child);
+            children[time.ordinal()].remove(child);
             return true;
         }
         return false;
@@ -370,34 +364,13 @@ public class DiffNode implements HasNodeType {
      * @return All removed children.
      */
     public List<DiffNode> removeChildren(Time time) {
-        final List<DiffNode> orphans = new ArrayList<>();
-
-        // Note that the following method call can't be written using a foreach loop reusing
-        // {@code removeBeforeChild} because lists can't be modified during traversal.
-        childOrder.removeIf(child -> {
-            if (!isChild(child, time)) {
-                return false;
-            }
-
-            orphans.add(child);
+        for (var child : children[time.ordinal()]) {
             dropChild(child, time);
-            return !isChild(child, time.other());
-        });
-
-        return orphans;
-    }
-
-    /**
-     * If the given node is neither a before nor after child, it will be removed
-     * from the internal cache that stores the order of children.
-     * This method does nothing the given node is (still) a child.
-     * @param child The node to remove from the order cache if it is no child.
-     * @see DiffNode#isChild(DiffNode)
-     */
-    private void removeFromCache(final DiffNode child) {
-        if (!isChild(child)) {
-            childOrder.remove(child);
         }
+
+        final List<DiffNode> orphans = children[time.ordinal()];
+        children[time.ordinal()] = new ArrayList<>();
+        return orphans;
     }
 
     /**
@@ -491,18 +464,41 @@ public class DiffNode implements HasNodeType {
     }
 
     /**
-     * Returns the list representing the order of the children.
-     * Any child occurs exactly once, even if this node is it's before and after parent.
+     * Returns the order of the children at {@code time}.
      */
-    public List<DiffNode> getChildOrder() {
-        return Collections.unmodifiableList(childOrder);
+    public List<DiffNode> getChildOrder(Time time) {
+        return Collections.unmodifiableList(children[time.ordinal()]);
     }
 
     /**
-     * Legacy alias for {@link DiffNode#getChildOrder()}.
+     * Returns an efficient stream representation of all direct children without duplicates.
+     * In particular, children which are both before and after children of this node are only
+     * contained once. The order of the children is unspecified.
      */
-    public List<DiffNode> getAllChildren() {
-        return getChildOrder();
+    public Stream<DiffNode> getAllChildrenStream() {
+        return Stream.concat(
+            children[BEFORE.ordinal()].stream(),
+            children[AFTER.ordinal()].stream().filter(child -> child.getParent(BEFORE) != this)
+        );
+    };
+
+    /**
+     * Returns an efficient iterable representation of all direct children without duplicates.
+     * Note: The returned iterable can only be traversed once.
+     * @see getAllChildrenStream
+     */
+    public Iterable<DiffNode> getAllChildren() {
+        return getAllChildrenStream()::iterator;
+    }
+
+    /**
+     * Returns a new set with all children of this node without duplicates.
+     * @see getAllChildren
+     */
+    public Set<DiffNode> getAllChildrenSet() {
+        var result = new HashSet<DiffNode>();
+        getAllChildrenStream().forEach(result::add);
+        return result;
     }
 
     /**
@@ -546,7 +542,7 @@ public class DiffNode implements HasNodeType {
      * Returns true iff this node has no children.
      */
     public boolean isLeaf() {
-        return childOrder.isEmpty();
+        return children[BEFORE.ordinal()].isEmpty() && children[AFTER.ordinal()].isEmpty();
     }
 
     /**
@@ -658,7 +654,7 @@ public class DiffNode implements HasNodeType {
      */
     public void assertConsistency() {
         // check consistency of children lists and edges
-        for (final DiffNode c : childOrder) {
+        for (final DiffNode c : getAllChildren()) {
             Assert.assertTrue(isChild(c), () -> "Child " + c + " of " + this + " is neither a before nor an after child!");
             Time.forAll(time -> {
                 if (c.getParent(time) != null) {

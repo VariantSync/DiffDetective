@@ -4,4 +4,4 @@ v 202 REM;ELIF;(old: 2, diff: 2, new:-1);(old: 4, diff: 4, new:-1);B;#elif \;  B
 v 259 ADD;ARTIFACT;(old: -1, diff: 3, new:2);(old: -1, diff: 4, new:3);;  B
 e 144 16 ba;0;0
 e 202 144 b;0
-e 259 144 a;1
+e 259 144 a;0

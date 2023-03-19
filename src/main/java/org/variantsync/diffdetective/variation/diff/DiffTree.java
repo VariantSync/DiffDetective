@@ -353,7 +353,7 @@ public class DiffTree {
      * The tree is considered empty if it only has a root or if it has no nodes at all.
      */
     public boolean isEmpty() {
-        return root == null || root.getTotalNumberOfChildren() == 0;
+        return root == null || root.isLeaf();
     }
 
     /**

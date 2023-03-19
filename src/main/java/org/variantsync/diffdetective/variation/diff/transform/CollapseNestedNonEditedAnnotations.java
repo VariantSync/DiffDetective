@@ -143,18 +143,18 @@ public class CollapseNestedNonEditedAnnotations implements DiffTreeTransformer {
      * @return True iff at least one child of was edited.
      */
     private static boolean anyChildEdited(DiffNode d) {
-        return d.getAllChildren().stream().anyMatch(c -> !c.isNon());
+        return d.getAllChildrenStream().anyMatch(c -> !c.isNon());
     }
 
     /**
      * @return True iff no child of was edited.
      */
     private static boolean noChildEdited(DiffNode d) {
-        return d.getAllChildren().stream().allMatch(DiffNode::isNon);
+        return d.getAllChildrenStream().allMatch(DiffNode::isNon);
     }
 
     private static boolean hasExactlyOneChild(DiffNode d) {
-        return d.getTotalNumberOfChildren() == 1;
+        return d.getAllChildrenStream().limit(2).count() == 1;
     }
 
     /**
