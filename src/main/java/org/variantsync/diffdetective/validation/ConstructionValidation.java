@@ -253,8 +253,8 @@ public class ConstructionValidation implements Analysis.Hooks {
         Logger.info("current patch: {} {} (by thread {})", analysis.getCurrentPatch().getFileName(), analysis.getCurrentPatch().getCommitHash(), Thread.currentThread().getId());
         Statistics statistics = new Statistics();
         try {
-            statistics.diffTree[0].matchingDuration = 0;
-            statistics.diffTree[0].constructionDuration = 0;
+            statistics.diffTree[0].matchingDuration += analysis.getCurrentDiffTree().diffingDuration;
+            statistics.diffTree[0].constructionDuration += analysis.getCurrentDiffTree().constructionDuration;
 
             Clock clock = new Clock();
             final DiffTree beforeVariationTree = parseVariationTree(analysis, analysis.getCurrentCommit().getParent(0));

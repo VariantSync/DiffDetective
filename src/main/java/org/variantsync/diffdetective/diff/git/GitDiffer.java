@@ -23,6 +23,7 @@ import org.variantsync.diffdetective.diff.result.DiffError;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.preliminary.GitDiff;
 import org.variantsync.diffdetective.util.Assert;
+import org.variantsync.diffdetective.util.Clock;
 import org.variantsync.diffdetective.util.StringUtils;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParser;
@@ -369,7 +370,9 @@ public class GitDiffer {
             strippedDiff = gitDiff;
         }
 
+        Clock clock = new Clock();
         final String fullDiff = getFullDiff(beforeFullFile, new BufferedReader(new StringReader(strippedDiff)));
+        long diffingDuration = clock.getPassedMilliseconds();
         try {
             DiffTree diffTree = DiffTreeParser.createDiffTree(fullDiff, false, false, parseOptions.annotationParser());
             diffTree.diffingDuration = diffingDuration;

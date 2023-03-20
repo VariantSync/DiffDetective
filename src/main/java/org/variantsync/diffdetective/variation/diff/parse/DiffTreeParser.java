@@ -15,6 +15,7 @@ import org.variantsync.diffdetective.diff.result.DiffError;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.feature.CPPAnnotationParser;
 import org.variantsync.diffdetective.util.Assert;
+import org.variantsync.diffdetective.util.Clock;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.variation.diff.DiffType;
@@ -249,6 +250,7 @@ public class DiffTreeParser {
     private DiffTree parse(
         FailableSupplier<DiffLine, IOException> lines
     ) throws IOException, DiffParseException {
+        Clock clock = new Clock();
         DiffNode root = DiffNode.createRoot();
         beforeStack.push(root);
         afterStack.push(root);
@@ -329,7 +331,9 @@ public class DiffTreeParser {
         afterStack.clear();
         lastArtifact = null;
 
-        return new DiffTree(root);
+        var result = new DiffTree(root);
+        result.constructionDuration = clock.getPassedMilliseconds();
+        return result;
     }
 
     /**

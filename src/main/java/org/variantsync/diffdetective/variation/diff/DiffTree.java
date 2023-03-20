@@ -64,6 +64,8 @@ import static org.variantsync.functjonal.Functjonal.when;
 public class DiffTree {
     private final DiffNode root;
     private DiffTreeSource source;
+    public long constructionDuration = 0;
+    public long diffingDuration = 0;
 
     /**
      * Creates a DiffTree that only consists of the single given root node.
