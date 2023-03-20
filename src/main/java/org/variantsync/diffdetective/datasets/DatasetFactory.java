@@ -41,6 +41,7 @@ public class DatasetFactory {
     public static final DiffFilter DEFAULT_DIFF_FILTER =
             new DiffFilter.Builder()
                     .allowMerge(false)
+                    .allowCommitsWithoutParents(false)
                     .allowedChangeTypes(DiffEntry.ChangeType.MODIFY)
                     .allowedFileExtensions("h", "hpp", "c", "cpp")
                     .build();
@@ -78,11 +79,11 @@ public class DatasetFactory {
      * Returns the default parse options for the repository with the given name.
      * For Marlin, uses the {@link Marlin#ANNOTATION_PARSER}.
      */
-    private static ParseOptions getParseOptionsFor(final String repositoryName) {
+    private static PatchDiffParseOptions getParseOptionsFor(final String repositoryName) {
         if (repositoryName.equalsIgnoreCase(MARLIN)) {
-            return new ParseOptions(Marlin.ANNOTATION_PARSER);
+            return PatchDiffParseOptions.Default.withAnnotationParser(Marlin.ANNOTATION_PARSER);
         }
-        return ParseOptions.Default;
+        return PatchDiffParseOptions.Default;
     }
 
     /**
@@ -94,7 +95,7 @@ public class DatasetFactory {
      */
     public Repository create(final DatasetDescription dataset) {
         final DiffFilter diffFilter = getDefaultDiffFilterFor(dataset.name());
-        final ParseOptions parseOptions = getParseOptionsFor(dataset.name());
+        final PatchDiffParseOptions parseOptions = getParseOptionsFor(dataset.name());
 
         final Repository repo = Repository.tryFromRemote(
                 cloneDirectory,

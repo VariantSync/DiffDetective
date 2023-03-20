@@ -9,10 +9,9 @@ import org.prop4j.Node;
 import org.tinylog.Logger;
 import org.variantsync.diffdetective.datasets.DatasetDescription;
 import org.variantsync.diffdetective.datasets.DatasetFactory;
-import org.variantsync.diffdetective.datasets.ParseOptions;
+import org.variantsync.diffdetective.datasets.PatchDiffParseOptions;
 import org.variantsync.diffdetective.datasets.Repository;
 import org.variantsync.diffdetective.diff.git.CommitDiff;
-import org.variantsync.diffdetective.diff.git.GitDiffer;
 import org.variantsync.diffdetective.diff.git.PatchDiff;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParser;
@@ -68,7 +67,7 @@ public class MarlinDebug {
                     new DatasetFactory(reposPath).create(marlin),
                     OUTPATH.resolve(marlin.name())
             );
-            MARLIN.repo.setParseOptions(MARLIN.repo.getParseOptions().withDiffStoragePolicy(ParseOptions.DiffStoragePolicy.REMEMBER_STRIPPED_DIFF));
+            MARLIN.repo.setParseOptions(MARLIN.repo.getParseOptions().withDiffStoragePolicy(PatchDiffParseOptions.DiffStoragePolicy.REMEMBER_STRIPPED_DIFF));
         }
         {
             DatasetDescription php = new DatasetDescription(
@@ -83,7 +82,7 @@ public class MarlinDebug {
                     new DatasetFactory(reposPath).create(php),
                     OUTPATH.resolve(php.name())
             );
-            PHP.repo.setParseOptions(PHP.repo.getParseOptions().withDiffStoragePolicy(ParseOptions.DiffStoragePolicy.REMEMBER_STRIPPED_DIFF));
+            PHP.repo.setParseOptions(PHP.repo.getParseOptions().withDiffStoragePolicy(PatchDiffParseOptions.DiffStoragePolicy.REMEMBER_STRIPPED_DIFF));
         }
     }
 

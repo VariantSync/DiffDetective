@@ -3,6 +3,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.tinylog.Logger;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.feature.CPPAnnotationParser;
+import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParseOptions;
 import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParser;
 import org.variantsync.diffdetective.variation.diff.serialize.LineGraphExportOptions;
 import org.variantsync.diffdetective.variation.diff.serialize.DiffTreeSerializeDebugData;
@@ -30,9 +31,11 @@ public class TestMultiLineMacros {
         try (BufferedReader fullDiff = Files.newBufferedReader(p)) {
             tree = DiffTreeParser.createDiffTree(
                     fullDiff,
-                    true,
-                    false,
-                    CPPAnnotationParser.Default);
+                    new DiffTreeParseOptions(
+                            CPPAnnotationParser.Default,
+                            true,
+                            false
+                    ));
         }
 
         try (var destination = IO.newBufferedOutputStream(resDir.resolve("gen").resolve(p.getFileName() + ".lg"))) {

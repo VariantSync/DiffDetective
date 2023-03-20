@@ -2,6 +2,7 @@ package org.variantsync.diffdetective.examplesearch;
 
 import org.tinylog.Logger;
 import org.variantsync.diffdetective.analysis.Analysis;
+import org.variantsync.diffdetective.datasets.PatchDiffParseOptions;
 import org.variantsync.diffdetective.datasets.Repository;
 import org.variantsync.diffdetective.diff.git.GitPatch;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
@@ -11,6 +12,7 @@ import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.util.IO;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.variation.diff.filter.ExplainedFilter;
+import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParseOptions;
 import org.variantsync.diffdetective.variation.diff.render.DiffTreeRenderer;
 import org.variantsync.diffdetective.variation.diff.render.PatchDiffRenderer;
 import org.variantsync.diffdetective.variation.diff.render.RenderOptions;
@@ -23,7 +25,6 @@ import org.variantsync.diffdetective.variation.diff.source.DiffTreeSource;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Function;
 
 /**
  * Helper class to find suitable running examples.
@@ -70,13 +71,13 @@ public class ExampleFinder implements Analysis.Hooks {
     public boolean analyzeDiffTree(Analysis analysis) {
         final Repository currentRepo = analysis.getRepository();
         final DiffTree diffTree = analysis.getCurrentDiffTree();
-        final CPPAnnotationParser annotationParser = analysis.getRepository().getParseOptions().annotationParser();
+        final CPPAnnotationParser annotationParser = analysis.getRepository().getParseOptions().diffTreeParseOptions().annotationParser();
 
         // We do not want a difftree for the entire file but only for the local change to have a small example.
         final DiffTree localTree;
         try {
             final String localDiff = getDiff(diffTree);
-            localTree = DiffTree.fromDiff(localDiff, true, true, annotationParser);
+            localTree = DiffTree.fromDiff(localDiff, new DiffTreeParseOptions(annotationParser, true, true));
             // Not every local diff can be parsed to a difftree because diffs are unaware of the underlying language (i.e., CPP).
             // We want only running examples whose diffs describe entire diff trees for easier understanding.
             if (isGoodExample.test(localTree)) {

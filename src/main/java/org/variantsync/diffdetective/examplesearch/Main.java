@@ -2,7 +2,7 @@ package org.variantsync.diffdetective.examplesearch;
 
 import org.variantsync.diffdetective.AnalysisRunner;
 import org.variantsync.diffdetective.analysis.Analysis;
-import org.variantsync.diffdetective.datasets.ParseOptions;
+import org.variantsync.diffdetective.datasets.PatchDiffParseOptions;
 import org.variantsync.diffdetective.datasets.Repository;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.variation.diff.filter.ExplainedFilter;
@@ -42,7 +42,9 @@ public class Main {
                 defaultOptions.repositoriesDirectory(),
                 ExampleCriterions.DefaultExamplesDirectory,
                 defaultOptions.datasetsFile(),
-                ParseOptions.DiffStoragePolicy.REMEMBER_STRIPPED_DIFF,
+                repo -> repo.getParseOptions().withDiffStoragePolicy(
+                        PatchDiffParseOptions.DiffStoragePolicy.REMEMBER_STRIPPED_DIFF
+                ),
                 defaultOptions.getFilterForRepo(),
                 false,
                 false
