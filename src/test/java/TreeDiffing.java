@@ -88,7 +88,11 @@ public class TreeDiffing {
                 var expectedFile = Files.newBufferedReader(testCase.expected());
                 var actualFile = Files.newBufferedReader(testCase.actual());
         ) {
-            if (!IOUtils.contentEqualsIgnoreEOL(expectedFile, actualFile)) {
+            if (IOUtils.contentEqualsIgnoreEOL(expectedFile, actualFile)) {
+                // Delete output files if the test succeeded
+                Files.delete(testCase.actual());
+            } else {
+                // Keep output files if the test failed
                 new TikzExporter(new Format(new FullNodeFormat(), new DefaultEdgeLabelFormat()))
                     .exportFullLatexExample(diffTree, testCase.visualisation());
                 fail(String.format(
@@ -101,10 +105,6 @@ public class TreeDiffing {
                     testCase.actual(),
                     testCase.visualisation()
                 ));
-                // Keep output files if the test failed
-            } else {
-                // Delete output files if the test succeeded
-                Files.delete(testCase.actual());
             }
         }
     }

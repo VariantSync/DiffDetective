@@ -77,17 +77,17 @@ public class DiffTreeParserTest {
                 var expectedFile = Files.newBufferedReader(expectedPath);
                 var actualFile = Files.newBufferedReader(actualPath);
         ) {
-            if (!IOUtils.contentEqualsIgnoreEOL(expectedFile, actualFile)) {
+            if (IOUtils.contentEqualsIgnoreEOL(expectedFile, actualFile)) {
+                // Delete output files if the test succeeded
+                Files.delete(actualPath);
+            } else {
+                // Keep output files if the test failed
                 var visualizationPath = testDir.resolve("tex").resolve(basename + ".tex");
                 new TikzExporter(new Format(new FullNodeFormat(), new DefaultEdgeLabelFormat()))
                     .exportFullLatexExample(diffTree, visualizationPath);
                 fail("The DiffTree in file " + testCasePath + " didn't parse correctly. "
                     + "Expected the content of " + expectedPath + " but got the content of " + actualPath + ". "
                     + "Note: A visualisation is available at " + visualizationPath);
-                // Keep output files if the test failed
-            } else {
-                // Delete output files if the test succeeded
-                Files.delete(actualPath);
             }
         }
     }
