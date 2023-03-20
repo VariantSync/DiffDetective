@@ -73,7 +73,7 @@ public interface Metadata<T> {
      * @param properties The key-value store to print.
      * @return A string showing all key-value pairs.
      */
-    static String show(final Map<String, ?> properties) {
+    public static String show(final Map<String, ?> properties) {
         StringBuilder result = new StringBuilder();
         for (final Map.Entry<String, ?> property : properties.entrySet()) {
             result.append(show(property.getKey(), property.getValue()));

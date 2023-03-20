@@ -765,6 +765,28 @@ public class DiffNode implements HasNodeType {
         return diffNode;
     }
 
+    public DiffNode deepCopy() {
+        return deepCopy(new HashMap<>());
+    }
+
+    public DiffNode deepCopy(HashMap<DiffNode, DiffNode> oldToNew) {
+        DiffNode copy = oldToNew.get(this);
+        if (copy == null) {
+            copy = shallowCopy();
+
+            final var copyFinal = copy;
+            Time.forAll(time -> {
+                for (var child : getChildOrder(time)) {
+                    copyFinal.addChild(child.deepCopy(oldToNew), time);
+                }
+            });
+
+            oldToNew.put(this, copy);
+        }
+
+        return copy;
+    }
+
     public DiffNode shallowCopy() {
         return new DiffNode(
             getDiffType(),

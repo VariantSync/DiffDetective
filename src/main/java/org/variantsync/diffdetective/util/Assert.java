@@ -64,6 +64,10 @@ public class Assert {
         }
     }
 
+    public static void assertFalse(boolean condition) {
+        assertTrue(!condition);
+    }
+
     /** Throws {@link AssertionError} with {@code errorMessage} as error message. */
     public static void fail(String errorMessage) {
         throw new AssertionError(errorMessage);

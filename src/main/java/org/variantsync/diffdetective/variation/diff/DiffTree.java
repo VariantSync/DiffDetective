@@ -715,4 +715,8 @@ public class DiffTree {
             }
         }
     }
+
+    public DiffTree deepCopy() {
+        return new DiffTree(getRoot().deepCopy(), getSource());
+    }
 }

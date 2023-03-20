@@ -372,7 +372,8 @@ public class GitDiffer {
 
         final String fullDiff = getFullDiff(beforeFullFile, new BufferedReader(new StringReader(strippedDiff)));
         try {
-            DiffTree diffTree = DiffTreeParser.createDiffTree(fullDiff, true, true, parseOptions.annotationParser());
+            DiffTree diffTree = DiffTreeParser.createDiffTree(fullDiff, false, false, parseOptions.annotationParser());
+            diffTree.diffingDuration = diffingDuration;
 
             // not storing the full diff reduces memory usage by around 40-50%
             final String diffToRemember = switch (parseOptions.diffStoragePolicy()) {

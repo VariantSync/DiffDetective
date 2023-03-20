@@ -32,4 +32,6 @@ public final class MetadataKeys {
 
     public final static String EXPORTED_COMMITS = "exported commits";
     public final static String EXPORTED_TREES = "exported trees";
+
+    public final static String EDIT_CLASS_MOVEMENT = "edit class movement";
 }
