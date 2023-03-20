@@ -9,7 +9,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class View {
+public class TreeView {
     private static void treeInline(final VariationTreeNode v, final Set<VariationTreeNode> view) {
         /// We assume that d is interesting for q.
         final List<VariationTreeNode> boringChildren = new ArrayList<>(v.getChildren().size());
