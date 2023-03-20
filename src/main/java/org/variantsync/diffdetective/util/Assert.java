@@ -89,7 +89,7 @@ public class Assert {
                 fail("expected is null but actual is not!");
             }
         } else {
-            assertTrue(expected.equals(actual));
+            assertTrue(expected.equals(actual), expected + " != " + actual);
         }
     }
 }
