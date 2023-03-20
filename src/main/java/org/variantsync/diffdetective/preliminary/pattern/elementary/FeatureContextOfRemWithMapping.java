@@ -24,7 +24,7 @@ public final class FeatureContextOfRemWithMapping implements FeatureContextRever
         final LineRange diffLines = codeNode.getLinesInDiff();
 
         return new PatternMatch<>(this,
-                diffLines.getFromInclusive(), diffLines.getToExclusive(), fm
+                diffLines.fromInclusive(), diffLines.toExclusive(), fm
         );
     }
 

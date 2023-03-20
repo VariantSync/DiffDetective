@@ -510,8 +510,8 @@ public class DiffNode implements HasNodeType {
      * the edit.
      */
     public void setLinesAtTime(LineRange lineRange, Time time) {
-        from = from.withLineNumberAtTime(lineRange.getFromInclusive(), time);
-        to = to.withLineNumberAtTime(lineRange.getToExclusive(), time);
+        from = from.withLineNumberAtTime(lineRange.fromInclusive(), time);
+        to = to.withLineNumberAtTime(lineRange.toExclusive(), time);
     }
 
     /**
@@ -776,8 +776,8 @@ public class DiffNode implements HasNodeType {
      * to itself. Acts on only the given node and does not perform recursive translations.
      */
     public static <T extends VariationNode<T>> DiffNode unchangedFlat(T variationNode) {
-        int from = variationNode.getLineRange().getFromInclusive();
-        int to = variationNode.getLineRange().getToExclusive();
+        int from = variationNode.getLineRange().fromInclusive();
+        int to = variationNode.getLineRange().toExclusive();
 
         return new DiffNode(
                 DiffType.NON,
