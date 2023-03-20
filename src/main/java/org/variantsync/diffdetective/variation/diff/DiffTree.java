@@ -631,6 +631,7 @@ public class DiffTree {
 
         MappingStore matching = new MappingStore(src, dst);
         extractMatching(src, dst, matching);
+        matching.assertConsistency();
         matcher.match(src, dst, matching);
         Assert.assertTrue(matching.has(src, dst));
 

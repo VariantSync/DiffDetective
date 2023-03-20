@@ -1,3 +1,4 @@
+import com.github.gumtreediff.client.Run;
 import com.github.gumtreediff.matchers.Matcher;
 import com.github.gumtreediff.matchers.Matchers;
 
@@ -54,6 +55,7 @@ public class TreeDiffing {
     }
 
     private static Stream<TestCase> testCases() throws IOException {
+        Run.initMatchers();
         return Files
             .list(testDir)
             .mapMulti(((path, result) -> {

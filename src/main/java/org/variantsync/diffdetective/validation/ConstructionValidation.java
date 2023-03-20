@@ -160,7 +160,7 @@ public class ConstructionValidation implements Analysis.Hooks {
                     List.of(
                         new FilterAnalysis(DiffTreeFilter.notEmpty()),
                         new ConstructionValidation(
-                            // new CompositeMatchers.XyMatcher(),
+                            // new CompositeMatchers.XyMatcher(), // Buggy
                             new CompositeMatchers.ClassicGumtree(),
                             // new CompositeMatchers.SimpleGumtree(),
                             // new CompositeMatchers.HybridGumtree(),
@@ -443,6 +443,7 @@ public class ConstructionValidation implements Analysis.Hooks {
                 Clock matchingClock = new Clock();
                 MappingStore result = matcher.match(src, dst, mappings);
                 statistics.matchingDuration += matchingClock.getPassedMilliseconds();
+                mappings.assertConsistency();
                 return result;
             }
         };

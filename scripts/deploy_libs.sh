@@ -8,3 +8,7 @@ mvn deploy:deploy-file -DgroupId=org.variantsync -DartifactId=functjonal -Dversi
 
 # sat4j
 mvn deploy:deploy-file -DgroupId=org.sat4j -DartifactId=core -Dversion=2.3.5 -Durl=file:./local-maven-repo/ -DrepositoryId=local-maven-repo -DupdateReleaseInfo=true -Dfile=./lib/org.sat4j.core.jar
+
+# gumtree
+mvn deploy:deploy-file -DgroupId=com.github.gumtreediff -DartifactId=core -Dversion=3.1.0-SNAPSHOT -Durl=file:./local-maven-repo/ -DrepositoryId=local-maven-repo -DupdateReleaseInfo=true -Dfile=./lib/gumtree-core-3.1.0-SNAPSHOT.jar
+mvn deploy:deploy-file -DgroupId=com.github.gumtreediff -DartifactId=client -Dversion=3.1.0-SNAPSHOT -Durl=file:./local-maven-repo/ -DrepositoryId=local-maven-repo -DupdateReleaseInfo=true -Dfile=./lib/gumtree-client-3.1.0-SNAPSHOT.jar

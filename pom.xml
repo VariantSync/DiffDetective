@@ -101,7 +101,25 @@
         <dependency>
             <groupId>com.github.gumtreediff</groupId>
             <artifactId>core</artifactId>
-            <version>3.0.0</version>
+            <version>3.1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.gumtreediff</groupId>
+            <artifactId>client</artifactId>
+            <version>3.1.0-SNAPSHOT</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <!-- For Gumtree -->
+            <groupId>it.unimi.dsi</groupId>
+            <artifactId>fastutil</artifactId>
+            <version>8.3.1</version>
+        </dependency>
+        <dependency>
+            <!-- For Gumtree -->
+            <groupId>com.github.mpkorstanje</groupId>
+            <artifactId>simmetrics-core</artifactId>
+            <version>3.2.3</version>
         </dependency>
         <dependency>
             <!-- For Gumtree -->
