@@ -290,7 +290,7 @@ public class VariationTreeNode extends VariationNode<VariationTreeNode> {
     @Override
     public int getID() {
         // Add one to ensure invalid (negative) line numbers don't cause issues.
-        final int lineNumber = 1 + getLineRange().getFromInclusive();
+        final int lineNumber = 1 + getLineRange().fromInclusive();
 
         final int usedBitCount = DiffType.getRequiredBitCount() + NodeType.getRequiredBitCount();
         Assert.assertTrue((lineNumber << usedBitCount) >> usedBitCount == lineNumber);

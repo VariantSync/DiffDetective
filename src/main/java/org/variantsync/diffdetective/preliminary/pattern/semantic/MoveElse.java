@@ -48,7 +48,7 @@ class MoveElse extends SemanticPattern {
             }
 
             return Optional.of(new PatternMatch<>(this,
-                    annotationNode.getLinesInDiff().getFromInclusive(), removedElse.getLinesInDiff().getToExclusive()
+                    annotationNode.getLinesInDiff().fromInclusive(), removedElse.getLinesInDiff().toExclusive()
             ));
         }
 

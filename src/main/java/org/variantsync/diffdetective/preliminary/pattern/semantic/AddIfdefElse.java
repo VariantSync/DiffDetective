@@ -56,7 +56,7 @@ class AddIfdefElse extends SemanticPattern {
             }
 
             return Optional.of(new PatternMatch<>(this,
-                    annotationNode.getLinesInDiff().getFromInclusive(), elseNode.getLinesInDiff().getToExclusive(),
+                    annotationNode.getLinesInDiff().fromInclusive(), elseNode.getLinesInDiff().toExclusive(),
                     annotationNode.getFeatureMapping(AFTER)
             ));
         }
