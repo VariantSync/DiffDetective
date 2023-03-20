@@ -729,7 +729,7 @@ public class DiffNode implements HasNodeType {
      * Transforms a {@code VariationNode} into a {@code DiffNode} by diffing {@code variationNode}
      * to itself. Acts on only the given node and does not perform recursive translations.
      */
-    public static <T extends VariationNode<T>> DiffNode unchangedFlat(T variationNode) {
+    public static <T extends VariationNode<T>> DiffNode unchangedFlat(VariationNode<T> variationNode) {
         int from = variationNode.getLineRange().getFromInclusive();
         int to = variationNode.getLineRange().getToExclusive();
 
@@ -753,8 +753,8 @@ public class DiffNode implements HasNodeType {
      * @param convert A function to translate single nodes (without their hierarchy).
      */
     public static <T extends VariationNode<T>> DiffNode unchanged(
-            final Function<T, DiffNode> convert,
-            T variationNode) {
+            final Function<? super T, DiffNode> convert,
+            VariationNode<T> variationNode) {
 
         var diffNode = convert.apply(variationNode.upCast());
 
@@ -773,7 +773,7 @@ public class DiffNode implements HasNodeType {
      * This is the inverse of {@link projection} iff the original {@link DiffNode} wasn't modified
      * (all node had a {@link getDiffType diff type} of {@link DiffType#NON}).
      */
-    public static <T extends VariationNode<T>> DiffNode unchanged(T variationNode) {
+    public static <T extends VariationNode<T>> DiffNode unchanged(VariationNode<T> variationNode) {
         return unchanged(DiffNode::unchangedFlat, variationNode);
     }
 
