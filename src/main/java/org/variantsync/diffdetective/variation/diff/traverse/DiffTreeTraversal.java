@@ -22,7 +22,7 @@ import java.util.function.Consumer;
  * @author Paul Bittner
  */
 public class DiffTreeTraversal {
-    private final Set<Integer> visited;
+    private final Set<DiffNode> visited;
     private final DiffTreeVisitor visitor;
 
     private DiffTreeTraversal(final DiffTreeVisitor visitor) {
@@ -86,6 +86,6 @@ public class DiffTreeTraversal {
      *         False if the node was already marked visited.
      */
     private boolean markAsVisited(final DiffNode node) {
-        return visited.add(node.getID());
+        return visited.add(node);
     }
 }
