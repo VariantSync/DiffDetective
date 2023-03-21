@@ -18,12 +18,6 @@ import org.variantsync.functjonal.list.FilteredMappedListView;
  *
  * <p>This class has to be instantiated using {@link DiffNode#projection}.
  *
- * <p>Implementation note: It's ensured that identity can be checked using {@code ==}. This
- * prevents unexpected behaviour if some code uses {@code ==} instead of {@link isSameAs} as
- * documented in {@link VariationNode}. Although this is currently guaranteed by all
- * implementations of {@link VariationNode} it should still be considered a bug if {@code ==} is
- * used to check for identity ({@code null} checks are still allowed).
- *
  * @see DiffNode#projection
  */
 public class Projection extends VariationNode<Projection> {
@@ -147,23 +141,5 @@ public class Projection extends VariationNode<Projection> {
     @Override
     public int getID() {
         return getBackingNode().getID();
-    }
-
-    @Override
-    public boolean isSameAs(Projection other) {
-        if (other != null && getClass() == other.getClass()) {
-            Projection otherProjection = (Projection) other;
-            return time.equals(otherProjection.time) && getBackingNode() == otherProjection.getBackingNode();
-        } else {
-            return false;
-        }
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Projection projection = (Projection) o;
-        return time.equals(projection.time) && getBackingNode().equals(projection.getBackingNode());
     }
 };

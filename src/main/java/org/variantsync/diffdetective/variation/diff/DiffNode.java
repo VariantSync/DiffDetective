@@ -104,8 +104,7 @@ public class DiffNode implements HasNodeType {
      * It stores the projection node at each time so that only one instance of {@link Projection}
      * per {@link Time} is ever created. This array has to be indexed by {@code Time.ordinal()}
      *
-     * <p>This field is required to allow identity tests of {@link Projection}s with {@code ==} instead
-     * of {@link Projection#isSameAs}.
+     * <p>This field is required to allow identity tests of {@link Projection}s with {@code ==}.
      */
     private Projection[] projections = new Projection[2];
 
@@ -824,6 +823,41 @@ public class DiffNode implements HasNodeType {
         return unchanged(DiffNode::unchangedFlat, variationNode);
     }
 
+    /**
+     * Returns true if this subtree is exactly equal to {@code other}.
+     * This check uses equality checks instead of identity.
+     */
+    public boolean isSameAs(DiffNode other) {
+        return isSameAs(this, other, new HashSet<>());
+    }
+
+    private static boolean isSameAs(DiffNode a, DiffNode b, Set<DiffNode> visited) {
+        if (!visited.add(a)) {
+            return true;
+        }
+
+        if (!(
+                a.getDiffType().equals(b.getDiffType()) &&
+                a.getNodeType().equals(b.getNodeType()) &&
+                a.getFromLine().equals(b.getFromLine()) &&
+                a.getToLine().equals(b.getToLine()) &&
+                (a.getFormula() == null ? b.getFormula() == null : a.getFormula().equals(b.getFormula())) &&
+                a.getLabel().equals(b.getLabel())
+        )) {
+            return false;
+        }
+
+        Iterator<DiffNode> aIt = a.getAllChildren().iterator();
+        Iterator<DiffNode> bIt = b.getAllChildren().iterator();
+        while (aIt.hasNext() && bIt.hasNext()) {
+            if (!isSameAs(aIt.next(), bIt.next(), visited)) {
+                return false;
+            }
+        }
+
+        return aIt.hasNext() == bIt.hasNext();
+    }
+
     @Override
     public String toString() {
         String s;
@@ -836,26 +870,5 @@ public class DiffNode implements HasNodeType {
                     from.inDiff(), to.inDiff(), featureMapping);
         }
         return s;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        DiffNode diffNode = (DiffNode) o;
-        return diffType == diffNode.diffType && nodeType == diffNode.nodeType && from.equals(diffNode.from) && to.equals(diffNode.to) && Objects.equals(featureMapping, diffNode.featureMapping) && label.equals(diffNode.label);
-    }
-
-    /**
-     * Compute a hash using all available attributes.
-     *
-     * This implementation doesn't strictly adhere to the contract required by {@code Object},
-     * because some attributes (for example the line numbers) can be changed during the lifetime of
-     * a {@code DiffNode}. So when using something like a {@code HashSet} the user of {@code
-     * DiffNode} has to be careful not to change any attributes of a stored {@code DiffNode}.
-     */
-    @Override
-    public int hashCode() {
-        return Objects.hash(diffType, nodeType, from, to, featureMapping, label);
     }
 }

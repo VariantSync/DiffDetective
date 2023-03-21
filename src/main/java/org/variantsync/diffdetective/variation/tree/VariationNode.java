@@ -35,11 +35,6 @@ import static org.variantsync.diffdetective.util.fide.FormulaUtils.negate;
  * quite common or because the calling syntax {@code node.algorithm()} makes more sense than the
  * alternative {@code Algorithm.run(node)}).
  *
- * <p>Identity of {@code VariationNode}s shouldn't be tested using {@code ==} because this might be
- * a view which is instantiated multiple times for the same node (e.g., it might be that
- * {@code getParent() != getParent()}). Instead the method {@link isSameAs} should be used to test
- * for identity.
- *
  * @param <T> the derived type (the type extending this class)
  *
  * @see assertConsistency
@@ -124,7 +119,7 @@ public abstract class VariationNode<T extends VariationNode<T>> implements HasNo
      * <p>The following invariant has to hold for all {@code node}s:
      * <code>
      *   for (var child : node.getChildren()) {
-     *     Assert.assertTrue(node.isSameAs(child.getParent(node)))
+     *     Assert.assertTrue(node == child.getParent(node))
      *   }
      * </code>
      *
@@ -190,7 +185,7 @@ public abstract class VariationNode<T extends VariationNode<T>> implements HasNo
      * @see getChildren
      */
     public boolean isChild(T child) {
-        return child.getParent().isSameAs(this.upCast());
+        return child.getParent() == this.upCast();
     }
 
     /**
@@ -560,7 +555,7 @@ public abstract class VariationNode<T extends VariationNode<T>> implements HasNo
         // check consistency of children lists and edges
         for (var child : getChildren()) {
             Assert.assertTrue(
-                child.getParent().isSameAs(this.upCast()), () ->
+                child.getParent() == this.upCast(), () ->
                 "The parent (" + this + ") of " + child + " is not set correctly");
         }
     }
@@ -577,19 +572,6 @@ public abstract class VariationNode<T extends VariationNode<T>> implements HasNo
      * {@link VariationTreeNode#getID}.
      */
     public abstract int getID();
-
-    /**
-     * Checks if {@code other} represents the same node as this node.
-     *
-     * <p>The difference between this method and {@link equals} is the same as the difference
-     * between {@code ==} and {@link equals}: {@code isSameAs} respects the identity of the backing
-     * node and {@link equals} does not.
-     *
-     * <p>This method has to be used instead of {@code ==} because multiple instances of this view
-     * representing the same node might be created (i.e., {@code getParent() == getParent()} might
-     * not always hold).
-     */
-    public abstract boolean isSameAs(T other);
 
     /**
      * Unparses the labels of this subtree into {@code output}.
@@ -613,5 +595,36 @@ public abstract class VariationNode<T extends VariationNode<T>> implements HasNo
             output.write("#endif");
             output.newLine();
         }
+    }
+
+    /**
+     * Returns true if this subtree is exactly equal to {@code other}.
+     * This check uses equality checks instead of identity.
+     */
+    public boolean isSameAs(VariationNode<T> other) {
+        if (!shallowIsSameAs(other)) {
+            return false;
+        }
+
+        var childIt = getChildren().iterator();
+        var otherChildIt = other.getChildren().iterator();
+        while (childIt.hasNext() && otherChildIt.hasNext()) {
+            if (!childIt.next().isSameAs(otherChildIt.next())) {
+                return false;
+            }
+        }
+
+        return childIt.hasNext() == otherChildIt.hasNext();
+    }
+
+    /**
+     * Returns true if this node is exactly equal to {@code other} without checking any children.
+     * This check uses equality checks instead of identity.
+     */
+    protected boolean shallowIsSameAs(VariationNode<T> other) {
+        return
+            this.getNodeType().equals(other.getNodeType()) &&
+            this.getLabel().equals(other.getLabel()) &&
+            this.getLineRange().equals(other.getLineRange());
     }
 }
