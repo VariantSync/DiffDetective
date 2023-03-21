@@ -359,7 +359,7 @@ public class DiffTree {
             ALL_PATHS_END_AT_ROOT,
             NOT_ALL_PATHS_END_AT_ROOT
         }
-        private final Map<Integer, VisitStatus> cache = new HashMap<>();
+        private final Map<DiffNode, VisitStatus> cache = new HashMap<>();
         private final DiffNode root;
 
         private AllPathsEndAtRoot(final DiffNode root) {
@@ -375,11 +375,10 @@ public class DiffTree {
                 return true;
             }
 
-            final int id = d.getID();
-            return switch (cache.getOrDefault(id, VisitStatus.STRANGER)) {
+            return switch (cache.getOrDefault(d, VisitStatus.STRANGER)) {
                 case STRANGER -> {
                     // The stranger is now known.
-                    cache.putIfAbsent(id, VisitStatus.VISITED);
+                    cache.putIfAbsent(d, VisitStatus.VISITED);
 
                     final DiffNode b = d.getParent(BEFORE);
                     final DiffNode a = d.getParent(AFTER);
@@ -397,7 +396,7 @@ public class DiffTree {
                     }
 
                     // Now we also know the result for the stranger.
-                    cache.put(id, result ? VisitStatus.ALL_PATHS_END_AT_ROOT : VisitStatus.NOT_ALL_PATHS_END_AT_ROOT);
+                    cache.put(d, result ? VisitStatus.ALL_PATHS_END_AT_ROOT : VisitStatus.NOT_ALL_PATHS_END_AT_ROOT);
                     yield result;
                 }
                 // We detected a cycle because we visited a node but did not determine its value yet!
