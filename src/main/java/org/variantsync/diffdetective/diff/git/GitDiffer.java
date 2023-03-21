@@ -52,6 +52,7 @@ import java.util.stream.Collectors;
 public class GitDiffer {
     private static final Pattern BOM_PATTERN = Pattern.compile("\\x{FEFF}");
     private static final Pattern DIFF_HUNK_PATTERN = Pattern.compile( "^@@\\s-(\\d+).*\\+(\\d+).*@@$");
+    private static final Pattern GIT_HEADER_PATTERN = Pattern.compile( "^diff --git .*$", Pattern.MULTILINE);
     private static final Pattern DIFF_HEADER_PATTERN = Pattern.compile( "^\\+\\+\\+.*$", Pattern.MULTILINE);
     private static final String NO_NEW_LINE = "\\ No newline at end of file";
 
@@ -332,13 +333,22 @@ public class GitDiffer {
                 final String strippedDiff;
                 if (matcher.find()) {
                     strippedDiff = gitDiff.substring(matcher.end() + 1);
+                } else if (GIT_HEADER_PATTERN.matcher(gitDiff).find()) {
+                    // Check whether it is a diff returned by `git diff` and not one created by some other means
+                    strippedDiff = "";
                 } else {
+                    // It is a diff from another source (e.g., manually created or copy-pasted from GitHub)
                     strippedDiff = gitDiff;
                 }
+
 
                 try {
                     final String fullDiff = switch (diffEntry.getChangeType()) {
                         case ADD, DELETE -> {
+                            if (strippedDiff.isEmpty()) {
+                                // Addition or deletion of an empty file
+                                yield "";
+                            }
                             // The first lines contains meta information "@@ ... " that we want to skip.
                             final String[] hunkBeginAndRest = StringUtils.LINEBREAK_REGEX.split(strippedDiff, 2);
                             Assert.assertTrue(hunkBeginAndRest.length == 2, "Hunk is only one line. Is it a hunk? Hunk: " + strippedDiff);
