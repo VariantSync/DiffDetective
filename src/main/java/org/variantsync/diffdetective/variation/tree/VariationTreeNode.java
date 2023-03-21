@@ -358,32 +358,6 @@ public class VariationTreeNode extends VariationNode<VariationTreeNode> {
     }
 
     @Override
-    public boolean isSameAs(VariationTreeNode other) {
-        return this == other;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        var other = (VariationTreeNode) o;
-        return nodeType == other.nodeType && lineRange.equals(other.lineRange) && Objects.equals(featureMapping, other.featureMapping) && label.equals(other.label);
-    }
-
-    /**
-     * Compute a hash using all available attributes.
-     *
-     * <p>This implementation doesn't strictly adhere to the contract required by {@code Object},
-     * because some attributes (for example the line numbers) can be changed during the lifetime of
-     * a node. So when using something like a {@code HashSet} the user of this class has to be
-     * careful with any modifications of attributes.
-     */
-    @Override
-    public int hashCode() {
-        return Objects.hash(nodeType, lineRange, featureMapping, label);
-    }
-
-    @Override
     public String toString() {
         String s;
         if (isArtifact()) {

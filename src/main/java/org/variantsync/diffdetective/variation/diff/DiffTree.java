@@ -437,6 +437,14 @@ public class DiffTree {
         return ConsistencyResult.Success();
     }
 
+    /**
+     * Returns true if this {@code DiffTree} is exactly equal to {@code other}.
+     * This check uses equality checks instead of identity.
+     */
+    public boolean isSameAs(DiffTree other) {
+        return this.getRoot().isSameAs(other.getRoot());
+    }
+
     @Override
     public String toString() {
         return "DiffTree of " + source;

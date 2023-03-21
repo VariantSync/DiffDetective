@@ -68,20 +68,5 @@ public record FormalDiffGraph(
 
         return b.toString();
     }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        final FormalDiffGraph graph = (FormalDiffGraph) o;
-
-        return     nodes.equals(graph.nodes)
-                && edges.equals(graph.edges);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(nodes, edges);
-    }
 }
 
