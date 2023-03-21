@@ -18,6 +18,7 @@ import org.variantsync.diffdetective.variation.NodeType;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.variation.diff.DiffType;
+import org.variantsync.functjonal.list.FilteredMappedListView;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -311,13 +312,32 @@ public class DiffTreeParser {
 
         // Is this line a conditional macro?
         // Note: The following line doesn't handle comments and line continuations correctly.
-        var matcher = macroPattern.matcher(line.getLines().get(0));
+        var matcher = macroPattern.matcher(line.toString());
         var conditionalMacroName = matcher.find()
             ? matcher.group(1)
             : null;
 
         if ("endif".equals(conditionalMacroName)) {
             lastArtifact = null;
+
+            // Add the #endif to the last seen #if/#elif/#else it belongs to. Don't add it twice if
+            // the #endif and the #if/#elif/#else node are unchanged.
+            // Note: If the #endif has been modified but the #if/#elif/#else node was unchanged
+            //       there will be two #endif lines in the label (they can be distinguished by
+            //       checking at which time the line numbers of the #endif and the following lines
+            //       are invalid). Be careful about line continuations!
+            if (diffType == DiffType.NON && beforeStack.peek() == afterStack.peek()) {
+                beforeStack.peek().addDiffLines(line.getLines());
+            } else {
+                diffType.forAllTimesOfExistence(beforeStack, afterStack, stack ->
+                    stack.peek().addDiffLines(FilteredMappedListView.map(line.getLines(), diffLine ->
+                        new DiffNode.Label.Line(
+                            diffLine.content(),
+                            diffLine.lineNumber().as(stack == beforeStack ? DiffType.REM : DiffType.ADD)
+                        )
+                    ))
+                );
+            }
 
             // Do not create a node for ENDIF, but update the line numbers of the closed if-chain
             // and remove that if-chain from the relevant stacks.
@@ -330,7 +350,7 @@ public class DiffTreeParser {
                 && lastArtifact.diffType.equals(diffType)
                 && lastArtifact.getToLine().inDiff() == fromLine.inDiff()) {
             // Collapse consecutive lines if possible.
-            lastArtifact.addLines(line.getLines());
+            lastArtifact.addDiffLines(line.getLines());
             lastArtifact.setToLine(toLine);
         } else {
             try {
@@ -350,8 +370,8 @@ public class DiffTreeParser {
                     toLine,
                     nodeType == NodeType.ARTIFACT || nodeType == NodeType.ELSE
                         ? null
-                        : options.annotationParser().parseDiffLines(line.getLines()),
-                    line.getLines()
+                        : options.annotationParser().parseDiffLine(line.toString()),
+                    new DiffNode.Label(line.getLines())
                 );
 
                 addNode(newNode);
