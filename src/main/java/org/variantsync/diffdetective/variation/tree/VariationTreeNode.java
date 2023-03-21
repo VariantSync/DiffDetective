@@ -335,6 +335,28 @@ public class VariationTreeNode extends VariationNode<VariationTreeNode> {
         );
     }
 
+    /**
+     * Creates a deep copy of this node.
+     */
+    public VariationTreeNode deepCopy() {
+        return toVariationTree();
+    }
+
+    /**
+     * Creates a deep copy of this node.
+     *
+     * <p>The map {@code oldToNew} should be empty as it will be filled by this method. After the
+     * method call, the map keys will contain all nodes in this node's subtree (including this
+     * node). The corresponding values will be the nodes in the returned node's subtree (including
+     * the returned node), where each pair (k, v) denotes that v was cloned from k.
+     *
+     * @param oldToNew A map that memorizes the translation of individual nodes.
+     * @return A deep copy of this tree.
+     */
+    public VariationTreeNode deepCopy(final Map<VariationTreeNode, VariationTreeNode> oldToNew) {
+        return toVariationTree(oldToNew);
+    }
+
     @Override
     public boolean isSameAs(VariationTreeNode other) {
         return this == other;

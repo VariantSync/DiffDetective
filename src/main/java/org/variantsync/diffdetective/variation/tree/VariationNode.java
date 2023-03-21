@@ -4,8 +4,11 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import org.prop4j.And;
 import org.prop4j.Node;
@@ -440,18 +443,61 @@ public abstract class VariationNode<T extends VariationNode<T>> implements HasNo
     }
 
     /**
+     * Checks whether any node in this subtree satisfies the given condition.
+     * The condition might not be invoked on every node in case a node is found.
+     * @param condition A condition to check on each node.
+     * @return True iff the given condition returns true for at least one node in this tree.
+     */
+    public boolean anyMatch(final Predicate<? super T> condition) {
+        if (condition.test(this.upCast())) {
+            return true;
+        }
+
+        for (var child : getChildren()) {
+            if (child.anyMatch(condition)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Returns a copy of this variation tree in a {@link VariationTreeNode concrete variation tree implementation}.
      * If the type parameter {@code T} of this class is {@link VariationTreeNode} then this is
      * effectively a deep copy.
      */
     public VariationTreeNode toVariationTree() {
+        return toVariationTree(new HashMap<>());
+    }
+
+    /**
+     * Returns a copy of this variation tree in a {@link VariationTreeNode concrete variation tree implementation}.
+     * If the type parameter {@code T} of this class is {@link VariationTreeNode} then this is
+     * effectively a deep copy.
+     *
+     * <p>The map {@code oldToNew} should be empty as it will be filled by this method. After the
+     * method call, the map keys will contain all nodes in this node's subtree (including this
+     * node). The corresponding values will be the nodes in the returned node's subtree (including
+     * the returned node), where each pair (k, v) denotes that v was cloned from k.
+     *
+     * @param oldToNew A map that memorizes the translation of individual nodes.
+     * @return A deep copy of this tree.
+     */
+    public VariationTreeNode toVariationTree(final Map<? super T, VariationTreeNode> oldToNew) {
+        Node formula = getFormula();
+        if (formula != null) {
+            formula = formula.clone();
+        }
+
         // Copy mutable attributes to allow modifications of the new node.
         var newNode = new VariationTreeNode(
             getNodeType(),
-            getFormula().clone(),
+            formula,
             getLineRange(),
             new ArrayList<>(getLabel().lines())
         );
+        oldToNew.put(this.upCast(), newNode);
 
         for (var child : getChildren()) {
             newNode.addChild(child.toVariationTree());
