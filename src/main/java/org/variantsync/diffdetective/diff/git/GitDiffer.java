@@ -54,7 +54,8 @@ public class GitDiffer {
     private static final Pattern DIFF_HUNK_PATTERN = Pattern.compile( "^@@\\s-(\\d+).*\\+(\\d+).*@@$");
     private static final Pattern GIT_HEADER_PATTERN = Pattern.compile( "^diff --git .*$", Pattern.MULTILINE);
     private static final Pattern DIFF_HEADER_PATTERN = Pattern.compile( "^\\+\\+\\+.*$", Pattern.MULTILINE);
-    private static final String NO_NEW_LINE = "\\ No newline at end of file";
+    private static final Pattern NO_NEWLINE_PATTERN = Pattern.compile(
+            "(" + StringUtils.LINEBREAK_REGEX.pattern() + ")(?m)\\\\ No newline at end of file$");
 
     private final Git git;
     private final DiffFilter diffFilter;
@@ -343,7 +344,7 @@ public class GitDiffer {
 
 
                 try {
-                    final String fullDiff = switch (diffEntry.getChangeType()) {
+                    String fullDiff = switch (diffEntry.getChangeType()) {
                         case ADD, DELETE -> {
                             if (strippedDiff.isEmpty()) {
                                 // Addition or deletion of an empty file
@@ -359,6 +360,20 @@ public class GitDiffer {
                             yield getFullDiff(beforeFullFile, new BufferedReader(new StringReader(strippedDiff)));
                         }
                     };
+
+                    // Iff a file does not end with a newline character, git adds a meta-line to the diff, which states
+                    // the absence of the newline. If this is the case, we remove the meta-line, in order not to
+                    // parse it as artifact line. If the meta-line does not exist, we add a newline, which adds an empty
+                    // line to the end of the diff. Without this empty line, we would loose the information about the
+                    // newline during the next parse step, which splits the text into lines and removes all newline
+                    // characters.
+                    // TODO: In future versions, we might want to track the newline more explicitly
+                    final Matcher newlineMatcher = NO_NEWLINE_PATTERN.matcher(fullDiff);
+                    if (newlineMatcher.find()) {
+                        fullDiff = newlineMatcher.replaceAll("");
+                    } else {
+                        fullDiff += StringUtils.LINEBREAK;
+                    }
 
                     final DiffTree diffTree = DiffTreeParser.createDiffTree(
                             fullDiff,
@@ -422,8 +437,6 @@ public class GitDiffer {
                     while (before.getLineNumber() < beforeDiffIndex) {
                         fullDiffLines.add(" " + before.readLine());
                     }
-                } else if (diffLine.equals(NO_NEW_LINE)) {
-                    fullDiffLines.add(StringUtils.LINEBREAK);
                 } else {
                     fullDiffLines.add(diffLine);
                     if (!diffLine.startsWith("+")) {
