@@ -26,8 +26,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
@@ -387,7 +390,7 @@ public class DiffTree {
             ALL_PATHS_END_AT_ROOT,
             NOT_ALL_PATHS_END_AT_ROOT
         }
-        private final Map<Integer, VisitStatus> cache = new HashMap<>();
+        private final Map<DiffNode, VisitStatus> cache = new HashMap<>();
         private final DiffNode root;
 
         private AllPathsEndAtRoot(final DiffNode root) {
@@ -403,11 +406,10 @@ public class DiffTree {
                 return true;
             }
 
-            final int id = d.getID();
-            return switch (cache.getOrDefault(id, VisitStatus.STRANGER)) {
+            return switch (cache.getOrDefault(d, VisitStatus.STRANGER)) {
                 case STRANGER -> {
                     // The stranger is now known.
-                    cache.putIfAbsent(id, VisitStatus.VISITED);
+                    cache.putIfAbsent(d, VisitStatus.VISITED);
 
                     final DiffNode b = d.getParent(BEFORE);
                     final DiffNode a = d.getParent(AFTER);
@@ -425,7 +427,7 @@ public class DiffTree {
                     }
 
                     // Now we also know the result for the stranger.
-                    cache.put(id, result ? VisitStatus.ALL_PATHS_END_AT_ROOT : VisitStatus.NOT_ALL_PATHS_END_AT_ROOT);
+                    cache.put(d, result ? VisitStatus.ALL_PATHS_END_AT_ROOT : VisitStatus.NOT_ALL_PATHS_END_AT_ROOT);
                     yield result;
                 }
                 // We detected a cycle because we visited a node but did not determine its value yet!
@@ -463,6 +465,38 @@ public class DiffTree {
         }
 
         return ConsistencyResult.Success();
+    }
+
+    public boolean isSameAs(DiffTree b) {
+        var visited = new HashSet<DiffNode>();
+        return isSameAs(this.getRoot(), b.getRoot(), visited);
+    }
+
+    private static boolean isSameAs(DiffNode a, DiffNode b, Set<DiffNode> visited) {
+        if (!visited.add(a)) {
+            return true;
+        }
+
+        if (!(
+                a.getDiffType().equals(b.getDiffType()) &&
+                a.getNodeType().equals(b.getNodeType()) &&
+                a.getFromLine().equals(b.getFromLine()) &&
+                a.getToLine().equals(b.getToLine()) &&
+                (a.getFormula() == null ? b.getFormula() == null : a.getFormula().equals(b.getFormula())) &&
+                a.getLabel().equals(b.getLabel())
+        )) {
+            return false;
+        }
+
+        Iterator<DiffNode> aIt = a.getAllChildren().iterator();
+        Iterator<DiffNode> bIt = b.getAllChildren().iterator();
+        while (aIt.hasNext() && bIt.hasNext()) {
+            if (!isSameAs(aIt.next(), bIt.next(), visited)) {
+                return false;
+            }
+        }
+
+        return aIt.hasNext() == bIt.hasNext();
     }
 
     @Override

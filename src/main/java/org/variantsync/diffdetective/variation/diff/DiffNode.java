@@ -69,8 +69,7 @@ public class DiffNode implements HasNodeType {
      * It stores the projection node at each time so that only one instance of {@link Projection}
      * per {@link Time} is ever created. This array has to be indexed by {@code Time.ordinal()}
      *
-     * <p>This field is required to allow identity tests of {@link Projection}s with {@code ==} instead
-     * of {@link Projection#isSameAs}.
+     * <p>This field is required to allow identity tests of {@link Projection}s with {@code ==}.
      */
     private Projection[] projections = new Projection[2];
 
@@ -789,26 +788,5 @@ public class DiffNode implements HasNodeType {
                     from.inDiff(), to.inDiff(), featureMapping);
         }
         return s;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        DiffNode diffNode = (DiffNode) o;
-        return diffType == diffNode.diffType && nodeType == diffNode.nodeType && from.equals(diffNode.from) && to.equals(diffNode.to) && Objects.equals(featureMapping, diffNode.featureMapping) && lines.equals(diffNode.lines);
-    }
-
-    /**
-     * Compute a hash using all available attributes.
-     *
-     * This implementation doesn't strictly adhere to the contract required by {@code Object},
-     * because some attributes (for example the line numbers) can be changed during the lifetime of
-     * a {@code DiffNode}. So when using something like a {@code HashSet} the user of {@code
-     * DiffNode} has to be careful not to change any attributes of a stored {@code DiffNode}.
-     */
-    @Override
-    public int hashCode() {
-        return Objects.hash(diffType, nodeType, from, to, featureMapping, lines);
     }
 }

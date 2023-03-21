@@ -26,18 +26,16 @@ public class BadVDiffTest {
         Logger.debug("Testing " + testfile);
 
         final DiffTree initialVDiff = DiffTree.fromFile(testfile, false, false);
-        final FormalDiffGraph initialVDiffAsGraph = FormalDiffGraph.fromDiffTree(initialVDiff);
-        Logger.debug("Initial:" + StringUtils.LINEBREAK + initialVDiffAsGraph);
+        Logger.debug("Initial:" + StringUtils.LINEBREAK + initialVDiff);
         initialVDiff.assertConsistency();
 
         final BadVDiff badDiff = BadVDiff.fromGood(initialVDiff);
         Logger.debug("Bad:" + StringUtils.LINEBREAK + badDiff.prettyPrint());
 
         final DiffTree goodDiff = badDiff.toGood();
-        final FormalDiffGraph goodDiffAsGraph = FormalDiffGraph.fromDiffTree(goodDiff);
-        Logger.debug("Good:" + StringUtils.LINEBREAK + goodDiffAsGraph);
+        Logger.debug("Good:" + StringUtils.LINEBREAK + goodDiff);
         goodDiff.assertConsistency();
 
-        Assertions.assertEquals(initialVDiffAsGraph, goodDiffAsGraph);
+        Assertions.assertTrue(initialVDiff.isSameAs(goodDiff));
     }
 }
