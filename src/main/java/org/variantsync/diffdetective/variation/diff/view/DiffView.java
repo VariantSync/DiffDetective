@@ -81,38 +81,45 @@ public class DiffView {
             final DiffNode node = relevantNodeAtTimes.getKey();
             final Set<Time> timesOfRelevancy = relevantNodeAtTimes.getValue();
 
-            DiffType.thatExistsOnlyAtAll(timesOfRelevancy).ifPresent(dt -> {
-                // create copy
-                final DiffNode copy = new DiffNode(
-                        dt,
-                        node.getNodeType(),
-                        node.getFromLine(),
-                        node.getToLine(),
-                        node.getFormula(),
-                        node.getLabelLines()
-                );
-                toCopy.put(node, copy);
+            /*
+             * A DiffType exists because timesOfRelevancy is not empty
+             * because our node is relevant and thus there must be at least
+             * one time at which it is relevant.
+             */
+            final DiffType dt = DiffType.thatExistsOnlyAtAll(timesOfRelevancy).orElseThrow(
+                    AssertionError::new
+            );
 
-                // connect to parent + find root
-                final AtomicBoolean isRoot = new AtomicBoolean(true);
-                timesOfRelevancy.forEach(t -> {
-                    final DiffNode parent = node.getParent(t);
-                    if (parent != null) {
-                        edges.add(new Edge(
-                                copy,
-                                parent,
-                                t,
-                                parent.indexOfChild(node)
-                        ));
-                        isRoot.set(false);
-                    }
-                });
+            // create copy
+            final DiffNode copy = new DiffNode(
+                    dt,
+                    node.getNodeType(),
+                    node.getFromLine(),
+                    node.getToLine(),
+                    node.getFormula(),
+                    node.getLabelLines()
+            );
+            toCopy.put(node, copy);
 
-                if (isRoot.get()) {
-                    Assert.assertNull(rootCopy[0]);
-                    rootCopy[0] = copy;
+            // connect to parent + find root
+            final AtomicBoolean isRoot = new AtomicBoolean(true);
+            timesOfRelevancy.forEach(t -> {
+                final DiffNode parent = node.getParent(t);
+                if (parent != null) {
+                    edges.add(new Edge(
+                            copy,
+                            parent,
+                            t,
+                            parent.indexOfChild(node)
+                    ));
+                    isRoot.set(false);
                 }
             });
+
+            if (isRoot.get()) {
+                Assert.assertNull(rootCopy[0]);
+                rootCopy[0] = copy;
+            }
         }
 
         // Step 3: Embed edges in OOP.
