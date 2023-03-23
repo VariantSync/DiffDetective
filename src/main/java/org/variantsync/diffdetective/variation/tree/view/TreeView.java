@@ -45,4 +45,10 @@ public class TreeView {
 
         treeInline(t.root(), interestingNodes);
     }
+
+    public static VariationTree tree(final VariationTree t, final Query q) {
+        final VariationTree copy = t.deepCopy();
+        treeInline(copy, q);
+        return copy;
+    }
 }
