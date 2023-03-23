@@ -38,15 +38,20 @@ import java.util.List;
 import java.util.Map;
 
 public class DiffTreeApp extends App {
-    private final static double DEFAULT_NODE_RADIUS = 50;
+    public final static double TIKZ_NODE_RADIUS = 6.5;
+    public final static int TIKZ_FONT_SIZE = 5;
+    public final static double DEFAULT_NODE_RADIUS = 50;
+    public final static int DEFAULT_FONT_SIZE = 30;
+
     private final static Format DEFAULT_FORMAT =
             new Format(
-                    new ShowNodeFormat(),
+                    new PaperNodeFormat(),
                     // There is a bug in the exporter currently that accidentally switches direction so as a workaround we revert it here.
                     new DefaultEdgeLabelFormat(EdgeLabelFormat.Direction.ParentToChild)
             );
 
     private final static List<DiffNodeLabelFormat> AVAILABLE_FORMATS = List.of(
+            new PaperNodeFormat(),
             new ShowNodeFormat(),
             new LabelOnlyDiffNodeFormat(),
             new EditClassesDiffNodeFormat(),
@@ -175,9 +180,11 @@ public class DiffTreeApp extends App {
                     var unbufferedOutput = Files.newOutputStream(targetFile.toPath());
                     var output = new BufferedOutputStream(unbufferedOutput)
             ) {
+                final double millimetersPerPixel = TIKZ_NODE_RADIUS / resolution.x();
                 final Vec2 flipY  = new Vec2(1.0, -1.0);
-                final double nodeRadiusInTikz = 6.5;
-                final Vec2 scaleToTikz = Vec2.all(nodeRadiusInTikz).dividedBy(resolution);
+                final Vec2 scaleToTikz =
+                        Vec2.all(millimetersPerPixel);
+//                        Vec2.all(TIKZ_NODE_RADIUS).dividedBy(resolution);
 
                 tikzExporter.exportDiffTree(
                         diffTree,
@@ -187,7 +194,8 @@ public class DiffTreeApp extends App {
                             pos = pos.scale(scaleToTikz);
                             return pos;
                         },
-                        output
+                        output,
+                        true
                         );
             } catch (IOException e) {
                 JOptionPane.showMessageDialog(
