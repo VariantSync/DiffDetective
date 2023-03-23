@@ -16,6 +16,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 
 /**
  * Exporter for TikZ pictures which can be embedded into a LaTeX document.
@@ -69,13 +71,15 @@ public final class TikzExporter implements Exporter {
         exportDiffTree(
                 diffTree,
                 positions::get,
-                destination);
+                destination,
+                true);
     }
 
     public void exportDiffTree(
             DiffTree diffTree,
             Function<DiffNode, Vec2> nodeLayout,
-            OutputStream destination
+            OutputStream destination,
+            boolean escape
     ) {
         // Start tikz picture.
         var output = new PrintStream(destination);
@@ -101,9 +105,9 @@ public final class TikzExporter implements Exporter {
         output.format("%n\t\\draw[vtdarrow]");
         format.forEachEdge(diffTree, (edge) -> {
             output.format("%n\t\t(node_%d) edge[%s] (node_%d)",
-                edge.from().getID(),
-                edge.style().tikzStyle(),
-                edge.to().getID());
+                    edge.from().getID(),
+                    edge.style().tikzStyle(),
+                    edge.to().getID());
         });
         output.println();
         output.format("%n\t;");
@@ -111,14 +115,15 @@ public final class TikzExporter implements Exporter {
 
         // Draw node labels. We do this last so that they are on top of edges and nodes.
         format.forEachNode(diffTree, (node) -> {
-            String escapedLabel =
+            Stream<String> labels =
                     format
                             .getNodeFormat()
                             .toMultilineLabel(node)
-                            .stream()
-                            .map(LaTeX::escape)
-                            .collect(Collectors
-                                    .joining(" \\\\ "));
+                            .stream();
+            if (escape) {
+                labels = labels.map(LaTeX::escape);
+            }
+            String escapedLabel = labels.collect(Collectors.joining(" \\\\ "));
 
             output.format("\t\\node[textbox] at (%s) {%s};%n",
                     node.getID(),
