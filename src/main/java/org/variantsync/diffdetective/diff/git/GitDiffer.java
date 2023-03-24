@@ -52,7 +52,6 @@ import java.util.regex.Pattern;
  * @author Soeren Viegener, Paul Maximilian Bittner
  */
 public class GitDiffer {
-    private static final Pattern BOM_PATTERN = Pattern.compile("\\x{FEFF}");
     private static final Pattern DIFF_HUNK_PATTERN = Pattern.compile( "^@@\\s-(\\d+).*\\+(\\d+).*@@$");
     private static final Pattern DIFF_HEADER_PATTERN = Pattern.compile( "^\\+\\+\\+.*$", Pattern.MULTILINE);
     private static final String NO_NEW_LINE = "\\ No newline at end of file";
@@ -435,10 +434,6 @@ public class GitDiffer {
                 fullDiffLines.add(" " + beforeLine);
             }
             String fullDiff = String.join(StringUtils.LINEBREAK, fullDiffLines);
-
-            // JGit seems to put BOMs in weird locations somewhere in the files
-            // We need to remove those or the regex matching for the lines fails
-            fullDiff = BOM_PATTERN.matcher(fullDiff).replaceAll("");
 
             return fullDiff;
         } catch (IOException e) {
