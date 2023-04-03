@@ -3,7 +3,7 @@ v 147 NON;ARTIFACT;(old: 1, diff: 1, new:1);(old: 2, diff: 2, new:2);;Hello worl
 v 203 REM;ARTIFACT;(old: 2, diff: 2, new:-1);(old: 3, diff: 3, new:-1);;
 v 259 ADD;ARTIFACT;(old: -1, diff: 3, new:2);(old: -1, diff: 4, new:3);;Hallo
 v 339 NON;ARTIFACT;(old: 3, diff: 4, new:3);(old: 4, diff: 5, new:4);;Another line
-e 147 16 ba;0;0
+e 147 16 ba;0
 e 203 16 b;1
 e 259 16 a;2
-e 339 16 ba;3;3
+e 339 16 ba;3
