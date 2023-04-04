@@ -7,6 +7,7 @@ import org.variantsync.diffdetective.variation.diff.DiffType;
 import org.variantsync.diffdetective.variation.diff.Time;
 import org.variantsync.diffdetective.variation.diff.bad.BadVDiff;
 import org.variantsync.diffdetective.variation.diff.source.DiffTreeSource;
+import org.variantsync.diffdetective.variation.tree.VariationTree;
 import org.variantsync.diffdetective.variation.tree.view.TreeView;
 import org.variantsync.diffdetective.variation.tree.view.query.Query;
 
@@ -21,6 +22,19 @@ public class DiffView {
         if (p != null) {
             forMeAndMyAncestors(p, t, callback);
         }
+    }
+
+    public static DiffTree naive(final DiffTree d, final Query q) {
+        final VariationTree[] projectionViews = new VariationTree[2];
+
+        Time.forAll(t -> {
+            final VariationTree projection = d.project(t);
+            TreeView.treeInline(projection, q);
+            projectionViews[t.ordinal()] = projection;
+        });
+
+        // TODO: Apply @ibbem's diff operator on the projectionViews here.
+        return d;
     }
 
     public static DiffTree badgood(final DiffTree d, final Query q) {
