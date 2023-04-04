@@ -34,7 +34,7 @@ public class DiffView {
         });
 
         // TODO: Apply @ibbem's diff operator on the projectionViews here.
-        return d;
+        return d; // new ViewSource(D, q)
     }
 
     public static DiffTree badgood(final DiffTree d, final Query q) {
@@ -144,6 +144,6 @@ public class DiffView {
 
         // Step 4: Build return value
         Assert.assertNotNull(rootCopy[0]);
-        return new DiffTree(rootCopy[0], DiffTreeSource.Unknown);
+        return new DiffTree(rootCopy[0], new ViewSource(D, q));
     }
 }
