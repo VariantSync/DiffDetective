@@ -18,6 +18,7 @@ import org.variantsync.diffdetective.variation.diff.source.PatchFile;
 import org.variantsync.diffdetective.variation.diff.source.PatchString;
 import org.variantsync.diffdetective.variation.diff.traverse.DiffTreeTraversal;
 import org.variantsync.diffdetective.variation.diff.traverse.DiffTreeVisitor;
+import org.variantsync.diffdetective.variation.tree.VariationTree;
 import org.variantsync.functjonal.Result;
 
 import java.io.BufferedReader;
@@ -136,6 +137,21 @@ public class DiffTree {
             return Result.Failure(errors);
         }
         return Result.Failure(result.errors());
+    }
+
+    /**
+     * Creates the projection of this variation diff at the given time.
+     * The returned value is a deep copy of the variation tree within this diff
+     * at the given time.
+     * If you instead wish to only have a view on the tree at the given diff
+     * have a look at {@link DiffNode#projection(Time)} for this trees {@link #getRoot() root}.
+     * @param t The time for which to project the variation tree.
+     */
+    public VariationTree project(Time t) {
+        return VariationTree.fromProjection(
+                getRoot().projection(t),
+                new ProjectionSource(this, t)
+        );
     }
 
     /**
