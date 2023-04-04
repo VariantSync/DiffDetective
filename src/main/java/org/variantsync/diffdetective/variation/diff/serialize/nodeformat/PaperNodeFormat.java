@@ -21,11 +21,11 @@ public class PaperNodeFormat implements DiffNodeLabelFormat {
         String s = "";
 
         if (node.isAnnotation()) {
-//            if (node.getNodeType() == NodeType.ELSE) {
-//                s += "ELSE";
-//            } else {
+            if (node.getNodeType() == NodeType.ELSE) {
+                s += "ELSE";
+            } else {
               s += node.getFormula().toString(NodeWriter.logicalSymbols);
-//            }
+            }
         } else {
             final int lineNoFrom = node.getFromLine().inDiff();
             final int lineNoTo   = node.getToLine().inDiff();
