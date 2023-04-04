@@ -25,7 +25,7 @@ import org.variantsync.diffdetective.tablegen.rows.ContentRow;
 import org.variantsync.diffdetective.tablegen.styles.ShortTable;
 import org.variantsync.diffdetective.tablegen.styles.VariabilityShare;
 import org.variantsync.diffdetective.util.IO;
-import org.variantsync.diffdetective.validation.FindMedianCommitTime;
+import org.variantsync.diffdetective.experiments.esecfse22.FindMedianCommitTime;
 
 /** Accumulates multiple {@link AnalysisResult}s of several datasets. */
 public class MiningResultAccumulator {

@@ -1,4 +1,4 @@
-package org.variantsync.diffdetective.validation;
+package org.variantsync.diffdetective.experiments.esecfse22;
 
 import org.variantsync.diffdetective.AnalysisRunner;
 import org.variantsync.diffdetective.analysis.Analysis;
