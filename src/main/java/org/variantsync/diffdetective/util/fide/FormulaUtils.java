@@ -4,6 +4,16 @@ import org.prop4j.And;
 import org.prop4j.Literal;
 import org.prop4j.Node;
 import org.prop4j.Not;
+import org.tinylog.Logger;
+import org.variantsync.diffdetective.analysis.logic.SAT;
+import org.variantsync.diffdetective.editclass.proposed.ProposedEditClasses;
+import org.variantsync.diffdetective.experiments.views.ViewAnalysis;
+import org.variantsync.diffdetective.util.Assert;
+import org.variantsync.diffdetective.variation.diff.DiffTree;
+import org.variantsync.diffdetective.variation.diff.Time;
+import org.variantsync.functjonal.Cast;
+
+import java.util.*;
 
 /** Utilities for handling {@link Node}s as logical formulas. */
 public class FormulaUtils {
@@ -51,5 +61,33 @@ public class FormulaUtils {
             sum += numberOfLiterals(child);
         }
         return sum;
+    }
+
+
+    public static void sortRegularCNF(final Node rcnf) {
+        Assert.assertTrue(rcnf instanceof And);
+
+        // sort literals in clauses by string compare
+        Node[] cs = rcnf.getChildren();
+        for (final Node c : cs) {
+            Arrays.sort(c.getChildren(), (e1, e2) -> {
+                final Literal l1 = Cast.unchecked(e1);
+                final Literal l2 = Cast.unchecked(e2);
+                return ((String) l1.var).compareTo((String) l2.var);
+            });
+        }
+
+        // sort clauses by literal count
+        // clauses with equal literal count will be sorted by their literals as string (might be useless)
+        Arrays.sort(cs, Comparator
+                .comparingInt((Node e) -> e.getChildren().length)
+                .thenComparing(e -> Arrays.toString(e.getChildren())));
+    }
+
+    public static int numberOfLiteralsInRegularCNF(final Node rcnf) {
+        Assert.assertTrue(rcnf instanceof And);
+        return Arrays.stream(rcnf.getChildren())
+                .mapToInt(cs -> cs.getChildren().length)
+                .sum();
     }
 }

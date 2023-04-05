@@ -18,33 +18,6 @@ import java.util.*;
 import static org.variantsync.diffdetective.util.fide.FormulaUtils.negate;
 
 public class ViewAnalysis implements Analysis.Hooks {
-    public static void sortRegularCNF(final Node rcnf) {
-        Assert.assertTrue(rcnf instanceof And);
-
-        // sort literals in clauses by string compare
-        Node[] cs = rcnf.getChildren();
-        for (final Node c : cs) {
-            Arrays.sort(c.getChildren(), (e1, e2) -> {
-                final Literal l1 = Cast.unchecked(e1);
-                final Literal l2 = Cast.unchecked(e2);
-                return ((String) l1.var).compareTo((String) l2.var);
-            });
-        }
-
-        // sort clauses by literal count
-        // clauses with equal literal count will be sorted by their literals as string (might be useless)
-        Arrays.sort(cs, Comparator
-                .comparingInt((Node e) -> e.getChildren().length)
-                .thenComparing(e -> Arrays.toString(e.getChildren())));
-    }
-
-    public static int numberOfLiteralsInRegularCNF(final Node rcnf) {
-        Assert.assertTrue(rcnf instanceof And);
-        return Arrays.stream(rcnf.getChildren())
-                .mapToInt(cs -> cs.getChildren().length)
-                .sum();
-    }
-
     /**
      * Build a set of partial configurations such that
      * - every config denotes a view of the given diff
@@ -69,7 +42,7 @@ public class ViewAnalysis implements Analysis.Hooks {
                     deselectedPC = FixTrueFalse.EliminateTrueAndFalseInplace(deselectedPC); // must
                     deselectedPC = negate(deselectedPC); // must
                     deselectedPC = deselectedPC.toRegularCNF(simplify); // optimization
-                    sortRegularCNF(deselectedPC); // optimization
+                    FormulaUtils.sortRegularCNF(deselectedPC); // optimization
 
                     deselectedPCs.add(deselectedPC);
                 });
@@ -83,7 +56,7 @@ public class ViewAnalysis implements Analysis.Hooks {
         // Optimization Heuristic: Sort list of PCs
         deselectedPCsList.sort(Comparator
                 .comparingInt((Node e) -> e.getChildren().length)
-                .thenComparing(ViewAnalysis::numberOfLiteralsInRegularCNF)
+                .thenComparing(FormulaUtils::numberOfLiteralsInRegularCNF)
         );
         Logger.info(deselectedPCsList);
 
@@ -122,6 +95,9 @@ public class ViewAnalysis implements Analysis.Hooks {
             for (int j = i + 1; j < len; ++j) {
                 final Node cj = partialConfigs.get(j);
                 if (SAT.equivalent(cj, ci)) {
+                    // remove ci
+                    // We do this by swapping it with the last element of the list, then reducing the list length by 1
+                    // and then continue inspection of the newly swapped in element (thus --i).
                     Collections.swap(partialConfigs, i, len - 1);
                     --i;
                     --len;
