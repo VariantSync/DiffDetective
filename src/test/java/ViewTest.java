@@ -19,10 +19,7 @@ import org.variantsync.diffdetective.variation.diff.view.DiffView;
 import org.variantsync.diffdetective.variation.diff.view.ViewSource;
 import org.variantsync.diffdetective.variation.tree.VariationTree;
 import org.variantsync.diffdetective.variation.tree.view.TreeView;
-import org.variantsync.diffdetective.variation.tree.view.query.FeatureQuery;
-import org.variantsync.diffdetective.variation.tree.view.query.Query;
-import org.variantsync.diffdetective.variation.tree.view.query.TraceYesQuery;
-import org.variantsync.diffdetective.variation.tree.view.query.VariantQuery;
+import org.variantsync.diffdetective.variation.tree.view.query.*;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -76,7 +73,8 @@ public class ViewTest {
 
         List<Query> queries = List.of(
                 new FeatureQuery("B"),
-                new VariantQuery(negate(var("B")))
+                new VariantQuery(negate(var("B"))),
+                new ArtifactQuery("foo")
         );
 
         for (Query q : queries) {
