@@ -280,8 +280,7 @@ public class DiffFilter {
      */
     public boolean filter(DiffEntry diffEntry) {
         if (!allowedPaths.isEmpty() &&
-                !(isAllowedPath(diffEntry.getOldPath()) || isAllowedPath(diffEntry.getNewPath())))
-        {
+                !(isAllowedPath(diffEntry.getOldPath()) || isAllowedPath(diffEntry.getNewPath()))) {
             return false;
         }
         if (!blockedPaths.isEmpty() &&
@@ -293,8 +292,7 @@ public class DiffFilter {
             return false;
         }
         if (!allowedFileExtensions.isEmpty() &&
-                !(hasAllowedExtension(diffEntry.getOldPath()) || hasAllowedExtension(diffEntry.getNewPath())))
-        {
+                !(hasAllowedExtension(diffEntry.getOldPath()) || hasAllowedExtension(diffEntry.getNewPath()))) {
             return false;
         }
         if (!blockedFileExtensions.isEmpty() &&
