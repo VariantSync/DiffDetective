@@ -3,9 +3,13 @@ package org.variantsync.diffdetective.experiments.views;
 import org.variantsync.diffdetective.AnalysisRunner;
 import org.variantsync.diffdetective.analysis.Analysis;
 import org.variantsync.diffdetective.analysis.FilterAnalysis;
+import org.variantsync.diffdetective.analysis.PreprocessingAnalysis;
 import org.variantsync.diffdetective.analysis.StatisticsAnalysis;
+import org.variantsync.diffdetective.datasets.PatchDiffParseOptions;
 import org.variantsync.diffdetective.datasets.Repository;
 import org.variantsync.diffdetective.variation.diff.filter.DiffTreeFilter;
+import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParseOptions;
+import org.variantsync.diffdetective.variation.diff.transform.CutNonEditedSubtrees;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -17,9 +21,11 @@ public class Main {
         return new Analysis(
                 "Views Analysis",
                 List.of(
-//                      new PreprocessingAnalysis(new CutNonEditedSubtrees()),
-                        new FilterAnalysis(DiffTreeFilter.notEmpty()), // filters unwanted trees
-//                        new ViewAnalysis(),
+                        new PreprocessingAnalysis(new CutNonEditedSubtrees(true)),
+                        new FilterAnalysis( // filters unwanted trees
+                                DiffTreeFilter.notEmpty()
+                        ),
+                        new ViewAnalysis(),
                         new StatisticsAnalysis()
                 ),
                 repo,
@@ -33,14 +39,20 @@ public class Main {
                 defaultOptions.repositoriesDirectory(),
                 Paths.get("results", "views", "current"),
                 defaultOptions.datasetsFile(),
-                defaultOptions.getParseOptionsForRepo(),
+                repo -> new PatchDiffParseOptions(
+                        PatchDiffParseOptions.DiffStoragePolicy.DO_NOT_REMEMBER,
+                        new DiffTreeParseOptions(
+                                true,
+                                true
+                        )
+                ),
                 defaultOptions.getFilterForRepo(),
                 true,
                 false
         );
 
         AnalysisRunner.run(analysisOptions, (repository, path) ->
-                Analysis.forEachCommit(() -> AnalysisFactory(repository, path), 100, 1)
+                Analysis.forEachCommit(() -> AnalysisFactory(repository, path))
         );
     }
 }
