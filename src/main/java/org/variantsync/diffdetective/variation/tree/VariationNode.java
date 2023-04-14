@@ -432,6 +432,14 @@ public abstract class VariationNode<T extends VariationNode<T>> implements HasNo
         }
     }
 
+    public void forMeAndMyAncestors(final Consumer<T> action) {
+        action.accept(this.upCast());
+        final T p = getParent();
+        if (p != null) {
+            p.forMeAndMyAncestors(action);
+        }
+    }
+
     /**
      * Checks whether any node in this subtree satisfies the given condition.
      * The condition might not be invoked on every node in case a node is found.
@@ -490,7 +498,7 @@ public abstract class VariationNode<T extends VariationNode<T>> implements HasNo
         oldToNew.put(this.upCast(), newNode);
 
         for (var child : getChildren()) {
-            newNode.addChild(child.toVariationTree());
+            newNode.addChild(child.toVariationTree(oldToNew));
         }
 
         return newNode;
