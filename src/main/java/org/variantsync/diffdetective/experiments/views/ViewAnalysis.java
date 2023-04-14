@@ -157,7 +157,7 @@ public class ViewAnalysis implements Analysis.Hooks {
             return null;
         }
 
-        return new VariantQuery(winner);
+        return VariantQuery.fromConfigurationWithoutTrueAndFalseLiterals(winner);
     }
 
     private Query randomFeatureQuery(final Set<String> features) {

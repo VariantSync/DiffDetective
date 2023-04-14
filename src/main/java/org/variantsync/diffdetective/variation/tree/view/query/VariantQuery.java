@@ -4,15 +4,34 @@ import org.prop4j.And;
 import org.prop4j.Node;
 import org.prop4j.NodeWriter;
 import org.variantsync.diffdetective.analysis.logic.SAT;
+import org.variantsync.diffdetective.util.fide.FixTrueFalse;
 import org.variantsync.diffdetective.variation.tree.VariationNode;
-import org.variantsync.diffdetective.variation.tree.VariationTreeNode;
 
 import java.util.function.Consumer;
 
-public record VariantQuery(Node configuration) implements Query {
+public class VariantQuery implements Query {
+    private final Node configuration;
+
+    public VariantQuery(final Node configuration) {
+        this.configuration = configuration;
+    }
+
+    public static VariantQuery fromConfiguration(final Node configuration) {
+        return new VariantQuery(FixTrueFalse.EliminateTrueAndFalse(configuration));
+    }
+
+    public static VariantQuery fromConfigurationWithoutTrueAndFalseLiterals(final Node configuration) {
+        return new VariantQuery(configuration);
+    }
+
     @Override
     public boolean test(VariationNode<?> v) {
-        return SAT.isSatisfiableAlreadyEliminatedTrueAndFalse(new And(configuration, v.getPresenceCondition()));
+        return SAT.isSatisfiableAlreadyEliminatedTrueAndFalse(
+                new And(
+                        configuration,
+                        FixTrueFalse.EliminateTrueAndFalse(v.getPresenceCondition())
+                )
+        );
     }
 
     @Override
