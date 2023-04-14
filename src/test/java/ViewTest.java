@@ -5,8 +5,8 @@ import org.prop4j.Literal;
 import org.prop4j.Node;
 import org.prop4j.NodeWriter;
 import org.tinylog.Logger;
+import org.variantsync.diffdetective.analysis.logic.UniqueViewsAlgorithm;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
-import org.variantsync.diffdetective.experiments.views.ViewAnalysis;
 import org.variantsync.diffdetective.show.Show;
 import org.variantsync.diffdetective.show.engine.GameEngine;
 import org.variantsync.diffdetective.util.StringUtils;
@@ -14,6 +14,7 @@ import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.variation.diff.Time;
 import org.variantsync.diffdetective.variation.diff.bad.BadVDiff;
 import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParseOptions;
+import org.variantsync.diffdetective.variation.diff.transform.CutNonEditedSubtrees;
 import org.variantsync.diffdetective.variation.diff.view.DiffView;
 import org.variantsync.diffdetective.variation.diff.view.ViewSource;
 import org.variantsync.diffdetective.variation.tree.VariationTree;
@@ -52,34 +53,46 @@ public class ViewTest {
         GameEngine.showAndAwaitAll(
                 Show.diff(initialVDiff, "initial edit e"),
                 Show.baddiff(badDiff, "tree(e)"),
-                Show.baddiff(view, "view(tree(e), " + query.getName() + ")"),
-                Show.diff(goodDiff, "unify(view(tree(e), " + query.getName() + "))")
+                Show.baddiff(view, "view(tree(e), " + query + ")"),
+                Show.diff(goodDiff, "unify(view(tree(e), " + query + "))")
         );
     }
 
 
     @ParameterizedTest
     @ValueSource(strings = {
-//            "1",
-            "runningexample",
-//            "const",
-//            "diamond",
-//            "deep_insertion"
+            "1",
+            "diamond",
+            "deep_insertion"
     })
     void test(String filename) throws IOException, DiffParseException {
-        final Path testfile = resDir.resolve(filename + ".diff");
+        final String filenameWithEnding = filename + ".diff";
+        final Path testfile = resDir.resolve(filenameWithEnding);
         Logger.debug("Testing " + testfile);
 
         // Load diff
-        final DiffTree initialVDiff = DiffTree.fromFile(testfile, false, false);
+        final DiffTree initialVDiff = DiffTree.fromFile(testfile, DiffTreeParseOptions.Default);
         initialVDiff.assertConsistency();
+
+        List<Query> queries = List.of(
+                new FeatureQuery("B"),
+                new VariantQuery(negate(var("B")))
+        );
+
+        for (Query q : queries) {
+            GameEngine.showAndAwaitAll(
+                    Show.diff(initialVDiff, "D = " + filenameWithEnding),
+                    Show.diff(DiffView.naive(initialVDiff, q), "diff_naive(D, " + q + ")"),
+                    Show.diff(DiffView.optimized(initialVDiff, q), "diff_smart(D, " + q + ")")
+            );
+        }
 
 //        showViews(initialVDiff, new VariantQuery(new And(new Literal("X"))));
 //        showViews(initialVDiff, new VariantQuery(new And(new Literal("Y"))));
 //        showViews(initialVDiff, new VariantQuery(new And(negate(new Literal("X")))));
 //        showViews(initialVDiff, new VariantQuery(new And(negate(new Literal("Y")))));
-        showViews(initialVDiff, new FeatureQuery("X"));
-        showViews(initialVDiff, new FeatureQuery("Y"));
+//        showViews(initialVDiff, new FeatureQuery("X"));
+//        showViews(initialVDiff, new FeatureQuery("Y"));
 //        showViews(initialVDiff, new ArtifactQuery("y"));
     }
 
@@ -94,36 +107,38 @@ public class ViewTest {
         final Literal featureRing = var("Ring");
         final Literal featureDoubleLink = var("DoubleLink");
 
-        final DiffTree d = DiffTree.fromFile(testfile, false, false);
-        final VariationTree b = VariationTree.fromProjection(d.getRoot().projection(Time.BEFORE), VariationTreeSource.Unknown);
-        final VariationTree a = VariationTree.fromProjection(d.getRoot().projection(Time.AFTER),  VariationTreeSource.Unknown);
-        // Let's say Bob is expert in feature X only.
-        final Query bobsQuery =
-                new VariantQuery(and(negate(featureDoubleLink)));
-//                new FeatureQuery(ring.toString());
-        final Query charlottesQuery = new VariantQuery(and(
-//                new Literal("X"),
-                negate(featureRing)
-        ));
-//        GameEngine.showAndAwaitAll(
-//                Show.diff(d, "D"),
-////                Show.tree(b, "project(D, b)"),
-////                Show.tree(a, "project(D, a)"),
-//                Show.diff(DiffView.badgood(d, bobsQuery), "[BadGood] Bob's View: " + bobsQuery.getName()),
-//                Show.diff(DiffView.optimized(d, bobsQuery), "[Optimized] Bob's View: " + bobsQuery.getName()),
-//                Show.diff(DiffView.badgood(d, charlottesQuery), "[BadGood] Charlotte's View: " + charlottesQuery.getName()),
-//                Show.diff(DiffView.optimized(d, charlottesQuery), "[Optimized] Charlotte's View: " + charlottesQuery.getName())
-//        );
+        final DiffTree d = DiffTree.fromFile(testfile, DiffTreeParseOptions.Default);
+        final VariationTree b = d.project(Time.BEFORE);
+        final VariationTree a = d.project(Time.AFTER);
 
+        // Queries of Listing 3 and 4
+        final Query bobsQuery1 = new VariantQuery(and(negate(featureDoubleLink)));
+        final Query charlottesQuery = new VariantQuery(negate(featureRing));
+
+        // Figure 1
+        GameEngine.showAndAwaitAll(
+                Show.tree(b, "Figure 1: project(D, b)")
+        );
+
+        // Figure 2
+        GameEngine.showAndAwaitAll(
+                Show.diff(d, "Figure 2: D")
+        );
+
+        // Figure 3
         final VariantQuery configureExample1 = new VariantQuery(
                 and(featureRing, /* FM = */ new Implies(featureDoubleLink, negate(featureRing)))
         );
+        GameEngine.showAndAwaitAll(
+                Show.tree(TreeView.tree(b, configureExample1), "Figure 3: view_{tree}(Figure 1, " + configureExample1 + ")")
+        );
+
+        // Figure 4
         final TraceYesQuery traceYesExample1 = new TraceYesQuery(
                 featureDoubleLink
         );
         GameEngine.showAndAwaitAll(
-                Show.tree(TreeView.tree(b, configureExample1), "view_{tree}(project_b(D), " + configureExample1.getName() + ")"),
-                Show.tree(TreeView.tree(b, traceYesExample1), "view_{tree}(project_b(D), " + traceYesExample1.getName() + ")")
+                Show.tree(TreeView.tree(b, traceYesExample1), "Figure 4: view_{tree}(Figure 1, " + traceYesExample1 + ")")
         );
     }
 
@@ -140,7 +155,7 @@ public class ViewTest {
         final Path testfile = resDir.resolve(filename + ".diff");
         final DiffTree d = DiffTree.fromFile(testfile, DiffTreeParseOptions.Default);
 
-        final List<Node> configs = ViewAnalysis.getUniquePartialConfigs(d, false);
+        final List<Node> configs = UniqueViewsAlgorithm.getUniquePartialConfigs(d, false);
         final List<DiffTree> views = new ArrayList<>();
 
         final StringBuilder str = new StringBuilder();
@@ -183,7 +198,25 @@ public class ViewTest {
         for (int i = 0; i < configs.size(); ++i) {
             final DiffTree view = views.get(i);
             final Query       q = ((ViewSource) view.getSource()).q();
-            Show.diff(view, i + ".) view(D, " + q.getName() + ")").showAndAwait();
+            Show.diff(view, i + ".) view(D, " + q + ")").showAndAwait();
         }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "1",
+            "2",
+            "runningexample",
+            "const",
+            "diamond",
+            "deep_insertion"
+    })
+    void cutTest(String filename) throws IOException, DiffParseException {
+        final Path testfile = resDir.resolve(filename + ".diff");
+        final DiffTree d = DiffTree.fromFile(testfile, DiffTreeParseOptions.Default);
+
+        Show.diff(d, "original").showAndAwait();
+        new CutNonEditedSubtrees(true).transform(d);
+        Show.diff(d, "cut").showAndAwait();
     }
 }
