@@ -1,16 +1,23 @@
 package org.variantsync.diffdetective.variation.diff.view;
 
+import org.eclipse.jgit.diff.*;
+import org.tinylog.Logger;
+import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.variation.diff.DiffType;
 import org.variantsync.diffdetective.variation.diff.Time;
 import org.variantsync.diffdetective.variation.diff.bad.BadVDiff;
-import org.variantsync.diffdetective.variation.diff.source.DiffTreeSource;
+import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParseOptions;
+import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParser;
 import org.variantsync.diffdetective.variation.tree.VariationTree;
 import org.variantsync.diffdetective.variation.tree.view.TreeView;
 import org.variantsync.diffdetective.variation.tree.view.query.Query;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
@@ -24,17 +31,61 @@ public class DiffView {
         }
     }
 
-    public static DiffTree naive(final DiffTree d, final Query q) {
-        final VariationTree[] projectionViews = new VariationTree[2];
+    private static DiffFormatter makeFormatterWithoutHeader(final OutputStream os) {
+        return new DiffFormatter(os) {
+            @Override
+            protected void writeHunkHeader(int aStartLine, int aEndLine, int bStartLine, int bEndLine) {
+            }
+        };
+    }
 
-        Time.forAll(t -> {
+    public static DiffTree naive(final DiffTree d, final Query q) throws IOException, DiffParseException {
+//        Logger.info("q = " + q);
+        final RawText[] text = new RawText[2];
+
+        for (final Time t : Time.values()) {
             final VariationTree projection = d.project(t);
             TreeView.treeInline(projection, q);
-            projectionViews[t.ordinal()] = projection;
-        });
 
-        // TODO: Apply @ibbem's diff operator on the projectionViews here.
-        return d; // new ViewSource(D, q)
+            final StringBuilder b = new StringBuilder();
+            projection.root().printSourceCode(b);
+            String s = b.toString();
+            text[t.ordinal()] = new RawText(s.getBytes());
+
+//            Logger.info("t = " + t + "\n" + s);
+        }
+
+        // MYERS or HISTOGRAM
+        final EditList diff = DiffAlgorithm.getAlgorithm(DiffAlgorithm.SupportedAlgorithm.MYERS).diff(
+                RawTextComparator.DEFAULT,
+                text[Time.BEFORE.ordinal()],
+                text[Time.AFTER.ordinal()]
+        );
+
+        final String textDiff;
+        {
+            final OutputStream os = new ByteArrayOutputStream();
+            final DiffFormatter formatter = makeFormatterWithoutHeader(os);
+            formatter.setContext(Integer.MAX_VALUE); // FULL DIFF
+            formatter.format(
+                    diff,
+                    text[Time.BEFORE.ordinal()],
+                    text[Time.AFTER.ordinal()]);
+            formatter.close();
+            os.flush();
+            textDiff = os.toString();
+            os.close();
+        }
+//        Logger.info("\n" + textDiff);
+
+        final DiffTree view = DiffTreeParser.createDiffTree(textDiff,
+                new DiffTreeParseOptions(
+                        true,
+                        true
+                ));
+        view.setSource(new ViewSource(d, q));
+//        Logger.info("success");
+        return view;
     }
 
     public static DiffTree badgood(final DiffTree d, final Query q) {
