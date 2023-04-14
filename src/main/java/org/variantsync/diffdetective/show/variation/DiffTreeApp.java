@@ -43,6 +43,8 @@ public class DiffTreeApp extends App {
     public final static double DEFAULT_NODE_RADIUS = 50;
     public final static int DEFAULT_FONT_SIZE = 30;
 
+    public final static double BOX_ALIGN_INDENT = 0.7;
+
     private final static Format DEFAULT_FORMAT =
             new Format(
                     new PaperNodeFormat(),
@@ -174,13 +176,13 @@ public class DiffTreeApp extends App {
         final int result = fileChooser.showSaveDialog(getWindow());
         if (result == JFileChooser.APPROVE_OPTION) {
             final File targetFile = fileChooser.getSelectedFile();
-            final TikzExporter tikzExporter = new TikzExporter(new Format(currentFormat, new DefaultEdgeLabelFormat()));
+            final TikzExporter tikzExporter = new TikzExporter(new Format(currentFormat, new DefaultEdgeLabelFormat(EdgeLabelFormat.Direction.ChildToParent)));
 
             try (
                     var unbufferedOutput = Files.newOutputStream(targetFile.toPath());
                     var output = new BufferedOutputStream(unbufferedOutput)
             ) {
-                final double millimetersPerPixel = TIKZ_NODE_RADIUS / resolution.x();
+                final double millimetersPerPixel = TIKZ_NODE_RADIUS / (BOX_ALIGN_INDENT * resolution.x());
                 final Vec2 flipY  = new Vec2(1.0, -1.0);
                 final Vec2 scaleToTikz =
                         Vec2.all(millimetersPerPixel);
@@ -375,8 +377,8 @@ public class DiffTreeApp extends App {
         for (final Map.Entry<V, Vec2> entry : locations.entrySet()) {
             final Vec2 graphvizpos = entry.getValue();
             entry.setValue(new Vec2(
-                     0.7 * (scale_x * (graphvizpos.x() - xmin) - resolution.x() / 2.0),
-                    -0.7 * (scale_y * (graphvizpos.y() - ymin) - resolution.y() / 2.0)
+                     BOX_ALIGN_INDENT * (scale_x * (graphvizpos.x() - xmin) - resolution.x() / 2.0),
+                    -BOX_ALIGN_INDENT * (scale_y * (graphvizpos.y() - ymin) - resolution.y() / 2.0)
             ));
         }
     }
