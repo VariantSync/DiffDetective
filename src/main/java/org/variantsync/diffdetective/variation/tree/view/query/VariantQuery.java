@@ -7,10 +7,17 @@ import org.variantsync.diffdetective.analysis.logic.SAT;
 import org.variantsync.diffdetective.variation.tree.VariationNode;
 import org.variantsync.diffdetective.variation.tree.VariationTreeNode;
 
+import java.util.function.Consumer;
+
 public record VariantQuery(Node configuration) implements Query {
     @Override
     public boolean test(VariationNode<?> v) {
-        return SAT.isSatisfiable(new And(configuration, v.getPresenceCondition()));
+        return SAT.isSatisfiableAlreadyEliminatedTrueAndFalse(new And(configuration, v.getPresenceCondition()));
+    }
+
+    @Override
+    public <TreeNode extends VariationNode<TreeNode>> void computeViewNodes(TreeNode v, Consumer<TreeNode> markRelevant) {
+        Query.computeViewSubtrees(this, v, markRelevant);
     }
 
     @Override
