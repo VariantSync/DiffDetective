@@ -2,6 +2,7 @@ package org.variantsync.diffdetective.experiments.views;
 
 import org.prop4j.Node;
 import org.variantsync.diffdetective.analysis.Analysis;
+import org.variantsync.diffdetective.analysis.logic.SAT;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.editclass.proposed.ProposedEditClasses;
 import org.variantsync.diffdetective.experiments.views.result.ViewEvaluation;
@@ -16,6 +17,7 @@ import org.variantsync.diffdetective.variation.tree.view.query.VariantQuery;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.function.Function;
 
 import static org.variantsync.diffdetective.util.fide.FormulaUtils.negate;
 
@@ -102,17 +104,23 @@ public class ViewAnalysis implements Analysis.Hooks {
         features.remove(FixTrueFalse.False.var.toString());
 
         final List<Query> queries = new ArrayList<>(3);
-        if (!deselectedPCs.isEmpty()) {
-            queries.add(randomVariantQuery(deselectedPCs));
-        }
-        if (!features.isEmpty()) {
-            queries.add(randomFeatureQuery(features));
-        }
-        if (!artifacts.isEmpty()) {
-            queries.add(randomArtifactQuery(artifacts));
-        }
-
+        addRandomQuery(deselectedPCs, this::randomVariantQuery,  queries);
+        addRandomQuery(features,      this::randomFeatureQuery,  queries);
+        addRandomQuery(artifacts,     this::randomArtifactQuery, queries);
         return queries;
+    }
+
+    private static <QueryData, QueryCandidates extends Collection<QueryData>> void addRandomQuery(
+            QueryCandidates source,
+            Function<QueryCandidates, Query> pick,
+            Collection<Query> target
+    ) {
+        if (!source.isEmpty()) {
+            final Query e = pick.apply(source);
+            if (e != null) {
+                target.add(e);
+            }
+        }
     }
 
     private Query randomVariantQuery(final List<Node> deselectedPCs) {
@@ -126,8 +134,20 @@ public class ViewAnalysis implements Analysis.Hooks {
 //        final List<Node> deselectedPCsList = new ArrayList<>(deselectedPCs);
 //        removeSemanticDuplicates(deselectedPCsList);
 
-        Node winner = deselectedPCs.get(random.nextInt(deselectedPCs.size()));
-        FixTrueFalse.EliminateTrueAndFalseInplace(winner);
+        Node winner = null;
+        while (winner == null && !deselectedPCs.isEmpty()) {
+            final Node candidate = deselectedPCs.get(random.nextInt(deselectedPCs.size()));
+            if (SAT.isSatisfiable(candidate)) {
+                winner = candidate;
+            } else {
+                deselectedPCs.remove(candidate);
+            }
+        }
+
+        if (winner == null) {
+            return null;
+        }
+
         return new VariantQuery(winner);
     }
 
