@@ -90,4 +90,25 @@ public class FormulaUtils {
                 .mapToInt(cs -> cs.getChildren().length)
                 .sum();
     }
+
+    public static void removeSemanticDuplicates(final List<Node> formulas) {
+        int len = formulas.size();
+        for (int i = 0; i < len; ++i) {
+            final Node ci = formulas.get(i);
+
+            for (int j = i + 1; j < len; ++j) {
+                final Node cj = formulas.get(j);
+                if (SAT.equivalent(cj, ci)) {
+                    // remove ci
+                    // We do this by swapping it with the last element of the list, then reducing the list length by 1
+                    // and then continue inspection of the newly swapped in element (thus --i).
+                    Collections.swap(formulas, i, len - 1);
+                    --i;
+                    --len;
+                    break;
+                }
+            }
+        }
+        formulas.subList(len, formulas.size()).clear();
+    }
 }
