@@ -392,7 +392,7 @@ public class Analysis {
     }
 
     protected void processCommitBatch(List<RevCommit> commits) throws Exception {
-        outputFile = outputDir.resolve(commits.get(0).getId().getName() + ".lg");
+        outputFile = outputDir.resolve(commits.get(0).getId().getName());
 
         ListIterator<Hooks> batchHook = hooks.listIterator();
         try {
