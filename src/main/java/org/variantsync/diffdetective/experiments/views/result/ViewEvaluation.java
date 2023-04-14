@@ -1,8 +1,8 @@
 package org.variantsync.diffdetective.experiments.views.result;
 
-import org.variantsync.diffdetective.datasets.Repository;
 import org.variantsync.diffdetective.util.CSV;
 import org.variantsync.diffdetective.variation.tree.view.query.Query;
+import org.variantsync.diffdetective.variation.tree.view.query.VariantQuery;
 
 import static org.variantsync.functjonal.Functjonal.intercalate;
 
@@ -20,10 +20,17 @@ public record ViewEvaluation(
                 "commit",
                 "file",
                 "jtype",
-                "jquery",
+                "jargs",
                 "msnaive",
                 "msoptimized"
         );
+    }
+
+    private String getQueryArguments() {
+        if (query instanceof VariantQuery) {
+            return query.parametersToString();
+        }
+        return "";
     }
 
     @Override
@@ -33,7 +40,7 @@ public record ViewEvaluation(
                 commit,
                 file,
                 query.getFunctionName(),
-                query.parametersToString(),
+                getQueryArguments(),
                 msNaive,
                 msOptimized
         );
