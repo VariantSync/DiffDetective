@@ -18,13 +18,6 @@ import java.util.*;
 
 import static org.variantsync.diffdetective.util.fide.FormulaUtils.negate;
 
-/**
- * Wie wäre es, wenn wir auch ermitteln, wie groß der Anteil der Commits ist, bei denen man durch die Views einen
- * Vorteil hat? Also nicht nur auf die Mittelwerte schauen, sondern ganz bewusst zwischen Commits mit hoher
- * Komplexität, Zahl an Views, etc., und enfachen Commits unterscheiden? Ein ausgedachtes Beispiel: Im Durchschnitt
- * könnte es ja sein, dass die Views erstmal scheinbar wenig bringen,  aber dann eben in beispielsweise 10% der Commit
- * die Views einen sehr großen Unterschied machen.
- */
 public class ViewAnalysis implements Analysis.Hooks {
     // Result data
     public static final String EDIT_COMPLEXITIES_EXTENSION = ".views.csv";
