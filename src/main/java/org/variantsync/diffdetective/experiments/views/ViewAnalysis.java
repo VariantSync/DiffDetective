@@ -6,6 +6,7 @@ import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.editclass.proposed.ProposedEditClasses;
 import org.variantsync.diffdetective.experiments.views.result.ViewEvaluation;
 import org.variantsync.diffdetective.util.*;
+import org.variantsync.diffdetective.util.fide.FixTrueFalse;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.variation.diff.view.DiffView;
 import org.variantsync.diffdetective.variation.tree.view.query.ArtifactQuery;
@@ -97,6 +98,9 @@ public class ViewAnalysis implements Analysis.Hooks {
             }
         });
 
+        features.remove(FixTrueFalse.True.var.toString());
+        features.remove(FixTrueFalse.False.var.toString());
+
         final List<Query> queries = new ArrayList<>(3);
         if (!deselectedPCs.isEmpty()) {
             queries.add(randomVariantQuery(deselectedPCs));
@@ -122,7 +126,9 @@ public class ViewAnalysis implements Analysis.Hooks {
 //        final List<Node> deselectedPCsList = new ArrayList<>(deselectedPCs);
 //        removeSemanticDuplicates(deselectedPCsList);
 
-        return new VariantQuery(deselectedPCs.get(random.nextInt(deselectedPCs.size())));
+        Node winner = deselectedPCs.get(random.nextInt(deselectedPCs.size()));
+        FixTrueFalse.EliminateTrueAndFalseInplace(winner);
+        return new VariantQuery(winner);
     }
 
     private Query randomFeatureQuery(final Set<String> features) {
