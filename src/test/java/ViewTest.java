@@ -80,10 +80,12 @@ public class ViewTest {
         );
 
         for (Query q : queries) {
+            final var viewNodes = DiffView.computeWhenNodesAreRelevant(initialVDiff, q);
+
             GameEngine.showAndAwaitAll(
                     Show.diff(initialVDiff, "D = " + filenameWithEnding),
-                    Show.diff(DiffView.naive(initialVDiff, q), "diff_naive(D, " + q + ")"),
-                    Show.diff(DiffView.optimized(initialVDiff, q), "diff_smart(D, " + q + ")")
+                    Show.diff(DiffView.naive(initialVDiff, q, viewNodes), "diff_naive(D, " + q + ")"),
+                    Show.diff(DiffView.optimized(initialVDiff, q, viewNodes), "diff_smart(D, " + q + ")")
             );
         }
 

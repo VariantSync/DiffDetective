@@ -5,20 +5,21 @@ import org.tinylog.Logger;
 import org.variantsync.diffdetective.diff.git.GitDiffer;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.util.Assert;
-import org.variantsync.diffdetective.variation.diff.DiffNode;
-import org.variantsync.diffdetective.variation.diff.DiffTree;
-import org.variantsync.diffdetective.variation.diff.DiffType;
-import org.variantsync.diffdetective.variation.diff.Time;
+import org.variantsync.diffdetective.util.CollectionUtils;
+import org.variantsync.diffdetective.variation.diff.*;
 import org.variantsync.diffdetective.variation.diff.bad.BadVDiff;
 import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParseOptions;
 import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParser;
 import org.variantsync.diffdetective.variation.tree.VariationTree;
+import org.variantsync.diffdetective.variation.tree.VariationTreeNode;
 import org.variantsync.diffdetective.variation.tree.view.TreeView;
 import org.variantsync.diffdetective.variation.tree.view.query.Query;
+import org.variantsync.diffdetective.variation.tree.view.query.VariantQuery;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
@@ -42,29 +43,20 @@ public class DiffView {
         };
     }
 
-    public static DiffTree naive(final DiffTree d, final Query q) throws IOException, DiffParseException {
-//        Logger.info("q = " + q);
-        final String[] projectionViewText = new String[2];
-        final RawText[] text = new RawText[2];
+    public static BiPredicate<Time, Projection> computeWhenNodesAreRelevant(final DiffTree d, final Query q) {
+        final Map<Time, Set<Projection>> V = new HashMap<>();
 
         for (final Time t : Time.values()) {
-            final int i = t.ordinal();
-
-            final VariationTree projection = d.project(t);
-            try {
-                TreeView.treeInline(projection, q);
-            } catch (NullPointerException e) {
-                Logger.info(q);
-                throw e;
-            }
-
-            final StringBuilder b = new StringBuilder();
-            projection.root().printSourceCode(b);
-            projectionViewText[i] = b.toString();
-            text[i] = new RawText(projectionViewText[i].getBytes());
-
-//            Logger.info("t = " + t + "\n" + s);
+            final Set<Projection> relevantNodes_t = new HashSet<>();
+            q.computeViewNodes(d.getRoot().projection(t), relevantNodes_t::add);
+            V.put(t, relevantNodes_t);
         }
+
+        return (t, p) -> V.get(t).contains(p);
+    }
+
+    public static DiffTree naive(final DiffTree d, final Query q, final String[] projectionViewText, final RawText[] text) throws IOException, DiffParseException {
+//        Logger.info("q = " + q);
 
         // MYERS or HISTOGRAM
         final DiffAlgorithm diffAlgorithm = DiffAlgorithm.getAlgorithm(DiffAlgorithm.SupportedAlgorithm.MYERS);
@@ -128,6 +120,55 @@ public class DiffView {
         return view;
     }
 
+    public static DiffTree naive(final DiffTree d, final Query q, final BiPredicate<Time, Projection> inView) throws IOException, DiffParseException {
+        final String[] projectionViewText = new String[2];
+        final RawText[] text = new RawText[2];
+
+        for (final Time t : Time.values()) {
+            final int i = t.ordinal();
+
+            final Map<Projection, VariationTreeNode> copyMemory = new HashMap<>();
+            final VariationTree treeView = new VariationTree(
+                    d.getRoot().projection(t).toVariationTree(copyMemory),
+                    new ProjectionSource(d, t)
+            );
+
+            // TODO: Avoid inversion by building the map in the correct way in the first place.
+            final Map<VariationTreeNode, Projection> invCopyMemory = CollectionUtils.invert(copyMemory, HashMap::new);
+            TreeView.treeInline(treeView.root(), v -> inView.test(t, invCopyMemory.get(v)));
+
+            final StringBuilder b = new StringBuilder();
+            treeView.root().printSourceCode(b);
+            projectionViewText[i] = b.toString();
+            text[i] = new RawText(projectionViewText[i].getBytes());
+        }
+
+        return naive(d, q, projectionViewText, text);
+    }
+
+    public static DiffTree naive(final DiffTree d, final Query q) throws IOException, DiffParseException {
+        final String[] projectionViewText = new String[2];
+        final RawText[] text = new RawText[2];
+
+        for (final Time t : Time.values()) {
+            final int i = t.ordinal();
+
+            final VariationTree projection = d.project(t);
+            try {
+                TreeView.treeInline(projection, q);
+            } catch (NullPointerException e) {
+                Logger.info(q);
+                throw e;
+            }
+
+            final StringBuilder b = new StringBuilder();
+            projection.root().printSourceCode(b);
+            projectionViewText[i] = b.toString();
+            text[i] = new RawText(projectionViewText[i].getBytes());
+        }
+        return naive(d, q, projectionViewText, text);
+    }
+
     public static DiffTree badgood(final DiffTree d, final Query q) {
         // treeify
         final BadVDiff badDiff = BadVDiff.fromGood(d);
@@ -141,13 +182,45 @@ public class DiffView {
         return goodDiff;
     }
 
-    public static DiffTree optimized(final DiffTree D, final Query q) {
-        /*
-         * Set of relevant nodes R from the DiffTree D as for variation trees.
-         * For variation diffs though, we also need to know at which times a node is relevant.
-         */
-        final Map<DiffNode, Set<Time>> R = new HashMap<>();
+    private static void computeViewNodesForVariantQuery(final Map<DiffNode, Set<Time>> R, VariantQuery q, Time t, Projection p) {
+        // if a presence condition is not compatible with the query, then also no child will be compatible.
+        if (q.test(p)) {
+            final DiffNode dn = p.getBackingNode();
 
+            R
+                    .computeIfAbsent(dn, _ignored -> new HashSet<>())
+                    .add(t);
+
+            // inlined optimised version of Projection::getChildren
+            for (DiffNode c : dn.getAllChildren()) {
+                if (dn.isChild(c, t)) {
+                    computeViewNodesForVariantQuery(R, q, t, c.projection(t));
+                }
+            }
+        }
+    }
+
+    private static Map<DiffNode, Set<Time>> computeViewNodes(final DiffTree D, final Query q) {
+        final Map<DiffNode, Set<Time>> V = new HashMap<>();
+
+        if (q instanceof VariantQuery vq) {
+            for (final Time t : Time.values()) {
+                computeViewNodesForVariantQuery(V, vq, t, D.getRoot().projection(t));
+            }
+        } else {
+            D.forAll(node -> Time.forAll(t -> {
+                if (node.diffType.existsAtTime(t) && q.test(node.projection(t))) {
+                    forMeAndMyAncestors(node, t, a -> V
+                            .computeIfAbsent(a, _ignored -> new HashSet<>())
+                            .add(t));
+                }
+            }));
+        }
+
+        return V;
+    }
+
+    public static DiffTree optimized(final DiffTree D, final Query q, final Map<DiffNode, Set<Time>> V) {
         /*
          * Memorization of translated nodes.
          * Keys are the nodes in R.
@@ -171,18 +244,9 @@ public class DiffView {
         // Memoization of the copy of the root.
         DiffNode rootCopy = null;
 
-        // Step 1: Determine R
-        D.forAll(node -> Time.forAll(t -> {
-            if (node.diffType.existsAtTime(t) && q.test(node.projection(t))) {
-                forMeAndMyAncestors(node, t, a -> R
-                        .computeIfAbsent(a, _ignored -> new HashSet<>())
-                        .add(t));
-            }
-        }));
-
         // Step 2: Create copy nodes and edges.
         //         We also find the root here.
-        for (final Map.Entry<DiffNode, Set<Time>> relevantNodeAtTimes : R.entrySet()) {
+        for (final Map.Entry<DiffNode, Set<Time>> relevantNodeAtTimes : V.entrySet()) {
             final DiffNode node = relevantNodeAtTimes.getKey();
             final Set<Time> timesOfRelevancy = relevantNodeAtTimes.getValue();
 
@@ -236,5 +300,24 @@ public class DiffView {
         // Step 4: Build return value
         Assert.assertNotNull(rootCopy);
         return new DiffTree(rootCopy, new ViewSource(D, q));
+    }
+
+    public static DiffTree optimized(final DiffTree D, final Query q, final BiPredicate<Time, Projection> inView) {
+        /*
+         * Set of relevant nodes V from the DiffTree D as for variation trees.
+         * For variation diffs though, we also need to know at which times a node is relevant.
+         */
+        final Map<DiffNode, Set<Time>> V = computeViewNodes(D, q);
+        D.forAll(node -> Time.forAll(t -> {
+            if (node.diffType.existsAtTime(t) && inView.test(t, node.projection(t))) {
+                V.computeIfAbsent(node, _ignored -> new HashSet<>()).add(t);
+            }
+        }));
+
+        return optimized(D, q, V);
+    }
+
+    public static DiffTree optimized(final DiffTree D, final Query q) {
+        return optimized(D, q, computeViewNodes(D, q));
     }
 }

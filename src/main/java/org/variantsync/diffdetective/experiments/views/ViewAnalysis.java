@@ -9,6 +9,8 @@ import org.variantsync.diffdetective.experiments.views.result.ViewEvaluation;
 import org.variantsync.diffdetective.util.*;
 import org.variantsync.diffdetective.util.fide.FixTrueFalse;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
+import org.variantsync.diffdetective.variation.diff.Projection;
+import org.variantsync.diffdetective.variation.diff.Time;
 import org.variantsync.diffdetective.variation.diff.view.DiffView;
 import org.variantsync.diffdetective.variation.tree.view.query.ArtifactQuery;
 import org.variantsync.diffdetective.variation.tree.view.query.FeatureQuery;
@@ -17,6 +19,7 @@ import org.variantsync.diffdetective.variation.tree.view.query.VariantQuery;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.function.BiPredicate;
 import java.util.function.Function;
 
 import static org.variantsync.diffdetective.util.fide.FormulaUtils.negate;
@@ -38,13 +41,18 @@ public class ViewAnalysis implements Analysis.Hooks {
     }
 
     private void runQueryExperiment(Analysis analysis, final DiffTree d, final Query q) {
-        final long naiveTime, optimizedTime;
+        final long preprocessingTime, naiveTime, optimizedTime;
+
         final Clock c = new Clock();
+
+        final BiPredicate<Time, Projection> inV = DiffView.computeWhenNodesAreRelevant(d, q);
+
+        preprocessingTime = c.getPassedMilliseconds();
 
         // measure naive view generation
         try {
             c.start();
-            DiffView.naive(d, q);
+            DiffView.naive(d, q, inV);
             naiveTime = c.getPassedMilliseconds();
         } catch (IOException | DiffParseException e) {
             throw new RuntimeException(e);
@@ -52,7 +60,7 @@ public class ViewAnalysis implements Analysis.Hooks {
 
         // measure optimized view generation
         c.start();
-        DiffView.optimized(d, q);
+        DiffView.optimized(d, q, inV);
         optimizedTime = c.getPassedMilliseconds();
 
         // export results
@@ -60,8 +68,8 @@ public class ViewAnalysis implements Analysis.Hooks {
                 analysis.getCurrentCommitDiff().getAbbreviatedCommitHash(),
                 analysis.getCurrentPatch().getFileName(),
                 q,
-                naiveTime,
-                optimizedTime
+                preprocessingTime + naiveTime,
+                preprocessingTime + optimizedTime
         );
         csv.append(e.toCSV()).append(StringUtils.LINEBREAK);
     }
@@ -137,7 +145,8 @@ public class ViewAnalysis implements Analysis.Hooks {
         Node winner = null;
         while (winner == null && !deselectedPCs.isEmpty()) {
             final Node candidate = deselectedPCs.get(random.nextInt(deselectedPCs.size()));
-            if (SAT.isSatisfiable(candidate)) {
+            FixTrueFalse.EliminateTrueAndFalseInplace(candidate);
+            if (SAT.isSatisfiableAlreadyEliminatedTrueAndFalse(candidate)) {
                 winner = candidate;
             } else {
                 deselectedPCs.remove(candidate);
