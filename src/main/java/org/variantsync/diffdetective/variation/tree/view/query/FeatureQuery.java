@@ -11,7 +11,17 @@ public record FeatureQuery(String featureName) implements Query {
     }
 
     @Override
-    public String getName() {
-        return "feature(" + featureName() + ")";
+    public String parametersToString() {
+        return featureName();
+    }
+
+    @Override
+    public String getFunctionName() {
+        return "traceall";
+    }
+
+    @Override
+    public String toString() {
+        return Query.toString(this);
     }
 }

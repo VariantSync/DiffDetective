@@ -38,7 +38,7 @@ public class TreeView {
         final Set<VariationTreeNode> interestingNodes = new HashSet<>();
 
         t.forAllPreorder(node -> {
-            if (q.isInteresting(node)) {
+            if (q.test(node)) {
                 addMeAndMyAncestorsTo(node, interestingNodes);
             }
         });

@@ -82,7 +82,7 @@ public class DiffView {
 
         // Step 1: Determine R
         D.forAll(node -> Time.forAll(t -> {
-            if (node.diffType.existsAtTime(t) && q.isInteresting(node.projection(t))) {
+            if (node.diffType.existsAtTime(t) && q.test(node.projection(t))) {
                 forMeAndMyAncestors(node, t, a -> R
                         .computeIfAbsent(a, _ignored -> new HashSet<>())
                         .add(t));

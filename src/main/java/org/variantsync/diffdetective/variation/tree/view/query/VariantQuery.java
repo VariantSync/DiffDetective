@@ -14,7 +14,17 @@ public record VariantQuery(Node configuration) implements Query {
     }
 
     @Override
-    public String getName() {
-        return "variant(" + configuration.toString(NodeWriter.logicalSymbols)  + ")";
+    public String parametersToString() {
+        return configuration.toString(NodeWriter.logicalSymbols);
+    }
+
+    @Override
+    public String getFunctionName() {
+        return "configure";
+    }
+
+    @Override
+    public String toString() {
+        return Query.toString(this);
     }
 }

@@ -5,13 +5,11 @@ import org.variantsync.diffdetective.variation.tree.VariationTreeNode;
 
 import java.util.function.Predicate;
 
-@FunctionalInterface
 public interface Query extends Predicate<VariationNode<?>> {
-    default boolean isInteresting(final VariationNode<?> v) {
-        return test(v);
-    }
+    String getFunctionName();
+    String parametersToString();
 
-    default String getName() {
-        return getClass().getSimpleName();
+    static String toString(Query q) {
+        return q.getFunctionName() + "(" + q.parametersToString() + ")";
     }
 }

@@ -12,7 +12,17 @@ public record TraceYesQuery(Node configuration) implements Query {
     }
 
     @Override
-    public String getName() {
-        return "trace_{all}(" + configuration.toString(NodeWriter.logicalSymbols)  + ")";
+    public String parametersToString() {
+        return configuration.toString(NodeWriter.logicalSymbols);
+    }
+
+    @Override
+    public String getFunctionName() {
+        return "traceyes";
+    }
+
+    @Override
+    public String toString() {
+        return Query.toString(this);
     }
 }

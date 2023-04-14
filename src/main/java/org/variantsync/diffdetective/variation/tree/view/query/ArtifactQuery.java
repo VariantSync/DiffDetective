@@ -12,8 +12,17 @@ public record ArtifactQuery(String artifact) implements Query {
         return false;
     }
 
+    public String parametersToString() {
+        return artifact();
+    }
+
     @Override
-    public String getName() {
-        return "artifact(" + artifact() + ")";
+    public String getFunctionName() {
+        return "is";
+    }
+
+    @Override
+    public String toString() {
+        return Query.toString(this);
     }
 }
