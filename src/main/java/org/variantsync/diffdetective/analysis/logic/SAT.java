@@ -78,16 +78,11 @@ public final class SAT {
      * @param formula Formula to check for being satisfiable.
      * @return True iff the given formula is a satisfiable.
      */
-    public static boolean isSatisfiable(Node formula) {
-        // TODO: Remove this block once issue #1333 of FeatureIDE is resolved because FixTrueFalse::EliminateTrueAndFalse is expensive.
-        //       https://github.com/FeatureIDE/FeatureIDE/issues/1333
-        {
-            formula = FixTrueFalse.EliminateTrueAndFalse(formula);
-            if (FixTrueFalse.isTrue(formula)) {
-                return true;
-            } else if (FixTrueFalse.isFalse(formula)) {
-                return false;
-            }
+    public static boolean isSatisfiableAlreadyEliminatedTrueAndFalse(Node formula) {
+        if (FixTrueFalse.isTrue(formula)) {
+            return true;
+        } else if (FixTrueFalse.isFalse(formula)) {
+            return false;
         }
 
         if (FormulaUtils.numberOfLiterals(formula) > 40) {
@@ -95,6 +90,20 @@ public final class SAT {
         }
 
         return checkSAT(formula);
+    }
+
+    /**
+     * Checks whether the given formula is satisfiable.
+     * This method uses the Tseytin transformation for formulas with more than 40 literals as a heuristic to optimize
+     * SAT solving times for larger formulas.
+     * @param formula Formula to check for being satisfiable.
+     * @return True iff the given formula is a satisfiable.
+     */
+    public static boolean isSatisfiable(Node formula) {
+        // TODO: Remove this block once issue #1333 of FeatureIDE is resolved because FixTrueFalse::EliminateTrueAndFalse is expensive.
+        //       https://github.com/FeatureIDE/FeatureIDE/issues/1333
+        formula = FixTrueFalse.EliminateTrueAndFalse(formula);
+        return isSatisfiableAlreadyEliminatedTrueAndFalse(formula);
     }
 
     /**
