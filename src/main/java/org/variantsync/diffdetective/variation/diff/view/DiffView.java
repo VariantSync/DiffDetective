@@ -2,6 +2,7 @@ package org.variantsync.diffdetective.variation.diff.view;
 
 import org.eclipse.jgit.diff.*;
 import org.tinylog.Logger;
+import org.variantsync.diffdetective.diff.git.GitDiffer;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
@@ -15,14 +16,15 @@ import org.variantsync.diffdetective.variation.tree.VariationTree;
 import org.variantsync.diffdetective.variation.tree.view.TreeView;
 import org.variantsync.diffdetective.variation.tree.view.query.Query;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
+import java.util.regex.Pattern;
 
 public class DiffView {
+    public static final Pattern HUNK_HEADER_REGEX = Pattern.compile("@@\\s-(\\d+).*\\+(\\d+).*@@(\\r\\n|\\r|\\n)");
+
     private static void forMeAndMyAncestors(final DiffNode n, Time t, Consumer<DiffNode> callback) {
         callback.accept(n);
         final DiffNode p = n.getParent(t);
@@ -35,48 +37,86 @@ public class DiffView {
         return new DiffFormatter(os) {
             @Override
             protected void writeHunkHeader(int aStartLine, int aEndLine, int bStartLine, int bEndLine) {
+
             }
         };
     }
 
     public static DiffTree naive(final DiffTree d, final Query q) throws IOException, DiffParseException {
 //        Logger.info("q = " + q);
+        final String[] projectionViewText = new String[2];
         final RawText[] text = new RawText[2];
 
         for (final Time t : Time.values()) {
+            final int i = t.ordinal();
+
             final VariationTree projection = d.project(t);
-            TreeView.treeInline(projection, q);
+            try {
+                TreeView.treeInline(projection, q);
+            } catch (NullPointerException e) {
+                Logger.info(q);
+                throw e;
+            }
 
             final StringBuilder b = new StringBuilder();
             projection.root().printSourceCode(b);
-            String s = b.toString();
-            text[t.ordinal()] = new RawText(s.getBytes());
+            projectionViewText[i] = b.toString();
+            text[i] = new RawText(projectionViewText[i].getBytes());
 
 //            Logger.info("t = " + t + "\n" + s);
         }
 
         // MYERS or HISTOGRAM
-        final EditList diff = DiffAlgorithm.getAlgorithm(DiffAlgorithm.SupportedAlgorithm.MYERS).diff(
-                RawTextComparator.DEFAULT,
+        final DiffAlgorithm diffAlgorithm = DiffAlgorithm.getAlgorithm(DiffAlgorithm.SupportedAlgorithm.MYERS);
+        final RawTextComparator comparator = RawTextComparator.DEFAULT;
+        final EditList diff = diffAlgorithm.diff(
+                comparator,
                 text[Time.BEFORE.ordinal()],
                 text[Time.AFTER.ordinal()]
         );
 
-        final String textDiff;
+        String textDiff;
         {
-            final OutputStream os = new ByteArrayOutputStream();
-            final DiffFormatter formatter = makeFormatterWithoutHeader(os);
-            formatter.setContext(Integer.MAX_VALUE); // FULL DIFF
+            final ByteArrayOutputStream os = new ByteArrayOutputStream();
+
+
+            /*
+            Using our own formatter without diff headers (paired with a maximum context (?))
+            caused the formatter to crash due to index out of bounds exceptions.
+            So I guess there is a hidden assumption in the DiffFormatter that expects the header
+            to be there.
+
+            As a fix, we also use our own construction of embedding patches into the before file to obtain a full diff.
+             */
+            // final DiffFormatter formatter = makeFormatterWithoutHeader(os);
+            // formatter.setContext(Integer.MAX_VALUE); // FULL DIFF
+            final DiffFormatter formatter = new DiffFormatter(os);
+
+            formatter.setDiffAlgorithm(diffAlgorithm);
+            formatter.setDiffComparator(comparator);
+            formatter.setOldPrefix("");
+            formatter.setNewPrefix("");
+
             formatter.format(
                     diff,
                     text[Time.BEFORE.ordinal()],
                     text[Time.AFTER.ordinal()]);
+            formatter.flush();
+            textDiff = os.toString(StandardCharsets.UTF_8);
             formatter.close();
-            os.flush();
-            textDiff = os.toString();
             os.close();
+
+//            Logger.info("Initial Diff\n" + textDiff);
+
+            textDiff = GitDiffer.getFullDiff(
+                    new BufferedReader(new StringReader(projectionViewText[Time.BEFORE.ordinal()])),
+                    new BufferedReader(new StringReader(textDiff))
+            );
+
+            //textDiff = textDiff.replace("\\ No newline at end of file\n", "");
+            //textDiff = HUNK_HEADER_REGEX.matcher(textDiff).replaceAll("");
         }
-//        Logger.info("\n" + textDiff);
+//        Logger.info("Full Diff\n" + textDiff);
 
         final DiffTree view = DiffTreeParser.createDiffTree(textDiff,
                 new DiffTreeParseOptions(
@@ -129,7 +169,7 @@ public class DiffView {
         final List<Edge> edges = new ArrayList<>();
 
         // Memoization of the copy of the root.
-        final DiffNode[] rootCopy = {null};
+        DiffNode rootCopy = null;
 
         // Step 1: Determine R
         D.forAll(node -> Time.forAll(t -> {
@@ -167,8 +207,8 @@ public class DiffView {
             toCopy.put(node, copy);
 
             // connect to parent + find root
-            final AtomicBoolean isRoot = new AtomicBoolean(true);
-            timesOfRelevancy.forEach(t -> {
+            boolean isRoot = true;
+            for (Time t : timesOfRelevancy) {
                 final DiffNode parent = node.getParent(t);
                 if (parent != null) {
                     edges.add(new Edge(
@@ -177,13 +217,13 @@ public class DiffView {
                             t,
                             parent.indexOfChild(node)
                     ));
-                    isRoot.set(false);
+                    isRoot = false;
                 }
-            });
+            }
 
-            if (isRoot.get()) {
-                Assert.assertNull(rootCopy[0]);
-                rootCopy[0] = copy;
+            if (isRoot) {
+                Assert.assertNull(rootCopy);
+                rootCopy = copy;
             }
         }
 
@@ -194,7 +234,7 @@ public class DiffView {
         }
 
         // Step 4: Build return value
-        Assert.assertNotNull(rootCopy[0]);
-        return new DiffTree(rootCopy[0], new ViewSource(D, q));
+        Assert.assertNotNull(rootCopy);
+        return new DiffTree(rootCopy, new ViewSource(D, q));
     }
 }
