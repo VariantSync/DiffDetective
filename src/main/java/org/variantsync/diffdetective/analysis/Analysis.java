@@ -22,6 +22,7 @@ import org.variantsync.diffdetective.diff.git.PatchDiff;
 import org.variantsync.diffdetective.diff.result.CommitDiffResult;
 import org.variantsync.diffdetective.metadata.Metadata;
 import org.variantsync.diffdetective.parallel.ScheduledTasksIterator;
+import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.util.Clock;
 import org.variantsync.diffdetective.util.Diagnostics;
 import org.variantsync.diffdetective.util.InvocationCounter;
@@ -261,7 +262,6 @@ public class Analysis {
         }
     }
 
-
     /**
      * Runs the analysis for the repository given in {@link Analysis#Analysis} on the given commit only.
      * {@link Hooks} passed to {@link Analysis#Analysis} are the main customization point
@@ -269,7 +269,6 @@ public class Analysis {
      *
      * @param commitHash the commit to analyze relative to its first parent
      * @param analysis the analysis to run
-     * state
      */
     public static AnalysisResult forSingleCommit(final String commitHash, final Analysis analysis) {
         analysis.differ = new GitDiffer(analysis.getRepository());
@@ -296,6 +295,38 @@ public class Analysis {
 
         exportMetadata(analysis.getOutputDir(), result);
         return result;
+    }
+
+    /**
+     * Runs the analysis for the repository given in {@link Analysis#Analysis} on the given patch only.
+     * {@link Hooks} passed to {@link Analysis#Analysis} are the main customization point
+     * for executing different analyses.
+     * The Hooks will be manipulated in that a new hook for patch filtering will be inserted as the first hook
+     * for as long as the analysis runs. This hook will be removed afterwards. It is assumed that this hook
+     * remains at the same place and is not manipulated by the user.
+     *
+     * @param commitHash the commit to analyze relative to its first parent
+     * @param fileName the name of the file that was edited in the given commit
+     * @param analysis the analysis to run
+     */
+    public static void forSinglePatch(final String commitHash, final String fileName, final Analysis analysis) {
+        assert fileName != null;
+
+        final Hooks filterPatchHook = new Hooks() {
+            @Override
+            public boolean beginPatch(Analysis analysis) {
+                return fileName.equals(analysis.getCurrentPatch().getFileName());
+            }
+        };
+
+        // Add a hook that skips all patches unequal to the requested one.
+        analysis.hooks.add(0, filterPatchHook);
+        forSingleCommit(commitHash, analysis);
+
+        // Assert that our hook is still in place after the analysis ...
+        Assert.assertTrue(analysis.hooks.isEmpty() || analysis.hooks.get(0) == filterPatchHook);
+        // ... and remove it.
+        analysis.hooks.remove(0);
     }
 
     /**
