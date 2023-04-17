@@ -60,7 +60,7 @@ public class ViewAnalysis implements Analysis.Hooks {
 
         // measure optimized view generation
         c.start();
-        DiffView.optimized(d, q, inV);
+        final DiffTree view = DiffView.optimized(d, q, inV);
         optimizedTime = c.getPassedMilliseconds();
 
         // export results
@@ -69,7 +69,9 @@ public class ViewAnalysis implements Analysis.Hooks {
                 analysis.getCurrentPatch().getFileName(),
                 q,
                 preprocessingTime + naiveTime,
-                preprocessingTime + optimizedTime
+                preprocessingTime + optimizedTime,
+                ViewEvaluation.DiffStatistics.of(d),
+                ViewEvaluation.DiffStatistics.of(view)
         );
         csv.append(e.toCSV()).append(StringUtils.LINEBREAK);
     }
