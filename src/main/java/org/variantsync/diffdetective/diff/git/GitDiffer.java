@@ -164,12 +164,12 @@ public class GitDiffer {
         );
     }
 
+    public RevCommit getCommit(String commitHash) throws IOException {
+        return git.getRepository().parseCommit(ObjectId.fromString(commitHash));
+    }
+
     public CommitDiffResult createCommitDiff(final String commitHash) throws IOException {
-        Assert.assertNotNull(git);
-        try (var revWalk = new RevWalk(git.getRepository())) {
-            final RevCommit commit = revWalk.parseCommit(ObjectId.fromString(commitHash));
-            return createCommitDiff(commit);
-        }
+        return createCommitDiff(getCommit(commitHash));
     }
 
     public CommitDiffResult createCommitDiff(final RevCommit revCommit) {
