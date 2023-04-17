@@ -14,7 +14,6 @@ import org.variantsync.diffdetective.variation.tree.VariationTree;
 import org.variantsync.diffdetective.variation.tree.VariationTreeNode;
 import org.variantsync.diffdetective.variation.tree.view.TreeView;
 import org.variantsync.diffdetective.variation.tree.view.query.Query;
-import org.variantsync.diffdetective.variation.tree.view.query.VariantQuery;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -182,45 +181,7 @@ public class DiffView {
         return goodDiff;
     }
 
-    private static void computeViewNodesForVariantQuery(final Map<DiffNode, Set<Time>> R, VariantQuery q, Time t, Projection p) {
-        // if a presence condition is not compatible with the query, then also no child will be compatible.
-        if (q.test(p)) {
-            final DiffNode dn = p.getBackingNode();
-
-            R
-                    .computeIfAbsent(dn, _ignored -> new HashSet<>())
-                    .add(t);
-
-            // inlined optimised version of Projection::getChildren
-            for (DiffNode c : dn.getAllChildren()) {
-                if (dn.isChild(c, t)) {
-                    computeViewNodesForVariantQuery(R, q, t, c.projection(t));
-                }
-            }
-        }
-    }
-
-    private static Map<DiffNode, Set<Time>> computeViewNodes(final DiffTree D, final Query q) {
-        final Map<DiffNode, Set<Time>> V = new HashMap<>();
-
-        if (q instanceof VariantQuery vq) {
-            for (final Time t : Time.values()) {
-                computeViewNodesForVariantQuery(V, vq, t, D.getRoot().projection(t));
-            }
-        } else {
-            D.forAll(node -> Time.forAll(t -> {
-                if (node.diffType.existsAtTime(t) && q.test(node.projection(t))) {
-                    forMeAndMyAncestors(node, t, a -> V
-                            .computeIfAbsent(a, _ignored -> new HashSet<>())
-                            .add(t));
-                }
-            }));
-        }
-
-        return V;
-    }
-
-    public static DiffTree optimized(final DiffTree D, final Query q, final Map<DiffNode, Set<Time>> V) {
+    public static DiffTree optimized(final DiffTree D, final Query q, final BiPredicate<Time, Projection> inView) {
         /*
          * Memorization of translated nodes.
          * Keys are the nodes in R.
@@ -242,22 +203,28 @@ public class DiffView {
         final List<Edge> edges = new ArrayList<>();
 
         // Memoization of the copy of the root.
-        DiffNode rootCopy = null;
+        final DiffNode[] rootCopy = {null};
 
-        // Step 2: Create copy nodes and edges.
-        //         We also find the root here.
-        for (final Map.Entry<DiffNode, Set<Time>> relevantNodeAtTimes : V.entrySet()) {
-            final DiffNode node = relevantNodeAtTimes.getKey();
-            final Set<Time> timesOfRelevancy = relevantNodeAtTimes.getValue();
+        // Create copy nodes and edges.
+        // We also find the root here.
+        D.forAll(node -> {
+            final DiffType nodeDiffType = node.getDiffType();
+            final Set<Time> timesOfRelevancy = new HashSet<>();
+            for (final Time t : Time.values()) {
+                if (nodeDiffType.existsAtTime(t) && inView.test(t, node.projection(t))) {
+                    timesOfRelevancy.add(t);
+                }
+            }
 
-            /*
-             * A DiffType exists because timesOfRelevancy is not empty
-             * because our node is relevant and thus there must be at least
-             * one time at which it is relevant.
-             */
-            final DiffType dt = DiffType.thatExistsOnlyAtAll(timesOfRelevancy).orElseThrow(
-                    AssertionError::new
-            );
+            final DiffType dt;
+            {
+                final Optional<DiffType> odt = DiffType.thatExistsOnlyAtAll(timesOfRelevancy);
+                if (odt.isEmpty()) {
+                    return;
+                } else {
+                    dt = odt.get();
+                }
+            }
 
             // create copy
             final DiffNode copy = new DiffNode(
@@ -272,7 +239,7 @@ public class DiffView {
 
             // connect to parent + find root
             boolean isRoot = true;
-            for (Time t : timesOfRelevancy) {
+            for (final Time t : timesOfRelevancy) {
                 final DiffNode parent = node.getParent(t);
                 if (parent != null) {
                     edges.add(new Edge(
@@ -286,38 +253,27 @@ public class DiffView {
             }
 
             if (isRoot) {
-                Assert.assertNull(rootCopy);
-                rootCopy = copy;
+                Assert.assertNull(rootCopy[0]);
+                rootCopy[0] = copy;
             }
-        }
+        });
 
         // Step 3: Embed edges in OOP.
         edges.sort(Comparator.comparingInt(Edge::index));
         for (final Edge edge : edges) {
-            toCopy.get(edge.parentInD()).addChild(edge.childCopy(), edge.t());
+            final DiffNode parentInView = toCopy.get(edge.parentInD());
+            if (parentInView == null) {
+                Assert.assertTrue(parentInView != null, () -> "Node " + edge.childCopy + " has no parent in view given by " + q + " in " + D.getSource());
+            }
+            parentInView.addChild(edge.childCopy(), edge.t());
         }
 
         // Step 4: Build return value
-        Assert.assertNotNull(rootCopy);
-        return new DiffTree(rootCopy, new ViewSource(D, q));
-    }
-
-    public static DiffTree optimized(final DiffTree D, final Query q, final BiPredicate<Time, Projection> inView) {
-        /*
-         * Set of relevant nodes V from the DiffTree D as for variation trees.
-         * For variation diffs though, we also need to know at which times a node is relevant.
-         */
-        final Map<DiffNode, Set<Time>> V = computeViewNodes(D, q);
-        D.forAll(node -> Time.forAll(t -> {
-            if (node.diffType.existsAtTime(t) && inView.test(t, node.projection(t))) {
-                V.computeIfAbsent(node, _ignored -> new HashSet<>()).add(t);
-            }
-        }));
-
-        return optimized(D, q, V);
+        Assert.assertNotNull(rootCopy[0]);
+        return new DiffTree(rootCopy[0], new ViewSource(D, q));
     }
 
     public static DiffTree optimized(final DiffTree D, final Query q) {
-        return optimized(D, q, computeViewNodes(D, q));
+        return optimized(D, q, computeWhenNodesAreRelevant(D, q));
     }
 }
