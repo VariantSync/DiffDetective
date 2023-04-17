@@ -47,6 +47,7 @@ public class DiffView {
 
         for (final Time t : Time.values()) {
             final Set<Projection> relevantNodes_t = new HashSet<>();
+            relevantNodes_t.add(d.getRoot().projection(t));
             q.computeViewNodes(d.getRoot().projection(t), relevantNodes_t::add);
             V.put(t, relevantNodes_t);
         }
