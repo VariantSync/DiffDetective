@@ -20,8 +20,6 @@ final class Untouched extends EditClass {
 
     @Override
     protected boolean matchesArtifactNode(DiffNode artifactNode) {
-        final Node pcb = artifactNode.getPresenceCondition(BEFORE);
-        final Node pca = artifactNode.getPresenceCondition(AFTER);
-        return SAT.equivalent(pcb, pca) && artifactNode.beforePathEqualsAfterPath();
+        return artifactNode.beforePathEqualsAfterPath();
     }
 }
