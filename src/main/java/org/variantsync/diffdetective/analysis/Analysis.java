@@ -261,6 +261,43 @@ public class Analysis {
         }
     }
 
+
+    /**
+     * Runs the analysis for the repository given in {@link Analysis#Analysis} on the given commit only.
+     * {@link Hooks} passed to {@link Analysis#Analysis} are the main customization point
+     * for executing different analyses.
+     *
+     * @param commitHash the commit to analyze relative to its first parent
+     * @param analysis the analysis to run
+     * state
+     */
+    public static AnalysisResult forSingleCommit(final String commitHash, final Analysis analysis) {
+        analysis.differ = new GitDiffer(analysis.getRepository());
+
+        final Clock clock = new Clock();
+        // prepare tasks
+        Logger.info(">>> Running Analysis on single commit {} in {}", commitHash, analysis.getRepository().getRepositoryName());
+        clock.start();
+
+        AnalysisResult result = null;
+        try {
+            final RevCommit commit = analysis.differ.getCommit(commitHash);
+            result = analysis.processCommits(List.of(commit), analysis.differ);
+        } catch (Exception e) {
+            Logger.error("Failed to analyze {}. Exiting.", commitHash);
+            System.exit(1);
+        }
+
+        final double runtime = clock.getPassedSeconds();
+        Logger.info("<<< done in {}", Clock.printPassedSeconds(runtime));
+
+        result.runtimeWithMultithreadingInSeconds = -1;
+        result.totalCommits = 1;
+
+        exportMetadata(analysis.getOutputDir(), result);
+        return result;
+    }
+
     /**
      * Same as {@link forEachCommit(Supplier<Analysis>, int, int)}.
      * Defaults to {@link COMMITS_TO_PROCESS_PER_THREAD_DEFAULT} and a machine dependent number of
