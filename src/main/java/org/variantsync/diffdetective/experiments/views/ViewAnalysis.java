@@ -142,6 +142,12 @@ public class ViewAnalysis implements Analysis.Hooks {
 //        final List<Node> deselectedPCsList = new ArrayList<>(deselectedPCs);
 //        removeSemanticDuplicates(deselectedPCsList);
 
+        /*
+         * Select a random satisfiable configuration (i.e., a non-false config).
+         * Unsatisfiable configs cause empty views which
+         * (1) we suspect to be rather useless and thus unused in practice
+         * (2) cause a crash in view generation because everything is removed, even the mandatory root.
+         */
         Node winner = null;
         while (winner == null && !deselectedPCs.isEmpty()) {
             final Node candidate = deselectedPCs.get(random.nextInt(deselectedPCs.size()));
