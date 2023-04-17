@@ -34,14 +34,14 @@ public class PaperNodeFormat implements DiffNodeLabelFormat {
                 s += "-" + lineNoTo;
             }
 
-            s += ": ";
-
-
-            String label = node.getLabel().toString().trim();
-            if (label.length() > MAX_ARTIFACT_LABEL_LENGTH) {
-                label = StringUtils.clamp(MAX_ARTIFACT_LABEL_LENGTH - 3, label) + "...";
-            }
-            s += label; //LaTeX.escape(label);
+//            s += ": ";
+//
+//
+//            String label = node.getLabel().toString().trim();
+//            if (label.length() > MAX_ARTIFACT_LABEL_LENGTH) {
+//                label = StringUtils.clamp(MAX_ARTIFACT_LABEL_LENGTH - 3, label) + "...";
+//            }
+//            s += label; //LaTeX.escape(label);
         }
 
         return s;
