@@ -43,7 +43,7 @@ public class Main {
                         PatchDiffParseOptions.DiffStoragePolicy.DO_NOT_REMEMBER,
                         new DiffTreeParseOptions(
                                 true,
-                                true
+                                false
                         )
                 ),
                 defaultOptions.getFilterForRepo(),

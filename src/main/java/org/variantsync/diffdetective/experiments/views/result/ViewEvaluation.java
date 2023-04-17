@@ -38,8 +38,8 @@ public record ViewEvaluation(
 //                "repository",
                 "commit",
                 "file",
-                "jtype",
-                "jargs",
+                "vtype",
+                "vargs",
                 "msnaive",
                 "msoptimized",
                 "diffNodeCount",
@@ -47,13 +47,6 @@ public record ViewEvaluation(
                 "viewNodeCount",
                 "viewAnnotationNodeCount"
         );
-    }
-
-    private String getQueryArguments() {
-        if (query instanceof VariantQuery) {
-            return query.parametersToString();
-        }
-        return "";
     }
 
     @Override
@@ -71,5 +64,12 @@ public record ViewEvaluation(
                 viewStatistics.nodeCount,
                 viewStatistics.annotationNodeCount
         );
+    }
+
+    private String getQueryArguments() {
+        if (query instanceof VariantQuery) {
+            return query.parametersToString();
+        }
+        return "";
     }
 }
