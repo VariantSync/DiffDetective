@@ -23,15 +23,6 @@ public interface Query extends Predicate<VariationNode<?>> {
         }
     }
 
-    static <TreeNode extends VariationNode<TreeNode>> void computeViewSubtrees(final Query q, final TreeNode v, final Consumer<TreeNode> markRelevant) {
-        for (final TreeNode c : v.getChildren()) {
-            if (q.test(c)) {
-                markRelevant.accept(c);
-                computeViewSubtrees(q, c, markRelevant);
-            }
-        }
-    }
-
     static String toString(Query q) {
         return q.getFunctionName() + "(" + q.parametersToString() + ")";
     }

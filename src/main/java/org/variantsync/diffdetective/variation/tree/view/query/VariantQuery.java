@@ -36,7 +36,13 @@ public class VariantQuery implements Query {
 
     @Override
     public <TreeNode extends VariationNode<TreeNode>> void computeViewNodes(TreeNode v, Consumer<TreeNode> markRelevant) {
-        Query.computeViewSubtrees(this, v, markRelevant);
+        for (final TreeNode c : v.getChildren()) {
+            // If the child is an artifact it has the same presence condition as we do, so it is also included in the view.
+            if (c.isArtifact() || test(c)) {
+                markRelevant.accept(c);
+                computeViewNodes(c, markRelevant);
+            }
+        }
     }
 
     @Override
