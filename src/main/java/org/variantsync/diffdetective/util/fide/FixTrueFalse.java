@@ -31,8 +31,8 @@ public class FixTrueFalse {
      *
      * @see FixTrueFalse#isTrueLiteral
      */
-    public static boolean isTrue(final Node n) {
-        return n instanceof Literal l && isTrueLiteral(l);
+    public static boolean isTrue(final Node f) {
+        return (f instanceof Literal l && isTrueLiteral(l)) || (f instanceof Not n && isFalse(n.getChildren()[0]));
     }
 
     /**
@@ -40,8 +40,8 @@ public class FixTrueFalse {
      *
      * @see FixTrueFalse#isFalseLiteral
      */
-    public static boolean isFalse(final Node n) {
-        return n instanceof Literal l && isFalseLiteral(l);
+    public static boolean isFalse(final Node f) {
+        return (f instanceof Literal l && isFalseLiteral(l)) || (f instanceof Not n && isTrue(n.getChildren()[0]));
     }
 
     /**
