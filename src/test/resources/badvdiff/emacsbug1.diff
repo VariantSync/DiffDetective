@@ -29,10 +29,9 @@
    do {						\
      if (!c_symbol_p (ptr))			\
        {						\
-     CHECK_ALLOCATED ();			\
-     CHECK_LIVE (live_symbol_p);		\
+    CHECK_ALLOCATED ();			\
+    CHECK_LIVE (live_symbol_p);		\
        }						\
    } while (0)					\
  
  #endif
- 

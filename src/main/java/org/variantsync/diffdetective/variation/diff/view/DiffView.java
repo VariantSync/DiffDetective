@@ -4,11 +4,11 @@ import org.eclipse.jgit.diff.*;
 import org.tinylog.Logger;
 import org.variantsync.diffdetective.diff.git.GitDiffer;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
+import org.variantsync.diffdetective.experiments.views.Main;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.util.CollectionUtils;
 import org.variantsync.diffdetective.variation.diff.*;
 import org.variantsync.diffdetective.variation.diff.bad.BadVDiff;
-import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParseOptions;
 import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParser;
 import org.variantsync.diffdetective.variation.tree.VariationTree;
 import org.variantsync.diffdetective.variation.tree.VariationTreeNode;
@@ -19,7 +19,6 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.BiPredicate;
-import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
 public class DiffView {
@@ -106,31 +105,18 @@ public class DiffView {
 //        Logger.info("Full Diff\n" + textDiff);
         final DiffTree view;
         try {
-            view = DiffTreeParser.createDiffTree(textDiff,
-                    new DiffTreeParseOptions(
-                            true,
-                            true
-                    ));
+            view = DiffTreeParser.createDiffTree(textDiff, Main.DIFFTREE_PARSE_OPTIONS);
         } catch (DiffParseException e) {
             Logger.error("""
-                            Could not parse diff obtained with query {}:
-                            Text before:
-                            {}
-                            
-                            Text after:
-                            {}
-                            
+                            Could not parse diff obtained with query {} at {}:
                             Diff:
-                            {}
                             """,
-                    q,
-                    projectionViewText[0],
-                    projectionViewText[1],
-                    textDiff);
+                    d.getSource(), q);
+            System.out.println(textDiff);
             throw e;
         }
         view.setSource(new ViewSource(d, q));
-//        Logger.info("success");
+
         return view;
     }
 
