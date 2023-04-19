@@ -104,12 +104,31 @@ public class DiffView {
             //textDiff = HUNK_HEADER_REGEX.matcher(textDiff).replaceAll("");
         }
 //        Logger.info("Full Diff\n" + textDiff);
-
-        final DiffTree view = DiffTreeParser.createDiffTree(textDiff,
-                new DiffTreeParseOptions(
-                        true,
-                        true
-                ));
+        final DiffTree view;
+        try {
+            view = DiffTreeParser.createDiffTree(textDiff,
+                    new DiffTreeParseOptions(
+                            true,
+                            true
+                    ));
+        } catch (DiffParseException e) {
+            Logger.error("""
+                            Could not parse diff obtained with query {}:
+                            Text before:
+                            {}
+                            
+                            Text after:
+                            {}
+                            
+                            Diff:
+                            {}
+                            """,
+                    q,
+                    projectionViewText[0],
+                    projectionViewText[1],
+                    textDiff);
+            throw e;
+        }
         view.setSource(new ViewSource(d, q));
 //        Logger.info("success");
         return view;

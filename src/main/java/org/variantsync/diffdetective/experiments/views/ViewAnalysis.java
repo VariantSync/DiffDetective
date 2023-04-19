@@ -43,6 +43,8 @@ public class ViewAnalysis implements Analysis.Hooks {
     private void runQueryExperiment(Analysis analysis, final DiffTree d, final Query q) {
         final long preprocessingTime, naiveTime, optimizedTime;
 
+        //Show.diff(d, "D").showAndAwait();
+
         final Clock c = new Clock();
 
         final BiPredicate<Time, Projection> inV = DiffView.computeWhenNodesAreRelevant(d, q);
@@ -114,9 +116,12 @@ public class ViewAnalysis implements Analysis.Hooks {
         features.remove(FixTrueFalse.False.var.toString());
 
         final List<Query> queries = new ArrayList<>(3);
-        addRandomQuery(deselectedPCs, this::randomVariantQuery,  queries);
-        addRandomQuery(features,      this::randomFeatureQuery,  queries);
-        addRandomQuery(artifacts,     this::randomArtifactQuery, queries);
+//        addRandomQuery(deselectedPCs, this::randomVariantQuery,  queries);
+//        addRandomQuery(features,      this::randomFeatureQuery,  queries);
+//        addRandomQuery(artifacts,     this::randomArtifactQuery, queries);
+        addAll(deselectedPCs, this::allVariantQueries,  queries);
+        addAll(features,      this::allFeatureQueries,  queries);
+        addAll(artifacts,     this::allArtifactQueries, queries);
         return queries;
     }
 
@@ -131,6 +136,34 @@ public class ViewAnalysis implements Analysis.Hooks {
                 target.add(e);
             }
         }
+    }
+
+    private static <QueryData, QueryCandidates extends Collection<? extends QueryData>> void addAll(
+            QueryCandidates source,
+            Function<? super QueryCandidates, ? extends Collection<? extends Query>> prepare,
+            Collection<Query> target
+    ) {
+        if (!source.isEmpty()) {
+            target.addAll(prepare.apply(source));
+        }
+    }
+
+    private List<VariantQuery> allVariantQueries(final List<Node> deselectedPCs) {
+        /*
+         * Select a random satisfiable configuration (i.e., a non-false config).
+         * Unsatisfiable configs cause empty views which
+         * (1) we suspect to be rather useless and thus unused in practice
+         * (2) cause a crash in view generation because everything is removed, even the mandatory root.
+         */
+        final List<VariantQuery> all = new ArrayList<>();
+        for (final Node deselectedPC : deselectedPCs) {
+            final FixTrueFalse.Formula p = FixTrueFalse.EliminateTrueAndFalseInplace(deselectedPC);
+            if (SAT.isSatisfiable(p)) {
+                all.add(new VariantQuery(p));
+            }
+        }
+
+        return all;
     }
 
     private Query randomVariantQuery(final List<Node> deselectedPCs) {
@@ -168,6 +201,10 @@ public class ViewAnalysis implements Analysis.Hooks {
         return new VariantQuery(winner);
     }
 
+    private List<FeatureQuery> allFeatureQueries(final Set<String> features) {
+        return features.stream().map(FeatureQuery::new).toList();
+    }
+
     private Query randomFeatureQuery(final Set<String> features) {
         /*
         Pick a random feature for our query.
@@ -175,6 +212,10 @@ public class ViewAnalysis implements Analysis.Hooks {
         but I don't know if there is any hidden sorting within the set that would bias this choice.
          */
         return new FeatureQuery(CollectionUtils.getRandomElement(random, features));
+    }
+
+    private List<ArtifactQuery> allArtifactQueries(final Set<String> artifacts) {
+        return artifacts.stream().map(ArtifactQuery::new).toList();
     }
 
     private Query randomArtifactQuery(final Set<String> artifacts) {

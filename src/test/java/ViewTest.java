@@ -55,6 +55,23 @@ public class ViewTest {
         );
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "emacsbug1"
+    })
+    void debugTest(String filename) throws IOException, DiffParseException {
+        final String filenameWithEnding = filename + ".diff";
+        final Path testfile = resDir.resolve(filenameWithEnding);
+        Logger.debug("Testing " + testfile);
+//        is(  /* Check both of the above conditions, for symbols.  */)
+        final DiffTree D = DiffTree.fromFile(testfile, DiffTreeParseOptions.Default);
+        D.assertConsistency();
+
+        final Query debugQuery = new ArtifactQuery("  /* Check both of the above conditions, for symbols.  */");
+        Show.diff(DiffView.optimized(D, debugQuery)).showAndAwait();
+        Show.diff(DiffView.naive(D, debugQuery)).showAndAwait();
+    }
+
 
     @ParameterizedTest
     @ValueSource(strings = {
