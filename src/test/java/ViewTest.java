@@ -68,8 +68,9 @@ public class ViewTest {
         D.assertConsistency();
 
         final Query debugQuery = new ArtifactQuery("  /* Check both of the above conditions, for symbols.  */");
-        Show.diff(DiffView.optimized(D, debugQuery)).showAndAwait();
-        Show.diff(DiffView.naive(D, debugQuery)).showAndAwait();
+        final var imp = DiffView.computeWhenNodesAreRelevant(D, debugQuery);
+        Show.diff(DiffView.optimized(D, debugQuery, imp)).showAndAwait();
+        Show.diff(DiffView.naive(D, debugQuery, imp)).showAndAwait();
     }
 
 

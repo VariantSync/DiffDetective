@@ -158,6 +158,7 @@ public class DiffView {
         return naive(d, q, projectionViewText);
     }
 
+    @Deprecated
     public static DiffTree naive(final DiffTree d, final Query q) throws IOException, DiffParseException {
         final String[] projectionViewText = new String[2];
 
