@@ -25,14 +25,6 @@ import java.util.regex.Pattern;
 public class DiffView {
     public static final Pattern HUNK_HEADER_REGEX = Pattern.compile("@@\\s-(\\d+).*\\+(\\d+).*@@(\\r\\n|\\r|\\n)");
 
-    private static void forMeAndMyAncestors(final DiffNode n, Time t, Consumer<DiffNode> callback) {
-        callback.accept(n);
-        final DiffNode p = n.getParent(t);
-        if (p != null) {
-            forMeAndMyAncestors(p, t, callback);
-        }
-    }
-
     private static DiffFormatter makeFormatterWithoutHeader(final OutputStream os) {
         return new DiffFormatter(os) {
             @Override
