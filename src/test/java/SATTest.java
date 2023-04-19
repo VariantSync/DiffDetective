@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.variantsync.diffdetective.util.fide.FormulaUtils.negate;
 
-public class TseytinTest {
+public class SATTest {
     private static final Literal A = new Literal("A");
     private static final Literal B = new Literal("B");
 
@@ -47,11 +47,26 @@ public class TseytinTest {
         return satisfiableTestCases;
     }
 
+
+    public static boolean isSatisfiableNoTseytin(final Node formula) {
+        return SAT.checkSATviaSat4J(FixTrueFalse.EliminateTrueAndFalse(formula));
+    }
+
+    public static boolean isSatisfiableAlwaysTseytin(final Node formula) {
+        return SAT.checkSATviaSat4J(FixTrueFalse.EliminateTrueAndFalse(Tseytin.toEquivalentCNF(formula)));
+    }
+
+    public static boolean isSatisfiableDNF(final Node formula) {
+        return SAT.checkSATviaDNF(FixTrueFalse.EliminateTrueAndFalse(formula));
+    }
+
     @ParameterizedTest
     @MethodSource("satisfiableTestCases")
     public void testSAT(Node formula) {
-        assertTrue(SAT.isSatisfiableNoTseytin(formula), formula.toString());
-        assertTrue(SAT.isSatisfiableAlwaysTseytin(formula), formula.toString());
+        assertTrue(SAT.isSatisfiable(formula), formula.toString());
+        assertTrue(isSatisfiableDNF(formula), formula.toString());
+        assertTrue(isSatisfiableNoTseytin(formula), formula.toString());
+        assertTrue(isSatisfiableAlwaysTseytin(formula), formula.toString());
     }
 
     @ParameterizedTest
@@ -59,11 +74,19 @@ public class TseytinTest {
     public void testTAUT(Node formula) {
         final Node no = negate(formula);
         assertFalse(
-                SAT.isSatisfiableNoTseytin(no),
+                SAT.isSatisfiable(no),
                 no.toString()
         );
         assertFalse(
-                SAT.isSatisfiableAlwaysTseytin(no),
+                isSatisfiableDNF(no),
+                no.toString()
+        );
+        assertFalse(
+                isSatisfiableNoTseytin(no),
+                no.toString()
+        );
+        assertFalse(
+                isSatisfiableAlwaysTseytin(no),
                 "Expected SAT(tseytin(" + no + ")) = SAT(" + Tseytin.toEquisatisfiableCNF(no) + ") = false but got true."
         );
     }
@@ -71,7 +94,9 @@ public class TseytinTest {
     @ParameterizedTest
     @MethodSource("contradictoryTestCases")
     public void testContradictions(Node formula) {
-        assertFalse(SAT.isSatisfiableNoTseytin(formula), formula.toString());
-        assertFalse(SAT.isSatisfiableAlwaysTseytin(formula), formula.toString());
+        assertFalse(SAT.isSatisfiable(formula), formula.toString());
+        assertFalse(isSatisfiableDNF(formula), formula.toString());
+        assertFalse(isSatisfiableNoTseytin(formula), formula.toString());
+        assertFalse(isSatisfiableAlwaysTseytin(formula), formula.toString());
     }
 }
