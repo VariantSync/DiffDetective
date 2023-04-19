@@ -15,6 +15,8 @@ import static org.variantsync.diffdetective.util.fide.FormulaUtils.negate;
 public class SATTest {
     private static final Literal A = new Literal("A");
     private static final Literal B = new Literal("B");
+    private static final Literal C = new Literal("C");
+    private static final Literal D = new Literal("D");
 
     public static List<Node> tautologyTestCases() {
         return List.of(
@@ -41,7 +43,8 @@ public class SATTest {
                 new And(A, B),
                 new Or(A, B),
                 new Implies(A, B),
-                new Equals(A, B)
+                new Equals(A, B),
+                new And(A, B, new Or(negate(C), new Implies(D, A)))
         ));
         satisfiableTestCases.addAll(tautologyTestCases());
         return satisfiableTestCases;
