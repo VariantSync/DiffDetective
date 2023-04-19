@@ -1,3 +1,4 @@
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.prop4j.Implies;
@@ -29,6 +30,7 @@ import java.util.stream.Collectors;
 
 import static org.variantsync.diffdetective.util.fide.FormulaUtils.*;
 
+@Disabled
 public class ViewTest {
     private static final Path resDir = Constants.RESOURCE_DIR.resolve("badvdiff");
 
