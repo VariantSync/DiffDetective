@@ -40,7 +40,6 @@ public class Main {
         return new Analysis(
                 "Views Analysis",
                 new ArrayList<>(List.of(
-//                        new PreprocessingAnalysis(new CutNonEditedSubtrees(true)),
                         new FilterAnalysis( // filters unwanted trees
                                 DiffTreeFilter.notEmpty()
                         ),
@@ -70,7 +69,9 @@ public class Main {
         AnalysisRunner.run(analysisOptions, (repository, path) -> {
             //1b424533675341a2090b79a6ffc420ac6b179ce7
 //            Analysis.forSinglePatch("2254b6c09cff8f3a83684fd159289d0e305b0e7d", "src/alloc.c", AnalysisFactory(repository, path));
-            Analysis.forEachCommit(() -> AnalysisFactory(repository, path));
+            Analysis.forEachCommit(() -> AnalysisFactory(repository, path)
+//                    , 1000, 1
+            );
         });
     }
 }

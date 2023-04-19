@@ -26,7 +26,7 @@ import static org.variantsync.diffdetective.util.fide.FormulaUtils.negate;
 
 public class ViewAnalysis implements Analysis.Hooks {
     // Result data
-    public static final String EDIT_COMPLEXITIES_EXTENSION = ".views.csv";
+    public static final String VIEW_CSV_EXTENSION = ".views.csv";
     private StringBuilder csv;
     private Random random;
 
@@ -78,6 +78,12 @@ public class ViewAnalysis implements Analysis.Hooks {
         csv.append(e.toCSV()).append(StringUtils.LINEBREAK);
     }
 
+//    @Override
+//    public boolean onParsedCommit(Analysis analysis) throws Exception {
+//        Logger.info("Processing " + analysis.getCurrentCommitDiff().getCommitHash());
+//        return Analysis.Hooks.super.onParsedCommit(analysis);
+//    }
+
     @Override
     public boolean analyzeDiffTree(Analysis analysis) throws Exception {
         final DiffTree d                = analysis.getCurrentDiffTree();
@@ -91,9 +97,9 @@ public class ViewAnalysis implements Analysis.Hooks {
     }
 
     private List<Query> generateRandomQueries(final DiffTree d) {
-        final List<Node> deselectedPCs = new ArrayList<>();
-        final Set<String> features = new HashSet<>();
-        final Set<String> artifacts = new HashSet<>();
+        final List<Node>  deselectedPCs = new ArrayList<>();
+        final Set<String> features      = new HashSet<>();
+        final Set<String> artifacts     = new HashSet<>();
 
         d.forAll(a -> {
             if (a.isArtifact()) {
@@ -116,12 +122,15 @@ public class ViewAnalysis implements Analysis.Hooks {
         features.remove(FixTrueFalse.False.var.toString());
 
         final List<Query> queries = new ArrayList<>(3);
-//        addRandomQuery(deselectedPCs, this::randomVariantQuery,  queries);
-//        addRandomQuery(features,      this::randomFeatureQuery,  queries);
-//        addRandomQuery(artifacts,     this::randomArtifactQuery, queries);
-        addAll(deselectedPCs, this::allVariantQueries,  queries);
-        addAll(features,      this::allFeatureQueries,  queries);
-        addAll(artifacts,     this::allArtifactQueries, queries);
+        addRandomQuery(deselectedPCs, this::randomVariantQuery,  queries);
+        addRandomQuery(features,      this::randomFeatureQuery,  queries);
+        addRandomQuery(artifacts,     this::randomArtifactQuery, queries);
+
+        // For debugging:
+//        addAll(deselectedPCs, this::allVariantQueries,  queries);
+//        addAll(features,      this::allFeatureQueries,  queries);
+//        addAll(artifacts,     this::allArtifactQueries, queries);
+
         return queries;
     }
 
@@ -230,7 +239,7 @@ public class ViewAnalysis implements Analysis.Hooks {
     @Override
     public void endBatch(Analysis analysis) throws IOException {
         IO.write(
-                FileUtils.addExtension(analysis.getOutputFile(), EDIT_COMPLEXITIES_EXTENSION),
+                FileUtils.addExtension(analysis.getOutputFile(), VIEW_CSV_EXTENSION),
                 csv.toString()
         );
     }
