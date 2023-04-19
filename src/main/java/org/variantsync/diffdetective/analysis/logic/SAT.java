@@ -1,12 +1,12 @@
 package org.variantsync.diffdetective.analysis.logic;
 
-import org.prop4j.And;
-import org.prop4j.Equals;
-import org.prop4j.Node;
+import org.prop4j.*;
 import org.prop4j.explain.solvers.SatSolver;
 import org.prop4j.explain.solvers.SatSolverFactory;
 import org.variantsync.diffdetective.util.fide.FixTrueFalse;
 import org.variantsync.diffdetective.util.fide.FormulaUtils;
+
+import java.util.HashMap;
 
 import static org.variantsync.diffdetective.util.fide.FormulaUtils.negate;
 
@@ -17,79 +17,78 @@ import static org.variantsync.diffdetective.util.fide.FormulaUtils.negate;
 public final class SAT {
     private SAT() {}
 
+    public static boolean checkSATviaDNF(final FixTrueFalse.Formula formula) {
+        if (formula.isTrueConstant()) {
+            return true;
+        } else if (formula.isFalseConstant()) {
+            return false;
+        }
+
+        final Node rdnf = formula.get().toRegularDNF();
+        assert rdnf instanceof Or;
+
+        checkClauses : for (final Node clause : rdnf.getChildren()) {
+            assert clause instanceof And;
+
+            final HashMap<Object, Boolean> literals = new HashMap<>();
+
+            for (final Node element : clause.getChildren()) {
+                final Literal l = (Literal) element;
+                final Boolean otherB = literals.putIfAbsent(l.var, l.positive);
+                if (otherB != null && otherB != l.positive) {
+                    // found two contradicting literals
+                    continue checkClauses;
+                }
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
     /**
      * Invokes a SAT solver on the given formula and returns its result.
      * @param formula Formula to check for being satisfiable.
      * @return True iff the given formula is a satisfiable.
      */
-    private static boolean checkSAT(final Node formula) {
+    public static boolean checkSATviaSat4J(final FixTrueFalse.Formula formula) {
+        if (formula.isTrueConstant()) {
+            return true;
+        } else if (formula.isFalseConstant()) {
+            return false;
+        }
+
         final SatSolver solver = SatSolverFactory.getDefault().getSatSolver();
-        solver.addFormula(formula);
+        solver.addFormula(formula.get());
         return solver.isSatisfiable();
     }
 
     /**
      * Checks whether the given formula is satisfiable.
-     * This method uses a plain SAT call without using heuristics such as the Tseytin transformation.
-     * @param formula Formula to check for being satisfiable.
-     * @return True iff the given formula is a satisfiable.
-     */
-    public static boolean isSatisfiableNoTseytin(Node formula) {
-        // TODO: Remove this block once issue #1333 of FeatureIDE is resolved because FixTrueFalse::EliminateTrueAndFalse is expensive.
-        //       https://github.com/FeatureIDE/FeatureIDE/issues/1333
-        {
-            formula = FixTrueFalse.EliminateTrueAndFalse(formula);
-            if (FixTrueFalse.isTrue(formula)) {
-                return true;
-            } else if (FixTrueFalse.isFalse(formula)) {
-                return false;
-            }
-        }
-        return checkSAT(formula);
-    }
-
-    /**
-     * Checks whether the given formula is satisfiable.
-     * This method uses the Tseytin transformation to transform the formula before SAT solving.
-     * @param formula Formula to check for being satisfiable.
-     * @return True iff the given formula is a satisfiable.
-     */
-    public static boolean isSatisfiableAlwaysTseytin(Node formula) {
-        // TODO: Remove this block once issue #1333 of FeatureIDE is resolved because FixTrueFalse::EliminateTrueAndFalse is expensive.
-        //       https://github.com/FeatureIDE/FeatureIDE/issues/1333
-        {
-            formula = FixTrueFalse.EliminateTrueAndFalse(formula);
-            if (FixTrueFalse.isTrue(formula)) {
-                return true;
-            } else if (FixTrueFalse.isFalse(formula)) {
-                return false;
-            }
-        }
-
-        formula = Tseytin.toEquivalentCNF(formula);
-
-        return checkSAT(formula);
-    }
-
-    /**
-     * Checks whether the given formula is satisfiable.
      * This method uses the Tseytin transformation for formulas with more than 40 literals as a heuristic to optimize
      * SAT solving times for larger formulas.
      * @param formula Formula to check for being satisfiable.
      * @return True iff the given formula is a satisfiable.
      */
-    public static boolean isSatisfiableAlreadyEliminatedTrueAndFalse(Node formula) {
-        if (FixTrueFalse.isTrue(formula)) {
+    public static boolean isSatisfiable(FixTrueFalse.Formula formula) {
+        if (formula.isTrueConstant()) {
             return true;
-        } else if (FixTrueFalse.isFalse(formula)) {
+        } else if (formula.isFalseConstant()) {
             return false;
         }
 
-        if (FormulaUtils.numberOfLiterals(formula) > 40) {
-            formula = Tseytin.toEquivalentCNF(formula);
+        final int numLiterals = FormulaUtils.numberOfLiterals(formula.get());
+
+        if (numLiterals < 10) {
+            return checkSATviaDNF(formula);
         }
 
-        return checkSAT(formula);
+        if (numLiterals > 40) {
+            formula = formula.mapUnsafe(Tseytin::toEquivalentCNF);
+        }
+
+        return checkSATviaSat4J(formula);
     }
 
     /**
@@ -99,11 +98,8 @@ public final class SAT {
      * @param formula Formula to check for being satisfiable.
      * @return True iff the given formula is a satisfiable.
      */
-    public static boolean isSatisfiable(Node formula) {
-        // TODO: Remove this block once issue #1333 of FeatureIDE is resolved because FixTrueFalse::EliminateTrueAndFalse is expensive.
-        //       https://github.com/FeatureIDE/FeatureIDE/issues/1333
-        formula = FixTrueFalse.EliminateTrueAndFalse(formula);
-        return isSatisfiableAlreadyEliminatedTrueAndFalse(formula);
+    public static boolean isSatisfiable(final Node formula) {
+        return isSatisfiable(FixTrueFalse.EliminateTrueAndFalse(formula));
     }
 
     /**

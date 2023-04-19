@@ -37,7 +37,7 @@ public class UniqueViewsAlgorithm {
                 a.getDiffType().forAllTimesOfExistence(t -> {
                     Node deselectedPC = a.getPresenceCondition(t);
 
-                    deselectedPC = FixTrueFalse.EliminateTrueAndFalseInplace(deselectedPC); // must
+                    deselectedPC = FixTrueFalse.EliminateTrueAndFalseInplace(deselectedPC).get(); // must
                     deselectedPC = negate(deselectedPC); // must
                     deselectedPC = deselectedPC.toRegularCNF(simplify); // optimization
                     FormulaUtils.sortRegularCNF(deselectedPC); // optimization

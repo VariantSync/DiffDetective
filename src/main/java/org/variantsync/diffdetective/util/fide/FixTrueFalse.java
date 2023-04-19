@@ -1,11 +1,15 @@
 package org.variantsync.diffdetective.util.fide;
 
 import org.prop4j.*;
+import org.variantsync.diffdetective.util.Assert;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Function;
 import java.util.function.Predicate;
+
+import static org.variantsync.diffdetective.util.fide.FormulaUtils.negate;
 
 /**
  * Class to fix bugs related to {@link True} and {@link False} of FeatureIDE.
@@ -16,6 +20,76 @@ import java.util.function.Predicate;
  * as well as a conversion method for parsing certain feature names to true and false, respectively.
  */
 public class FixTrueFalse {
+    /**
+     * This class is a witness that a formula had its true and false constants eliminated
+     * or is just such a constant (and nothing else except from perhaps negations).
+     */
+    public static class Formula {
+        private final Node formula;
+
+        private Formula(final Node f) {
+            this.formula = f;
+        }
+
+        public Node get() {
+            return formula;
+        }
+
+        public static Node[] gets(final Formula[] formulas) {
+            final Node[] cs = new Node[formulas.length];
+
+            for (int i = 0; i < formulas.length; ++i) {
+                cs[i] = formulas[i].get();
+            }
+
+            return cs;
+        }
+
+        /**
+         * Runs the given function on this formula and assumes that the given function
+         * does not introduce the constants "true" or "false".
+         * This method is side-effect free: The transformed formula will be returned but this object remains unaltered.
+         * Warning: Use at your own risk! Introducing constants here can lead to wrong SAT results.
+         * @param f The function to apply to this formula.
+         * @return The converted formula.
+         */
+        public Formula mapUnsafe(final Function<Node, Node> f) {
+            return new Formula(f.apply(formula));
+        }
+
+        public static Formula var(final String name) {
+            Assert.assertFalse(isTrueLiteral(name) || isFalseLiteral(name));
+            return new Formula(new Literal(name, true));
+        }
+
+        public static Formula not(final Formula formula) {
+            return new Formula(negate(formula.get()));
+        }
+
+        public static Formula and(final Formula... formulas) {
+            return new Formula(new And(gets(formulas)));
+        }
+
+        public static Formula or(final Formula... formulas) {
+            return new Formula(new Or(gets(formulas)));
+        }
+
+        /**
+         * @see FixTrueFalse#isTrue(Node)
+         */
+        public boolean isTrueConstant() {
+            return FixTrueFalse.isTrue(formula);
+        }
+
+
+        /**
+         * @see FixTrueFalse#isFalse(Node)
+         */
+        public boolean isFalseConstant() {
+            return FixTrueFalse.isFalse(formula);
+        }
+    }
+
     /** Names of variables that we want to interpret as the constant true. */
     public final static List<String> TrueNames = Arrays.asList("true", "1");
     /** Names of variables that we want to interpret as the constant false. */
@@ -45,21 +119,39 @@ public class FixTrueFalse {
     }
 
     /**
-     * Returns {@code true} iff the given name represents the atomic value true
+     * Returns true iff the given literal's variable is the atomic value {@code true}.
      *
-     * @see TrueNames
+     * @see #TrueNames
      */
     public static boolean isTrueLiteral(final Literal l) {
-        return TrueNames.stream().anyMatch(t -> t.equalsIgnoreCase(l.var.toString()));
+        return isTrueLiteral(l.var.toString());
     }
 
     /**
-     * Returns {@code true} iff the given name represents the atomic value false
+     * Returns true iff the given name represents the atomic value {@code true}.
      *
-     * @see FalseNames
+     * @see #TrueNames
+     */
+    public static boolean isTrueLiteral(final String l) {
+        return TrueNames.stream().anyMatch(t -> t.equalsIgnoreCase(l));
+    }
+
+    /**
+     * Returns true iff the given literal's variable is the atomic value {@code false}.
+     *
+     * @see #FalseNames
      */
     public static boolean isFalseLiteral(final Literal l) {
-        return FalseNames.stream().anyMatch(f -> f.equalsIgnoreCase(l.var.toString()));
+        return isFalseLiteral(l.var.toString());
+    }
+
+    /**
+     * Returns true iff the given name represents the atomic value {@code false}.
+     *
+     * @see #TrueNames
+     */
+    public static boolean isFalseLiteral(final String l) {
+        return FalseNames.stream().anyMatch(f -> f.equalsIgnoreCase(l));
     }
 
     /**
@@ -94,26 +186,32 @@ public class FixTrueFalse {
      * {@link True}. By applying constant folding the result will be either {@link True},
      * {@link False}, or a formula that does not contain any True or False nodes. For an impure,
      * in-place version of this method (which is likely more performant) see
-     * {@link EliminateTrueAndFalseInplace}.
+     * {@link #EliminateTrueAndFalseInplace}.
      *
      * @param formula the formula to simplify. It remains unchanged.
-     * @return either {@link True}, {@link False}, or a formula without True or False
+     * @return either {@link True}, {@link False}, negations of the previous
+     *         (i.e., in terms of {@link Not} or {@link Literal}), or a formula without True or False
      */
-    public static Node EliminateTrueAndFalse(final Node formula) {
+    public static Formula EliminateTrueAndFalse(final Node formula) {
         return EliminateTrueAndFalseInplace(formula.clone());
     }
 
     /**
-     * Same as {@link EliminateTrueAndFalse} but mutates the given formula in-place.
+     * Same as {@link #EliminateTrueAndFalse} but mutates the given formula in-place.
      * Thus, the given formula should not be used after invoking this method as it might be
      * corrupted. Instead, the returned node should be used.
      *
      * @param formula the formula to transform
-     * @return either {@link True}, {@link False}, or a formula without True or False
+     * @return either {@link True}, {@link False}, negations of the previous
+     *         (i.e., in terms of {@link Not} or {@link Literal}), or a formula without True or False
      *
-     * @see EliminateTrueAndFalse
+     * @see #EliminateTrueAndFalse
      */
-    public static Node EliminateTrueAndFalseInplace(final Node formula) {
+    public static Formula EliminateTrueAndFalseInplace(final Node formula) {
+        return new Formula(EliminateTrueAndFalseInplaceRecurse(formula));
+    }
+
+    private static Node EliminateTrueAndFalseInplaceRecurse(final Node formula) {
         if (formula instanceof Literal l) {
             if (isTrueLiteral(l)) {
                 return l.positive ? True : False;
@@ -126,7 +224,7 @@ public class FixTrueFalse {
 
         Node[] children = formula.getChildren();
         for (int i = 0; i < children.length; ++i) {
-            children[i] = EliminateTrueAndFalseInplace(children[i]);
+            children[i] = EliminateTrueAndFalseInplaceRecurse(children[i]);
         }
 
         if (formula instanceof And) {
@@ -153,21 +251,21 @@ public class FixTrueFalse {
             }
         } else {
             if (formula instanceof Not) {
-                return FormulaUtils.negate(children[0]);
+                return negate(children[0]);
             } else if (formula instanceof Implies) {
                 final Node l = children[0];
                 final Node r = children[1];
 
                 if (isFalse(l)) return True;
-                if (isFalse(r)) return FormulaUtils.negate(l);
+                if (isFalse(r)) return negate(l);
                 if (isTrue(l)) return r;
                 if (isTrue(r)) return True;
             } else if (formula instanceof Equals) {
                 final Node l = children[0];
                 final Node r = children[1];
 
-                if (isFalse(l)) return FormulaUtils.negate(r);
-                if (isFalse(r)) return FormulaUtils.negate(l);
+                if (isFalse(l)) return negate(r);
+                if (isFalse(r)) return negate(l);
                 if (isTrue(l)) return r;
                 if (isTrue(r)) return l;
             }

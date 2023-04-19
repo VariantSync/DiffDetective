@@ -53,6 +53,6 @@ public class FixTrueFalseTest {
     @ParameterizedTest
     @MethodSource("testCases")
     public void test(TestCase testCase) {
-        assertEquals(FixTrueFalse.EliminateTrueAndFalse(testCase.formula), testCase.expectedResult);
+        assertEquals(FixTrueFalse.EliminateTrueAndFalse(testCase.formula).get(), testCase.expectedResult);
     }
 }

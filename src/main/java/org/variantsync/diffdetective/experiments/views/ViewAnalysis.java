@@ -150,12 +150,12 @@ public class ViewAnalysis implements Analysis.Hooks {
          * (1) we suspect to be rather useless and thus unused in practice
          * (2) cause a crash in view generation because everything is removed, even the mandatory root.
          */
-        Node winner = null;
+        FixTrueFalse.Formula winner = null;
         while (winner == null && !deselectedPCs.isEmpty()) {
             final Node candidate = deselectedPCs.get(random.nextInt(deselectedPCs.size()));
-            FixTrueFalse.EliminateTrueAndFalseInplace(candidate);
-            if (SAT.isSatisfiableAlreadyEliminatedTrueAndFalse(candidate)) {
-                winner = candidate;
+            final FixTrueFalse.Formula fixedCandidate = FixTrueFalse.EliminateTrueAndFalseInplace(candidate);
+            if (SAT.isSatisfiable(fixedCandidate)) {
+                winner = fixedCandidate;
             } else {
                 deselectedPCs.remove(candidate);
             }
@@ -165,7 +165,7 @@ public class ViewAnalysis implements Analysis.Hooks {
             return null;
         }
 
-        return VariantQuery.fromConfigurationWithoutTrueAndFalseLiterals(winner);
+        return new VariantQuery(winner);
     }
 
     private Query randomFeatureQuery(final Set<String> features) {

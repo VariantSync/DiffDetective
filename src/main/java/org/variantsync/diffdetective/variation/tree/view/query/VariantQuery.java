@@ -1,6 +1,5 @@
 package org.variantsync.diffdetective.variation.tree.view.query;
 
-import org.prop4j.And;
 import org.prop4j.Node;
 import org.prop4j.NodeWriter;
 import org.variantsync.diffdetective.analysis.logic.SAT;
@@ -10,24 +9,20 @@ import org.variantsync.diffdetective.variation.tree.VariationNode;
 import java.util.function.Consumer;
 
 public class VariantQuery implements Query {
-    private final Node configuration;
+    private final FixTrueFalse.Formula configuration;
 
-    public VariantQuery(final Node configuration) {
+    public VariantQuery(final FixTrueFalse.Formula configuration) {
         this.configuration = configuration;
     }
 
-    public static VariantQuery fromConfiguration(final Node configuration) {
-        return new VariantQuery(FixTrueFalse.EliminateTrueAndFalse(configuration));
-    }
-
-    public static VariantQuery fromConfigurationWithoutTrueAndFalseLiterals(final Node configuration) {
-        return new VariantQuery(configuration);
+    public VariantQuery(final Node configuration) {
+        this(FixTrueFalse.EliminateTrueAndFalse(configuration));
     }
 
     @Override
     public boolean test(VariationNode<?> v) {
-        return SAT.isSatisfiableAlreadyEliminatedTrueAndFalse(
-                new And(
+        return SAT.isSatisfiable(
+                FixTrueFalse.Formula.and(
                         configuration,
                         FixTrueFalse.EliminateTrueAndFalse(v.getPresenceCondition())
                 )
@@ -48,7 +43,7 @@ public class VariantQuery implements Query {
 
     @Override
     public String parametersToString() {
-        return configuration.toString(NodeWriter.logicalSymbols);
+        return configuration.get().toString(NodeWriter.logicalSymbols);
     }
 
     @Override
