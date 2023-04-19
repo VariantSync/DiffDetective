@@ -73,7 +73,7 @@ public class ViewTest {
 
         List<Query> queries = List.of(
                 new FeatureQuery("B"),
-                VariantQuery.fromConfigurationWithoutTrueAndFalseLiterals(negate(var("B"))),
+                new VariantQuery(negate(var("B"))),
                 new ArtifactQuery("foo")
         );
 
@@ -112,8 +112,8 @@ public class ViewTest {
         final VariationTree a = d.project(Time.AFTER);
 
         // Queries of Listing 3 and 4
-        final Query bobsQuery1 = VariantQuery.fromConfigurationWithoutTrueAndFalseLiterals(and(negate(featureDoubleLink)));
-        final Query charlottesQuery = VariantQuery.fromConfigurationWithoutTrueAndFalseLiterals(negate(featureRing));
+        final Query bobsQuery1 = new VariantQuery(and(negate(featureDoubleLink)));
+        final Query charlottesQuery = new VariantQuery(negate(featureRing));
 
         // Figure 1
         GameEngine.showAndAwaitAll(
@@ -126,7 +126,7 @@ public class ViewTest {
         );
 
         // Figure 3
-        final VariantQuery configureExample1 = VariantQuery.fromConfigurationWithoutTrueAndFalseLiterals(
+        final VariantQuery configureExample1 = new VariantQuery(
                 and(featureRing, /* FM = */ new Implies(featureDoubleLink, negate(featureRing)))
         );
         GameEngine.showAndAwaitAll(
@@ -162,7 +162,7 @@ public class ViewTest {
         for (int i = 0; i < configs.size(); ++i) {
             final Node config = configs.get(i);
 
-            final Query q = VariantQuery.fromConfigurationWithoutTrueAndFalseLiterals(config);
+            final Query q = new VariantQuery(config);
             final DiffTree view = DiffView.optimized(d, q);
             views.add(view);
 
