@@ -47,8 +47,12 @@ public class DiffView {
         return (t, p) -> V.get(t).contains(p);
     }
 
-    public static DiffTree naive(final DiffTree d, final Query q, final String[] projectionViewText, final RawText[] text) throws IOException, DiffParseException {
+    public static DiffTree naive(final DiffTree d, final Query q, final String[] projectionViewText) throws IOException, DiffParseException {
 //        Logger.info("q = " + q);
+        final RawText[] text = new RawText[] {
+                new RawText(projectionViewText[Time.BEFORE.ordinal()].getBytes()),
+                new RawText(projectionViewText[Time.AFTER.ordinal()].getBytes())
+        };
 
         // MYERS or HISTOGRAM
         final DiffAlgorithm diffAlgorithm = DiffAlgorithm.getAlgorithm(DiffAlgorithm.SupportedAlgorithm.MYERS);
@@ -62,7 +66,6 @@ public class DiffView {
         String textDiff;
         {
             final ByteArrayOutputStream os = new ByteArrayOutputStream();
-
 
             /*
             Using our own formatter without diff headers (paired with a maximum context (?))
@@ -114,7 +117,6 @@ public class DiffView {
 
     public static DiffTree naive(final DiffTree d, final Query q, final BiPredicate<Time, Projection> inView) throws IOException, DiffParseException {
         final String[] projectionViewText = new String[2];
-        final RawText[] text = new RawText[2];
 
         for (final Time t : Time.values()) {
             final int i = t.ordinal();
@@ -132,15 +134,13 @@ public class DiffView {
             final StringBuilder b = new StringBuilder();
             treeView.root().printSourceCode(b);
             projectionViewText[i] = b.toString();
-            text[i] = new RawText(projectionViewText[i].getBytes());
         }
 
-        return naive(d, q, projectionViewText, text);
+        return naive(d, q, projectionViewText);
     }
 
     public static DiffTree naive(final DiffTree d, final Query q) throws IOException, DiffParseException {
         final String[] projectionViewText = new String[2];
-        final RawText[] text = new RawText[2];
 
         for (final Time t : Time.values()) {
             final int i = t.ordinal();
@@ -156,9 +156,8 @@ public class DiffView {
             final StringBuilder b = new StringBuilder();
             projection.root().printSourceCode(b);
             projectionViewText[i] = b.toString();
-            text[i] = new RawText(projectionViewText[i].getBytes());
         }
-        return naive(d, q, projectionViewText, text);
+        return naive(d, q, projectionViewText);
     }
 
     public static DiffTree badgood(final DiffTree d, final Query q) {
