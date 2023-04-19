@@ -80,7 +80,7 @@ public final class SAT {
 
         final int numLiterals = FormulaUtils.numberOfLiterals(formula.get());
 
-        if (numLiterals < 10) {
+        if (numLiterals < 15) {
             return checkSATviaDNF(formula);
         }
 
