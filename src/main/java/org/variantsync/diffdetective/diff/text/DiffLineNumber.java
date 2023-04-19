@@ -108,7 +108,7 @@ public record DiffLineNumber(int inDiff, int beforeEdit, int afterEdit) {
 
     @Override
     public String toString() {
-        return "(old: " + beforeEdit + ", diff: " + inDiff + ", new:" + afterEdit + ")";
+        return "(old: " + beforeEdit + ", diff: " + inDiff + ", new: " + afterEdit + ")";
     }
 
     @Override
