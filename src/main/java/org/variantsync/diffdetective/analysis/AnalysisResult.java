@@ -146,6 +146,7 @@ public final class AnalysisResult implements Metadata<AnalysisResult> {
     public LinkedHashMap<String, Object> snapshot() {
         LinkedHashMap<String, Object> snap = new LinkedHashMap<>();
         snap.put(MetadataKeys.TASKNAME, taskName);
+        snap.put(MetadataKeys.REPONAME, repoName);
         snap.put(MetadataKeys.RUNTIME_WITH_MULTITHREADING, runtimeWithMultithreadingInSeconds);
         snap.put(MetadataKeys.TOTAL_COMMITS, totalCommits);
 
@@ -154,11 +155,11 @@ public final class AnalysisResult implements Metadata<AnalysisResult> {
             snap.put(MetadataKeys.FILTERED_COMMITS, totalCommits - statistics.processedCommits - statistics.emptyCommits - statistics.failedCommits);
         }
 
-        snap.putAll(Functjonal.bimap(diffErrors, error -> ERROR_BEGIN + error + ERROR_END, Object::toString));
-        snap.put(MetadataKeys.REPONAME, repoName);
         for (var result : results.values()) {
             snap.putAll(result.snapshot());
         }
+
+        snap.putAll(Functjonal.bimap(diffErrors, error -> ERROR_BEGIN + error + ERROR_END, Object::toString));
         return snap;
     }
 
