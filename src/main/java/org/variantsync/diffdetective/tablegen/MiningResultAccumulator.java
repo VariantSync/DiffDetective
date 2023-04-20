@@ -48,9 +48,13 @@ public class MiningResultAccumulator {
         final Map<String, AnalysisResult> results = new HashMap<>();
         for (final Path p : paths) {
             var result = new AnalysisResult();
+
+            // FIXME: Here, we actually have to use the Analysis::initializeResult method on all Hooks of the Analysis
+            //        that produced the results we accumulate. Maybe Java reflection can help?
+            result.append(StatisticsAnalysis.RESULT, new StatisticsAnalysis.Result());
             result.append(ExplainedFilterSummary.KEY, new ExplainedFilterSummary());
             result.append(EditClassCount.KEY, new EditClassCount());
-            result.append(StatisticsAnalysis.RESULT, new StatisticsAnalysis.Result());
+
             result.setFrom(p);
             results.put(p.getParent().getFileName().toString(), result);
         }
