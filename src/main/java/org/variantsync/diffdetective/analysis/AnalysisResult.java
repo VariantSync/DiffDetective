@@ -182,6 +182,10 @@ public final class AnalysisResult implements Metadata<AnalysisResult> {
                 diffErrors.put(e.get(), Integer.parseInt(entry.getValue()));
             }
         }
+
+        for (final Metadata<?> result : results.values()) {
+            result.setFromSnapshot(snap);
+        }
     }
 
     public void setFrom(final Path path) throws IOException {
