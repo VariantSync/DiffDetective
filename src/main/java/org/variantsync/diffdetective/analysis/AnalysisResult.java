@@ -9,6 +9,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.tinylog.Logger;
 import org.variantsync.diffdetective.diff.result.DiffError;
 import org.variantsync.diffdetective.metadata.Metadata;
 import org.variantsync.functjonal.Cast;
@@ -99,7 +100,11 @@ public final class AnalysisResult implements Metadata<AnalysisResult> {
      * Merges the second results values into the first result.
      */
     public static final InplaceSemigroup<AnalysisResult> ISEMIGROUP = (a, b) -> {
-        a.repoName = Metadata.mergeEqual(a.repoName, b.repoName);
+        a.repoName = Metadata.mergeIfEqualElse(a.repoName, b.repoName,
+                (ar, br) -> {
+                    Logger.warn("Merging analysis for different repos {} and {}!", ar, br);
+                    return ar + "; " + br;
+                });
         a.taskName = Metadata.mergeEqual(a.taskName, b.taskName);
         a.runtimeWithMultithreadingInSeconds += b.runtimeWithMultithreadingInSeconds;
         a.totalCommits += b.totalCommits;
