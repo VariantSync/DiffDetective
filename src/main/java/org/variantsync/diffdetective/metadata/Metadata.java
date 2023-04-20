@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.function.BiFunction;
 
 /**
  * Generic interface to model composable and printable metadata.
@@ -65,6 +66,37 @@ public interface Metadata<T> {
         }
 
         return b;
+    }
+
+    /**
+     * Same as {@link #mergeEqual(Object, Object)} but does not crash when the two values are unequal.
+     * Instead, both values are merged using the supplied function.
+     * The supplied function is called only if the two given values are unequal (according to {@link Object::equals}).
+     *
+     * <p>The value {@code null} is treated as the neutral element in the sense that no exception is
+     * thrown if an element is {@code null}. In this case return value is defined by {@code
+     * mergeIfEqualElse(a, null, f) == a} and {@code mergeIfEqualElse(b, null, f) == b}.
+     *
+     * @param a the first element to merge
+     * @param b the second element to merge
+     * @param ifUnequal merge operator called when the two values are unequal
+     * @param <T> the type of the objects to be merged
+     * @return {@code a} if both given values are equal, otherwise the result of {@code ifUnequal.apply(a, b)}
+     */
+    static <T> T mergeIfEqualElse(T a, T b, BiFunction<T, T, T> ifUnequal) {
+        if (b == null) {
+            return a;
+        }
+
+        if (a == null) {
+            return b;
+        }
+
+        if (a.equals(b)) {
+            return a;
+        } else {
+            return ifUnequal.apply(a, b);
+        }
     }
 
     /**
