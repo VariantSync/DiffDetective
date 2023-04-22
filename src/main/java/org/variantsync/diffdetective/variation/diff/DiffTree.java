@@ -446,7 +446,7 @@ public class DiffTree {
                 }
                 // We detected a cycle because we visited a node but did not determine its value yet!
                 // Thus, we are stuck in a recursion.
-                case VISITED -> false;
+                case VISITED -> true;
                 case ALL_PATHS_END_AT_ROOT -> true;
                 case NOT_ALL_PATHS_END_AT_ROOT -> false;
             };
