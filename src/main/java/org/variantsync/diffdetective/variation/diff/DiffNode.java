@@ -650,6 +650,9 @@ public class DiffNode implements HasNodeType {
         final DiffNode pb = getParent(BEFORE);
         final DiffNode pa = getParent(AFTER);
 
+        Assert.assertTrue(pb == null || pb.getDiffType().existsAtTime(BEFORE));
+        Assert.assertTrue(pa == null || pa.getDiffType().existsAtTime(AFTER));
+
         // a node with exactly one parent was edited
         if (pb == null && pa != null) {
             Assert.assertTrue(isAdd());
