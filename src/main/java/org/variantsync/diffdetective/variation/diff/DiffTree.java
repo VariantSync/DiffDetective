@@ -607,7 +607,9 @@ public class DiffTree {
             );
         } else {
             diffNode = ((WrappedDiffTree)src).getDiffNode();
-            diffNode.drop(AFTER);
+            if (diffNode.getParent(AFTER) != null) {
+                diffNode.drop(AFTER);
+            }
         }
         parent.addChild(diffNode, AFTER);
 

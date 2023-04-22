@@ -102,8 +102,8 @@ public class Projection extends VariationNode<Projection> {
     }
 
     @Override
-    public boolean removeChild(final Projection child) {
-        return getBackingNode().removeChild(child.getBackingNode(), time);
+    public void removeChild(final Projection child) {
+        getBackingNode().removeChild(child.getBackingNode(), time);
     }
 
     @Override

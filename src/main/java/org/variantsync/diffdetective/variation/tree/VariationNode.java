@@ -228,7 +228,7 @@ public abstract class VariationNode<T extends VariationNode<T>> implements HasNo
      * @see removeChildren
      * @see getChildren
      */
-    public abstract boolean removeChild(final T child);
+    public abstract void removeChild(final T child);
 
     /**
      * Removes the given nodes from the children list using {@link removeChild}.
