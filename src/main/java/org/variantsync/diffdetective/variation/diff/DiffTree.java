@@ -48,6 +48,7 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import static org.variantsync.diffdetective.variation.diff.DiffType.ADD;
+import static org.variantsync.diffdetective.variation.diff.DiffType.NON;
 import static org.variantsync.diffdetective.variation.diff.DiffType.REM;
 import static org.variantsync.diffdetective.variation.diff.Time.AFTER;
 import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
@@ -616,4 +617,102 @@ public class DiffTree {
         }
     }
 
+    public void improveMatching(Matcher matcher) {
+        improveMatching(getRoot(), matcher);
+    }
+
+    public static DiffNode improveMatching(DiffNode tree, Matcher matcher) {
+        var src = new WrappedDiffTree(tree, BEFORE);
+        var dst = new WrappedDiffTree(tree, AFTER);
+
+        MappingStore matching = new MappingStore(src, dst);
+        extractMatching(src, dst, matching);
+        matcher.match(src, dst, matching);
+        Assert.assertTrue(matching.has(src, dst));
+
+        for (var srcNode : src.preOrder()) {
+            var dstNode = matching.getDstForSrc(srcNode);
+            var beforeNode = ((WrappedDiffTree)srcNode).getDiffNode();
+            if (dstNode == null || !srcNode.getLabel().equals(dstNode.getLabel())) {
+                if (beforeNode.isNon()) {
+                    splitNode(beforeNode);
+                }
+
+                Assert.assertTrue(beforeNode.isRem());
+            } else {
+                var afterNode = ((WrappedDiffTree)dstNode).getDiffNode();
+
+                if (beforeNode != afterNode) {
+                    if (beforeNode.isNon()) {
+                        splitNode(beforeNode);
+                    }
+                    if (afterNode.isNon()) {
+                        afterNode = splitNode(afterNode);
+                    }
+
+                    joinNode(beforeNode, afterNode);
+                }
+
+                Assert.assertTrue(beforeNode.isNon());
+            }
+            beforeNode.assertConsistency();
+        }
+
+        return tree;
+    }
+
+    private static DiffNode splitNode(DiffNode beforeNode) {
+        Assert.assertTrue(beforeNode.isNon());
+
+        DiffNode afterNode = beforeNode.shallowCopy();
+
+        afterNode.diffType = ADD;
+        beforeNode.diffType = REM;
+
+        afterNode.addChildren(beforeNode.removeChildren(AFTER), AFTER);
+        var afterParent = beforeNode.getParent(AFTER);
+        afterParent.insertChild(afterNode, afterParent.indexOfChild(beforeNode, AFTER), AFTER);
+        beforeNode.drop(AFTER);
+
+        beforeNode.assertConsistency();
+        afterNode.assertConsistency();
+
+        return afterNode;
+    }
+
+    private static void joinNode(DiffNode beforeNode, DiffNode afterNode) {
+        Assert.assertTrue(beforeNode.isRem());
+        Assert.assertTrue(afterNode.isAdd());
+
+        beforeNode.diffType = NON;
+
+        beforeNode.addChildren(afterNode.removeChildren(AFTER), AFTER);
+
+        var afterParent = afterNode.getParent(AFTER);
+        afterParent.insertChild(beforeNode, afterParent.indexOfChild(afterNode, AFTER), AFTER);
+        afterNode.drop(AFTER);
+    }
+
+    private static void extractMatching(
+        WrappedDiffTree src,
+        WrappedDiffTree dst,
+        MappingStore result
+    ) {
+        Map<DiffNode, Tree> matching = new HashMap<>();
+
+        for (var srcNode : src.preOrder()) {
+            DiffNode diffNode = ((WrappedDiffTree)srcNode).getDiffNode();
+            if (diffNode.isNon()) {
+                matching.put(diffNode, srcNode);
+            }
+        }
+
+        for (var dstNode : dst.preOrder()) {
+            DiffNode diffNode = ((WrappedDiffTree)dstNode).getDiffNode();
+            if (diffNode.isNon()) {
+                Assert.assertTrue(matching.get(diffNode) != null);
+                result.addMapping(matching.get(diffNode), dstNode);
+            }
+        }
+    }
 }

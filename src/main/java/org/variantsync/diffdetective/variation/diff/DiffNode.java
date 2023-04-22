@@ -765,6 +765,17 @@ public class DiffNode implements HasNodeType {
         return diffNode;
     }
 
+    public DiffNode shallowCopy() {
+        return new DiffNode(
+            getDiffType(),
+            getNodeType(),
+            getFromLine(),
+            getToLine(),
+            getFormula(),
+            getLabelLines()
+        );
+    }
+
     /**
      * Transforms a {@code VariationNode} into a {@code DiffNode} by diffing {@code variationNode}
      * to itself. Recursively translates all children.
