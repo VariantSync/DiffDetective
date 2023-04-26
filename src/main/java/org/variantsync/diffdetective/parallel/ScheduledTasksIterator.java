@@ -70,7 +70,7 @@ public class ScheduledTasksIterator<T> implements Iterator<T>, AutoCloseable {
 
     /** Stops all scheduled tasks and releases the used thread resources. */
     @Override
-    public void close() throws Exception {
+    public void close() {
         threadPool.shutdown();
     }
 }
