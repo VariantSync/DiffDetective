@@ -157,6 +157,11 @@ public class ViewTest {
         GameEngine.showAndAwaitAll(
                 Show.tree(TreeView.tree(b, traceYesExample1), "Figure 4: view_{tree}(Figure 1, " + traceYesExample1 + ")")
         );
+
+        // Figure 5
+        GameEngine.showAndAwaitAll(
+                Show.diff(DiffView.optimized(d, charlottesQuery), "Figure 5: view_{naive}(Figure 2, " + charlottesQuery + ")")
+        );
     }
 
     @ParameterizedTest
