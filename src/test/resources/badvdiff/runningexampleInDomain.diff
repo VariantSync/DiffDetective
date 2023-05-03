@@ -1,0 +1,20 @@
+ void prepend(T e) {
+   Itm* newHead = new Itm(e);
+   newHead->suc = head;
+ #if Ring
+   if (empty())
+     last = head;
+-#endif
+   last->suc = newHead;
++#endif
+ #if DoubleLink
++  if (head) {
+-  head->prev = head;
++    head->prev = newHead;
++  }
+   #if Ring
+     newHead->prev = last;
+   #endif
+ #endif
+   head = newHead;
+ }
