@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.BiConsumer;
 
+import org.apache.commons.io.input.CharacterFilterReader;
 import org.apache.commons.lang3.NotImplementedException;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.tinylog.Logger;
@@ -350,11 +351,13 @@ public class ConstructionValidation implements Analysis.Hooks {
 
     private DiffTree parseVariationTree(Analysis analysis, RevCommit commit) throws IOException, DiffParseException {
         try (BufferedReader afterFile =
-            GitDiffer.getBeforeFullFile(
-                analysis.getRepository().getGitRepo().run(),
-                commit,
-                analysis.getCurrentPatch().getFileName()
-            )
+            new BufferedReader(
+                new CharacterFilterReader(
+                    GitDiffer.getBeforeFullFile(
+                        analysis.getRepository().getGitRepo().run(),
+                        commit,
+                        analysis.getCurrentPatch().getFileName()),
+                    0xfeff)) // BOM, same as GitDiffer.BOM_PATTERN
         ) {
             return DiffTreeParser.createVariationTree(afterFile, analysis.getRepository().getParseOptions().diffTreeParseOptions());
         }
