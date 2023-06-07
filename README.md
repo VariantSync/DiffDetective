@@ -24,6 +24,8 @@ or by first parsing both versions to an abstract representation, a variation tre
 
 ### [2] Views on Edits to Variational Software (SPLC 2023)
 
+> P. M. Bittner, A. Schultheiß, S. Greiner, B. Moosherr, S. Krieter, C. Tinnes, T. Kehrer, T. Thüm. _Views on Edits to Variational Software_. In Proceedings of the 27th ACM International Systems and Software Product Line Conference (SPLC 2023), ACM, New York, NY, 2023
+
 In this work, we used DiffDetective for a feasibility study of creating views on edits to C-preprocessor based software.
 The idea of a view is to act as a filter on relevant parts of a system.
 For instance, a piece of source code may be deemed relevant if it implements a certain feature.
@@ -36,9 +38,11 @@ Our replication package and further information can be found in the [README](rep
 
 ### [1] Classifying Edits to Variability in Source Code (ESEC/FSE 2022)
 
+> P. M. Bittner, C.Tinnes, A. Schultheiß, S. Viegener, T. Kehrer, T. Thüm. _Views on Edits to Variational Software_. In Proceedings of the 30th ACM Joint European Software Engineering Conference and Symposium on the Foundations of Software Engineering (ESEC/FSE 2022), ACM, New York, NY, November 2022
+
 <img padding="10" align="right" src="https://www.acm.org/binaries/content/gallery/acm/publications/artifact-review-v1_1-badges/artifacts_evaluated_reusable_v1_1.png" alt="ACM Artifacts Evaluated Reusable" width="114" height="113"/>
 
-In this work, we used DiffDetective to classify edits to variation software in the change histories of 44 open-source C-preprocessor-based software projects.
+In this work, we used DiffDetective to classify the effect of edits on the variability of the edited source code in the change histories of 44 open-source C-preprocessor-based software projects.
 
 Our replication package and further information can be found in the [README](replication/esecfse22/README.md) file in the respective directory (`replication/esecfse22`).
 
