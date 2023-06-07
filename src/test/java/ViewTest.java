@@ -1,10 +1,7 @@
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.prop4j.Implies;
-import org.prop4j.Literal;
-import org.prop4j.Node;
-import org.prop4j.NodeWriter;
+import org.prop4j.*;
 import org.tinylog.Logger;
 import org.variantsync.diffdetective.analysis.logic.UniqueViewsAlgorithm;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
@@ -147,18 +144,23 @@ public class ViewTest {
 
         // Figure 3
         final VariantQuery configureExample1 = new VariantQuery(
-                and(featureRing, /* FM = */ new Implies(featureDoubleLink, negate(featureRing)))
+                and(featureRing, /* FM = */ negate(new And(featureDoubleLink, featureRing)))
         );
         GameEngine.showAndAwaitAll(
                 Show.tree(TreeView.tree(b, configureExample1), "Figure 3: view_{tree}(Figure 1, " + configureExample1 + ")")
         );
 
         // Figure 4
-        final TraceYesQuery traceYesExample1 = new TraceYesQuery(
-                featureDoubleLink
+        final FeatureQuery traceYesExample1 = new FeatureQuery(
+                featureDoubleLink.toString()
         );
         GameEngine.showAndAwaitAll(
                 Show.tree(TreeView.tree(b, traceYesExample1), "Figure 4: view_{tree}(Figure 1, " + traceYesExample1 + ")")
+        );
+
+        // Figure 5
+        GameEngine.showAndAwaitAll(
+                Show.diff(DiffView.optimized(d, charlottesQuery), "Figure 5: view_{naive}(Figure 2, " + charlottesQuery + ")")
         );
     }
 
