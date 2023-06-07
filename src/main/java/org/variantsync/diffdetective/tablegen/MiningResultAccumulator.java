@@ -53,7 +53,7 @@ public class MiningResultAccumulator {
             //        that produced the results we accumulate. Maybe Java reflection can help?
             result.append(StatisticsAnalysis.RESULT, new StatisticsAnalysis.Result());
             result.append(ExplainedFilterSummary.KEY, new ExplainedFilterSummary());
-            result.append(EditClassCount.KEY, new EditClassCount());
+//            result.append(EditClassCount.KEY, new EditClassCount());
 
             result.setFrom(p);
             results.put(p.getParent().getFileName().toString(), result);
@@ -114,9 +114,16 @@ public class MiningResultAccumulator {
             throw new IllegalArgumentException("Expected path to directory but the given path is not a directory!");
         }
 
+        // TODO: Implement argument parser
+        final boolean exportESECFSETables = false;
+
         final Map<String, AnalysisResult> allResults = getAllTotalResultsIn(inputPath);
         final AnalysisResult ultimateResult = computeTotalMetadataResult(allResults.values());
         Analysis.exportMetadataToFile(inputPath.resolve("ultimateresult" + Analysis.EXTENSION), ultimateResult);
+
+        if (!exportESECFSETables) {
+            return;
+        }
 
         final Map<String, DatasetDescription> datasetByName;
         try {
