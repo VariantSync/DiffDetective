@@ -25,6 +25,12 @@ We offer a [Docker](https://www.docker.com/) setup to easily __replicate__ the v
 In the following, we provide a quickstart guide for running the replication.
 You can find detailed information on how to install Docker and build the container in the [INSTALL](INSTALL.md) file, including detailed descriptions of each step and troubleshooting advice.
 
+### Prerequisite
+All following commands assume that working directory of your terminal is the `esecfse` directory. Please switch directories, if this is not the case:
+```shell
+cd DiffDetective/replication/esecfse22
+```
+
 ### 1.1 Build the Docker container
 Start the docker deamon.
 Clone this repository.
@@ -120,6 +126,6 @@ The input file must have the same format as the other dataset files (i.e., repos
 [documentation]: https://variantsync.github.io/DiffDetective/docs/javadoc/
 [website]: https://variantsync.github.io/DiffDetective/
 
-[resultsdir]: ../../results
-[resultsdir_classification_results]: ../../results/validation/current/ultimateresult.metadata.txt
-[resultsdir_speed_statistics]: ../../results/validation/current/speedstatistics.txt
+[resultsdir]: results
+[resultsdir_classification_results]: results/validation/current/ultimateresult.metadata.txt
+[resultsdir_speed_statistics]: results/validation/current/speedstatistics.txt

@@ -31,9 +31,9 @@ Clone this repository to a directory of your choice using git:
 ```shell
 git clone https://github.com/VariantSync/DiffDetective.git
 ```
-Then, navigate to the root of your local clone of this repository:
+Then, navigate to the `esecfse22` folder in your local clone of this repository:
 ```shell
-cd DiffDetective
+cd DiffDetective/replication/esecfse22
 ```
 
 ### 3. Build the Docker Container
@@ -48,7 +48,10 @@ To build the Docker container you can run the `build` script corresponding to yo
 ## 4. Verification & Replication
 
 ### Running the Replication or Verification
-To execute the replication you can run the `execute` script corresponding to your operating system with `replication` as first argument.
+To execute the replication you can run the `execute` script corresponding to your operating system with `replication` as first argument. To execute the script you first have to navigate to the `esecfse22` directory, if you have not done so. 
+```shell
+cd DiffDetective/replication/esecfse22
+```
 
 #### Windows:
 `.\execute.bat replication`
