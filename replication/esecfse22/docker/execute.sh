@@ -1,8 +1,10 @@
 #! /bin/bash
 
 if [ "$1" == '' ] || [ "$1" == '--help' ] || [ "$1" == '-help' ]; then
+  echo ">>>>>>>>> USAGE <<<<<<<<<<"
   echo "Either fully run DiffDetective as presented in the paper (replication), do quick setup verification (verification),
   or run DiffDetective on a custom dataset by providing the path to the dataset file."
+  echo ""
   echo "-- Examples --"
   echo "Run replication: './execute.sh replication'"
   echo "Validate the setup: './execute.sh verification'"
