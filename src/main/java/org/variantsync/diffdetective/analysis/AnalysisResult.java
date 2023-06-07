@@ -9,6 +9,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.tinylog.Logger;
 import org.variantsync.diffdetective.diff.result.DiffError;
 import org.variantsync.diffdetective.metadata.Metadata;
 import org.variantsync.functjonal.Cast;
@@ -99,7 +100,11 @@ public final class AnalysisResult implements Metadata<AnalysisResult> {
      * Merges the second results values into the first result.
      */
     public static final InplaceSemigroup<AnalysisResult> ISEMIGROUP = (a, b) -> {
-        a.repoName = Metadata.mergeEqual(a.repoName, b.repoName);
+        a.repoName = Metadata.mergeIfEqualElse(a.repoName, b.repoName,
+                (ar, br) -> {
+                    Logger.warn("Merging analysis for different repos {} and {}!", ar, br);
+                    return ar + "; " + br;
+                });
         a.taskName = Metadata.mergeEqual(a.taskName, b.taskName);
         a.runtimeWithMultithreadingInSeconds += b.runtimeWithMultithreadingInSeconds;
         a.totalCommits += b.totalCommits;
@@ -141,6 +146,7 @@ public final class AnalysisResult implements Metadata<AnalysisResult> {
     public LinkedHashMap<String, Object> snapshot() {
         LinkedHashMap<String, Object> snap = new LinkedHashMap<>();
         snap.put(MetadataKeys.TASKNAME, taskName);
+        snap.put(MetadataKeys.REPONAME, repoName);
         snap.put(MetadataKeys.RUNTIME_WITH_MULTITHREADING, runtimeWithMultithreadingInSeconds);
         snap.put(MetadataKeys.TOTAL_COMMITS, totalCommits);
 
@@ -149,11 +155,11 @@ public final class AnalysisResult implements Metadata<AnalysisResult> {
             snap.put(MetadataKeys.FILTERED_COMMITS, totalCommits - statistics.processedCommits - statistics.emptyCommits - statistics.failedCommits);
         }
 
-        snap.putAll(Functjonal.bimap(diffErrors, error -> ERROR_BEGIN + error + ERROR_END, Object::toString));
-        snap.put(MetadataKeys.REPONAME, repoName);
         for (var result : results.values()) {
             snap.putAll(result.snapshot());
         }
+
+        snap.putAll(Functjonal.bimap(diffErrors, error -> ERROR_BEGIN + error + ERROR_END, Object::toString));
         return snap;
     }
 
@@ -181,6 +187,10 @@ public final class AnalysisResult implements Metadata<AnalysisResult> {
                 // add DiffError
                 diffErrors.put(e.get(), Integer.parseInt(entry.getValue()));
             }
+        }
+
+        for (final Metadata<?> result : results.values()) {
+            result.setFromSnapshot(snap);
         }
     }
 
