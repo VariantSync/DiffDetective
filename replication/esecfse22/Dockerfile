@@ -20,19 +20,19 @@
 FROM alpine:3.15
 # PACKAGE STAGE
 
-# EXAMPLE: Prepare the compile environment. JDK is automatically installed
+# Prepare the compile environment. JDK is automatically installed
 RUN apk add maven
 
-# REQUIRED: Create and navigate to a working directory
+# Create and navigate to a working directory
 WORKDIR /home/user
 
-COPY ../../local-maven-repo ./local-maven-repo
+COPY local-maven-repo ./local-maven-repo
 
-# EXAMPLE: Copy the source code
-COPY ../../src ./src
-# EXAMPLE: Copy the pom.xml if Maven is used
-COPY ../../pom.xml .
-# EXAMPLE: Execute the maven package process
+# Copy the source code
+COPY src ./src
+# Copy the pom.xml if Maven is used
+COPY pom.xml .
+# Execute the maven package process
 RUN mvn package || exit
 
 FROM alpine:3.15
@@ -43,7 +43,7 @@ RUN adduser --disabled-password  --home /home/sherlock --gecos '' sherlock
 RUN apk add --no-cache --upgrade bash
 RUN apk add --update openjdk17
 
-# REQUIRED: Change into the home directory
+# Change into the home directory
 WORKDIR /home/sherlock
 
 # Copy the compiled JAR file from the first stage into the second stage
@@ -53,10 +53,11 @@ COPY --from=0 /home/user/target/diffdetective-1.0.0-jar-with-dependencies.jar ./
 WORKDIR /home/sherlock
 
 # Copy the setup
-COPY ../../docs holmes/docs
+COPY docs holmes/docs
 
 # Copy the docker resources
 COPY docker/* ./
+COPY replication/esecfse22/docker/* ./
 RUN mkdir DiffDetectiveMining
 
 #  Adjust permissions
@@ -65,11 +66,8 @@ RUN chmod +x execute.sh
 RUN chmod +x entrypoint.sh
 RUN chmod +x fix-perms.sh
 
-# EXAMPLE: List the content in the work dir
-RUN ls -l
-
-# REQUIRED: Set the entrypoint
+# Set the entrypoint
 ENTRYPOINT ["./entrypoint.sh", "./execute.sh"]
 
-# REQUIRED: Set the user
+# Set the user
 USER sherlock
