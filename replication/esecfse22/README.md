@@ -4,7 +4,7 @@
 [![Documentation](https://img.shields.io/badge/Documentation-Read-purple)][documentation]
 [![Install](https://img.shields.io/badge/Install-Instructions-blue)](INSTALL.md)
 [![GitHubPages](https://img.shields.io/badge/GitHub%20Pages-online-blue.svg?style=flat)][website]
-[![License](https://img.shields.io/badge/License-GNU%20LGPLv3-blue)](LICENSE.LGPL3)
+[![License](https://img.shields.io/badge/License-GNU%20LGPLv3-blue)](../../LICENSE.LGPL3)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7110095.svg)](https://doi.org/10.5281/zenodo.7110095)
 
 # Classifying Edits to Variability in Source Code
@@ -15,7 +15,7 @@ This replication package consists of four parts:
 
 1. **DiffDetective**: For our validation, we built _DiffDetective_, a java library and command-line tool to classify edits to variability in git histories of preprocessor-based software product lines.
 2. **Appendix**: The appendix of our paper is given in PDF format in the file [appendix.pdf][appendix].
-3. **Haskell Formalization**: We provide an extended formalization in the Haskell programming language as described in our appendix. Its implementation can be found in the Haskell project in the [proofs](proofs) directory.
+3. **Haskell Formalization**: We provide an extended formalization in the Haskell programming language as described in our appendix. Its implementation can be found in the Haskell project in the [proofs](../../proofs) directory.
 4. **Dataset Overview**: We provide an overview of the 44 inspected datasets with updated links to their repositories in the file [docs/datasets/all.md][dataset].
 
 ## 1. DiffDetective
@@ -81,14 +81,14 @@ DiffDetective is documented with javadoc. The documentation can be accessed on t
 Our [appendix][appendix] consists of:
 1. An extended formalization of our concepts in the [Haskell][haskell] programming language. The corresponding source code is also part of this replication package (see below).
 2. The proofs for (a) the completeness of variation diffs to represent edits to variation trees, and (b) the completeness and unambiguity of our edit classes.
-3. An inspection of edit patterns from related work to show that existing patterns are either composite patterns built from our edit classes or similar to one of our edit classes. The used diffs of these patterns can also be found in [docs/compositepatterns](docs/compositepatterns).
+3. An inspection of edit patterns from related work to show that existing patterns are either composite patterns built from our edit classes or similar to one of our edit classes. The used diffs of these patterns can also be found in [docs/compositepatterns](../../docs/compositepatterns).
 4. The complete results of our validation for all 44 datasets.
 
 ## 3. Haskell Formalization
-The extended formalization is a [Haskell][haskell] library in the [`proofs`](proofs) subdirectory.
+The extended formalization is a [Haskell][haskell] library in the [`proofs`](../../proofs) subdirectory.
 Since the `proofs` library is its own software project, we provide a separate documentation of requirements and installation instructions within the projects subdirectory.
-Requirements and instructions for setting up the build environment (Stack) are given in [proofs/REQUIREMENTS.md](proofs/REQUIREMENTS.md).
-How to build our library and how to run the example is described in the [proofs/INSTALL.md](proofs/INSTALL.md).
+Requirements and instructions for setting up the build environment (Stack) are given in [proofs/REQUIREMENTS.md](../../proofs/REQUIREMENTS.md).
+How to build our library and how to run the example is described in the [proofs/INSTALL.md](../../proofs/INSTALL.md).
 
 
 ## 4. Dataset Overview
@@ -110,16 +110,16 @@ You can also run DiffDetective on other datasets by providing the path to the da
 #### Linux/Mac (bash):
 `./execute.sh path/to/custom/dataset.md`
 
-The input file must have the same format as the other dataset files (i.e., repositories are listed in a Markdown table). You can find [dataset files](docs/datasets/all.md) in the [docs/datasets](docs/datasets) folder.
+The input file must have the same format as the other dataset files (i.e., repositories are listed in a Markdown table). You can find [dataset files](../../docs/datasets/all.md) in the [docs/datasets](../../docs/datasets) folder.
 
 [difftree_class]: https://variantsync.github.io/DiffDetective/docs/javadoc/org/variantsync/diffdetective/diff/difftree/DiffTree.html
 [haskell]: https://www.haskell.org/
-[dataset]: docs/datasets/all.md
-[appendix]: appendix.pdf
+[dataset]: ../../docs/datasets/all.md
+[appendix]: ../../appendix/appendix-esecfse22.pdf
 
 [documentation]: https://variantsync.github.io/DiffDetective/docs/javadoc/
 [website]: https://variantsync.github.io/DiffDetective/
 
-[resultsdir]: results
-[resultsdir_classification_results]: results/validation/current/ultimateresult.metadata.txt
-[resultsdir_speed_statistics]: results/validation/current/speedstatistics.txt
+[resultsdir]: ../../results
+[resultsdir_classification_results]: ../../results/validation/current/ultimateresult.metadata.txt
+[resultsdir_speed_statistics]: ../../results/validation/current/speedstatistics.txt

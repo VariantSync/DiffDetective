@@ -8,6 +8,3 @@ To fix permission issues that occur in Docker environments under Linux, two file
 These files should remain unaltered and are automatically copied to the Docker container.
 
 > Make sure to also set the required [.gitattributes](../.gitattributes) in your replication package. They are required to assure that the Docker container can be executed correctly under Windows.
-
-## Execution
-The [`execute.sh`](execute.sh) script can be adjusted to run the program that should be executed by the Docker container.

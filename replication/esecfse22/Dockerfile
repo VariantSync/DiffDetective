@@ -26,12 +26,12 @@ RUN apk add maven
 # REQUIRED: Create and navigate to a working directory
 WORKDIR /home/user
 
-COPY local-maven-repo ./local-maven-repo
+COPY ../../local-maven-repo ./local-maven-repo
 
 # EXAMPLE: Copy the source code
-COPY src ./src
+COPY ../../src ./src
 # EXAMPLE: Copy the pom.xml if Maven is used
-COPY pom.xml .
+COPY ../../pom.xml .
 # EXAMPLE: Execute the maven package process
 RUN mvn package || exit
 
@@ -53,7 +53,7 @@ COPY --from=0 /home/user/target/diffdetective-1.0.0-jar-with-dependencies.jar ./
 WORKDIR /home/sherlock
 
 # Copy the setup
-COPY docs holmes/docs
+COPY ../../docs holmes/docs
 
 # Copy the docker resources
 COPY docker/* ./

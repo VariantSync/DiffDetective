@@ -44,6 +44,6 @@ Furthermore, both DiffDetective and our Haskell formalization serve as reference
 [ddappendix]: https://github.com/VariantSync/DiffDetective/raw/esecfse22/appendix.pdf
 [ddproofs]: https://github.com/VariantSync/DiffDetective/tree/esecfse22/proofs
 [ddlicense]: https://github.com/VariantSync/DiffDetective/blob/main/LICENSE.LGPL3
-[dddatasets]: docs/datasets/all.md
-[ddforks]: docs/datasets/esecfse22-replication.md
+[dddatasets]: ../../docs/datasets/all.md
+[ddforks]: ../../docs/datasets/esecfse22-replication.md
 [dddocumentation]: https://variantsync.github.io/DiffDetective/docs/javadoc/
