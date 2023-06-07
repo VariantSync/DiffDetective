@@ -70,7 +70,7 @@ Moreover, the results comprise the (LaTeX) tables that are part of our paper and
 
 DiffDetective is documented with javadoc. The documentation can be accessed on this [website][documentation]. Notable classes of our library are:
 - [DiffTree](https://variantsync.github.io/DiffDetective/docs/javadoc/org/variantsync/diffdetective/diff/difftree/DiffTree.html) and [DiffNode](https://variantsync.github.io/DiffDetective/docs/javadoc/org/variantsync/diffdetective/diff/difftree/DiffNode.html) implement variation diffs from our paper. A variation diff is represented by an instance of the `DiffTree` class. It stores the root node of the diff and offers various methods to parse, traverse, and analyze variation diffs. `DiffNode`s represent individual nodes within a variation diff.
-- [EditClassValidation](https://variantsync.github.io/DiffDetective/docs/javadoc/org/variantsync/diffdetective/validation/EditClassValidation.html) contains the main method for our validation.
+- [EditClassValidation](https://variantsync.github.io/DiffDetective/docs/javadoc/org/variantsync/diffdetective/validation/Validation.html) contains the main method for our validation.
 - [ProposedEditClasses](https://variantsync.github.io/DiffDetective/docs/javadoc/org/variantsync/diffdetective/editclass/proposed/ProposedEditClasses.html) holds the catalog of the nine edit classes we proposed in our paper. It implements the interface [EditClassCatalogue](https://variantsync.github.io/DiffDetective/docs/javadoc/org/variantsync/diffdetective/editclass/EditClassCatalogue.html), which allows to define custom edit classifications.
 - [BooleanAbstraction](https://variantsync.github.io/DiffDetective/docs/javadoc/org/variantsync/diffdetective/feature/BooleanAbstraction.html) contains data and methods for boolean abstraction of higher-order logic formulas. We use this for macro parsing.
 - [GitDiffer](https://variantsync.github.io/DiffDetective/docs/javadoc/org/variantsync/diffdetective/diff/GitDiffer.html) may parse the history of a git repository to variation diffs.
@@ -99,7 +99,7 @@ We provide updated links for each system's repository.
 
 ### 4.2 Forked Repositories for Replication
 To guarantee the exact replication of our validation, we created forks of all 44 open-source repositories at the state we performed the validation for our paper.
-The forked repositories are listed in the [replication datasets](docs/datasets/esecfse22-replication.md.md) and are located at the Github user profile [DiffDetective](https://github.com/DiffDetective?tab=repositories).
+The forked repositories are listed in the [replication datasets](../../docs/datasets/esecfse22-replication.md) and are located at the Github user profile [DiffDetective](https://github.com/DiffDetective?tab=repositories).
 These repositories are used when running the replication as described under `1.2` and in the [INSTALL](INSTALL.md).
 
 ## 5. Running DiffDetective on Custom Datasets
