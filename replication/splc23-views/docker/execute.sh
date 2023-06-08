@@ -29,6 +29,7 @@ else
 fi
 echo "Collecting results."
 cp -r results/* ../results/
-python analyze_data.py ../results/validation/current
+cd ..
+python3 analyze_data.py results/views/current
 echo "The results are located in the 'results' directory."
 

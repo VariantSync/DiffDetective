@@ -26,6 +26,12 @@ RUN adduser --disabled-password  --home /home/sherlock --gecos '' sherlock
 RUN apk add --no-cache --upgrade bash
 RUN apk add --update openjdk17
 
+RUN apk add --no-cache tesseract-ocr python3 py3-pip py3-numpy py3-pandas py3-scipy && \
+    pip3 install --upgrade pip setuptools wheel && \
+    apk add --no-cache --virtual .build-deps gcc g++ zlib-dev make python3-dev py3-numpy-dev jpeg-dev && \
+    pip3 install Jinja2 && \
+    apk del .build-deps
+
 # Change into the home directory
 WORKDIR /home/sherlock
 
@@ -41,6 +47,7 @@ COPY docs holmes/docs
 # Copy the docker resources
 COPY docker/* ./
 COPY replication/splc23-views/docker/* ./
+
 RUN mkdir DiffDetectiveMining
 RUN mkdir results
 
