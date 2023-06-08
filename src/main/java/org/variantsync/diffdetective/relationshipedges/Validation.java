@@ -29,7 +29,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
- * This is the validation for the paper.
+ * This is the validation for the paper Explaining Edits to Variability Annotations in Evolving Software Product Lines.
  * It provides all configuration settings and facilities to setup the validation by
  * creating a {@link HistoryAnalysis} and run it.
  */
