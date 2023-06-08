@@ -1,21 +1,4 @@
 # syntax=docker/dockerfile:1
-# ----------------------------
-# This template sets up a Docker container using a multi-stage build and Alpine Linux.
-# Alpine is a Linux-based OS embedded systems making it one of the smalles Docker images. It should be used if possible.
-# The multi-stage build consists of two stages: The compile stage, and the environment preparation stage.
-#
-# The compile stage only installs the packages required to compile the source files of the prototype. The generated binaries
-# are then copied to the environment during the environment preparation stage.
-#
-# The environment preparation stage is responsible for installing all dependencies and copying all files that are required
-# to execute the Docker container.
-#
-# This template contains the commands that are required to compile and execute a Java prototype.
-#
-# Lines commented as `REQUIRED` should only be altered/removed if you know what you are doing.
-# Lines commented as `EXAMPLE` contain commands that probably have to be adjusted
-# ----------------------------
-
 
 FROM alpine:3.15
 # PACKAGE STAGE
