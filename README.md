@@ -4,7 +4,7 @@
 
 This is the replication package for our paper _Explaining Edits to Variability Annotations in Evolving Software Product Lines_.
 
-This replication package consists of four parts:
+This replication package consists of two parts:
 
 1. **DiffDetective**: For our validation, we built _DiffDetective_, a java library and command-line tool to classify edits to variability in git histories of preprocessor-based software product lines.
 2. **Dataset Overview**: We provide an overview of the 44 inspected datasets with updated links to their repositories in the file [docs/datasets.md][dataset].
