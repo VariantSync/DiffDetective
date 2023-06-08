@@ -34,6 +34,7 @@ WORKDIR /home/sherlock
 WORKDIR /home/sherlock/holmes
 COPY --from=0 /home/user/target/diffdetective-1.0.0-jar-with-dependencies.jar ./DiffDetective.jar
 WORKDIR /home/sherlock
+RUN mkdir results
 
 # Copy the setup
 COPY docs holmes/docs
