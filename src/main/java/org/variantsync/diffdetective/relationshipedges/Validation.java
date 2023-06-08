@@ -7,7 +7,6 @@ import org.variantsync.diffdetective.analysis.CommitHistoryAnalysisTask;
 import org.variantsync.diffdetective.analysis.CommitHistoryAnalysisTaskFactory;
 import org.variantsync.diffdetective.analysis.HistoryAnalysis;
 import org.variantsync.diffdetective.analysis.strategies.AnalyzeAllThenExport;
-import org.variantsync.diffdetective.analysis.strategies.NullStrategy;
 import org.variantsync.diffdetective.datasets.*;
 import org.variantsync.diffdetective.diff.difftree.filter.DiffTreeFilter;
 import org.variantsync.diffdetective.diff.difftree.filter.ExplainedFilter;
@@ -30,10 +29,9 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
- * This is the validation for Lukas Güthing's master's thesis.
+ * This is the validation for the paper.
  * It provides all configuration settings and facilities to setup the validation by
  * creating a {@link HistoryAnalysis} and run it.
- * @author Paul Bittner, Lukas Güthing
  */
 public class Validation {
     /**
@@ -50,10 +48,10 @@ public class Validation {
 
     /**
      * The {@link CommitHistoryAnalysisTaskFactory} for the {@link HistoryAnalysis} that will run our validation.
-     * This factory creates {@link ThesisValidationTask}s with the respective settings.
+     * This factory creates {@link PaperEvaluationTask}s with the respective settings.
      */
     public static final CommitHistoryAnalysisTaskFactory VALIDATION_TASK_FACTORY =
-            (repo, differ, outputPath, commits) -> new ThesisValidationTask(new CommitHistoryAnalysisTask.Options(
+            (repo, differ, outputPath, commits) -> new PaperEvaluationTask(new CommitHistoryAnalysisTask.Options(
                     repo,
                     differ,
                     outputPath,

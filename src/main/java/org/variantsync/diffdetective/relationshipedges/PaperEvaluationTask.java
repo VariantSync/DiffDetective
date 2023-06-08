@@ -26,12 +26,12 @@ import java.util.List;
 import static org.variantsync.diffdetective.relationshipedges.Validation.ValidationExportOptions;
 
 /**
- * Task for performing the mining for Lukas Güthing's thesis.
+ * Task for performing the mining for the paper evaluation.
  *
- * @author Paul Bittner, Lukas Güthing
+ *
  */
-public class ThesisValidationTask extends CommitHistoryAnalysisTask {
-    public ThesisValidationTask(Options options) {
+public class PaperEvaluationTask extends CommitHistoryAnalysisTask {
+    public PaperEvaluationTask(Options options) {
         super(options);
     }
 
@@ -82,9 +82,9 @@ public class ThesisValidationTask extends CommitHistoryAnalysisTask {
 
                         ++numDiffTrees;
 
-                        boolean RELATIONSHIP_EDGES = true; // TODO: replace this later with some sort of options parameter
-                        boolean optimized = true;
-                        boolean alternativeFirst = false;
+                        boolean RELATIONSHIP_EDGES = true;  // Used for comparison between runtime with and without edge-adding
+                        boolean optimized = true;           // Used for comparison between optimized (using mutual exclusivity) and not optimized runtime
+                        boolean alternativeFirst = false;   // When optimized, used for comparing runtimes checking for alternative instead of implication first
 
                         if (RELATIONSHIP_EDGES) {
                         /*
@@ -150,6 +150,9 @@ public class ThesisValidationTask extends CommitHistoryAnalysisTask {
                             edgeTypedDiff.addEdgesWithType(Implication.class, implicationEdges);
                             edgeTypedDiff.addEdgesWithType(Alternative.class, alternativeEdges);
 
+                            /* measure the complexity change from variation diffs to edge-typed variation diffs
+                             * with a simple metric: (#relation edges/#nesting edges)
+                             */
                             int addedComplexityPercents = (int) (edgeTypedDiff.calculateAdditionalComplexity() * 100);
                             if(edgeTypedDiff.calculateAdditionalComplexity() == 0){
                                 miningResult.complexityChangeCount[0] += 1;

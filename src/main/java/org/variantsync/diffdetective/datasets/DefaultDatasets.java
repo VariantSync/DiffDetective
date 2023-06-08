@@ -20,7 +20,7 @@ public class DefaultDatasets {
     /**
      * Path to the
      */
-    public final static Path TESTING_DATASETS_FILE = Path.of("docs", "thesis_lg", "datasets.md");
+    public final static Path TESTING_DATASETS_FILE = Path.of("docs", "paper_evaluation", "datasets.md");
 
     /**
      * Path to the markdown file with the links and metadata for Emacs only.
