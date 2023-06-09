@@ -74,7 +74,7 @@ The aggregated results of the verification/replication can be found in the follo
 The example file content shown below should match your results when running the _verification_.
 (Note that the links below only have a target _after_ running the replication or verification.)
 
-- The [speed statistics](results/validation/current/speedstatistics.txt) contain information about the total runtime, median runtime, mean runtime, and more:
+- The [speed statistics](../../results/validation/current/speedstatistics.txt) contain information about the total runtime, median runtime, mean runtime, and more:
   ```
   #Commits: 24701
   Total   commit process time is: 14.065916666666668min
@@ -83,7 +83,7 @@ The example file content shown below should match your results when running the 
   Median  commit process time is: f77ffeb9b26f49ef66f77929848f2ac9486f1081___tcl___13ms
   Average commit process time is: 34.166835350795516ms
   ```
-- The [classification results](results/validation/current/ultimateresult.metadata.txt) contain information about how often each pattern was matched, and more.
+- The [classification results](../../results/validation/current/ultimateresult.metadata.txt) contain information about how often each pattern was matched, and more.
   ```
   repository: <NONE>
   total commits: 42323
