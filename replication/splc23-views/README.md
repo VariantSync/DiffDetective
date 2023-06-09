@@ -35,4 +35,4 @@ Please make sure that you meet the specified software requirements (there are no
 We offer a [Docker](https://www.docker.com/) setup to replicate the feasibility study performed in our paper.
 Information for the Docker setup and replicating our experiments can be found in the [INSTALL.md](INSTALL.md) file, including detailed descriptions of each step and troubleshooting advice.
 
-[appendix]: ../../appendix/appendix-splc23.pdf
+[appendix]: ../../appendix/appendix-splc23-views.pdf
