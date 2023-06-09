@@ -72,7 +72,7 @@ cd DiffDetective/replication/esecfse22
 You might see warnings or errors reported from SLF4J like `Failed to load class "org.slf4j.impl.StaticLoggerBinder"` which you can safely ignore.
 Further troubleshooting advice can be found at the bottom of this file.
 
-The results of the verification will be stored in the [results](../../results) directory.
+The results of the verification will be stored in the [results](results) directory.
 
 ### Expected Output of the Verification
 The aggregated results of the verification/replication can be found in the following files.
