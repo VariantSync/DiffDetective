@@ -5,7 +5,12 @@ The instructions explain how to build the Docker image and run the validation in
 
 ### 1. Start Docker
 
-Start the docker deamon.
+Start the docker deamon:
+
+- **On Linux**: Typically, the docker deamon runs automatically. Otherwise, run `sudo systemctl start docker`.
+- **On Windows**: Open the search bar using the 'Windows Key' and search for 'Docker' or 'Docker Desktop'.
+
+More detailed instructions on starting the deamon are given [here](https://docs.docker.com/config/daemon/start/) on the docker website. 
 
 ### 2. Open a Suitable Terminal
 ```
