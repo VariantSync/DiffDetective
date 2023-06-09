@@ -54,9 +54,9 @@ To execute the replication you can run the `execute` script corresponding to you
 `./execute.sh replication`
 
 > WARNING!
-> The replication will at least require an hour and might require up to a day depending on your system.
-> Therefore, we offer a short verification (5-10 minutes) which runs DiffDetective on only four of the datasets.
-> You can run it by providing "verification" as argument instead of "replication" (i.e., `.\execute.bat verification`,  `./execute.sh verification`).
+> The replication may require multiple hours, depending on your system (and internet connection to clone the datasets repositories).
+> Therefore, we offer a short verification (5-10 minutes) which runs the feasibility study on only four of the datasets (instead of all 44).
+> You can run the short verification by providing "verification" as argument instead of "replication" (i.e., `.\execute.bat verification`,  `./execute.sh verification`).
 > If you want to stop the execution, you can call the provided script for stopping the container in a separate terminal.
 > When restarted, the execution will continue processing by restarting at the last unfinished repository.
 > #### Windows:
@@ -69,62 +69,38 @@ Further troubleshooting advice can be found at the bottom of this file.
 
 The results of the verification will be stored in the top level [results](../../results) directory.
 
-### Expected Output of the Verification
-The aggregated results of the verification/replication can be found in the following files.
-The example file content shown below should match your results when running the _verification_.
-(Note that the links below only have a target _after_ running the replication or verification.)
+### Expected Output of the Feasibility Study
+The aggregated results of the study can be found in the `results/views` directory.
+The results split into two subdirectories:
 
-- The [speed statistics](../../results/validation/current/speedstatistics.txt) contain information about the total runtime, median runtime, mean runtime, and more:
-  ```
-  #Commits: 24701
-  Total   commit process time is: 14.065916666666668min
-  Fastest commit process time is: d86e352859e797f6792d6013054435ae0538ef6d___xfig___0ms
-  Slowest commit process time is: 9838b7032ea9792bec21af424c53c07078636d21___xorg-server___7996ms
-  Median  commit process time is: f77ffeb9b26f49ef66f77929848f2ac9486f1081___tcl___13ms
-  Average commit process time is: 34.166835350795516ms
-  ```
-- The [classification results](../../results/validation/current/ultimateresult.metadata.txt) contain information about how often each pattern was matched, and more.
-  ```
-  repository: <NONE>
-  total commits: 42323
-  filtered commits: 7425
-  failed commits: 0
-  empty commits: 10197
-  processed commits: 24701
-  tree diffs: 80751
-  fastestCommit: 518e205b06d0dc7a0cd35fbc2c6a4376f2959020___xorg-server___0ms
-  slowestCommit: 9838b7032ea9792bec21af424c53c07078636d21___xorg-server___7996ms
-  runtime in seconds: 853.9739999999999
-  runtime with multithreading in seconds: 144.549
-  treeformat: org.variantsync.diffdetective.variation.diff.serialize.treeformat.CommitDiffDiffTreeLabelFormat
-  nodeformat: org.variantsync.diffdetective.mining.formats.ReleaseMiningDiffNodeFormat
-  edgeformat: org.variantsync.diffdetective.mining.formats.DirectedEdgeLabelFormat with org.variantsync.diffdetective.mining.formats.ReleaseMiningDiffNodeFormat
-  analysis: org.variantsync.diffdetective.validation.PatternValidationTask
-  #NON nodes: 0
-  #ADD nodes: 0
-  #REM nodes: 0
-  filtered because not (is not empty): 212
-  AddToPC: { total = 443451; commits = 22470 }
-  AddWithMapping: { total = 51036; commits = 2971 }
-  RemFromPC: { total = 406809; commits = 21384 }
-  RemWithMapping: { total = 36622; commits = 2373 }
-  Specialization: { total = 7949; commits = 1251 }
-  Generalization: { total = 11057; commits = 955 }
-  Reconfiguration: { total = 3186; commits = 381 }
-  Refactoring: { total = 4862; commits = 504 }
-  Untouched: { total = 0; commits = 0 }
-  #Error[conditional macro without expression]: 2
-  #Error[#else after #else]: 2
-  #Error[#else or #elif without #if]: 11
-  #Error[#endif without #if]: 12
-  #Error[not all annotations closed]: 8
-  ```
+#### results/views/current
 
-Moreover, the results comprise the (LaTeX) tables that are part of our paper and appendix.
-The processing times might deviate because performance depends on your hardware.
+There should be a subdirectory for each repository, the feasibility study has been executed on.
+The analysis processes the commits of each repository in batches of up to 1000 commits.
+Each repository directory contains three files for each batch.
+The three files are named by the hash of the first commit in the batch.
+The files are:
 
-### (Optional) Running DiffDetective on Custom Datasets
-You can also run DiffDetective on other datasets by providing the path to the dataset file as first argument to the execution script:
+- `<first commit hash>.metadata.txt`: contains various metadata on the analysis of this commit batch, such as the number of processed commits.
+- `<first commit hash>.committimes.txt`: Contains the time in milliseconds each commit in the batch required to be analysed.
+- `<first commit hash>.views.csv`: contains information on each generated view. This file contains the main results of our feasibility study.
+
+Additionally, each repository directory also contains a `totalresult.metadata.txt` that is an aggregation of the `*.metadata.txt` files of each batch.
+
+#### results/views/current_plots
+
+The directory `results/views/current_plots` contains plots, latex tables, and aggregated results that we used to report
+our results in the paper. The directory should contain the following files:
+- `count.csv`: Lists how many views of each view type were generated.
+- `hist.tex`: A latex table that reports the runtimes of the view-smart and view-naive algorithm. Table 1 in our paper is a slightly adapted variant of `hist.tex`.
+- `median.tex`: A latex table that repots the median runtime for each view type per algorithm.
+- `merged.csv`: An aggregation of all `*.views.csv` of all batches of all repositories within the `results/views/current` directory. This file thus lists the result data for each view we generated during the entire feasibility study.
+- `rank.csv`: Lists the slowest view generations with the naive algorithm. This table allows us to inspect how the view-smart algorithm performs on the worst case candidates of the view-naive algorithm.
+- `rel_speedup1sOrMore.csv`: Shows the relative speedups with the optimized algorithm view-smart relative to the naive algorithm view-naive for all views that required 1s or longer to generate with view-naive.
+- `wilcoxon.csv`: Results of the Wilcoxon Signed-Rank Test for determining whether there is a statistically significant improvement in runtimes with the optimized algorithm view-smart.
+
+### (Optional) Running the Feasibility Study on Custom Datasets
+You can also run the feasibility study on other datasets by providing the path to the dataset file as first argument to the execution script:
 
 #### Windows:
 `.\execute.bat path\to\custom\dataset.md`
