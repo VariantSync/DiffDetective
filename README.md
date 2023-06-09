@@ -6,7 +6,7 @@ This is the replication package for our paper _Explaining Edits to Variability A
 
 This replication package consists of two parts:
 
-1. **DiffDetective**: For our validation, we built _DiffDetective_, a java library and command-line tool to classify edits to variability in git histories of preprocessor-based software product lines.
+1. **DiffDetective**: For our validation, we modified [_DiffDetective_](https://github.com/VariantSync/DiffDetective), a java library and command-line tool to classify edits to variability in git histories of preprocessor-based software product lines, to extend the variation diffs constructed by _DiffDetective_ to edge-typed variation diffs we introduce in the paper.
 2. **Dataset Overview**: We provide an overview of the 44 inspected datasets with updated links to their repositories in the file [docs/datasets.md][dataset].
 
 ## 1. DiffDetective
@@ -56,15 +56,8 @@ The results consist of general information about the analysed repositories as we
 
 
 ## 2. Dataset Overview
-### 2.1 Open-Source Repositories
-We provide an overview of the used 44 open-source preprocessor-based software product lines in the [docs/datasets.md][dataset] file.
-As described in our paper in Section 5.1, this list contains all systems that were studied by Liebig et al., extended by four new subject systems (Busybox, Marlin, LibSSH, Godot).
-We provide updated links for each system's repository.
+We provide an overview of the used 44 open-source preprocessor-based software product lines in the [docs/datasets.md][dataset] file, taken from the original [_DiffDetective_](https://github.com/VariantSync/DiffDetective) implementation.
 
-### 2.2 Forked Repositories for Replication
-To guarantee the exact replication of our validation, we created forks of all 44 open-source repositories at the state we performed the validation for our paper.
-The forked repositories are listed in the [replication datasets](docs/replication/datasets.md) and are located at the Github user profile [DiffDetective](https://github.com/DiffDetective?tab=repositories).
-These repositories are used when running the replication as described under `1.2` and in the [INSTALL](INSTALL.md).
 
 ## 3. Running DiffDetective on Custom Datasets
 You can also run DiffDetective on other datasets by providing the path to the dataset file as first argument to the execution script:
