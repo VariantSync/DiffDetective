@@ -50,7 +50,7 @@ Further troubleshooting advice can be found at the bottom of the [Install](INSTA
 ### 1.3 View the results in the [results][resultsdir] directory
 All raw results are stored in the [results][resultsdir] directory.
 The aggregated results can be found in the following files.
-(Note that the links below only have a target _after_ running the replication or verification.)
+(Note that the links to the results only have a target _after_ running the replication or verification.)
 The results consist of general information about the analysed repositories as well as CSV files with entries for every patch analysed, i.e., every source code file changed in a commit.
 
 
