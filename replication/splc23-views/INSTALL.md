@@ -72,7 +72,7 @@ To execute the replication you can run the `execute` script corresponding to you
 You might see warnings or errors reported from SLF4J like `Failed to load class "org.slf4j.impl.StaticLoggerBinder"` which you can safely ignore.
 Further troubleshooting advice can be found at the bottom of this file.
 
-The results of the verification will be stored in the [results](../../results) directory.
+The results of the verification will be stored in the top level [results](../../results) directory.
 
 ### Expected Output of the Verification
 The aggregated results of the verification/replication can be found in the following files.

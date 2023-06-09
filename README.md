@@ -10,7 +10,7 @@
 
 DiffDetective is a research software to study the evolution of configurable and variational software projects, also known as software product lines.
 
-DiffDetective reads the git history of a C-preprocessor-based software product line to analyze patches in terms of _variation diffs_ [1].
+DiffDetective reads the Git history of a C-preprocessor-based software product line to analyze patches in terms of _variation diffs_ [1].
 A variation diff is a variability-aware diff that depicts changes to source code as well as to variability annotations (e.g., C-preprocessor macros such as `#if` and `#ifdef`).
 
 ![DiffDetectiveTeaser](docs/teaser.png)
@@ -18,7 +18,7 @@ A variation diff is a variability-aware diff that depicts changes to source code
 This figure outlines the parsing process within DiffDetective.
 Given two states of a C-preprocessor annotated source code file (left), for example before and after a commit, DiffDetective constructs a variation diff (right) that describes the differences of the code as well as the involved variability.
 DiffDetective can construct a variation diff either from a text-based diff between both file versions (center path),
-or by first parsing both versions to an abstract representation, a variation tree (center top and bottom).
+or by first parsing both versions to an abstract representation, a variation tree (center top and bottom), and constructing a variation diff using a tree matching algorithm in a second step.
 
 ## Publications
 
@@ -31,7 +31,7 @@ The idea of a view is to act as a filter on relevant parts of a system.
 For instance, a piece of source code may be deemed relevant if it implements a certain feature.
 
 Views on edits extend views to software changes.
-A view on an edit thus is a simplified form of an edit that, for example, contains only those changes to a certain feature.
+A view on an edit thus is a simplified form of an edit that, for example, contains only changes to a certain feature.
 We implemented views on edits for variational systems in terms of views on variation diffs.
 
 Our replication package and further information can be found in the [README](replication/splc23-views/README.md) file in the respective directory (`replication/splc23-views`).
