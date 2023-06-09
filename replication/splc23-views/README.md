@@ -11,7 +11,7 @@ This is the replication package for our paper _Views on Edits to Variational Sof
 This replication package consists of two parts:
 
 1. **Feasibility Study**: We implemented our feasibility study in _DiffDetective_, a library and command-line tool for analysis of edits to preprocessor-based software product lines.
-2. **Appendix**: The appendix of our paper is given in PDF format in the file [../../appendix/appendix-splc23.pdf][appendix].
+2. **Appendix**: The appendix of our paper is given in PDF format in the file [../../appendix/appendix-splc23-views.pdf][appendix].
 
 ## Implementation of Views on Edits to Variational Software in DiffDetective
 
@@ -29,10 +29,12 @@ The majority of DiffDetective's code base is documented, too.
 
 ## Replication of the Feasibility Study
 
-Hardware and software requirements are documented in the [REQUIREMENTS.md](REQUIREMENTS.md) file.
+**Hardware and software requirements** are documented in the [REQUIREMENTS.md](REQUIREMENTS.md) file.
 Please make sure that you meet the specified software requirements (there are no specific hardware requirements).
 
+**Instructions to setup and replicate our feasibility study** can be found in the [INSTALL.md](INSTALL.md) file, including detailed descriptions of each step.
 We offer a [Docker](https://www.docker.com/) setup to replicate the feasibility study performed in our paper.
-Information for the Docker setup and replicating our experiments can be found in the [INSTALL.md](INSTALL.md) file, including detailed descriptions of each step and troubleshooting advice.
+
+**Troubleshooting advice** for frequent errors can be found at the bottom of the [INSTALL.md](INSTALL.md) file.
 
 [appendix]: ../../appendix/appendix-splc23-views.pdf
