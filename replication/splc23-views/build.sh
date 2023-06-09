@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/usr/bin/env bash
 # Assure that the script is only called from the splc23-views folder
 current_dir=$(pwd)
 expected_path="/replication/splc23-views"
