@@ -24,7 +24,9 @@ or by first parsing both versions to an abstract representation, a variation tre
 
 ### [2] Views on Edits to Variational Software (SPLC 2023)
 
-> P. M. Bittner, A. Schultheiß, S. Greiner, B. Moosherr, S. Krieter, C. Tinnes, T. Kehrer, T. Thüm. _Views on Edits to Variational Software_. In Proceedings of the 27th ACM International Systems and Software Product Line Conference (SPLC 2023), ACM, New York, NY, 2023
+[![Replication Package](https://img.shields.io/badge/Replication-Package-blue)](replication/splc23-views/README.md)
+
+> P. M. Bittner, A. Schultheiß, S. Greiner, B. Moosherr, S. Krieter, C. Tinnes, T. Kehrer, T. Thüm. _Views on Edits to Variational Software_. Conditionally Accepted at the 27th ACM International Systems and Software Product Line Conference (SPLC 2023)
 
 In this work, we used DiffDetective for a feasibility study of creating views on edits to C-preprocessor based software.
 The idea of a view is to act as a filter on relevant parts of a system.
@@ -38,7 +40,13 @@ Our replication package and further information can be found in the [README](rep
 
 ### [1] Classifying Edits to Variability in Source Code (ESEC/FSE 2022)
 
-> P. M. Bittner, C.Tinnes, A. Schultheiß, S. Viegener, T. Kehrer, T. Thüm. _Views on Edits to Variational Software_. In Proceedings of the 30th ACM Joint European Software Engineering Conference and Symposium on the Foundations of Software Engineering (ESEC/FSE 2022), ACM, New York, NY, November 2022
+[![Preprint](https://img.shields.io/badge/Preprint-Read-purple)](https://github.com/SoftVarE-Group/Papers/raw/main/2022/2022-ESECFSE-Bittner.pdf)
+[![Paper](https://img.shields.io/badge/Paper-Read-purple)](https://dl.acm.org/doi/10.1145/3540250.3549108)
+[![Talk](https://img.shields.io/badge/Talk-Watch-purple)](https://www.youtube.com/watch?v=EnDx1AWxD24)
+[![Replication Package](https://img.shields.io/badge/Replication-Package-blue)](replication/esecfse22/README.md)
+[![Artifact DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7110095.svg)](https://doi.org/10.5281/zenodo.7110095)
+
+> P. M. Bittner, C.Tinnes, A. Schultheiß, S. Viegener, T. Kehrer, T. Thüm. _Classifying Edits to Variability in Source Code_. In Proceedings of the 30th ACM Joint European Software Engineering Conference and Symposium on the Foundations of Software Engineering (ESEC/FSE 2022), ACM, New York, NY, November 2022
 
 <img padding="10" align="right" src="https://www.acm.org/binaries/content/gallery/acm/publications/artifact-review-v1_1-badges/artifacts_evaluated_reusable_v1_1.png" alt="ACM Artifacts Evaluated Reusable" width="114" height="113"/>
 
