@@ -72,7 +72,7 @@ cd DiffDetective/replication/esecfse22
 You might see warnings or errors reported from SLF4J like `Failed to load class "org.slf4j.impl.StaticLoggerBinder"` which you can safely ignore.
 Further troubleshooting advice can be found at the bottom of this file.
 
-The results of the verification will be stored in the [results](../../results) directory.
+The results of the verification will be stored in the [results](results) directory.
 
 ### Expected Output of the Verification
 The aggregated results of the verification/replication can be found in the following files.
@@ -151,7 +151,7 @@ The input file must have the same format as the other dataset files (i.e., repos
 `Fix:` Follow the instructions described above in the section `Build the Docker Container`.
 
 ### No results after verification, or 'cannot create directory '../results/validation/current': Permission denied'
-`Problem:` This problem can occur due to how permissions are managed inside the Docker container. More specifically, it will appear, if Docker is executed with elevated permissions (i.e., `sudo`) and if there is no [results](../../results) directory because it was deleted manually. In this case, Docker will create the directory with elevated permissions, and the Docker user has no permissions to access the directory.
+`Problem:` This problem can occur due to how permissions are managed inside the Docker container. More specifically, it will appear, if Docker is executed with elevated permissions (i.e., `sudo`) and if there is no [results](results) directory because it was deleted manually. In this case, Docker will create the directory with elevated permissions, and the Docker user has no permissions to access the directory.
 
 `Fix:` If there is a _results_ directory, delete it with elevated permission (e.g., `sudo rm -r results`). 
 Then, create a new _results_ directory without elevated permissions, or execute `git restore .` to restore the deleted directory.
