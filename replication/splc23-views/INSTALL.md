@@ -9,11 +9,6 @@ Start the docker deamon.
 
 ### 2. Open a Suitable Terminal
 ```
-# Windows Command Prompt: 
- - Press 'Windows Key + R' on your keyboard
- - Type in 'cmd' 
- - Click 'OK' or press 'Enter' on your keyboard
- 
 # Windows PowerShell:
  - Open the search bar (Default: 'Windows Key') and search for 'PowerShell'
  - Start the PowerShell
