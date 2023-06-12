@@ -1,4 +1,4 @@
-package org.variantsync.diffdetective.variation.tree.view.query;
+package org.variantsync.diffdetective.variation.tree.view.relevance;
 
 import org.prop4j.Node;
 import org.prop4j.NodeWriter;
@@ -8,14 +8,30 @@ import org.variantsync.diffdetective.variation.tree.VariationNode;
 
 import java.util.function.Consumer;
 
-public class VariantQuery implements Query {
+/**
+ * Relevance predicate that generates (partial) variants from variation trees.
+ * This relevance predicate is the implementation of Equation 5 in our SPLC'23 paper.
+ */
+public class Configure implements Relevance {
     private final FixTrueFalse.Formula configuration;
 
-    public VariantQuery(final FixTrueFalse.Formula configuration) {
+    /**
+     * Same as {@link Configure#Configure(Node)} but with a formula that is witnessed to
+     * not contain true or false constants not at the root.
+     * Workaround for FeatureIDE bug <a href="https://github.com/FeatureIDE/FeatureIDE/issues/1333">FeatureIDE Issue 1333</a>.
+     */
+    public Configure(final FixTrueFalse.Formula configuration) {
         this.configuration = configuration;
     }
 
-    public VariantQuery(final Node configuration) {
+    /**
+     * Create a configuration relevance from a propositional formula that encodes selections
+     * and deselections of variables.
+     * Typically, the given formula should be in conjunctive normal form.
+     * The given configuration may be partial or complete.
+     * @param configuration A propositional formula that denotes selections and deselections.
+     */
+    public Configure(final Node configuration) {
         this(FixTrueFalse.EliminateTrueAndFalse(configuration));
     }
 
@@ -53,6 +69,6 @@ public class VariantQuery implements Query {
 
     @Override
     public String toString() {
-        return Query.toString(this);
+        return Relevance.toString(this);
     }
 }

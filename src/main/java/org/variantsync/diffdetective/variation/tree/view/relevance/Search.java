@@ -1,8 +1,12 @@
-package org.variantsync.diffdetective.variation.tree.view.query;
+package org.variantsync.diffdetective.variation.tree.view.relevance;
 
 import org.variantsync.diffdetective.variation.tree.VariationNode;
 
-public record ArtifactQuery(String artifact) implements Query {
+/**
+ * Relevance predicate that searches for implementation artifacts in a variation tree.
+ * This relevance predicate is the implementation of Equation 7 in our SPLC'23 paper.
+ */
+public record Search(String artifact) implements Relevance {
     @Override
     public boolean test(VariationNode<?> v) {
         if (v.isArtifact()) {
@@ -12,6 +16,7 @@ public record ArtifactQuery(String artifact) implements Query {
         return false;
     }
 
+    @Override
     public String parametersToString() {
         return artifact();
     }
@@ -23,6 +28,6 @@ public record ArtifactQuery(String artifact) implements Query {
 
     @Override
     public String toString() {
-        return Query.toString(this);
+        return Relevance.toString(this);
     }
 }

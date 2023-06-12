@@ -1,8 +1,12 @@
-package org.variantsync.diffdetective.variation.tree.view.query;
+package org.variantsync.diffdetective.variation.tree.view.relevance;
 
 import org.variantsync.diffdetective.variation.tree.VariationNode;
 
-public record FeatureQuery(String featureName) implements Query {
+/**
+ * Relevance predicate that traces a certain feature syntactically within a variation tree.
+ * This relevance predicate is the implementation of Equation 6 in our SPLC'23 paper.
+ */
+public record Trace(String featureName) implements Relevance {
     @Override
     public boolean test(VariationNode<?> v) {
         return v.getPresenceCondition().getUniqueContainedFeatures().stream().anyMatch(
@@ -22,6 +26,6 @@ public record FeatureQuery(String featureName) implements Query {
 
     @Override
     public String toString() {
-        return Query.toString(this);
+        return Relevance.toString(this);
     }
 }
