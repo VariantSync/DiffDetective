@@ -25,6 +25,7 @@ The experiment's entry point is the main method in the [Main][cls-feasibilitymai
 
 We documented all relevant source code of our extensions with Javadoc.
 The majority of DiffDetective's code base is documented, too.
+You may access the javadoc website [here][documentation].
 
 ## Replication of the Feasibility Study
 
