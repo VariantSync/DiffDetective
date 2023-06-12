@@ -1,8 +1,8 @@
-# Views on Edits to Variational Software
-
 [![Documentation](https://img.shields.io/badge/Documentation-Read-purple)][documentation]
 [![Install](https://img.shields.io/badge/Install-Instructions-blue)](INSTALL.md)
 [![License](https://img.shields.io/badge/License-GNU%20LGPLv3-blue)](../../LICENSE.LGPL3)
+
+# Views on Edits to Variational Software
 
 This is the replication package for our paper _Views on Edits to Variational Software_ conditionally accepted at the 27th Systems and Software Product Line Conference (SPLC 2023).
 

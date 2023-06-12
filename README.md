@@ -2,7 +2,7 @@
 ![Maven](https://github.com/VariantSync/DiffDetective/actions/workflows/maven.yml/badge.svg)
 [![Documentation](https://img.shields.io/badge/Documentation-Read-purple)][documentation]
 [![GitHubPages](https://img.shields.io/badge/GitHub%20Pages-online-blue.svg?style=flat)][website]
-[![License](https://img.shields.io/badge/License-GNU%20LGPLv3-blue)](../../LICENSE.LGPL3)
+[![License](https://img.shields.io/badge/License-GNU%20LGPLv3-blue)](LICENSE.LGPL3)
 
 # DiffDetective - Analysing Edits to Preprocessor-Based Variability
 
