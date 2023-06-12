@@ -71,7 +71,7 @@ public interface Metadata<T> {
     /**
      * Same as {@link #mergeEqual(Object, Object)} but does not crash when the two values are unequal.
      * Instead, both values are merged using the supplied function.
-     * The supplied function is called only if the two given values are unequal (according to {@link Object::equals}).
+     * The supplied function is called only if the two given values are unequal (according to {@link Object#equals(Object)}).
      *
      * <p>The value {@code null} is treated as the neutral element in the sense that no exception is
      * thrown if an element is {@code null}. In this case return value is defined by {@code
