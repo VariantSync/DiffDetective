@@ -23,6 +23,7 @@ or by first parsing both versions to an abstract representation, a variation tre
 ### [2] Views on Edits to Variational Software (SPLC 2023)
 
 [![Replication Package](https://img.shields.io/badge/Replication-Package-blue)](replication/splc23-views/README.md)
+[![Artifact DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.8027920.svg)](https://doi.org/10.5281/zenodo.8027920)
 
 > P. M. Bittner, A. Schultheiß, S. Greiner, B. Moosherr, S. Krieter, C. Tinnes, T. Kehrer, T. Thüm. _Views on Edits to Variational Software_. Conditionally Accepted at the 27th ACM International Systems and Software Product Line Conference (SPLC 2023)
 

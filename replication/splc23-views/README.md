@@ -1,6 +1,7 @@
 [![Documentation](https://img.shields.io/badge/Documentation-Read-purple)][documentation]
 [![Install](https://img.shields.io/badge/Install-Instructions-blue)](INSTALL.md)
 [![License](https://img.shields.io/badge/License-GNU%20LGPLv3-blue)](../../LICENSE.LGPL3)
+[![Artifact DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.8027920.svg)](https://doi.org/10.5281/zenodo.8027920)
 
 # Views on Edits to Variational Software
 
