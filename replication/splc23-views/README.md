@@ -11,7 +11,7 @@ This is the replication package for our paper _Views on Edits to Variational Sof
 This replication package consists of two parts:
 
 1. **Feasibility Study**: We implemented our feasibility study in _DiffDetective_, a library and command-line tool for analysis of edits to preprocessor-based software product lines.
-2. **Appendix**: The appendix of our paper is given in PDF format in the file [../../appendix/appendix-splc23-views.pdf][appendix].
+2. **Appendix**: The appendix of our paper is given in PDF format in the file [../../appendix/appendix-splc23-views.pdf][appendix]. The appendix consists of the proof of correctness of our optimized view generation $view_{smart}$ (Theorem 5.8 in the paper).
 
 ## Implementation of Views on Edits to Variational Software in DiffDetective
 
