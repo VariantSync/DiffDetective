@@ -55,5 +55,5 @@ In this work, we used DiffDetective to classify the effect of edits on the varia
 Our replication package and further information can be found in the [README](replication/esecfse22/README.md) file in the respective directory (`replication/esecfse22`).
 
 
-[documentation]: https://variantsync.github.io/DiffDetective/docs/javadoc/
+[documentation]: https://htmlpreview.github.io/?https://github.com/VariantSync/DiffDetective/blob/splc23-views/docs/javadoc/index.html
 [website]: https://variantsync.github.io/DiffDetective/

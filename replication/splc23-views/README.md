@@ -1,8 +1,6 @@
 # Views on Edits to Variational Software
 
-[//]: # (![Maven]&#40;https://github.com/VariantSync/DiffDetective/actions/workflows/maven.yml/badge.svg&#41;)
-[//]: # ([![Documentation]&#40;https://img.shields.io/badge/Documentation-Read-purple&#41;][documentation])
-[//]: # ([![DOI]&#40;https://zenodo.org/badge/DOI/10.5281/zenodo.7110095.svg&#41;]&#40;https://doi.org/10.5281/zenodo.7110095&#41;)
+[![Documentation](https://img.shields.io/badge/Documentation-Read-purple)][documentation]
 [![Install](https://img.shields.io/badge/Install-Instructions-blue)](INSTALL.md)
 [![License](https://img.shields.io/badge/License-GNU%20LGPLv3-blue)](../../LICENSE.LGPL3)
 
@@ -39,10 +37,11 @@ We offer a [Docker](https://www.docker.com/) setup to replicate the feasibility 
 **Troubleshooting advice** for frequent errors can be found at the bottom of the [INSTALL.md](INSTALL.md) file.
 
 [appendix]: ../../appendix/appendix-splc23-views.pdf
+[documentation]: https://htmlpreview.github.io/?https://github.com/VariantSync/DiffDetective/blob/splc23-views/docs/javadoc/index.html
 
-[pkg-treeview]: ../../src/main/java/org/variantsync/diffdetective/variation/tree/view
-[pkg-diffview]: ../../src/main/java/org/variantsync/diffdetective/variation/diff/view
-[pkg-relevance]: ../../src/main/java/org/variantsync/diffdetective/variation/tree/view/relevance
-[pkg-feasibilityexperiment]: ../../src/main/java/org/variantsync/diffdetective/experiments/views
-[cls-diffview]: ../../src/main/java/org/variantsync/diffdetective/variation/diff/view/DiffView.java
-[cls-feasibilitymain]: ../../src/main/java/org/variantsync/diffdetective/experiments/views/Main.java
+[pkg-treeview]: https://htmlpreview.github.io/?https://raw.githubusercontent.com/VariantSync/DiffDetective/splc23-views/docs/javadoc/org/variantsync/diffdetective/variation/tree/view/package-summary.html
+[pkg-diffview]: https://htmlpreview.github.io/?https://raw.githubusercontent.com/VariantSync/DiffDetective/splc23-views/docs/javadoc/org/variantsync/diffdetective/variation/diff/view/package-summary.html
+[pkg-relevance]: https://htmlpreview.github.io/?https://raw.githubusercontent.com/VariantSync/DiffDetective/splc23-views/docs/javadoc/org/variantsync/diffdetective/variation/tree/view/relevance/package-summary.html
+[pkg-feasibilityexperiment]: https://htmlpreview.github.io/?https://raw.githubusercontent.com/VariantSync/DiffDetective/splc23-views/docs/javadoc/org/variantsync/diffdetective/experiments/views/package-summary.html
+[cls-diffview]: https://htmlpreview.github.io/?https://raw.githubusercontent.com/VariantSync/DiffDetective/splc23-views/docs/javadoc/org/variantsync/diffdetective/variation/diff/view/DiffView.html
+[cls-feasibilitymain]: https://htmlpreview.github.io/?https://raw.githubusercontent.com/VariantSync/DiffDetective/splc23-views/docs/javadoc/org/variantsync/diffdetective/experiments/views/Main.html
