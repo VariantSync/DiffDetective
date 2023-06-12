@@ -18,12 +18,12 @@ This replication package consists of two parts:
 We implemented the generation of views and our experiment in DiffDetective.
 In this section, we outline where our extensions can be found within DiffDetective's code base.
 
-Our implementation of views as proposed in our paper can be found in the packages [org.variantsync.diffdetective.variation.tree.view](../../src/main/java/org/variantsync/diffdetective/variation/tree/view) and [org.variantsync.diffdetective.variation.diff.view](../../src/main/java/org/variantsync/diffdetective/variation/diff/view) for views on variation trees (Section 3 in our paper) and diffs (Section 5), respectively.
-The algorithms $view_{naive}$ and $view_{smart}$ from Section 5.2 and 5.3 in the paper are implemented in the [DiffView](../../src/main/java/org/variantsync/diffdetective/variation/diff/view/DiffView.java) class.
-The sub-package [org.variantsync.diffdetective.variation.tree.view.relevance](../../src/main/java/org/variantsync/diffdetective/variation/tree/view/relevance) contains the implementation of the relevance predicates to support different types of views (Section 3)
+Our implementation of views as proposed in our paper can be found in the packages [org.variantsync.diffdetective.variation.tree.view][pkg-treeview] and [org.variantsync.diffdetective.variation.diff.view][pkg-diffview] for views on variation trees (Section 3 in our paper) and diffs (Section 5), respectively.
+The algorithms $view_{naive}$ and $view_{smart}$ from Section 5.2 and 5.3 in the paper are implemented in the [DiffView][cls-diffview] class.
+The sub-package [org.variantsync.diffdetective.variation.tree.view.relevance][pkg-relevance] contains the implementation of the relevance predicates to support different types of views (Section 3)
 
-The experiment for our feasibility study (Section 6) is implemented in the package [org.variantsync.diffdetective.experiments.views](../../src/main/java/org/variantsync/diffdetective/experiments/views).
-The experiment's entry point is the main method in the [Main](../../src/main/java/org/variantsync/diffdetective/experiments/views/Main.java) class in that package.
+The experiment for our feasibility study (Section 6) is implemented in the package [org.variantsync.diffdetective.experiments.views][pkg-feasibilityexperiment].
+The experiment's entry point is the main method in the [Main][cls-feasibilitymain] class in that package.
 
 We documented all relevant source code of our extensions with Javadoc.
 The majority of DiffDetective's code base is documented, too.
@@ -39,3 +39,10 @@ We offer a [Docker](https://www.docker.com/) setup to replicate the feasibility 
 **Troubleshooting advice** for frequent errors can be found at the bottom of the [INSTALL.md](INSTALL.md) file.
 
 [appendix]: ../../appendix/appendix-splc23-views.pdf
+
+[pkg-treeview]: ../../src/main/java/org/variantsync/diffdetective/variation/tree/view
+[pkg-diffview]: ../../src/main/java/org/variantsync/diffdetective/variation/diff/view
+[pkg-relevance]: ../../src/main/java/org/variantsync/diffdetective/variation/tree/view/relevance
+[pkg-feasibilityexperiment]: ../../src/main/java/org/variantsync/diffdetective/experiments/views
+[cls-diffview]: ../../src/main/java/org/variantsync/diffdetective/variation/diff/view/DiffView.java
+[cls-feasibilitymain]: ../../src/main/java/org/variantsync/diffdetective/experiments/views/Main.java
