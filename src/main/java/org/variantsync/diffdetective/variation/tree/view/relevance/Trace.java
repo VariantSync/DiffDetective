@@ -2,6 +2,10 @@ package org.variantsync.diffdetective.variation.tree.view.relevance;
 
 import org.variantsync.diffdetective.variation.tree.VariationNode;
 
+/**
+ * Relevance predicate that traces a certain feature syntactically within a variation tree.
+ * This relevance predicate is the implementation of Equation 6 in our SPLC'23 paper.
+ */
 public record Trace(String featureName) implements Relevance {
     @Override
     public boolean test(VariationNode<?> v) {

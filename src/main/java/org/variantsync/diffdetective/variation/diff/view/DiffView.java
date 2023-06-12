@@ -21,18 +21,20 @@ import java.util.*;
 import java.util.function.BiPredicate;
 import java.util.regex.Pattern;
 
+/**
+ * This class groups the implementations for functions that generate views on variation diffs,
+ * as described in Chapter 5 of our SPLC'23 paper - Views on Edits to Variational Software.
+ */
 public class DiffView {
-    public static final Pattern HUNK_HEADER_REGEX = Pattern.compile("@@\\s-(\\d+).*\\+(\\d+).*@@(\\rho\\n|\\rho|\\n)");
-
-    private static DiffFormatter makeFormatterWithoutHeader(final OutputStream os) {
-        return new DiffFormatter(os) {
-            @Override
-            protected void writeHunkHeader(int aStartLine, int aEndLine, int bStartLine, int bEndLine) {
-
-            }
-        };
-    }
-
+    /**
+     * Translates a relevance predicate for nodes on variation trees to a relevance predicate on nodes in a
+     * variation diff.
+     * The returned predicate determines if a node in the given variation diff is relevant at a given time.
+     * @param d The variation diff on which relevance of nodes should be determined.
+     * @param rho A relevance predicate for view generation.
+     * @return A binary predicate that determines whether a node in a variation diff is relevant at a given time.
+     *         The variation diff node has to be given in terms of its projection at the corresponding time.
+     */
     public static BiPredicate<Time, Projection> computeWhenNodesAreRelevant(final DiffTree d, final Relevance rho) {
         final Map<Time, Set<Projection>> V = new HashMap<>();
 
@@ -45,8 +47,28 @@ public class DiffView {
 
         return (t, p) -> V.get(t).contains(p);
     }
-
-    public static DiffTree naive(final DiffTree d, final Relevance rho, final String[] projectionViewText) throws IOException, DiffParseException {
+    
+    /**
+     * This method is not intended to be used directly and exists for optimization purposes only.
+     * Instead, consider using {@link #naive(DiffTree, Relevance)}.
+     * <p>
+     * This method behaves as {@link #naive(DiffTree, Relevance)} but takes as additional parameter,
+     * an array of length two that contains the text representation of the views on the two variation trees
+     * of the given variation diff d.
+     * This method assumes that
+     * {@code projectionViewText[Time.BEFORE.ordinal()]} represents the text of {@code d.project(Time.BEFORE)}
+     * and that
+     * {@code projectionViewText[Time.AFTER.ordinal()]} represents the text of {@code d.project(Time.AFTER)}.
+     * This array is used for a text-based differencing of the two texts.
+     * The resulting diff is considered to be the view on the given variation diff d and is subsequently parsed
+     * to a variation diff and returned.
+     *
+     * @param projectionViewText The text-based representation of the views on the two variation trees represented by
+     *                           the given diff d.
+     * @throws IOException When the text-based diffing fails because of an IO error.
+     * @throws DiffParseException When the text-based diff could not be parsed to a variation diff.
+     */
+    private static DiffTree naive(final DiffTree d, final Relevance rho, final String[] projectionViewText) throws IOException, DiffParseException {
 //        Logger.info("q = " + q);
         final RawText[] text = new RawText[] {
                 new RawText(projectionViewText[Time.BEFORE.ordinal()].getBytes()),
@@ -119,7 +141,23 @@ public class DiffView {
 
         return view;
     }
-
+    
+    /**
+     * This method is not intended to be used directly and exists for optimization purposes only.
+     * Instead, consider using {@link #naive(DiffTree, Relevance)}.
+     * This method is used to compare different the naive view generation to other algorithms, independently
+     * of the shared preprocessing in terms of {@link #computeWhenNodesAreRelevant(DiffTree, Relevance)}.
+     * <p>
+     * This method behaves as {@link #naive(DiffTree, Relevance)} but takes as additional parameter,
+     * the translation of the given relevance predicate to a relevance on a variation diff.
+     * This additional parameter is assumed to be created from the given relevance predicate
+     * in terms of {@link #computeWhenNodesAreRelevant(DiffTree, Relevance)}.
+     * 
+     * @param inView {@link #computeWhenNodesAreRelevant(DiffTree, Relevance)} for the given variation diff d
+     *                                                                        and relevance predicate rho.
+     * @throws IOException When the text-based diffing fails because of an IO error.
+     * @throws DiffParseException When the text-based diff could not be parsed to a variation diff.
+     */
     public static DiffTree naive(final DiffTree d, final Relevance rho, final BiPredicate<Time, Projection> inView) throws IOException, DiffParseException {
         final String[] projectionViewText = new String[2];
 
@@ -144,34 +182,36 @@ public class DiffView {
         return naive(d, rho, projectionViewText);
     }
 
-    @Deprecated
+    /**
+     * This function generates a view on the given variation diff by generating views on the underlying
+     * variation trees, and then differencing these tree views.
+     * Implementation of the function view_naive (Equation 8) from SPLC'23 paper - Views on Edits to Variational Software.
+     * @param d The variation diff to generate a view on.
+     * @param rho A relevance predicate that determines which nodes should be contained in the view.
+     * @return A variation diff that constitutes a view on the given variation diff.
+     * @throws IOException When the text-based diffing fails because of an IO error.
+     * @throws DiffParseException When the text-based diff could not be parsed to a variation diff.
+     */
     public static DiffTree naive(final DiffTree d, final Relevance rho) throws IOException, DiffParseException {
-        final String[] projectionViewText = new String[2];
-
-        for (final Time t : Time.values()) {
-            final int i = t.ordinal();
-
-            final VariationTree projection = d.project(t);
-            try {
-                TreeView.treeInline(projection, rho);
-            } catch (NullPointerException e) {
-                Logger.info(rho);
-                throw e;
-            }
-
-            final StringBuilder b = new StringBuilder();
-            projection.root().printSourceCode(b);
-            projectionViewText[i] = b.toString();
-        }
-        return naive(d, rho, projectionViewText);
+        return naive(d, rho, DiffView.computeWhenNodesAreRelevant(d, rho));
     }
 
-    public static DiffTree badgood(final DiffTree d, final Relevance q) {
+    /**
+     * An alternative algorithm for generating of views on variation diffs based on 
+     * (1) removing cycles in the variation diff,
+     * (2) interpreting the resulting acyclic variation diff as a colored variation tree,
+     * (3) creating a view on the variation tree,
+     * (4) and finally reintroducing the removed cycles.
+     * @param d The variation diff to generate a view on.
+     * @param rho A relevance predicate that determines which nodes should be contained in the view.
+     * @return A variation diff that constitutes a view on the given variation diff.
+     */
+    public static DiffTree badgood(final DiffTree d, final Relevance rho) {
         // treeify
         final BadVDiff badDiff = BadVDiff.fromGood(d);
 
         // create view
-        TreeView.treeInline(badDiff.diff(), q);
+        TreeView.treeInline(badDiff.diff(), rho);
 
         // unify
         final DiffTree goodDiff = badDiff.toGood();
@@ -179,7 +219,22 @@ public class DiffView {
         return goodDiff;
     }
 
-    public static DiffTree optimized(final DiffTree D, final Relevance rho, final BiPredicate<Time, Projection> inView) {
+
+    /**
+     * This method is not intended to be used directly and exists for optimization purposes only.
+     * Instead, consider using {@link #optimized(DiffTree, Relevance)}.
+     * This method is used to compare different the naive view generation to other algorithms, independently
+     * of the shared preprocessing in terms of {@link #computeWhenNodesAreRelevant(DiffTree, Relevance)}.
+     * <p>
+     * This method behaves as {@link #optimized(DiffTree, Relevance)} but takes as additional parameter,
+     * the translation of the given relevance predicate to a relevance on a variation diff.
+     * This additional parameter is assumed to be created from the given relevance predicate
+     * in terms of {@link #computeWhenNodesAreRelevant(DiffTree, Relevance)}.
+     *
+     * @param inView {@link #computeWhenNodesAreRelevant(DiffTree, Relevance)} for the given variation diff d
+     *                                                                        and relevance predicate rho.
+     */
+    public static DiffTree optimized(final DiffTree d, final Relevance rho, final BiPredicate<Time, Projection> inView) {
         /*
          * Memorization of translated nodes.
          * Keys are the nodes in rho.
@@ -205,7 +260,7 @@ public class DiffView {
 
         // Create copy nodes and edges.
         // We also find the root here.
-        D.forAll(node -> {
+        d.forAll(node -> {
             final DiffType nodeDiffType = node.getDiffType();
             final Set<Time> timesOfRelevancy = new HashSet<>();
             for (final Time t : Time.values()) {
@@ -261,17 +316,24 @@ public class DiffView {
         for (final Edge edge : edges) {
             final DiffNode parentInView = toCopy.get(edge.parentInD());
             if (parentInView == null) {
-                Assert.assertTrue(parentInView != null, () -> "Node " + edge.childCopy + " has no parent in view given by " + rho + " in " + D.getSource());
+                Assert.assertTrue(parentInView != null, () -> "Node " + edge.childCopy + " has no parent in view given by " + rho + " in " + d.getSource());
             }
             parentInView.addChild(edge.childCopy(), edge.t());
         }
 
         // Step 4: Build return value
         Assert.assertNotNull(rootCopy[0]);
-        return new DiffTree(rootCopy[0], new ViewSource(D, rho));
+        return new DiffTree(rootCopy[0], new ViewSource(d, rho));
     }
 
-    public static DiffTree optimized(final DiffTree D, final Relevance q) {
-        return optimized(D, q, computeWhenNodesAreRelevant(D, q));
+    /**
+     * This function generates a view on the given variation diff by determining the times of relevance for each node.
+     * Implementation of the function view_smart (Equation 10) from SPLC'23 paper - Views on Edits to Variational Software.
+     * @param d The variation diff to generate a view on.
+     * @param rho A relevance predicate that determines which nodes should be contained in the view.
+     * @return A variation diff that constitutes a view on the given variation diff.
+     */
+    public static DiffTree optimized(final DiffTree d, final Relevance rho) {
+        return optimized(d, rho, computeWhenNodesAreRelevant(d, rho));
     }
 }

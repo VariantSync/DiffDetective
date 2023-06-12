@@ -13,8 +13,8 @@ import static org.variantsync.diffdetective.util.fide.FormulaUtils.negate;
 
 /**
  * Class to fix bugs related to {@link True} and {@link False} of FeatureIDE.
- * See: https://github.com/FeatureIDE/FeatureIDE/issues/1111
- * See: https://github.com/FeatureIDE/FeatureIDE/issues/1333
+ * See: <a href="https://github.com/FeatureIDE/FeatureIDE/issues/1111">FeatureIDE Issue 1111</a>
+ * See: <a href="https://github.com/FeatureIDE/FeatureIDE/issues/1333">FeatureIDE Issue 1333</a>
  *
  * This class contains constants for representing atomic values true and false in formulas
  * as well as a conversion method for parsing certain feature names to true and false, respectively.

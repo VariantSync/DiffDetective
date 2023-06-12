@@ -16,6 +16,10 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Main entry point for running the feasibility study (Section 6) of our SPLC'23 paper
+ * Views on Edits to Variational Software.
+ */
 public class Main {
     /*
      * There is a bug in DiffView::naive when ignoreEmptyLines is set to true under
@@ -36,7 +40,13 @@ public class Main {
                     false
             );
 
-    public static Analysis AnalysisFactory(Repository repo, Path repoOutputDir) {
+    /**
+     * Creates the analysis to perform on the given repository to run our feasibility study.
+     * @param repo The repository to run the feasibility study on.
+     * @param repoOutputDir The directory to which output should be written.
+     * @return The analysis to run.
+     */
+    private static Analysis AnalysisFactory(Repository repo, Path repoOutputDir) {
         return new Analysis(
                 "Views Analysis",
                 new ArrayList<>(List.of(
@@ -51,6 +61,11 @@ public class Main {
         );
     }
 
+    /**
+     * Main method for running the feasibility study (Section 6).
+     * @param args see {@link AnalysisRunner.Options#DEFAULT(String[])}
+     * @throws IOException When an IO operation within the feasibility study fails.
+     */
     public static void main(String[] args) throws IOException {
         final AnalysisRunner.Options defaultOptions = AnalysisRunner.Options.DEFAULT(args);
         final AnalysisRunner.Options analysisOptions = new AnalysisRunner.Options(
