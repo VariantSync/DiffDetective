@@ -70,7 +70,7 @@ To execute the replication you can run the `execute` script corresponding to you
 > `./stop-execution.sh`
 
 You might see warnings or errors reported from SLF4J like `Failed to load class "org.slf4j.impl.StaticLoggerBinder"` which you can safely ignore.
-Further troubleshooting advice can be found at the bottom of this file.
+Further **troubleshooting advice** can be found at the bottom of this file.
 
 The results of the verification will be stored in the [results](results) directory.
 
@@ -90,19 +90,18 @@ The files are:
 - `<first commit hash>.committimes.txt`: Contains the time in milliseconds each commit in the batch required to be analysed.
 - `<first commit hash>.views.csv`: contains information on each generated view. This file contains the main results of our feasibility study.
 
-Additionally, each repository directory also contains a `totalresult.metadata.txt` that is an aggregation of the `*.metadata.txt` files of each batch.
+Additionally, each repository directory also contains a `totalresult.metadata.txt`, which is an aggregation of the `*.metadata.txt` files of each batch.
 
 #### results/views/current_plots
 
-The directory `results/views/current_plots` contains plots, latex tables, and aggregated results that we used to report
-our results in the paper. The directory should contain the following files:
+The directory `results/views/current_plots` contains plots, latex tables, and aggregated results that we used to report results in the paper. The directory should contain the following files:
 - `count.csv`: Lists how many views of each view type were generated.
-- `hist.tex`: A latex table that reports the runtimes of the view-smart and view-naive algorithm. Table 1 in our paper is a slightly adapted variant of `hist.tex`.
-- `median.tex`: A latex table that repots the median runtime for each view type per algorithm.
+- `hist.tex`: A latex table that reports the runtimes of the $view_{smart}$ and $view_{naive}$ algorithm. Table 1 in our paper is a slightly adapted variant of `hist.tex`.
+- `median.tex`: A latex table that reports the median runtime for each view type per algorithm.
 - `merged.csv`: An aggregation of all `*.views.csv` of all batches of all repositories within the `results/views/current` directory. This file thus lists the result data for each view we generated during the entire feasibility study.
-- `rank.csv`: Lists the slowest view generations with the naive algorithm. This table allows us to inspect how the view-smart algorithm performs on the worst case candidates of the view-naive algorithm.
-- `rel_speedup1sOrMore.csv`: Shows the relative speedups with the optimized algorithm view-smart relative to the naive algorithm view-naive for all views that required 1s or longer to generate with view-naive.
-- `wilcoxon.csv`: Results of the Wilcoxon Signed-Rank Test for determining whether there is a statistically significant improvement in runtimes with the optimized algorithm view-smart.
+- `rank.csv`: Lists the slowest view generations with the naive algorithm. This table allows us to inspect how the $view_{smart}$ algorithm performs on the worst case candidates of the $view_{naive}$ algorithm.
+- `rel_speedup1sOrMore.csv`: Shows the relative speedups with the optimized algorithm $view_{smart}$ relative to the naive algorithm $view_{naive}$ for all views that required 1s or longer to generate with $view_{naive}$.
+- `wilcoxon.csv`: Results of the Wilcoxon Signed-Rank Test for determining whether there is a statistically significant improvement in runtimes with the optimized algorithm $view_{smart}$.
 
 ### (Optional) Running the Feasibility Study on Custom Datasets
 You can also run the feasibility study on other datasets by providing the path to the dataset file as first argument to the execution script:
