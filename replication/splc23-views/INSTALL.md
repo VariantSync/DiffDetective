@@ -126,7 +126,7 @@ The input file must have the same format as the other dataset files (i.e., repos
 
 `Fix:` Follow the instructions described above in the section `Build the Docker Container`.
 
-### No results after verification, or 'cannot create directory '../results/validation/current': Permission denied'
+### No results after verification, or 'cannot create directory '../results/views/current': Permission denied'
 `Problem:` This problem can occur due to how permissions are managed inside the Docker container. More specifically, it will appear, if Docker is executed with elevated permissions (i.e., `sudo`) and if there is no [results](results) directory because it was deleted manually. In this case, Docker will create the directory with elevated permissions, and the Docker user has no permissions to access the directory.
 
 `Fix:` If there is a _results_ directory, delete it with elevated permission (e.g., `sudo rm -r results`). 
@@ -136,3 +136,9 @@ Then, create a new _results_ directory without elevated permissions, or execute 
 `Problem:` An operation within the initialization phase of the logger library we use (tinylog) failed.
 
 `Fix:` Please ignore this warning. Tinylog will fall back onto a default implementation (`Defaulting to no-operation (NOP) logger implementation`) and logging will work as expected.
+
+### './build.sh: Bad substitution' or './execute.sh: [[: not found'
+
+`Problem:` The scripts `build.sh` and `execute.sh` were not run in bash. The scripts were probably run in shell explicitly (i.e., the `sh` command, for example via `sh build.sh`).
+
+`Fix:` Run the scripts directly (i.e., `./build.sh` or `./execute.sh ...`) or via bash (i.e., `bash build.sh`).
