@@ -18,10 +18,11 @@ This replication package consists of two parts:
 We implemented the generation of views and our experiment in DiffDetective.
 In this section, we outline where our extensions can be found within DiffDetective's code base.
 
-Our implementation of views as proposed in our paper can be found in the packages [org.variantsync.diffdetective.variation.tree.view](../../src/main/java/org/variantsync/diffdetective/variation/tree/view) and [org.variantsync.diffdetective.variation.diff.view](../../src/main/java/org/variantsync/diffdetective/variation/diff/view) for views on variation trees and diffs, respectively.
-The algorithms _view-naive_ and _view-smart_ from the paper are implemented in the [DiffView](../../src/main/java/org/variantsync/diffdetective/variation/diff/view/DiffView.java) class.
+Our implementation of views as proposed in our paper can be found in the packages [org.variantsync.diffdetective.variation.tree.view](../../src/main/java/org/variantsync/diffdetective/variation/tree/view) and [org.variantsync.diffdetective.variation.diff.view](../../src/main/java/org/variantsync/diffdetective/variation/diff/view) for views on variation trees (Section 3 in our paper) and diffs (Section 5), respectively.
+The algorithms $view_{naive}$ and $view_{smart}$ from Section 5.2 and 5.3 in the paper are implemented in the [DiffView](../../src/main/java/org/variantsync/diffdetective/variation/diff/view/DiffView.java) class.
+The sub-package [org.variantsync.diffdetective.variation.tree.view.relevance](../../src/main/java/org/variantsync/diffdetective/variation/tree/view/relevance) contains the implementation of the relevance predicates to support different types of views (Section 3)
 
-The experiment is implemented in the package [org.variantsync.diffdetective.experiments.views](../../src/main/java/org/variantsync/diffdetective/experiments/views).
+The experiment for our feasibility study (Section 6) is implemented in the package [org.variantsync.diffdetective.experiments.views](../../src/main/java/org/variantsync/diffdetective/experiments/views).
 The experiment's entry point is the main method in the [Main](../../src/main/java/org/variantsync/diffdetective/experiments/views/Main.java) class in that package.
 
 We documented all relevant source code of our extensions with Javadoc.
