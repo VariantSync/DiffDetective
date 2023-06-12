@@ -1,8 +1,8 @@
-package org.variantsync.diffdetective.variation.tree.view.query;
+package org.variantsync.diffdetective.variation.tree.view.relevance;
 
 import org.variantsync.diffdetective.variation.tree.VariationNode;
 
-public record ArtifactQuery(String artifact) implements Query {
+public record Search(String artifact) implements Relevance {
     @Override
     public boolean test(VariationNode<?> v) {
         if (v.isArtifact()) {
@@ -23,6 +23,6 @@ public record ArtifactQuery(String artifact) implements Query {
 
     @Override
     public String toString() {
-        return Query.toString(this);
+        return Relevance.toString(this);
     }
 }

@@ -2,8 +2,8 @@ package org.variantsync.diffdetective.experiments.views.result;
 
 import org.variantsync.diffdetective.util.CSV;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
-import org.variantsync.diffdetective.variation.tree.view.query.Query;
-import org.variantsync.diffdetective.variation.tree.view.query.VariantQuery;
+import org.variantsync.diffdetective.variation.tree.view.relevance.Relevance;
+import org.variantsync.diffdetective.variation.tree.view.relevance.Configure;
 
 import static org.variantsync.functjonal.Functjonal.intercalate;
 
@@ -11,7 +11,7 @@ public record ViewEvaluation(
 //        Repository repo,
         String commit,
         String file,
-        Query query,
+        Relevance relevance,
         long msNaive,
         long msOptimized,
         DiffStatistics diffStatistics,
@@ -55,7 +55,7 @@ public record ViewEvaluation(
 //                repo.getRepositoryName(),
                 commit,
                 file,
-                query.getFunctionName(),
+                relevance.getFunctionName(),
 //                getQueryArguments(),
                 msNaive,
                 msOptimized,
@@ -66,9 +66,9 @@ public record ViewEvaluation(
         );
     }
 
-    private String getQueryArguments() {
-        if (query instanceof VariantQuery) {
-            return query.parametersToString();
+    private String getRelevanceArguments() {
+        if (relevance instanceof Configure) {
+            return relevance.parametersToString();
         }
         return "";
     }

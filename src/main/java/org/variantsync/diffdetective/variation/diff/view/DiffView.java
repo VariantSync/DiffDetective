@@ -13,7 +13,7 @@ import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParser;
 import org.variantsync.diffdetective.variation.tree.VariationTree;
 import org.variantsync.diffdetective.variation.tree.VariationTreeNode;
 import org.variantsync.diffdetective.variation.tree.view.TreeView;
-import org.variantsync.diffdetective.variation.tree.view.query.Query;
+import org.variantsync.diffdetective.variation.tree.view.relevance.Relevance;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -22,7 +22,7 @@ import java.util.function.BiPredicate;
 import java.util.regex.Pattern;
 
 public class DiffView {
-    public static final Pattern HUNK_HEADER_REGEX = Pattern.compile("@@\\s-(\\d+).*\\+(\\d+).*@@(\\r\\n|\\r|\\n)");
+    public static final Pattern HUNK_HEADER_REGEX = Pattern.compile("@@\\s-(\\d+).*\\+(\\d+).*@@(\\rho\\n|\\rho|\\n)");
 
     private static DiffFormatter makeFormatterWithoutHeader(final OutputStream os) {
         return new DiffFormatter(os) {
@@ -33,20 +33,20 @@ public class DiffView {
         };
     }
 
-    public static BiPredicate<Time, Projection> computeWhenNodesAreRelevant(final DiffTree d, final Query q) {
+    public static BiPredicate<Time, Projection> computeWhenNodesAreRelevant(final DiffTree d, final Relevance rho) {
         final Map<Time, Set<Projection>> V = new HashMap<>();
 
         for (final Time t : Time.values()) {
             final Set<Projection> relevantNodes_t = new HashSet<>();
             relevantNodes_t.add(d.getRoot().projection(t));
-            q.computeViewNodes(d.getRoot().projection(t), relevantNodes_t::add);
+            rho.computeViewNodes(d.getRoot().projection(t), relevantNodes_t::add);
             V.put(t, relevantNodes_t);
         }
 
         return (t, p) -> V.get(t).contains(p);
     }
 
-    public static DiffTree naive(final DiffTree d, final Query q, final String[] projectionViewText) throws IOException, DiffParseException {
+    public static DiffTree naive(final DiffTree d, final Relevance rho, final String[] projectionViewText) throws IOException, DiffParseException {
 //        Logger.info("q = " + q);
         final RawText[] text = new RawText[] {
                 new RawText(projectionViewText[Time.BEFORE.ordinal()].getBytes()),
@@ -111,16 +111,16 @@ public class DiffView {
                             Could not parse diff obtained with query {} at {}:
                             Diff:
                             """,
-                    d.getSource(), q);
+                    d.getSource(), rho);
             System.out.println(textDiff);
             throw e;
         }
-        view.setSource(new ViewSource(d, q));
+        view.setSource(new ViewSource(d, rho));
 
         return view;
     }
 
-    public static DiffTree naive(final DiffTree d, final Query q, final BiPredicate<Time, Projection> inView) throws IOException, DiffParseException {
+    public static DiffTree naive(final DiffTree d, final Relevance rho, final BiPredicate<Time, Projection> inView) throws IOException, DiffParseException {
         final String[] projectionViewText = new String[2];
 
         for (final Time t : Time.values()) {
@@ -141,11 +141,11 @@ public class DiffView {
             projectionViewText[i] = b.toString();
         }
 
-        return naive(d, q, projectionViewText);
+        return naive(d, rho, projectionViewText);
     }
 
     @Deprecated
-    public static DiffTree naive(final DiffTree d, final Query q) throws IOException, DiffParseException {
+    public static DiffTree naive(final DiffTree d, final Relevance rho) throws IOException, DiffParseException {
         final String[] projectionViewText = new String[2];
 
         for (final Time t : Time.values()) {
@@ -153,9 +153,9 @@ public class DiffView {
 
             final VariationTree projection = d.project(t);
             try {
-                TreeView.treeInline(projection, q);
+                TreeView.treeInline(projection, rho);
             } catch (NullPointerException e) {
-                Logger.info(q);
+                Logger.info(rho);
                 throw e;
             }
 
@@ -163,10 +163,10 @@ public class DiffView {
             projection.root().printSourceCode(b);
             projectionViewText[i] = b.toString();
         }
-        return naive(d, q, projectionViewText);
+        return naive(d, rho, projectionViewText);
     }
 
-    public static DiffTree badgood(final DiffTree d, final Query q) {
+    public static DiffTree badgood(final DiffTree d, final Relevance q) {
         // treeify
         final BadVDiff badDiff = BadVDiff.fromGood(d);
 
@@ -179,10 +179,10 @@ public class DiffView {
         return goodDiff;
     }
 
-    public static DiffTree optimized(final DiffTree D, final Query q, final BiPredicate<Time, Projection> inView) {
+    public static DiffTree optimized(final DiffTree D, final Relevance rho, final BiPredicate<Time, Projection> inView) {
         /*
          * Memorization of translated nodes.
-         * Keys are the nodes in R.
+         * Keys are the nodes in rho.
          * Values are copies of keys to return.
          */
         final Map<DiffNode, DiffNode> toCopy = new HashMap<>();
@@ -261,17 +261,17 @@ public class DiffView {
         for (final Edge edge : edges) {
             final DiffNode parentInView = toCopy.get(edge.parentInD());
             if (parentInView == null) {
-                Assert.assertTrue(parentInView != null, () -> "Node " + edge.childCopy + " has no parent in view given by " + q + " in " + D.getSource());
+                Assert.assertTrue(parentInView != null, () -> "Node " + edge.childCopy + " has no parent in view given by " + rho + " in " + D.getSource());
             }
             parentInView.addChild(edge.childCopy(), edge.t());
         }
 
         // Step 4: Build return value
         Assert.assertNotNull(rootCopy[0]);
-        return new DiffTree(rootCopy[0], new ViewSource(D, q));
+        return new DiffTree(rootCopy[0], new ViewSource(D, rho));
     }
 
-    public static DiffTree optimized(final DiffTree D, final Query q) {
+    public static DiffTree optimized(final DiffTree D, final Relevance q) {
         return optimized(D, q, computeWhenNodesAreRelevant(D, q));
     }
 }

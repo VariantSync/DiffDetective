@@ -1,4 +1,4 @@
-package org.variantsync.diffdetective.variation.tree.view.query;
+package org.variantsync.diffdetective.variation.tree.view.relevance;
 
 import org.prop4j.Node;
 import org.prop4j.NodeWriter;
@@ -8,14 +8,14 @@ import org.variantsync.diffdetective.variation.tree.VariationNode;
 
 import java.util.function.Consumer;
 
-public class VariantQuery implements Query {
+public class Configure implements Relevance {
     private final FixTrueFalse.Formula configuration;
 
-    public VariantQuery(final FixTrueFalse.Formula configuration) {
+    public Configure(final FixTrueFalse.Formula configuration) {
         this.configuration = configuration;
     }
 
-    public VariantQuery(final Node configuration) {
+    public Configure(final Node configuration) {
         this(FixTrueFalse.EliminateTrueAndFalse(configuration));
     }
 
@@ -53,6 +53,6 @@ public class VariantQuery implements Query {
 
     @Override
     public String toString() {
-        return Query.toString(this);
+        return Relevance.toString(this);
     }
 }

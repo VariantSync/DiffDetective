@@ -12,10 +12,10 @@ import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.variation.diff.Projection;
 import org.variantsync.diffdetective.variation.diff.Time;
 import org.variantsync.diffdetective.variation.diff.view.DiffView;
-import org.variantsync.diffdetective.variation.tree.view.query.ArtifactQuery;
-import org.variantsync.diffdetective.variation.tree.view.query.FeatureQuery;
-import org.variantsync.diffdetective.variation.tree.view.query.Query;
-import org.variantsync.diffdetective.variation.tree.view.query.VariantQuery;
+import org.variantsync.diffdetective.variation.tree.view.relevance.Search;
+import org.variantsync.diffdetective.variation.tree.view.relevance.Trace;
+import org.variantsync.diffdetective.variation.tree.view.relevance.Relevance;
+import org.variantsync.diffdetective.variation.tree.view.relevance.Configure;
 
 import java.io.IOException;
 import java.util.*;
@@ -40,21 +40,21 @@ public class ViewAnalysis implements Analysis.Hooks {
         csv.append(ViewEvaluation.makeHeader(CSV.DEFAULT_CSV_DELIMITER)).append(StringUtils.LINEBREAK);
     }
 
-    private void runQueryExperiment(Analysis analysis, final DiffTree d, final Query q) {
+    private void runRelevanceExperiment(Analysis analysis, final DiffTree d, final Relevance rho) {
         final long preprocessingTime, naiveTime, optimizedTime;
 
         //Show.diff(d, "D").showAndAwait();
 
         final Clock c = new Clock();
 
-        final BiPredicate<Time, Projection> inV = DiffView.computeWhenNodesAreRelevant(d, q);
+        final BiPredicate<Time, Projection> inV = DiffView.computeWhenNodesAreRelevant(d, rho);
 
         preprocessingTime = c.getPassedMilliseconds();
 
         // measure naive view generation
         try {
             c.start();
-            DiffView.naive(d, q, inV);
+            DiffView.naive(d, rho, inV);
             naiveTime = c.getPassedMilliseconds();
         } catch (IOException | DiffParseException e) {
             throw new RuntimeException(e);
@@ -62,14 +62,14 @@ public class ViewAnalysis implements Analysis.Hooks {
 
         // measure optimized view generation
         c.start();
-        final DiffTree view = DiffView.optimized(d, q, inV);
+        final DiffTree view = DiffView.optimized(d, rho, inV);
         optimizedTime = c.getPassedMilliseconds();
 
         // export results
         final ViewEvaluation e = new ViewEvaluation(
                 analysis.getCurrentCommitDiff().getAbbreviatedCommitHash(),
                 analysis.getCurrentPatch().getFileName(),
-                q,
+                rho,
                 preprocessingTime + naiveTime,
                 preprocessingTime + optimizedTime,
                 ViewEvaluation.DiffStatistics.of(d),
@@ -86,17 +86,17 @@ public class ViewAnalysis implements Analysis.Hooks {
 
     @Override
     public boolean analyzeDiffTree(Analysis analysis) throws Exception {
-        final DiffTree d                = analysis.getCurrentDiffTree();
-        final Collection<Query> queries = generateRandomQueries(d);
+        final DiffTree d                    = analysis.getCurrentDiffTree();
+        final Collection<Relevance> queries = generateRandomRelevances(d);
 
-        for (final Query q : queries) {
-            runQueryExperiment(analysis, d, q);
+        for (final Relevance r : queries) {
+            runRelevanceExperiment(analysis, d, r);
         }
 
         return Analysis.Hooks.super.analyzeDiffTree(analysis);
     }
 
-    private List<Query> generateRandomQueries(final DiffTree d) {
+    private List<Relevance> generateRandomRelevances(final DiffTree d) {
         final List<Node>  deselectedPCs = new ArrayList<>();
         final Set<String> features      = new HashSet<>();
         final Set<String> artifacts     = new HashSet<>();
@@ -121,61 +121,61 @@ public class ViewAnalysis implements Analysis.Hooks {
         features.remove(FixTrueFalse.True.var.toString());
         features.remove(FixTrueFalse.False.var.toString());
 
-        final List<Query> queries = new ArrayList<>(3);
-        addRandomQuery(deselectedPCs, this::randomVariantQuery,  queries);
-        addRandomQuery(features,      this::randomFeatureQuery,  queries);
-        addRandomQuery(artifacts,     this::randomArtifactQuery, queries);
+        final List<Relevance> relevances = new ArrayList<>(3);
+        addRandomRelevance(deselectedPCs, this::randomConfigure,  relevances);
+        addRandomRelevance(features,      this::randomTrace,  relevances);
+        addRandomRelevance(artifacts,     this::randomSearch, relevances);
 
         // For debugging:
 //        addAll(deselectedPCs, this::allVariantQueries,  queries);
 //        addAll(features,      this::allFeatureQueries,  queries);
 //        addAll(artifacts,     this::allArtifactQueries, queries);
 
-        return queries;
+        return relevances;
     }
 
-    private static <QueryData, QueryCandidates extends Collection<QueryData>> void addRandomQuery(
-            QueryCandidates source,
-            Function<QueryCandidates, Query> pick,
-            Collection<Query> target
+    private static <RelevanceParams, RelevanceCandidates extends Collection<RelevanceParams>> void addRandomRelevance(
+            RelevanceCandidates source,
+            Function<RelevanceCandidates, Relevance> pick,
+            Collection<Relevance> target
     ) {
         if (!source.isEmpty()) {
-            final Query e = pick.apply(source);
+            final Relevance e = pick.apply(source);
             if (e != null) {
                 target.add(e);
             }
         }
     }
 
-    private static <QueryData, QueryCandidates extends Collection<? extends QueryData>> void addAll(
-            QueryCandidates source,
-            Function<? super QueryCandidates, ? extends Collection<? extends Query>> prepare,
-            Collection<Query> target
+    private static <RelevanceParams, RelevanceCandidates extends Collection<? extends RelevanceParams>> void addAll(
+            RelevanceCandidates source,
+            Function<? super RelevanceCandidates, ? extends Collection<? extends Relevance>> prepare,
+            Collection<Relevance> target
     ) {
         if (!source.isEmpty()) {
             target.addAll(prepare.apply(source));
         }
     }
 
-    private List<VariantQuery> allVariantQueries(final List<Node> deselectedPCs) {
+    private List<Configure> allConfigureRelevances(final List<Node> deselectedPCs) {
         /*
          * Select a random satisfiable configuration (i.e., a non-false config).
          * Unsatisfiable configs cause empty views which
          * (1) we suspect to be rather useless and thus unused in practice
          * (2) cause a crash in view generation because everything is removed, even the mandatory root.
          */
-        final List<VariantQuery> all = new ArrayList<>();
+        final List<Configure> all = new ArrayList<>();
         for (final Node deselectedPC : deselectedPCs) {
             final FixTrueFalse.Formula p = FixTrueFalse.EliminateTrueAndFalseInplace(deselectedPC);
             if (SAT.isSatisfiable(p)) {
-                all.add(new VariantQuery(p));
+                all.add(new Configure(p));
             }
         }
 
         return all;
     }
 
-    private Query randomVariantQuery(final List<Node> deselectedPCs) {
+    private Configure randomConfigure(final List<Node> deselectedPCs) {
         /*
         Do we need this?
         I think for our feasibility study, we can ignore this.
@@ -207,33 +207,33 @@ public class ViewAnalysis implements Analysis.Hooks {
             return null;
         }
 
-        return new VariantQuery(winner);
+        return new Configure(winner);
     }
 
-    private List<FeatureQuery> allFeatureQueries(final Set<String> features) {
-        return features.stream().map(FeatureQuery::new).toList();
+    private List<Trace> allTraceRelevances(final Set<String> features) {
+        return features.stream().map(Trace::new).toList();
     }
 
-    private Query randomFeatureQuery(final Set<String> features) {
+    private Trace randomTrace(final Set<String> features) {
         /*
-        Pick a random feature for our query.
+        Pick a random feature for our relevance.
         Since we actually just need a single random value, we could also just pick the first element
         but I don't know if there is any hidden sorting within the set that would bias this choice.
          */
-        return new FeatureQuery(CollectionUtils.getRandomElement(random, features));
+        return new Trace(CollectionUtils.getRandomElement(random, features));
     }
 
-    private List<ArtifactQuery> allArtifactQueries(final Set<String> artifacts) {
-        return artifacts.stream().map(ArtifactQuery::new).toList();
+    private List<Search> allSearchRelevances(final Set<String> artifacts) {
+        return artifacts.stream().map(Search::new).toList();
     }
 
-    private Query randomArtifactQuery(final Set<String> artifacts) {
+    private Search randomSearch(final Set<String> artifacts) {
         /*
-        Pick a random artifact for our query.
+        Pick a random artifact for our relevance.
         Since we actually just need a single random value, we could also just pick the first element
         but I don't know if there is any hidden sorting within the set that would bias this choice.
          */
-        return new ArtifactQuery(CollectionUtils.getRandomElement(random, artifacts));
+        return new Search(CollectionUtils.getRandomElement(random, artifacts));
     }
 
     @Override

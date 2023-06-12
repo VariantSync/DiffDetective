@@ -8,7 +8,7 @@ import org.variantsync.diffdetective.datasets.PatchDiffParseOptions;
 import org.variantsync.diffdetective.datasets.Repository;
 import org.variantsync.diffdetective.variation.diff.filter.DiffTreeFilter;
 import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParseOptions;
-import org.variantsync.diffdetective.variation.tree.view.query.ArtifactQuery;
+import org.variantsync.diffdetective.variation.tree.view.relevance.Search;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -24,12 +24,12 @@ public class Main {
      * commit: 2254b6c09cff8f3a83684fd159289d0e305b0e7d
      * patch: "src/alloc.c"
      * view_naive
-     * with the following query.
+     * with the following relevance.
      * What is weird that the parsing only failed when running the analyses but not when extracting the diff to a unit
      * test and parsing it there.
      * Maybe it has something to do with linebreak or whitespace characters?
      */
-    private static final ArtifactQuery bugQuery = new ArtifactQuery("  /* Check both of the above conditions, for symbols.  */");
+    private static final Search bugRelevance = new Search("  /* Check both of the above conditions, for symbols.  */");
     public static DiffTreeParseOptions DIFFTREE_PARSE_OPTIONS =
             new DiffTreeParseOptions(
                     true,

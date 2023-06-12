@@ -1,11 +1,11 @@
-package org.variantsync.diffdetective.variation.tree.view.query;
+package org.variantsync.diffdetective.variation.tree.view.relevance;
 
 import org.variantsync.diffdetective.variation.tree.VariationNode;
 
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-public interface Query extends Predicate<VariationNode<?>> {
+public interface Relevance extends Predicate<VariationNode<?>> {
     String getFunctionName();
     String parametersToString();
 
@@ -13,7 +13,7 @@ public interface Query extends Predicate<VariationNode<?>> {
         computeViewNodesCheckAll(this, v, markRelevant);
     }
 
-    static <TreeNode extends VariationNode<TreeNode>> void computeViewNodesCheckAll(final Query q, final TreeNode v, final Consumer<TreeNode> markRelevant) {
+    static <TreeNode extends VariationNode<TreeNode>> void computeViewNodesCheckAll(final Relevance q, final TreeNode v, final Consumer<TreeNode> markRelevant) {
         for (final TreeNode c : v.getChildren()) {
             if (q.test(c)) {
                 c.forMeAndMyAncestors(markRelevant);
@@ -23,7 +23,7 @@ public interface Query extends Predicate<VariationNode<?>> {
         }
     }
 
-    static String toString(Query q) {
+    static String toString(Relevance q) {
         return q.getFunctionName() + "(" + q.parametersToString() + ")";
     }
 }

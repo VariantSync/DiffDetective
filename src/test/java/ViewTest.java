@@ -17,7 +17,7 @@ import org.variantsync.diffdetective.variation.diff.view.DiffView;
 import org.variantsync.diffdetective.variation.diff.view.ViewSource;
 import org.variantsync.diffdetective.variation.tree.VariationTree;
 import org.variantsync.diffdetective.variation.tree.view.TreeView;
-import org.variantsync.diffdetective.variation.tree.view.query.*;
+import org.variantsync.diffdetective.variation.tree.view.relevance.*;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -33,7 +33,7 @@ public class ViewTest {
 
     private static void showViews(
             DiffTree initialVDiff,
-            Query query
+            Relevance query
     ) {
         // treeify
         final BadVDiff badDiff = BadVDiff.fromGood(initialVDiff);
@@ -66,7 +66,7 @@ public class ViewTest {
         final DiffTree D = DiffTree.fromFile(testfile, DiffTreeParseOptions.Default);
         D.assertConsistency();
 
-        final Query debugQuery = new ArtifactQuery("  /* Check both of the above conditions, for symbols.  */");
+        final Relevance debugQuery = new Search("  /* Check both of the above conditions, for symbols.  */");
         final var imp = DiffView.computeWhenNodesAreRelevant(D, debugQuery);
         Show.diff(DiffView.optimized(D, debugQuery, imp)).showAndAwait();
         Show.diff(DiffView.naive(D, debugQuery, imp)).showAndAwait();
@@ -88,13 +88,13 @@ public class ViewTest {
         final DiffTree initialVDiff = DiffTree.fromFile(testfile, DiffTreeParseOptions.Default);
         initialVDiff.assertConsistency();
 
-        List<Query> queries = List.of(
-                new FeatureQuery("B"),
-                new VariantQuery(negate(var("B"))),
-                new ArtifactQuery("foo")
+        List<Relevance> queries = List.of(
+                new Trace("B"),
+                new Configure(negate(var("B"))),
+                new Search("foo")
         );
 
-        for (Query q : queries) {
+        for (Relevance q : queries) {
             final var viewNodes = DiffView.computeWhenNodesAreRelevant(initialVDiff, q);
 
             GameEngine.showAndAwaitAll(
@@ -129,8 +129,8 @@ public class ViewTest {
         final VariationTree a = d.project(Time.AFTER);
 
         // Queries of Listing 3 and 4
-        final Query bobsQuery1 = new VariantQuery(and(negate(featureDoubleLink)));
-        final Query charlottesQuery = new VariantQuery(negate(featureRing));
+        final Relevance bobsQuery1 = new Configure(and(negate(featureDoubleLink)));
+        final Relevance charlottesQuery = new Configure(negate(featureRing));
 
         // Figure 1
         GameEngine.showAndAwaitAll(
@@ -143,7 +143,7 @@ public class ViewTest {
         );
 
         // Figure 3
-        final VariantQuery configureExample1 = new VariantQuery(
+        final Configure configureExample1 = new Configure(
                 and(featureRing, /* FM = */ negate(new And(featureDoubleLink, featureRing)))
         );
         GameEngine.showAndAwaitAll(
@@ -151,7 +151,7 @@ public class ViewTest {
         );
 
         // Figure 4
-        final FeatureQuery traceYesExample1 = new FeatureQuery(
+        final Trace traceYesExample1 = new Trace(
                 featureDoubleLink.toString()
         );
         GameEngine.showAndAwaitAll(
@@ -184,7 +184,7 @@ public class ViewTest {
         for (int i = 0; i < configs.size(); ++i) {
             final Node config = configs.get(i);
 
-            final Query q = new VariantQuery(config);
+            final Relevance q = new Configure(config);
             final DiffTree view = DiffView.optimized(d, q);
             views.add(view);
 
@@ -219,7 +219,7 @@ public class ViewTest {
 
         for (int i = 0; i < configs.size(); ++i) {
             final DiffTree view = views.get(i);
-            final Query       q = ((ViewSource) view.getSource()).q();
+            final Relevance q = ((ViewSource) view.getSource()).relevance();
             Show.diff(view, i + ".) view(D, " + q + ")").showAndAwait();
         }
     }

@@ -1,8 +1,8 @@
-package org.variantsync.diffdetective.variation.tree.view.query;
+package org.variantsync.diffdetective.variation.tree.view.relevance;
 
 import org.variantsync.diffdetective.variation.tree.VariationNode;
 
-public record FeatureQuery(String featureName) implements Query {
+public record Trace(String featureName) implements Relevance {
     @Override
     public boolean test(VariationNode<?> v) {
         return v.getPresenceCondition().getUniqueContainedFeatures().stream().anyMatch(
@@ -22,6 +22,6 @@ public record FeatureQuery(String featureName) implements Query {
 
     @Override
     public String toString() {
-        return Query.toString(this);
+        return Relevance.toString(this);
     }
 }

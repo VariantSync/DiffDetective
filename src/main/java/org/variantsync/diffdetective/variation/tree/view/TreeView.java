@@ -3,7 +3,7 @@ package org.variantsync.diffdetective.variation.tree.view;
 import org.variantsync.diffdetective.variation.tree.VariationNode;
 import org.variantsync.diffdetective.variation.tree.VariationTree;
 import org.variantsync.diffdetective.variation.tree.VariationTreeNode;
-import org.variantsync.diffdetective.variation.tree.view.query.Query;
+import org.variantsync.diffdetective.variation.tree.view.relevance.Relevance;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -27,15 +27,15 @@ public class TreeView {
         }
     }
 
-    public static void treeInline(final VariationTree t, final Query q) {
+    public static void treeInline(final VariationTree t, final Relevance r) {
         final Set<VariationTreeNode> interestingNodes = new HashSet<>();
-        q.computeViewNodes(t.root(), interestingNodes::add);
+        r.computeViewNodes(t.root(), interestingNodes::add);
         treeInline(t.root(), interestingNodes::contains);
     }
 
-    public static VariationTree tree(final VariationTree T, final Query q) {
+    public static VariationTree tree(final VariationTree T, final Relevance r) {
         final VariationTree copy = T.deepCopy();
-        treeInline(copy, q);
+        treeInline(copy, r);
         return copy;
     }
 }
