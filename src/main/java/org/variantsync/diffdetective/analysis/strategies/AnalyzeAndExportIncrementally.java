@@ -66,7 +66,7 @@ public class AnalyzeAndExportIncrementally extends AnalysisStrategy {
 
         // lineGraphDestination is reused for all commits. CloseShieldOutputStream ensures that it
         // isn't closed after processing this commit.
-        return new CloseShieldOutputStream(lineGraphDestination);
+        return CloseShieldOutputStream.wrap(lineGraphDestination);
     }
 
     @Override
