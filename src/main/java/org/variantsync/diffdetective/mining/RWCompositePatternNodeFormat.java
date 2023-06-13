@@ -11,11 +11,11 @@ public class RWCompositePatternNodeFormat extends DebugMiningDiffNodeFormat {
         if (node.isArtifact()) {
             return ProposedEditClasses.Instance.match(node).getName() + "<br>" + node.getLabel();
         } else {
-            return node.diffType + "_" + switch (node.nodeType) {
+            return node.diffType + "_" + switch (node.getNodeType()) {
                 case IF -> "mapping<br> " + node.getLabel();
                 case ELSE -> "else";
                 case ELIF -> "elif<br>" + node.getLabel();
-                default -> node.nodeType + "<br>" + node.getLabel();
+                default -> node.getNodeType() + "<br>" + node.getLabel();
             };
         }
     }

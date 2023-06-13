@@ -13,6 +13,6 @@ import org.variantsync.diffdetective.variation.diff.DiffNode;
 public class MappingsDiffNodeFormat<L extends Label> implements DiffNodeLabelFormat<L> {
 	@Override
 	public String toLabel(final DiffNode<? extends L> node) {
-		return node.diffType + "_" + node.nodeType + "_\"" + DiffNodeLabelPrettyfier.prettyPrintIfAnnotationOr(node, "") + "\"";
+		return node.diffType + "_" + node.getNodeType() + "_\"" + DiffNodeLabelPrettyfier.prettyPrintIfAnnotationOr(node, "") + "\"";
 	}
 }

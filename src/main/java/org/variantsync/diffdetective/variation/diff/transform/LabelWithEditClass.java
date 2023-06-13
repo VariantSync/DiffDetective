@@ -28,7 +28,7 @@ public class LabelWithEditClass implements DiffTreeTransformer<DiffLinesLabel> {
             if (d.isArtifact()) {
                 return DiffLinesLabel.ofCodeBlock(editClasses.match(d).getName());
             } else {
-                return DiffLinesLabel.ofCodeBlock(d.nodeType.name);
+                return DiffLinesLabel.ofCodeBlock(d.getNodeType().name);
             }
         });
     }

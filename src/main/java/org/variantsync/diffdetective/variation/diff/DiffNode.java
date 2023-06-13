@@ -8,6 +8,7 @@ import org.variantsync.diffdetective.util.fide.FixTrueFalse;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.Label;
 import org.variantsync.diffdetective.variation.NodeType;
+import org.variantsync.diffdetective.variation.VariationLabel;
 import org.variantsync.diffdetective.variation.tree.HasNodeType;
 import org.variantsync.diffdetective.variation.tree.VariationNode;
 import org.variantsync.functjonal.Cast;
@@ -40,16 +41,15 @@ public class DiffNode<L extends Label> implements HasNodeType {
     public DiffType diffType;
 
     /**
-     * The node type of this node, which determines the type of the represented
-     * element in the diff (e.g., mapping or artifact).
+     * The label together with the node type of this node, which determines the type of the
+     * represented element in the diff (e.g., mapping or artifact).
      */
-    public final NodeType nodeType;
+    public final VariationLabel<L> label;
 
     private DiffLineNumber from = DiffLineNumber.Invalid();
     private DiffLineNumber to = DiffLineNumber.Invalid();
 
     private Node featureMapping;
-    private L label;
 
     /**
      * The parents {@link DiffNode} before and after the edit.
@@ -94,11 +94,10 @@ public class DiffNode<L extends Label> implements HasNodeType {
         children[AFTER.ordinal()] = new ArrayList<>();
 
         this.diffType = diffType;
-        this.nodeType = nodeType;
+        this.label = new VariationLabel<>(nodeType, label);
         this.from = fromLines;
         this.to = toLines;
         this.featureMapping = featureMapping;
-        this.label = label;
     }
 
     /**
@@ -136,15 +135,15 @@ public class DiffNode<L extends Label> implements HasNodeType {
      * Returns the lines in the diff that are represented by this DiffNode as a single text.
      */
     public L getLabel() {
-        return label;
+        return label.getInnerLabel();
     }
 
     /**
      * Sets the lines in the diff that are represented by this DiffNode to the given code.
      * Lines are identified by linebreak characters.
      */
-    public void setLabel(L label) {
-        this.label = label;
+    public void setLabel(L newLabel) {
+        label.setInnerLabel(newLabel);
     }
 
     /**
@@ -535,7 +534,7 @@ public class DiffNode<L extends Label> implements HasNodeType {
 
     @Override
     public NodeType getNodeType() {
-        return nodeType;
+        return label.getNodeType();
     }
 
     /**
@@ -568,13 +567,13 @@ public class DiffNode<L extends Label> implements HasNodeType {
         id |= diffType.ordinal();
 
         id <<= NodeType.getRequiredBitCount();
-        id |= nodeType.ordinal();
+        id |= getNodeType().ordinal();
         return id;
     }
 
     /**
      * Reconstructs a node from the given id and sets the given label.
-     * An id uniquely determines a node's {@link DiffNode#nodeType}, {@link DiffNode#diffType}, and {@link DiffLineNumber#inDiff line number in the diff}.
+     * An id uniquely determines a node's {@link DiffNode#getNodeType}, {@link DiffNode#diffType}, and {@link DiffLineNumber#inDiff line number in the diff}.
      * The almost-inverse function is {@link DiffNode#getID()} but the conversion is not lossless.
      * @param id The id from which to reconstruct the node.
      * @param label The label the node should have.
@@ -657,7 +656,7 @@ public class DiffNode<L extends Label> implements HasNodeType {
         if (this.isIf() || this.isElif()) {
             Assert.assertTrue(this.getFormula() != null, "If or elif without feature mapping!");
         } else {
-            Assert.assertTrue(this.getFormula() == null, "Node with type " + nodeType + " has a non null feature mapping");
+            Assert.assertTrue(this.getFormula() == null, "Node with type " + getNodeType() + " has a non null feature mapping");
         }
     }
 
@@ -692,7 +691,7 @@ public class DiffNode<L extends Label> implements HasNodeType {
                 new DiffLineNumber(from, from, from),
                 new DiffLineNumber(to, to, to),
                 variationNode.getFormula(),
-                Cast.unchecked(variationNode.getLabel().clone())
+                variationNode.getLabel()
         );
     }
 
@@ -802,11 +801,11 @@ public class DiffNode<L extends Label> implements HasNodeType {
     public String toString() {
         String s;
         if (isArtifact()) {
-            s = String.format("%s_%s from %d to %d", diffType, nodeType, from.inDiff(), to.inDiff());
+            s = String.format("%s_%s from %d to %d", diffType, getNodeType(), from.inDiff(), to.inDiff());
         } else if (isRoot()) {
             s = "ROOT";
         } else {
-            s = String.format("%s_%s from %d to %d with \"%s\"", diffType, nodeType,
+            s = String.format("%s_%s from %d to %d with \"%s\"", diffType, getNodeType(),
                     from.inDiff(), to.inDiff(), featureMapping);
         }
         return s;

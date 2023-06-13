@@ -20,7 +20,7 @@ public class DebugMiningDiffNodeFormat implements MiningNodeFormat {
         if (node.isArtifact()) {
             return ProposedEditClasses.Instance.match(node).getName();
         } else {
-            return node.diffType + "_" + node.nodeType;
+            return node.diffType + "_" + node.getNodeType();
         }
 	}
 

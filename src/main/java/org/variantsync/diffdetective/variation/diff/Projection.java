@@ -54,7 +54,7 @@ public class Projection<L extends Label> extends VariationNode<Projection<L>, L>
 
     @Override
     public NodeType getNodeType() {
-        return getBackingNode().nodeType;
+        return getBackingNode().getNodeType();
     }
 
     @Override

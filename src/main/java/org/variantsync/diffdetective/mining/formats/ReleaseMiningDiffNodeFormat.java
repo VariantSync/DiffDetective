@@ -42,7 +42,7 @@ public class ReleaseMiningDiffNodeFormat implements MiningNodeFormat {
         if (node.isArtifact()) {
             return ARTIFACT_PREFIX + toId(ProposedEditClasses.Instance.match(node));
         } else {
-            return ANNOTATION_PREFIX + node.diffType.ordinal() + node.nodeType.ordinal();
+            return ANNOTATION_PREFIX + node.diffType.ordinal() + node.getNodeType().ordinal();
         }
     }
 

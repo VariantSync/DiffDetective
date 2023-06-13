@@ -28,7 +28,7 @@ public class FullNodeFormat implements DiffNodeLabelFormat<DiffLinesLabel> {
         List<String> lines = new ArrayList<>();
 
         lines.add(node.diffType.toString());
-        lines.add(node.nodeType.toString());
+        lines.add(node.getNodeType().toString());
         lines.add(node.getFromLine().toString());
         lines.add(node.getToLine().toString());
         lines.add(node.getFormula() == null ? "" : node.getFormula().toString());

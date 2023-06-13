@@ -7,6 +7,7 @@ import org.variantsync.diffdetective.util.LineRange;
 import org.variantsync.diffdetective.util.fide.FixTrueFalse;
 import org.variantsync.diffdetective.variation.Label;
 import org.variantsync.diffdetective.variation.NodeType;
+import org.variantsync.diffdetective.variation.VariationLabel;
 import org.variantsync.diffdetective.variation.diff.DiffNode; // For Javdoc
 import org.variantsync.diffdetective.variation.diff.DiffTree; // For Javdoc
 import org.variantsync.diffdetective.variation.diff.DiffType;
@@ -50,20 +51,15 @@ import java.util.*;
  */
 public class VariationTreeNode<L extends Label> extends VariationNode<VariationTreeNode<L>, L> {
     /**
-     * The node type of this node, which determines the type of the represented
-     * element in the diff (e.g., mapping or artifact).
+     * The label together with the node type of this node, which determines the type of the
+     * represented element in the diff (e.g., mapping or artifact).
      */
-    private final NodeType nodeType;
+    private VariationLabel<L> label;
 
     /**
      * The range of line numbers of this node's corresponding source code.
      */
     private LineRange lineRange;
-
-    /**
-     * A list of lines representing the label of this node.
-     */
-    private L label;
 
     /**
      * The direct feature mapping of this node.
@@ -110,9 +106,8 @@ public class VariationTreeNode<L extends Label> extends VariationNode<VariationT
     ) {
         super();
 
-        this.nodeType = nodeType;
+        this.label = new VariationLabel<>(nodeType, label);
         this.lineRange = lineRange;
-        this.label = label;
         this.featureMapping = featureMapping;
 
         this.childOrder = new ArrayList<>();
@@ -156,12 +151,12 @@ public class VariationTreeNode<L extends Label> extends VariationNode<VariationT
 
     @Override
     public NodeType getNodeType() {
-        return nodeType;
+        return label.getNodeType();
     }
 
     @Override
     public L getLabel() {
-        return label;
+        return label.getInnerLabel();
     }
 
     /**
@@ -170,7 +165,7 @@ public class VariationTreeNode<L extends Label> extends VariationNode<VariationT
      * @see getLabel
      */
     public void setLabel(L newLabel) {
-        label = newLabel;
+        label.setInnerLabel(newLabel);
     }
 
     @Override
@@ -261,7 +256,7 @@ public class VariationTreeNode<L extends Label> extends VariationNode<VariationT
         id |= DiffType.NON.ordinal();
 
         id <<= NodeType.getRequiredBitCount();
-        id |= nodeType.ordinal();
+        id |= getNodeType().ordinal();
         return id;
     }
 
@@ -319,11 +314,11 @@ public class VariationTreeNode<L extends Label> extends VariationNode<VariationT
     public String toString() {
         String s;
         if (isArtifact()) {
-            s = String.format("%s in the lines %s", nodeType, lineRange);
+            s = String.format("%s in the lines %s", getNodeType(), lineRange);
         } else if (isRoot()) {
             s = "ROOT";
         } else {
-            s = String.format("%s in the lines %s with \"%s\"", nodeType,
+            s = String.format("%s in the lines %s with \"%s\"", getNodeType(),
                     lineRange, featureMapping);
         }
         return s;

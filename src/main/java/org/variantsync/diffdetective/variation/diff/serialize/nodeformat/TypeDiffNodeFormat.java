@@ -10,6 +10,6 @@ import org.variantsync.diffdetective.variation.diff.DiffNode;
 public class TypeDiffNodeFormat<L extends Label> implements DiffNodeLabelFormat<L> {
 	@Override
 	public String toLabel(final DiffNode<? extends L> node) {
-		return node.diffType + "_" + node.nodeType;
+		return node.diffType + "_" + node.getNodeType();
 	}
 }

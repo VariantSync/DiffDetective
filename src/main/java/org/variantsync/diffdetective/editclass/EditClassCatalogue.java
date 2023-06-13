@@ -35,7 +35,7 @@ public interface EditClassCatalogue {
     default EditClass match(DiffNode<?> node)
     {
         if (!node.isArtifact()) {
-            throw new IllegalArgumentException("Expected an artifact node but got " + node.nodeType + "!");
+            throw new IllegalArgumentException("Expected an artifact node but got " + node.getNodeType() + "!");
         }
 
         final List<EditClass> classessToCheck = byType().get(node.diffType);

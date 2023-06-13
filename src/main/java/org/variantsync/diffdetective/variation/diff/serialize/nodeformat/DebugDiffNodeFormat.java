@@ -11,7 +11,7 @@ import org.variantsync.diffdetective.variation.diff.DiffNode;
 public class DebugDiffNodeFormat<L extends Label> implements DiffNodeLabelFormat<L> {
 	@Override
 	public String toLabel(final DiffNode<? extends L> node) {
-		return node.diffType + "_" + node.nodeType + "_\"" +
+		return node.diffType + "_" + node.getNodeType() + "_\"" +
 				DiffNodeLabelPrettyfier.prettyPrintIfAnnotationOr(
 						node,
 						FileUtils.replaceLineEndings(node.getLabel().toString().trim().replaceAll("\t", "  "), "<br>"))

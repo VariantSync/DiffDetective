@@ -15,7 +15,7 @@ import org.variantsync.diffdetective.variation.diff.DiffNode;
 public class FormulasAndLineNumbersNodeFormat<L extends Label> implements DiffNodeLabelFormat<L> {
     @Override
     public String toLabel(DiffNode<? extends L> node) {
-        final String lineNumbers = node.getFromLine().inDiff() + "-" + node.getToLine().inDiff() + ": " + node.nodeType;
+        final String lineNumbers = node.getFromLine().inDiff() + "-" + node.getToLine().inDiff() + ": " + node.getNodeType();
         if (node.isAnnotation()) {
             return lineNumbers + " " + node.getFormula();
         }

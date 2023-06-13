@@ -107,7 +107,7 @@ public class CollapseNestedNonEditedAnnotations implements DiffTreeTransformer<D
         while (!chain.isEmpty()) {
             lastPopped = chain.pop();
 
-            switch (lastPopped.nodeType) {
+            switch (lastPopped.getNodeType()) {
                 case IF ->
                     featureMappings.add(lastPopped.getFeatureMapping(AFTER));
                 case ELSE, ELIF -> {
@@ -119,7 +119,7 @@ public class CollapseNestedNonEditedAnnotations implements DiffTreeTransformer<D
                     }
                 }
                 case ARTIFACT ->
-                    throw new RuntimeException("Unexpected node type " + lastPopped.nodeType + " within annotation chain!");
+                    throw new RuntimeException("Unexpected node type " + lastPopped.getNodeType() + " within annotation chain!");
             }
         }
 
