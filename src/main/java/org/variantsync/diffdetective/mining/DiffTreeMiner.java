@@ -12,6 +12,7 @@ import org.variantsync.diffdetective.metadata.ExplainedFilterSummary;
 import org.variantsync.diffdetective.mining.formats.DirectedEdgeLabelFormat;
 import org.variantsync.diffdetective.mining.formats.MiningNodeFormat;
 import org.variantsync.diffdetective.mining.formats.ReleaseMiningDiffNodeFormat;
+import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.diff.filter.DiffTreeFilter;
 import org.variantsync.diffdetective.variation.diff.serialize.GraphFormat;
 import org.variantsync.diffdetective.variation.diff.serialize.LineGraphExportOptions;
@@ -38,9 +39,9 @@ public class DiffTreeMiner {
 //    public static final int PRINT_LARGEST_SUBJECTS = 3;
     public static final boolean DEBUG_TEST = false;
 
-    public static List<DiffTreeTransformer> Postprocessing(final Repository repository) {
-        final List<DiffTreeTransformer> processing = new ArrayList<>();
-        processing.add(new CutNonEditedSubtrees());
+    public static List<DiffTreeTransformer<DiffLinesLabel>> Postprocessing(final Repository repository) {
+        final List<DiffTreeTransformer<DiffLinesLabel>> processing = new ArrayList<>();
+        processing.add(new CutNonEditedSubtrees<>());
         processing.add(new CollapseNestedNonEditedAnnotations());
         processing.add(Starfold.IgnoreNodeOrder());
         return processing;
@@ -52,20 +53,20 @@ public class DiffTreeMiner {
                 new ReleaseMiningDiffNodeFormat();
     }
 
-    public static EdgeLabelFormat EdgeFormat() {
+    public static EdgeLabelFormat<DiffLinesLabel> EdgeFormat() {
         return EdgeFormat(NodeFormat());
     }
 
-    private static EdgeLabelFormat EdgeFormat(final MiningNodeFormat nodeFormat) {
+    private static EdgeLabelFormat<DiffLinesLabel> EdgeFormat(final MiningNodeFormat nodeFormat) {
         final EdgeLabelFormat.Direction direction = EdgeLabelFormat.Direction.ParentToChild;
         return
 //                new DefaultEdgeLabelFormat(direction);
                 new DirectedEdgeLabelFormat(nodeFormat, false, direction);
     }
 
-    public static LineGraphExportOptions MiningExportOptions(final Repository repository) {
+    public static LineGraphExportOptions<DiffLinesLabel> MiningExportOptions(final Repository repository) {
         final MiningNodeFormat nodeFormat = NodeFormat();
-        return new LineGraphExportOptions(
+        return new LineGraphExportOptions<>(
                   GraphFormat.DIFFTREE
                 // We have to ensure that all DiffTrees have unique IDs, so use name of changed file and commit hash.
                 , new CommitDiffDiffTreeLabelFormat()
@@ -152,8 +153,7 @@ public class DiffTreeMiner {
         final Consumer<Path> repoPostProcessing;
         if (SEARCH_FOR_GOOD_RUNNING_EXAMPLES) {
             repoPostProcessing = repoOutputDir -> {
-                new ExplainedFilterSummary(ExampleCriterions.DefaultExampleConditions).exportTo(repoOutputDir.resolve("runningExampleFilterReasons.txt"));
-                ExampleCriterions.DefaultExampleConditions.resetExplanations();
+                new ExplainedFilterSummary(ExampleCriterions.DefaultExampleConditions()).exportTo(repoOutputDir.resolve("runningExampleFilterReasons.txt"));
             };
         } else {
             repoPostProcessing = p -> {};

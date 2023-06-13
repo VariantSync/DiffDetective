@@ -2,7 +2,6 @@ package org.variantsync.diffdetective.examplesearch;
 
 import org.tinylog.Logger;
 import org.variantsync.diffdetective.analysis.Analysis;
-import org.variantsync.diffdetective.datasets.PatchDiffParseOptions;
 import org.variantsync.diffdetective.datasets.Repository;
 import org.variantsync.diffdetective.diff.git.GitPatch;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
@@ -10,6 +9,7 @@ import org.variantsync.diffdetective.diff.text.TextBasedDiff;
 import org.variantsync.diffdetective.feature.CPPAnnotationParser;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.util.IO;
+import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.variation.diff.filter.ExplainedFilter;
 import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParseOptions;
@@ -36,22 +36,22 @@ public class ExampleFinder implements Analysis.Hooks {
     /**
      * Default render options for exporting example candidates.
      */
-    public static final RenderOptions ExportOptions = new RenderOptions(
+    public static final RenderOptions<DiffLinesLabel> ExportOptions = new RenderOptions<>(
             GraphFormat.DIFFTREE,
             new CommitDiffDiffTreeLabelFormat(),
-            new MappingsDiffNodeFormat(),
-            new DefaultEdgeLabelFormat(),
+            new MappingsDiffNodeFormat<>(),
+            new DefaultEdgeLabelFormat<>(),
             false,
             1000,
-            RenderOptions.DEFAULT.nodesize()/3,
-            0.5*RenderOptions.DEFAULT.edgesize(),
-            RenderOptions.DEFAULT.arrowsize()/2,
+            RenderOptions.DEFAULT().nodesize()/3,
+            0.5*RenderOptions.DEFAULT().edgesize(),
+            RenderOptions.DEFAULT().arrowsize()/2,
             2,
             true,
             List.of()
     );
 
-    private final ExplainedFilter<DiffTree> isGoodExample;
+    private final ExplainedFilter<DiffTree<? extends DiffLinesLabel>> isGoodExample;
     private final PatchDiffRenderer exampleExport;
 
     /**
@@ -62,7 +62,7 @@ public class ExampleFinder implements Analysis.Hooks {
      *                      The returned DiffTree might be the exact same DiffTree or a subtree (e.g., to only export a certain subtree that is relevant).
      * @param renderer The renderer to use for rendering example candidates.
      */
-    public ExampleFinder(final ExplainedFilter<DiffTree> isGoodExample, DiffTreeRenderer renderer) {
+    public ExampleFinder(final ExplainedFilter<DiffTree<? extends DiffLinesLabel>> isGoodExample, DiffTreeRenderer renderer) {
         this.isGoodExample = isGoodExample;
         this.exampleExport = new PatchDiffRenderer(renderer, ExportOptions);
     }
@@ -70,11 +70,11 @@ public class ExampleFinder implements Analysis.Hooks {
     @Override
     public boolean analyzeDiffTree(Analysis analysis) {
         final Repository currentRepo = analysis.getRepository();
-        final DiffTree diffTree = analysis.getCurrentDiffTree();
+        final DiffTree<DiffLinesLabel> diffTree = analysis.getCurrentDiffTree();
         final CPPAnnotationParser annotationParser = analysis.getRepository().getParseOptions().diffTreeParseOptions().annotationParser();
 
         // We do not want a difftree for the entire file but only for the local change to have a small example.
-        final DiffTree localTree;
+        final DiffTree<DiffLinesLabel> localTree;
         try {
             final String localDiff = getDiff(diffTree);
             localTree = DiffTree.fromDiff(localDiff, new DiffTreeParseOptions(annotationParser, true, true));
@@ -99,7 +99,7 @@ public class ExampleFinder implements Analysis.Hooks {
         return true;
     }
 
-    private void exportExample(final DiffTree example, final Path outputDir) {
+    private void exportExample(final DiffTree<? extends DiffLinesLabel> example, final Path outputDir) {
         Assert.assertTrue(example.getSource() instanceof GitPatch);
         final GitPatch patch = (GitPatch) example.getSource();
         final Path treeDir = outputDir.resolve(Path.of(patch.getCommitHash()));
@@ -114,7 +114,7 @@ public class ExampleFinder implements Analysis.Hooks {
         IO.tryWrite(treeDir.resolve(patch.getFileName() + ".metadata.txt"), metadata);
     }
 
-    static String getDiff(final DiffTree tree) {
+    static String getDiff(final DiffTree<?> tree) {
         final DiffTreeSource source = tree.getSource();
         Assert.assertTrue(source instanceof TextBasedDiff);
         return ((TextBasedDiff) source).getDiff();

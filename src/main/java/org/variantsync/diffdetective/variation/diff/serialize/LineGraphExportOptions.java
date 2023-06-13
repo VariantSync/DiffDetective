@@ -2,13 +2,13 @@ package org.variantsync.diffdetective.variation.diff.serialize;
 
 import org.tinylog.Logger;
 import org.variantsync.diffdetective.diff.git.PatchDiff;
+import org.variantsync.diffdetective.variation.Label;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.variation.diff.render.DiffTreeRenderer;
 import org.variantsync.diffdetective.variation.diff.render.PatchDiffRenderer;
 import org.variantsync.diffdetective.variation.diff.serialize.edgeformat.EdgeLabelFormat;
 import org.variantsync.diffdetective.variation.diff.serialize.nodeformat.DiffNodeLabelFormat;
 import org.variantsync.diffdetective.variation.diff.serialize.treeformat.DiffTreeLabelFormat;
-import org.variantsync.diffdetective.variation.diff.transform.DiffTreeTransformer;
 
 import java.nio.file.Path;
 import java.util.function.BiConsumer;
@@ -23,17 +23,17 @@ import java.util.function.BiConsumer;
  * @param onError Callback that is invoked when an error occurs.
  * @author Paul Bittner
  */
-public record LineGraphExportOptions(
+public record LineGraphExportOptions<L extends Label>(
         GraphFormat graphFormat,
-		DiffTreeLabelFormat treeFormat,
-		DiffNodeLabelFormat nodeFormat,
-        EdgeLabelFormat edgeFormat,
+        DiffTreeLabelFormat treeFormat,
+        DiffNodeLabelFormat<? super L> nodeFormat,
+        EdgeLabelFormat<? super L> edgeFormat,
         BiConsumer<PatchDiff, Exception> onError) {
 
     /**
      * Creates a export options with a neutral filter (that accepts all trees), no transformers, and that logs errors.
      */
-    public LineGraphExportOptions(GraphFormat graphFormat, DiffTreeLabelFormat treeFormat, DiffNodeLabelFormat nodeFormat, EdgeLabelFormat edgeFormat) {
+    public LineGraphExportOptions(GraphFormat graphFormat, DiffTreeLabelFormat treeFormat, DiffNodeLabelFormat<? super L> nodeFormat, EdgeLabelFormat<? super L> edgeFormat) {
         this(graphFormat, treeFormat, nodeFormat, edgeFormat, LogError());
     }
 
@@ -43,7 +43,7 @@ public record LineGraphExportOptions(
      * with all formats from the given import options.
      * @param importOptions The import options to convert to export options.
      */
-    public LineGraphExportOptions(final LineGraphImportOptions importOptions) {
+    public LineGraphExportOptions(final LineGraphImportOptions<? super L> importOptions) {
         this(
                 importOptions.graphFormat(),
                 importOptions.treeFormat(),

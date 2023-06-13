@@ -1,5 +1,6 @@
 package org.variantsync.diffdetective.variation.diff.serialize;
 
+import org.variantsync.diffdetective.variation.Label;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.variation.diff.serialize.edgeformat.EdgeLabelFormat;
 import org.variantsync.diffdetective.variation.diff.serialize.nodeformat.DiffNodeLabelFormat;
@@ -13,8 +14,8 @@ import org.variantsync.diffdetective.variation.diff.serialize.treeformat.DiffTre
  * @param nodeFormat {@link DiffNodeLabelFormat}
  * @param edgeFormat {@link EdgeLabelFormat}
  */
-public record LineGraphImportOptions(
+public record LineGraphImportOptions<L extends Label>(
         GraphFormat graphFormat,
         DiffTreeLabelFormat treeFormat,
-        DiffNodeLabelFormat nodeFormat,
-        EdgeLabelFormat edgeFormat) { }
+        DiffNodeLabelFormat<? super L> nodeFormat,
+        EdgeLabelFormat<? super L> edgeFormat) { }

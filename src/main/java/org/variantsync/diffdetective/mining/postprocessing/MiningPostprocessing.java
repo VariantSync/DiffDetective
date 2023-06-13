@@ -4,6 +4,7 @@ import org.tinylog.Logger;
 import org.variantsync.diffdetective.mining.DiffTreeMiner;
 import org.variantsync.diffdetective.util.FileUtils;
 import org.variantsync.diffdetective.util.IO;
+import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.variation.diff.render.DiffTreeRenderer;
 import org.variantsync.diffdetective.variation.diff.render.RenderOptions;
@@ -25,19 +26,19 @@ import java.util.stream.Collectors;
 public class MiningPostprocessing {
     private static final DiffTreeRenderer DefaultRenderer = DiffTreeRenderer.WithinDiffDetective();
     private static final boolean RENDER_CANDIDATES = false;
-    private static final LineGraphImportOptions IMPORT_OPTIONS = new LineGraphImportOptions(
+    private static final LineGraphImportOptions<DiffLinesLabel> IMPORT_OPTIONS = new LineGraphImportOptions<>(
             GraphFormat.DIFFGRAPH,
             new IndexedTreeFormat(),
             DiffTreeMiner.NodeFormat(),
             DiffTreeMiner.EdgeFormat()
     );
-    private static final LineGraphExportOptions EXPORT_OPTIONS = new LineGraphExportOptions(
+    private static final LineGraphExportOptions<DiffLinesLabel> EXPORT_OPTIONS = new LineGraphExportOptions<>(
             GraphFormat.DIFFTREE,
             IMPORT_OPTIONS.treeFormat(),
             DiffTreeMiner.NodeFormat(),
             DiffTreeMiner.EdgeFormat()
     );
-    public static final RenderOptions DefaultRenderOptions = new RenderOptions.Builder()
+    public static final RenderOptions<DiffLinesLabel> DefaultRenderOptions = new RenderOptions.Builder<DiffLinesLabel>()
             .setGraphFormat(EXPORT_OPTIONS.graphFormat())
             .setTreeFormat(EXPORT_OPTIONS.treeFormat())
             .setNodeFormat(EXPORT_OPTIONS.nodeFormat())
@@ -81,7 +82,7 @@ public class MiningPostprocessing {
      * @return The list of all diffgraphs parsed from linegraph files in the given directory.
      * @throws IOException If the directory could not be accessed ({@link Files#list}).
      */
-    public static List<DiffTree> parseFrequentSubgraphsIn(final Path path) throws IOException {
+    public static List<DiffTree<DiffLinesLabel>> parseFrequentSubgraphsIn(final Path path) throws IOException {
         if (Files.isDirectory(path)) {
             try {
                 return Files.list(path)
@@ -106,15 +107,15 @@ public class MiningPostprocessing {
     }
 
     public static void postprocessAndInterpretResults(
-            final List<DiffTree> frequentSubgraphs,
-            final Postprocessor postprocessor,
+            final List<DiffTree<DiffLinesLabel>> frequentSubgraphs,
+            final Postprocessor<DiffLinesLabel> postprocessor,
             final Consumer<String> printer,
             final DiffTreeRenderer renderer,
-            RenderOptions renderOptions,
+            RenderOptions<? super DiffLinesLabel> renderOptions,
             final Path outputDir)
     {
-        final Postprocessor.Result result = postprocessor.postprocess(frequentSubgraphs);
-        final List<DiffTree> semanticPatterns = result.processedTrees();
+        final Postprocessor.Result<DiffLinesLabel> result = postprocessor.postprocess(frequentSubgraphs);
+        final List<DiffTree<DiffLinesLabel>> semanticPatterns = result.processedTrees();
 
         printer.accept("Of " + frequentSubgraphs.size() + " mined subgraphs "
                 + semanticPatterns.size() + " are candidates for semantic patterns.");
@@ -126,12 +127,12 @@ public class MiningPostprocessing {
 
         if (RENDER_CANDIDATES && renderer != null) {
             if (renderOptions == null) {
-                renderOptions = RenderOptions.DEFAULT;
+                renderOptions = RenderOptions.DEFAULT();
             }
 
             printer.accept("Exporting and rendering semantic patterns to " + outputDir);
             int patternNo = 0;
-            for (final DiffTree semanticPattern : semanticPatterns) {
+            for (final DiffTree<DiffLinesLabel> semanticPattern : semanticPatterns) {
                 renderer.render(semanticPattern, "SemanticPatternCandidate_" + patternNo, outputDir, renderOptions);
                 ++patternNo;
             }

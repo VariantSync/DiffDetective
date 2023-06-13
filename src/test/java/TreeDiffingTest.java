@@ -7,6 +7,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.feature.CPPAnnotationParser;
 import org.variantsync.diffdetective.util.IO;
+import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.diff.Construction;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParseOptions;
@@ -76,13 +77,13 @@ public class TreeDiffingTest {
     @ParameterizedTest
     @MethodSource("testCases")
     public void testCase(TestCase testCase) throws IOException, DiffParseException {
-        VariationTree beforeEdit = parseVariationTree(testCase.beforeEdit());
-        VariationTree afterEdit = parseVariationTree(testCase.afterEdit());
+        VariationTree<DiffLinesLabel> beforeEdit = parseVariationTree(testCase.beforeEdit());
+        VariationTree<DiffLinesLabel> afterEdit = parseVariationTree(testCase.afterEdit());
 
-        DiffTree diffTree = Construction.diffUsingMatching(beforeEdit, afterEdit);
+        DiffTree<DiffLinesLabel> diffTree = Construction.diffUsingMatching(beforeEdit, afterEdit);
 
         try (var output = IO.newBufferedOutputStream(testCase.actual())) {
-            new LineGraphExporter(new Format(new FullNodeFormat(), new ChildOrderEdgeFormat()))
+            new LineGraphExporter<>(new Format<>(new FullNodeFormat(), new ChildOrderEdgeFormat<>()))
                 .exportDiffTree(diffTree, output);
         }
 
@@ -95,7 +96,7 @@ public class TreeDiffingTest {
                 Files.delete(testCase.actual());
             } else {
                 // Keep output files if the test failed
-                new TikzExporter(new Format(new FullNodeFormat(), new DefaultEdgeLabelFormat()))
+                new TikzExporter<>(new Format<>(new FullNodeFormat(), new DefaultEdgeLabelFormat<>()))
                     .exportFullLatexExample(diffTree, testCase.visualisation());
                 fail(String.format(
                     "The diff of %s and %s is not as expected. " +
@@ -111,9 +112,9 @@ public class TreeDiffingTest {
         }
     }
 
-    public VariationTree parseVariationTree(Path filename) throws IOException, DiffParseException {
+    public VariationTree<DiffLinesLabel> parseVariationTree(Path filename) throws IOException, DiffParseException {
         try (var file = Files.newBufferedReader(filename)) {
-            return new VariationTree(
+            return new VariationTree<>(
                 DiffTreeParser.createVariationTree(
                     file,
                     new DiffTreeParseOptions(

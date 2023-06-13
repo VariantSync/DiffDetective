@@ -1,6 +1,7 @@
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
+import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.variation.diff.serialize.*;
 import org.variantsync.diffdetective.variation.diff.serialize.edgeformat.DefaultEdgeLabelFormat;
@@ -22,21 +23,21 @@ public class ExportTest {
     /**
      * Format used for the test export.
      */
-    private final static Format format =
-        new Format(
-            new LineNumberFormat(),
-            new DefaultEdgeLabelFormat()
+    private final static Format<DiffLinesLabel> format =
+        new Format<>(
+            new LineNumberFormat<>(),
+            new DefaultEdgeLabelFormat<>()
         );
 
     /**
      * Format used to deserialize the test case.
      */
-    private final static LineGraphImportOptions importOptions =
-        new LineGraphImportOptions(
+    private final static LineGraphImportOptions<DiffLinesLabel> importOptions =
+        new LineGraphImportOptions<>(
             GraphFormat.DIFFTREE,
             new CommitDiffDiffTreeLabelFormat(),
-            new LabelOnlyDiffNodeFormat(),
-            new DefaultEdgeLabelFormat()
+            new LabelOnlyDiffNodeFormat<>(),
+            new DefaultEdgeLabelFormat<>()
         );
 
     public static boolean isGraphvizInstalled() throws InterruptedException {
@@ -57,7 +58,7 @@ public class ExportTest {
         var expectedPath = RESOURCE_DIR.resolve("expected.tex");
 
         // Deserialize the test case.
-        DiffTree diffTree;
+        DiffTree<DiffLinesLabel> diffTree;
         try (BufferedReader lineGraph = Files.newBufferedReader(testCasePath)) {
             diffTree = LineGraphImport.fromLineGraph(lineGraph, testCasePath, importOptions).get(0);
         }
@@ -67,7 +68,7 @@ public class ExportTest {
                 var unbufferedOutput = Files.newOutputStream(actualPath);
                 var output = new BufferedOutputStream(unbufferedOutput)
         ) {
-            new TikzExporter(format).exportDiffTree(diffTree, output);
+            new TikzExporter<>(format).exportDiffTree(diffTree, output);
         }
 
         try (

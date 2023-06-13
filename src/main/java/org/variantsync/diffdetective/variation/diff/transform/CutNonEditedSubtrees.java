@@ -1,5 +1,6 @@
 package org.variantsync.diffdetective.variation.diff.transform;
 
+import org.variantsync.diffdetective.variation.Label;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.variation.diff.traverse.DiffTreeTraversal;
@@ -18,16 +19,16 @@ import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
  * of our edit classes in our ESEC/FSE'22 paper.
  * @author Paul Bittner
  */
-public class CutNonEditedSubtrees implements DiffTreeTransformer, DiffTreeVisitor {
+public class CutNonEditedSubtrees<L extends Label> implements DiffTreeTransformer<L>, DiffTreeVisitor<L> {
     @Override
-    public void transform(final DiffTree diffTree) {
+    public void transform(final DiffTree<L> diffTree) {
         diffTree.traverse(this);
     }
 
     @Override
-    public void visit(final DiffTreeTraversal traversal, final DiffNode subtree) {
-        final ArrayList<DiffNode> collapsableChildren = new ArrayList<>();
-        for (final DiffNode child : subtree.getAllChildren()) {
+    public void visit(final DiffTreeTraversal<L> traversal, final DiffNode<L> subtree) {
+        final ArrayList<DiffNode<L>> collapsableChildren = new ArrayList<>();
+        for (final DiffNode<L> child : subtree.getAllChildren()) {
             traversal.visit(child);
 
             /*

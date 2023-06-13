@@ -7,6 +7,7 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.variantsync.diffdetective.analysis.AnalysisResult.ResultKey;
 import org.variantsync.diffdetective.analysis.strategies.AnalysisStrategy;
 import org.variantsync.diffdetective.metadata.Metadata;
+import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.diff.serialize.LineGraphExport;
 import org.variantsync.diffdetective.variation.diff.serialize.LineGraphExportOptions;
 import org.variantsync.functjonal.category.InplaceSemigroup;
@@ -45,10 +46,10 @@ public class LineGraphExportAnalysis implements Analysis.Hooks {
     }
 
     private final AnalysisStrategy analysisStrategy;
-    private final LineGraphExportOptions exportOptions;
+    private final LineGraphExportOptions<? super DiffLinesLabel> exportOptions;
     private OutputStream lineGraphDestination;
 
-    public LineGraphExportAnalysis(final AnalysisStrategy analysisStrategy, final LineGraphExportOptions exportOptions) {
+    public LineGraphExportAnalysis(final AnalysisStrategy analysisStrategy, final LineGraphExportOptions<? super DiffLinesLabel> exportOptions) {
         this.analysisStrategy = analysisStrategy;
         this.exportOptions = exportOptions;
     }

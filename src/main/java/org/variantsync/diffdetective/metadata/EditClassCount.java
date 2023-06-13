@@ -6,6 +6,8 @@ import org.variantsync.diffdetective.editclass.EditClass;
 import org.variantsync.diffdetective.editclass.EditClassCatalogue;
 import org.variantsync.diffdetective.editclass.proposed.ProposedEditClasses;
 import org.variantsync.diffdetective.util.Assert;
+import org.variantsync.diffdetective.variation.Label;
+import org.variantsync.functjonal.Cast;
 import org.variantsync.functjonal.Functjonal;
 import org.variantsync.functjonal.category.InplaceSemigroup;
 import org.variantsync.functjonal.map.MergeMap;
@@ -72,20 +74,15 @@ public class EditClassCount implements Metadata<EditClassCount> {
      * class.
      * @see Occurrences#ISEMIGROUP
      */
-    public static InplaceSemigroup<EditClassCount> ISEMIGROUP = (a, b) -> MergeMap.putAllValues(
+    public static InplaceSemigroup<EditClassCount> ISEMIGROUP() {
+        return (a, b) -> MergeMap.putAllValues(
             a.occurences,
             b.occurences,
             Occurrences.ISEMIGROUP
-    );
+        );
+    }
 
     private final LinkedHashMap<EditClass, Occurrences> occurences;
-
-    /**
-     * Create a new empty count with the {@link ProposedEditClasses default edit class catalog}.
-     */
-    public EditClassCount() {
-        this(ProposedEditClasses.Instance);
-    }
 
     /**
      * Create a new empty count that reports occurrences of the given edit class.
@@ -128,7 +125,7 @@ public class EditClassCount implements Metadata<EditClassCount> {
      * @return {@link EditClassCount}
      */
     public static EditClassCount parse(final List<String> lines, final String uuid) {
-        EditClassCount count = new EditClassCount();
+        EditClassCount count = new EditClassCount(ProposedEditClasses.Instance);
         String[] keyValuePair;
         String key;
         String value;
@@ -177,20 +174,14 @@ public class EditClassCount implements Metadata<EditClassCount> {
 
     @Override
     public void setFromSnapshot(LinkedHashMap<String, String> snap) {
-        for (var entry : snap.entrySet()) {
-            if (ProposedEditClasses.All.stream().anyMatch(editClass -> editClass.getName().equals(entry.getKey()))) {
-                var key = entry.getKey(); // edit class
-                var value = entry.getValue(); // key value content
+        for (var occurrence : occurences.entrySet()) {
+            var editClass = occurrence.getKey();
+            var value = snap.get(editClass.getName());
+            if (value != null) {
                 value = value.replaceAll("[{} ]", ""); // remove unnecessary symbols
                 var innerKeyValuePair = value.split(";");
                 var total = Integer.parseInt(innerKeyValuePair[0].split("=")[1]); // total count
                 var commits = Integer.parseInt(innerKeyValuePair[1].split("=")[1]);
-
-                // get edit class from key
-                final String finalKey = key;
-                EditClass editClass = ProposedEditClasses.Instance.fromName(key).orElseThrow(
-                        () -> new RuntimeException("Could not find EditClass with name " + finalKey)
-                );
 
                 Occurrences occurence = new Occurrences();
                 occurence.totalAmount = total;
@@ -211,7 +202,7 @@ public class EditClassCount implements Metadata<EditClassCount> {
      */
     @Override
     public InplaceSemigroup<EditClassCount> semigroup() {
-        return ISEMIGROUP;
+        return ISEMIGROUP();
     }
 
     /**

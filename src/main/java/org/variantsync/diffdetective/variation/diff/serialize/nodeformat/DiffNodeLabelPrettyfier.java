@@ -15,7 +15,7 @@ public abstract class DiffNodeLabelPrettyfier {
      * @param node The {@link DiffNode} to print.
      * @return NodeType and {@link DiffNode#getFormula} of the node in a single string, seperated by a space character.
      */
-    private static String prettyPrintTypeAndMapping(final DiffNode node) {
+    private static String prettyPrintTypeAndMapping(final DiffNode<?> node) {
         String result = node.nodeType.name;
         final Node fm = node.getFormula();
         if (fm != null) {
@@ -31,7 +31,7 @@ public abstract class DiffNodeLabelPrettyfier {
      * @param elseValue The value to return in case the given node is not an annotation.
      * @return The generated label.
      */
-    public static String prettyPrintIfAnnotationOr(final DiffNode node, final String elseValue) {
+    public static String prettyPrintIfAnnotationOr(final DiffNode<?> node, final String elseValue) {
         String result = "";
         if (node.isAnnotation()) {
             result += prettyPrintTypeAndMapping(node);

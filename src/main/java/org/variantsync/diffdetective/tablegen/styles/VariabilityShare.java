@@ -1,8 +1,8 @@
 package org.variantsync.diffdetective.tablegen.styles;
 
-import org.variantsync.diffdetective.metadata.EditClassCount;
 import org.variantsync.diffdetective.editclass.EditClass;
 import org.variantsync.diffdetective.editclass.proposed.ProposedEditClasses;
+import org.variantsync.diffdetective.metadata.EditClassCount;
 import org.variantsync.diffdetective.tablegen.Row;
 import org.variantsync.diffdetective.tablegen.TableDefinition;
 import org.variantsync.diffdetective.tablegen.rows.ContentRow;

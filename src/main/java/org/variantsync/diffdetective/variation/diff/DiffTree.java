@@ -10,6 +10,8 @@ import org.variantsync.diffdetective.diff.result.CommitDiffResult;
 import org.variantsync.diffdetective.diff.result.DiffError;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.util.Assert;
+import org.variantsync.diffdetective.variation.DiffLinesLabel;
+import org.variantsync.diffdetective.variation.Label;
 import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParseOptions;
 import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParser;
 import org.variantsync.diffdetective.variation.diff.source.DiffTreeSource;
@@ -17,10 +19,12 @@ import org.variantsync.diffdetective.variation.diff.source.PatchFile;
 import org.variantsync.diffdetective.variation.diff.source.PatchString;
 import org.variantsync.diffdetective.variation.diff.traverse.DiffTreeTraversal;
 import org.variantsync.diffdetective.variation.diff.traverse.DiffTreeVisitor;
+import org.variantsync.functjonal.Cast;
 import org.variantsync.functjonal.Result;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -41,17 +45,20 @@ import static org.variantsync.functjonal.Functjonal.when;
  * An instance of this class represents a variation tree diff. It stores the root of the graph as a {@link DiffNode}.
  * It optionally holds a {@link DiffTreeSource} that describes how the variation tree diff was obtained.
  * The graph structure is implemented by the {@link DiffNode} class.
+ *
+ * @param <L> The type of label stored in this tree.
+ *
  * @author Paul Bittner, Sören Viegener
  */
-public class DiffTree {
-    private final DiffNode root;
+public class DiffTree<L extends Label> {
+    private final DiffNode<L> root;
     private DiffTreeSource source;
 
     /**
      * Creates a DiffTree that only consists of the single given root node.
      * @param root The root of this tree.
      */
-    public DiffTree(DiffNode root) {
+    public DiffTree(DiffNode<L> root) {
         this(root, DiffTreeSource.Unknown);
     }
 
@@ -61,7 +68,7 @@ public class DiffTree {
      * @param root The root of this tree.
      * @param source The data from which the DiffTree was created.
      */
-    public DiffTree(DiffNode root, DiffTreeSource source) {
+    public DiffTree(DiffNode<L> root, DiffTreeSource source) {
         this.root = root;
         this.source = source;
     }
@@ -75,9 +82,9 @@ public class DiffTree {
      * @return A result either containing the parsed DiffTree or an error message in case of failure.
      * @throws IOException when the given file could not be read for some reason.
      */
-    public static DiffTree fromFile(final Path p, DiffTreeParseOptions parseOptions) throws IOException, DiffParseException {
+    public static DiffTree<DiffLinesLabel> fromFile(final Path p, DiffTreeParseOptions parseOptions) throws IOException, DiffParseException {
         try (BufferedReader file = Files.newBufferedReader(p)) {
-            final DiffTree tree = DiffTreeParser.createDiffTree(file, parseOptions);
+            final DiffTree<DiffLinesLabel> tree = DiffTreeParser.createDiffTree(file, parseOptions);
             tree.setSource(new PatchFile(p));
             return tree;
         }
@@ -92,8 +99,8 @@ public class DiffTree {
      * @return A result either containing the parsed DiffTree or an error message in case of failure.
      * @throws DiffParseException if {@code diff} couldn't be parsed
      */
-    public static DiffTree fromDiff(final String diff, final DiffTreeParseOptions parseOptions) throws DiffParseException {
-        final DiffTree tree = DiffTreeParser.createDiffTree(diff, parseOptions);
+    public static DiffTree<DiffLinesLabel> fromDiff(final String diff, final DiffTreeParseOptions parseOptions) throws DiffParseException {
+        final DiffTree<DiffLinesLabel> tree = DiffTreeParser.createDiffTree(diff, parseOptions);
         tree.setSource(new PatchString(diff));
         return tree;
     }
@@ -110,7 +117,7 @@ public class DiffTree {
      * @return a {@link DiffTree} representing the referenced patch, or a list of errors
      * encountered while trying to parse the {@link DiffTree}
      */
-    public static Result<DiffTree, List<DiffError>> fromPatch(final PatchReference patchReference, final Repository repository) throws IOException {
+    public static Result<DiffTree<DiffLinesLabel>, List<DiffError>> fromPatch(final PatchReference patchReference, final Repository repository) throws IOException {
         final CommitDiffResult result = new GitDiffer(repository).createCommitDiff(patchReference.getCommitHash());
         final Path changedFile = Path.of(patchReference.getFileName());
         if (result.diff().isPresent()) {
@@ -142,7 +149,7 @@ public class DiffTree {
      * @param procedure callback
      * @return this
      */
-    public DiffTree forAll(final Consumer<DiffNode> procedure) {
+    public DiffTree<L> forAll(final Consumer<DiffNode<L>> procedure) {
         DiffTreeTraversal.forAll(procedure).visit(this);
         return this;
     }
@@ -154,7 +161,7 @@ public class DiffTree {
      * @param visitor visitor that is invoked on the root first and then decides how to proceed the traversal.
      * @return this
      */
-    public DiffTree traverse(final DiffTreeVisitor visitor) {
+    public DiffTree<L> traverse(final DiffTreeVisitor<L> visitor) {
         DiffTreeTraversal.with(visitor).visit(this);
         return this;
     }
@@ -165,11 +172,11 @@ public class DiffTree {
      * @param condition A condition to check on each node.
      * @return True iff the given condition returns true for all nodes in this tree.
      */
-    public boolean allMatch(final Predicate<DiffNode> condition) {
+    public boolean allMatch(final Predicate<DiffNode<L>> condition) {
         final AtomicBoolean all = new AtomicBoolean(true);
-        DiffTreeTraversal.with((traversal, subtree) -> {
+        DiffTreeTraversal.<L>with((traversal, subtree) -> {
             if (condition.test(subtree)) {
-                for (final DiffNode child : subtree.getAllChildren()) {
+                for (final DiffNode<L> child : subtree.getAllChildren()) {
                     traversal.visit(child);
                     if (!all.get()) break;
                 }
@@ -186,13 +193,13 @@ public class DiffTree {
      * @param condition A condition to check on each node.
      * @return True iff the given condition returns true for at least one node in this tree.
      */
-    public boolean anyMatch(final Predicate<DiffNode> condition) {
+    public boolean anyMatch(final Predicate<DiffNode<L>> condition) {
         final AtomicBoolean matchFound = new AtomicBoolean(false);
-        DiffTreeTraversal.with((traversal, subtree) -> {
+        DiffTreeTraversal.<L>with((traversal, subtree) -> {
             if (condition.test(subtree)) {
                 matchFound.set(true);
             } else {
-                for (final DiffNode child : subtree.getAllChildren()) {
+                for (final DiffNode<L> child : subtree.getAllChildren()) {
                     traversal.visit(child);
                     if (matchFound.get()) break;
                 }
@@ -207,14 +214,14 @@ public class DiffTree {
      * @param condition A condition to check on each node.
      * @return True iff the given condition returns false for every node in this tree.
      */
-    public boolean noneMatch(final Predicate<DiffNode> condition) {
+    public boolean noneMatch(final Predicate<DiffNode<L>> condition) {
         return !anyMatch(condition);
     }
 
     /**
      * Returns the root node of this tree.
      */
-    public DiffNode getRoot() {
+    public DiffNode<L> getRoot() {
         return root;
     }
 
@@ -223,14 +230,14 @@ public class DiffTree {
      * @param id The id of the node to search.
      * @return The node with the given id if existing, null otherwise.
      */
-    public DiffNode getNodeWithID(int id) {
-        final DiffNode[] d = {null};
+    public DiffNode<L> getNodeWithID(int id) {
+        final DiffNode<L>[] d = Cast.unchecked(Array.newInstance(DiffNode.class, 1));
 
         traverse((traversal, subtree) -> {
             if (subtree.getID() == id) {
                 d[0] = subtree;
             } else {
-                for (final DiffNode child : subtree.getAllChildren()) {
+                for (final DiffNode<L> child : subtree.getAllChildren()) {
                     if (d[0] == null) {
                         traversal.visit(child);
                     }
@@ -247,9 +254,9 @@ public class DiffTree {
      * @param property Filter for nodes. Should return true if a node should be included.
      * @return A List of all nodes satisfying the given predicate.
      */
-    public List<DiffNode> computeAllNodesThat(final Predicate<DiffNode> property) {
-        final List<DiffNode> nodes = new ArrayList<>();
-        forAll(when(property, (Consumer<? super DiffNode>) nodes::add));
+    public List<DiffNode<L>> computeAllNodesThat(final Predicate<DiffNode<L>> property) {
+        final List<DiffNode<L>> nodes = new ArrayList<>();
+        forAll(when(property, (Consumer<? super DiffNode<L>>) nodes::add));
         return nodes;
     }
 
@@ -257,24 +264,24 @@ public class DiffTree {
      * Returns all artifact nodes of this DiffTree.
      * @see DiffTree#computeAllNodesThat
      */
-    public List<DiffNode> computeArtifactNodes() {
-        return computeAllNodesThat(DiffNode::isArtifact);
+    public List<DiffNode<L>> computeArtifactNodes() {
+        return computeAllNodesThat(DiffNode<L>::isArtifact);
     }
 
     /**
      * Returns all mapping nodes of this DiffTree.
      * @see DiffTree#computeAllNodesThat
      */
-    public List<DiffNode> computeAnnotationNodes() {
-        return computeAllNodesThat(DiffNode::isAnnotation);
+    public List<DiffNode<L>> computeAnnotationNodes() {
+        return computeAllNodesThat(DiffNode<L>::isAnnotation);
     }
 
     /**
      * Returns all nodes in this DiffTree.
      * Traverses the DiffTree once.
      */
-    public List<DiffNode> computeAllNodes() {
-        final List<DiffNode> allnodes = new ArrayList<>();
+    public List<DiffNode<L>> computeAllNodes() {
+        final List<DiffNode<L>> allnodes = new ArrayList<>();
         forAll(allnodes::add);
         return allnodes;
     }
@@ -284,7 +291,7 @@ public class DiffTree {
      * @param nodesToCount A condition that returns true for each node that should be counted.
      * @return The number of nodes in this tree that satisfy the given condition.
      */
-    public int count(final Predicate<DiffNode> nodesToCount) {
+    public int count(final Predicate<DiffNode<L>> nodesToCount) {
         final AtomicInteger count = new AtomicInteger();
         forAll(d -> {
             if (nodesToCount.test(d)) {
@@ -333,11 +340,11 @@ public class DiffTree {
      * node afterwards.
      * @param node The node to remove. Cannot be the root.
      */
-    public void removeNode(DiffNode node) {
+    public void removeNode(DiffNode<L> node) {
         Assert.assertTrue(node != root);
 
         Time.forAll(time -> {
-            final DiffNode parent = node.getParent(time);
+            final DiffNode<L> parent = node.getParent(time);
             if (parent != null) {
                 parent.removeChild(node, time);
                 parent.addChildren(node.removeChildren(time), time);
@@ -351,17 +358,17 @@ public class DiffTree {
      * if it walks in cycles.
      * Function programmers might think of this as a state monad.
      */
-    private static class AllPathsEndAtRoot implements Predicate<DiffNode> {
+    private static class AllPathsEndAtRoot implements Predicate<DiffNode<?>> {
         private enum VisitStatus {
             STRANGER,
             VISITED,
             ALL_PATHS_END_AT_ROOT,
             NOT_ALL_PATHS_END_AT_ROOT
         }
-        private final Map<DiffNode, VisitStatus> cache = new HashMap<>();
-        private final DiffNode root;
+        private final Map<DiffNode<?>, VisitStatus> cache = new HashMap<>();
+        private final DiffNode<?> root;
 
-        private AllPathsEndAtRoot(final DiffNode root) {
+        private AllPathsEndAtRoot(final DiffNode<?> root) {
             this.root = root;
         }
 
@@ -369,7 +376,7 @@ public class DiffTree {
          * Returns true if all paths (in parent direction) starting at the given node end at the root.
          */
         @Override
-        public boolean test(final DiffNode d) {
+        public boolean test(final DiffNode<?> d) {
             if (d == root) {
                 return true;
             }
@@ -379,8 +386,8 @@ public class DiffTree {
                     // The stranger is now known.
                     cache.putIfAbsent(d, VisitStatus.VISITED);
 
-                    final DiffNode b = d.getParent(BEFORE);
-                    final DiffNode a = d.getParent(AFTER);
+                    final DiffNode<?> b = d.getParent(BEFORE);
+                    final DiffNode<?> a = d.getParent(AFTER);
                     if (a == null && b == null) {
                         // We found a second root node which is invalid.
                         yield false;
@@ -435,7 +442,7 @@ public class DiffTree {
         return ConsistencyResult.Success();
     }
 
-    public boolean isSameAs(DiffTree b) {
+    public boolean isSameAs(DiffTree<L> b) {
         return getRoot().isSameAs(b.getRoot());
     }
 
@@ -444,7 +451,7 @@ public class DiffTree {
         return "DiffTree of " + source;
     }
 
-    public DiffTree deepCopy() {
-        return new DiffTree(getRoot().deepCopy(), getSource());
+    public DiffTree<L> deepCopy() {
+        return new DiffTree<>(getRoot().deepCopy(), getSource());
     }
 }

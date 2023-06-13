@@ -4,6 +4,7 @@ import org.variantsync.diffdetective.AnalysisRunner;
 import org.variantsync.diffdetective.analysis.Analysis;
 import org.variantsync.diffdetective.datasets.PatchDiffParseOptions;
 import org.variantsync.diffdetective.datasets.Repository;
+import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.variation.diff.filter.ExplainedFilter;
 import org.variantsync.diffdetective.variation.diff.render.DiffTreeRenderer;
@@ -16,19 +17,21 @@ public class Main {
     /**
      * Modify this list to your requirements on a suitable example.
      */
-    private static final ExplainedFilter<DiffTree> EXAMPLE_CRITERIONS = new ExplainedFilter<>(
+    private static final ExplainedFilter<DiffTree<? extends DiffLinesLabel>> EXAMPLE_CRITERIONS() {
+        return new ExplainedFilter<>(
             ExampleCriterions.MAX_LINE_COUNT(ExampleCriterions.DefaultMaxDiffLineCount),
-            ExampleCriterions.HAS_EDITED_ARTIFACTS,
-            ExampleCriterions.DOES_NOT_CONTAIN_ANNOTATED_MACROS,
+            ExampleCriterions.HAS_EDITED_ARTIFACTS(),
+            ExampleCriterions.DOES_NOT_CONTAIN_ANNOTATED_MACROS(),
             ExampleCriterions.MIN_ANNOTATIONS(2),
-            ExampleCriterions.HAS_ELSE
-    );
+            ExampleCriterions.HAS_ELSE()
+        );
+    }
 
     public static Analysis findExamplesIn(Repository repo, Path repoOutputDir) {
         return new Analysis(
                 "Find Running Examples in " + repo.getRepositoryName(),
                 List.of(new ExampleFinder(
-                        EXAMPLE_CRITERIONS,
+                        EXAMPLE_CRITERIONS(),
                         DiffTreeRenderer.WithinDiffDetective()
                 )),
                 repo,

@@ -1,17 +1,18 @@
 package org.variantsync.diffdetective.show.variation;
 
+import org.variantsync.diffdetective.variation.Label;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
 import org.variantsync.diffdetective.variation.diff.serialize.nodeformat.DiffNodeLabelFormat;
 
 import java.awt.*;
 
-public class NodeView {
-    protected final DiffNode node;
-    private DiffNodeLabelFormat labelFormat;
+public class NodeView<L extends Label> {
+    protected final DiffNode<L> node;
+    private DiffTreeApp<L> formatHolder;
 
-    protected NodeView(DiffNode node, DiffNodeLabelFormat format) {
+    protected NodeView(DiffNode<L> node, DiffTreeApp<L> formatHolder) {
         this.node = node;
-        this.labelFormat = format;
+        this.formatHolder = formatHolder;
     }
 
     public Color borderColor() {
@@ -23,14 +24,10 @@ public class NodeView {
     }
 
     public String nodeLabel() {
-        return labelFormat.toLabel(node);
+        return getLabelFormat().toLabel(node);
     }
 
-    public DiffNodeLabelFormat getLabelFormat() {
-        return labelFormat;
-    }
-
-    public void setLabelFormat(DiffNodeLabelFormat labelFormat) {
-        this.labelFormat = labelFormat;
+    public DiffNodeLabelFormat<? super L> getLabelFormat() {
+        return formatHolder.getLabelFormat();
     }
 }

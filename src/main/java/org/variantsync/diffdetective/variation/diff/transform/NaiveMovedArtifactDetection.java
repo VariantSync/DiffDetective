@@ -1,6 +1,7 @@
 package org.variantsync.diffdetective.variation.diff.transform;
 
 import org.variantsync.diffdetective.diff.text.DiffLineNumber;
+import org.variantsync.diffdetective.variation.Label;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.variation.diff.DiffType;
@@ -19,14 +20,14 @@ import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
  * but for each line in the nodes individually.
  * @author Paul Bittner
  */
-public class NaiveMovedArtifactDetection implements DiffTreeTransformer {
+public class NaiveMovedArtifactDetection<L extends Label> implements DiffTreeTransformer<L> {
     @Override
-    public void transform(final DiffTree diffTree) {
-        final List<Pair<DiffNode, DiffNode>> twins = findArtifactTwins(diffTree);
+    public void transform(final DiffTree<L> diffTree) {
+        final List<Pair<DiffNode<L>, DiffNode<L>>> twins = findArtifactTwins(diffTree);
 
-        for (final Pair<DiffNode, DiffNode> twin : twins) {
-            final DiffNode added;
-            final DiffNode removed;
+        for (final Pair<DiffNode<L>, DiffNode<L>> twin : twins) {
+            final DiffNode<L> added;
+            final DiffNode<L> removed;
 
             // Determine which one is the added and which is the removed node.
             if (twin.first().isAdd()) {
@@ -37,9 +38,9 @@ public class NaiveMovedArtifactDetection implements DiffTreeTransformer {
                 removed = twin.first();
             }
 
-            final DiffNode afterParent = added.getParent(AFTER);
-            final DiffNode beforeParent = removed.getParent(BEFORE);
-            final DiffNode mergedNode = merge(added, removed);
+            final DiffNode<L> afterParent = added.getParent(AFTER);
+            final DiffNode<L> beforeParent = removed.getParent(BEFORE);
+            final DiffNode<L> mergedNode = merge(added, removed);
 
             added.drop();
             removed.drop();
@@ -49,19 +50,19 @@ public class NaiveMovedArtifactDetection implements DiffTreeTransformer {
         }
     }
 
-    private static List<Pair<DiffNode, DiffNode>> findArtifactTwins(final DiffTree diffTree) {
-        final List<DiffNode> artifactNodes = diffTree.computeArtifactNodes();
-        final List<Pair<DiffNode, DiffNode>> twins = new ArrayList<>();
+    private static <L extends Label> List<Pair<DiffNode<L>, DiffNode<L>>> findArtifactTwins(final DiffTree<L> diffTree) {
+        final List<DiffNode<L>> artifactNodes = diffTree.computeArtifactNodes();
+        final List<Pair<DiffNode<L>, DiffNode<L>>> twins = new ArrayList<>();
 
         while (!artifactNodes.isEmpty()) {
             // Always inspect last element as it's the cheapest to remove.
-            final DiffNode artifact = artifactNodes.get(artifactNodes.size() - 1);
+            final DiffNode<L> artifact = artifactNodes.get(artifactNodes.size() - 1);
             artifactNodes.remove(artifact);
 
             // If the node was inserted or removed ...
             if (!artifact.isNon()) {
                 // ... check if the opposite operation was applied to the same artifact somewhere else.
-                final DiffNode twin = findTwinOf(artifact, artifactNodes);
+                final DiffNode<L> twin = findTwinOf(artifact, artifactNodes);
                 if (twin != null) {
                     twins.add(new Pair<>(artifact, twin));
                     artifactNodes.remove(twin);
@@ -72,7 +73,7 @@ public class NaiveMovedArtifactDetection implements DiffTreeTransformer {
         return twins;
     }
 
-    private static DiffNode findTwinOf(final DiffNode artifact, final List<DiffNode> artifactNodes) {
+    private static <L extends Label> DiffNode<L> findTwinOf(final DiffNode<L> artifact, final List<DiffNode<L>> artifactNodes) {
         final DiffType weAreLookingFor = artifact.diffType.inverse();
         final String text = artifact.getLabel().toString().trim();
 
@@ -82,7 +83,7 @@ public class NaiveMovedArtifactDetection implements DiffTreeTransformer {
 
         // We assert the following as we removed the artifact node in transform.
         // assert(!artifactNodes.contains(artifact));
-        for (final DiffNode other : artifactNodes) {
+        for (final DiffNode<L> other : artifactNodes) {
             if (other.diffType == weAreLookingFor && text.equals(other.getLabel().toString().trim())) {
                 return other;
             }
@@ -91,7 +92,7 @@ public class NaiveMovedArtifactDetection implements DiffTreeTransformer {
         return null;
     }
 
-    private static DiffNode merge(final DiffNode added, final DiffNode removed) {
+    private static <L extends Label> DiffNode<L> merge(final DiffNode<L> added, final DiffNode<L> removed) {
         final DiffLineNumber addFrom = added.getFromLine();
         final DiffLineNumber remFrom = removed.getFromLine();
         final DiffLineNumber addTo = added.getToLine();

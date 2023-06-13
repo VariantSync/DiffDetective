@@ -9,15 +9,15 @@ import org.variantsync.diffdetective.preliminary.analysis.data.PatternMatch;
  * Data class containing a PatternMatch, the possible reverse-engineered FeatureContexts and the complexity of the feature context.
  */
 @Deprecated
-public class PatternMatchEvaluation {
+public class PatternMatchEvaluation<L> {
     private final CommitDiffAnalysisResult commit;
     private final PatchDiffAnalysisResult patch;
-    private final PatternMatch patternMatch;
+    private final PatternMatch<L> patternMatch;
     private final FeatureContext[] featureContexts;
     private final int featureContextComplexity;
 
     public PatternMatchEvaluation(CommitDiffAnalysisResult commit, PatchDiffAnalysisResult patch,
-                                  PatternMatch patternMatch, FeatureContext[] featureContexts) {
+                                  PatternMatch<L> patternMatch, FeatureContext[] featureContexts) {
         this.commit = commit;
         this.patch = patch;
         this.patternMatch = patternMatch;
@@ -75,7 +75,7 @@ public class PatternMatchEvaluation {
         return patch;
     }
 
-    public PatternMatch getPatternMatch() {
+    public PatternMatch<L> getPatternMatch() {
         return patternMatch;
     }
 

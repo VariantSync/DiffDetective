@@ -2,6 +2,7 @@ package org.variantsync.diffdetective.diff.git;
 
 import org.apache.commons.io.FilenameUtils;
 import org.eclipse.jgit.diff.DiffEntry;
+import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
 
 /**
@@ -13,7 +14,7 @@ import org.variantsync.diffdetective.variation.diff.DiffTree;
  */
 public class PatchDiff implements GitPatch {
     private final String fullDiff;
-    private final DiffTree diffTree;
+    private final DiffTree<DiffLinesLabel> diffTree;
 
     /**
      * The commit the patch belongs to.
@@ -38,7 +39,7 @@ public class PatchDiff implements GitPatch {
      * @param diffTree The {@link DiffTree} that describes this patch.
      */
     public PatchDiff(CommitDiff commitDiff, DiffEntry diffEntry, String fullDiff,
-                     DiffTree diffTree) {
+                     DiffTree<DiffLinesLabel> diffTree) {
         this.commitDiff = commitDiff;
         this.changeType = diffEntry.getChangeType();
         this.path = diffEntry.getNewPath();
@@ -91,7 +92,7 @@ public class PatchDiff implements GitPatch {
     /**
      * Returns the DiffTree for this patch.
      */
-    public DiffTree getDiffTree() {
+    public DiffTree<DiffLinesLabel> getDiffTree() {
         return diffTree;
     }
 

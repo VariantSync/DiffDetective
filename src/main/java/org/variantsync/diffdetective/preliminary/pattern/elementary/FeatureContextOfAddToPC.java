@@ -12,14 +12,14 @@ import org.variantsync.diffdetective.variation.diff.DiffNode;
 import static org.variantsync.diffdetective.variation.diff.Time.AFTER;
 
 @Deprecated
-public final class FeatureContextOfAddToPC implements FeatureContextReverseEngineering<DiffNode> {
+public final class FeatureContextOfAddToPC implements FeatureContextReverseEngineering<DiffNode<?>> {
     @Override
-    public Pattern<DiffNode> getPattern() {
+    public Pattern<DiffNode<?>> getPattern() {
         return ProposedEditClasses.AddToPC;
     }
 
     @Override
-    public PatternMatch<DiffNode> createMatch(DiffNode codeNode) {
+    public PatternMatch<DiffNode<?>> createMatch(DiffNode<?> codeNode) {
         final Node fm = codeNode.getParent(AFTER).getFeatureMapping(AFTER);
         final LineRange diffLines = codeNode.getLinesInDiff();
 
@@ -29,7 +29,7 @@ public final class FeatureContextOfAddToPC implements FeatureContextReverseEngin
     }
 
     @Override
-    public FeatureContext[] getFeatureContexts(PatternMatch<DiffNode> patternMatch) {
+    public FeatureContext[] getFeatureContexts(PatternMatch<DiffNode<?>> patternMatch) {
         return new FeatureContext[]{
                 new FeatureContext(patternMatch.getFeatureMappings()[0])
         };

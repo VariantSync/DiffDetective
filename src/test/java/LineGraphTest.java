@@ -1,6 +1,7 @@
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.variation.diff.serialize.*;
 import org.variantsync.diffdetective.variation.diff.serialize.edgeformat.DefaultEdgeLabelFormat;
@@ -22,13 +23,13 @@ import java.util.stream.Stream;
  * For testing the import of a line graph.
  */
 public class LineGraphTest {
-	private final static LineGraphImportOptions IMPORT_OPTIONS = new LineGraphImportOptions(
+	private final static LineGraphImportOptions<DiffLinesLabel> IMPORT_OPTIONS = new LineGraphImportOptions<>(
             GraphFormat.DIFFTREE,
             new CommitDiffDiffTreeLabelFormat(),
-            new LabelOnlyDiffNodeFormat(),
-            new DefaultEdgeLabelFormat()
+            new LabelOnlyDiffNodeFormat<>(),
+            new DefaultEdgeLabelFormat<>()
     );
-    private final static LineGraphExportOptions EXPORT_OPTIONS = new LineGraphExportOptions(
+    private final static LineGraphExportOptions<DiffLinesLabel> EXPORT_OPTIONS = new LineGraphExportOptions<>(
             IMPORT_OPTIONS
     );
 
@@ -42,7 +43,7 @@ public class LineGraphTest {
     @ParameterizedTest
     @MethodSource("testCases")
     public void idempotentReadWrite(Path testFile) throws IOException {
-        List<DiffTree> diffTrees;
+        List<DiffTree<DiffLinesLabel>> diffTrees;
         try (BufferedReader lineGraph = Files.newBufferedReader(testFile)) {
             diffTrees = LineGraphImport.fromLineGraph(lineGraph, testFile, IMPORT_OPTIONS);
         }
@@ -71,7 +72,7 @@ public class LineGraphTest {
 	 * 
 	 * @param treeList {@link DiffTree} list
 	 */
-	private static void assertConsistencyForAll(final List<DiffTree> treeList) {
+	private static void assertConsistencyForAll(final List<DiffTree<DiffLinesLabel>> treeList) {
 //        for (final DiffTree t : treeList) {
 //            DiffTreeRenderer.WithinDiffDetective().render(t, t.getSource().toString(), Path.of("error"), PatchDiffRenderer.ErrorDiffTreeRenderOptions);
 //        }

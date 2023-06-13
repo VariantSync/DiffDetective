@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
+import org.variantsync.diffdetective.variation.Label;
 import org.variantsync.diffdetective.variation.tree.VariationNode;
 
 import com.github.gumtreediff.tree.AbstractTree;
@@ -20,17 +21,17 @@ import com.github.gumtreediff.tree.TypeSet;
  * variation tree. Essentially it creates a copy of the tree structure and the labels of a variation
  * tree by stores a reference to the variation node which it adapts.
  */
-public class VariationTreeAdapter extends AbstractTree {
+public class VariationTreeAdapter<L extends Label> extends AbstractTree {
     private String cachedLabel;
-    private VariationNode<?> backingNode;
+    private VariationNode<?, L> backingNode;
 
-    public VariationTreeAdapter(VariationNode<?> node) {
+    public VariationTreeAdapter(VariationNode<?, L> node) {
         this.backingNode = node;
 
         if (backingNode.isConditionalAnnotation()) {
             cachedLabel = backingNode.getFormula().toString();
         } else {
-            cachedLabel = backingNode.getLabelLines().stream().collect(Collectors.joining("\n"));
+            cachedLabel = backingNode.getLabel().getLines().stream().collect(Collectors.joining("\n"));
         }
 
         var children = new ArrayList<Tree>(node.getChildren().size());
@@ -40,11 +41,11 @@ public class VariationTreeAdapter extends AbstractTree {
         setChildren(children);
     }
 
-    protected VariationTreeAdapter newInstance(VariationNode<?> node) {
-        return new VariationTreeAdapter(node);
+    protected VariationTreeAdapter newInstance(VariationNode<?, L> node) {
+        return new VariationTreeAdapter<>(node);
     }
 
-    public VariationNode<?> getVariationNode() {
+    public VariationNode<?, L> getVariationNode() {
         return backingNode;
     }
 

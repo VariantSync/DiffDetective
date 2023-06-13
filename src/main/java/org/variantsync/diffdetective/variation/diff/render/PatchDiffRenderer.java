@@ -4,6 +4,7 @@ import org.tinylog.Logger;
 import org.variantsync.diffdetective.diff.git.GitPatch;
 import org.variantsync.diffdetective.diff.git.PatchDiff;
 import org.variantsync.diffdetective.util.IO;
+import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.variation.diff.serialize.LineGraphConstants;
 import org.variantsync.diffdetective.variation.diff.serialize.LineGraphExportOptions;
@@ -25,18 +26,18 @@ public class PatchDiffRenderer {
      * Default RenderOptions for debug rendering of DiffTrees
      * relevant to the occurrence of an error.
      */
-    public static final RenderOptions ErrorDiffTreeRenderOptions = new RenderOptions.Builder()
+    public static final RenderOptions<DiffLinesLabel> ErrorDiffTreeRenderOptions = new RenderOptions.Builder<DiffLinesLabel>()
 //            .setNodeFormat(new MappingsDiffNodeFormat())
-            .setNodeFormat(new TypeDiffNodeFormat())
+            .setNodeFormat(new TypeDiffNodeFormat<>())
             .setDpi(2000)
-    		.setNodesize(RenderOptions.DEFAULT.nodesize()/30)
-    		.setEdgesize(0.2*RenderOptions.DEFAULT.edgesize())
-    		.setArrowsize(RenderOptions.DEFAULT.arrowsize()/5)
-    		.setFontsize(2)
-    		.build();
+            .setNodesize(RenderOptions.DEFAULT().nodesize()/30)
+            .setEdgesize(0.2*RenderOptions.DEFAULT().edgesize())
+            .setArrowsize(RenderOptions.DEFAULT().arrowsize()/5)
+            .setFontsize(2)
+            .build();
 
     private final DiffTreeRenderer renderer;
-    private final RenderOptions options;
+    private final RenderOptions<? super DiffLinesLabel> options;
 
     /**
      * Creates a PatchDiffRenderer wrapping the given renderer and rendering patches
@@ -44,7 +45,7 @@ public class PatchDiffRenderer {
      * @param renderer The renderer to use when rendering PatchDiffs.
      * @param options Options to use for all render calls.
      */
-    public PatchDiffRenderer(final DiffTreeRenderer renderer, RenderOptions options) {
+    public PatchDiffRenderer(final DiffTreeRenderer renderer, RenderOptions<? super DiffLinesLabel> options) {
         this.renderer = renderer;
         this.options = options;
     }
@@ -76,7 +77,7 @@ public class PatchDiffRenderer {
      * @param patch The patch from which the given tree was created.
      * @param outputDirectory The directory to which the rendered image should be written.
      */
-    public void render(final DiffTree diffTree, final GitPatch patch, final Path outputDirectory) {
+    public void render(final DiffTree<? extends DiffLinesLabel> diffTree, final GitPatch patch, final Path outputDirectory) {
         renderer.render(diffTree, patch, outputDirectory, options);
         try {
             IO.write(outputDirectory.resolve(

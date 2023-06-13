@@ -2,6 +2,8 @@ package org.variantsync.diffdetective.variation.diff.serialize;
 
 import java.io.IOException;
 import java.io.OutputStream;
+
+import org.variantsync.diffdetective.variation.Label;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
 
 /**
@@ -10,7 +12,7 @@ import org.variantsync.diffdetective.variation.diff.DiffTree;
  *
  * @author Benjamin Moosherr
  */
-public interface Exporter {
+public interface Exporter<L extends Label> {
     /**
      * Export a {@code diffTree} into {@code destination}.
      *
@@ -23,5 +25,5 @@ public interface Exporter {
      * @param diffTree to be exported
      * @param destination where the result should be written
      */
-    void exportDiffTree(DiffTree diffTree, OutputStream destination) throws IOException;
+    <La extends L> void exportDiffTree(DiffTree<La> diffTree, OutputStream destination) throws IOException;
 }

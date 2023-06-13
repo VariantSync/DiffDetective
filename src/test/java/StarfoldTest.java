@@ -1,6 +1,7 @@
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParseOptions;
 import org.variantsync.diffdetective.variation.diff.transform.Starfold;
@@ -22,7 +23,7 @@ public class StarfoldTest {
     }
 
     private void test(Path inputDiff, final Starfold starfold, Path expected) throws IOException, DiffParseException {
-        final DiffTree t = DiffTree.fromFile(inputDiff, new DiffTreeParseOptions(true, true));
+        final DiffTree<DiffLinesLabel> t = DiffTree.fromFile(inputDiff, new DiffTreeParseOptions(true, true));
         starfold.transform(t);
 
         // missing: Check that t is correct.

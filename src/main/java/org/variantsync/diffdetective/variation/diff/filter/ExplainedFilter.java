@@ -94,13 +94,13 @@ public class ExplainedFilter<T> implements Predicate<T> {
         }
     }
 
-    private final List<TaggedPredicate<Explanation, T>> filters;
+    private final List<TaggedPredicate<Explanation, ? super T>> filters;
 
     /**
      * Creates an ExplainedFilter by conjunction of all given filters.
      * @param namedFilters Filters to compose. Each filter has to be explained by a (unique) name.
      */
-    public ExplainedFilter(final Stream<TaggedPredicate<String, T>> namedFilters) {
+    public ExplainedFilter(final Stream<TaggedPredicate<String, ? super T>> namedFilters) {
         this.filters = namedFilters.map(
                 filter -> filter.map(Explanation::new)
         ).collect(Collectors.toList());
@@ -110,7 +110,7 @@ public class ExplainedFilter<T> implements Predicate<T> {
      * Same as {@link ExplainedFilter#ExplainedFilter(Stream)} but with variadic arguments.
      */
     @SafeVarargs
-    public ExplainedFilter(final TaggedPredicate<String, T>... filters) {
+    public ExplainedFilter(final TaggedPredicate<String, ? super T>... filters) {
         this(Arrays.stream(filters));
     }
 
@@ -124,7 +124,7 @@ public class ExplainedFilter<T> implements Predicate<T> {
 
     @Override
     public boolean test(final T element) {
-        for (final TaggedPredicate<Explanation, T> filter : filters) {
+        for (final TaggedPredicate<Explanation, ? super T> filter : filters) {
             if (!filter.condition().test(element)) {
                 filter.tag().hit();
                 return false;
@@ -148,7 +148,7 @@ public class ExplainedFilter<T> implements Predicate<T> {
      * Returns all sub-filters whose filter hits are recorded.
      * @return
      */
-    public List<TaggedPredicate<Explanation, T>> getFilters() {
+    public List<TaggedPredicate<Explanation, ? super T>> getFilters() {
         return filters;
     }
 

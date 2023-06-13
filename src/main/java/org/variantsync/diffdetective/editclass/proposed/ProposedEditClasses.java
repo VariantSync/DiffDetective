@@ -67,7 +67,7 @@ public class ProposedEditClasses implements EditClassCatalogue {
     }
 
     @Override
-    public EditClass match(DiffNode node)
+    public EditClass match(DiffNode<?> node)
     {
         // This is an inlined version of all edit classes to optimize runtime when detecting the class of a certain node.
 

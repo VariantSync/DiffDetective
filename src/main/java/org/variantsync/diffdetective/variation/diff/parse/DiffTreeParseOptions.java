@@ -1,6 +1,5 @@
 package org.variantsync.diffdetective.variation.diff.parse;
 
-import org.variantsync.diffdetective.datasets.PatchDiffParseOptions;
 import org.variantsync.diffdetective.feature.CPPAnnotationParser;
 
 /**

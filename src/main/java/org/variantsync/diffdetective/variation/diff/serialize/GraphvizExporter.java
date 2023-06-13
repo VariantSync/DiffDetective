@@ -1,6 +1,7 @@
 package org.variantsync.diffdetective.variation.diff.serialize;
 
 import org.variantsync.diffdetective.util.TriConsumer;
+import org.variantsync.diffdetective.variation.Label;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
 
 import java.io.*;
@@ -16,10 +17,10 @@ import java.util.stream.Collectors;
  *
  * Currently only basic layout relevant information is exported, so if the result is rendered directly by Graphviz no styling is applied.
  */
-public class GraphvizExporter implements Exporter {
+public class GraphvizExporter<L extends Label> implements Exporter<L> {
     private static final Pattern quotePattern = Pattern.compile("[\"\\\\]");
     public static final Pattern graphvizNodePattern = Pattern.compile("^node (\\w+) ([0-9.]+) ([0-9.]+) .*$");
-    private Format format;
+    private Format<? super L> format;
 
     public enum LayoutAlgorithm {
         DOT("dot"),
@@ -63,7 +64,7 @@ public class GraphvizExporter implements Exporter {
         }
     }
 
-    public GraphvizExporter(Format format) {
+    public GraphvizExporter(Format<? super L> format) {
         this.format = format;
     }
 
@@ -75,7 +76,7 @@ public class GraphvizExporter implements Exporter {
      * @param destination where the result should be written
      */
     @Override
-    public void exportDiffTree(DiffTree diffTree, OutputStream destination) throws IOException {
+    public <La extends L> void exportDiffTree(DiffTree<La> diffTree, OutputStream destination) throws IOException {
         var output = new PrintStream(destination);
 
         output.println("digraph g {");
@@ -103,8 +104,8 @@ public class GraphvizExporter implements Exporter {
      * the {@code -T} flag.
      * @return a buffered {@code InputStream} of the Graphviz output
      */
-    public InputStream computeGraphvizLayout(
-            DiffTree diffTree,
+    public <La extends L> InputStream computeGraphvizLayout(
+            DiffTree<La> diffTree,
             LayoutAlgorithm algorithm,
             OutputFormat outputFormat)
             throws IOException {
@@ -149,14 +150,14 @@ public class GraphvizExporter implements Exporter {
             .collect(Collectors.joining("\\n"));
     }
 
-    public static void layoutNodesIn(
-            final DiffTree diffTree,
-            Format format,
+    public static <L extends Label> void layoutNodesIn(
+            final DiffTree<L> diffTree,
+            Format<? super L> format,
             GraphvizExporter.LayoutAlgorithm algorithm,
             TriConsumer<Integer, Double, Double> positionNode) throws IOException {
         // Convert the layout information received by Graphviz to coordinates used by TikZ.
         try (
-                var graphvizExporter = new GraphvizExporter(format)
+                var graphvizExporter = new GraphvizExporter<>(format)
                         .computeGraphvizLayout(
                                 diffTree,
                                 algorithm,

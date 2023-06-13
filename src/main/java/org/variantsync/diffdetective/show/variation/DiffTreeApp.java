@@ -10,6 +10,7 @@ import org.variantsync.diffdetective.show.engine.input.ZoomViaMouseWheel;
 import org.variantsync.diffdetective.show.variation.input.ExitOnEscape;
 import org.variantsync.diffdetective.show.variation.input.NodeDragAndDrop;
 import org.variantsync.diffdetective.util.StringUtils;
+import org.variantsync.diffdetective.variation.Label;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.variation.diff.DiffType;
@@ -25,54 +26,58 @@ import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class DiffTreeApp extends App {
+public class DiffTreeApp<L extends Label> extends App {
     public final static double TIKZ_NODE_RADIUS = 6.5;
     public final static int TIKZ_FONT_SIZE = 5;
     public final static double DEFAULT_NODE_RADIUS = 50;
     public final static int DEFAULT_FONT_SIZE = 30;
+    public final static <L extends Label> List<DiffNodeLabelFormat<L>> DEFAULT_FORMATS() {
+        return List.of(
+            new PaperNodeFormat<>(),
+            new ShowNodeFormat<>(),
+            new LabelOnlyDiffNodeFormat<>(),
+            new EditClassesDiffNodeFormat<>(),
+            new LineNumberFormat<>(),
+            new FormulasAndLineNumbersNodeFormat<>()
+        );
+    }
 
-    private final static Format DEFAULT_FORMAT =
-            new Format(
-                    new PaperNodeFormat(),
-                    // There is a bug in the exporter currently that accidentally switches direction so as a workaround we revert it here.
-                    new DefaultEdgeLabelFormat(EdgeLabelFormat.Direction.ParentToChild)
-            );
+    private final Format<L> defaultFormat;
 
-    private final static List<DiffNodeLabelFormat> AVAILABLE_FORMATS = List.of(
-            new PaperNodeFormat(),
-            new ShowNodeFormat(),
-            new LabelOnlyDiffNodeFormat(),
-            new EditClassesDiffNodeFormat(),
-            new LineNumberFormat(),
-            new FormulasAndLineNumbersNodeFormat()
-    );
+    private final List<DiffNodeLabelFormat<L>> availableFormats;
     private Vec2 resolution;
-    private final DiffTree diffTree;
+    private final DiffTree<L> diffTree;
 
-    protected final Map<DiffNode, Entity> nodes = new HashMap<>();
+    protected final Map<DiffNode<L>, Entity> nodes = new HashMap<>();
 
     private boolean rootDancing = false;
     private final Dance rootDance;
 
-    private DiffNodeLabelFormat currentFormat = DEFAULT_FORMAT.getNodeFormat();
+    private DiffNodeLabelFormat<L> currentFormat;
 
-    public DiffTreeApp(final String name, final DiffTree diffTree, Vec2 resolution) {
+    public DiffTreeApp(final String name, final DiffTree<L> diffTree, Vec2 resolution, List<DiffNodeLabelFormat<L>> availableFormats) {
         super(new Window(name, (int)resolution.x(), (int)resolution.y()));
         this.diffTree = diffTree;
         this.resolution = resolution;
         this.rootDance = new Dance();
+        this.availableFormats = availableFormats;
+        currentFormat = availableFormats.get(0);
+        defaultFormat =
+            new Format<>(
+                    currentFormat,
+                    // There is a bug in the exporter currently that accidentally switches direction so as a workaround we revert it here.
+                    new DefaultEdgeLabelFormat<>(EdgeLabelFormat.Direction.ParentToChild)
+            );
     }
 
     private void setupMenu() {
@@ -110,7 +115,7 @@ public class DiffTreeApp extends App {
         }
 
         // Switch labels
-        for (final DiffNodeLabelFormat labelFormat : AVAILABLE_FORMATS) {
+        for (final DiffNodeLabelFormat<L> labelFormat : availableFormats) {
             final JMenuItem setLabelFormatMenuItem = new JMenuItem(labelFormat.getShortName());
             setLabelFormatMenuItem.addActionListener(event -> setLabelFormat(labelFormat));
             labelMenu.add(setLabelFormatMenuItem);
@@ -174,7 +179,7 @@ public class DiffTreeApp extends App {
         final int result = fileChooser.showSaveDialog(getWindow());
         if (result == JFileChooser.APPROVE_OPTION) {
             final File targetFile = fileChooser.getSelectedFile();
-            final TikzExporter tikzExporter = new TikzExporter(new Format(currentFormat, new DefaultEdgeLabelFormat()));
+            final TikzExporter<L> tikzExporter = new TikzExporter<>(new Format<>(currentFormat, new DefaultEdgeLabelFormat<>()));
 
             try (
                     var unbufferedOutput = Files.newOutputStream(targetFile.toPath());
@@ -212,22 +217,21 @@ public class DiffTreeApp extends App {
         }
     }
 
-    private void setLabelFormat(DiffNodeLabelFormat labelFormat) {
+    private void setLabelFormat(DiffNodeLabelFormat<L> labelFormat) {
         this.currentFormat = labelFormat;
-        for (Entity e : nodes.values()) {
-            e.forComponent(GraphNodeGraphics.class,
-                    graphNodeGraphics -> graphNodeGraphics.node.setLabelFormat(labelFormat)
-            );
-        }
+    }
+
+    DiffNodeLabelFormat<? super L> getLabelFormat() {
+        return currentFormat;
     }
 
     private void layoutNodes(GraphvizExporter.LayoutAlgorithm layoutAlgorithm) {
-        final Map<DiffNode, Vec2> locations;
+        final Map<DiffNode<?>, Vec2> locations;
         try {
             locations = calculateLayout(
                     diffTree,
                     layoutAlgorithm,
-                    DEFAULT_FORMAT);
+                    defaultFormat);
         } catch (IOException e) {
             Logger.error(e);
             return;
@@ -243,9 +247,9 @@ public class DiffTreeApp extends App {
             final Entity e = new Entity();
             e.add(new CircleHitbox(new Circle(DEFAULT_NODE_RADIUS)));
             e.add(new GraphNodeGraphics(
-                    new NodeView(
+                    new NodeView<L>(
                             diffNode,
-                            currentFormat
+                            this
                     )
             ));
             e.setZ(Z.FOR_NODES);
@@ -259,8 +263,8 @@ public class DiffTreeApp extends App {
         // spawn the edges
         final List<EdgeGraphics> edges = new ArrayList<>();
         getDiffTree().forAll(node -> {
-            final DiffNode pbefore = node.getParent(Time.BEFORE);
-            final DiffNode pafter = node.getParent(Time.AFTER);
+            final DiffNode<?> pbefore = node.getParent(Time.BEFORE);
+            final DiffNode<?> pafter = node.getParent(Time.AFTER);
 
             if (pbefore != null && pbefore == pafter) {
                 edges.add(new EdgeGraphics(
@@ -311,20 +315,20 @@ public class DiffTreeApp extends App {
         );
     }
 
-    public Entity getEntityOf(DiffNode diffNode) {
+    public Entity getEntityOf(DiffNode<?> diffNode) {
         return nodes.get(diffNode);
     }
 
-    public DiffTree getDiffTree() {
+    public DiffTree<?> getDiffTree() {
         return diffTree;
     }
 
-    public static Map<DiffNode, Vec2> calculateLayout(
-            DiffTree d,
+    public static <L extends Label> Map<DiffNode<?>, Vec2> calculateLayout(
+            DiffTree<L> d,
             GraphvizExporter.LayoutAlgorithm layout,
-            Format format
+            Format<L> format
     ) throws IOException {
-        final Map<DiffNode, Vec2> locations = new HashMap<>();
+        final Map<DiffNode<?>, Vec2> locations = new HashMap<>();
 
         GraphvizExporter.layoutNodesIn(d, format, layout,
                 (id, x, y) -> locations.put(
@@ -335,8 +339,8 @@ public class DiffTreeApp extends App {
         return locations;
     }
 
-    public void locateDiffTreeNodesAt(final Map<DiffNode, Vec2> locations) {
-        for (final Map.Entry<DiffNode, Vec2> entry : locations.entrySet()) {
+    public void locateDiffTreeNodesAt(final Map<DiffNode<?>, Vec2> locations) {
+        for (final Map.Entry<DiffNode<?>, Vec2> entry : locations.entrySet()) {
             final Entity e = nodes.get(entry.getKey());
             e.setLocation(entry.getValue());
         }

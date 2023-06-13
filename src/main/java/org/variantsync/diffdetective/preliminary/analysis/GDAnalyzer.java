@@ -3,6 +3,7 @@ package org.variantsync.diffdetective.preliminary.analysis;
 import org.variantsync.diffdetective.diff.git.CommitDiff;
 import org.variantsync.diffdetective.diff.git.PatchDiff;
 import org.variantsync.diffdetective.preliminary.pattern.Pattern;
+import org.variantsync.diffdetective.variation.diff.DiffNode;
 import org.variantsync.diffdetective.preliminary.GitDiff;
 import org.variantsync.diffdetective.preliminary.analysis.data.CommitDiffAnalysisResult;
 import org.variantsync.diffdetective.preliminary.analysis.data.GDAnalysisResult;
@@ -18,23 +19,23 @@ import java.util.stream.Collectors;
  * Gets a GitDiff which is analyzed using the given edit patterns.
  */
 @Deprecated
-public abstract class GDAnalyzer<E> {
+public abstract class GDAnalyzer {
 
     final GitDiff gitDiff;
-    final List<FeatureContextReverseEngineering<E>> patterns;
+    final List<FeatureContextReverseEngineering<DiffNode<?>>> patterns;
 
-    public GDAnalyzer(GitDiff gitDiff, List<FeatureContextReverseEngineering<E>> patterns) {
+    public GDAnalyzer(GitDiff gitDiff, List<FeatureContextReverseEngineering<DiffNode<?>>> patterns) {
         this.gitDiff = gitDiff;
 //        List<Pattern<DiffNode>> patternList = new ArrayList<>(Arrays.asList(patterns));
 //        patternList.add(0, new InvalidPatchPattern<>());
         this.patterns = patterns;
     }
 
-    public List<FeatureContextReverseEngineering<E>> getReverseEngineerings() {
+    public List<FeatureContextReverseEngineering<DiffNode<?>>> getReverseEngineerings() {
         return patterns;
     }
 
-    public List<Pattern<E>> getPatterns() {
+    public List<Pattern<DiffNode<?>>> getPatterns() {
         return patterns.stream().map(FeatureContextReverseEngineering::getPattern).collect(Collectors.toList());
     }
 

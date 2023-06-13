@@ -19,6 +19,7 @@ import org.variantsync.diffdetective.analysis.AutomationResult;
 import org.variantsync.diffdetective.analysis.StatisticsAnalysis;
 import org.variantsync.diffdetective.datasets.DatasetDescription;
 import org.variantsync.diffdetective.datasets.DefaultDatasets;
+import org.variantsync.diffdetective.editclass.proposed.ProposedEditClasses;
 import org.variantsync.diffdetective.metadata.EditClassCount;
 import org.variantsync.diffdetective.metadata.ExplainedFilterSummary;
 import org.variantsync.diffdetective.tablegen.rows.ContentRow;
@@ -26,6 +27,7 @@ import org.variantsync.diffdetective.tablegen.styles.ShortTable;
 import org.variantsync.diffdetective.tablegen.styles.VariabilityShare;
 import org.variantsync.diffdetective.util.IO;
 import org.variantsync.diffdetective.validation.FindMedianCommitTime;
+import org.variantsync.diffdetective.variation.Label;
 
 /** Accumulates multiple {@link AnalysisResult}s of several datasets. */
 public class MiningResultAccumulator {
@@ -49,7 +51,7 @@ public class MiningResultAccumulator {
         for (final Path p : paths) {
             var result = new AnalysisResult();
             result.append(ExplainedFilterSummary.KEY, new ExplainedFilterSummary());
-            result.append(EditClassCount.KEY, new EditClassCount());
+            result.append(EditClassCount.KEY, new EditClassCount(ProposedEditClasses.Instance));
             result.append(StatisticsAnalysis.RESULT, new StatisticsAnalysis.Result());
             result.setFrom(p);
             results.put(p.getParent().getFileName().toString(), result);

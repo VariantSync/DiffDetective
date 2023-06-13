@@ -1,7 +1,7 @@
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.variantsync.diffdetective.datasets.PatchDiffParseOptions;
 import org.variantsync.diffdetective.diff.text.DiffLineNumber;
+import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParseOptions;
@@ -64,13 +64,13 @@ public class TestLineNumbers {
         return List.of(elifchain, lineno1, deleteMLM);
     }
 
-    private static DiffTree loadFullDiff(final Path p) throws IOException, DiffParseException {
+    private static DiffTree<DiffLinesLabel> loadFullDiff(final Path p) throws IOException, DiffParseException {
         return DiffTree.fromFile(p, new DiffTreeParseOptions(
                 false, false
         ));
     }
 
-    private static void printLineNumbers(final DiffTree diffTree) {
+    private static void printLineNumbers(final DiffTree<DiffLinesLabel> diffTree) {
         diffTree.forAll(node ->
                 System.out.println(node.diffType.symbol
                     + " " + node.nodeType
@@ -84,7 +84,7 @@ public class TestLineNumbers {
     }
 
     private static String generateTestCaseCode(final Path p) throws IOException, DiffParseException {
-        final DiffTree diffTree = loadFullDiff(p);
+        final DiffTree<DiffLinesLabel> diffTree = loadFullDiff(p);
         final Function<DiffLineNumber, String> toConstructorCall = l ->
                 "new DiffLineNumber(" + l.inDiff() + ", " + l.beforeEdit() + ", " + l.afterEdit() + ")";
         String testName = p.getFileName().toString();
@@ -131,7 +131,7 @@ public class TestLineNumbers {
     @ParameterizedTest
     @MethodSource("testCases")
     public void testLineNumbers(TestCase testCase) throws IOException, DiffParseException {
-        final DiffTree t = loadFullDiff(resDir.resolve(testCase.filename()));
+        final DiffTree<DiffLinesLabel> t = loadFullDiff(resDir.resolve(testCase.filename()));
         t.forAll(node -> {
             var fromTo = testCase.expectedLineNumbers.get(node.getID());
             final DiffLineNumber from = fromTo.first();

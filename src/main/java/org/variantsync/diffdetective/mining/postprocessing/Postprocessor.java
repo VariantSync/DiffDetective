@@ -1,6 +1,7 @@
 package org.variantsync.diffdetective.mining.postprocessing;
 
 import org.variantsync.diffdetective.metadata.ExplainedFilterSummary;
+import org.variantsync.diffdetective.variation.Label;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.variation.diff.filter.DiffTreeFilter;
 import org.variantsync.diffdetective.variation.diff.filter.ExplainedFilter;
@@ -15,9 +16,9 @@ import java.util.Map;
  * Generic Postprocessor for mined patterns.
  * Patterns are represented as DiffTrees and might be filtered or transformed.
  */
-public class Postprocessor {
-    private final List<DiffTreeTransformer> transformers;
-    private final ExplainedFilter<DiffTree> filters;
+public class Postprocessor<L extends Label> {
+    private final List<DiffTreeTransformer<L>> transformers;
+    private final ExplainedFilter<DiffTree<L>> filters;
 
     /**
      * Result type for prostprocessing.
@@ -26,13 +27,13 @@ public class Postprocessor {
      * Notice, that filters were ordered and when a filter was applied, subsequent filters were not tested.
      * Thus, each filter operated on the unfiltered trees of the previous filter.
      */
-    public record Result(List<DiffTree> processedTrees, Map<String, Integer> filterCounts) {}
+    public record Result<L extends Label>(List<DiffTree<L>> processedTrees, Map<String, Integer> filterCounts) {}
 
     private Postprocessor(
-            final List<DiffTreeTransformer> transformers,
-            final List<TaggedPredicate<String, DiffTree>> namedFilters) {
+            final List<DiffTreeTransformer<L>> transformers,
+            final List<TaggedPredicate<String, ? super DiffTree<L>>> namedFilters) {
         this.transformers = transformers;
-        this.filters = new ExplainedFilter<>(namedFilters.stream());
+        this.filters = new ExplainedFilter<DiffTree<L>>(namedFilters.stream());
     }
 
     /**
@@ -44,9 +45,9 @@ public class Postprocessor {
      *   - {@link CutNonEditedSubtrees}
      * @return the default postprocessor.
      */
-    public static Postprocessor Default() {
-        return new Postprocessor(
-                List.of(new CutNonEditedSubtrees()),
+    public static <L extends Label> Postprocessor<L> Default() {
+        return new Postprocessor<>(
+                List.of(new CutNonEditedSubtrees<>()),
                 List.of(
                         // Filter ill-formed patterns
                         DiffTreeFilter.consistent(),
@@ -62,13 +63,13 @@ public class Postprocessor {
      * @param frequentSubgraphs A list of subgraphs to which to apply the postprocessing.
      * @return The processed difftrees as well as some metadata.
      */
-    public Result postprocess(final List<DiffTree> frequentSubgraphs) {
-        final List<DiffTree> processedTrees = frequentSubgraphs.stream()
+    public Result<L> postprocess(final List<DiffTree<L>> frequentSubgraphs) {
+        final List<DiffTree<L>> processedTrees = frequentSubgraphs.stream()
                 .filter(filters)
                 .peek(tree -> DiffTreeTransformer.apply(transformers, tree))
                 .toList();
 
         final Map<String, Integer> filterCounts = new ExplainedFilterSummary(filters).snapshot();
-        return new Result(processedTrees, filterCounts);
+        return new Result<>(processedTrees, filterCounts);
     }
 }

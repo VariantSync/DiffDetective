@@ -25,6 +25,7 @@ import org.variantsync.diffdetective.parallel.ScheduledTasksIterator;
 import org.variantsync.diffdetective.util.Clock;
 import org.variantsync.diffdetective.util.Diagnostics;
 import org.variantsync.diffdetective.util.InvocationCounter;
+import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.functjonal.iteration.ClusteredIterator;
 import org.variantsync.functjonal.iteration.MappedIterator;
@@ -64,7 +65,7 @@ public class Analysis {
     protected RevCommit currentCommit;
     protected CommitDiff currentCommitDiff;
     protected PatchDiff currentPatch;
-    protected DiffTree currentDiffTree;
+    protected DiffTree<DiffLinesLabel> currentDiffTree;
 
     protected final Path outputDir;
     protected Path outputFile;
@@ -106,7 +107,7 @@ public class Analysis {
      * The currently processed patch.
      * Valid only during {@link Hooks#analyzeDiffTree}.
      */
-    public DiffTree getCurrentDiffTree() {
+    public DiffTree<DiffLinesLabel> getCurrentDiffTree() {
         return currentDiffTree;
     }
 

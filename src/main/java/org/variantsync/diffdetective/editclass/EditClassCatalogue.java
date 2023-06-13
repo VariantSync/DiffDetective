@@ -32,7 +32,7 @@ public interface EditClassCatalogue {
      * @param node The node of which to find its edit class.
      * @return Returns the edit class that matches the given node.
      */
-    default EditClass match(DiffNode node)
+    default EditClass match(DiffNode<?> node)
     {
         if (!node.isArtifact()) {
             throw new IllegalArgumentException("Expected an artifact node but got " + node.nodeType + "!");
