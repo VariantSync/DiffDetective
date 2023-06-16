@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 public class GitDifferTest {
     private final static Path testDir = Constants.RESOURCE_DIR.resolve("diffs").resolve("differ");
-    private final static Path REPOS_DIR = Path.of("src").resolve("test").resolve("resources").resolve("repos");
+    private final static Path REPOS_DIR = Constants.RESOURCE_DIR.resolve("repos");
 
     private static final String[] commitIDs = new String[] {"a032346092e47048becb36a7cb183b4739547370", "4a4c1db1b192e221d8e25460d6d1128d1bdd0c0d", "d7eeba1b94f3d0c0ebed3457eea8fa8537143348"};
 
@@ -70,9 +70,7 @@ public class GitDifferTest {
     }
 
     private static Repository repo() {
-        final Path repoPath = Path.of(".")
-                .resolve(REPOS_DIR)
-                .resolve("test-spl.zip");
+        final Path repoPath = REPOS_DIR.resolve("test-spl.zip");
         return Repository
                 .fromZip(repoPath, "test-spl")
                 .setDiffFilter(DiffFilter.ALLOW_ALL)

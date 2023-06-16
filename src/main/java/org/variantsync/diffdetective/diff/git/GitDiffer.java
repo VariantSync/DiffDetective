@@ -164,12 +164,12 @@ public class GitDiffer {
         );
     }
 
+    public RevCommit getCommit(String commitHash) throws IOException {
+        return git.getRepository().parseCommit(ObjectId.fromString(commitHash));
+    }
+
     public CommitDiffResult createCommitDiff(final String commitHash) throws IOException {
-        Assert.assertNotNull(git);
-        try (var revWalk = new RevWalk(git.getRepository())) {
-            final RevCommit commit = revWalk.parseCommit(ObjectId.fromString(commitHash));
-            return createCommitDiff(commit);
-        }
+        return createCommitDiff(getCommit(commitHash));
     }
 
     public CommitDiffResult createCommitDiff(final RevCommit revCommit) {
@@ -351,7 +351,7 @@ public class GitDiffer {
                                 yield "";
                             }
                             // The first lines contains meta information "@@ ... " that we want to skip.
-                            final String[] hunkBeginAndRest = strippedDiff.split(StringUtils.LINEBREAK_REGEX_RAW, 2);
+                            final String[] hunkBeginAndRest = StringUtils.LINEBREAK_REGEX.split(strippedDiff, 2);
                             Assert.assertTrue(hunkBeginAndRest.length == 2, "Hunk is only one line. Is it a hunk? Hunk: " + strippedDiff);
                             yield hunkBeginAndRest[1];
                         }

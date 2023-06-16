@@ -1,47 +1,47 @@
-v 16 NON;IF;(old: -1, diff: -1, new:-1);(old: -1, diff: -1, new:-1);True
-v 147 NON;ARTIFACT;(old: 1, diff: 1, new:1);(old: 2, diff: 2, new:2);;
-v 211 NON;ARTIFACT;(old: 2, diff: 2, new:2);(old: 3, diff: 3, new:3);;
-v 275 NON;ARTIFACT;(old: 3, diff: 3, new:3);(old: 4, diff: 4, new:4);;
-v 336 NON;IF;(old: 4, diff: 4, new:4);(old: 33, diff: 33, new:33);-_DB_STL_RESOURCE_MANAGER_H__;#ifndef _DB_STL_RESOURCE_MANAGER_H__;#endif
-v 403 NON;ARTIFACT;(old: 5, diff: 5, new:5);(old: 6, diff: 6, new:6);;#include <stdio.h>
-v 467 NON;ARTIFACT;(old: 6, diff: 6, new:6);(old: 7, diff: 7, new:7);;
-v 528 NON;IF;(old: 7, diff: 7, new:7);(old: 9, diff: 9, new:9);-DEFINED_MESSAGE;#if !defined (MESSAGE)
-v 595 NON;ARTIFACT;(old: 8, diff: 8, new:8);(old: 9, diff: 9, new:9);;   #define MESSAGE "You wish!"
-v 657 NON;ELSE;(old: 9, diff: 9, new:9);(old: 11, diff: 11, new:11);;#else;#endif
-v 723 NON;ARTIFACT;(old: 10, diff: 10, new:10);(old: 11, diff: 11, new:11);;   // do nothing
-v 851 NON;ARTIFACT;(old: 12, diff: 12, new:12);(old: 13, diff: 13, new:13);;
-v 915 NON;ARTIFACT;(old: 13, diff: 13, new:13);(old: 14, diff: 14, new:14);;int main(void) {
-v 979 NON;ARTIFACT;(old: 14, diff: 14, new:14);(old: 15, diff: 15, new:15);;   printf("Here is the message: %s\n", MESSAGE);
-v 1043 NON;ARTIFACT;(old: 15, diff: 15, new:15);(old: 16, diff: 16, new:16);;
-v 1104 NON;IF;(old: 16, diff: 16, new:16);(old: 21, diff: 21, new:21);(-DEFINED_HAVE_GETHOSTBYNAME_R | -DEFINED_HAVE_GETHOSTBYADDR_R | -DEFINED_HAVE_GETPWUID_R | -DEFINED_HAVE_GETGRGID_R) & (-DEFINED_HAVE_MTSAFE_GETHOSTBYNAME | -DEFINED_HAVE_MTSAFE_GETHOSTBYADDR);#if (!defined(HAVE_GETHOSTBYNAME_R) || !defined(HAVE_GETHOSTBYADDR_R) || \;           !defined(HAVE_GETPWUID_R)      || !defined(HAVE_GETGRGID_R)) && \;          (!defined(HAVE_MTSAFE_GETHOSTBYNAME) || !defined(HAVE_MTSAFE_GETHOSTBYADDR));#endif /* (!defined(HAVE_GETHOSTBYNAME_R) || !defined(HAVE_GETHOSTBYADDR_R) || \;           !defined(HAVE_GETPWUID_R)      || !defined(HAVE_GETGRGID_R)) && \;          (!defined(HAVE_MTSAFE_GETHOSTBYNAME) || !defined(HAVE_MTSAFE_GETHOSTBYADDR)) */
-v 1299 NON;ARTIFACT;(old: 19, diff: 19, new:19);(old: 20, diff: 20, new:20);;          blabla
-v 1363 NON;ARTIFACT;(old: 20, diff: 20, new:20);(old: 21, diff: 21, new:21);;          blabla
-v 1619 NON;ARTIFACT;(old: 24, diff: 24, new:24);(old: 25, diff: 25, new:25);;
-v 1680 NON;IF;(old: 25, diff: 25, new:25);(old: 28, diff: 28, new:28);(-DEFINED_HAVE_GETHOSTBYNAME_R | -DEFINED_HAVE_GETHOSTBYADDR_R) & (-DEFINED_HAVE_MTSAFE_GETHOSTBYNAME | -DEFINED_HAVE_MTSAFE_GETHOSTBYADDR);#if (!defined(HAVE_GETHOSTBYNAME_R) || !defined(HAVE_GETHOSTBYADDR_R)) && \;    (!defined(HAVE_MTSAFE_GETHOSTBYNAME) || !defined(HAVE_MTSAFE_GETHOSTBYADDR));#endif
-v 1811 NON;ARTIFACT;(old: 27, diff: 27, new:27);(old: 28, diff: 28, new:28);;hello
-v 1939 NON;ARTIFACT;(old: 29, diff: 29, new:29);(old: 30, diff: 30, new:30);;}
-v 2000 NON;IF;(old: 30, diff: 30, new:30);(old: 32, diff: 32, new:32);DEFINED_MESSAGE;#if defined (MESSAGE);#endif
-v 2067 NON;ARTIFACT;(old: 31, diff: 31, new:31);(old: 32, diff: 32, new:32);;   #define MESSAGE "You wish!"
-e 147 16 ba;0;0
-e 211 16 ba;1;1
-e 275 16 ba;2;2
-e 336 16 ba;3;3
-e 403 336 ba;0;0
-e 467 336 ba;1;1
-e 528 336 ba;2;2
-e 595 528 ba;0;0
-e 657 528 ba;1;1
-e 723 657 ba;0;0
-e 851 336 ba;3;3
-e 915 336 ba;4;4
-e 979 336 ba;5;5
-e 1043 336 ba;6;6
-e 1104 336 ba;7;7
-e 1299 1104 ba;0;0
-e 1363 1104 ba;1;1
-e 1619 336 ba;8;8
-e 1680 336 ba;9;9
-e 1811 1680 ba;0;0
-e 1939 336 ba;10;10
-e 2000 336 ba;11;11
-e 2067 2000 ba;0;0
+v 16 NON;IF;(old: -1, diff: -1, new: -1);(old: -1, diff: -1, new: -1);True
+v 147 NON;ARTIFACT;(old: 1, diff: 1, new: 1);(old: 2, diff: 2, new: 2);;
+v 211 NON;ARTIFACT;(old: 2, diff: 2, new: 2);(old: 3, diff: 3, new: 3);;
+v 275 NON;ARTIFACT;(old: 3, diff: 3, new: 3);(old: 4, diff: 4, new: 4);;
+v 336 NON;IF;(old: 4, diff: 4, new: 4);(old: 33, diff: 33, new: 33);-_DB_STL_RESOURCE_MANAGER_H__;#ifndef _DB_STL_RESOURCE_MANAGER_H__
+v 403 NON;ARTIFACT;(old: 5, diff: 5, new: 5);(old: 6, diff: 6, new: 6);;#include <stdio.h>
+v 467 NON;ARTIFACT;(old: 6, diff: 6, new: 6);(old: 7, diff: 7, new: 7);;
+v 528 NON;IF;(old: 7, diff: 7, new: 7);(old: 9, diff: 9, new: 9);-DEFINED_MESSAGE;#if !defined (MESSAGE)
+v 595 NON;ARTIFACT;(old: 8, diff: 8, new: 8);(old: 9, diff: 9, new: 9);;   #define MESSAGE "You wish!"
+v 657 NON;ELSE;(old: 9, diff: 9, new: 9);(old: 11, diff: 11, new: 11);;#else
+v 723 NON;ARTIFACT;(old: 10, diff: 10, new: 10);(old: 11, diff: 11, new: 11);;   // do nothing
+v 851 NON;ARTIFACT;(old: 12, diff: 12, new: 12);(old: 13, diff: 13, new: 13);;
+v 915 NON;ARTIFACT;(old: 13, diff: 13, new: 13);(old: 14, diff: 14, new: 14);;int main(void) {
+v 979 NON;ARTIFACT;(old: 14, diff: 14, new: 14);(old: 15, diff: 15, new: 15);;   printf("Here is the message: %s\n", MESSAGE);
+v 1043 NON;ARTIFACT;(old: 15, diff: 15, new: 15);(old: 16, diff: 16, new: 16);;
+v 1104 NON;IF;(old: 16, diff: 16, new: 16);(old: 21, diff: 21, new: 21);(-DEFINED_HAVE_GETHOSTBYNAME_R | -DEFINED_HAVE_GETHOSTBYADDR_R | -DEFINED_HAVE_GETPWUID_R | -DEFINED_HAVE_GETGRGID_R) & (-DEFINED_HAVE_MTSAFE_GETHOSTBYNAME | -DEFINED_HAVE_MTSAFE_GETHOSTBYADDR);#if (!defined(HAVE_GETHOSTBYNAME_R) || !defined(HAVE_GETHOSTBYADDR_R) || \;           !defined(HAVE_GETPWUID_R)      || !defined(HAVE_GETGRGID_R)) && \;          (!defined(HAVE_MTSAFE_GETHOSTBYNAME) || !defined(HAVE_MTSAFE_GETHOSTBYADDR))
+v 1299 NON;ARTIFACT;(old: 19, diff: 19, new: 19);(old: 20, diff: 20, new: 20);;          blabla
+v 1363 NON;ARTIFACT;(old: 20, diff: 20, new: 20);(old: 21, diff: 21, new: 21);;          blabla
+v 1619 NON;ARTIFACT;(old: 24, diff: 24, new: 24);(old: 25, diff: 25, new: 25);;
+v 1680 NON;IF;(old: 25, diff: 25, new: 25);(old: 28, diff: 28, new: 28);(-DEFINED_HAVE_GETHOSTBYNAME_R | -DEFINED_HAVE_GETHOSTBYADDR_R) & (-DEFINED_HAVE_MTSAFE_GETHOSTBYNAME | -DEFINED_HAVE_MTSAFE_GETHOSTBYADDR);#if (!defined(HAVE_GETHOSTBYNAME_R) || !defined(HAVE_GETHOSTBYADDR_R)) && \;    (!defined(HAVE_MTSAFE_GETHOSTBYNAME) || !defined(HAVE_MTSAFE_GETHOSTBYADDR))
+v 1811 NON;ARTIFACT;(old: 27, diff: 27, new: 27);(old: 28, diff: 28, new: 28);;hello
+v 1939 NON;ARTIFACT;(old: 29, diff: 29, new: 29);(old: 30, diff: 30, new: 30);;}
+v 2000 NON;IF;(old: 30, diff: 30, new: 30);(old: 32, diff: 32, new: 32);DEFINED_MESSAGE;#if defined (MESSAGE)
+v 2067 NON;ARTIFACT;(old: 31, diff: 31, new: 31);(old: 32, diff: 32, new: 32);;   #define MESSAGE "You wish!"
+e 147 16 ba;0
+e 211 16 ba;1
+e 275 16 ba;2
+e 336 16 ba;3
+e 403 336 ba;0
+e 467 336 ba;1
+e 528 336 ba;2
+e 595 528 ba;0
+e 657 528 ba;1
+e 723 657 ba;0
+e 851 336 ba;3
+e 915 336 ba;4
+e 979 336 ba;5
+e 1043 336 ba;6
+e 1104 336 ba;7
+e 1299 1104 ba;0
+e 1363 1104 ba;1
+e 1619 336 ba;8
+e 1680 336 ba;9
+e 1811 1680 ba;0
+e 1939 336 ba;10
+e 2000 336 ba;11
+e 2067 2000 ba;0

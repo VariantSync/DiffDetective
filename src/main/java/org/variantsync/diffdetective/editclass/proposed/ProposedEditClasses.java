@@ -93,6 +93,10 @@ public class ProposedEditClasses implements EditClassCatalogue {
         } else {
             Assert.assertTrue(node.isNon());
 
+            if (node.beforePathEqualsAfterPath()) {
+                return Untouched;
+            }
+
             final Node pcb = node.getPresenceCondition(BEFORE);
             final Node pca = node.getPresenceCondition(AFTER);
 
@@ -114,11 +118,7 @@ public class ProposedEditClasses implements EditClassCatalogue {
 
             // If the set of variants stayed the same.
             if (beforeVariantsSubsetOfAfterVariants && afterVariantsSubsetOfBeforeVariants) {
-                if (node.beforePathEqualsAfterPath()) {
-                    return Untouched;
-                } else {
-                    return Refactoring;
-                }
+                return Refactoring;
             }
             // If the set of variants grew.
             if (beforeVariantsSubsetOfAfterVariants) { // && !afterVariantsSubsetOfBeforeVariants

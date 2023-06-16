@@ -9,36 +9,51 @@ import org.variantsync.diffdetective.show.engine.input.CameraDragAndDrop;
 import org.variantsync.diffdetective.show.engine.input.ZoomViaMouseWheel;
 import org.variantsync.diffdetective.show.variation.input.ExitOnEscape;
 import org.variantsync.diffdetective.show.variation.input.NodeDragAndDrop;
+import org.variantsync.diffdetective.util.StringUtils;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.variation.diff.DiffType;
 import org.variantsync.diffdetective.variation.diff.Time;
 import org.variantsync.diffdetective.variation.diff.serialize.Format;
 import org.variantsync.diffdetective.variation.diff.serialize.GraphvizExporter;
+import org.variantsync.diffdetective.variation.diff.serialize.TikzExporter;
 import org.variantsync.diffdetective.variation.diff.serialize.edgeformat.DefaultEdgeLabelFormat;
 import org.variantsync.diffdetective.variation.diff.serialize.edgeformat.EdgeLabelFormat;
 import org.variantsync.diffdetective.variation.diff.serialize.nodeformat.*;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class DiffTreeApp extends App {
-    private final static double DEFAULT_NODE_RADIUS = 50;
+    public final static double TIKZ_NODE_RADIUS = 6.5;
+    public final static int TIKZ_FONT_SIZE = 5;
+    public final static double DEFAULT_NODE_RADIUS = 50;
+    public final static int DEFAULT_FONT_SIZE = 30;
+
+    public final static double BOX_ALIGN_INDENT = 0.7;
+
     private final static Format DEFAULT_FORMAT =
             new Format(
-                    new ShowNodeFormat(),
+                    new PaperNodeFormat(),
                     // There is a bug in the exporter currently that accidentally switches direction so as a workaround we revert it here.
                     new DefaultEdgeLabelFormat(EdgeLabelFormat.Direction.ParentToChild)
             );
 
     private final static List<DiffNodeLabelFormat> AVAILABLE_FORMATS = List.of(
+            new PaperNodeFormat(),
             new ShowNodeFormat(),
             new LabelOnlyDiffNodeFormat(),
             new EditClassesDiffNodeFormat(),
@@ -52,6 +67,8 @@ public class DiffTreeApp extends App {
 
     private boolean rootDancing = false;
     private final Dance rootDance;
+
+    private DiffNodeLabelFormat currentFormat = DEFAULT_FORMAT.getNodeFormat();
 
     public DiffTreeApp(final String name, final DiffTree diffTree, Vec2 resolution) {
         super(new Window(name, (int)resolution.x(), (int)resolution.y()));
@@ -80,6 +97,12 @@ public class DiffTreeApp extends App {
         saveScreenshotMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
         saveScreenshotMenuItem.addActionListener(event -> saveScreenshot());
         fileMenu.add(saveScreenshotMenuItem);
+
+        // Tikz export
+        final JMenuItem tikzExportMenuItem = new JMenuItem("Tikz Export");
+        tikzExportMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_T, java.awt.event.InputEvent.CTRL_MASK));
+        tikzExportMenuItem.addActionListener(event -> saveTikz());
+        fileMenu.add(tikzExportMenuItem);
 
         // Switch layout
         for (final GraphvizExporter.LayoutAlgorithm layoutAlgorithm : GraphvizExporter.LayoutAlgorithm.values()) {
@@ -127,12 +150,12 @@ public class DiffTreeApp extends App {
     }
 
     private void saveScreenshot() {
-        JFileChooser fileChooser = new JFileChooser();
+        final JFileChooser fileChooser = new JFileChooser();
         fileChooser.setFileFilter(
                 new FileNameExtensionFilter("Image Files", javax.imageio.ImageIO.getReaderFileSuffixes())
         );
 
-        int result = fileChooser.showSaveDialog(getWindow());
+        final int result = fileChooser.showSaveDialog(getWindow());
         if (result == JFileChooser.APPROVE_OPTION) {
             final File targetFile = fileChooser.getSelectedFile();
             final Texture screenshot = getWindow().getScreen().screenshot();
@@ -144,7 +167,55 @@ public class DiffTreeApp extends App {
         }
     }
 
+    private void saveTikz() {
+        final JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setFileFilter(
+                new FileNameExtensionFilter("TeX", "tex")
+        );
+
+        final int result = fileChooser.showSaveDialog(getWindow());
+        if (result == JFileChooser.APPROVE_OPTION) {
+            final File targetFile = fileChooser.getSelectedFile();
+            final TikzExporter tikzExporter = new TikzExporter(new Format(currentFormat, new DefaultEdgeLabelFormat(EdgeLabelFormat.Direction.ChildToParent)));
+
+            try (
+                    var unbufferedOutput = Files.newOutputStream(targetFile.toPath());
+                    var output = new BufferedOutputStream(unbufferedOutput)
+            ) {
+                final double millimetersPerPixel = TIKZ_NODE_RADIUS / (BOX_ALIGN_INDENT * resolution.x());
+                final Vec2 flipY  = new Vec2(1.0, -1.0);
+                final Vec2 scaleToTikz =
+                        Vec2.all(millimetersPerPixel);
+//                        Vec2.all(TIKZ_NODE_RADIUS).dividedBy(resolution);
+
+                tikzExporter.exportDiffTree(
+                        diffTree,
+                        node -> {
+                            Vec2 pos = nodes.get(node).getLocation();
+                            pos = pos.scale(flipY);
+                            pos = pos.scale(scaleToTikz);
+                            return pos;
+                        },
+                        output,
+                        true
+                        );
+            } catch (IOException e) {
+                JOptionPane.showMessageDialog(
+                        getWindow(),
+                        "Export to "
+                                + targetFile
+                                + " failed because:"
+                                + StringUtils.LINEBREAK
+                                + e,
+                        "Tikz export failed",
+                        JOptionPane.ERROR_MESSAGE
+                );
+            }
+        }
+    }
+
     private void setLabelFormat(DiffNodeLabelFormat labelFormat) {
+        this.currentFormat = labelFormat;
         for (Entity e : nodes.values()) {
             e.forComponent(GraphNodeGraphics.class,
                     graphNodeGraphics -> graphNodeGraphics.node.setLabelFormat(labelFormat)
@@ -176,7 +247,7 @@ public class DiffTreeApp extends App {
             e.add(new GraphNodeGraphics(
                     new NodeView(
                             diffNode,
-                            DEFAULT_FORMAT.getNodeFormat()
+                            currentFormat
                     )
             ));
             e.setZ(Z.FOR_NODES);
@@ -231,6 +302,15 @@ public class DiffTreeApp extends App {
         setupMenu();
         setupInput();
         spawnDiffTree(world);
+
+        getWindow().addComponentListener(new ComponentAdapter() {
+                                             @Override
+                                             public void componentResized(ComponentEvent e) {
+                                                 super.componentResized(e);
+                                                 resolution = Vec2.from(getWindow().getScreen().getSize());
+                                             }
+                                         }
+        );
     }
 
     public Entity getEntityOf(DiffNode diffNode) {
@@ -297,8 +377,8 @@ public class DiffTreeApp extends App {
         for (final Map.Entry<V, Vec2> entry : locations.entrySet()) {
             final Vec2 graphvizpos = entry.getValue();
             entry.setValue(new Vec2(
-                     0.7 * (scale_x * (graphvizpos.x() - xmin) - resolution.x() / 2.0),
-                    -0.7 * (scale_y * (graphvizpos.y() - ymin) - resolution.y() / 2.0)
+                     BOX_ALIGN_INDENT * (scale_x * (graphvizpos.x() - xmin) - resolution.x() / 2.0),
+                    -BOX_ALIGN_INDENT * (scale_y * (graphvizpos.y() - ymin) - resolution.y() / 2.0)
             ));
         }
     }

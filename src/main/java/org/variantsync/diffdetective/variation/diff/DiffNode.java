@@ -104,8 +104,7 @@ public class DiffNode implements HasNodeType {
      * It stores the projection node at each time so that only one instance of {@link Projection}
      * per {@link Time} is ever created. This array has to be indexed by {@code Time.ordinal()}
      *
-     * <p>This field is required to allow identity tests of {@link Projection}s with {@code ==} instead
-     * of {@link Projection#isSameAs}.
+     * <p>This field is required to allow identity tests of {@link Projection}s with {@code ==}.
      */
     private Projection[] projections = new Projection[2];
 
@@ -511,8 +510,8 @@ public class DiffNode implements HasNodeType {
      * the edit.
      */
     public void setLinesAtTime(LineRange lineRange, Time time) {
-        from = from.withLineNumberAtTime(lineRange.getFromInclusive(), time);
-        to = to.withLineNumberAtTime(lineRange.getToExclusive(), time);
+        from = from.withLineNumberAtTime(lineRange.fromInclusive(), time);
+        to = to.withLineNumberAtTime(lineRange.toExclusive(), time);
     }
 
     /**
@@ -777,8 +776,8 @@ public class DiffNode implements HasNodeType {
      * to itself. Acts on only the given node and does not perform recursive translations.
      */
     public static <T extends VariationNode<T>> DiffNode unchangedFlat(T variationNode) {
-        int from = variationNode.getLineRange().getFromInclusive();
-        int to = variationNode.getLineRange().getToExclusive();
+        int from = variationNode.getLineRange().fromInclusive();
+        int to = variationNode.getLineRange().toExclusive();
 
         return new DiffNode(
                 DiffType.NON,
@@ -822,6 +821,41 @@ public class DiffNode implements HasNodeType {
      */
     public static <T extends VariationNode<T>> DiffNode unchanged(T variationNode) {
         return unchanged(DiffNode::unchangedFlat, variationNode);
+    }
+
+    /**
+     * Returns true if this subtree is exactly equal to {@code other}.
+     * This check uses equality checks instead of identity.
+     */
+    public boolean isSameAs(DiffNode other) {
+        return isSameAs(this, other, new HashSet<>());
+    }
+
+    private static boolean isSameAs(DiffNode a, DiffNode b, Set<DiffNode> visited) {
+        if (!visited.add(a)) {
+            return true;
+        }
+
+        if (!(
+                a.getDiffType().equals(b.getDiffType()) &&
+                a.getNodeType().equals(b.getNodeType()) &&
+                a.getFromLine().equals(b.getFromLine()) &&
+                a.getToLine().equals(b.getToLine()) &&
+                (a.getFormula() == null ? b.getFormula() == null : a.getFormula().equals(b.getFormula())) &&
+                a.getLabel().equals(b.getLabel())
+        )) {
+            return false;
+        }
+
+        Iterator<DiffNode> aIt = a.getAllChildren().iterator();
+        Iterator<DiffNode> bIt = b.getAllChildren().iterator();
+        while (aIt.hasNext() && bIt.hasNext()) {
+            if (!isSameAs(aIt.next(), bIt.next(), visited)) {
+                return false;
+            }
+        }
+
+        return aIt.hasNext() == bIt.hasNext();
     }
 
     @Override

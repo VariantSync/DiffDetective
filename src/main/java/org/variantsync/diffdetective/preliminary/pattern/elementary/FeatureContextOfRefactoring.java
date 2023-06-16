@@ -19,7 +19,7 @@ public final class FeatureContextOfRefactoring implements FeatureContextReverseE
     public PatternMatch<DiffNode> createMatch(DiffNode codeNode) {
         final LineRange diffLines = codeNode.getLinesInDiff();
         return new PatternMatch<>(this,
-                diffLines.getFromInclusive(), diffLines.getToExclusive()
+                diffLines.fromInclusive(), diffLines.toExclusive()
         );
     }
 

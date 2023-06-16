@@ -1,4 +1,4 @@
-#!/bin/python3
+#!/usr/bin/env python3
 
 # constants from our Java code
 JAVA_TREE_NAME_SEPARATOR = "$$$"

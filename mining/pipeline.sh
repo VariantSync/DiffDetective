@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # call as pipline.sh [input-path] [output-path] [lib-path]
 # e.g. ./pipeline.sh '/home/schwinnez/projects/Frequent Subgraph Mining/case studies/variability_patterns/dataset_1/diffgraphs/' '/home/schwinnez/projects/Frequent Subgraph Mining/case studies/variability_patterns/dataset_1/output/' './lib/'

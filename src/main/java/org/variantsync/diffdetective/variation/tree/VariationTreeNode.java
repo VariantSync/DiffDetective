@@ -290,7 +290,7 @@ public class VariationTreeNode extends VariationNode<VariationTreeNode> {
     @Override
     public int getID() {
         // Add one to ensure invalid (negative) line numbers don't cause issues.
-        final int lineNumber = 1 + getLineRange().getFromInclusive();
+        final int lineNumber = 1 + getLineRange().fromInclusive();
 
         final int usedBitCount = DiffType.getRequiredBitCount() + NodeType.getRequiredBitCount();
         Assert.assertTrue((lineNumber << usedBitCount) >> usedBitCount == lineNumber);
@@ -335,30 +335,26 @@ public class VariationTreeNode extends VariationNode<VariationTreeNode> {
         );
     }
 
-    @Override
-    public boolean isSameAs(VariationTreeNode other) {
-        return this == other;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        var other = (VariationTreeNode) o;
-        return nodeType == other.nodeType && lineRange.equals(other.lineRange) && Objects.equals(featureMapping, other.featureMapping) && label.equals(other.label);
+    /**
+     * Creates a deep copy of this node.
+     */
+    public VariationTreeNode deepCopy() {
+        return toVariationTree();
     }
 
     /**
-     * Compute a hash using all available attributes.
+     * Creates a deep copy of this node.
      *
-     * <p>This implementation doesn't strictly adhere to the contract required by {@code Object},
-     * because some attributes (for example the line numbers) can be changed during the lifetime of
-     * a node. So when using something like a {@code HashSet} the user of this class has to be
-     * careful with any modifications of attributes.
+     * <p>The map {@code oldToNew} should be empty as it will be filled by this method. After the
+     * method call, the map keys will contain all nodes in this node's subtree (including this
+     * node). The corresponding values will be the nodes in the returned node's subtree (including
+     * the returned node), where each pair (k, v) denotes that v was cloned from k.
+     *
+     * @param oldToNew A map that memorizes the translation of individual nodes.
+     * @return A deep copy of this tree.
      */
-    @Override
-    public int hashCode() {
-        return Objects.hash(nodeType, lineRange, featureMapping, label);
+    public VariationTreeNode deepCopy(final Map<VariationTreeNode, VariationTreeNode> oldToNew) {
+        return toVariationTree(oldToNew);
     }
 
     @Override

@@ -2,8 +2,8 @@
    #if B
      #if C
        1
-+      2
-       3
++foo
+       2
      #endif
    #endif
  #endif

@@ -1,20 +1,18 @@
 package org.variantsync.diffdetective.variation.tree;
 
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.function.Consumer;
-
 import org.prop4j.And;
 import org.prop4j.Node;
-import org.variantsync.diffdetective.util.LineRange;
 import org.variantsync.diffdetective.util.Assert;
+import org.variantsync.diffdetective.util.LineRange;
+import org.variantsync.diffdetective.util.StringUtils;
 import org.variantsync.diffdetective.util.fide.FixTrueFalse;
-import org.variantsync.diffdetective.variation.diff.DiffNode; // For Javadoc
-import org.variantsync.diffdetective.variation.diff.Projection; // For Javadoc
 import org.variantsync.diffdetective.variation.NodeType;
+import org.variantsync.diffdetective.variation.diff.DiffNode;
+import org.variantsync.diffdetective.variation.diff.Projection;
+
+import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import static org.variantsync.diffdetective.util.fide.FormulaUtils.negate;
 
@@ -31,11 +29,6 @@ import static org.variantsync.diffdetective.util.fide.FormulaUtils.negate;
  * acting on variation nodes where a separate class may be undesirable (for example because they are
  * quite common or because the calling syntax {@code node.algorithm()} makes more sense than the
  * alternative {@code Algorithm.run(node)}).
- *
- * <p>Identity of {@code VariationNode}s shouldn't be tested using {@code ==} because this might be
- * a view which is instantiated multiple times for the same node (e.g., it might be that
- * {@code getParent() != getParent()}). Instead the method {@link isSameAs} should be used to test
- * for identity.
  *
  * @param <T> the derived type (the type extending this class)
  *
@@ -121,7 +114,7 @@ public abstract class VariationNode<T extends VariationNode<T>> implements HasNo
      * <p>The following invariant has to hold for all {@code node}s:
      * <code>
      *   for (var child : node.getChildren()) {
-     *     Assert.assertTrue(node.isSameAs(child.getParent(node)))
+     *     Assert.assertTrue(node == child.getParent(node))
      *   }
      * </code>
      *
@@ -187,7 +180,7 @@ public abstract class VariationNode<T extends VariationNode<T>> implements HasNo
      * @see getChildren
      */
     public boolean isChild(T child) {
-        return child.getParent().isSameAs(this.upCast());
+        return child.getParent() == this.upCast();
     }
 
     /**
@@ -439,22 +432,73 @@ public abstract class VariationNode<T extends VariationNode<T>> implements HasNo
         }
     }
 
+    public void forMeAndMyAncestors(final Consumer<T> action) {
+        action.accept(this.upCast());
+        final T p = getParent();
+        if (p != null) {
+            p.forMeAndMyAncestors(action);
+        }
+    }
+
+    /**
+     * Checks whether any node in this subtree satisfies the given condition.
+     * The condition might not be invoked on every node in case a node is found.
+     * @param condition A condition to check on each node.
+     * @return True iff the given condition returns true for at least one node in this tree.
+     */
+    public boolean anyMatch(final Predicate<? super T> condition) {
+        if (condition.test(this.upCast())) {
+            return true;
+        }
+
+        for (var child : getChildren()) {
+            if (child.anyMatch(condition)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     /**
      * Returns a copy of this variation tree in a {@link VariationTreeNode concrete variation tree implementation}.
      * If the type parameter {@code T} of this class is {@link VariationTreeNode} then this is
      * effectively a deep copy.
      */
     public VariationTreeNode toVariationTree() {
+        return toVariationTree(new HashMap<>());
+    }
+
+    /**
+     * Returns a copy of this variation tree in a {@link VariationTreeNode concrete variation tree implementation}.
+     * If the type parameter {@code T} of this class is {@link VariationTreeNode} then this is
+     * effectively a deep copy.
+     *
+     * <p>The map {@code oldToNew} should be empty as it will be filled by this method. After the
+     * method call, the map keys will contain all nodes in this node's subtree (including this
+     * node). The corresponding values will be the nodes in the returned node's subtree (including
+     * the returned node), where each pair (k, v) denotes that v was cloned from k.
+     *
+     * @param oldToNew A map that memorizes the translation of individual nodes.
+     * @return A deep copy of this tree.
+     */
+    public VariationTreeNode toVariationTree(final Map<? super T, VariationTreeNode> oldToNew) {
+        Node formula = getFormula();
+        if (formula != null) {
+            formula = formula.clone();
+        }
+
         // Copy mutable attributes to allow modifications of the new node.
         var newNode = new VariationTreeNode(
             getNodeType(),
-            getFormula().clone(),
+            formula,
             getLineRange(),
-            getLabel().lines()
+            new ArrayList<>(getLabel().lines())
         );
+        oldToNew.put(this.upCast(), newNode);
 
         for (var child : getChildren()) {
-            newNode.addChild(child.toVariationTree());
+            newNode.addChild(child.toVariationTree(oldToNew));
         }
 
         return newNode;
@@ -514,7 +558,7 @@ public abstract class VariationNode<T extends VariationNode<T>> implements HasNo
         // check consistency of children lists and edges
         for (var child : getChildren()) {
             Assert.assertTrue(
-                child.getParent().isSameAs(this.upCast()), () ->
+                child.getParent() == this.upCast(), () ->
                 "The parent (" + this + ") of " + child + " is not set correctly");
         }
     }
@@ -533,29 +577,14 @@ public abstract class VariationNode<T extends VariationNode<T>> implements HasNo
     public abstract int getID();
 
     /**
-     * Checks if {@code other} represents the same node as this node.
-     *
-     * <p>The difference between this method and {@link equals} is the same as the difference
-     * between {@code ==} and {@link equals}: {@code isSameAs} respects the identity of the backing
-     * node and {@link equals} does not.
-     *
-     * <p>This method has to be used instead of {@code ==} because multiple instances of this view
-     * representing the same node might be created (i.e., {@code getParent() == getParent()} might
-     * not always hold).
-     */
-    public abstract boolean isSameAs(T other);
-
-    /**
      * Unparses the labels of this subtree into {@code output}.
      *
      * <p>This method assumes that all labels of this subtree represent source code lines.
-     *
-     * @throws IOException iff output throws an {@link IOException}
      */
-    public void printSourceCode(BufferedWriter output) throws IOException {
-        for (final var line : getLabelLines()) {
-            output.write(line);
-            output.newLine();
+    public void printSourceCode(final StringBuilder output) {
+        for (final String line : getLabelLines()) {
+            output.append(line);
+            output.append(StringUtils.LINEBREAK);
         }
 
         for (final var child : getChildren()) {
@@ -564,8 +593,39 @@ public abstract class VariationNode<T extends VariationNode<T>> implements HasNo
 
         // Add #endif after macro
         if (isIf() && !isRoot()) {
-            output.write("#endif");
-            output.newLine();
+            output.append("#endif");
+            output.append(StringUtils.LINEBREAK);
         }
+    }
+
+    /**
+     * Returns true if this subtree is exactly equal to {@code other}.
+     * This check uses equality checks instead of identity.
+     */
+    public boolean isSameAs(VariationNode<T> other) {
+        if (!shallowIsSameAs(other)) {
+            return false;
+        }
+
+        var childIt = getChildren().iterator();
+        var otherChildIt = other.getChildren().iterator();
+        while (childIt.hasNext() && otherChildIt.hasNext()) {
+            if (!childIt.next().isSameAs(otherChildIt.next())) {
+                return false;
+            }
+        }
+
+        return childIt.hasNext() == otherChildIt.hasNext();
+    }
+
+    /**
+     * Returns true if this node is exactly equal to {@code other} without checking any children.
+     * This check uses equality checks instead of identity.
+     */
+    protected boolean shallowIsSameAs(VariationNode<T> other) {
+        return
+            this.getNodeType().equals(other.getNodeType()) &&
+            this.getLabel().equals(other.getLabel()) &&
+            this.getLineRange().equals(other.getLineRange());
     }
 }

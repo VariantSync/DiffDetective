@@ -39,8 +39,8 @@ public class Show {
     public static GameEngine baddiff(final BadVDiff badVDiff, final String title) {
         final DiffTree d = badVDiff.diff().toDiffTree(
             v -> {
-                int from = v.getLineRange().getFromInclusive();
-                int to = v.getLineRange().getToExclusive();
+                int from = v.getLineRange().fromInclusive();
+                int to = v.getLineRange().toExclusive();
 
                 return new DiffNode(
                         badVDiff.coloring().get(v),

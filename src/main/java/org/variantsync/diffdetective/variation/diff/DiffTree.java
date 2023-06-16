@@ -18,6 +18,7 @@ import org.variantsync.diffdetective.variation.diff.source.PatchFile;
 import org.variantsync.diffdetective.variation.diff.source.PatchString;
 import org.variantsync.diffdetective.variation.diff.traverse.DiffTreeTraversal;
 import org.variantsync.diffdetective.variation.diff.traverse.DiffTreeVisitor;
+import org.variantsync.diffdetective.variation.tree.VariationTree;
 import org.variantsync.functjonal.Result;
 
 import java.io.BufferedReader;
@@ -136,6 +137,21 @@ public class DiffTree {
             return Result.Failure(errors);
         }
         return Result.Failure(result.errors());
+    }
+
+    /**
+     * Creates the projection of this variation diff at the given time.
+     * The returned value is a deep copy of the variation tree within this diff
+     * at the given time.
+     * If you instead wish to only have a view on the tree at the given diff
+     * have a look at {@link DiffNode#projection(Time)} for this trees {@link #getRoot() root}.
+     * @param t The time for which to project the variation tree.
+     */
+    public VariationTree project(Time t) {
+        return VariationTree.fromProjection(
+                getRoot().projection(t),
+                new ProjectionSource(this, t)
+        );
     }
 
     /**
@@ -359,7 +375,7 @@ public class DiffTree {
             ALL_PATHS_END_AT_ROOT,
             NOT_ALL_PATHS_END_AT_ROOT
         }
-        private final Map<Integer, VisitStatus> cache = new HashMap<>();
+        private final Map<DiffNode, VisitStatus> cache = new HashMap<>();
         private final DiffNode root;
 
         private AllPathsEndAtRoot(final DiffNode root) {
@@ -375,11 +391,10 @@ public class DiffTree {
                 return true;
             }
 
-            final int id = d.getID();
-            return switch (cache.getOrDefault(id, VisitStatus.STRANGER)) {
+            return switch (cache.getOrDefault(d, VisitStatus.STRANGER)) {
                 case STRANGER -> {
                     // The stranger is now known.
-                    cache.putIfAbsent(id, VisitStatus.VISITED);
+                    cache.putIfAbsent(d, VisitStatus.VISITED);
 
                     final DiffNode b = d.getParent(BEFORE);
                     final DiffNode a = d.getParent(AFTER);
@@ -397,7 +412,7 @@ public class DiffTree {
                     }
 
                     // Now we also know the result for the stranger.
-                    cache.put(id, result ? VisitStatus.ALL_PATHS_END_AT_ROOT : VisitStatus.NOT_ALL_PATHS_END_AT_ROOT);
+                    cache.put(d, result ? VisitStatus.ALL_PATHS_END_AT_ROOT : VisitStatus.NOT_ALL_PATHS_END_AT_ROOT);
                     yield result;
                 }
                 // We detected a cycle because we visited a node but did not determine its value yet!
@@ -435,6 +450,14 @@ public class DiffTree {
         }
 
         return ConsistencyResult.Success();
+    }
+
+    /**
+     * Returns true if this {@code DiffTree} is exactly equal to {@code other}.
+     * This check uses equality checks instead of identity.
+     */
+    public boolean isSameAs(DiffTree other) {
+        return this.getRoot().isSameAs(other.getRoot());
     }
 
     @Override
