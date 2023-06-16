@@ -27,6 +27,7 @@ import org.variantsync.diffdetective.util.Clock;
 import org.variantsync.diffdetective.util.Diagnostics;
 import org.variantsync.diffdetective.util.InvocationCounter;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
+import org.variantsync.diffdetective.variation.diff.Time;
 import org.variantsync.functjonal.iteration.ClusteredIterator;
 import org.variantsync.functjonal.iteration.MappedIterator;
 
@@ -315,7 +316,8 @@ public class Analysis {
         final Hooks filterPatchHook = new Hooks() {
             @Override
             public boolean beginPatch(Analysis analysis) {
-                return fileName.equals(analysis.getCurrentPatch().getFileName());
+                return fileName.equals(analysis.getCurrentPatch().getFileName(Time.AFTER))
+                        || fileName.equals(analysis.getCurrentPatch().getFileName(Time.BEFORE));
             }
         };
 

@@ -177,7 +177,7 @@ public class ExampleFinder implements Analysis.Hooks {
         // export vdiff
         //exampleExport.render(example, patch, treeDir);
         try {
-            Show.diff(vdiff).dontShowButRenderToTexture().saveAsPng(outputDir.resolve(patch.getFileName() + ".png").toFile());
+            Show.diff(vdiff).dontShowButRenderToTexture().saveAsPng(outputDir.resolve(patch.getFileName(Time.AFTER) + ".png").toFile());
         } catch (IOException e) {
             Logger.error("Could not render example");
         }
