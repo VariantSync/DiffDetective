@@ -317,7 +317,8 @@ public class Analysis {
         final Hooks filterPatchHook = new Hooks() {
             @Override
             public boolean beginPatch(Analysis analysis) {
-                return fileName.equals(analysis.getCurrentPatch().getFileName(Time.AFTER));
+                return fileName.equals(analysis.getCurrentPatch().getFileName(Time.AFTER))
+                        || fileName.equals(analysis.getCurrentPatch().getFileName(Time.BEFORE));
             }
         };
 
