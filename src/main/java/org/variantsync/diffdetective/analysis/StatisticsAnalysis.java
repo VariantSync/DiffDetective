@@ -20,12 +20,12 @@ public class StatisticsAnalysis implements Analysis.Hooks {
     public static final ResultKey<Result> RESULT = new ResultKey<>("StatisticsAnalysis");
     public static final class Result implements Metadata<Result> {
         /**
-         * Number of commits that were not processed because they had no DiffTrees.
+         * Number of commits that were not processed because they had no VariationDiffs.
          * A commit is empty iff at least of one of the following conditions is met for every of its patches:
          * <ul>
          * <li>the patch did not edit a C file,
-         * <li>the DiffTree became empty after transformations (this can happen if there are only whitespace changes),
-         * <li>or the patch had syntax errors in its annotations, so the DiffTree could not be parsed.
+         * <li>the VariationDiff became empty after transformations (this can happen if there are only whitespace changes),
+         * <li>or the patch had syntax errors in its annotations, so the VariationDiff could not be parsed.
          * </ul>
          */
         public int emptyCommits = 0;
@@ -114,7 +114,7 @@ public class StatisticsAnalysis implements Analysis.Hooks {
     // Clock for runtime measurement.
     private final Clock totalTime = new Clock();
     private final Clock commitProcessTimer = new Clock();
-    private int numDiffTrees = 0;
+    private int numVariationDiffs = 0;
 
     @Override
     public void initializeResults(Analysis analysis) {
@@ -129,7 +129,7 @@ public class StatisticsAnalysis implements Analysis.Hooks {
     @Override
     public boolean beginCommit(Analysis analysis) {
         commitProcessTimer.start();
-        numDiffTrees = 0;
+        numVariationDiffs = 0;
         return true;
     }
 
@@ -145,17 +145,17 @@ public class StatisticsAnalysis implements Analysis.Hooks {
     }
 
     @Override
-    public boolean analyzeDiffTree(Analysis analysis) {
-        ++numDiffTrees;
+    public boolean analyzeVariationDiff(Analysis analysis) {
+        ++numVariationDiffs;
         return true;
     }
 
     @Override
     public void endCommit(Analysis analysis) {
-        analysis.get(RESULT).processedTrees += numDiffTrees;
+        analysis.get(RESULT).processedTrees += numVariationDiffs;
 
         // Report the commit process time if the commit is not empty.
-        if (numDiffTrees > 0) {
+        if (numVariationDiffs > 0) {
             final long commitTimeMS = commitProcessTimer.getPassedMilliseconds();
             // find max commit time
             if (commitTimeMS > analysis.get(RESULT).max.milliseconds()) {

@@ -13,17 +13,17 @@ import org.variantsync.functjonal.Cast;
  * This class is almost identical to {@link VariationTreeAdapter} except that it provides type safe
  * access to the projected {@link DiffNode}.
  */
-public class DiffTreeAdapter<L extends Label> extends VariationTreeAdapter<L> {
-    public DiffTreeAdapter(DiffNode<L> node, Time time) {
+public class VariationDiffAdapter<L extends Label> extends VariationTreeAdapter<L> {
+    public VariationDiffAdapter(DiffNode<L> node, Time time) {
         super(node.projection(time));
     }
 
-    public DiffTreeAdapter(Projection<L> node) {
+    public VariationDiffAdapter(Projection<L> node) {
         super(node);
     }
 
     protected VariationTreeAdapter<L> newInstance(VariationNode<?, L> node) {
-        return new DiffTreeAdapter<>(Cast.unchecked(node));
+        return new VariationDiffAdapter<>(Cast.unchecked(node));
     }
 
     public DiffNode<L> getDiffNode() {

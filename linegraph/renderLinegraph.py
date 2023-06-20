@@ -129,9 +129,9 @@ def plot_graphs(S, exportDir):
 #     plt.figure(0, figsize=(FIG_WIDTH, FIG_HEIGHT))
     fig = plt.figure(0)
     for i in range(len(S)):
-        difftree = S[i]
+        variation_diff = S[i]
 
-        # print("Render tree", difftree.name.replace("\n", JAVA_TREE_NAME_SEPARATOR))
+        # print("Render tree", variation_diff.name.replace("\n", JAVA_TREE_NAME_SEPARATOR))
 
         plt.clf()
         if WITH_TITLE:
@@ -140,7 +140,7 @@ def plot_graphs(S, exportDir):
         node_colors = []
         node_type_colors = []
         rootNode = None
-        for v, d in difftree.nodes(data=True):
+        for v, d in variation_diff.nodes(data=True):
             name = d['label']
             nodedata = NODE_PARSER(v, name)
 
@@ -164,7 +164,7 @@ def plot_graphs(S, exportDir):
             d['label'] = nodedata.label
 
         edge_colors = []
-        for _, _, d in difftree.edges.data():
+        for _, _, d in variation_diff.edges.data():
             typeName = str(d['label'])
             edge_colors.append(g.edgeColour(typeName))
 
@@ -173,7 +173,7 @@ def plot_graphs(S, exportDir):
 
         # We have to do this to circumvent a bug:
         # https://networkx.org/documentation/stable/reference/generated/networkx.drawing.nx_pydot.pydot_layout.html
-        H = nx.convert_node_labels_to_integers(difftree, label_attribute='label')
+        H = nx.convert_node_labels_to_integers(variation_diff, label_attribute='label')
         H_layout = nx.drawing.nx_pydot.pydot_layout(H, prog=NODE_POSITION_LAYOUT, root=rootNode)
         pos = {H.nodes[n]['label']: p for n, p in H_layout.items()}
 
@@ -209,14 +209,14 @@ def plot_graphs(S, exportDir):
         axes.set_ylim([-yhalf, +yhalf])
 
         # draw type borders
-        nx.draw_networkx_nodes(difftree, pos,
+        nx.draw_networkx_nodes(variation_diff, pos,
                 node_size=int(NODE_SIZE * g.TYPE_BORDER_SIZE),
                 node_color=node_type_colors)
 
         # draw nodes
         if SHOW_LABELS:
-            node_labels = dict([(v, d['label']) for v, d in difftree.nodes(data=True)])
-            nx.draw(difftree,
+            node_labels = dict([(v, d['label']) for v, d in variation_diff.nodes(data=True)])
+            nx.draw(variation_diff,
                     pos,
                     node_size=NODE_SIZE,
                     node_color=node_colors,
@@ -227,7 +227,7 @@ def plot_graphs(S, exportDir):
                     labels=node_labels,
                     bbox=dict(facecolor="white", edgecolor='black', linewidth=0.3, boxstyle='round,pad=0.2', linestyle='solid'))
         else:
-            nx.draw(difftree, pos,
+            nx.draw(variation_diff, pos,
                     node_size=NODE_SIZE,
                     node_color=node_colors,
                     width=EDGE_SIZE,
@@ -235,7 +235,7 @@ def plot_graphs(S, exportDir):
                     edge_color=edge_colors,
                     font_size=FONT_SIZE)
 
-        save_path = os.path.join(exportDir, difftree.graph['outfilename'] + OUTPUT_FORMAT)
+        save_path = os.path.join(exportDir, variation_diff.graph['outfilename'] + OUTPUT_FORMAT)
 
         # Save
         print("Exporting", save_path)
@@ -257,7 +257,7 @@ def getAllFilesInDirectoryRecusivelyThat(dirname, condition):
     return listOfFiles
 
 if __name__ == "__main__":
-    argparser = argparse.ArgumentParser(description="Render DiffTrees specified in linegraph files (.lg).")
+    argparser = argparse.ArgumentParser(description="Render VariationDiffs specified in linegraph files (.lg).")
     argparser.add_argument('infile')
     argparser.add_argument('--nodesize', nargs='?', default=700, type=int)
     argparser.add_argument('--edgesize', nargs='?', default=1.0, type=float)

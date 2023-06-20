@@ -13,14 +13,14 @@ import org.variantsync.diffdetective.mining.formats.DirectedEdgeLabelFormat;
 import org.variantsync.diffdetective.mining.formats.MiningNodeFormat;
 import org.variantsync.diffdetective.mining.formats.ReleaseMiningDiffNodeFormat;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
-import org.variantsync.diffdetective.variation.diff.filter.DiffTreeFilter;
+import org.variantsync.diffdetective.variation.diff.filter.VariationDiffFilter;
 import org.variantsync.diffdetective.variation.diff.serialize.GraphFormat;
 import org.variantsync.diffdetective.variation.diff.serialize.LineGraphExportOptions;
 import org.variantsync.diffdetective.variation.diff.serialize.edgeformat.EdgeLabelFormat;
-import org.variantsync.diffdetective.variation.diff.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
+import org.variantsync.diffdetective.variation.diff.serialize.treeformat.CommitDiffVariationDiffLabelFormat;
 import org.variantsync.diffdetective.variation.diff.transform.CollapseNestedNonEditedAnnotations;
 import org.variantsync.diffdetective.variation.diff.transform.CutNonEditedSubtrees;
-import org.variantsync.diffdetective.variation.diff.transform.DiffTreeTransformer;
+import org.variantsync.diffdetective.variation.diff.transform.VariationDiffTransformer;
 import org.variantsync.diffdetective.variation.diff.transform.Starfold;
 
 import java.io.IOException;
@@ -31,7 +31,7 @@ import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
-public class DiffTreeMiner {
+public class VariationDiffMiner {
     public static final Path DATASET_FILE = DefaultDatasets.EMACS;
     public static final boolean SEARCH_FOR_GOOD_RUNNING_EXAMPLES = false;
     public static final boolean UPDATE_REPOS_BEFORE_MINING = false;
@@ -39,8 +39,8 @@ public class DiffTreeMiner {
 //    public static final int PRINT_LARGEST_SUBJECTS = 3;
     public static final boolean DEBUG_TEST = false;
 
-    public static List<DiffTreeTransformer<DiffLinesLabel>> Postprocessing(final Repository repository) {
-        final List<DiffTreeTransformer<DiffLinesLabel>> processing = new ArrayList<>();
+    public static List<VariationDiffTransformer<DiffLinesLabel>> Postprocessing(final Repository repository) {
+        final List<VariationDiffTransformer<DiffLinesLabel>> processing = new ArrayList<>();
         processing.add(new CutNonEditedSubtrees<>());
         processing.add(new CollapseNestedNonEditedAnnotations());
         processing.add(Starfold.IgnoreNodeOrder());
@@ -67,9 +67,9 @@ public class DiffTreeMiner {
     public static LineGraphExportOptions<DiffLinesLabel> MiningExportOptions(final Repository repository) {
         final MiningNodeFormat nodeFormat = NodeFormat();
         return new LineGraphExportOptions<>(
-                  GraphFormat.DIFFTREE
-                // We have to ensure that all DiffTrees have unique IDs, so use name of changed file and commit hash.
-                , new CommitDiffDiffTreeLabelFormat()
+                  GraphFormat.VARIATION_DIFF
+                // We have to ensure that all VariationDiffs have unique IDs, so use name of changed file and commit hash.
+                , new CommitDiffVariationDiffLabelFormat()
                 , nodeFormat
                 , EdgeFormat(nodeFormat)
                 , LineGraphExportOptions.LogError()
@@ -80,7 +80,7 @@ public class DiffTreeMiner {
 
     public static AnalysisStrategy MiningStrategy() {
         return new AnalyzeAllThenExport();
-//                new CompositeDiffTreeMiningStrategy(
+//                new CompositeVariationDiffMiningStrategy(
 //                        new MineAndExportIncrementally(1000),
 //                        new MiningMonitor(10)
 //                );
@@ -88,18 +88,18 @@ public class DiffTreeMiner {
 
     public static BiFunction<Repository, Path, Analysis> AnalysisFactory =
         (repo, repoOutputDir) -> new Analysis(
-            "DiffTreeMiner",
+            "VariationDiffMiner",
             List.of(
                 new PreprocessingAnalysis(Postprocessing(repo)),
                 new FilterAnalysis(
-                        DiffTreeFilter.notEmpty(),
-                        DiffTreeFilter.moreThanOneArtifactNode(),
+                        VariationDiffFilter.notEmpty(),
+                        VariationDiffFilter.moreThanOneArtifactNode(),
                         /// We want to exclude patches that do not edit variability.
                         /// In particular, we noticed that most edits just insert or delete artifacts (or replace it).
                         /// This is reasonable and was also observed in previous studies: Edits to artifacts are more frequent than edits to variability.
                         /// Yet, such edits cannot reveal compositions of more complex edits to variability.
                         /// We thus filter them.
-                        DiffTreeFilter.hasAtLeastOneEditToVariability()
+                        VariationDiffFilter.hasAtLeastOneEditToVariability()
                 ),
                 new LineGraphExportAnalysis(MiningStrategy(), MiningExportOptions(repo)),
                 new EditClassOccurenceAnalysis(MiningStrategy()),
@@ -116,7 +116,7 @@ public class DiffTreeMiner {
         final PatchDiffParseOptions.DiffStoragePolicy diffStoragePolicy = PatchDiffParseOptions.DiffStoragePolicy.DO_NOT_REMEMBER;
 
         final Path inputDir = Paths.get("..", "DiffDetectiveMining");
-        final Path outputDir = Paths.get("results", "difftrees");
+        final Path outputDir = Paths.get("results", "variationdiffs");
 
         final List<Repository> repos;
 

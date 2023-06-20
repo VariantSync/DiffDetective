@@ -1,7 +1,7 @@
 package org.variantsync.diffdetective.variation.diff;
 
 /**
- * Result value for checking the consistency of a DiffTree (e.g., if it s acyclic).
+ * Result value for checking the consistency of a VariationDiff (e.g., if it s acyclic).
  */
 public class ConsistencyResult {
     private final AssertionError error;
@@ -11,7 +11,7 @@ public class ConsistencyResult {
     }
 
     /**
-     * Create a result that signals success (i.e, the checked DiffTree is consistent).
+     * Create a result that signals success (i.e, the checked VariationDiff is consistent).
      */
     public static ConsistencyResult Success() {
         return new ConsistencyResult(null);
@@ -19,7 +19,7 @@ public class ConsistencyResult {
 
     /**
      * Create a result that indicates failure with provided reason.
-     * @param reason Error explaining why the DiffTree is inconsistent.
+     * @param reason Error explaining why the VariationDiff is inconsistent.
      */
     public static ConsistencyResult Failure(AssertionError reason) {
         return new ConsistencyResult(reason);

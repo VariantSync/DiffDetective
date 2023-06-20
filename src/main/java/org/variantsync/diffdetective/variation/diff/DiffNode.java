@@ -22,7 +22,7 @@ import static org.variantsync.diffdetective.variation.diff.Time.AFTER;
 import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
 
 /**
- * Implementation of a node in a {@link DiffTree}.
+ * Implementation of a node in a {@link VariationDiff}.
  * A DiffNode represents a single node within a variation tree diff (according to our ESEC/FSE'22 paper), but is specialized
  * to the target domain of preprocessor-based software product lines.
  * Thus, opposed to the generic mathematical model of variation tree diffs, a DiffNode always stores lines of text, line numbers, and child ordering information as its label.
@@ -602,7 +602,7 @@ public class DiffNode<L extends Label> implements HasNodeType {
     }
 
     /**
-     * Checks that the DiffTree is in a valid state.
+     * Checks that the VariationDiff is in a valid state.
      * In particular, this method checks that all edges are well-formed (e.g., edges can be inconsistent because edges are double-linked).
      * This method also checks that a node with exactly one parent was edited, and that a node with exactly two parents was not edited.
      * @see Assert#assertTrue

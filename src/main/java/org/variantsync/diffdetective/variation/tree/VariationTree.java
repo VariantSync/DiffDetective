@@ -6,10 +6,10 @@ import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.Label;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
-import org.variantsync.diffdetective.variation.diff.DiffTree;
+import org.variantsync.diffdetective.variation.diff.VariationDiff;
 import org.variantsync.diffdetective.variation.diff.Projection;
-import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParseOptions;
-import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParser;
+import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParseOptions;
+import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParser;
 import org.variantsync.diffdetective.variation.diff.source.FromVariationTreeSource;
 import org.variantsync.diffdetective.variation.tree.source.LocalFileSource;
 import org.variantsync.diffdetective.variation.tree.source.VariationTreeSource;
@@ -55,12 +55,12 @@ public record VariationTree<L extends Label>(
     }
 
     /**
-     * Same as {@link #fromFile(BufferedReader, VariationTreeSource, DiffTreeParseOptions)}
+     * Same as {@link #fromFile(BufferedReader, VariationTreeSource, VariationDiffParseOptions)}
      * but registers {@code path} as source.
      */
     public static VariationTree<DiffLinesLabel> fromFile(
         final Path path,
-        final DiffTreeParseOptions parseOptions
+        final VariationDiffParseOptions parseOptions
     ) throws IOException, DiffParseException {
         try (BufferedReader file = Files.newBufferedReader(path)) {
             return fromFile(
@@ -83,9 +83,9 @@ public record VariationTree<L extends Label>(
     public static VariationTree<DiffLinesLabel> fromFile(
             final BufferedReader input,
             final VariationTreeSource source,
-            final DiffTreeParseOptions parseOptions
+            final VariationDiffParseOptions parseOptions
             ) throws IOException, DiffParseException {
-        VariationTreeNode<DiffLinesLabel> tree = DiffTreeParser
+        VariationTreeNode<DiffLinesLabel> tree = VariationDiffParser
             .createVariationTree(input, parseOptions)
             .getRoot()
             // Arbitrarily choose the BEFORE projection as both should be equal.
@@ -106,15 +106,15 @@ public record VariationTree<L extends Label>(
         );
     }
 
-    public DiffTree<L> toDiffTree(final Function<VariationTreeNode<L>, DiffNode<L>> nodeConverter) {
-        return new DiffTree<>(
+    public VariationDiff<L> toVariationDiff(final Function<VariationTreeNode<L>, DiffNode<L>> nodeConverter) {
+        return new VariationDiff<>(
                 DiffNode.unchanged(nodeConverter, root()),
                 new FromVariationTreeSource(source())
         );
     }
 
-    public DiffTree<L> toCompletelyUnchangedDiffTree() {
-        return toDiffTree(DiffNode::unchangedFlat);
+    public VariationDiff<L> toCompletelyUnchangedVariationDiff() {
+        return toVariationDiff(DiffNode::unchangedFlat);
     }
 
     /**

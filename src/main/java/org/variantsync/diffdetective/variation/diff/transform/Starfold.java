@@ -3,7 +3,7 @@ package org.variantsync.diffdetective.variation.diff.transform;
 import org.variantsync.diffdetective.diff.text.DiffLineNumber;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
-import org.variantsync.diffdetective.variation.diff.DiffTree;
+import org.variantsync.diffdetective.variation.diff.VariationDiff;
 import org.variantsync.diffdetective.variation.diff.DiffType;
 import org.variantsync.diffdetective.variation.diff.Time;
 
@@ -19,7 +19,7 @@ import java.util.List;
  * This means, all inserted star-children will be merged into a single child, and for deletions respectively.
  * @author Paul Bittner, Benjamin Moosherr
  */
-public class Starfold implements DiffTreeTransformer<DiffLinesLabel> {
+public class Starfold implements VariationDiffTransformer<DiffLinesLabel> {
     private final boolean respectNodeOrder;
 
     private Starfold(boolean respectNodeOrder) {
@@ -45,9 +45,9 @@ public class Starfold implements DiffTreeTransformer<DiffLinesLabel> {
     }
 
     @Override
-    public void transform(DiffTree<DiffLinesLabel> diffTree) {
+    public void transform(VariationDiff<DiffLinesLabel> variationDiff) {
         // All non-artifact nodes are potential roots of stars.
-        final List<DiffNode<DiffLinesLabel>> annotations = diffTree.computeAllNodesThat(Starfold::isStarRoot);
+        final List<DiffNode<DiffLinesLabel>> annotations = variationDiff.computeAllNodesThat(Starfold::isStarRoot);
 //        System.out.println("Inspecting " + annotations.size() + " star roots.");
         for (DiffNode<DiffLinesLabel> annotation : annotations) {
 //            System.out.println("Found star root " + annotation);

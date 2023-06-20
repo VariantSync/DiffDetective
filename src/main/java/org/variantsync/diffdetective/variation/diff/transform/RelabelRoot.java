@@ -1,18 +1,18 @@
 package org.variantsync.diffdetective.variation.diff.transform;
 
 import org.variantsync.diffdetective.variation.Label;
-import org.variantsync.diffdetective.variation.diff.DiffTree;
+import org.variantsync.diffdetective.variation.diff.VariationDiff;
 
 /**
- * Transformer that relabels the root of a DiffTree.
+ * Transformer that relabels the root of a VariationDiff.
  * @author Paul Bittner
  */
-public class RelabelRoot<L extends Label> implements DiffTreeTransformer<L> {
+public class RelabelRoot<L extends Label> implements VariationDiffTransformer<L> {
     private final L newLabel;
 
     /**
      * Creates a new transformation that will set the root's label
-     * of a DiffTree to the given text.
+     * of a VariationDiff to the given text.
      * @param newLabel New label for the root node.
      */
     public RelabelRoot(final L newLabel) {
@@ -20,7 +20,7 @@ public class RelabelRoot<L extends Label> implements DiffTreeTransformer<L> {
     }
 
     @Override
-    public void transform(DiffTree<L> diffTree) {
-        diffTree.getRoot().setLabel(newLabel);
+    public void transform(VariationDiff<L> variationDiff) {
+        variationDiff.getRoot().setLabel(newLabel);
     }
 }

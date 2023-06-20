@@ -15,6 +15,6 @@ Generalization: { total = 0; commits = 0 }
 Reconfiguration: { total = 23; commits = 1 }
 Refactoring: { total = 2; commits = 1 }
 Unchanged: { total = 0; commits = 0 }
-treeformat: diff.difftree.serialize.treeformat.CommitDiffDiffTreeLabelFormat
+treeformat: variation.diff.serialize.treeformat.CommitDiffVariationDiffLabelFormat
 nodeformat: mining.formats.ReleaseMiningDiffNodeFormat
 edgeformat: mining.formats.DirectedEdgeLabelFormat with mining.formats.ReleaseMiningDiffNodeFormat

@@ -10,9 +10,9 @@ import org.variantsync.diffdetective.diff.git.PatchDiff;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.util.IO;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
-import org.variantsync.diffdetective.variation.diff.DiffTree;
-import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParseOptions;
-import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParser;
+import org.variantsync.diffdetective.variation.diff.VariationDiff;
+import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParseOptions;
+import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParser;
 import org.variantsync.diffdetective.variation.diff.serialize.Format;
 import org.variantsync.diffdetective.variation.diff.serialize.LineGraphExporter;
 import org.variantsync.diffdetective.variation.diff.serialize.edgeformat.ChildOrderEdgeFormat;
@@ -40,18 +40,18 @@ public class GitDifferTest {
     @MethodSource("testCommits")
     public void test(String commitHash) throws IOException, DiffParseException {
         Repository repo = repo();
-        final CommitDiff commitDiff = DiffTreeParser.parseCommit(repo, commitHash);
+        final CommitDiff commitDiff = VariationDiffParser.parseCommit(repo, commitHash);
 
         for (final PatchDiff patch : commitDiff.getPatchDiffs()) {
             Assertions.assertTrue(patch.isValid());
             var actualPath = testDir.resolve(commitHash + "_actual.lg");
             var expectedPath = testDir.resolve(commitHash + ".lg");
 
-            DiffTree<DiffLinesLabel> diffTree = patch.getDiffTree();
+            VariationDiff<DiffLinesLabel> variationDiff = patch.getVariationDiff();
 
             try (var output = IO.newBufferedOutputStream(actualPath)) {
                 new LineGraphExporter<>(new Format<>(new FullNodeFormat(), new ChildOrderEdgeFormat<>()))
-                        .exportDiffTree(diffTree, output);
+                        .exportVariationDiff(variationDiff, output);
             }
 
             try (
@@ -59,7 +59,7 @@ public class GitDifferTest {
                     var actualFile = Files.newBufferedReader(actualPath);
             ) {
                 if (!IOUtils.contentEqualsIgnoreEOL(expectedFile, actualFile)) {
-                    fail("The DiffTree for commit " + commitHash + " didn't parse correctly. "
+                    fail("The VariationDiff for commit " + commitHash + " didn't parse correctly. "
                             + "Expected the content of " + expectedPath + " but got the content of " + actualPath + ". ");
                     // Keep output files if the test failed
                 } else {
@@ -75,7 +75,7 @@ public class GitDifferTest {
         return Repository
                 .fromZip(repoPath, "test-spl")
                 .setDiffFilter(DiffFilter.ALLOW_ALL)
-                .setParseOptions(new PatchDiffParseOptions(PatchDiffParseOptions.DiffStoragePolicy.REMEMBER_FULL_DIFF, new DiffTreeParseOptions(
+                .setParseOptions(new PatchDiffParseOptions(PatchDiffParseOptions.DiffStoragePolicy.REMEMBER_FULL_DIFF, new VariationDiffParseOptions(
                         false,
                         false
                 )));

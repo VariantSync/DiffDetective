@@ -1,15 +1,15 @@
 package org.variantsync.diffdetective.variation.diff.source;
 
 /**
- * Describes or identifies that data a DiffTree was created or parsed from.
+ * Describes or identifies that data a VariationDiff was created or parsed from.
  * This is typically a patch.
  */
-public interface DiffTreeSource {
+public interface VariationDiffSource {
     /**
-     * Constant to use when the source of a DiffTree is unknown
+     * Constant to use when the source of a VariationDiff is unknown
      * or if it was created artificially.
      */
-    DiffTreeSource Unknown = new DiffTreeSource() {
+    VariationDiffSource Unknown = new VariationDiffSource() {
         @Override
         public int hashCode() {
             return 0;
@@ -17,7 +17,7 @@ public interface DiffTreeSource {
 
         @Override
         public String toString() {
-            return "Unknown DiffTreeSource";
+            return "Unknown VariationDiffSource";
         }
     };
 }

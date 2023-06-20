@@ -9,9 +9,9 @@ import org.variantsync.diffdetective.feature.CPPAnnotationParser;
 import org.variantsync.diffdetective.util.IO;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.diff.Construction;
-import org.variantsync.diffdetective.variation.diff.DiffTree;
-import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParseOptions;
-import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParser;
+import org.variantsync.diffdetective.variation.diff.VariationDiff;
+import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParseOptions;
+import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParser;
 import org.variantsync.diffdetective.variation.diff.serialize.Format;
 import org.variantsync.diffdetective.variation.diff.serialize.LineGraphExporter;
 import org.variantsync.diffdetective.variation.diff.serialize.TikzExporter;
@@ -80,11 +80,11 @@ public class TreeDiffingTest {
         VariationTree<DiffLinesLabel> beforeEdit = parseVariationTree(testCase.beforeEdit());
         VariationTree<DiffLinesLabel> afterEdit = parseVariationTree(testCase.afterEdit());
 
-        DiffTree<DiffLinesLabel> diffTree = Construction.diffUsingMatching(beforeEdit, afterEdit);
+        VariationDiff<DiffLinesLabel> variationDiff = Construction.diffUsingMatching(beforeEdit, afterEdit);
 
         try (var output = IO.newBufferedOutputStream(testCase.actual())) {
             new LineGraphExporter<>(new Format<>(new FullNodeFormat(), new ChildOrderEdgeFormat<>()))
-                .exportDiffTree(diffTree, output);
+                .exportVariationDiff(variationDiff, output);
         }
 
         try (
@@ -97,7 +97,7 @@ public class TreeDiffingTest {
             } else {
                 // Keep output files if the test failed
                 new TikzExporter<>(new Format<>(new FullNodeFormat(), new DefaultEdgeLabelFormat<>()))
-                    .exportFullLatexExample(diffTree, testCase.visualisation());
+                    .exportFullLatexExample(variationDiff, testCase.visualisation());
                 fail(String.format(
                     "The diff of %s and %s is not as expected. " +
                     "Expected the content of %s but got the content of %s. " +
@@ -115,9 +115,9 @@ public class TreeDiffingTest {
     public VariationTree<DiffLinesLabel> parseVariationTree(Path filename) throws IOException, DiffParseException {
         try (var file = Files.newBufferedReader(filename)) {
             return new VariationTree<>(
-                DiffTreeParser.createVariationTree(
+                VariationDiffParser.createVariationTree(
                     file,
-                    new DiffTreeParseOptions(
+                    new VariationDiffParseOptions(
                         CPPAnnotationParser.Default,
                         false,
                         false)

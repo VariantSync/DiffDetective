@@ -7,18 +7,18 @@ import org.variantsync.diffdetective.variation.diff.serialize.edgeformat.Default
 import org.variantsync.diffdetective.variation.diff.serialize.edgeformat.EdgeLabelFormat;
 import org.variantsync.diffdetective.variation.diff.serialize.nodeformat.DebugDiffNodeFormat;
 import org.variantsync.diffdetective.variation.diff.serialize.nodeformat.DiffNodeLabelFormat;
-import org.variantsync.diffdetective.variation.diff.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
-import org.variantsync.diffdetective.variation.diff.serialize.treeformat.DiffTreeLabelFormat;
+import org.variantsync.diffdetective.variation.diff.serialize.treeformat.CommitDiffVariationDiffLabelFormat;
+import org.variantsync.diffdetective.variation.diff.serialize.treeformat.VariationDiffLabelFormat;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Configuration options to configure rendering of DiffTrees.
- * @param format The format specifies if the input to render is a DiffTree or DiffGraph. Most of the time you want to pick {@link GraphFormat#DIFFTREE}.
- * @param treeFormat The export format for DiffTree names and metadata. This format may read or write a DiffTree source.
+ * Configuration options to configure rendering of VariationDiffs.
+ * @param format The format specifies if the input to render is a VariationDiff or DiffGraph. Most of the time you want to pick {@link GraphFormat#VARIATION_DIFF}.
+ * @param treeFormat The export format for VariationDiff names and metadata. This format may read or write a VariationDiff source.
  * @param nodeFormat The export format for DiffNodes. This format decides how nodes are labeled in the exported graph.
- * @param edgeFormat The export format for edges in DiffTrees. This format decides how edges are labeled as well as their direction.
+ * @param edgeFormat The export format for edges in VariationDiffs. This format decides how edges are labeled as well as their direction.
  * @param cleanUpTemporaryFiles During rendering, some temporary files might be created. Set this to true if these files should be deleted after rendering.
  * @param dpi The resolution of the produced image. Higher yields a better resolution at the cost of a larger memory footprint.
  * @param nodesize The size, nodes should be printed (in pixels?).
@@ -35,7 +35,7 @@ import java.util.List;
  */
 public record RenderOptions<L extends Label>(
 		GraphFormat format,
-		DiffTreeLabelFormat treeFormat,
+		VariationDiffLabelFormat treeFormat,
 		DiffNodeLabelFormat<? super L> nodeFormat,
 		EdgeLabelFormat<? super L> edgeFormat,
 		boolean cleanUpTemporaryFiles,
@@ -59,7 +59,7 @@ public record RenderOptions<L extends Label>(
 	 */
 	public static class Builder<L extends Label> {
 		private GraphFormat format;
-		private DiffTreeLabelFormat treeParser;
+		private VariationDiffLabelFormat treeParser;
 		private DiffNodeLabelFormat<? super L> nodeParser;
 		private EdgeLabelFormat<? super L> edgeParser;
 		private boolean cleanUpTemporaryFiles;
@@ -75,8 +75,8 @@ public record RenderOptions<L extends Label>(
 		 * Creates a new builder with the default options for {@link RenderOptions}.
 		 */
 		public Builder() {
-			format = GraphFormat.DIFFTREE;
-			treeParser = new CommitDiffDiffTreeLabelFormat();
+			format = GraphFormat.VARIATION_DIFF;
+			treeParser = new CommitDiffVariationDiffLabelFormat();
 			nodeParser = new DebugDiffNodeFormat<>();
 			edgeParser = new DefaultEdgeLabelFormat<>();
 			cleanUpTemporaryFiles = true;
@@ -121,7 +121,7 @@ public record RenderOptions<L extends Label>(
 		/**
 		 * @see RenderOptions#treeFormat
 		 */
-		public Builder<L> setTreeFormat(DiffTreeLabelFormat treeFormat) {
+		public Builder<L> setTreeFormat(VariationDiffLabelFormat treeFormat) {
 			this.treeParser = treeFormat;
 			return this;
 		}

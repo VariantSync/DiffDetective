@@ -12,7 +12,7 @@ import org.variantsync.diffdetective.show.variation.input.NodeDragAndDrop;
 import org.variantsync.diffdetective.util.StringUtils;
 import org.variantsync.diffdetective.variation.Label;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
-import org.variantsync.diffdetective.variation.diff.DiffTree;
+import org.variantsync.diffdetective.variation.diff.VariationDiff;
 import org.variantsync.diffdetective.variation.diff.DiffType;
 import org.variantsync.diffdetective.variation.diff.Time;
 import org.variantsync.diffdetective.variation.diff.serialize.Format;
@@ -36,7 +36,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class DiffTreeApp<L extends Label> extends App {
+public class VariationDiffApp<L extends Label> extends App {
     public final static double TIKZ_NODE_RADIUS = 6.5;
     public final static int TIKZ_FONT_SIZE = 5;
     public final static double DEFAULT_NODE_RADIUS = 50;
@@ -56,7 +56,7 @@ public class DiffTreeApp<L extends Label> extends App {
 
     private final List<DiffNodeLabelFormat<L>> availableFormats;
     private Vec2 resolution;
-    private final DiffTree<L> diffTree;
+    private final VariationDiff<L> variationDiff;
 
     protected final Map<DiffNode<L>, Entity> nodes = new HashMap<>();
 
@@ -65,9 +65,9 @@ public class DiffTreeApp<L extends Label> extends App {
 
     private DiffNodeLabelFormat<L> currentFormat;
 
-    public DiffTreeApp(final String name, final DiffTree<L> diffTree, Vec2 resolution, List<DiffNodeLabelFormat<L>> availableFormats) {
+    public VariationDiffApp(final String name, final VariationDiff<L> variationDiff, Vec2 resolution, List<DiffNodeLabelFormat<L>> availableFormats) {
         super(new Window(name, (int)resolution.x(), (int)resolution.y()));
-        this.diffTree = diffTree;
+        this.variationDiff = variationDiff;
         this.resolution = resolution;
         this.rootDance = new Dance();
         this.availableFormats = availableFormats;
@@ -138,7 +138,7 @@ public class DiffTreeApp<L extends Label> extends App {
     }
 
     private void toggleRootDance() {
-        final Entity rootNode = getEntityOf(getDiffTree().getRoot());
+        final Entity rootNode = getEntityOf(getVariationDiff().getRoot());
         if (rootDancing) {
             rootNode.remove(rootDance);
             removeUpdateable(rootDance);
@@ -191,8 +191,8 @@ public class DiffTreeApp<L extends Label> extends App {
                         Vec2.all(millimetersPerPixel);
 //                        Vec2.all(TIKZ_NODE_RADIUS).dividedBy(resolution);
 
-                tikzExporter.exportDiffTree(
-                        diffTree,
+                tikzExporter.exportVariationDiff(
+                        variationDiff,
                         node -> {
                             Vec2 pos = nodes.get(node).getLocation();
                             pos = pos.scale(flipY);
@@ -229,7 +229,7 @@ public class DiffTreeApp<L extends Label> extends App {
         final Map<DiffNode<?>, Vec2> locations;
         try {
             locations = calculateLayout(
-                    diffTree,
+                    variationDiff,
                     layoutAlgorithm,
                     defaultFormat);
         } catch (IOException e) {
@@ -238,12 +238,12 @@ public class DiffTreeApp<L extends Label> extends App {
         }
 
         alignInBox(resolution, locations);
-        locateDiffTreeNodesAt(locations);
+        locateVariationDiffNodesAt(locations);
     }
 
-    private void spawnDiffTree(final World world) {
+    private void spawnVariationDiff(final World world) {
         // Create entities for all nodes
-        diffTree.forAll(diffNode -> {
+        variationDiff.forAll(diffNode -> {
             final Entity e = new Entity();
             e.add(new CircleHitbox(new Circle(DEFAULT_NODE_RADIUS)));
             e.add(new GraphNodeGraphics(
@@ -262,7 +262,7 @@ public class DiffTreeApp<L extends Label> extends App {
 
         // spawn the edges
         final List<EdgeGraphics> edges = new ArrayList<>();
-        getDiffTree().forAll(node -> {
+        getVariationDiff().forAll(node -> {
             final DiffNode<?> pbefore = node.getParent(Time.BEFORE);
             final DiffNode<?> pafter = node.getParent(Time.AFTER);
 
@@ -303,7 +303,7 @@ public class DiffTreeApp<L extends Label> extends App {
         resolution = new Vec2(getWindow().getWidth(), getWindow().getHeight());
         setupMenu();
         setupInput();
-        spawnDiffTree(world);
+        spawnVariationDiff(world);
 
         getWindow().addComponentListener(new ComponentAdapter() {
                                              @Override
@@ -319,12 +319,12 @@ public class DiffTreeApp<L extends Label> extends App {
         return nodes.get(diffNode);
     }
 
-    public DiffTree<?> getDiffTree() {
-        return diffTree;
+    public VariationDiff<?> getVariationDiff() {
+        return variationDiff;
     }
 
     public static <L extends Label> Map<DiffNode<?>, Vec2> calculateLayout(
-            DiffTree<L> d,
+            VariationDiff<L> d,
             GraphvizExporter.LayoutAlgorithm layout,
             Format<L> format
     ) throws IOException {
@@ -339,7 +339,7 @@ public class DiffTreeApp<L extends Label> extends App {
         return locations;
     }
 
-    public void locateDiffTreeNodesAt(final Map<DiffNode<?>, Vec2> locations) {
+    public void locateVariationDiffNodesAt(final Map<DiffNode<?>, Vec2> locations) {
         for (final Map.Entry<DiffNode<?>, Vec2> entry : locations.entrySet()) {
             final Entity e = nodes.get(entry.getKey());
             e.setLocation(entry.getValue());

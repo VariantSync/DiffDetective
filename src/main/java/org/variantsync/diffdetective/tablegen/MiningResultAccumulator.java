@@ -40,7 +40,7 @@ public class MiningResultAccumulator {
      * @return an association between the parsed filenames and their parsed content
      */
     public static Map<String, AnalysisResult> getAllTotalResultsIn(final Path folderPath) throws IOException {
-        // get all files in the directory which are outputs of DiffTreeMiningResult
+        // get all files in the directory which are outputs of VariationDiffMiningResult
         final List<Path> paths = Files.walk(folderPath)
                 .filter(Files::isRegularFile)
                 .filter(p -> p.toString().endsWith(Analysis.TOTAL_RESULTS_FILE_NAME))

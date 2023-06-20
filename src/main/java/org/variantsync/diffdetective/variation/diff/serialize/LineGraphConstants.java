@@ -1,7 +1,7 @@
 package org.variantsync.diffdetective.variation.diff.serialize;
 
 import org.variantsync.diffdetective.variation.diff.DiffNode; // For Javadoc
-import org.variantsync.diffdetective.variation.diff.DiffTree; // For Javadoc
+import org.variantsync.diffdetective.variation.diff.VariationDiff; // For Javadoc
 
 /**
  * Constants that are related to line graph IO.
@@ -9,17 +9,17 @@ import org.variantsync.diffdetective.variation.diff.DiffTree; // For Javadoc
 public class LineGraphConstants {
 	
 	/**
-	 * Declaration of a {@link DiffTree} in a line graph.
+	 * Declaration of a {@link VariationDiff} in a line graph.
 	 */
 	public static final String LG_TREE_HEADER = "t #";
 	
 	/**
-	 * Delimiter used in {@link DiffTree DiffTrees}.
+	 * Delimiter used in {@link VariationDiff VariationDiffs}.
 	 */
 	public static final String TREE_NAME_SEPARATOR = "$$$";
 	
 	/**
-	 * Delimiter used in {@link DiffTree DiffTrees} for regular expressions.
+	 * Delimiter used in {@link VariationDiff VariationDiffs} for regular expressions.
 	 * {@link #TREE_NAME_SEPARATOR}
 	 */
 	public static final String TREE_NAME_SEPARATOR_REGEX = "\\$\\$\\$";

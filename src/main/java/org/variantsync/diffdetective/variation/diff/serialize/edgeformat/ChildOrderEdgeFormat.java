@@ -4,7 +4,7 @@ import static org.variantsync.diffdetective.variation.diff.Time.AFTER;
 import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
 
 import org.variantsync.diffdetective.variation.Label;
-import org.variantsync.diffdetective.variation.diff.DiffTree; // For JavaDoc
+import org.variantsync.diffdetective.variation.diff.VariationDiff; // For JavaDoc
 import org.variantsync.diffdetective.variation.diff.Time;
 import org.variantsync.diffdetective.variation.diff.serialize.StyledEdge;
 
@@ -15,7 +15,7 @@ import org.variantsync.diffdetective.variation.diff.serialize.StyledEdge;
  *
  * This index is encoded into decimal and delimited by a semicolon from the previous value.
  *
- * This format is mainly useful to equivalence of two {@link DiffTree}s, for example in tests.
+ * This format is mainly useful to equivalence of two {@link VariationDiff}s, for example in tests.
  *
  * @author Benjamin Moosherr
  */

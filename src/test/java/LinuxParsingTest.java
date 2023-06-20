@@ -1,7 +1,7 @@
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
-import org.variantsync.diffdetective.variation.diff.DiffTree;
-import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParseOptions;
-import org.variantsync.diffdetective.variation.diff.render.DiffTreeRenderer;
+import org.variantsync.diffdetective.variation.diff.VariationDiff;
+import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParseOptions;
+import org.variantsync.diffdetective.variation.diff.render.VariationDiffRenderer;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.util.Assert;
 
@@ -16,7 +16,7 @@ public class LinuxParsingTest {
     public void test1() throws IOException, DiffParseException {
         final String testFilename = "test1.diff";
         final Path path = testDir.resolve(testFilename);
-        final DiffTree<DiffLinesLabel> t = DiffTree.fromFile(path, new DiffTreeParseOptions(false, true));
+        final VariationDiff<DiffLinesLabel> t = VariationDiff.fromFile(path, new VariationDiffParseOptions(false, true));
 
 //        new FeatureExpressionFilter(LinuxKernel::isFeature).transform(t);
 
@@ -26,7 +26,7 @@ public class LinuxParsingTest {
             }
         });
 
-        DiffTreeRenderer r = DiffTreeRenderer.WithinDiffDetective();
+        VariationDiffRenderer r = VariationDiffRenderer.WithinDiffDetective();
         r.render(t, testFilename, testDir.resolve("gen"));
     }
 }

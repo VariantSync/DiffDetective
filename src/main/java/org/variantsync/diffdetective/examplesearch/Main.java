@@ -5,9 +5,9 @@ import org.variantsync.diffdetective.analysis.Analysis;
 import org.variantsync.diffdetective.datasets.PatchDiffParseOptions;
 import org.variantsync.diffdetective.datasets.Repository;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
-import org.variantsync.diffdetective.variation.diff.DiffTree;
+import org.variantsync.diffdetective.variation.diff.VariationDiff;
 import org.variantsync.diffdetective.variation.diff.filter.ExplainedFilter;
-import org.variantsync.diffdetective.variation.diff.render.DiffTreeRenderer;
+import org.variantsync.diffdetective.variation.diff.render.VariationDiffRenderer;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -17,7 +17,7 @@ public class Main {
     /**
      * Modify this list to your requirements on a suitable example.
      */
-    private static final ExplainedFilter<DiffTree<? extends DiffLinesLabel>> EXAMPLE_CRITERIONS() {
+    private static final ExplainedFilter<VariationDiff<? extends DiffLinesLabel>> EXAMPLE_CRITERIONS() {
         return new ExplainedFilter<>(
             ExampleCriterions.MAX_LINE_COUNT(ExampleCriterions.DefaultMaxDiffLineCount),
             ExampleCriterions.HAS_EDITED_ARTIFACTS(),
@@ -32,7 +32,7 @@ public class Main {
                 "Find Running Examples in " + repo.getRepositoryName(),
                 List.of(new ExampleFinder(
                         EXAMPLE_CRITERIONS(),
-                        DiffTreeRenderer.WithinDiffDetective()
+                        VariationDiffRenderer.WithinDiffDetective()
                 )),
                 repo,
                 repoOutputDir

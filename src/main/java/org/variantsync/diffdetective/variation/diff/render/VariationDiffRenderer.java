@@ -11,12 +11,12 @@ import org.variantsync.diffdetective.util.IO;
 import org.variantsync.diffdetective.util.StringUtils;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.Label;
-import org.variantsync.diffdetective.variation.diff.DiffTree;
-import org.variantsync.diffdetective.variation.diff.serialize.DiffTreeSerializeDebugData;
+import org.variantsync.diffdetective.variation.diff.VariationDiff;
+import org.variantsync.diffdetective.variation.diff.serialize.VariationDiffSerializeDebugData;
 import org.variantsync.diffdetective.variation.diff.serialize.LineGraphConstants;
 import org.variantsync.diffdetective.variation.diff.serialize.LineGraphExport;
 import org.variantsync.diffdetective.variation.diff.serialize.LineGraphExportOptions;
-import org.variantsync.diffdetective.variation.diff.source.DiffTreeSource;
+import org.variantsync.diffdetective.variation.diff.source.VariationDiffSource;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -25,12 +25,12 @@ import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
 /**
- * A DiffTreeRenderer renders DiffTrees and CommitDiffs.
+ * A VariationDiffRenderer renders VariationDiffs and CommitDiffs.
  * The renderer may be configured with {@link RenderOptions}.
  * Internally, this renderer will invoke a python render script.
  * @author Paul Bittner
  */
-public class DiffTreeRenderer {
+public class VariationDiffRenderer {
     private static final Path DiffDetectiveRenderScriptPath = Path.of("linegraph", "renderLinegraph.py");
     private static final Path DiffDetectiveWorkDir = null;
     private static final Supplier<PythonCommand> DiffDetectivePythonCommand
@@ -39,7 +39,7 @@ public class DiffTreeRenderer {
     private final Path workDir;
     private final Supplier<PythonCommand> pythonCommandFactory;
 
-    private DiffTreeRenderer(final Supplier<PythonCommand> pythonCommandFactory, final Path workDir) {
+    private VariationDiffRenderer(final Supplier<PythonCommand> pythonCommandFactory, final Path workDir) {
         this.workDir = workDir;
         this.pythonCommandFactory = pythonCommandFactory;
     }
@@ -50,8 +50,8 @@ public class DiffTreeRenderer {
      * DiffDetective's source code.
      * @return A renderer that may be used from applications within DiffDetective itself.
      */
-    public static DiffTreeRenderer WithinDiffDetective() {
-        return new DiffTreeRenderer(DiffDetectivePythonCommand, DiffDetectiveWorkDir);
+    public static VariationDiffRenderer WithinDiffDetective() {
+        return new VariationDiffRenderer(DiffDetectivePythonCommand, DiffDetectiveWorkDir);
     }
 
     /**
@@ -66,12 +66,12 @@ public class DiffTreeRenderer {
      * @param workDir Working directory, to run the rendering in.
      * @return A renderer that uses the given python instance and render script to render diff trees.
      */
-    public static DiffTreeRenderer FromThirdPartyApplication(final Supplier<PythonCommand> pythonCommandFactory, final Path workDir) {
-        return new DiffTreeRenderer(pythonCommandFactory, workDir);
+    public static VariationDiffRenderer FromThirdPartyApplication(final Supplier<PythonCommand> pythonCommandFactory, final Path workDir) {
+        return new VariationDiffRenderer(pythonCommandFactory, workDir);
     }
 
     /**
-     * Combination of {@link DiffTreeRenderer#WithinDiffDetective()} and {@link DiffTreeRenderer#FromThirdPartyApplication(Supplier, Path)}.
+     * Combination of {@link VariationDiffRenderer#WithinDiffDetective()} and {@link VariationDiffRenderer#FromThirdPartyApplication(Supplier, Path)}.
      * This method produces a renderer that uses the virtual environment within DiffDetective's source code but that
      * can be used from another application.
      * Use this, when you integrated DiffDetective as a library in your project but you still have the DiffDetective repository
@@ -80,7 +80,7 @@ public class DiffTreeRenderer {
      * @param workDir Path to your working directory. May be absolute or relative.
      * @return A renderer that uses the python virtual environment in the DiffDetective source files from an external application.
      */
-    public static DiffTreeRenderer FromThirdPartyApplication(final Path relativePathFromWorkDirToDiffDetectiveSources, final Path workDir) {
+    public static VariationDiffRenderer FromThirdPartyApplication(final Path relativePathFromWorkDirToDiffDetectiveSources, final Path workDir) {
         return FromThirdPartyApplication(
                 () -> new PythonCommand(
                         relativePathFromWorkDirToDiffDetectiveSources.resolve(PythonCommand.DiffDetectiveVenv).toString(),
@@ -89,42 +89,42 @@ public class DiffTreeRenderer {
     }
 
     /**
-     * Invokes {@link DiffTreeRenderer#render(PatchDiff, Path, RenderOptions)} with the {@link RenderOptions#DEFAULT default render options}.
+     * Invokes {@link VariationDiffRenderer#render(PatchDiff, Path, RenderOptions)} with the {@link RenderOptions#DEFAULT default render options}.
      */
     public boolean render(PatchDiff patchDiff, final Path directory) {
         return render(patchDiff, directory, RenderOptions.DEFAULT());
     }
 
     /**
-     * Invokes {@link DiffTreeRenderer#render(DiffTree, GitPatch, Path, RenderOptions)}
-     * by extracting the given patchDiff's DiffTree.
+     * Invokes {@link VariationDiffRenderer#render(VariationDiff, GitPatch, Path, RenderOptions)}
+     * by extracting the given patchDiff's VariationDiff.
      */
     public boolean render(PatchDiff patchDiff, final Path directory, final RenderOptions<? super DiffLinesLabel> options) {
-        return render(patchDiff.getDiffTree(), patchDiff, directory, options);
+        return render(patchDiff.getVariationDiff(), patchDiff, directory, options);
     }
 
     /**
-     * Invokes {@link DiffTreeRenderer#render(DiffTree, GitPatch, Path, RenderOptions, LineGraphExportOptions)}
-     * by extracting the given patchDiff's DiffTree.
+     * Invokes {@link VariationDiffRenderer#render(VariationDiff, GitPatch, Path, RenderOptions, LineGraphExportOptions)}
+     * by extracting the given patchDiff's VariationDiff.
      */
     public boolean render(PatchDiff patchDiff, final Path directory, final RenderOptions<? super DiffLinesLabel> options, final LineGraphExportOptions<? super DiffLinesLabel> exportOptions) {
-        return render(patchDiff.getDiffTree(), patchDiff, directory, options, exportOptions);
+        return render(patchDiff.getVariationDiff(), patchDiff, directory, options, exportOptions);
     }
 
     /**
-     * Invokes {@link DiffTreeRenderer#render(DiffTree, GitPatch, Path, RenderOptions, LineGraphExportOptions)}
+     * Invokes {@link VariationDiffRenderer#render(VariationDiff, GitPatch, Path, RenderOptions, LineGraphExportOptions)}
      * by creating {@link LineGraphExportOptions} via {@link RenderOptions#toLineGraphOptions()}.
      */
-    public <L extends Label> boolean render(final DiffTree<L> tree, final GitPatch patch, final Path directory, final RenderOptions<? super L> options) {
+    public <L extends Label> boolean render(final VariationDiff<L> tree, final GitPatch patch, final Path directory, final RenderOptions<? super L> options) {
         return render(tree, patch, directory, options, options.toLineGraphOptions());
     }
 
     /**
-     * Invokes {@link DiffTreeRenderer#render(DiffTree, String, Path, RenderOptions, LineGraphExportOptions)}
+     * Invokes {@link VariationDiffRenderer#render(VariationDiff, String, Path, RenderOptions, LineGraphExportOptions)}
      * by creating a name for the tree and its produced image file.
      * The created <code>treeAndFileName</code> is the given patches file name and commit hash, separated by {@link LineGraphConstants#TREE_NAME_SEPARATOR}.
      */
-    public <L extends Label> boolean render(final DiffTree<L> tree, final GitPatch patch, final Path directory, final RenderOptions<? super L> options, final LineGraphExportOptions<? super L> exportOptions) {
+    public <L extends Label> boolean render(final VariationDiff<L> tree, final GitPatch patch, final Path directory, final RenderOptions<? super L> options, final LineGraphExportOptions<? super L> exportOptions) {
         final String treeAndFileName =
                 patch.getFileName()
                         + LineGraphConstants.TREE_NAME_SEPARATOR
@@ -133,51 +133,51 @@ public class DiffTreeRenderer {
     }
 
     /**
-     * Invokes {@link DiffTreeRenderer#render(DiffTree, String, Path, RenderOptions)}
+     * Invokes {@link VariationDiffRenderer#render(VariationDiff, String, Path, RenderOptions)}
      * with the {@link RenderOptions#DEFAULT default render options}.
      */
-    public <L extends Label> boolean render(final DiffTree<L> tree, final String treeAndFileName, final Path directory) {
+    public <L extends Label> boolean render(final VariationDiff<L> tree, final String treeAndFileName, final Path directory) {
         return render(tree, treeAndFileName, directory, RenderOptions.DEFAULT());
     }
 
     /**
-     * Invokes {@link DiffTreeRenderer#render(DiffTree, String, Path, RenderOptions, LineGraphExportOptions)}
+     * Invokes {@link VariationDiffRenderer#render(VariationDiff, String, Path, RenderOptions, LineGraphExportOptions)}
      * by creating {@link LineGraphExportOptions} via {@link RenderOptions#toLineGraphOptions()}.
      */
-    public <L extends Label> boolean render(final DiffTree<? extends L> tree, final String treeAndFileName, final Path directory, RenderOptions<? super L> options) {
+    public <L extends Label> boolean render(final VariationDiff<? extends L> tree, final String treeAndFileName, final Path directory, RenderOptions<? super L> options) {
         return render(tree, treeAndFileName, directory, options, options.toLineGraphOptions());
     }
 
     /**
-     * Invokes {@link DiffTreeRenderer#render(DiffTree, String, Path, RenderOptions, LineGraphExportOptions, BiFunction)}
+     * Invokes {@link VariationDiffRenderer#render(VariationDiff, String, Path, RenderOptions, LineGraphExportOptions, BiFunction)}
      * with the a default tree header factory.
      * The tree header factory uses the given <code>treeAndFileName</code> to create
      * <code>LineGraphConstants.LG_TREE_HEADER + " " + treeAndFileName + LineGraphConstants.TREE_NAME_SEPARATOR + "0"</code>.
      * @see LineGraphConstants#LG_TREE_HEADER
      * @see LineGraphConstants#TREE_NAME_SEPARATOR
      */
-    public <L extends Label> boolean render(final DiffTree<? extends L> tree, final String treeAndFileName, final Path directory, RenderOptions<? super L> options, final LineGraphExportOptions<? super L> exportOptions) {
+    public <L extends Label> boolean render(final VariationDiff<? extends L> tree, final String treeAndFileName, final Path directory, RenderOptions<? super L> options, final LineGraphExportOptions<? super L> exportOptions) {
         return render(tree, treeAndFileName, directory, options, exportOptions,
                 (treeName, treeSource) -> LineGraphConstants.LG_TREE_HEADER + " " + treeAndFileName + LineGraphConstants.TREE_NAME_SEPARATOR + "0"
                 );
     }
 
     /**
-     * Invokes {@link DiffTreeRenderer#render(DiffTree, String, Path, RenderOptions, LineGraphExportOptions, BiFunction)}
+     * Invokes {@link VariationDiffRenderer#render(VariationDiff, String, Path, RenderOptions, LineGraphExportOptions, BiFunction)}
      * with the a default tree header factory.
      * The tree header factory uses the given <code>treeAndFileName</code> to create
      * <code>LineGraphConstants.LG_TREE_HEADER + " " + treeAndFileName + LineGraphConstants.TREE_NAME_SEPARATOR + "0"</code>.
      * @see LineGraphConstants#LG_TREE_HEADER
      * @see LineGraphConstants#TREE_NAME_SEPARATOR
      */
-    public <L extends Label> boolean renderWithTreeFormat(final DiffTree<? extends L> tree, final String treeAndFileName, final Path directory, RenderOptions<? super L> options) {
+    public <L extends Label> boolean renderWithTreeFormat(final VariationDiff<? extends L> tree, final String treeAndFileName, final Path directory, RenderOptions<? super L> options) {
         return render(tree, treeAndFileName, directory, options, options.toLineGraphOptions(),
                 (treeName, treeSource) -> options.treeFormat().toLineGraphLine(treeSource)
         );
     }
 
     /**
-     * Renders the given DiffTree to an image file.
+     * Renders the given VariationDiff to an image file.
      * First, exports the tree to a linegraph file.
      * Second, invokes a python render script with the produced linegraph file as input.
      * The python script will produce an image file at the given directory.
@@ -189,18 +189,18 @@ public class DiffTreeRenderer {
      *                      Should be compatible with the render options.
      *                      Most of the time, you just want to use {@link RenderOptions#toLineGraphOptions()} here.
      * @param treeHeader A factory that produces a name for the given tree in the intermediate linegraph file.
-     *                   The function is invoked on the given treeAndFileName as first argument and the given DiffTree's source as second argument.
+     *                   The function is invoked on the given treeAndFileName as first argument and the given VariationDiff's source as second argument.
      * @return True iff rendering was successful. False iff an error occurred.
      */
-    private <L extends Label> boolean render(final DiffTree<? extends L> tree, final String treeAndFileName, final Path directory, RenderOptions<? super L> options, LineGraphExportOptions<? super L> exportOptions, BiFunction<String, DiffTreeSource, String> treeHeader) {
+    private <L extends Label> boolean render(final VariationDiff<? extends L> tree, final String treeAndFileName, final Path directory, RenderOptions<? super L> options, LineGraphExportOptions<? super L> exportOptions, BiFunction<String, VariationDiffSource, String> treeHeader) {
         final Path tempFile = directory.resolve(treeAndFileName + ".lg");
 
         try (var destination = IO.newBufferedOutputStream(tempFile)) {
             destination.write((treeHeader.apply(treeAndFileName, tree.getSource()) + StringUtils.LINEBREAK).getBytes());
-            final DiffTreeSerializeDebugData result = LineGraphExport.toLineGraphFormat(tree, exportOptions, destination);
+            final VariationDiffSerializeDebugData result = LineGraphExport.toLineGraphFormat(tree, exportOptions, destination);
             Assert.assertNotNull(result);
         } catch (IOException e) {
-            Logger.error(e, "Could not render difftree {} because", treeAndFileName);
+            Logger.error(e, "Could not render variation diff {} because", treeAndFileName);
             return false;
         }
 
@@ -216,7 +216,7 @@ public class DiffTreeRenderer {
     }
 
     /**
-     * Invokes {@link DiffTreeRenderer#renderFile(Path, RenderOptions)} with the {@link RenderOptions#DEFAULT default render options}.
+     * Invokes {@link VariationDiffRenderer#renderFile(Path, RenderOptions)} with the {@link RenderOptions#DEFAULT default render options}.
      */
     public boolean renderFile(final Path lineGraphFile) {
         return renderFile(lineGraphFile, RenderOptions.DEFAULT());
@@ -224,7 +224,7 @@ public class DiffTreeRenderer {
 
     /**
      * Renders the given linegraph file with the given options.
-     * @param lineGraphFile The path of a linegraph file in which only DiffTrees are stored.
+     * @param lineGraphFile The path of a linegraph file in which only VariationDiffs are stored.
      * @param options Configuration options for the rendering process.
      * @return True iff rendering was successful. False iff an error occurred.
      */

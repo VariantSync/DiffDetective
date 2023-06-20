@@ -7,12 +7,12 @@ import java.util.stream.Collectors;
 
 import org.variantsync.diffdetective.diff.text.DiffLineNumber;
 import org.variantsync.diffdetective.util.StringUtils;
-import org.variantsync.diffdetective.variation.diff.DiffTree; // For Javadoc
+import org.variantsync.diffdetective.variation.diff.VariationDiff; // For Javadoc
 
 /**
  * A label consisting of lines with {@link DiffLineNumber line number} information for each line.
  *
- * Using this label, a {@link DiffTree} encodes all information (except the original line
+ * Using this label, a {@link VariationDiff} encodes all information (except the original line
  * ending encoding, i.e. {@code LF} vs {@code CRLF}) necessary to reconstruct the original files
  * and, when used during construction, the line diff between these files.
  */

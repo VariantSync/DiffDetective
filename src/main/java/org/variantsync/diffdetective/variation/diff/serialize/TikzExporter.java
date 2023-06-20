@@ -5,7 +5,7 @@ import org.variantsync.diffdetective.util.IO;
 import org.variantsync.diffdetective.util.LaTeX;
 import org.variantsync.diffdetective.variation.Label;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
-import org.variantsync.diffdetective.variation.diff.DiffTree;
+import org.variantsync.diffdetective.variation.diff.VariationDiff;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -34,49 +34,49 @@ public final class TikzExporter<L extends Label> implements Exporter<L> {
     }
 
     /**
-     * Export {@code diffTree} as TikZ graph into {@code destination}.
+     * Export {@code variationDiff} as TikZ graph into {@code destination}.
      *
      * The exported graph starts and ends with the {@code tikzpicture} environment and does not
      * include surrounding LaTeX code like the preamble. For a quick way to set up a working LaTeX
      * document see {@link exportFullLatexExample}.
      *
-     * @param diffTree to be exported
+     * @param variationDiff to be exported
      * @param destination where the result should be written
      */
     @Override
-    public <La extends L> void exportDiffTree(DiffTree<La> diffTree, OutputStream destination) throws IOException {
-        exportDiffTree(diffTree, GraphvizExporter.LayoutAlgorithm.DOT, destination);
+    public <La extends L> void exportVariationDiff(VariationDiff<La> variationDiff, OutputStream destination) throws IOException {
+        exportVariationDiff(variationDiff, GraphvizExporter.LayoutAlgorithm.DOT, destination);
     }
 
     /**
-     * Export {@code diffTree} as TikZ graph into {@code destination}.
+     * Export {@code variationDiff} as TikZ graph into {@code destination}.
      *
-     * Same as {@link exportDiffTree(DiffTree, OutputStream)}, but allows the selection of
+     * Same as {@link exportVariationDiff(VariationDiff, OutputStream)}, but allows the selection of
      * a different Graphviz layout algorithm.
      */
-    public <La extends L> void exportDiffTree(
-            DiffTree<La> diffTree,
+    public <La extends L> void exportVariationDiff(
+            VariationDiff<La> variationDiff,
             GraphvizExporter.LayoutAlgorithm algorithm,
             OutputStream destination
             ) throws IOException {
         final Map<Integer, DiffNode<La>> ids = new HashMap<>();
-        diffTree.forAll(node -> ids.put(node.getID(), node));
+        variationDiff.forAll(node -> ids.put(node.getID(), node));
 
         // Convert the layout information received by Graphviz to coordinates used by TikZ.
         final Map<DiffNode<La>, Vec2> positions = new HashMap<>();
-        GraphvizExporter.layoutNodesIn(diffTree, format, algorithm, (id, x, y) ->
+        GraphvizExporter.layoutNodesIn(variationDiff, format, algorithm, (id, x, y) ->
                 positions.put(ids.get(id), new Vec2(x, y))
         );
 
-        exportDiffTree(
-                diffTree,
+        exportVariationDiff(
+                variationDiff,
                 positions::get,
                 destination,
                 true);
     }
 
-    public <La extends L> void exportDiffTree(
-            DiffTree<La> diffTree,
+    public <La extends L> void exportVariationDiff(
+            VariationDiff<La> variationDiff,
             Function<DiffNode<La>, Vec2> nodeLayout,
             OutputStream destination,
             boolean escape
@@ -86,13 +86,13 @@ public final class TikzExporter<L extends Label> implements Exporter<L> {
         output.println("\\begin{tikzpicture}");
 
         // Convert the layout information received by Graphviz to coordinates used by TikZ.
-        diffTree.forAll(node -> {
+        variationDiff.forAll(node -> {
             final Vec2 position = nodeLayout.apply(node);
             output.format("\t\\coordinate (%s) at (%s,%s);%n", node.getID(), position.x(), position.y());
         });
 
         // Add all TikZ nodes positioned at the Graphviz coordinates.
-        format.forEachNode(diffTree, (node) -> {
+        format.forEachNode(variationDiff, (node) -> {
             output.format("%n\t\\node[%s, %s] (node_%s) at (%s) {};",
                 node.isArtifact() ? "artifact" : "annotation",
                 node.getDiffType().toString().toLowerCase(Locale.ROOT),
@@ -103,7 +103,7 @@ public final class TikzExporter<L extends Label> implements Exporter<L> {
 
         // Add all TikZ edges positioned.
         output.format("%n\t\\draw[vtdarrow]");
-        format.forEachEdge(diffTree, (edge) -> {
+        format.forEachEdge(variationDiff, (edge) -> {
             output.format("%n\t\t(node_%d) edge[%s] (node_%d)",
                     edge.from().getID(),
                     edge.style().tikzStyle(),
@@ -114,7 +114,7 @@ public final class TikzExporter<L extends Label> implements Exporter<L> {
         output.println();
 
         // Draw node labels. We do this last so that they are on top of edges and nodes.
-        format.forEachNode(diffTree, (node) -> {
+        format.forEachNode(variationDiff, (node) -> {
             Stream<String> labels =
                     format
                             .getNodeFormat()
@@ -137,22 +137,22 @@ public final class TikzExporter<L extends Label> implements Exporter<L> {
 
     /**
      * Exports a ready to compile LaTeX document containing a TikZ graph exported by {@link
-     * exportDiffTree}.
+     * exportVariationDiff}.
      *
      * The resulting document should be used as prototype not as ready to be published
-     * visualisation. To discourage further processing the API differs from {@code exportDiffTree}
+     * visualisation. To discourage further processing the API differs from {@code exportVariationDiff}
      * by exporting directly into a file.
      *
-     * @param diffTree to be exported
+     * @param variationDiff to be exported
      * @param destination path of the generated file
      */
-    public <La extends L> void exportFullLatexExample(DiffTree<La> diffTree, Path destination) throws IOException {
+    public <La extends L> void exportFullLatexExample(VariationDiff<La> variationDiff, Path destination) throws IOException {
         try (var file = IO.newBufferedOutputStream(destination)) {
             try (var header = new BufferedInputStream(getClass().getResourceAsStream("/tikz_header.tex"))) {
                 header.transferTo(file);
             }
 
-            exportDiffTree(diffTree, file);
+            exportVariationDiff(variationDiff, file);
 
             try (var footer = new BufferedInputStream(getClass().getResourceAsStream("/tikz_footer.tex"))) {
                 footer.transferTo(file);

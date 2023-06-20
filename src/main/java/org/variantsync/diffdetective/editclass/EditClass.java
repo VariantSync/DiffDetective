@@ -2,7 +2,7 @@ package org.variantsync.diffdetective.editclass;
 
 import org.variantsync.diffdetective.preliminary.pattern.Pattern;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
-import org.variantsync.diffdetective.variation.diff.DiffTree;
+import org.variantsync.diffdetective.variation.diff.VariationDiff;
 import org.variantsync.diffdetective.variation.diff.DiffType;
 
 /**
@@ -46,7 +46,7 @@ public abstract class EditClass extends Pattern<DiffNode<?>> {
     /**
      * Returns true iff this edit class matches at leat one node on the given tree.
      */
-    public boolean anyMatch(final DiffTree<?> t) {
+    public boolean anyMatch(final VariationDiff<?> t) {
         return t.anyMatch(this::matches);
     }
 }

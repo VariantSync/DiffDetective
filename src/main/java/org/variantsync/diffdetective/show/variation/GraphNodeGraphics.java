@@ -18,7 +18,7 @@ public class GraphNodeGraphics extends EntityGraphics {
     double textbox_borderwidth_absolute = 2;
     double textbox_insets_absolute = 12;
     int textbox_borderarcwidth_absolute = 7;
-    Font basic = new Font(null, Font.PLAIN, DiffTreeApp.DEFAULT_FONT_SIZE);
+    Font basic = new Font(null, Font.PLAIN, VariationDiffApp.DEFAULT_FONT_SIZE);
 
     public GraphNodeGraphics(NodeView<?> node) {
         this.node = node;

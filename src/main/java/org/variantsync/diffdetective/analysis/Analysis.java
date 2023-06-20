@@ -26,13 +26,13 @@ import org.variantsync.diffdetective.util.Clock;
 import org.variantsync.diffdetective.util.Diagnostics;
 import org.variantsync.diffdetective.util.InvocationCounter;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
-import org.variantsync.diffdetective.variation.diff.DiffTree;
+import org.variantsync.diffdetective.variation.diff.VariationDiff;
 import org.variantsync.functjonal.iteration.ClusteredIterator;
 import org.variantsync.functjonal.iteration.MappedIterator;
 
 /**
  * Encapsulates the state and control flow during an analysis of the commit history of multiple
- * repositories using {@link DiffTree}s. Each repository is processed sequentially but the commits
+ * repositories using {@link VariationDiff}s. Each repository is processed sequentially but the commits
  * of each repository can be processed in parallel.
  *
  * <p>For thread safety, each thread receives its own instance of {@code Analysis}. The getters
@@ -65,7 +65,7 @@ public class Analysis {
     protected RevCommit currentCommit;
     protected CommitDiff currentCommitDiff;
     protected PatchDiff currentPatch;
-    protected DiffTree<DiffLinesLabel> currentDiffTree;
+    protected VariationDiff<DiffLinesLabel> currentVariationDiff;
 
     protected final Path outputDir;
     protected Path outputFile;
@@ -105,10 +105,10 @@ public class Analysis {
 
     /**
      * The currently processed patch.
-     * Valid only during {@link Hooks#analyzeDiffTree}.
+     * Valid only during {@link Hooks#analyzeVariationDiff}.
      */
-    public DiffTree<DiffLinesLabel> getCurrentDiffTree() {
-        return currentDiffTree;
+    public VariationDiff<DiffLinesLabel> getCurrentVariationDiff() {
+        return currentVariationDiff;
     }
 
     /**
@@ -154,7 +154,7 @@ public class Analysis {
     }
 
     /**
-     * Hooks for analyzing commits using {@link DiffTree}s.
+     * Hooks for analyzing commits using {@link VariationDiff}s.
      *
      * <p>In general the hooks of different {@code Hook} instances are called in sequence according
      * to the order specified in {@link Analysis#Analysis} (except end hooks). Hooks are separated
@@ -218,7 +218,7 @@ public class Analysis {
          * The main hook for analyzing non-empty diff trees.
          * Called at most once during the patch phase.
          */
-        default boolean analyzeDiffTree(Analysis analysis) throws Exception { return true; }
+        default boolean analyzeVariationDiff(Analysis analysis) throws Exception { return true; }
         default void endPatch(Analysis analysis) throws Exception {}
         default void endCommit(Analysis analysis) throws Exception {}
         default void endBatch(Analysis analysis) throws Exception {}
@@ -280,7 +280,7 @@ public class Analysis {
      * history is processed in batches of {@code commitsToProcessPerThread} on {@code nThreads} in
      * parallel. {@link Hooks} passed to {@link Analysis#Analysis} are the main customization point
      * for executing different analyses. By default only the total number of commits and the total
-     * runtime with multithreading of the {@link DiffTree} parsing is recorded.
+     * runtime with multithreading of the {@link VariationDiff} parsing is recorded.
      *
      * @param analysisFactory creates independent (at least thread safe) instances the analysis
      * state
@@ -426,7 +426,7 @@ public class Analysis {
         // parse the commit
         final CommitDiffResult commitDiffResult = differ.createCommitDiff(currentCommit);
 
-        // report any errors that occurred and exit in case no DiffTree could be parsed.
+        // report any errors that occurred and exit in case no VariationDiff could be parsed.
         getResult().reportDiffErrors(commitDiffResult.errors());
         if (commitDiffResult.diff().isEmpty()) {
             Logger.debug("found commit that failed entirely because:\n{}", commitDiffResult.errors());
@@ -463,10 +463,10 @@ public class Analysis {
     protected void processPatch() throws Exception {
         if (currentPatch.isValid()) {
             // generate TreeDiff
-            currentDiffTree = currentPatch.getDiffTree();
-            currentDiffTree.assertConsistency();
+            currentVariationDiff = currentPatch.getVariationDiff();
+            currentVariationDiff.assertConsistency();
 
-            runFilterHook(hooks.listIterator(), Hooks::analyzeDiffTree);
+            runFilterHook(hooks.listIterator(), Hooks::analyzeVariationDiff);
         }
     }
 

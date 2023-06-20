@@ -10,7 +10,7 @@ import org.variantsync.diffdetective.preliminary.pattern.elementary.*;
 import org.variantsync.diffdetective.preliminary.pattern.semantic.SemanticPattern;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
-import org.variantsync.diffdetective.variation.diff.DiffTree;
+import org.variantsync.diffdetective.variation.diff.VariationDiff;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -65,10 +65,10 @@ public class TreeGDAnalyzer extends GDAnalyzer {
     protected PatchDiffAnalysisResult analyzePatch(PatchDiff patchDiff) {
         List<PatternMatch<DiffNode<?>>> results = new ArrayList<>();
 
-        DiffTree<DiffLinesLabel> diffTree = patchDiff.getDiffTree();
-        if(diffTree != null) {
+        VariationDiff<DiffLinesLabel> variationDiff = patchDiff.getVariationDiff();
+        if(variationDiff != null) {
             // match atomic patterns
-            for (DiffNode<DiffLinesLabel> diffNode : diffTree.computeArtifactNodes()) {
+            for (DiffNode<DiffLinesLabel> diffNode : variationDiff.computeArtifactNodes()) {
                 for (FeatureContextReverseEngineering<DiffNode<?>> pattern : patterns) {
                     if (pattern.getPattern() instanceof EditClass) {
                         results.add(pattern.createMatch(diffNode));
@@ -78,7 +78,7 @@ public class TreeGDAnalyzer extends GDAnalyzer {
             }
 
             // match semantic patterns
-            for (DiffNode<DiffLinesLabel> diffNode : diffTree.computeAnnotationNodes()) {
+            for (DiffNode<DiffLinesLabel> diffNode : variationDiff.computeAnnotationNodes()) {
                 for (FeatureContextReverseEngineering<DiffNode<?>> pattern : patterns) {
                     if (pattern.getPattern() instanceof SemanticPattern s) {
                         s.match(diffNode).ifPresent(results::add);

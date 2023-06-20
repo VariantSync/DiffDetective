@@ -5,10 +5,10 @@ import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.util.StringUtils;
 import org.variantsync.diffdetective.variation.Label;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
-import org.variantsync.diffdetective.variation.diff.DiffTree;
+import org.variantsync.diffdetective.variation.diff.VariationDiff;
 import org.variantsync.diffdetective.variation.diff.DiffType;
 import org.variantsync.diffdetective.variation.diff.Time;
-import org.variantsync.diffdetective.variation.diff.source.DiffTreeSource;
+import org.variantsync.diffdetective.variation.diff.source.VariationDiffSource;
 import org.variantsync.diffdetective.variation.tree.VariationTree;
 import org.variantsync.diffdetective.variation.tree.VariationTreeNode;
 import org.variantsync.functjonal.Cast;
@@ -54,7 +54,7 @@ import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
  * nodes difftype in the original variation diff in a coloring map.
  * <p>
  * (Unproven) Invariants:
- * for all DiffTree d: fromGood(d).toGood() equals d
+ * for all VariationDiff d: fromGood(d).toGood() equals d
  *
  * @param diff The variation tree that models the tree diff.
  * @param matching Memorization of which nodes are clones and can be safely merged when converting back
@@ -72,7 +72,7 @@ public record BadVDiff<L extends Label>(
 {
     /**
      * Memoization of the VariationTreeNodes a DiffNode was
-     * converted to in {@link #fromGood(DiffTree)}.
+     * converted to in {@link #fromGood(VariationDiff)}.
      */
     private static class FromGoodNodeTranslation<L extends Label> {
         private final Map<DiffNode<L>, Map<Time, VariationTreeNode<L>>> translate = new HashMap<>();
@@ -80,7 +80,7 @@ public record BadVDiff<L extends Label>(
         /**
          * Remember that the given DiffNode d was translated to the given
          * VariationTreeNode v at all times d exists.
-         * @param d The DiffNode from the initial good DiffTree.
+         * @param d The DiffNode from the initial good VariationDiff.
          * @param v The VariationTreeNode d was translated to.
          */
         void put(DiffNode<L> d, VariationTreeNode<L> v) {
@@ -92,7 +92,7 @@ public record BadVDiff<L extends Label>(
         /**
          * Remember that the given DiffNode d was translated to the given
          * VariationTreeNode v at time t.
-         * @param d The DiffNode from the initial good DiffTree.
+         * @param d The DiffNode from the initial good VariationDiff.
          * @param t The time at which the translated node v represents the initial DiffNode d.
          * @param v The VariationTreeNode d was translated to.
          */
@@ -105,7 +105,7 @@ public record BadVDiff<L extends Label>(
          * Returns the VariationTreeNode that represents the given DiffNode d
          * at the given time t in the produced bad diff.
          *
-         * @param d The DiffNode from the initial good DiffTree.
+         * @param d The DiffNode from the initial good VariationDiff.
          * @param t The time for which we seek the node that represents the initial DiffNode d.
          */
         VariationTreeNode<L> get(DiffNode<L> d, Time t) {
@@ -190,11 +190,11 @@ public record BadVDiff<L extends Label>(
     }
 
     /**
-     * Creates a bad diff from a DiffTree.
-     * @param d The DiffTree to convert to a bad diff.
+     * Creates a bad diff from a VariationDiff.
+     * @param d The VariationDiff to convert to a bad diff.
      * @see BadVDiff
      */
-    public static <L extends Label> BadVDiff<L> fromGood(DiffTree<L> d) {
+    public static <L extends Label> BadVDiff<L> fromGood(VariationDiff<L> d) {
         record EdgeToConstruct<L extends Label>(
                 VariationTreeNode<L> child,
                 DiffNode<L> parent,
@@ -298,7 +298,7 @@ public record BadVDiff<L extends Label>(
         }
 
         return new BadVDiff<>(
-                new VariationTree<>(root, new BadVDiffFromDiffTreeSource(d.getSource())),
+                new VariationTree<>(root, new BadVDiffFromVariationDiffSource(d.getSource())),
                 matching,
                 coloring,
                 lines
@@ -306,10 +306,10 @@ public record BadVDiff<L extends Label>(
     }
 
     /**
-     * Inverse of {@link #fromGood(DiffTree)}.
-     * Restores the DiffTree that is represented by this bad tree diff.
+     * Inverse of {@link #fromGood(VariationDiff)}.
+     * Restores the VariationDiff that is represented by this bad tree diff.
      */
-    public DiffTree<L> toGood() {
+    public VariationDiff<L> toGood() {
         /*
         Store the command to construct an edge from the given child to the
         given parent at the given time.
@@ -381,12 +381,12 @@ public record BadVDiff<L extends Label>(
             nodeTranslation.get(e.parent()).addChild(e.child(), e.time());
         }
 
-        DiffTreeSource source = DiffTreeSource.Unknown;
-        if (diff.source() instanceof BadVDiffFromDiffTreeSource s) {
-            source = s.initialDiffTree();
+        VariationDiffSource source = VariationDiffSource.Unknown;
+        if (diff.source() instanceof BadVDiffFromVariationDiffSource s) {
+            source = s.initialVariationDiff();
         }
 
-        return new DiffTree<>(root, source);
+        return new VariationDiff<>(root, source);
     }
 
     public BadVDiff<L> deepCopy() {

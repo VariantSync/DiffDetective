@@ -6,8 +6,8 @@ import org.variantsync.diffdetective.util.FileUtils;
 import org.variantsync.diffdetective.util.IO;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
-import org.variantsync.diffdetective.variation.diff.DiffTree;
-import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParseOptions;
+import org.variantsync.diffdetective.variation.diff.VariationDiff;
+import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParseOptions;
 import org.variantsync.diffdetective.variation.diff.serialize.Format;
 import org.variantsync.diffdetective.variation.diff.serialize.GraphvizExporter;
 import org.variantsync.diffdetective.variation.diff.serialize.TikzExporter;
@@ -70,16 +70,16 @@ public class TextDiffToTikz {
         Logger.info("Using layout " + layout.getExecutableName());
         final Path targetFile = fileToConvert.resolveSibling(fileToConvert.getFileName() + ".tikz");
 
-        final DiffTree<DiffLinesLabel> d = DiffTree.fromFile(fileToConvert, new DiffTreeParseOptions(true, true));
+        final VariationDiff<DiffLinesLabel> d = VariationDiff.fromFile(fileToConvert, new VariationDiffParseOptions(true, true));
         final String tikz = exportAsTikz(d, layout);
         IO.write(targetFile, tikz);
         Logger.info("Wrote file " + targetFile);
     }
 
-    public static String exportAsTikz(final DiffTree<DiffLinesLabel> diffTree, GraphvizExporter.LayoutAlgorithm layout) throws IOException {
+    public static String exportAsTikz(final VariationDiff<DiffLinesLabel> variationDiff, GraphvizExporter.LayoutAlgorithm layout) throws IOException {
         // Export the test case
         var tikzOutput = new ByteArrayOutputStream();
-        new TikzExporter<DiffLinesLabel>(format).exportDiffTree(diffTree, layout, tikzOutput);
+        new TikzExporter<DiffLinesLabel>(format).exportVariationDiff(variationDiff, layout, tikzOutput);
         return tikzOutput.toString();
     }
 

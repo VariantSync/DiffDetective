@@ -3,18 +3,18 @@ package org.variantsync.diffdetective.variation.diff.graph;
 import org.variantsync.diffdetective.util.StringUtils;
 import org.variantsync.diffdetective.variation.Label;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
-import org.variantsync.diffdetective.variation.diff.DiffTree;
+import org.variantsync.diffdetective.variation.diff.VariationDiff;
 import org.variantsync.diffdetective.variation.diff.Time;
 
 import java.util.*;
 
 /**
- * A view on a DiffTree that shows the DiffTree as a list of nodes and edges.
- * The view invalidates as soon as the viewed DiffTree is altered as the view
+ * A view on a VariationDiff that shows the VariationDiff as a list of nodes and edges.
+ * The view invalidates as soon as the viewed VariationDiff is altered as the view
  * will not update itself.
  *
- * @param nodes The set of all nodes in a DiffTree.
- * @param edges The set of all edges in a DiffTree.
+ * @param nodes The set of all nodes in a VariationDiff.
+ * @param edges The set of all edges in a VariationDiff.
  *
  * @author Paul Bittner
  */
@@ -27,13 +27,13 @@ public record FormalDiffGraph<L extends Label>(
 
     /**
      * Creates a GraphView for a given VariationDiff.
-     * The produced view reflects the state of the given DiffTree as is.
-     * This means, the view is invalid as soon as the given DiffTree gets
+     * The produced view reflects the state of the given VariationDiff as is.
+     * This means, the view is invalid as soon as the given VariationDiff gets
      * modified elsewhere.
-     * @param d The DiffTree to view as a list of nodes and edges.
+     * @param d The VariationDiff to view as a list of nodes and edges.
      * @return the graph view
      */
-    public static <L extends Label> FormalDiffGraph<L> fromDiffTree(final DiffTree<L> d) {
+    public static <L extends Label> FormalDiffGraph<L> fromVariationDiff(final VariationDiff<L> d) {
         final Set<DiffNode<L>> nodes = new HashSet<>();
         final Set<Edge<L>> edges = new HashSet<>();
 

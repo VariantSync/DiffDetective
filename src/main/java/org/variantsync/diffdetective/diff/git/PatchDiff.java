@@ -3,18 +3,18 @@ package org.variantsync.diffdetective.diff.git;
 import org.apache.commons.io.FilenameUtils;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
-import org.variantsync.diffdetective.variation.diff.DiffTree;
+import org.variantsync.diffdetective.variation.diff.VariationDiff;
 
 /**
  * Data class containing information about a single patch (i.e., the differences in a single file).
  *
- * Contains a DiffTree of the patch.
+ * Contains a VariationDiff of the patch.
  *
  * @author Sören Viegener, Paul Bittner
  */
 public class PatchDiff implements GitPatch {
     private final String fullDiff;
-    private final DiffTree<DiffLinesLabel> diffTree;
+    private final VariationDiff<DiffLinesLabel> variationDiff;
 
     /**
      * The commit the patch belongs to.
@@ -36,17 +36,17 @@ public class PatchDiff implements GitPatch {
      * @param commitDiff The changes of a commit this patch belongs to.
      * @param diffEntry The diff entry from jgit from which this PatchDiff was produced.
      * @param fullDiff The diff of this patch as text. Might be empty.
-     * @param diffTree The {@link DiffTree} that describes this patch.
+     * @param variationDiff The {@link VariationDiff} that describes this patch.
      */
     public PatchDiff(CommitDiff commitDiff, DiffEntry diffEntry, String fullDiff,
-                     DiffTree<DiffLinesLabel> diffTree) {
+                     VariationDiff<DiffLinesLabel> variationDiff) {
         this.commitDiff = commitDiff;
         this.changeType = diffEntry.getChangeType();
         this.path = diffEntry.getNewPath();
         this.fullDiff = fullDiff;
-        this.diffTree = diffTree;
-        if (this.diffTree != null) {
-            this.diffTree.setSource(this);
+        this.variationDiff = variationDiff;
+        if (this.variationDiff != null) {
+            this.variationDiff.setSource(this);
         }
     }
 
@@ -90,18 +90,18 @@ public class PatchDiff implements GitPatch {
     }
 
     /**
-     * Returns the DiffTree for this patch.
+     * Returns the VariationDiff for this patch.
      */
-    public DiffTree<DiffLinesLabel> getDiffTree() {
-        return diffTree;
+    public VariationDiff<DiffLinesLabel> getVariationDiff() {
+        return variationDiff;
     }
 
     /**
      * Returns whether this PatchDiff is a valid patch.
-     * A patch is valid if it has a DiffTree.
+     * A patch is valid if it has a VariationDiff.
      */
     public boolean isValid() {
-        return diffTree != null;
+        return variationDiff != null;
     }
 
     @Override
