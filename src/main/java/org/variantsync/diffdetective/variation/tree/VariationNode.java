@@ -238,8 +238,6 @@ public abstract class VariationNode<T extends VariationNode<T>> implements HasNo
      * Removes the given node from this node's children list and sets the parent of {@code child}
      * to {@code null}.
      *
-     * @return {@code true} iff the child was removed, {@code false} iff {@code child} is not a
-     * child of this node
      * @throws IllegalArgumentException if {@code childe} is not a child of this node
      * @see removeChildren
      * @see getChildren

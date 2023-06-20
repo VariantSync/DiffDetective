@@ -286,7 +286,6 @@ public class DiffNode implements HasNodeType {
      * Inverse of drop.
      * @param newBeforeParent Node that should be this node's before parent. May be null.
      * @param newAfterParent Node that should be this node's after parent. May be null.
-     * @return True iff this node could be added as child to at least one of the given non-null parents.
      */
     public void addBelow(final DiffNode newBeforeParent, final DiffNode newAfterParent) {
         if (getDiffType().existsAtTime(BEFORE) && newBeforeParent != null) {
@@ -367,7 +366,6 @@ public class DiffNode implements HasNodeType {
      * The node might still remain a child after or before the edit.
      * @param child the child to remove
      * @param time whether {@code child} should be removed before or after the edit
-     * @return True iff the child was removed, false iff it's not a child at {@code time}.
      */
     public void removeChild(final DiffNode child, Time time) {
         Assert.assertTrue(isChild(child, time));

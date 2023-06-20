@@ -494,7 +494,7 @@ public class DiffTree {
      * Create a {@link DiffTree} by matching nodes between {@code before} and {@code after} with the
      * default GumTree matcher.
      *
-     * @see compareUsingMatching(VariationTree, VariationTree, Matcher)
+     * @see compareUsingMatching(VariationNode, VariationNode, Matcher)
      */
     public static DiffTree compareUsingMatching(VariationTree before, VariationTree after) {
         DiffNode root = compareUsingMatching(
@@ -507,13 +507,14 @@ public class DiffTree {
     }
 
     /**
-     * Create a {@link DiffTree} by matching nodes between {@code before} and {@code after} with
-     * {@code matcher}.
+     * Create a {@link DiffNode} by matching nodes between {@code before} and {@code after} with
+     * {@code matcher}. The arguments of this function aren't modified (note the
+     * {@link compareUsingMatching(DiffNode, VariationNode, Matcher) overload} which modifies
+     * {@code before} in-place.
      *
-     * Note: There are currently no guarantees about the line numbers. But it is guaranteed that
-     * {@link DiffNode#getID} is unique.
-     *
-     * @param TODO
+     * @param before the variation tree before an edit
+     * @param after the variation tree after an edit
+     * @see compareUsingMatching(DiffNode, VariationNode, Matcher)
      */
     public static <A extends VariationNode<A>, B extends VariationNode<B>> DiffNode compareUsingMatching(
         VariationNode<A> before,
@@ -523,6 +524,17 @@ public class DiffTree {
         return compareUsingMatching(DiffNode.unchanged(before), after, matcher);
     }
 
+    /**
+     * Create a {@link DiffNode} by matching nodes between {@code before} and {@code after} with
+     * {@code matcher}. The result of this function is {@code before} which is modified in-place. In
+     * contrast, {@code after} is kept in tact.
+     *
+     * Note: There are currently no guarantees about the line numbers. But it is guaranteed that
+     * {@link DiffNode#getID} is unique.
+     *
+     * @param before the variation tree before an edit
+     * @param after the variation tree after an edit
+     */
     public static <B extends VariationNode<B>> DiffNode compareUsingMatching(
         DiffNode before,
         VariationNode<B> after,
@@ -591,10 +603,18 @@ public class DiffTree {
         }
     }
 
+    /**
+     * Run {@code matcher} on the implicit matching of this variation diff and update this variation
+     * tree in-place to reflect the new matching.
+     */
     public void improveMatching(Matcher matcher) {
         improveMatching(getRoot(), matcher);
     }
 
+    /**
+     * Run {@code matcher} on the matching extracted from {@code tree} and modify {@code tree}
+     * in-place to reflect the new matching.
+     */
     public static DiffNode improveMatching(DiffNode tree, Matcher matcher) {
         var src = new WrappedDiffTree(tree, BEFORE);
         var dst = new WrappedDiffTree(tree, AFTER);
