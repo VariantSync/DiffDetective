@@ -15,8 +15,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: cachix/install-nix-action@v18
     - uses: actions/checkout@v3
+    - name: Install Nix with cached packages
+      uses: rikhuijzer/cache-install@v1.1.1
+      with:
+        key: nix-${{ hashFiles('.github/workflows/maven.yml', 'default.nix', 'nix/**') }}
+        nix_file: nix/github-workflow-dependencies.nix
     - name: Build
       run: nix-build
     - name: Upload Javadoc artifact
