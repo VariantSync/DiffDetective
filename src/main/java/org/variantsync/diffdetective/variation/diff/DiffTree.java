@@ -16,8 +16,8 @@ import org.variantsync.diffdetective.diff.result.CommitDiffResult;
 import org.variantsync.diffdetective.diff.result.DiffError;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.diff.text.DiffLineNumber;
-import org.variantsync.diffdetective.gumtree.WrappedDiffTree;
-import org.variantsync.diffdetective.gumtree.WrappedVariationTree;
+import org.variantsync.diffdetective.gumtree.DiffTreeAdapter;
+import org.variantsync.diffdetective.gumtree.VariationTreeAdapter;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParseOptions;
 import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParser;
@@ -512,15 +512,15 @@ public class DiffTree {
         VariationNode<B> after,
         Matcher matcher
     ) {
-        var src = new WrappedDiffTree(before, BEFORE);
-        var dst = new WrappedVariationTree(after);
+        var src = new DiffTreeAdapter(before, BEFORE);
+        var dst = new VariationTreeAdapter(after);
 
         MappingStore matching = matcher.match(src, dst);
         Assert.assertTrue(matching.has(src, dst));
 
         removeUnmapped(matching, src);
         for (var child : dst.getChildren()) {
-            addUnmapped(matching, src.getDiffNode(), (WrappedVariationTree)child);
+            addUnmapped(matching, src.getDiffNode(), (VariationTreeAdapter)child);
         }
 
         int[] currentID = new int[1];
@@ -533,18 +533,18 @@ public class DiffTree {
         return before;
     }
 
-    private static void removeUnmapped(MappingStore mappings, WrappedDiffTree root) {
+    private static void removeUnmapped(MappingStore mappings, DiffTreeAdapter root) {
         for (var node : root.preOrder()) {
             Tree dst = mappings.getDstForSrc(node);
             if (dst == null || !dst.getLabel().equals(node.getLabel())) {
-                var diffNode = ((WrappedDiffTree)node).getDiffNode();
+                var diffNode = ((DiffTreeAdapter)node).getDiffNode();
                 diffNode.diffType = REM;
                 diffNode.drop(AFTER);
             }
         }
     }
 
-    private static void addUnmapped(MappingStore mappings, DiffNode parent, WrappedVariationTree afterNode) {
+    private static void addUnmapped(MappingStore mappings, DiffNode parent, VariationTreeAdapter afterNode) {
         VariationNode<?> variationNode = afterNode.getVariationNode();
         DiffNode diffNode;
 
@@ -562,7 +562,7 @@ public class DiffTree {
                 variationNode.getLabelLines()
             );
         } else {
-            diffNode = ((WrappedDiffTree)src).getDiffNode();
+            diffNode = ((DiffTreeAdapter)src).getDiffNode();
             if (diffNode.getParent(AFTER) != null) {
                 diffNode.drop(AFTER);
             }
@@ -571,7 +571,7 @@ public class DiffTree {
 
         diffNode.removeChildren(AFTER);
         for (var child : afterNode.getChildren()) {
-            addUnmapped(mappings, diffNode, (WrappedVariationTree)child);
+            addUnmapped(mappings, diffNode, (VariationTreeAdapter)child);
         }
     }
 
@@ -588,8 +588,8 @@ public class DiffTree {
      * in-place to reflect the new matching.
      */
     public static DiffNode improveMatching(DiffNode tree, Matcher matcher) {
-        var src = new WrappedDiffTree(tree, BEFORE);
-        var dst = new WrappedDiffTree(tree, AFTER);
+        var src = new DiffTreeAdapter(tree, BEFORE);
+        var dst = new DiffTreeAdapter(tree, AFTER);
 
         MappingStore matching = new MappingStore(src, dst);
         extractMatching(src, dst, matching);
@@ -598,7 +598,7 @@ public class DiffTree {
 
         for (var srcNode : src.preOrder()) {
             var dstNode = matching.getDstForSrc(srcNode);
-            var beforeNode = ((WrappedDiffTree)srcNode).getDiffNode();
+            var beforeNode = ((DiffTreeAdapter)srcNode).getDiffNode();
             if (dstNode == null || !srcNode.getLabel().equals(dstNode.getLabel())) {
                 if (beforeNode.isNon()) {
                     splitNode(beforeNode);
@@ -606,7 +606,7 @@ public class DiffTree {
 
                 Assert.assertTrue(beforeNode.isRem());
             } else {
-                var afterNode = ((WrappedDiffTree)dstNode).getDiffNode();
+                var afterNode = ((DiffTreeAdapter)dstNode).getDiffNode();
 
                 if (beforeNode != afterNode) {
                     if (beforeNode.isNon()) {
@@ -660,21 +660,21 @@ public class DiffTree {
     }
 
     private static void extractMatching(
-        WrappedDiffTree src,
-        WrappedDiffTree dst,
+        DiffTreeAdapter src,
+        DiffTreeAdapter dst,
         MappingStore result
     ) {
         Map<DiffNode, Tree> matching = new HashMap<>();
 
         for (var srcNode : src.preOrder()) {
-            DiffNode diffNode = ((WrappedDiffTree)srcNode).getDiffNode();
+            DiffNode diffNode = ((DiffTreeAdapter)srcNode).getDiffNode();
             if (diffNode.isNon()) {
                 matching.put(diffNode, srcNode);
             }
         }
 
         for (var dstNode : dst.preOrder()) {
-            DiffNode diffNode = ((WrappedDiffTree)dstNode).getDiffNode();
+            DiffNode diffNode = ((DiffTreeAdapter)dstNode).getDiffNode();
             if (diffNode.isNon()) {
                 Assert.assertTrue(matching.get(diffNode) != null);
                 result.addMapping(matching.get(diffNode), dstNode);

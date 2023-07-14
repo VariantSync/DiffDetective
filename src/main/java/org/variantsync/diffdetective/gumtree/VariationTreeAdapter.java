@@ -12,11 +12,19 @@ import com.github.gumtreediff.tree.Tree;
 import com.github.gumtreediff.tree.Type;
 import com.github.gumtreediff.tree.TypeSet;
 
-public class WrappedVariationTree extends AbstractTree {
+/**
+ * Adapter for running Gumtree's matching algorithms on variation trees.
+ *
+ * This class is an <a href="https://en.wikipedia.org/wiki/Adapter_pattern">adapter</a> for a
+ * snapshot of a variation tree. This means that it doesn't reflect most changes to the underlying
+ * variation tree. Essentially it creates a copy of the tree structure and the labels of a variation
+ * tree by stores a reference to the variation node which it adapts.
+ */
+public class VariationTreeAdapter extends AbstractTree {
     private String cachedLabel;
     private VariationNode<?> backingNode;
 
-    public WrappedVariationTree(VariationNode<?> node) {
+    public VariationTreeAdapter(VariationNode<?> node) {
         this.backingNode = node;
 
         if (backingNode.isConditionalAnnotation()) {
@@ -32,8 +40,8 @@ public class WrappedVariationTree extends AbstractTree {
         setChildren(children);
     }
 
-    protected WrappedVariationTree newInstance(VariationNode<?> node) {
-        return new WrappedVariationTree(node);
+    protected VariationTreeAdapter newInstance(VariationNode<?> node) {
+        return new VariationTreeAdapter(node);
     }
 
     public VariationNode<?> getVariationNode() {
