@@ -501,11 +501,14 @@ public class DiffTree {
      * {@code matcher}. The result of this function is {@code before} which is modified in-place. In
      * contrast, {@code after} is kept in tact.
      *
+     * Warning: Modifications to {@code before} shouldn't concurrently modify {@code after}.
+     *
      * Note: There are currently no guarantees about the line numbers. But it is guaranteed that
      * {@link DiffNode#getID} is unique.
      *
      * @param before the variation tree before an edit
      * @param after the variation tree after an edit
+     * @see "Constructing Variation Diffs Using Tree Diffing Algorithms"
      */
     public static <B extends VariationNode<B>> DiffNode compareUsingMatching(
         DiffNode before,
@@ -533,6 +536,13 @@ public class DiffTree {
         return before;
     }
 
+    /**
+     * Remove all nodes from the {@code BEFORE} projection which aren't part of a mapping.
+     *
+     * @param mappings the matching between the {@code BEFORE} projection of {@code root} some
+     * variation tree
+     * @param root the variation diff whose before projection is modified
+     */
     private static void removeUnmapped(MappingStore mappings, DiffTreeAdapter root) {
         for (var node : root.preOrder()) {
             Tree dst = mappings.getDstForSrc(node);
@@ -544,6 +554,18 @@ public class DiffTree {
         }
     }
 
+    /**
+     * Recursively adds {@code afterNode} to {@code parent} reusing matched nodes.
+     *
+     * The variation diff {@code parent} is modified in-place such that its {@code AFTER}
+     * projection contains a child equivalent to {@code afterNode} which shares matched nodes with
+     * the {@code BEFORE} projection of {@code parent}.
+     *
+     * @param mappings the matching between the {@code BEFORE} projection of {@code root} and a
+     * variation tree containing {@code afterNode}
+     * @param parent the variation diff whose {@code AFTER} projection is modified
+     * @param afterNode a desired child of {@code parent}'s {@code AFTER} projection
+     */
     private static void addUnmapped(MappingStore mappings, DiffNode parent, VariationTreeAdapter afterNode) {
         VariationNode<?> variationNode = afterNode.getVariationNode();
         DiffNode diffNode;
@@ -564,6 +586,7 @@ public class DiffTree {
         } else {
             diffNode = ((DiffTreeAdapter)src).getDiffNode();
             if (diffNode.getParent(AFTER) != null) {
+                // Always drop and reinsert it because it could have moved.
                 diffNode.drop(AFTER);
             }
         }
@@ -578,6 +601,8 @@ public class DiffTree {
     /**
      * Run {@code matcher} on the implicit matching of this variation diff and update this variation
      * tree in-place to reflect the new matching.
+     *
+     * @see improveMatching(DiffNode tree, Matcher matcher)
      */
     public void improveMatching(Matcher matcher) {
         improveMatching(getRoot(), matcher);
@@ -586,6 +611,13 @@ public class DiffTree {
     /**
      * Run {@code matcher} on the matching extracted from {@code tree} and modify {@code tree}
      * in-place to reflect the new matching.
+     *
+     * This is equivalent to {@code compareUsingMatching} except that the existing implicit matching
+     * is {@link extractMatching extracted} and used as basis for the new matching. Hence, this
+     * method is mostly an optimisation to avoid a copy of the {@code AFTER} projection of {@code
+     * tree}.
+     *
+     * @see "Constructing Variation Diffs Using Tree Diffing Algorithms"
      */
     public static DiffNode improveMatching(DiffNode tree, Matcher matcher) {
         var src = new DiffTreeAdapter(tree, BEFORE);
@@ -627,6 +659,18 @@ public class DiffTree {
         return tree;
     }
 
+    /**
+     * Removes the implicit matching between the {@code BEFORE} and {@code AFTER} projection of
+     * {@code beforeNode}. This is achieved by copying {@code beforeNode} and reconnecting all
+     * necessary edges such that the new node exists only after and {@code beforeNode} only exists
+     * before the edit.
+     *
+     * This method doesn't change the {@code BEFORE} and {@code AFTER} projection of {@code
+     * beforeNode}.
+     *
+     * @param beforeNode the node to be split
+     * @return a copy of {@code beforeNode} existing only after the edit.
+     */
     private static DiffNode splitNode(DiffNode beforeNode) {
         Assert.assertTrue(beforeNode.isNon());
 
@@ -646,6 +690,17 @@ public class DiffTree {
         return afterNode;
     }
 
+    /**
+     * Merges {@code afterNode} into {@code beforeNode} such that {@code beforeNode.isNon() ==
+     * true}. Essentially, an implicit matching is inserted between {@code beforeNode} and {@code
+     * afterNode}.
+     *
+     * This method doesn't change the {@code BEFORE} and {@code AFTER} projection of {@code
+     * beforeNode}.
+     *
+     * @param beforeNode the node which is will exist {@code BEFORE} and {@code AFTER} the edit
+     * @param afterNode the node which is discarded
+     */
     private static void joinNode(DiffNode beforeNode, DiffNode afterNode) {
         Assert.assertTrue(beforeNode.isRem());
         Assert.assertTrue(afterNode.isAdd());
@@ -659,6 +714,15 @@ public class DiffTree {
         afterNode.drop(AFTER);
     }
 
+    /**
+     * Makes the implicit matching of a {@code DiffTree} explicit.
+     *
+     * @param src the source nodes of the matching, must be of the same {@link DiffTree} as {@code
+     * dst.
+     * @param dst the destination nodes of the matching, must be of the same {@link DiffTree} as
+     * {@code src}
+     * @param result the destination where the matching between {@code src} and {@code dst} is added
+     */
     private static void extractMatching(
         DiffTreeAdapter src,
         DiffTreeAdapter dst,

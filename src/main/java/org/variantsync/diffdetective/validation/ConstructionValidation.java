@@ -51,10 +51,24 @@ import static org.variantsync.diffdetective.variation.diff.Time.AFTER;
 import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
 
 /**
+ * Validates, evaluates and benchmarks the construction of {@link DiffTree}s using Gumtree.
+ *
+ * This experiment computes the variation diff from
+ * <ol>
+ * <li>a line matching ({@link DiffTreeParser#createDiffTree Viegener's algorithm}
+ * <li>a tree matching computed by Gumtree ({@link DiffTree#compareUsingMatching}
+ * <li>a hybrid matching ({@link DiffTree#improveMatching})
+ * </ol>
+ * compares them using some quality metrics and stores timing statistics.
+ *
  * @author Benjamin Moosherr
+ * @see "Constructing Variation Diffs Using Tree Diffing Algorithms"
  */
 public class ConstructionValidation implements Analysis.Hooks {
     public static final ResultKey<Result> RESULT = new ResultKey<>("ConstructionValidation");
+    /**
+     * Aggregate of the results of the three comparisons.
+     */
     public static final class Result implements Metadata<Result> {
         public ComparisonResult[] comparisons = new ComparisonResult[] {
             new ComparisonResult("old vs new"),
@@ -88,11 +102,19 @@ public class ConstructionValidation implements Analysis.Hooks {
         }
     }
 
+    /**
+     * Timing of a variation diff construction with a specific matching algorithm and quality results compared to another variation diff.
+     */
     public static final class ComparisonResult implements Metadata<ComparisonResult> {
         public String name;
+        /** Duration of the matching computation. */
         public long comparisonDuration = 0;
+        /** How many variation diffs are equal to the compared variation diff. */
         public int equal = 0;
+        /** How many variation diffs are different to the compared variation diff. */
         public int different = 0;
+        /** Counts of edit class flows (edit class pair of a projection of the compared
+         * variation diffs) */
         public MergeMap<EditClass, MergeMap<EditClass, Integer>> editClassMovements =
             new MergeMap<>(new HashMap<>(), (a, b) -> {
                 a.putAll(b);
@@ -352,6 +374,11 @@ public class ConstructionValidation implements Analysis.Hooks {
     private DiffTree parseVariationTree(Analysis analysis, RevCommit commit) throws IOException, DiffParseException {
         try (BufferedReader afterFile =
             new BufferedReader(
+                /*
+                 * JGit may insert a BOM (byte order mask, a Unicode feature) at unfortunate places
+                 * (e.g. at the start of a diff, right before a {@code +}, {@code -} or space.
+                 * Hence, BOMs need to be removed. A similar heuristic is implemented in {@link GitDiffer#getFullDiff()}.
+                 */
                 new CharacterFilterReader(
                     GitDiffer.getBeforeFullFile(
                         analysis.getRepository().getGitRepo().run(),
