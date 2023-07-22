@@ -56,7 +56,7 @@ import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
  * This experiment computes the variation diff from
  * <ol>
  * <li>a line matching ({@link DiffTreeParser#createDiffTree Viegener's algorithm}
- * <li>a tree matching computed by Gumtree ({@link DiffTree#compareUsingMatching}
+ * <li>a tree matching computed by Gumtree ({@link DiffTree#diffUsingMatching}
  * <li>a hybrid matching ({@link DiffTree#improveMatching})
  * </ol>
  * compares them using some quality metrics and stores timing statistics.
@@ -288,7 +288,7 @@ public class ConstructionValidation implements Analysis.Hooks {
             afterVariationTree.assertConsistency();
 
             clock.start();
-            final DiffNode newDiffTreeRoot = DiffTree.compareUsingMatching(
+            final DiffNode newDiffTreeRoot = DiffTree.diffUsingMatching(
                 beforeVariationTree.getRoot().projection(BEFORE),
                 afterVariationTree.getRoot().projection(AFTER),
                 augmentedMatcher(statistics.diffTree[1])

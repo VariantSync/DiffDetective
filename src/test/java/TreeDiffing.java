@@ -78,7 +78,7 @@ public class TreeDiffing {
         VariationTree beforeEdit = parseVariationTree(testCase.beforeEdit());
         VariationTree afterEdit = parseVariationTree(testCase.afterEdit());
 
-        DiffTree diffTree = DiffTree.compareUsingMatching(beforeEdit, afterEdit);
+        DiffTree diffTree = DiffTree.diffUsingMatching(beforeEdit, afterEdit);
 
         try (var output = IO.newBufferedOutputStream(testCase.actual())) {
             new LineGraphExporter(new Format(new FullNodeFormat(), new ChildOrderEdgeFormat()))

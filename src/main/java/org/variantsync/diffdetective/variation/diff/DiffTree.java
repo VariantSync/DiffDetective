@@ -466,10 +466,10 @@ public class DiffTree {
      * Create a {@link DiffTree} by matching nodes between {@code before} and {@code after} with the
      * default GumTree matcher.
      *
-     * @see compareUsingMatching(VariationNode, VariationNode, Matcher)
+     * @see diffUsingMatching(VariationNode, VariationNode, Matcher)
      */
-    public static DiffTree compareUsingMatching(VariationTree before, VariationTree after) {
-        DiffNode root = compareUsingMatching(
+    public static DiffTree diffUsingMatching(VariationTree before, VariationTree after) {
+        DiffNode root = diffUsingMatching(
             before.root(),
             after.root(),
             Matchers.getInstance().getMatcher()
@@ -481,19 +481,19 @@ public class DiffTree {
     /**
      * Create a {@link DiffNode} by matching nodes between {@code before} and {@code after} with
      * {@code matcher}. The arguments of this function aren't modified (note the
-     * {@link compareUsingMatching(DiffNode, VariationNode, Matcher) overload} which modifies
+     * {@link diffUsingMatching(DiffNode, VariationNode, Matcher) overload} which modifies
      * {@code before} in-place.
      *
      * @param before the variation tree before an edit
      * @param after the variation tree after an edit
-     * @see compareUsingMatching(DiffNode, VariationNode, Matcher)
+     * @see diffUsingMatching(DiffNode, VariationNode, Matcher)
      */
-    public static <A extends VariationNode<A>, B extends VariationNode<B>> DiffNode compareUsingMatching(
+    public static <A extends VariationNode<A>, B extends VariationNode<B>> DiffNode diffUsingMatching(
         VariationNode<A> before,
         VariationNode<B> after,
         Matcher matcher
     ) {
-        return compareUsingMatching(DiffNode.unchanged(before), after, matcher);
+        return diffUsingMatching(DiffNode.unchanged(before), after, matcher);
     }
 
     /**
@@ -510,7 +510,7 @@ public class DiffTree {
      * @param after the variation tree after an edit
      * @see "Constructing Variation Diffs Using Tree Diffing Algorithms"
      */
-    public static <B extends VariationNode<B>> DiffNode compareUsingMatching(
+    public static <B extends VariationNode<B>> DiffNode diffUsingMatching(
         DiffNode before,
         VariationNode<B> after,
         Matcher matcher
@@ -612,7 +612,7 @@ public class DiffTree {
      * Run {@code matcher} on the matching extracted from {@code tree} and modify {@code tree}
      * in-place to reflect the new matching.
      *
-     * This is equivalent to {@code compareUsingMatching} except that the existing implicit matching
+     * This is equivalent to {@code diffUsingMatching} except that the existing implicit matching
      * is {@link extractMatching extracted} and used as basis for the new matching. Hence, this
      * method is mostly an optimisation to avoid a copy of the {@code AFTER} projection of {@code
      * tree}.
