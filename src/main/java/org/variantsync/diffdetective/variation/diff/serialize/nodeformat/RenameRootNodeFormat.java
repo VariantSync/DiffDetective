@@ -9,16 +9,22 @@ import org.variantsync.diffdetective.variation.diff.DiffNode;
  * @author Benjamin Moosherr
  */
 public class RenameRootNodeFormat implements DiffNodeLabelFormat {
+    private final String rootLabel;
     private final DiffNodeLabelFormat inner;
 
     public RenameRootNodeFormat(DiffNodeLabelFormat inner) {
+        this(inner, "root");
+    }
+
+    public RenameRootNodeFormat(DiffNodeLabelFormat inner, String rootLabel) {
+        this.rootLabel = rootLabel;
         this.inner = inner;
     }
 
     @Override
     public String toLabel(final DiffNode node) {
         if (node.isRoot()) {
-            return "root";
+            return rootLabel;
         } else {
             return inner.toLabel(node);
         }
