@@ -1,7 +1,6 @@
 package org.variantsync.diffdetective.variation.diff;
 
 import org.tinylog.Logger;
-import org.variantsync.diffdetective.datasets.PatchDiffParseOptions;
 import org.variantsync.diffdetective.datasets.Repository;
 import org.variantsync.diffdetective.diff.git.CommitDiff;
 import org.variantsync.diffdetective.diff.git.GitDiffer;
@@ -325,7 +324,7 @@ public class DiffTree {
      * The tree is considered empty if it only has a root or if it has no nodes at all.
      */
     public boolean isEmpty() {
-        return root == null || root.getTotalNumberOfChildren() == 0;
+        return root == null || root.isLeaf();
     }
 
     /**
@@ -401,7 +400,7 @@ public class DiffTree {
                 }
                 // We detected a cycle because we visited a node but did not determine its value yet!
                 // Thus, we are stuck in a recursion.
-                case VISITED -> false;
+                case VISITED -> true;
                 case ALL_PATHS_END_AT_ROOT -> true;
                 case NOT_ALL_PATHS_END_AT_ROOT -> false;
             };
@@ -436,16 +435,16 @@ public class DiffTree {
         return ConsistencyResult.Success();
     }
 
-    /**
-     * Returns true if this {@code DiffTree} is exactly equal to {@code other}.
-     * This check uses equality checks instead of identity.
-     */
-    public boolean isSameAs(DiffTree other) {
-        return this.getRoot().isSameAs(other.getRoot());
+    public boolean isSameAs(DiffTree b) {
+        return getRoot().isSameAs(b.getRoot());
     }
 
     @Override
     public String toString() {
         return "DiffTree of " + source;
+    }
+
+    public DiffTree deepCopy() {
+        return new DiffTree(getRoot().deepCopy(), getSource());
     }
 }

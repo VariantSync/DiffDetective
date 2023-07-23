@@ -1,7 +1,11 @@
 package org.variantsync.diffdetective.variation.diff.serialize.edgeformat;
 
-import org.variantsync.diffdetective.variation.diff.serialize.StyledEdge;
+import static org.variantsync.diffdetective.variation.diff.Time.AFTER;
+import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
+
 import org.variantsync.diffdetective.variation.diff.DiffTree; // For JavaDoc
+import org.variantsync.diffdetective.variation.diff.Time;
+import org.variantsync.diffdetective.variation.diff.serialize.StyledEdge;
 
 /**
  * An edge format encoding the child index of this edge.
@@ -17,8 +21,13 @@ import org.variantsync.diffdetective.variation.diff.DiffTree; // For JavaDoc
 public class ChildOrderEdgeFormat extends EdgeLabelFormat {
     @Override
     public String labelOf(StyledEdge edge) {
-        int i = edge.from().indexOfChild(edge.to());
-        int j = edge.to().indexOfChild(edge.from());
-        return String.format(";%d", i < 0 ? j : i);
+        int[] index = new int[2];
+        Time.forAll(time -> {
+            int i = edge.from().indexOfChild(edge.to(), time);
+            int j = edge.to().indexOfChild(edge.from(), time);
+            index[time.ordinal()] = i < 0 ? j : i;
+        });
+
+        return String.format(";%d,%d", index[BEFORE.ordinal()], index[AFTER.ordinal()]);
     }
 }

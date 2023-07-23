@@ -87,7 +87,7 @@ public class Starfold implements DiffTreeTransformer {
     private void mergeArms(final DiffNode starRoot, Time time, final DiffType targetDiffType, final List<DiffNode> starArms) {
         // If there is more than one arm, merge.
         if (starArms.size() > 1) {
-            final int targetIndex = starRoot.indexOfChild(starArms.get(0));
+            final int targetIndex = starRoot.indexOfChild(starArms.get(0), time);
             starRoot.removeChildren(starArms);
             starRoot.insertChild(
                     DiffNode.createArtifact(

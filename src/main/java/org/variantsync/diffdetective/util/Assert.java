@@ -64,6 +64,18 @@ public class Assert {
         }
     }
 
+    public static void assertFalse(boolean condition) {
+        assertTrue(!condition);
+    }
+
+    public static void assertFalse(boolean condition, final Supplier<String> errorMessage) {
+        assertTrue(!condition, errorMessage);
+    }
+
+    public static void assertFalse(boolean condition, String errorMessage) {
+        assertTrue(!condition, errorMessage);
+    }
+
     /** Throws {@link AssertionError} with {@code errorMessage} as error message. */
     public static void fail(String errorMessage) {
         throw new AssertionError(errorMessage);
@@ -89,7 +101,7 @@ public class Assert {
                 fail("expected is null but actual is not!");
             }
         } else {
-            assertTrue(expected.equals(actual));
+            assertTrue(expected.equals(actual), expected + " != " + actual);
         }
     }
 }

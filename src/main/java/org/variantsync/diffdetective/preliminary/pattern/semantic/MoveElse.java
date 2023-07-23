@@ -6,6 +6,7 @@ import org.variantsync.diffdetective.variation.diff.DiffNode;
 
 import java.util.Collection;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static org.variantsync.diffdetective.variation.diff.Time.AFTER;
 
@@ -37,13 +38,11 @@ class MoveElse extends SemanticPattern {
                 return Optional.empty();
             }
 
-            Collection<DiffNode> commonAddElse = annotationNode.getAllChildren();
-            commonAddElse.retainAll(annotationNode.getParent(AFTER).getAllChildren());
+            Collection<DiffNode> annotationChildren = annotationNode.getParent(AFTER).getAllChildrenSet();
+            Stream<DiffNode> commonAddElse = annotationNode.getAllChildrenStream().filter(annotationChildren::contains);
+            Stream<DiffNode> commonRemElse = removedElse.getAllChildrenStream().filter(annotationChildren::contains);
 
-            Collection<DiffNode> commonRemElse = removedElse.getAllChildren();
-            commonRemElse.retainAll(annotationNode.getParent(AFTER).getAllChildren());
-
-            if(commonAddElse.isEmpty() && commonRemElse.isEmpty()){
+            if(commonAddElse.limit(1).count() == 0 && commonRemElse.limit(1).count() == 0){
                 return Optional.empty();
             }
 

@@ -238,13 +238,11 @@ public abstract class VariationNode<T extends VariationNode<T>> implements HasNo
      * Removes the given node from this node's children list and sets the parent of {@code child}
      * to {@code null}.
      *
-     * @return {@code true} iff the child was removed, {@code false} iff {@code child} is not a
-     * child of this node
      * @throws IllegalArgumentException if {@code childe} is not a child of this node
      * @see removeChildren
      * @see getChildren
      */
-    public abstract boolean removeChild(final T child);
+    public abstract void removeChild(final T child);
 
     /**
      * Removes the given nodes from the children list using {@link removeChild}.
@@ -480,15 +478,10 @@ public abstract class VariationNode<T extends VariationNode<T>> implements HasNo
      * @return A deep copy of this tree.
      */
     public VariationTreeNode toVariationTree(final Map<? super T, VariationTreeNode> oldToNew) {
-        Node formula = getFormula();
-        if (formula != null) {
-            formula = formula.clone();
-        }
-
         // Copy mutable attributes to allow modifications of the new node.
         var newNode = new VariationTreeNode(
             getNodeType(),
-            formula,
+            getFormula() == null ? null : getFormula().clone(),
             getLineRange(),
             new ArrayList<>(getLabel().lines())
         );

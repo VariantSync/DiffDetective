@@ -1,0 +1,12 @@
+v 80 NON;IF;(old: -1, diff: 0, new:-1);(old: -1, diff: 0, new:-1);True
+v 136 REM;IF;(old: 1, diff: 1, new:-1);(old: 5, diff: 1, new:-1);CONFIG_A;#ifdef CONFIG_A;#endif
+v 200 REM;IF;(old: 2, diff: 2, new:-1);(old: 4, diff: 2, new:-1);CONFIG_B;#ifdef CONFIG_B;#endif
+v 275 NON;ARTIFACT;(old: 3, diff: 3, new:3);(old: 4, diff: 3, new:4);;Line
+v 320 ADD;IF;(old: -1, diff: 4, new:1);(old: -1, diff: 4, new:5);CONFIG_B;#ifdef CONFIG_B;#endif
+v 384 ADD;IF;(old: -1, diff: 5, new:2);(old: -1, diff: 5, new:4);CONFIG_A;#ifdef CONFIG_A;#endif
+e 136 80 b;0,-1
+e 200 136 b;0,-1
+e 275 200 b;0,-1
+e 275 384 a;-1,0
+e 320 80 a;-1,0
+e 384 320 a;-1,0

@@ -1,0 +1,23 @@
+v 80 NON;IF;(old: -1, diff: 0, new:-1);(old: -1, diff: 0, new:-1);True
+v 144 NON;IF;(old: 1, diff: 1, new:1);(old: 10, diff: 1, new:10);A;#ifdef A;#endif
+v 211 NON;ARTIFACT;(old: 2, diff: 2, new:2);(old: 3, diff: 2, new:3);;Line 1
+v 275 NON;ARTIFACT;(old: 3, diff: 3, new:3);(old: 4, diff: 3, new:4);;Line 2
+v 339 NON;ARTIFACT;(old: 4, diff: 4, new:4);(old: 5, diff: 4, new:5);;Line 3
+v 392 REM;IF;(old: 5, diff: 5, new:-1);(old: 9, diff: 5, new:-1);B;#ifdef B;#endif
+v 467 NON;ARTIFACT;(old: 6, diff: 6, new:6);(old: 7, diff: 6, new:7);;Line 4
+v 531 NON;ARTIFACT;(old: 7, diff: 7, new:7);(old: 8, diff: 7, new:8);;Line 5
+v 595 NON;ARTIFACT;(old: 8, diff: 8, new:8);(old: 9, diff: 8, new:9);;Line 6
+v 640 ADD;IF;(old: -1, diff: 9, new:1);(old: -1, diff: 9, new:10);B;#ifdef B;#endif
+e 144 80 b;0,-1
+e 144 640 a;-1,0
+e 211 144 ba;0,0
+e 275 144 ba;1,1
+e 339 144 ba;2,2
+e 392 144 b;3,-1
+e 467 392 b;0,-1
+e 467 144 a;-1,3
+e 531 392 b;1,-1
+e 531 144 a;-1,4
+e 595 392 b;2,-1
+e 595 144 a;-1,5
+e 640 80 a;-1,0

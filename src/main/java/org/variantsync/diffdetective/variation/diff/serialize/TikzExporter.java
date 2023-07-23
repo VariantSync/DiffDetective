@@ -1,6 +1,7 @@
 package org.variantsync.diffdetective.variation.diff.serialize;
 
 import org.variantsync.diffdetective.show.engine.geom.Vec2;
+import org.variantsync.diffdetective.util.IO;
 import org.variantsync.diffdetective.util.LaTeX;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
@@ -9,7 +10,6 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Locale;
@@ -17,7 +17,6 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
 
 /**
  * Exporter for TikZ pictures which can be embedded into a LaTeX document.
@@ -147,7 +146,7 @@ public final class TikzExporter implements Exporter {
      * @param destination path of the generated file
      */
     public void exportFullLatexExample(DiffTree diffTree, Path destination) throws IOException {
-        try (var file = Files.newOutputStream(destination)) {
+        try (var file = IO.newBufferedOutputStream(destination)) {
             try (var header = new BufferedInputStream(getClass().getResourceAsStream("/tikz_header.tex"))) {
                 header.transferTo(file);
             }

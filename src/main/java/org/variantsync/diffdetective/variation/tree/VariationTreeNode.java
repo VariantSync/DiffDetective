@@ -255,13 +255,10 @@ public class VariationTreeNode extends VariationNode<VariationTreeNode> {
     }
 
     @Override
-    public boolean removeChild(final VariationTreeNode child) {
-        if (isChild(child)) {
-            child.parent = null;
-            childOrder.remove(child);
-            return true;
-        }
-        return false;
+    public void removeChild(final VariationTreeNode child) {
+        Assert.assertTrue(isChild(child));
+        child.parent = null;
+        childOrder.remove(child);
     }
 
     @Override

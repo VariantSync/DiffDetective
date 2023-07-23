@@ -450,6 +450,9 @@ public class Analysis {
                 }
 
                 processPatch();
+            } catch (Throwable t) {
+                Logger.error("error during {} {}", currentPatch.getFileName(), currentPatch.getCommitHash());
+                throw t;
             } finally {
                 runReverseHook(patchHook, Hooks::endPatch);
             }
