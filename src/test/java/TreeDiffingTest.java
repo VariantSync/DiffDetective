@@ -7,6 +7,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.feature.CPPAnnotationParser;
 import org.variantsync.diffdetective.util.IO;
+import org.variantsync.diffdetective.variation.diff.Construction;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParseOptions;
 import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParser;
@@ -78,7 +79,7 @@ public class TreeDiffingTest {
         VariationTree beforeEdit = parseVariationTree(testCase.beforeEdit());
         VariationTree afterEdit = parseVariationTree(testCase.afterEdit());
 
-        DiffTree diffTree = DiffTree.diffUsingMatching(beforeEdit, afterEdit);
+        DiffTree diffTree = Construction.diffUsingMatching(beforeEdit, afterEdit);
 
         try (var output = IO.newBufferedOutputStream(testCase.actual())) {
             new LineGraphExporter(new Format(new FullNodeFormat(), new ChildOrderEdgeFormat()))

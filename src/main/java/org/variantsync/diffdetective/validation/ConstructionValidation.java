@@ -33,6 +33,7 @@ import org.variantsync.diffdetective.util.CSV;
 import org.variantsync.diffdetective.util.Clock;
 import org.variantsync.diffdetective.util.Diagnostics;
 import org.variantsync.diffdetective.util.IO;
+import org.variantsync.diffdetective.variation.diff.Construction;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.variation.diff.Projection;
@@ -56,8 +57,8 @@ import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
  * This experiment computes the variation diff from
  * <ol>
  * <li>a line matching ({@link DiffTreeParser#createDiffTree Viegener's algorithm}
- * <li>a tree matching computed by Gumtree ({@link DiffTree#diffUsingMatching}
- * <li>a hybrid matching ({@link DiffTree#improveMatching})
+ * <li>a tree matching computed by Gumtree ({@link Construction#diffUsingMatching}
+ * <li>a hybrid matching ({@link Construction#improveMatching})
  * </ol>
  * compares them using some quality metrics and stores timing statistics.
  *
@@ -288,7 +289,7 @@ public class ConstructionValidation implements Analysis.Hooks {
             afterVariationTree.assertConsistency();
 
             clock.start();
-            final DiffNode newDiffTreeRoot = DiffTree.diffUsingMatching(
+            final DiffNode newDiffTreeRoot = Construction.diffUsingMatching(
                 beforeVariationTree.getRoot().projection(BEFORE),
                 afterVariationTree.getRoot().projection(AFTER),
                 augmentedMatcher(statistics.diffTree[1])
@@ -301,7 +302,7 @@ public class ConstructionValidation implements Analysis.Hooks {
             final DiffTree improvedDiffTree = analysis.getCurrentDiffTree().deepCopy();
             improvedDiffTree.assertConsistency();
             clock.start();
-            improvedDiffTree.improveMatching(augmentedMatcher(statistics.diffTree[2]));
+            Construction.improveMatching(improvedDiffTree.getRoot(), augmentedMatcher(statistics.diffTree[2]));
             statistics.diffTree[2].constructionDuration += clock.getPassedMilliseconds() - statistics.diffTree[2].matchingDuration;
             improvedDiffTree.assertConsistency();
 
