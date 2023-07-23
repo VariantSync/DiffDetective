@@ -29,7 +29,7 @@ import java.util.stream.Stream;
 
 import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
 
-public class TreeDiffing {
+public class TreeDiffingTest {
     private final static Path testDir = Constants.RESOURCE_DIR.resolve("tree-diffing");
     private static Pattern expectedFileNameRegex = Pattern.compile("([^_]+)_([^_]+)_expected.lg");
     private static record TestCase(String basename, String matcherName, Matcher matcher) {
