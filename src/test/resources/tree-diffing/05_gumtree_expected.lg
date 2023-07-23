@@ -1,5 +1,5 @@
 v 80 NON;IF;(old: -1, diff: 0, new:-1);(old: -1, diff: 0, new:-1);True
-v 136 REM;IF;(old: 1, diff: 1, new:-1);(old: 3, diff: 1, new:-1);A;#ifdef A
+v 136 REM;IF;(old: 1, diff: 1, new:-1);(old: 3, diff: 1, new:-1);A;#ifdef A;#endif // A
 v 211 NON;ARTIFACT;(old: 2, diff: 2, new:2);(old: 3, diff: 2, new:3);;Line
 e 136 80 b;0,-1
 e 211 136 b;0,-1

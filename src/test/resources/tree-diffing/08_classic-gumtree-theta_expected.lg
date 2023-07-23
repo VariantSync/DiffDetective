@@ -1,8 +1,8 @@
 v 80 NON;IF;(old: -1, diff: 0, new:-1);(old: -1, diff: 0, new:-1);True
-v 136 REM;IF;(old: 1, diff: 1, new:-1);(old: 5, diff: 1, new:-1);A;#ifdef A
-v 208 NON;IF;(old: 2, diff: 2, new:2);(old: 4, diff: 2, new:4);B;#ifdef B
+v 136 REM;IF;(old: 1, diff: 1, new:-1);(old: 5, diff: 1, new:-1);A;#ifdef A;#endif
+v 208 NON;IF;(old: 2, diff: 2, new:2);(old: 4, diff: 2, new:4);B;#ifdef B;#endif
 v 275 NON;ARTIFACT;(old: 3, diff: 3, new:3);(old: 4, diff: 3, new:4);;Line
-v 320 ADD;IF;(old: -1, diff: 4, new:2);(old: -1, diff: 4, new:4);A;#ifdef A
+v 320 ADD;IF;(old: -1, diff: 4, new:2);(old: -1, diff: 4, new:4);A;#ifdef A;#endif
 e 136 80 b;0,-1
 e 208 136 b;0,-1
 e 208 80 a;-1,0

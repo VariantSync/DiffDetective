@@ -7,6 +7,7 @@ import org.tinylog.Logger;
 import org.variantsync.diffdetective.analysis.logic.SAT;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
+import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParseOptions;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -71,10 +72,10 @@ public class PCTest {
     @MethodSource("testCases")
     public void test(final TestCase testCase) throws IOException, DiffParseException {
         final Path path = testDir.resolve(testCase.file);
-        final DiffTree t = DiffTree.fromFile(path, false, true);
+        final DiffTree t = DiffTree.fromFile(path, new DiffTreeParseOptions(false, true));
         t.forAll(node -> {
            if (node.isArtifact()) {
-               final String text = node.getLabel().trim();
+               final String text = node.getLabel().toString().trim();
                final ExpectedPC expectedPC = testCase.expectedResult.getOrDefault(text, null);
                if (expectedPC != null) {
                    Node pc = node.getPresenceCondition(BEFORE);

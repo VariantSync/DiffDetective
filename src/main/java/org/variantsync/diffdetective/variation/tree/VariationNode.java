@@ -4,8 +4,11 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import org.prop4j.And;
 import org.prop4j.Node;
@@ -38,6 +41,10 @@ import static org.variantsync.diffdetective.util.fide.FormulaUtils.negate;
  * @author Benjamin Moosherr
  */
 public abstract class VariationNode<T extends VariationNode<T>> implements HasNodeType {
+    public interface Label {
+        public List<String> lines();
+    }
+
     /**
      * Returns this instance as the derived class type {@code T}.
      * The deriving class will only have to return {@code this} here but this can't be implemented
@@ -66,14 +73,23 @@ public abstract class VariationNode<T extends VariationNode<T>> implements HasNo
     public abstract NodeType getNodeType();
 
     /**
-     * Returns the label of this node as an unmodifiable list of lines.
+     * Returns the label of this node.
      *
      * <p>If {@link #isArtifact()} is {@code true} this may represent the source code of this artifact.
      * Otherwise it may represent the preprocessor expression which was parsed to obtain
      * {@link #getFormula()}. In either case, this label may be an arbitrary value,
      * selected according to the needs of the user of this class.
      */
-    public abstract List<String> getLabelLines();
+    public abstract Label getLabel();
+
+    /**
+     * Returns the label of this node as an unmodifiable list of lines.
+     *
+     * @see getLabel
+     */
+    public List<String> getLabelLines() {
+        return getLabel().lines();
+    }
 
     /**
      * Returns the range of line numbers of this node's corresponding source code.
@@ -422,18 +438,56 @@ public abstract class VariationNode<T extends VariationNode<T>> implements HasNo
     }
 
     /**
+     * Checks whether any node in this subtree satisfies the given condition.
+     * The condition might not be invoked on every node in case a node is found.
+     * @param condition A condition to check on each node.
+     * @return True iff the given condition returns true for at least one node in this tree.
+     */
+    public boolean anyMatch(final Predicate<? super T> condition) {
+        if (condition.test(this.upCast())) {
+            return true;
+        }
+
+        for (var child : getChildren()) {
+            if (child.anyMatch(condition)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Returns a copy of this variation tree in a {@link VariationTreeNode concrete variation tree implementation}.
      * If the type parameter {@code T} of this class is {@link VariationTreeNode} then this is
      * effectively a deep copy.
      */
     public VariationTreeNode toVariationTree() {
+        return toVariationTree(new HashMap<>());
+    }
+
+    /**
+     * Returns a copy of this variation tree in a {@link VariationTreeNode concrete variation tree implementation}.
+     * If the type parameter {@code T} of this class is {@link VariationTreeNode} then this is
+     * effectively a deep copy.
+     *
+     * <p>The map {@code oldToNew} should be empty as it will be filled by this method. After the
+     * method call, the map keys will contain all nodes in this node's subtree (including this
+     * node). The corresponding values will be the nodes in the returned node's subtree (including
+     * the returned node), where each pair (k, v) denotes that v was cloned from k.
+     *
+     * @param oldToNew A map that memorizes the translation of individual nodes.
+     * @return A deep copy of this tree.
+     */
+    public VariationTreeNode toVariationTree(final Map<? super T, VariationTreeNode> oldToNew) {
         // Copy mutable attributes to allow modifications of the new node.
         var newNode = new VariationTreeNode(
             getNodeType(),
             getFormula() == null ? null : getFormula().clone(),
             getLineRange(),
-            new ArrayList<String>(getLabelLines())
+            new ArrayList<>(getLabel().lines())
         );
+        oldToNew.put(this.upCast(), newNode);
 
         for (var child : getChildren()) {
             newNode.addChild(child.toVariationTree());
@@ -536,5 +590,36 @@ public abstract class VariationNode<T extends VariationNode<T>> implements HasNo
             output.write("#endif");
             output.newLine();
         }
+    }
+
+    /**
+     * Returns true if this subtree is exactly equal to {@code other}.
+     * This check uses equality checks instead of identity.
+     */
+    public boolean isSameAs(VariationNode<T> other) {
+        if (!shallowIsSameAs(other)) {
+            return false;
+        }
+
+        var childIt = getChildren().iterator();
+        var otherChildIt = other.getChildren().iterator();
+        while (childIt.hasNext() && otherChildIt.hasNext()) {
+            if (!childIt.next().isSameAs(otherChildIt.next())) {
+                return false;
+            }
+        }
+
+        return childIt.hasNext() == otherChildIt.hasNext();
+    }
+
+    /**
+     * Returns true if this node is exactly equal to {@code other} without checking any children.
+     * This check uses equality checks instead of identity.
+     */
+    protected boolean shallowIsSameAs(VariationNode<T> other) {
+        return
+            this.getNodeType().equals(other.getNodeType()) &&
+            this.getLabel().equals(other.getLabel()) &&
+            this.getLineRange().equals(other.getLineRange());
     }
 }

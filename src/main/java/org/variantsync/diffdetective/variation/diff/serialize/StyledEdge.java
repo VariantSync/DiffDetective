@@ -15,5 +15,5 @@ public record StyledEdge(DiffNode from, DiffNode to, Style style) {
 
     public static final Style BEFORE = new Style("b", "before");
     public static final Style AFTER = new Style("a", "after");
-    public static final Style UNCHANGED = new Style("ba", "unchanged");
+    public static final Style ALWAYS = new Style("ba", "always");
 }

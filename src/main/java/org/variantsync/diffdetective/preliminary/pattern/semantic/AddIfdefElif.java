@@ -49,7 +49,7 @@ class AddIfdefElif extends SemanticPattern {
 
             final LineRange diffLines = annotationNode.getLinesInDiff();
             return Optional.of(new PatternMatch<>(this,
-                    diffLines.getFromInclusive(), diffLines.getToExclusive(),
+                    diffLines.fromInclusive(), diffLines.toExclusive(),
                     mappings.toArray(new Node[0])
             ));
         }

@@ -10,7 +10,7 @@ import java.util.function.Function;
 public class ShowNodeFormat implements DiffNodeLabelFormat {
     public static String toLabel(DiffNode node, Function<DiffNode, String> artifactPrinter) {
         if (node.isRoot()) {
-            return "⊤";
+            return "r";
         }
 
         String s = "";//node.getFromLine().inDiff() + " ";
@@ -31,7 +31,7 @@ public class ShowNodeFormat implements DiffNodeLabelFormat {
     public String toLabel(DiffNode node) {
         return toLabel(
                 node,
-                n -> StringUtils.clamp(10, n.getLabel().trim())
+                n -> StringUtils.clamp(10, n.getLabel().toString().trim())
         );
     }
 }

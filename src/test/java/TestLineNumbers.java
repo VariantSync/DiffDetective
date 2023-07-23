@@ -1,8 +1,10 @@
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.variantsync.diffdetective.datasets.PatchDiffParseOptions;
 import org.variantsync.diffdetective.diff.text.DiffLineNumber;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
+import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParseOptions;
 import org.variantsync.functjonal.Pair;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -63,14 +65,16 @@ public class TestLineNumbers {
     }
 
     private static DiffTree loadFullDiff(final Path p) throws IOException, DiffParseException {
-        return DiffTree.fromFile(p, false, false);
+        return DiffTree.fromFile(p, new DiffTreeParseOptions(
+                false, false
+        ));
     }
 
     private static void printLineNumbers(final DiffTree diffTree) {
         diffTree.forAll(node ->
                 System.out.println(node.diffType.symbol
                     + " " + node.nodeType
-                    + " \"" + node.getLabel().trim()
+                    + " \"" + node.getLabel().toString().trim()
                     + " with ID " + node.getID()
                     + "\" old: " + node.getLinesAtTime(BEFORE)
                     + ", diff: " + node.getLinesInDiff()

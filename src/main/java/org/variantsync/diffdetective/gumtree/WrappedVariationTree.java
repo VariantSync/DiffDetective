@@ -69,7 +69,7 @@ public class WrappedVariationTree extends AbstractTree {
      */
     @Override
     public int getPos() {
-        return backingNode.getLineRange().getFromInclusive();
+        return backingNode.getLineRange().fromInclusive();
     }
 
     @Override

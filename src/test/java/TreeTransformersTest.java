@@ -1,12 +1,14 @@
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.variantsync.diffdetective.datasets.PatchDiffParseOptions;
 import org.variantsync.diffdetective.datasets.Repository;
 import org.variantsync.diffdetective.datasets.predefined.StanciulescuMarlin;
 import org.variantsync.diffdetective.diff.git.PatchDiff;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.mining.DiffTreeMiner;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
+import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParseOptions;
 import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParser;
 import org.variantsync.diffdetective.variation.diff.render.DiffTreeRenderer;
 import org.variantsync.diffdetective.variation.diff.render.RenderOptions;
@@ -47,7 +49,7 @@ public class TreeTransformersTest {
     private static final Consumer<String> INFO = System.out::println;
 
     private void transformAndRender(String diffFileName) throws IOException, DiffParseException {
-        final DiffTree t = DiffTree.fromFile(resDir.resolve(diffFileName), true, true);
+        final DiffTree t = DiffTree.fromFile(resDir.resolve(diffFileName), new DiffTreeParseOptions(true, true));
         transformAndRender(t, diffFileName, "0", null);
     }
 

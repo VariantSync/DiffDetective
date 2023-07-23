@@ -3,17 +3,15 @@ package org.variantsync.diffdetective.util;
 /**
  * Class to hold a range of line numbers.
  * Mainly used to locate code snippets in source code files and textual diffs.
+ * @param fromInclusive The starting line number of this range. This number is included within the range.
+ * @param toExclusive The ending line number of this range. This number is excluded from the range
+ *                    (i.e., it points to the line right after the last line).
  * @author Paul Bittner
  */
-public class LineRange {
-    private final int fromInclusive; // including
-    private final int toExclusive; // excluding
-
-    private LineRange(int fromInclusive, int toExclusive) {
-        this.fromInclusive = fromInclusive;
-        this.toExclusive = toExclusive;
-    }
-
+public record LineRange(
+        int fromInclusive,
+        int toExclusive
+) {
     /**
      * Creates an invalid range that does not represent a valid range of line numbers in a text file.
      */
@@ -46,26 +44,6 @@ public class LineRange {
     public static LineRange FromInclToIncl(int fromInclusive, int toInclusive) {
         return new LineRange(fromInclusive, toInclusive + 1);
     }
-
-    /**
-     * Returns the starting line number of this range.
-     * This number is included within the range.
-     */
-    public int getFromInclusive() {
-        return fromInclusive;
-    }
-
-    /**
-     * Returns the ending line number of this range.
-     * This number is excluded from the range (i.e., it points to the line right after the last line).
-     */
-    public int getToExclusive() {
-        return toExclusive;
-    }
-
-//    public int getToInclusive() {
-//        return toExclusive;
-//    }
 
 
     @Override

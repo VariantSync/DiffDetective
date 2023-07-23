@@ -1,10 +1,11 @@
 package org.variantsync.diffdetective.variation.diff.serialize;
 
-import java.util.function.Consumer;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.variation.diff.serialize.edgeformat.EdgeLabelFormat;
 import org.variantsync.diffdetective.variation.diff.serialize.nodeformat.DiffNodeLabelFormat;
+
+import java.util.function.Consumer;
 
 import static org.variantsync.diffdetective.variation.diff.Time.AFTER;
 import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
@@ -71,7 +72,7 @@ public class Format {
 
             // Are both parent edges the same?
             if (beforeParent != null && afterParent != null && beforeParent == afterParent) {
-                sortedEdgeWithLabel(node, node.getParent(BEFORE), StyledEdge.UNCHANGED, callback);
+                sortedEdgeWithLabel(node, node.getParent(BEFORE), StyledEdge.ALWAYS, callback);
             } else {
                 if (beforeParent != null) {
                     sortedEdgeWithLabel(node, node.getParent(BEFORE), StyledEdge.BEFORE, callback);

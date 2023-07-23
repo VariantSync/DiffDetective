@@ -94,7 +94,7 @@ public class Starfold implements DiffTreeTransformer {
                             targetDiffType,
                             DiffLineNumber.Invalid(),
                             DiffLineNumber.Invalid(),
-                            starArms.stream().flatMap(node -> node.getLabelLines().stream()).toList()
+                            DiffNode.Label.withInvalidLineNumbers(starArms.stream().flatMap(node -> node.getLabelLines().stream()).toList())
                     ),
                     targetIndex,
                     time

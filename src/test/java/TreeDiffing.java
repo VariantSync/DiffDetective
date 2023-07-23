@@ -8,6 +8,7 @@ import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.feature.CPPAnnotationParser;
 import org.variantsync.diffdetective.util.IO;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
+import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParseOptions;
 import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParser;
 import org.variantsync.diffdetective.variation.diff.serialize.Format;
 import org.variantsync.diffdetective.variation.diff.serialize.LineGraphExporter;
@@ -114,9 +115,10 @@ public class TreeDiffing {
             return new VariationTree(
                 DiffTreeParser.createVariationTree(
                     file,
-                    false,
-                    false,
-                    CPPAnnotationParser.Default
+                    new DiffTreeParseOptions(
+                        CPPAnnotationParser.Default,
+                        false,
+                        false)
                 ).getRoot().projection(BEFORE).toVariationTree(),
                 new LocalFileSource(filename)
             );

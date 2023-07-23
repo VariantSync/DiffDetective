@@ -9,6 +9,6 @@ import org.variantsync.diffdetective.variation.diff.DiffNode;
 public class LabelOnlyDiffNodeFormat implements DiffNodeLabelFormat {
 	@Override
 	public String toLabel(final DiffNode node) {
-		return node.getLabel();
+		return node.getLabel().toString();
 	}
 }

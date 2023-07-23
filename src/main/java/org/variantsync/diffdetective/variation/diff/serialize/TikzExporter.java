@@ -1,19 +1,22 @@
 package org.variantsync.diffdetective.variation.diff.serialize;
 
+import org.variantsync.diffdetective.show.engine.geom.Vec2;
+import org.variantsync.diffdetective.util.IO;
+import org.variantsync.diffdetective.util.LaTeX;
+import org.variantsync.diffdetective.variation.diff.DiffNode;
+import org.variantsync.diffdetective.variation.diff.DiffTree;
+
 import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.Locale;
-import java.util.regex.Pattern;
+import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import org.variantsync.diffdetective.util.IO;
-import org.variantsync.diffdetective.util.LaTeX;
-import org.variantsync.diffdetective.variation.diff.DiffTree;
+import java.util.stream.Stream;
 
 /**
  * Exporter for TikZ pictures which can be embedded into a LaTeX document.
@@ -55,45 +58,76 @@ public final class TikzExporter implements Exporter {
             GraphvizExporter.LayoutAlgorithm algorithm,
             OutputStream destination
             ) throws IOException {
+        final Map<Integer, DiffNode> ids = new HashMap<>();
+        diffTree.forAll(node -> ids.put(node.getID(), node));
+
+        // Convert the layout information received by Graphviz to coordinates used by TikZ.
+        final Map<DiffNode, Vec2> positions = new HashMap<>();
+        GraphvizExporter.layoutNodesIn(diffTree, format, algorithm, (id, x, y) ->
+                positions.put(ids.get(id), new Vec2(x, y))
+        );
+
+        exportDiffTree(
+                diffTree,
+                positions::get,
+                destination,
+                true);
+    }
+
+    public void exportDiffTree(
+            DiffTree diffTree,
+            Function<DiffNode, Vec2> nodeLayout,
+            OutputStream destination,
+            boolean escape
+    ) {
         // Start tikz picture.
         var output = new PrintStream(destination);
         output.println("\\begin{tikzpicture}");
 
         // Convert the layout information received by Graphviz to coordinates used by TikZ.
-        GraphvizExporter.layoutNodesIn(diffTree, format, algorithm, (id, x, y) -> {
-            output.format("\t\\coordinate (%s) at (%s,%s);%n", id, x, y);
+        diffTree.forAll(node -> {
+            final Vec2 position = nodeLayout.apply(node);
+            output.format("\t\\coordinate (%s) at (%s,%s);%n", node.getID(), position.x(), position.y());
         });
 
         // Add all TikZ nodes positioned at the Graphviz coordinates.
         format.forEachNode(diffTree, (node) -> {
-            String escapedLabel =
-                format
-                    .getNodeFormat()
-                    .toMultilineLabel(node)
-                    .stream()
-                    .map(LaTeX::escape)
-                    .collect(Collectors
-                    .joining(" \\\\ "));
-
-            output.format("%n\t\\node[%s, %s] (node_%s) at (%s) {};%n",
+            output.format("%n\t\\node[%s, %s] (node_%s) at (%s) {};",
                 node.isArtifact() ? "artifact" : "annotation",
                 node.getDiffType().toString().toLowerCase(Locale.ROOT),
                 node.getID(),
                 node.getID());
-            output.format("\t\\node[textbox] at (%s) {%s};%n",
-                node.getID(),
-                escapedLabel);
         });
+        output.println();
 
         // Add all TikZ edges positioned.
         output.format("%n\t\\draw[vtdarrow]");
         format.forEachEdge(diffTree, (edge) -> {
             output.format("%n\t\t(node_%d) edge[%s] (node_%d)",
-                edge.from().getID(),
-                edge.style().tikzStyle(),
-                edge.to().getID());
+                    edge.from().getID(),
+                    edge.style().tikzStyle(),
+                    edge.to().getID());
         });
-        output.println(";");
+        output.println();
+        output.format("%n\t;");
+        output.println();
+
+        // Draw node labels. We do this last so that they are on top of edges and nodes.
+        format.forEachNode(diffTree, (node) -> {
+            Stream<String> labels =
+                    format
+                            .getNodeFormat()
+                            .toMultilineLabel(node)
+                            .stream();
+            if (escape) {
+                labels = labels.map(LaTeX::escape);
+            }
+            String escapedLabel = labels.collect(Collectors.joining(" \\\\ "));
+
+            output.format("\t\\node[textbox] at (%s) {%s};%n",
+                    node.getID(),
+                    escapedLabel);
+        });
 
         // Finish the TikZ picture.
         output.println("\\end{tikzpicture}");

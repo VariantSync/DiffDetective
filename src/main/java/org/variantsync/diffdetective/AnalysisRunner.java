@@ -30,12 +30,12 @@ public class AnalysisRunner {
      *                              those copies will be used.
      * @param outputDirectory The directory to which any output data of the analysis should be written to.
      * @param datasetsFile Path to a markdown file containing a table of git repositories to analyze.
-     * @param diffStoragePolicy Policy that decides whether and how the text-based diffs from git should
-     *                          be stored in any parsed DiffTrees during the analyses. The default is
-     *                          {@link ParseOptions.DiffStoragePolicy#DO_NOT_REMEMBER} as storing all
-     *                          the text-diffs as strings can cause a big memory footprint that can be
-     *                          avoided when the text-diffs are not used anyway.
+     * @param getParseOptionsForRepo Determines which {@link PatchDiffParseOptions} to use per repository.
+     *                               Each repository is by default, already equipped with options.
+     *                               If you wish no changes, just return {@link Repository#getParseOptions()} here.
      * @param getFilterForRepo Determines which filter to use for parsing diffs in given repository that is about to be analyzed.
+     *                         Each repository is by default, already equipped with a filter.
+     *                         If you wish no changes, just return {@link Repository#getDiffFilter()} here.
      * @param preloadReposBeforeAnalysis Decides whether all repositories should be cloned once before the analysis.
      *                                   If a repository does not have a local clone in {@link #repositoriesDirectory}
      *                                   it will be cloned before the analysis if preloadReposBeforeAnalysis is set to
@@ -48,7 +48,7 @@ public class AnalysisRunner {
             Path repositoriesDirectory,
             Path outputDirectory,
             Path datasetsFile,
-            ParseOptions.DiffStoragePolicy diffStoragePolicy,
+            Function<Repository, PatchDiffParseOptions> getParseOptionsForRepo,
             Function<Repository, DiffFilter> getFilterForRepo,
             boolean preloadReposBeforeAnalysis,
             /* Determines whether all analyzed repositories should be updated
@@ -71,8 +71,8 @@ public class AnalysisRunner {
                     Paths.get("..", "DiffDetectiveMining"),
                     Paths.get("results", "validation", "current"),
                     datasetsFile,
-                    ParseOptions.DiffStoragePolicy.DO_NOT_REMEMBER,
-                    repo -> DatasetFactory.getDefaultDiffFilterFor(repo.getRepositoryName()),
+                    Repository::getParseOptions,
+                    Repository::getDiffFilter,
                     true,
                     false
             );
@@ -107,7 +107,7 @@ public class AnalysisRunner {
 
         Logger.info("Performing validation on the following repositories:");
         for (final Repository repo : repos) {
-            repo.setParseOptions(repo.getParseOptions().withDiffStoragePolicy(options.diffStoragePolicy()));
+            repo.setParseOptions(options.getParseOptionsForRepo().apply(repo));
             repo.setDiffFilter(options.getFilterForRepo().apply(repo));
             Logger.info("  - {} from {}", repo.getRepositoryName(), repo.getRemoteURI());
         }

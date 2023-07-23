@@ -3,15 +3,20 @@ package org.variantsync.diffdetective.variation.diff.bad;
 import org.variantsync.diffdetective.diff.text.DiffLineNumberRange;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.util.StringUtils;
-import org.variantsync.diffdetective.variation.diff.*;
+
+import org.variantsync.diffdetective.variation.diff.DiffNode;
+import org.variantsync.diffdetective.variation.diff.DiffTree;
+import org.variantsync.diffdetective.variation.diff.DiffType;
+import org.variantsync.diffdetective.variation.diff.Time;
 import org.variantsync.diffdetective.variation.diff.source.DiffTreeSource;
 import org.variantsync.diffdetective.variation.tree.VariationTree;
 import org.variantsync.diffdetective.variation.tree.VariationTreeNode;
+import org.variantsync.functjonal.map.MapUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.variantsync.diffdetective.variation.diff.DiffType.*;
+import static org.variantsync.diffdetective.variation.diff.DiffType.NON;
 import static org.variantsync.diffdetective.variation.diff.Time.AFTER;
 import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
 
@@ -119,7 +124,7 @@ public record BadVDiff(
                 n.getNodeType(),
                 n.getFormula(),
                 n.getLinesInDiff(),
-                n.getLabelLines()
+                n.getLabel()
         );
     }
 
@@ -155,7 +160,7 @@ public record BadVDiff(
                 nlines.from(),
                 nlines.to(),
                 n.getFormula(),
-                n.getLabelLines()
+                (DiffNode.Label)n.getLabel()
         );
     }
 
@@ -178,7 +183,7 @@ public record BadVDiff(
                 nlines.from(),
                 nlines.to(),
                 before.getFormula(),
-                before.getLabelLines()
+                (DiffNode.Label)before.getLabel()
         );
     }
 
@@ -337,7 +342,7 @@ public record BadVDiff(
             Assert.assertNotNull(parent);
 
             final VariationTreeNode badBuddy = matching.get(vtnode);
-            if (badBuddy == null) {
+            if (badBuddy == null || !diff.contains(badBuddy)) {
                 // v was not cloned.
                 // We can just directly convert it to a DiffNode.
                 final DiffNode vGood = toGood(vtnode);
@@ -380,6 +385,26 @@ public record BadVDiff(
         }
 
         return new DiffTree(root, source);
+    }
+
+    public BadVDiff deepCopy() {
+        final Map<VariationTreeNode, VariationTreeNode> oldToNew = new HashMap<>();
+        final VariationTree diffCopy = diff().deepCopy(oldToNew);
+
+        final Map<VariationTreeNode, VariationTreeNode> matchingCopy = new HashMap<>();
+        for (Map.Entry<VariationTreeNode, VariationTreeNode> entry : matching().entrySet()) {
+            matchingCopy.put(
+                    oldToNew.get(entry.getKey()),
+                    oldToNew.get(entry.getValue())
+            );
+        }
+
+        return new BadVDiff(
+                diffCopy,
+                matchingCopy,
+                MapUtils.TransKeys(coloring(), oldToNew, HashMap::new),
+                MapUtils.TransKeys(lines(),    oldToNew, HashMap::new)
+        );
     }
 
     private void prettyPrint(final String indent, StringBuilder b, VariationTreeNode n) {

@@ -41,7 +41,7 @@ public class LineGraphExporter implements Exporter {
             output.println(LineGraphConstants.LG_NODE + " " + node.getID() + " " + format.getNodeFormat().toLabel(node));
         });
 
-        format.forEachEdge(diffTree, (edge) -> {
+        format.forEachEdge(diffTree, edge -> {
             output.print(Functjonal.unwords(LineGraphConstants.LG_EDGE, edge.from().getID(), edge.to().getID(), ""));
             output.print(edge.style().lineGraphType());
             output.print(format.getEdgeFormat().labelOf(edge));

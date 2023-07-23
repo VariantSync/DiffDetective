@@ -63,6 +63,11 @@ public class DiffFilter {
     private final boolean allowMerge;
 
     /**
+     * When set to false, commits without parents will be filtered (including the initial commit to a repository).
+     */
+    private final boolean allowCommitsWithoutParents;
+
+    /**
      * Builder for a DiffFilter.
      *
      * See field descriptions of DiffFilter for more details.
@@ -75,6 +80,7 @@ public class DiffFilter {
         private final List<String> allowedPaths;
         private final List<String> blockedPaths;
         private boolean allowMerge;
+        private boolean allowCommitsWithoutParents;
 
         /**
          * Create a new builder that is used to construct a DiffFilter.
@@ -86,6 +92,7 @@ public class DiffFilter {
             allowedPaths = new ArrayList<>();
             blockedPaths = new ArrayList<>();
             allowMerge = true;
+            allowCommitsWithoutParents = true;
         }
 
         /**
@@ -99,6 +106,7 @@ public class DiffFilter {
             allowedPaths = new ArrayList<>(other.allowedPaths);
             blockedPaths = new ArrayList<>(other.blockedPaths);
             allowMerge = other.allowMerge;
+            allowCommitsWithoutParents = other.allowCommitsWithoutParents;
         }
 
         /**
@@ -167,6 +175,18 @@ public class DiffFilter {
         }
 
         /**
+         * Specifies whether commits without parents should be considered or not.
+         * In particular, this setting affects whether the initial commit should
+         * be considered or not.
+         * @param allowNoParents True iff commits without parents should be included.
+         * @return this
+         */
+        public Builder allowCommitsWithoutParents(boolean allowNoParents) {
+            this.allowCommitsWithoutParents = allowNoParents;
+            return this;
+        }
+
+        /**
          * Resets the list of allowed change types to allow all change types.
          * @return this
          */
@@ -202,6 +222,7 @@ public class DiffFilter {
         this.allowedPaths = builder.allowedPaths;
         this.blockedPaths = builder.blockedPaths;
         this.allowMerge = builder.allowMerge;
+        this.allowCommitsWithoutParents = builder.allowCommitsWithoutParents;
     }
 
     /**
@@ -237,7 +258,7 @@ public class DiffFilter {
      */
     public boolean filter(DiffEntry diffEntry) {
         if (!allowedPaths.isEmpty() &&
-                !(isAllowedPath(diffEntry.getOldPath()) && isAllowedPath(diffEntry.getNewPath())))
+                !(isAllowedPath(diffEntry.getOldPath()) || isAllowedPath(diffEntry.getNewPath())))
         {
             return false;
         }
@@ -252,7 +273,7 @@ public class DiffFilter {
             return false;
         }
         if (!allowedFileExtensions.isEmpty() &&
-                !(hasAllowedExtension(diffEntry.getOldPath()) && hasAllowedExtension(diffEntry.getNewPath())))
+                !(hasAllowedExtension(diffEntry.getOldPath()) || hasAllowedExtension(diffEntry.getNewPath())))
         {
             return false;
         }
@@ -271,7 +292,12 @@ public class DiffFilter {
      * @return True iff the given commit should be considered w.r.t. this filter. False iff it should be ignored.
      */
     public boolean filter(RevCommit commit) {
-        return this.allowMerge || commit.getParentCount() <= 1;
+        return
+                // merge
+                   (this.allowMerge || commit.getParentCount() <= 1)
+                // no parents
+                && (this.allowCommitsWithoutParents || commit.getParentCount() > 0)
+                ;
     }
 
     private boolean isAllowedPath(String filename) {

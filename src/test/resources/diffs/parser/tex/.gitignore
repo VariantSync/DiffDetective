@@ -1,0 +1,5 @@
+# We need this gitignore so that git creates this directory.
+# Otherwise our DiffTreeParserTest fails.
+
+# ignore all temporary tex files here
+/*.tex

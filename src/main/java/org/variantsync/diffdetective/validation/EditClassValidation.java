@@ -5,6 +5,7 @@ import org.variantsync.diffdetective.analysis.Analysis;
 import org.variantsync.diffdetective.analysis.FilterAnalysis;
 import org.variantsync.diffdetective.analysis.PreprocessingAnalysis;
 import org.variantsync.diffdetective.analysis.StatisticsAnalysis;
+import org.variantsync.diffdetective.datasets.PatchDiffParseOptions;
 import org.variantsync.diffdetective.datasets.Repository;
 import org.variantsync.diffdetective.editclass.proposed.ProposedEditClasses;
 import org.variantsync.diffdetective.metadata.EditClassCount;
@@ -12,6 +13,7 @@ import org.variantsync.diffdetective.mining.formats.DirectedEdgeLabelFormat;
 import org.variantsync.diffdetective.mining.formats.MiningNodeFormat;
 import org.variantsync.diffdetective.mining.formats.ReleaseMiningDiffNodeFormat;
 import org.variantsync.diffdetective.variation.diff.filter.DiffTreeFilter;
+import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParseOptions;
 import org.variantsync.diffdetective.variation.diff.serialize.GraphFormat;
 import org.variantsync.diffdetective.variation.diff.serialize.LineGraphExportOptions;
 import org.variantsync.diffdetective.variation.diff.serialize.edgeformat.EdgeLabelFormat;
@@ -81,7 +83,28 @@ public class EditClassValidation implements Analysis.Hooks {
      * @throws IOException When copying the log file fails.
      */
     public static void main(String[] args) throws IOException {
-        AnalysisRunner.run(AnalysisRunner.Options.DEFAULT(args), (repo, repoOutputDir) ->
+        final AnalysisRunner.Options defaultOptions = AnalysisRunner.Options.DEFAULT(args);
+        final AnalysisRunner.Options validationOptions = new AnalysisRunner.Options(
+                defaultOptions.repositoriesDirectory(),
+                defaultOptions.outputDirectory(),
+                defaultOptions.datasetsFile(),
+                repo -> {
+                    final PatchDiffParseOptions defaultPatchDiffParseOptions = defaultOptions.getParseOptionsForRepo().apply(repo);
+                    return new PatchDiffParseOptions(
+                            defaultPatchDiffParseOptions.diffStoragePolicy(),
+                            new DiffTreeParseOptions(
+                                    defaultPatchDiffParseOptions.diffTreeParseOptions().annotationParser(),
+                                    true,
+                                    true
+                            )
+                    );
+                },
+                defaultOptions.getFilterForRepo(),
+                true,
+                false
+        );
+
+        AnalysisRunner.run(validationOptions, (repo, repoOutputDir) ->
             Analysis.forEachCommit(() -> AnalysisFactory.apply(repo, repoOutputDir))
         );
     }

@@ -356,7 +356,7 @@ public class ConstructionValidation implements Analysis.Hooks {
                 analysis.getCurrentPatch().getFileName()
             )
         ) {
-            return DiffTreeParser.createVariationTree(afterFile, false, false, analysis.getRepository().getParseOptions().annotationParser());
+            return DiffTreeParser.createVariationTree(afterFile, analysis.getRepository().getParseOptions().diffTreeParseOptions());
         }
     }
 
