@@ -64,6 +64,15 @@ public class Assert {
         }
     }
 
+    /**
+     * Abort program execution if {@code condition} is true.
+     *
+     * <p>If the checked condition is not obvious in the source code
+     * {@link assertTrue(boolean, String)} should be used to help identifying issues quickly.
+     *
+     * @param condition the condition which has to be false
+     * @throws AssertionError if {@code condition} is true
+     */
     public static void assertFalse(boolean condition) {
         assertTrue(!condition);
     }

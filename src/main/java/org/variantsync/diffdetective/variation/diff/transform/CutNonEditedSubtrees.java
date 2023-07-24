@@ -20,6 +20,29 @@ import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
  * @author Paul Bittner
  */
 public class CutNonEditedSubtrees<L extends Label> implements VariationDiffTransformer<L>, VariationDiffVisitor<L> {
+    private final boolean keepDummy;
+
+    /**
+     * @param keepDummy The transformation will keep the root of any removed subtree if this is true.
+     *                  Otherwise the entire subtree is removed.
+     *                  Default is false in {@link CutNonEditedSubtrees#CutNonEditedSubtrees()}.
+     */
+    public CutNonEditedSubtrees(boolean keepDummy) {
+        this.keepDummy = keepDummy;
+    }
+
+    public CutNonEditedSubtrees() {
+        this(false);
+    }
+
+    public static <L extends Label> void genericTransform(VariationDiff<L> variationDiff) {
+        new CutNonEditedSubtrees<L>().transform(variationDiff);
+    }
+
+    public static <L extends Label> void genericTransform(boolean keepDummy, VariationDiff<L> variationDiff) {
+        new CutNonEditedSubtrees<L>(keepDummy).transform(variationDiff);
+    }
+
     @Override
     public void transform(final VariationDiff<L> variationDiff) {
         variationDiff.traverse(this);
@@ -62,7 +85,13 @@ public class CutNonEditedSubtrees<L extends Label> implements VariationDiffTrans
 
         // ... remove all children.
         if (!collapsableChildren.isEmpty()) {
-            subtree.removeChildren(collapsableChildren);
+            final boolean subtreeIsAlsoCollapsable =
+                    (collapsableChildren.size() == subtree.getTotalNumberOfChildren()) // => subtree.getAllChildren().isEmpty() after removing children
+                    && subtree.getParent(AFTER) == subtree.getParent(BEFORE) // analogous to child.getParent(AFTER) == subtree && child.getParent(BEFORE) == subtree
+                    && subtree.getParent(AFTER) != null; // needed in case we reached the root. If subtree is the root, then it is not collabsable
+            if (!keepDummy || subtreeIsAlsoCollapsable) {
+                subtree.removeChildren(collapsableChildren);
+            }
         }
     }
 

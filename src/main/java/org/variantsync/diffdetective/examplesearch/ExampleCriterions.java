@@ -2,15 +2,23 @@ package org.variantsync.diffdetective.examplesearch;
 
 import org.prop4j.Literal;
 import org.prop4j.Node;
+import org.variantsync.diffdetective.editclass.proposed.ProposedEditClasses;
 import org.variantsync.diffdetective.variation.Label;
+import org.variantsync.diffdetective.variation.NodeType;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
+import org.variantsync.diffdetective.variation.diff.Time;
 import org.variantsync.diffdetective.variation.diff.VariationDiff;
-import org.variantsync.diffdetective.variation.diff.filter.VariationDiffFilter;
+import org.variantsync.diffdetective.variation.diff.bad.BadVDiff;
 import org.variantsync.diffdetective.variation.diff.filter.ExplainedFilter;
 import org.variantsync.diffdetective.variation.diff.filter.TaggedPredicate;
+import org.variantsync.diffdetective.variation.diff.filter.VariationDiffFilter;
+import org.variantsync.diffdetective.variation.diff.transform.CutNonEditedSubtrees;
 
 import java.nio.file.Path;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import static org.variantsync.diffdetective.variation.diff.Time.AFTER;
 import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
 
 public class ExampleCriterions {
@@ -29,8 +37,14 @@ public class ExampleCriterions {
     public static <L extends Label> TaggedPredicate<String, VariationDiff<? extends L>> HAS_ADDITIONS() {
         return new TaggedPredicate<>("has additions", t -> t.anyMatch(DiffNode::isAdd));
     }
+    public static <L extends Label> TaggedPredicate<String, VariationDiff<? extends L>> HAS_DELETIONS() {
+        return new TaggedPredicate<>("has deletions", t -> t.anyMatch(DiffNode::isRem));
+    }
     public static <L extends Label> TaggedPredicate<String, VariationDiff<? extends L>> HAS_NESTING_BEFORE_EDIT() {
-        return new TaggedPredicate<>("has nesting before the edit", ExampleCriterions::hasNestingBeforeEdit);
+        return new TaggedPredicate<>("has nesting before the edit", t -> t.anyMatch(n -> isNestedAt(n, BEFORE)));
+    }
+    public static <L extends Label> TaggedPredicate<String, VariationDiff<? extends L>> HAS_NESTING() {
+        return new TaggedPredicate<>("has nesting", t -> t.anyMatch(ExampleCriterions::isNested));
     }
 
     public static final <L extends Label> TaggedPredicate<String, VariationDiff<? extends L>> HAS_ELSE() {
@@ -46,10 +60,61 @@ public class ExampleCriterions {
         );
     }
 
+    public static <L extends Label> TaggedPredicate<String, VariationDiff<? extends L>> MIN_NODES_OF_TYPE(NodeType nt, int n) {
+        return new TaggedPredicate<>(
+                "has at least " + n + " nodes of type " + nt,
+                t -> t.computeAllNodesThat(node -> nt.equals(node.getNodeType())).size() >= n
+        );
+    }
+
     public static <L extends Label> TaggedPredicate<String, VariationDiff<? extends L>> MIN_ANNOTATIONS(int n) {
         return new TaggedPredicate<>(
                 "has at least " + n + " annotations",
                 t -> t.computeAnnotationNodes().size() >= n
+        );
+    }
+
+    public static <L extends Label> TaggedPredicate<String, VariationDiff<? extends L>> MIN_FEATURES(int n) {
+        return new TaggedPredicate<>(
+                "has edits below at least " + n + " syntactically different presence conditions",
+                t -> t.computeAnnotationNodes()
+                        .stream()
+                        .flatMap(node -> {
+                            if (node.isElse()) {
+                                return Stream.of();
+                            } else {
+                                return node.getFormula().getLiterals().stream().map(l -> l.var.toString());
+                            }
+                        })
+                        .collect(Collectors.toSet())
+                        .size()
+                        >= n
+        );
+    }
+
+    public static <L extends Label> TaggedPredicate<String, VariationDiff<? extends L>> MIN_PARALLEL_EDITS(int n) {
+        return new TaggedPredicate<>(
+                "has at least " + n + " edits next to each other",
+                t -> {
+                    VariationDiff<? extends L> copy = BadVDiff.fromGood(t).deepCopy().toGood();
+                    CutNonEditedSubtrees.genericTransform(copy);
+                    return copy.anyMatch(node ->
+                            node
+                                    .getAllChildrenStream()
+                                    .filter(DiffNode::isAnnotation)
+                                    .count()
+                                    >= n);
+                }
+        );
+    }
+
+    public static <L extends Label> TaggedPredicate<String, VariationDiff<? extends L>> MIN_CHANGES_TO_PCS(int n) {
+        return new TaggedPredicate<>(
+                "has edits below at least " + n + " syntactically different presence conditions",
+                t -> t.computeAllNodesThat(
+                        node -> node.isArtifact() && !ProposedEditClasses.Untouched.matches(node)
+                ).size()
+                >= n
         );
     }
 
@@ -74,12 +139,14 @@ public class ExampleCriterions {
         return variationDiff.anyMatch(n -> n.isArtifact() && n.getLabel().toString().trim().startsWith("#"));
     }
 
-    private static boolean hasNestingBeforeEdit(final VariationDiff<?> variationDiff) {
-        return variationDiff.anyMatch(n ->
-                           !n.isAdd()
-                        && n.getDepth(BEFORE) > 2
-                        && !(n.getParent(BEFORE).isElse() || n.getParent(BEFORE).isElif())
-        );
+    private static boolean isNestedAt(final DiffNode<?> n, Time t) {
+        return n.getDiffType().existsAtTime(t)
+                && n.getDepth(t) > 2
+                && !(n.getParent(t).isElse() || n.getParent(t).isElif());
+    }
+
+    private static boolean isNested(final DiffNode<?> n) {
+        return isNestedAt(n, BEFORE) || isNestedAt(n, AFTER);
     }
 
     private static boolean hasAtLeastOneComplexFormulaBeforeTheEdit(final VariationDiff<?> variationDiff) {

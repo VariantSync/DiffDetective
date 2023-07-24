@@ -2,6 +2,6 @@
 +#if B
  #if X
 +#endif
- y
+ foo
 -#endif
  #endif

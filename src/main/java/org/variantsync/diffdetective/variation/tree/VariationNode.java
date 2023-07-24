@@ -1,15 +1,5 @@
 package org.variantsync.diffdetective.variation.tree;
 
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
-
 import org.prop4j.And;
 import org.prop4j.Node;
 import org.variantsync.diffdetective.util.Assert;
@@ -17,8 +7,13 @@ import org.variantsync.diffdetective.util.LineRange;
 import org.variantsync.diffdetective.util.fide.FixTrueFalse;
 import org.variantsync.diffdetective.variation.Label;
 import org.variantsync.diffdetective.variation.NodeType;
+import org.variantsync.diffdetective.util.StringUtils;
 import org.variantsync.diffdetective.variation.diff.DiffNode; // For Javadoc
 import org.variantsync.diffdetective.variation.diff.Projection; // For Javadoc
+
+import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import static org.variantsync.diffdetective.util.fide.FormulaUtils.negate;
 
@@ -424,6 +419,14 @@ public abstract class VariationNode<T extends VariationNode<T, L>, L extends Lab
         }
     }
 
+    public void forMeAndMyAncestors(final Consumer<T> action) {
+        action.accept(this.upCast());
+        final T p = getParent();
+        if (p != null) {
+            p.forMeAndMyAncestors(action);
+        }
+    }
+
     /**
      * Checks whether any node in this subtree satisfies the given condition.
      * The condition might not be invoked on every node in case a node is found.
@@ -477,7 +480,7 @@ public abstract class VariationNode<T extends VariationNode<T, L>, L extends Lab
         oldToNew.put(this.upCast(), newNode);
 
         for (var child : getChildren()) {
-            newNode.addChild(child.toVariationTree());
+            newNode.addChild(child.toVariationTree(oldToNew));
         }
 
         return newNode;
@@ -559,13 +562,11 @@ public abstract class VariationNode<T extends VariationNode<T, L>, L extends Lab
      * Unparses the labels of this subtree into {@code output}.
      *
      * <p>This method assumes that all labels of this subtree represent source code lines.
-     *
-     * @throws IOException iff output throws an {@link IOException}
      */
-    public void printSourceCode(BufferedWriter output) throws IOException {
-        for (final var line : getLabel().getLines()) {
-            output.write(line);
-            output.newLine();
+    public void printSourceCode(final StringBuilder output) {
+        for (final String line : getLabel().getLines()) {
+            output.append(line);
+            output.append(StringUtils.LINEBREAK);
         }
 
         for (final var child : getChildren()) {
@@ -574,8 +575,8 @@ public abstract class VariationNode<T extends VariationNode<T, L>, L extends Lab
 
         // Add #endif after macro
         if (isIf() && !isRoot()) {
-            output.write("#endif");
-            output.newLine();
+            output.append("#endif");
+            output.append(StringUtils.LINEBREAK);
         }
     }
 

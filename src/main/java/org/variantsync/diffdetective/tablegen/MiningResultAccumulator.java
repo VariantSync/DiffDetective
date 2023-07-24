@@ -20,14 +20,13 @@ import org.variantsync.diffdetective.analysis.StatisticsAnalysis;
 import org.variantsync.diffdetective.datasets.DatasetDescription;
 import org.variantsync.diffdetective.datasets.DefaultDatasets;
 import org.variantsync.diffdetective.editclass.proposed.ProposedEditClasses;
+import org.variantsync.diffdetective.experiments.esecfse22.FindMedianCommitTime;
 import org.variantsync.diffdetective.metadata.EditClassCount;
 import org.variantsync.diffdetective.metadata.ExplainedFilterSummary;
 import org.variantsync.diffdetective.tablegen.rows.ContentRow;
 import org.variantsync.diffdetective.tablegen.styles.ShortTable;
 import org.variantsync.diffdetective.tablegen.styles.VariabilityShare;
 import org.variantsync.diffdetective.util.IO;
-import org.variantsync.diffdetective.validation.FindMedianCommitTime;
-import org.variantsync.diffdetective.variation.Label;
 
 /** Accumulates multiple {@link AnalysisResult}s of several datasets. */
 public class MiningResultAccumulator {
@@ -50,9 +49,13 @@ public class MiningResultAccumulator {
         final Map<String, AnalysisResult> results = new HashMap<>();
         for (final Path p : paths) {
             var result = new AnalysisResult();
-            result.append(ExplainedFilterSummary.KEY, new ExplainedFilterSummary());
-            result.append(EditClassCount.KEY, new EditClassCount(ProposedEditClasses.Instance));
+
+            // FIXME: Here, we actually have to use the Analysis::initializeResult method on all Hooks of the Analysis
+            //        that produced the results we accumulate. Maybe Java reflection can help?
             result.append(StatisticsAnalysis.RESULT, new StatisticsAnalysis.Result());
+            result.append(ExplainedFilterSummary.KEY, new ExplainedFilterSummary());
+//            result.append(EditClassCount.KEY, new EditClassCount(ProposedEditClasses.Instance));
+
             result.setFrom(p);
             results.put(p.getParent().getFileName().toString(), result);
         }
@@ -112,9 +115,16 @@ public class MiningResultAccumulator {
             throw new IllegalArgumentException("Expected path to directory but the given path is not a directory!");
         }
 
+        // TODO: Implement argument parser
+        final boolean exportESECFSETables = false;
+
         final Map<String, AnalysisResult> allResults = getAllTotalResultsIn(inputPath);
         final AnalysisResult ultimateResult = computeTotalMetadataResult(allResults.values());
         Analysis.exportMetadataToFile(inputPath.resolve("ultimateresult" + Analysis.EXTENSION), ultimateResult);
+
+        if (!exportESECFSETables) {
+            return;
+        }
 
         final Map<String, DatasetDescription> datasetByName;
         try {

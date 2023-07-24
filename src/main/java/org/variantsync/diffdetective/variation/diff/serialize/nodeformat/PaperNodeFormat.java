@@ -22,11 +22,11 @@ public class PaperNodeFormat<L extends Label> implements DiffNodeLabelFormat<L> 
         String s = "";
 
         if (node.isAnnotation()) {
-//            if (node.getNodeType() == NodeType.ELSE) {
-//                s += "ELSE";
-//            } else {
+            if (node.getNodeType() == NodeType.ELSE) {
+                s += "ELSE";
+            } else {
               s += node.getFormula().toString(NodeWriter.logicalSymbols);
-//            }
+            }
         } else {
             final int lineNoFrom = node.getFromLine().inDiff();
             final int lineNoTo   = node.getToLine().inDiff();
@@ -35,14 +35,14 @@ public class PaperNodeFormat<L extends Label> implements DiffNodeLabelFormat<L> 
                 s += "-" + lineNoTo;
             }
 
-            s += ": ";
-
-
-            String label = node.getLabel().toString().trim();
-            if (label.length() > MAX_ARTIFACT_LABEL_LENGTH) {
-                label = StringUtils.clamp(MAX_ARTIFACT_LABEL_LENGTH - 3, label) + "...";
-            }
-            s += label; //LaTeX.escape(label);
+//            s += ": ";
+//
+//
+//            String label = node.getLabel().toString().trim();
+//            if (label.length() > MAX_ARTIFACT_LABEL_LENGTH) {
+//                label = StringUtils.clamp(MAX_ARTIFACT_LABEL_LENGTH - 3, label) + "...";
+//            }
+//            s += label; //LaTeX.escape(label);
         }
 
         return s;

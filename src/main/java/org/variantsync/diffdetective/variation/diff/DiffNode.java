@@ -181,6 +181,13 @@ public class DiffNode<L extends Label> implements HasNodeType {
     }
 
     /**
+     * Returns the number of unique child nodes.
+     */
+    public int getTotalNumberOfChildren() {
+        return (int) getAllChildrenStream().count();
+    }
+
+    /**
      * Gets the amount of nodes on the path from the root to this node which only exist at the time
      * {@code time}.
      */

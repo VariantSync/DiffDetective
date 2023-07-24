@@ -2,6 +2,8 @@ package org.variantsync.diffdetective.variation.diff;
 
 import org.apache.commons.lang3.function.FailableConsumer;
 
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 
 /**
@@ -30,6 +32,33 @@ public enum DiffType {
             case BEFORE -> REM;
             case AFTER -> ADD;
         };
+    }
+
+    /**
+     * Returns the diff type for which corresponding artifacts exist at all times in the given set.
+     * {@link #NON Unchanged} artifacts exist at all times.
+     * REMoved artifacts exist only BEFORE the edit.
+     * ADDed artifacts exist only AFTER the edit.
+     * @return {@link Optional#empty()} if the given set is empty.
+     *         Otherwise returns non-empty optional with the DiffType that exists
+     *         exactly at all times in the given set.
+     */
+    public static Optional<DiffType> thatExistsOnlyAtAll(final Set<Time> t) {
+        if (t.isEmpty()) {
+            return Optional.empty();
+        }
+
+        final boolean b = t.contains(Time.BEFORE);
+        final boolean a = t.contains(Time.AFTER);
+        final DiffType d;
+        if (b && a) {
+            d = DiffType.NON;
+        } else if (b) {
+            d = DiffType.thatExistsOnlyAt(Time.BEFORE);
+        } else {
+            d = DiffType.thatExistsOnlyAt(Time.AFTER);
+        }
+        return Optional.of(d);
     }
 
     /**

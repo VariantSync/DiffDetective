@@ -79,7 +79,7 @@ public class ShortTable extends TableDefinition {
                 col("Domain", LEFT_DASH, row -> row.dataset().domain()),
                 col("\\#total\\\\ commits", RIGHT, row -> t.makeReadable(row.results().totalCommits)),
                 col("\\#processed commits", RIGHT, row -> t.makeReadable(row.get(StatisticsAnalysis.RESULT).processedCommits)),
-                col("\\#diffs", RIGHT, row -> t.makeReadable(row.get(StatisticsAnalysis.RESULT).processedTrees)),
+                col("\\#diffs", RIGHT, row -> t.makeReadable(row.get(StatisticsAnalysis.RESULT).processedPatches)),
                 col("\\#artifact nodes", RIGHT_DASH, row -> t.makeReadable(row
                         .get(EditClassCount.KEY)
                         .getOccurrences()

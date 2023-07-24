@@ -5,8 +5,10 @@ import org.variantsync.diffdetective.analysis.Analysis;
 import org.variantsync.diffdetective.datasets.PatchDiffParseOptions;
 import org.variantsync.diffdetective.datasets.Repository;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
+import org.variantsync.diffdetective.variation.NodeType;
 import org.variantsync.diffdetective.variation.diff.VariationDiff;
 import org.variantsync.diffdetective.variation.diff.filter.ExplainedFilter;
+import org.variantsync.diffdetective.variation.diff.filter.VariationDiffFilter;
 import org.variantsync.diffdetective.variation.diff.render.VariationDiffRenderer;
 
 import java.io.IOException;
@@ -20,10 +22,18 @@ public class Main {
     private static final ExplainedFilter<VariationDiff<? extends DiffLinesLabel>> EXAMPLE_CRITERIONS() {
         return new ExplainedFilter<>(
             ExampleCriterions.MAX_LINE_COUNT(ExampleCriterions.DefaultMaxDiffLineCount),
-            ExampleCriterions.HAS_EDITED_ARTIFACTS(),
             ExampleCriterions.DOES_NOT_CONTAIN_ANNOTATED_MACROS(),
-            ExampleCriterions.MIN_ANNOTATIONS(2),
-            ExampleCriterions.HAS_ELSE()
+            ExampleCriterions.HAS_EDITED_ARTIFACTS(),
+            ExampleCriterions.HAS_ADDITIONS(),
+            ExampleCriterions.HAS_DELETIONS(),
+            ExampleCriterions.HAS_NESTING(),
+            ExampleCriterions.HAS_ELSE(),
+            ExampleCriterions.MIN_PARALLEL_EDITS(3),
+            ExampleCriterions.MIN_CHANGES_TO_PCS(1),
+            ExampleCriterions.MIN_NODES_OF_TYPE(NodeType.IF, 3),
+            ExampleCriterions.MIN_FEATURES(2),
+            //ExampleCriterions.MIN_ANNOTATIONS(4), // root + if + else + something else
+            VariationDiffFilter.hasAtLeastOneEditToVariability()
         );
     }
 
@@ -44,7 +54,7 @@ public class Main {
         final AnalysisRunner.Options myOptions = new AnalysisRunner.Options(
                 defaultOptions.repositoriesDirectory(),
                 ExampleCriterions.DefaultExamplesDirectory,
-                defaultOptions.datasetsFile(),
+                Path.of("docs", "datasets", "reposToSearchForExamples.md"),
                 repo -> repo.getParseOptions().withDiffStoragePolicy(
                         PatchDiffParseOptions.DiffStoragePolicy.REMEMBER_STRIPPED_DIFF
                 ),

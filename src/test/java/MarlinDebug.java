@@ -22,7 +22,7 @@ import org.variantsync.diffdetective.feature.CPPAnnotationParser;
 import org.variantsync.diffdetective.mining.VariationDiffMiner;
 import org.variantsync.diffdetective.editclass.proposed.ProposedEditClasses;
 import org.variantsync.diffdetective.util.Clock;
-import org.variantsync.diffdetective.validation.EditClassValidation;
+import org.variantsync.diffdetective.experiments.esecfse22.EditClassValidation;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 

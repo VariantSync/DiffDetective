@@ -36,7 +36,7 @@ public class Table1 extends TableDefinition {
                 col("Domain", LEFT, row -> row.dataset().domain()),
                 col("\\#total commits", RIGHT_DASH, row -> makeReadable(row.results().totalCommits)),
                 col("\\#processed commits", RIGHT, row -> makeReadable(row.get(StatisticsAnalysis.RESULT).processedCommits)),
-                col("\\#diffs", RIGHT, row -> makeReadable(row.get(StatisticsAnalysis.RESULT).processedTrees))
+                col("\\#diffs", RIGHT, row -> makeReadable(row.get(StatisticsAnalysis.RESULT).processedPatches))
         ));
 
         for (final EditClass a : ProposedEditClasses.Instance.all()) {

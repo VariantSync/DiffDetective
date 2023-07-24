@@ -18,6 +18,11 @@ public class StatisticsAnalysis implements Analysis.Hooks {
     public static final String COMMIT_TIME_FILE_EXTENSION = ".committimes.txt";
 
     public static final ResultKey<Result> RESULT = new ResultKey<>("StatisticsAnalysis");
+
+    /**
+     * Invariant:
+     * {@link Result#emptyCommits} + {@link Result#failedCommits} + {@link Result#processedCommits} - {@link FilterAnalysis filteredCommits} = {@link AnalysisResult#totalCommits}
+     */
     public static final class Result implements Metadata<Result> {
         /**
          * Number of commits that were not processed because they had no VariationDiffs.
@@ -33,12 +38,13 @@ public class StatisticsAnalysis implements Analysis.Hooks {
          * Number of commits that could not be parsed at all because of exceptions when operating JGit.
          *
          * The number of commits that were filtered because they are a merge commit is thus given as
-         * {@code totalCommits - processedCommits - emptyCommits - failedCommits}
+         * {@code filteredCommits = totalCommits - processedCommits - emptyCommits - failedCommits}
          */
         public int failedCommits = 0;
         public int processedCommits = 0;
-        public int totalTrees = 0;
-        public int processedTrees = 0;
+
+        public int totalPatches = 0;
+        public int processedPatches = 0;
         /**
          * The total runtime in seconds (irrespective of multithreading).
          */
@@ -65,8 +71,8 @@ public class StatisticsAnalysis implements Analysis.Hooks {
             a.emptyCommits += b.emptyCommits;
             a.failedCommits += b.failedCommits;
             a.processedCommits += b.processedCommits;
-            a.totalTrees += b.totalTrees;
-            a.processedTrees += b.processedTrees;
+            a.totalPatches += b.totalPatches;
+            a.processedPatches += b.processedPatches;
             a.runtimeInSeconds += b.runtimeInSeconds;
             a.min.set(CommitProcessTime.min(a.min, b.min));
             a.max.set(CommitProcessTime.max(a.max, b.max));
@@ -83,8 +89,8 @@ public class StatisticsAnalysis implements Analysis.Hooks {
             snap.put(MetadataKeys.FAILED_COMMITS, failedCommits);
             snap.put(MetadataKeys.EMPTY_COMMITS, emptyCommits);
             snap.put(MetadataKeys.PROCESSED_COMMITS, processedCommits);
-            snap.put(MetadataKeys.TOTAL_PATCHES, totalTrees);
-            snap.put(MetadataKeys.TREES, processedTrees);
+            snap.put(MetadataKeys.TOTAL_PATCHES, totalPatches);
+            snap.put(MetadataKeys.PROCESSED_PATCHES, processedPatches);
             snap.put(MetadataKeys.MINCOMMIT, min.toString());
             snap.put(MetadataKeys.MAXCOMMIT, max.toString());
             snap.put(MetadataKeys.RUNTIME, runtimeInSeconds);
@@ -96,10 +102,10 @@ public class StatisticsAnalysis implements Analysis.Hooks {
             failedCommits = Integer.parseInt(snap.get(MetadataKeys.FAILED_COMMITS));
             emptyCommits = Integer.parseInt(snap.get(MetadataKeys.EMPTY_COMMITS));
             processedCommits = Integer.parseInt(snap.get(MetadataKeys.PROCESSED_COMMITS));
-            totalTrees = Integer.parseInt(snap.get(MetadataKeys.TOTAL_PATCHES));
+            totalPatches = Integer.parseInt(snap.get(MetadataKeys.TOTAL_PATCHES));
             min.set(CommitProcessTime.fromString(snap.get(MetadataKeys.MINCOMMIT)));
             max.set(CommitProcessTime.fromString(snap.get(MetadataKeys.MAXCOMMIT)));
-            processedTrees = Integer.parseInt(snap.get(MetadataKeys.TREES));
+            processedPatches = Integer.parseInt(snap.get(MetadataKeys.PROCESSED_PATCHES));
 
             String runtime = snap.get(MetadataKeys.RUNTIME);
             if (runtime.endsWith("s")) {
@@ -135,7 +141,7 @@ public class StatisticsAnalysis implements Analysis.Hooks {
 
     @Override
     public boolean onParsedCommit(Analysis analysis) {
-        analysis.get(RESULT).totalTrees += analysis.getCurrentCommitDiff().getPatchAmount();
+        analysis.get(RESULT).totalPatches += analysis.getCurrentCommitDiff().getPatchAmount();
         return true;
     }
 
@@ -152,7 +158,7 @@ public class StatisticsAnalysis implements Analysis.Hooks {
 
     @Override
     public void endCommit(Analysis analysis) {
-        analysis.get(RESULT).processedTrees += numVariationDiffs;
+        analysis.get(RESULT).processedPatches += numVariationDiffs;
 
         // Report the commit process time if the commit is not empty.
         if (numVariationDiffs > 0) {

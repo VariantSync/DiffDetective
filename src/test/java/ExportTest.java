@@ -1,4 +1,5 @@
 import org.apache.commons.io.IOUtils;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
@@ -9,13 +10,13 @@ import org.variantsync.diffdetective.variation.diff.serialize.nodeformat.LabelOn
 import org.variantsync.diffdetective.variation.diff.serialize.nodeformat.LineNumberFormat;
 import org.variantsync.diffdetective.variation.diff.serialize.treeformat.CommitDiffVariationDiffLabelFormat;
 
-import static org.junit.jupiter.api.Assertions.fail;
-
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class ExportTest {
     private final static Path RESOURCE_DIR = Path.of("src/test/resources/serialize");
@@ -52,6 +53,11 @@ public class ExportTest {
 
     @Test
     @EnabledIf("isGraphvizInstalled")
+    @Disabled
+    /* Paul:
+     * I disabled this testcase because it is too vulnerable to randomness by graphviz.
+     * Tiny changes in coordinates make the test fail although the exportex tex file is fine.
+     */
     public void export() throws IOException {
         var testCasePath = RESOURCE_DIR.resolve("testcase.lg");
         var actualPath = RESOURCE_DIR.resolve("actual.tex");

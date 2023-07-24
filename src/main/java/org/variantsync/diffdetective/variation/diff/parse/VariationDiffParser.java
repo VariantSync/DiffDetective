@@ -19,7 +19,6 @@ import org.variantsync.diffdetective.variation.NodeType;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
 import org.variantsync.diffdetective.variation.diff.VariationDiff;
 import org.variantsync.diffdetective.variation.diff.DiffType;
-import org.variantsync.functjonal.list.FilteredMappedListView;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -320,25 +319,6 @@ public class VariationDiffParser {
 
         if ("endif".equals(conditionalMacroName)) {
             lastArtifact = null;
-
-            // Add the #endif to the last seen #if/#elif/#else it belongs to. Don't add it twice if
-            // the #endif and the #if/#elif/#else node are unchanged.
-            // Note: If the #endif has been modified but the #if/#elif/#else node was unchanged
-            //       there will be two #endif lines in the label (they can be distinguished by
-            //       checking at which time the line numbers of the #endif and the following lines
-            //       are invalid). Be careful about line continuations!
-            if (diffType == DiffType.NON && beforeStack.peek() == afterStack.peek()) {
-                beforeStack.peek().getLabel().addDiffLines(line.getLines());
-            } else {
-                diffType.forAllTimesOfExistence(beforeStack, afterStack, stack ->
-                    stack.peek().getLabel().addDiffLines(FilteredMappedListView.map(line.getLines(), diffLine ->
-                        new DiffLinesLabel.Line(
-                            diffLine.content(),
-                            diffLine.lineNumber().as(stack == beforeStack ? DiffType.REM : DiffType.ADD)
-                        )
-                    ))
-                );
-            }
 
             // Do not create a node for ENDIF, but update the line numbers of the closed if-chain
             // and remove that if-chain from the relevant stacks.

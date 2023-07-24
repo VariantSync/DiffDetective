@@ -1,1 +1,0 @@
-docker run --rm -v "%cd%\results":"/home/sherlock/results" diff-detective %*
