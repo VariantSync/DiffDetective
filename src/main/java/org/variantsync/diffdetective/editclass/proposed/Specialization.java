@@ -19,7 +19,7 @@ final class Specialization extends EditClass {
     }
 
     @Override
-    protected boolean matchesArtifactNode(DiffNode artifactNode) {
+    protected boolean matchesArtifactNode(DiffNode<?> artifactNode) {
         final Node pcb = artifactNode.getFeatureMapping(BEFORE);
         final Node pca = artifactNode.getFeatureMapping(AFTER);
         return !SAT.implies(pcb, pca) && SAT.implies(pca, pcb);

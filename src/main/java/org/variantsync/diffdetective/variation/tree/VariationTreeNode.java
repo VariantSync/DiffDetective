@@ -2,17 +2,17 @@ package org.variantsync.diffdetective.variation.tree;
 
 import org.prop4j.Node;
 import org.variantsync.diffdetective.diff.text.DiffLineNumber;
-import org.variantsync.diffdetective.util.LineRange;
-import org.variantsync.diffdetective.util.StringUtils;
 import org.variantsync.diffdetective.util.Assert;
+import org.variantsync.diffdetective.util.LineRange;
 import org.variantsync.diffdetective.util.fide.FixTrueFalse;
+import org.variantsync.diffdetective.variation.Label;
+import org.variantsync.diffdetective.variation.NodeType;
+import org.variantsync.diffdetective.variation.VariationLabel;
 import org.variantsync.diffdetective.variation.diff.DiffNode; // For Javdoc
 import org.variantsync.diffdetective.variation.diff.DiffTree; // For Javdoc
 import org.variantsync.diffdetective.variation.diff.DiffType;
-import org.variantsync.diffdetective.variation.NodeType;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * A single node in a variation tree.
@@ -49,31 +49,17 @@ import java.util.stream.Collectors;
  * @see DiffNode
  * @author Benjamin Moosherr
  */
-public class VariationTreeNode extends VariationNode<VariationTreeNode> {
-    private record Lines(List<String> lines) implements Label {
-        @Override
-        public String toString() {
-            return lines
-                .stream()
-                .collect(Collectors.joining(StringUtils.LINEBREAK));
-        }
-    }
-
+public class VariationTreeNode<L extends Label> extends VariationNode<VariationTreeNode<L>, L> {
     /**
-     * The node type of this node, which determines the type of the represented
-     * element in the diff (e.g., mapping or artifact).
+     * The label together with the node type of this node, which determines the type of the
+     * represented element in the diff (e.g., mapping or artifact).
      */
-    private final NodeType nodeType;
+    private VariationLabel<L> label;
 
     /**
      * The range of line numbers of this node's corresponding source code.
      */
     private LineRange lineRange;
-
-    /**
-     * A list of lines representing the label of this node.
-     */
-    private Label label;
 
     /**
      * The direct feature mapping of this node.
@@ -87,14 +73,14 @@ public class VariationTreeNode extends VariationNode<VariationTreeNode> {
      *
      * <p>Invariant: Iff {@code parent != null} then {@code parent.childOrder.contains(this)}.
      */
-    private VariationTreeNode parent;
+    private VariationTreeNode<L> parent;
 
     /**
      * The list for maintaining the order of all children of this node.
      *
      * @see parent
      */
-    private final List<VariationTreeNode> childOrder;
+    private final List<VariationTreeNode<L>> childOrder;
 
     /**
      * Creates a new node of a variation tree.
@@ -116,34 +102,15 @@ public class VariationTreeNode extends VariationNode<VariationTreeNode> {
         NodeType nodeType,
         Node featureMapping,
         LineRange lineRange,
-        Label label
+        L label
     ) {
         super();
 
-        this.nodeType = nodeType;
+        this.label = new VariationLabel<>(nodeType, label);
         this.lineRange = lineRange;
-        this.label = label;
         this.featureMapping = featureMapping;
 
         this.childOrder = new ArrayList<>();
-    }
-
-    /**
-     * The same as {@link VariationTreeNode(NodeType, Node, LineRange, Label)} but with a minimal
-     * default implementation of {@link Label}.
-     */
-    public VariationTreeNode(
-        NodeType nodeType,
-        Node featureMapping,
-        LineRange lineRange,
-        List<String> label
-    ) {
-        this(
-            nodeType,
-            featureMapping,
-            lineRange,
-            new Lines(label)
-        );
     }
 
     /**
@@ -157,12 +124,12 @@ public class VariationTreeNode extends VariationNode<VariationTreeNode> {
      *
      * @see addChild
      */
-    public static VariationTreeNode createRoot() {
-        return new VariationTreeNode(
+    public static <L extends Label> VariationTreeNode<L> createRoot(L label) {
+        return new VariationTreeNode<>(
                 NodeType.IF,
                 FixTrueFalse.True,
                 LineRange.Invalid(),
-                new ArrayList<>()
+                label
         );
     }
 
@@ -173,43 +140,32 @@ public class VariationTreeNode extends VariationNode<VariationTreeNode> {
      * @param label a list of lines used as label
      * @see addBelow
      */
-    public static VariationTreeNode createArtifact(LineRange lineRange, List<String> label) {
-        return new VariationTreeNode(NodeType.ARTIFACT, null, lineRange, label);
+    public static <L extends Label> VariationTreeNode<L> createArtifact(LineRange lineRange, L label) {
+        return new VariationTreeNode<>(NodeType.ARTIFACT, null, lineRange, label);
     }
 
     @Override
-    public VariationTreeNode upCast() {
+    public VariationTreeNode<L> upCast() {
         return this;
     }
 
     @Override
     public NodeType getNodeType() {
-        return nodeType;
+        return label.getNodeType();
     }
 
     @Override
-    public Label getLabel() {
-        return label;
+    public L getLabel() {
+        return label.getInnerLabel();
     }
 
     /**
      * Replaces the current label by {@code newLabelLines}.
      *
-     * @see getLabelLines
+     * @see getLabel
      */
-    public void setLabelLines(List<String> newLabelLines) {
-        label.lines().clear();
-        addLines(newLabelLines);
-    }
-
-    /**
-     * Adds the given lines to the source code lines of this node.
-     *
-     * @param lines lines to add
-     * @see getLabelLines
-     */
-    public void addLines(final List<String> lines) {
-        this.label.lines().addAll(lines);
+    public void setLabel(L newLabel) {
+        label.setInnerLabel(newLabel);
     }
 
     @Override
@@ -223,7 +179,7 @@ public class VariationTreeNode extends VariationNode<VariationTreeNode> {
     }
 
     @Override
-    public VariationTreeNode getParent() {
+    public VariationTreeNode<L> getParent() {
         return parent;
     }
 
@@ -232,30 +188,30 @@ public class VariationTreeNode extends VariationNode<VariationTreeNode> {
      *
      * <p>This node must not have a parent yet.
      */
-    private void setParent(final VariationTreeNode newParent) {
+    private void setParent(final VariationTreeNode<L> newParent) {
         Assert.assertTrue(parent == null);
         this.parent = newParent;
     }
 
     @Override
-    public List<VariationTreeNode> getChildren() {
+    public List<VariationTreeNode<L>> getChildren() {
         return Collections.unmodifiableList(childOrder);
     }
 
     @Override
-    public void addChild(final VariationTreeNode child) {
+    public void addChild(final VariationTreeNode<L> child) {
         child.setParent(this);
         childOrder.add(child);
     }
 
     @Override
-    public void insertChild(final VariationTreeNode child, int index) {
+    public void insertChild(final VariationTreeNode<L> child, int index) {
         child.setParent(this);
         childOrder.add(index, child);
     }
 
     @Override
-    public void removeChild(final VariationTreeNode child) {
+    public void removeChild(final VariationTreeNode<L> child) {
         Assert.assertTrue(isChild(child));
         child.parent = null;
         childOrder.remove(child);
@@ -300,7 +256,7 @@ public class VariationTreeNode extends VariationNode<VariationTreeNode> {
         id |= DiffType.NON.ordinal();
 
         id <<= NodeType.getRequiredBitCount();
-        id |= nodeType.ordinal();
+        id |= getNodeType().ordinal();
         return id;
     }
 
@@ -312,7 +268,7 @@ public class VariationTreeNode extends VariationNode<VariationTreeNode> {
      * @param label the label the node should have
      * @return the reconstructed node
      */
-    public static VariationTreeNode fromID(int id, List<String> label) {
+    public static <L extends Label> VariationTreeNode<L> fromID(int id, L label) {
         final int nodeTypeBitmask = (1 << NodeType.getRequiredBitCount()) - 1;
         final int nodeTypeOrdinal = id & nodeTypeBitmask;
         id >>= NodeType.getRequiredBitCount();
@@ -324,7 +280,7 @@ public class VariationTreeNode extends VariationNode<VariationTreeNode> {
         final int from = id - 1;
 
         var nodeType = NodeType.values()[nodeTypeOrdinal];
-        return new VariationTreeNode(
+        return new VariationTreeNode<L>(
                 nodeType,
                 nodeType.isConditionalAnnotation() ? FixTrueFalse.True : null,
                 LineRange.SingleLine(from),
@@ -335,7 +291,7 @@ public class VariationTreeNode extends VariationNode<VariationTreeNode> {
     /**
      * Creates a deep copy of this node.
      */
-    public VariationTreeNode deepCopy() {
+    public VariationTreeNode<L> deepCopy() {
         return toVariationTree();
     }
 
@@ -350,7 +306,7 @@ public class VariationTreeNode extends VariationNode<VariationTreeNode> {
      * @param oldToNew A map that memorizes the translation of individual nodes.
      * @return A deep copy of this tree.
      */
-    public VariationTreeNode deepCopy(final Map<VariationTreeNode, VariationTreeNode> oldToNew) {
+    public VariationTreeNode<L> deepCopy(final Map<VariationTreeNode<L>, VariationTreeNode<L>> oldToNew) {
         return toVariationTree(oldToNew);
     }
 
@@ -358,11 +314,11 @@ public class VariationTreeNode extends VariationNode<VariationTreeNode> {
     public String toString() {
         String s;
         if (isArtifact()) {
-            s = String.format("%s in the lines %s", nodeType, lineRange);
+            s = String.format("%s in the lines %s", getNodeType(), lineRange);
         } else if (isRoot()) {
             s = "ROOT";
         } else {
-            s = String.format("%s in the lines %s with \"%s\"", nodeType,
+            s = String.format("%s in the lines %s with \"%s\"", getNodeType(),
                     lineRange, featureMapping);
         }
         return s;

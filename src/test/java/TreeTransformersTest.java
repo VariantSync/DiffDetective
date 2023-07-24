@@ -1,12 +1,12 @@
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.variantsync.diffdetective.datasets.PatchDiffParseOptions;
 import org.variantsync.diffdetective.datasets.Repository;
 import org.variantsync.diffdetective.datasets.predefined.StanciulescuMarlin;
 import org.variantsync.diffdetective.diff.git.PatchDiff;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.mining.DiffTreeMiner;
+import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParseOptions;
 import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParser;
@@ -31,11 +31,11 @@ public class TreeTransformersTest {
     private static final boolean RENDER = true;
     private static final Path resDir = Constants.RESOURCE_DIR.resolve("diffs/collapse");
     private static final Path genDir = resDir.resolve("gen");
-    private static final RenderOptions renderOptions = new RenderOptions(
+    private static final RenderOptions<DiffLinesLabel> renderOptions = new RenderOptions<>(
             GraphFormat.DIFFTREE,
             new CommitDiffDiffTreeLabelFormat(),
-            new TypeDiffNodeFormat(),
-            new DefaultEdgeLabelFormat(),
+            new TypeDiffNodeFormat<>(),
+            new DefaultEdgeLabelFormat<>(),
             false,
             500,
             50,
@@ -49,11 +49,11 @@ public class TreeTransformersTest {
     private static final Consumer<String> INFO = System.out::println;
 
     private void transformAndRender(String diffFileName) throws IOException, DiffParseException {
-        final DiffTree t = DiffTree.fromFile(resDir.resolve(diffFileName), new DiffTreeParseOptions(true, true));
+        final DiffTree<DiffLinesLabel> t = DiffTree.fromFile(resDir.resolve(diffFileName), new DiffTreeParseOptions(true, true));
         transformAndRender(t, diffFileName, "0", null);
     }
 
-    private void transformAndRender(DiffTree diffTree, String name, String commit, Repository repository) {
+    private void transformAndRender(DiffTree<DiffLinesLabel> diffTree, String name, String commit, Repository repository) {
         final DiffTreeRenderer renderer = DiffTreeRenderer.WithinDiffDetective();
         final String treeName = name + LineGraphConstants.TREE_NAME_SEPARATOR + commit;
 
@@ -64,8 +64,8 @@ public class TreeTransformersTest {
 
         int i = 1;
         int prevSize = diffTree.computeSize();
-        final List<DiffTreeTransformer> transformers = DiffTreeMiner.Postprocessing(repository);
-        for (final DiffTreeTransformer f : transformers) {
+        final List<DiffTreeTransformer<DiffLinesLabel>> transformers = DiffTreeMiner.Postprocessing(repository);
+        for (final DiffTreeTransformer<DiffLinesLabel> f : transformers) {
             INFO.accept("Applying transformation " + f + ".");
             f.transform(diffTree);
 

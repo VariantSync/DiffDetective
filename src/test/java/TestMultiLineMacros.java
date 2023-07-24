@@ -1,6 +1,7 @@
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.tinylog.Logger;
+import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.feature.CPPAnnotationParser;
 import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParseOptions;
@@ -26,8 +27,8 @@ import java.nio.file.Path;
 public class TestMultiLineMacros {
     private static final Path resDir = Constants.RESOURCE_DIR.resolve("multilinemacros");
 
-    public void diffToDiffTree(LineGraphExportOptions exportOptions, Path p) throws IOException, DiffParseException {
-        DiffTree tree;
+    public void diffToDiffTree(LineGraphExportOptions<DiffLinesLabel> exportOptions, Path p) throws IOException, DiffParseException {
+        DiffTree<DiffLinesLabel> tree;
         try (BufferedReader fullDiff = Files.newBufferedReader(p)) {
             tree = DiffTreeParser.createDiffTree(
                     fullDiff,
@@ -53,11 +54,11 @@ public class TestMultiLineMacros {
     @ParameterizedTest
     @ValueSource(strings = { "mldiff1.txt", "diffWithComments.txt" })
     public void test(String filename) throws IOException, DiffParseException {
-        final LineGraphExportOptions exportOptions = new LineGraphExportOptions(
+        final LineGraphExportOptions<DiffLinesLabel> exportOptions = new LineGraphExportOptions<>(
                 GraphFormat.DIFFTREE,
                 new CommitDiffDiffTreeLabelFormat(),
-                new DebugDiffNodeFormat(),
-                new DefaultEdgeLabelFormat()
+                new DebugDiffNodeFormat<>(),
+                new DefaultEdgeLabelFormat<>()
         );
 
         diffToDiffTree(exportOptions, resDir.resolve(filename));

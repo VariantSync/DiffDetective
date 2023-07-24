@@ -2,12 +2,13 @@ package org.variantsync.diffdetective.variation.diff.transform;
 
 import org.prop4j.And;
 import org.prop4j.Node;
-import org.variantsync.diffdetective.diff.text.DiffLineNumber;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.variation.diff.DiffType;
 import org.variantsync.diffdetective.variation.diff.traverse.DiffTreeTraversal;
+import org.variantsync.functjonal.Cast;
+import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.NodeType;
 
 import java.util.ArrayList;
@@ -30,17 +31,17 @@ import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
  *
  * @author Paul Bittner
  */
-public class CollapseNestedNonEditedAnnotations implements DiffTreeTransformer {
-    private final List<Stack<DiffNode>> chainCandidates = new ArrayList<>();
-    private final List<Stack<DiffNode>> chains = new ArrayList<>();
+public class CollapseNestedNonEditedAnnotations implements DiffTreeTransformer<DiffLinesLabel> {
+    private final List<Stack<DiffNode<DiffLinesLabel>>> chainCandidates = new ArrayList<>();
+    private final List<Stack<DiffNode<DiffLinesLabel>>> chains = new ArrayList<>();
 
     @Override
-    public List<Class<? extends DiffTreeTransformer>> getDependencies() {
-        return List.of(CutNonEditedSubtrees.class);
+    public List<Class<? extends DiffTreeTransformer<DiffLinesLabel>>> getDependencies() {
+        return List.of(Cast.unchecked(CutNonEditedSubtrees.class));
     }
 
     @Override
-    public void transform(final DiffTree diffTree) {
+    public void transform(final DiffTree<DiffLinesLabel> diffTree) {
         // find all chains
         diffTree.traverse(this::findChains);
 
@@ -49,14 +50,14 @@ public class CollapseNestedNonEditedAnnotations implements DiffTreeTransformer {
         chainCandidates.clear();
 
         // All found chains should at least have size 2.
-        for (final Stack<DiffNode> chain : chains) {
+        for (final Stack<DiffNode<DiffLinesLabel>> chain : chains) {
             Assert.assertTrue(chain.size() >= 2);
         }
 
 //        System.out.println(StringUtils.prettyPrintNestedCollections(chains));
 
         // collapse all found chains
-        for (final Stack<DiffNode> chain : chains) {
+        for (final Stack<DiffNode<DiffLinesLabel>> chain : chains) {
             collapseChain(chain);
         }
 
@@ -64,22 +65,22 @@ public class CollapseNestedNonEditedAnnotations implements DiffTreeTransformer {
         chains.clear();
     }
 
-    private void finalize(Stack<DiffNode> chain) {
+    private void finalize(Stack<DiffNode<DiffLinesLabel>> chain) {
         chainCandidates.remove(chain);
         chains.add(chain);
     }
 
-    private void findChains(DiffTreeTraversal traversal, DiffNode subtree) {
+    private void findChains(DiffTreeTraversal<DiffLinesLabel> traversal, DiffNode<DiffLinesLabel> subtree) {
         if (subtree.isNon() && subtree.isAnnotation()) {
             if (isHead(subtree)) {
-                final Stack<DiffNode> s = new Stack<>();
+                final Stack<DiffNode<DiffLinesLabel>> s = new Stack<>();
                 s.push(subtree);
                 chainCandidates.add(s);
             } else if (inChainTail(subtree)) {
-                final DiffNode parent = subtree.getParent(BEFORE); // == after parent
+                final DiffNode<DiffLinesLabel> parent = subtree.getParent(BEFORE); // == after parent
 
-                Stack<DiffNode> pushedTo = null;
-                for (final Stack<DiffNode> s : chainCandidates) {
+                Stack<DiffNode<DiffLinesLabel>> pushedTo = null;
+                for (final Stack<DiffNode<DiffLinesLabel>> s : chainCandidates) {
                     if (s.peek() == parent) {
                         s.push(subtree);
                         pushedTo = s;
@@ -96,17 +97,17 @@ public class CollapseNestedNonEditedAnnotations implements DiffTreeTransformer {
         traversal.visitChildrenOf(subtree);
     }
 
-    private static void collapseChain(Stack<DiffNode> chain) {
-        final DiffNode end = chain.peek();
-        final DiffNode head = chain.firstElement();
+    private static void collapseChain(Stack<DiffNode<DiffLinesLabel>> chain) {
+        final DiffNode<DiffLinesLabel> end = chain.peek();
+        final DiffNode<DiffLinesLabel> head = chain.firstElement();
         final ArrayList<Node> featureMappings = new ArrayList<>(chain.size());
 
-        DiffNode lastPopped = null;
+        DiffNode<DiffLinesLabel> lastPopped = null;
         Assert.assertTrue(!chain.isEmpty());
         while (!chain.isEmpty()) {
             lastPopped = chain.pop();
 
-            switch (lastPopped.nodeType) {
+            switch (lastPopped.getNodeType()) {
                 case IF ->
                     featureMappings.add(lastPopped.getFeatureMapping(AFTER));
                 case ELSE, ELIF -> {
@@ -118,22 +119,22 @@ public class CollapseNestedNonEditedAnnotations implements DiffTreeTransformer {
                     }
                 }
                 case ARTIFACT ->
-                    throw new RuntimeException("Unexpected node type " + lastPopped.nodeType + " within annotation chain!");
+                    throw new RuntimeException("Unexpected node type " + lastPopped.getNodeType() + " within annotation chain!");
             }
         }
 
         Assert.assertTrue(head == lastPopped);
 
-        final DiffNode beforeParent = head.getParent(BEFORE);
-        final DiffNode afterParent = head.getParent(AFTER);
+        final DiffNode<DiffLinesLabel> beforeParent = head.getParent(BEFORE);
+        final DiffNode<DiffLinesLabel> afterParent = head.getParent(AFTER);
 
-        var lines = new ArrayList<DiffNode.Label.Line>();
-        lines.add(DiffNode.Label.Line.withInvalidLineNumber("$Collapsed Nested Annotations$"));
-        final DiffNode merged = new DiffNode(
+        var label = new DiffLinesLabel();
+        label.addDiffLine(DiffLinesLabel.Line.withInvalidLineNumber("$Collapsed Nested Annotations$"));
+        final var merged = new DiffNode<>(
                 DiffType.NON, NodeType.IF,
                 head.getFromLine(), head.getToLine(),
                 new And(featureMappings.toArray()),
-                new DiffNode.Label(lines));
+                label);
 
         head.drop();
         merged.stealChildrenOf(end);
@@ -143,39 +144,39 @@ public class CollapseNestedNonEditedAnnotations implements DiffTreeTransformer {
     /**
      * @return True iff at least one child of was edited.
      */
-    private static boolean anyChildEdited(DiffNode d) {
+    private static boolean anyChildEdited(DiffNode<?> d) {
         return d.getAllChildrenStream().anyMatch(c -> !c.isNon());
     }
 
     /**
      * @return True iff no child of was edited.
      */
-    private static boolean noChildEdited(DiffNode d) {
+    private static boolean noChildEdited(DiffNode<?> d) {
         return d.getAllChildrenStream().allMatch(DiffNode::isNon);
     }
 
-    private static boolean hasExactlyOneChild(DiffNode d) {
+    private static boolean hasExactlyOneChild(DiffNode<?> d) {
         return d.getAllChildrenStream().limit(2).count() == 1;
     }
 
     /**
      * @return True iff d is in the tail of a chain.
      */
-    private static boolean inChainTail(DiffNode d) {
+    private static boolean inChainTail(DiffNode<?> d) {
         return d.getParent(BEFORE) == d.getParent(AFTER) && hasExactlyOneChild(d.getParent(BEFORE));
     }
 
     /**
      * @return True iff d is the head of a chain.
      */
-    private static boolean isHead(DiffNode d) {
+    private static boolean isHead(DiffNode<?> d) {
         return (!inChainTail(d) || d.getParent(BEFORE).isRoot()) && !isEnd(d);
     }
 
     /**
      * @return True iff d is the end of a chain and any chain ending at d has to end.
      */
-    private static boolean isEnd(DiffNode d) {
+    private static boolean isEnd(DiffNode<?> d) {
         return inChainTail(d) && (anyChildEdited(d) || !hasExactlyOneChild(d));
     }
 

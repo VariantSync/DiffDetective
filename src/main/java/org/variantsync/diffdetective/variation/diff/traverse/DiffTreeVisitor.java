@@ -1,5 +1,6 @@
 package org.variantsync.diffdetective.variation.diff.traverse;
 
+import org.variantsync.diffdetective.variation.Label;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
 
 /**
@@ -11,7 +12,7 @@ import org.variantsync.diffdetective.variation.diff.DiffNode;
  * @author Paul Bittner
  */
 @FunctionalInterface
-public interface DiffTreeVisitor {
+public interface DiffTreeVisitor<L extends Label> {
      /**
       * Invoked by a traversal when a node is visited.
       * The traversal might be continued by invoking respective methods on the given traversal object again.
@@ -20,5 +21,5 @@ public interface DiffTreeVisitor {
       * @param subtree The node that is currently visited.
       * @see DiffTreeTraversal
       */
-     void visit(final DiffTreeTraversal traversal, final DiffNode subtree);
+     void visit(final DiffTreeTraversal<L> traversal, final DiffNode<L> subtree);
 }

@@ -14,6 +14,7 @@ import org.variantsync.diffdetective.diff.result.DiffError;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.diff.text.DiffLineNumber;
 import org.variantsync.diffdetective.util.Assert;
+import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.NodeType;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
@@ -87,14 +88,14 @@ public class DiffTreeParser {
      * nodes in the resulting {@link DiffTree} and therefore {@code beforeStack} will never contain
      * an artifact node.
      */
-    private final Stack<DiffNode> beforeStack = new Stack<>();
+    private final Stack<DiffNode<DiffLinesLabel>> beforeStack = new Stack<>();
     /**
      * A stack containing the current path after the edit from the root of the currently parsed
      * {@link DiffTree} to the currently parsed {@link DiffNode}.
      * <p>
      * See {@link #beforeStack} for more explanations.
      */
-    private final Stack<DiffNode> afterStack = new Stack<>();
+    private final Stack<DiffNode<DiffLinesLabel>> afterStack = new Stack<>();
 
     /**
      * The last artifact node which was parsed by {@link #parseLine}.
@@ -102,7 +103,7 @@ public class DiffTreeParser {
      * <p>
      * This state is used to implement {@link DiffTreeParseOptions#collapseMultipleCodeLines()}.
      */
-    private DiffNode lastArtifact = null;
+    private DiffNode<DiffLinesLabel> lastArtifact = null;
 
 
     /**
@@ -111,7 +112,7 @@ public class DiffTreeParser {
      *
      * @throws DiffParseException if {@code fullDiff} couldn't be parsed
      */
-    public static DiffTree createDiffTree(
+    public static DiffTree<DiffLinesLabel> createDiffTree(
             final String fullDiff,
             final DiffTreeParseOptions parseOptions
     ) throws DiffParseException {
@@ -134,7 +135,7 @@ public class DiffTreeParser {
      * @throws IOException when reading from {@code fullDiff} fails.
      * @throws DiffParseException if an error in the diff or macro syntax is detected
      */
-    public static DiffTree createDiffTree(
+    public static DiffTree<DiffLinesLabel> createDiffTree(
             BufferedReader fullDiff,
             final DiffTreeParseOptions options
     ) throws IOException, DiffParseException {
@@ -163,7 +164,7 @@ public class DiffTreeParser {
      * @throws IOException iff {@code file} throws an {@code IOException}
      * @throws DiffParseException if an error in the diff or macro syntax is detected
      */
-    public static DiffTree createVariationTree(
+    public static DiffTree<DiffLinesLabel> createVariationTree(
             BufferedReader file,
             DiffTreeParseOptions options
     ) throws IOException, DiffParseException {
@@ -208,10 +209,10 @@ public class DiffTreeParser {
      * @throws DiffParseException if an error in the line diff or the underlying preprocessor syntax
      * is detected
      */
-    private DiffTree parse(
+    private DiffTree<DiffLinesLabel> parse(
         FailableSupplier<DiffLine, IOException> lines
     ) throws IOException, DiffParseException {
-        DiffNode root = DiffNode.createRoot();
+        DiffNode<DiffLinesLabel> root = DiffNode.createRoot(new DiffLinesLabel());
         beforeStack.push(root);
         afterStack.push(root);
 
@@ -291,7 +292,7 @@ public class DiffTreeParser {
         afterStack.clear();
         lastArtifact = null;
 
-        return new DiffTree(root);
+        return new DiffTree<>(root);
     }
 
     /**
@@ -327,11 +328,11 @@ public class DiffTreeParser {
             //       checking at which time the line numbers of the #endif and the following lines
             //       are invalid). Be careful about line continuations!
             if (diffType == DiffType.NON && beforeStack.peek() == afterStack.peek()) {
-                beforeStack.peek().addDiffLines(line.getLines());
+                beforeStack.peek().getLabel().addDiffLines(line.getLines());
             } else {
                 diffType.forAllTimesOfExistence(beforeStack, afterStack, stack ->
-                    stack.peek().addDiffLines(FilteredMappedListView.map(line.getLines(), diffLine ->
-                        new DiffNode.Label.Line(
+                    stack.peek().getLabel().addDiffLines(FilteredMappedListView.map(line.getLines(), diffLine ->
+                        new DiffLinesLabel.Line(
                             diffLine.content(),
                             diffLine.lineNumber().as(stack == beforeStack ? DiffType.REM : DiffType.ADD)
                         )
@@ -350,7 +351,7 @@ public class DiffTreeParser {
                 && lastArtifact.diffType.equals(diffType)
                 && lastArtifact.getToLine().inDiff() == fromLine.inDiff()) {
             // Collapse consecutive lines if possible.
-            lastArtifact.addDiffLines(line.getLines());
+            lastArtifact.getLabel().addDiffLines(line.getLines());
             lastArtifact.setToLine(toLine);
         } else {
             try {
@@ -363,7 +364,7 @@ public class DiffTreeParser {
                     }
                 }
 
-                DiffNode newNode = new DiffNode(
+                DiffNode<DiffLinesLabel> newNode = new DiffNode<DiffLinesLabel>(
                     diffType,
                     nodeType,
                     fromLine,
@@ -371,7 +372,7 @@ public class DiffTreeParser {
                     nodeType == NodeType.ARTIFACT || nodeType == NodeType.ELSE
                         ? null
                         : options.annotationParser().parseDiffLine(line.toString()),
-                    new DiffNode.Label(line.getLines())
+                    new DiffLinesLabel(line.getLines())
                 );
 
                 addNode(newNode);
@@ -392,12 +393,12 @@ public class DiffTreeParser {
      * @throws DiffParseException if {@code stack} doesn't contain an IF node
      */
     private void popIfChain(
-        Stack<DiffNode> stack,
+        Stack<DiffNode<DiffLinesLabel>> stack,
         DiffLineNumber elseLineNumber
     ) throws DiffParseException {
         DiffLineNumber previousLineNumber = elseLineNumber;
         do {
-            DiffNode annotation = stack.peek();
+            DiffNode<DiffLinesLabel> annotation = stack.peek();
 
             // Set the line number of now closed annotations to the beginning of the
             // following annotation.
@@ -426,7 +427,7 @@ public class DiffTreeParser {
      * @param newNode the fully parsed node to be added
      * @throws DiffParseException if {@code line} erroneous preprocessor macros are detected
      */
-    private void addNode(DiffNode newNode) throws DiffParseException {
+    private void addNode(DiffNode<DiffLinesLabel> newNode) throws DiffParseException {
         newNode.addBelow(beforeStack.peek(), afterStack.peek());
 
         if (newNode.isAnnotation()) {

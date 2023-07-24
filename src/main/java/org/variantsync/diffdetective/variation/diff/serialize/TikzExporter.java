@@ -3,6 +3,7 @@ package org.variantsync.diffdetective.variation.diff.serialize;
 import org.variantsync.diffdetective.show.engine.geom.Vec2;
 import org.variantsync.diffdetective.util.IO;
 import org.variantsync.diffdetective.util.LaTeX;
+import org.variantsync.diffdetective.variation.Label;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
 
@@ -25,10 +26,10 @@ import java.util.stream.Stream;
  * example for all required styles can be found in the file {@code tikz_header.tex} in the resource
  * directory. This particular style is used by {@link exportFullLatexExample}.
  */
-public final class TikzExporter implements Exporter {
-    private Format format;
+public final class TikzExporter<L extends Label> implements Exporter<L> {
+    private Format<? super L> format;
 
-    public TikzExporter(Format format) {
+    public TikzExporter(Format<? super L> format) {
         this.format = format;
     }
 
@@ -43,7 +44,7 @@ public final class TikzExporter implements Exporter {
      * @param destination where the result should be written
      */
     @Override
-    public void exportDiffTree(DiffTree diffTree, OutputStream destination) throws IOException {
+    public <La extends L> void exportDiffTree(DiffTree<La> diffTree, OutputStream destination) throws IOException {
         exportDiffTree(diffTree, GraphvizExporter.LayoutAlgorithm.DOT, destination);
     }
 
@@ -53,16 +54,16 @@ public final class TikzExporter implements Exporter {
      * Same as {@link exportDiffTree(DiffTree, OutputStream)}, but allows the selection of
      * a different Graphviz layout algorithm.
      */
-    public void exportDiffTree(
-            DiffTree diffTree,
+    public <La extends L> void exportDiffTree(
+            DiffTree<La> diffTree,
             GraphvizExporter.LayoutAlgorithm algorithm,
             OutputStream destination
             ) throws IOException {
-        final Map<Integer, DiffNode> ids = new HashMap<>();
+        final Map<Integer, DiffNode<La>> ids = new HashMap<>();
         diffTree.forAll(node -> ids.put(node.getID(), node));
 
         // Convert the layout information received by Graphviz to coordinates used by TikZ.
-        final Map<DiffNode, Vec2> positions = new HashMap<>();
+        final Map<DiffNode<La>, Vec2> positions = new HashMap<>();
         GraphvizExporter.layoutNodesIn(diffTree, format, algorithm, (id, x, y) ->
                 positions.put(ids.get(id), new Vec2(x, y))
         );
@@ -74,9 +75,9 @@ public final class TikzExporter implements Exporter {
                 true);
     }
 
-    public void exportDiffTree(
-            DiffTree diffTree,
-            Function<DiffNode, Vec2> nodeLayout,
+    public <La extends L> void exportDiffTree(
+            DiffTree<La> diffTree,
+            Function<DiffNode<La>, Vec2> nodeLayout,
             OutputStream destination,
             boolean escape
     ) {
@@ -145,7 +146,7 @@ public final class TikzExporter implements Exporter {
      * @param diffTree to be exported
      * @param destination path of the generated file
      */
-    public void exportFullLatexExample(DiffTree diffTree, Path destination) throws IOException {
+    public <La extends L> void exportFullLatexExample(DiffTree<La> diffTree, Path destination) throws IOException {
         try (var file = IO.newBufferedOutputStream(destination)) {
             try (var header = new BufferedInputStream(getClass().getResourceAsStream("/tikz_header.tex"))) {
                 header.transferTo(file);

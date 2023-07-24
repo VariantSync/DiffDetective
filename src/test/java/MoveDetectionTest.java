@@ -1,4 +1,4 @@
-import org.variantsync.diffdetective.datasets.PatchDiffParseOptions;
+import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParseOptions;
 import org.variantsync.diffdetective.variation.diff.render.DiffTreeRenderer;
@@ -14,10 +14,10 @@ public class MoveDetectionTest {
 
 //    @Test
     public void simpleTest() throws IOException, DiffParseException {
-        final DiffTree t = DiffTree.fromFile(resDir.resolve("simple.txt"), new DiffTreeParseOptions(true, true));
+        final DiffTree<DiffLinesLabel> t = DiffTree.fromFile(resDir.resolve("simple.txt"), new DiffTreeParseOptions(true, true));
         final DiffTreeRenderer renderer = DiffTreeRenderer.WithinDiffDetective();
         renderer.render(t, "MoveDetectionTestSimpleTest_Before", genDir);
-        new NaiveMovedArtifactDetection().transform(t);
+        new NaiveMovedArtifactDetection<DiffLinesLabel>().transform(t);
         renderer.render(t, "MoveDetectionTestSimpleTest_After", genDir);
     }
 }

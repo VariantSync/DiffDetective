@@ -9,6 +9,8 @@ import org.variantsync.diffdetective.shell.ShellExecutor;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.util.IO;
 import org.variantsync.diffdetective.util.StringUtils;
+import org.variantsync.diffdetective.variation.DiffLinesLabel;
+import org.variantsync.diffdetective.variation.Label;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.variation.diff.serialize.DiffTreeSerializeDebugData;
 import org.variantsync.diffdetective.variation.diff.serialize.LineGraphConstants;
@@ -90,14 +92,14 @@ public class DiffTreeRenderer {
      * Invokes {@link DiffTreeRenderer#render(PatchDiff, Path, RenderOptions)} with the {@link RenderOptions#DEFAULT default render options}.
      */
     public boolean render(PatchDiff patchDiff, final Path directory) {
-        return render(patchDiff, directory, RenderOptions.DEFAULT);
+        return render(patchDiff, directory, RenderOptions.DEFAULT());
     }
 
     /**
      * Invokes {@link DiffTreeRenderer#render(DiffTree, GitPatch, Path, RenderOptions)}
      * by extracting the given patchDiff's DiffTree.
      */
-    public boolean render(PatchDiff patchDiff, final Path directory, final RenderOptions options) {
+    public boolean render(PatchDiff patchDiff, final Path directory, final RenderOptions<? super DiffLinesLabel> options) {
         return render(patchDiff.getDiffTree(), patchDiff, directory, options);
     }
 
@@ -105,7 +107,7 @@ public class DiffTreeRenderer {
      * Invokes {@link DiffTreeRenderer#render(DiffTree, GitPatch, Path, RenderOptions, LineGraphExportOptions)}
      * by extracting the given patchDiff's DiffTree.
      */
-    public boolean render(PatchDiff patchDiff, final Path directory, final RenderOptions options, final LineGraphExportOptions exportOptions) {
+    public boolean render(PatchDiff patchDiff, final Path directory, final RenderOptions<? super DiffLinesLabel> options, final LineGraphExportOptions<? super DiffLinesLabel> exportOptions) {
         return render(patchDiff.getDiffTree(), patchDiff, directory, options, exportOptions);
     }
 
@@ -113,7 +115,7 @@ public class DiffTreeRenderer {
      * Invokes {@link DiffTreeRenderer#render(DiffTree, GitPatch, Path, RenderOptions, LineGraphExportOptions)}
      * by creating {@link LineGraphExportOptions} via {@link RenderOptions#toLineGraphOptions()}.
      */
-    public boolean render(final DiffTree tree, final GitPatch patch, final Path directory, final RenderOptions options) {
+    public <L extends Label> boolean render(final DiffTree<L> tree, final GitPatch patch, final Path directory, final RenderOptions<? super L> options) {
         return render(tree, patch, directory, options, options.toLineGraphOptions());
     }
 
@@ -122,7 +124,7 @@ public class DiffTreeRenderer {
      * by creating a name for the tree and its produced image file.
      * The created <code>treeAndFileName</code> is the given patches file name and commit hash, separated by {@link LineGraphConstants#TREE_NAME_SEPARATOR}.
      */
-    public boolean render(final DiffTree tree, final GitPatch patch, final Path directory, final RenderOptions options, final LineGraphExportOptions exportOptions) {
+    public <L extends Label> boolean render(final DiffTree<L> tree, final GitPatch patch, final Path directory, final RenderOptions<? super L> options, final LineGraphExportOptions<? super L> exportOptions) {
         final String treeAndFileName =
                 patch.getFileName()
                         + LineGraphConstants.TREE_NAME_SEPARATOR
@@ -134,15 +136,15 @@ public class DiffTreeRenderer {
      * Invokes {@link DiffTreeRenderer#render(DiffTree, String, Path, RenderOptions)}
      * with the {@link RenderOptions#DEFAULT default render options}.
      */
-    public boolean render(final DiffTree tree, final String treeAndFileName, final Path directory) {
-        return render(tree, treeAndFileName, directory, RenderOptions.DEFAULT);
+    public <L extends Label> boolean render(final DiffTree<L> tree, final String treeAndFileName, final Path directory) {
+        return render(tree, treeAndFileName, directory, RenderOptions.DEFAULT());
     }
 
     /**
      * Invokes {@link DiffTreeRenderer#render(DiffTree, String, Path, RenderOptions, LineGraphExportOptions)}
      * by creating {@link LineGraphExportOptions} via {@link RenderOptions#toLineGraphOptions()}.
      */
-    public boolean render(final DiffTree tree, final String treeAndFileName, final Path directory, RenderOptions options) {
+    public <L extends Label> boolean render(final DiffTree<? extends L> tree, final String treeAndFileName, final Path directory, RenderOptions<? super L> options) {
         return render(tree, treeAndFileName, directory, options, options.toLineGraphOptions());
     }
 
@@ -154,7 +156,7 @@ public class DiffTreeRenderer {
      * @see LineGraphConstants#LG_TREE_HEADER
      * @see LineGraphConstants#TREE_NAME_SEPARATOR
      */
-    public boolean render(final DiffTree tree, final String treeAndFileName, final Path directory, RenderOptions options, final LineGraphExportOptions exportOptions) {
+    public <L extends Label> boolean render(final DiffTree<? extends L> tree, final String treeAndFileName, final Path directory, RenderOptions<? super L> options, final LineGraphExportOptions<? super L> exportOptions) {
         return render(tree, treeAndFileName, directory, options, exportOptions,
                 (treeName, treeSource) -> LineGraphConstants.LG_TREE_HEADER + " " + treeAndFileName + LineGraphConstants.TREE_NAME_SEPARATOR + "0"
                 );
@@ -168,7 +170,7 @@ public class DiffTreeRenderer {
      * @see LineGraphConstants#LG_TREE_HEADER
      * @see LineGraphConstants#TREE_NAME_SEPARATOR
      */
-    public boolean renderWithTreeFormat(final DiffTree tree, final String treeAndFileName, final Path directory, RenderOptions options) {
+    public <L extends Label> boolean renderWithTreeFormat(final DiffTree<? extends L> tree, final String treeAndFileName, final Path directory, RenderOptions<? super L> options) {
         return render(tree, treeAndFileName, directory, options, options.toLineGraphOptions(),
                 (treeName, treeSource) -> options.treeFormat().toLineGraphLine(treeSource)
         );
@@ -190,7 +192,7 @@ public class DiffTreeRenderer {
      *                   The function is invoked on the given treeAndFileName as first argument and the given DiffTree's source as second argument.
      * @return True iff rendering was successful. False iff an error occurred.
      */
-    private boolean render(final DiffTree tree, final String treeAndFileName, final Path directory, RenderOptions options, LineGraphExportOptions exportOptions, BiFunction<String, DiffTreeSource, String> treeHeader) {
+    private <L extends Label> boolean render(final DiffTree<? extends L> tree, final String treeAndFileName, final Path directory, RenderOptions<? super L> options, LineGraphExportOptions<? super L> exportOptions, BiFunction<String, DiffTreeSource, String> treeHeader) {
         final Path tempFile = directory.resolve(treeAndFileName + ".lg");
 
         try (var destination = IO.newBufferedOutputStream(tempFile)) {
@@ -217,7 +219,7 @@ public class DiffTreeRenderer {
      * Invokes {@link DiffTreeRenderer#renderFile(Path, RenderOptions)} with the {@link RenderOptions#DEFAULT default render options}.
      */
     public boolean renderFile(final Path lineGraphFile) {
-        return renderFile(lineGraphFile, RenderOptions.DEFAULT);
+        return renderFile(lineGraphFile, RenderOptions.DEFAULT());
     }
 
     /**
@@ -226,7 +228,7 @@ public class DiffTreeRenderer {
      * @param options Configuration options for the rendering process.
      * @return True iff rendering was successful. False iff an error occurred.
      */
-    public boolean renderFile(final Path lineGraphFile, RenderOptions options) {
+    public <L extends Label> boolean renderFile(final Path lineGraphFile, RenderOptions<? super L> options) {
         final PythonCommand cmd = pythonCommandFactory.get();//apply(lineGraphFile);
 
         cmd.addArg("--nodesize").addArg(options.nodesize());

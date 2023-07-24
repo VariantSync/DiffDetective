@@ -67,7 +67,7 @@ public class ProposedEditClasses implements EditClassCatalogue {
     }
 
     @Override
-    public EditClass match(DiffNode node)
+    public EditClass match(DiffNode<?> node)
     {
         // This is an inlined version of all edit classes to optimize runtime when detecting the class of a certain node.
 
@@ -75,7 +75,7 @@ public class ProposedEditClasses implements EditClassCatalogue {
         // Each returned value is not null but an actual edit class object.
         // Since the given node may be any node, we have proven that every node is classified by at least one edit class.
         if (!node.isArtifact()) {
-            throw new IllegalArgumentException("Expected an artifact node but got " + node.nodeType + "!");
+            throw new IllegalArgumentException("Expected an artifact node but got " + node.getNodeType() + "!");
         }
 
         if (node.isAdd()) {

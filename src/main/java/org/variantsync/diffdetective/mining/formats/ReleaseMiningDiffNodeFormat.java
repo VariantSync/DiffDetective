@@ -5,6 +5,7 @@ import org.variantsync.diffdetective.editclass.proposed.ProposedEditClasses;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
 import org.variantsync.diffdetective.variation.diff.DiffType;
+import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.NodeType;
 import org.variantsync.functjonal.Pair;
 
@@ -37,11 +38,11 @@ public class ReleaseMiningDiffNodeFormat implements MiningNodeFormat {
     }
 
     @Override
-    public String toLabel(DiffNode node) {
+    public String toLabel(DiffNode<? extends DiffLinesLabel> node) {
         if (node.isArtifact()) {
             return ARTIFACT_PREFIX + toId(ProposedEditClasses.Instance.match(node));
         } else {
-            return ANNOTATION_PREFIX + node.diffType.ordinal() + node.nodeType.ordinal();
+            return ANNOTATION_PREFIX + node.diffType.ordinal() + node.getNodeType().ordinal();
         }
     }
 

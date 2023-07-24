@@ -1,10 +1,10 @@
 package org.variantsync.diffdetective.internal;
 
 import org.tinylog.Logger;
-import org.variantsync.diffdetective.diff.result.DiffError;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.util.FileUtils;
 import org.variantsync.diffdetective.util.IO;
+import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParseOptions;
@@ -13,7 +13,6 @@ import org.variantsync.diffdetective.variation.diff.serialize.GraphvizExporter;
 import org.variantsync.diffdetective.variation.diff.serialize.TikzExporter;
 import org.variantsync.diffdetective.variation.diff.serialize.edgeformat.DefaultEdgeLabelFormat;
 import org.variantsync.diffdetective.variation.diff.serialize.edgeformat.EdgeLabelFormat;
-import org.variantsync.functjonal.Result;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -28,11 +27,11 @@ public class TextDiffToTikz {
     /**
      * Format used for the test export.
      */
-    private final static Format format =
-            new Format(
+    private final static Format<DiffLinesLabel> format =
+            new Format<DiffLinesLabel>(
                     TextDiffToTikz::tikzNodeLabel,
                     // There is a bug in the exporter currently that accidentally switches direction so as a workaround we revert it here.
-                    new DefaultEdgeLabelFormat(EdgeLabelFormat.Direction.ParentToChild)
+                    new DefaultEdgeLabelFormat<>(EdgeLabelFormat.Direction.ParentToChild)
             );
 
     public static void main(String[] args) throws IOException, DiffParseException {
@@ -71,27 +70,27 @@ public class TextDiffToTikz {
         Logger.info("Using layout " + layout.getExecutableName());
         final Path targetFile = fileToConvert.resolveSibling(fileToConvert.getFileName() + ".tikz");
 
-        final DiffTree d = DiffTree.fromFile(fileToConvert, new DiffTreeParseOptions(true, true));
+        final DiffTree<DiffLinesLabel> d = DiffTree.fromFile(fileToConvert, new DiffTreeParseOptions(true, true));
         final String tikz = exportAsTikz(d, layout);
         IO.write(targetFile, tikz);
         Logger.info("Wrote file " + targetFile);
     }
 
-    public static String exportAsTikz(final DiffTree diffTree, GraphvizExporter.LayoutAlgorithm layout) throws IOException {
+    public static String exportAsTikz(final DiffTree<DiffLinesLabel> diffTree, GraphvizExporter.LayoutAlgorithm layout) throws IOException {
         // Export the test case
         var tikzOutput = new ByteArrayOutputStream();
-        new TikzExporter(format).exportDiffTree(diffTree, layout, tikzOutput);
+        new TikzExporter<DiffLinesLabel>(format).exportDiffTree(diffTree, layout, tikzOutput);
         return tikzOutput.toString();
     }
 
-    public static String tikzNodeLabel(DiffNode node) {
+    public static String tikzNodeLabel(DiffNode<? extends DiffLinesLabel> node) {
         if (node.isRoot()) {
             return "r";
         } else {
             if (node.isIf() || node.isElif()) {
                 return node.getFormula().toString(UNICODE_PROP_SYMBOLS);
             } else {
-                return node.getLabel().lines().get(0).trim();
+                return node.getLabel().getLines().get(0).trim();
             }
 //                    .map(String::trim)
 //                    .collect(Collectors.joining("<br>"));// substringBefore(node.getLabel(), StringUtils.LINEBREAK_REGEX);

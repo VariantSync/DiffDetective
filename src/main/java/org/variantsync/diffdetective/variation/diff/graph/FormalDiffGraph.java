@@ -1,6 +1,7 @@
 package org.variantsync.diffdetective.variation.diff.graph;
 
 import org.variantsync.diffdetective.util.StringUtils;
+import org.variantsync.diffdetective.variation.Label;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.variation.diff.Time;
@@ -17,11 +18,11 @@ import java.util.*;
  *
  * @author Paul Bittner
  */
-public record FormalDiffGraph(
-        Set<DiffNode> nodes,
-        Set<Edge> edges
+public record FormalDiffGraph<L extends Label>(
+        Set<DiffNode<L>> nodes,
+        Set<Edge<L>> edges
 ) {
-    public record Edge (DiffNode child, DiffNode parent, Time time) {
+    public record Edge<L extends Label>(DiffNode<L> child, DiffNode<L> parent, Time time) {
     }
 
     /**
@@ -32,31 +33,31 @@ public record FormalDiffGraph(
      * @param d The DiffTree to view as a list of nodes and edges.
      * @return the graph view
      */
-    public static FormalDiffGraph fromDiffTree(final DiffTree d) {
-        final Set<DiffNode> nodes = new HashSet<>();
-        final Set<Edge> edges = new HashSet<>();
+    public static <L extends Label> FormalDiffGraph<L> fromDiffTree(final DiffTree<L> d) {
+        final Set<DiffNode<L>> nodes = new HashSet<>();
+        final Set<Edge<L>> edges = new HashSet<>();
 
         d.forAll(n -> {
            nodes.add(n);
            if (!n.isRoot()) {
                n.getDiffType().forAllTimesOfExistence(
-                       time -> edges.add(new Edge(n, n.getParent(time), time))
+                       time -> edges.add(new Edge<>(n, n.getParent(time), time))
                );
            }
         });
 
-        return new FormalDiffGraph(nodes, edges);
+        return new FormalDiffGraph<>(nodes, edges);
     }
 
     @Override
     public String toString() {
         final StringBuilder b = new StringBuilder();
 
-        for (final DiffNode v : nodes) {
+        for (final DiffNode<L> v : nodes) {
             b.append(v.getID()).append(": ").append(v).append(StringUtils.LINEBREAK);
         }
 
-        for (final Edge e : edges) {
+        for (final var e : edges) {
             b
                     .append(e.child().getID())
                     .append(" --")

@@ -2,9 +2,9 @@ import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.variantsync.diffdetective.datasets.PatchDiffParseOptions;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.util.IO;
+import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParseOptions;
 import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParser;
@@ -59,7 +59,7 @@ public class DiffTreeParserTest {
         var actualPath = testDir.resolve(basename + "_actual.lg");
         var expectedPath = testDir.resolve(basename + "_expected.lg");
 
-        DiffTree diffTree;
+        DiffTree<DiffLinesLabel> diffTree;
         try (var inputFile = Files.newBufferedReader(testCasePath)) {
             diffTree = DiffTreeParser.createDiffTree(
                 inputFile,
@@ -71,7 +71,7 @@ public class DiffTreeParserTest {
         }
 
         try (var output = IO.newBufferedOutputStream(actualPath)) {
-            new LineGraphExporter(new Format(new FullNodeFormat(), new ChildOrderEdgeFormat()))
+            new LineGraphExporter<>(new Format<>(new FullNodeFormat(), new ChildOrderEdgeFormat<>()))
                 .exportDiffTree(diffTree, output);
         }
 
@@ -85,7 +85,7 @@ public class DiffTreeParserTest {
             } else {
                 // Keep output files if the test failed
                 var visualizationPath = testDir.resolve("tex").resolve(basename + ".tex");
-                new TikzExporter(new Format(new FullNodeFormat(), new DefaultEdgeLabelFormat()))
+                new TikzExporter<>(new Format<>(new FullNodeFormat(), new DefaultEdgeLabelFormat<>()))
                     .exportFullLatexExample(diffTree, visualizationPath);
                 fail("The DiffTree in file " + testCasePath + " didn't parse correctly. "
                     + "Expected the content of " + expectedPath + " but got the content of " + actualPath + ". "

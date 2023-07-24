@@ -3,6 +3,7 @@ package org.variantsync.diffdetective.editclass.proposed;
 import org.prop4j.Node;
 import org.variantsync.diffdetective.analysis.logic.SAT;
 import org.variantsync.diffdetective.editclass.EditClass;
+import org.variantsync.diffdetective.variation.Label;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
 import org.variantsync.diffdetective.variation.diff.DiffType;
 
@@ -19,7 +20,7 @@ final class Reconfiguration extends EditClass {
     }
 
     @Override
-    protected boolean matchesArtifactNode(DiffNode artifactNode) {
+    protected boolean matchesArtifactNode(DiffNode<?> artifactNode) {
         final Node pcb = artifactNode.getFeatureMapping(BEFORE);
         final Node pca = artifactNode.getFeatureMapping(AFTER);
         return !SAT.implies(pcb, pca) && !SAT.implies(pca, pcb);

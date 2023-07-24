@@ -3,7 +3,7 @@ package org.variantsync.diffdetective.variation.diff.bad;
 import org.variantsync.diffdetective.diff.text.DiffLineNumberRange;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.util.StringUtils;
-
+import org.variantsync.diffdetective.variation.Label;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.variation.diff.DiffType;
@@ -11,8 +11,10 @@ import org.variantsync.diffdetective.variation.diff.Time;
 import org.variantsync.diffdetective.variation.diff.source.DiffTreeSource;
 import org.variantsync.diffdetective.variation.tree.VariationTree;
 import org.variantsync.diffdetective.variation.tree.VariationTreeNode;
+import org.variantsync.functjonal.Cast;
 import org.variantsync.functjonal.map.MapUtils;
 
+import java.lang.reflect.Array;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -61,19 +63,19 @@ import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
  * @param lines Memorization of line ranges within text diffs.
  * @author Paul Bittner
  */
-public record BadVDiff(
-        VariationTree diff,
-        Map<VariationTreeNode, VariationTreeNode> matching,
-        Map<VariationTreeNode, DiffType> coloring,
-        Map<VariationTreeNode, DiffLineNumberRange> lines
+public record BadVDiff<L extends Label>(
+        VariationTree<L> diff,
+        Map<VariationTreeNode<L>, VariationTreeNode<L>> matching,
+        Map<VariationTreeNode<L>, DiffType> coloring,
+        Map<VariationTreeNode<L>, DiffLineNumberRange> lines
 )
 {
     /**
      * Memoization of the VariationTreeNodes a DiffNode was
      * converted to in {@link #fromGood(DiffTree)}.
      */
-    private static class FromGoodNodeTranslation {
-        private final Map<DiffNode, Map<Time, VariationTreeNode>> translate = new HashMap<>();
+    private static class FromGoodNodeTranslation<L extends Label> {
+        private final Map<DiffNode<L>, Map<Time, VariationTreeNode<L>>> translate = new HashMap<>();
 
         /**
          * Remember that the given DiffNode d was translated to the given
@@ -81,7 +83,7 @@ public record BadVDiff(
          * @param d The DiffNode from the initial good DiffTree.
          * @param v The VariationTreeNode d was translated to.
          */
-        void put(DiffNode d, VariationTreeNode v) {
+        void put(DiffNode<L> d, VariationTreeNode<L> v) {
             d.getDiffType().forAllTimesOfExistence(
                     t -> put(d, t, v)
             );
@@ -94,7 +96,7 @@ public record BadVDiff(
          * @param t The time at which the translated node v represents the initial DiffNode d.
          * @param v The VariationTreeNode d was translated to.
          */
-        void put(DiffNode d, Time t, VariationTreeNode v) {
+        void put(DiffNode<L> d, Time t, VariationTreeNode<L> v) {
             translate.putIfAbsent(d, new HashMap<>());
             translate.get(d).put(t, v);
         }
@@ -106,7 +108,7 @@ public record BadVDiff(
          * @param d The DiffNode from the initial good DiffTree.
          * @param t The time for which we seek the node that represents the initial DiffNode d.
          */
-        VariationTreeNode get(DiffNode d, Time t) {
+        VariationTreeNode<L> get(DiffNode<L> d, Time t) {
             return translate.getOrDefault(d, new HashMap<>()).get(t);
         }
     }
@@ -119,8 +121,8 @@ public record BadVDiff(
      *        and {@link DiffNode#getLabelLines() label} but no edge information.
      * @param n The node to convert to a plain VariationTreeNode.
      */
-    private static VariationTreeNode plain(final DiffNode n) {
-        return new VariationTreeNode(
+    private static <L extends Label> VariationTreeNode<L> plain(final DiffNode<L> n) {
+        return new VariationTreeNode<>(
                 n.getNodeType(),
                 n.getFormula(),
                 n.getLinesInDiff(),
@@ -137,12 +139,12 @@ public record BadVDiff(
      *
      * @param nodeTranslation see {@link FromGoodNodeTranslation}
      */
-    private static VariationTreeNode fromGood(
-            final DiffNode n,
-            final FromGoodNodeTranslation nodeTranslation,
-            final Map<VariationTreeNode, DiffType> coloring,
-            final Map<VariationTreeNode, DiffLineNumberRange> lines) {
-        final VariationTreeNode result = plain(n);
+    private static <L extends Label> VariationTreeNode<L> fromGood(
+            final DiffNode<L> n,
+            final FromGoodNodeTranslation<L> nodeTranslation,
+            final Map<VariationTreeNode<L>, DiffType> coloring,
+            final Map<VariationTreeNode<L>, DiffLineNumberRange> lines) {
+        final VariationTreeNode<L> result = plain(n);
         nodeTranslation.put(n, result);
         coloring.put(result, n.getDiffType());
         lines.put(result, new DiffLineNumberRange(n.getFromLine(), n.getToLine()));
@@ -152,15 +154,15 @@ public record BadVDiff(
     /**
      * Inverse of {@link #fromGood(DiffNode, FromGoodNodeTranslation, Map, Map)}.
      */
-    private DiffNode toGood(final VariationTreeNode n) {
+    private DiffNode<L> toGood(final VariationTreeNode<L> n) {
         final DiffLineNumberRange nlines = lines.get(n);
-        return new DiffNode(
+        return new DiffNode<L>(
                 coloring.get(n),
                 n.getNodeType(),
                 nlines.from(),
                 nlines.to(),
                 n.getFormula(),
-                (DiffNode.Label)n.getLabel()
+                n.getLabel()
         );
     }
 
@@ -169,21 +171,21 @@ public record BadVDiff(
      * It is asserted that both given nodes have the same {@link org.variantsync.diffdetective.variation.NodeType},
      * label, formula, and line numbers.
      */
-    private DiffNode mergeToGood(final VariationTreeNode before, final VariationTreeNode after) {
+    private DiffNode<L> mergeToGood(final VariationTreeNode<L> before, final VariationTreeNode<L> after) {
         Assert.assertEquals(before.getNodeType(), after.getNodeType());
         Assert.assertEquals(lines.get(before), lines.get(after));
         Assert.assertEquals(before.getFormula(), after.getFormula());
-        Assert.assertEquals(before.getLabelLines(), after.getLabelLines());
+        Assert.assertEquals(before.getLabel(), after.getLabel());
 
         final DiffLineNumberRange nlines = lines.get(before);
 
-        return new DiffNode(
+        return new DiffNode<>(
                 NON,
                 before.getNodeType(),
                 nlines.from(),
                 nlines.to(),
                 before.getFormula(),
-                (DiffNode.Label)before.getLabel()
+                before.getLabel()
         );
     }
 
@@ -192,31 +194,31 @@ public record BadVDiff(
      * @param d The DiffTree to convert to a bad diff.
      * @see BadVDiff
      */
-    public static BadVDiff fromGood(DiffTree d) {
-        record EdgeToConstruct(
-                VariationTreeNode child,
-                DiffNode parent,
+    public static <L extends Label> BadVDiff<L> fromGood(DiffTree<L> d) {
+        record EdgeToConstruct<L extends Label>(
+                VariationTreeNode<L> child,
+                DiffNode<L> parent,
                 Time t
         ) {}
 
-        final FromGoodNodeTranslation nodeTranslation = new FromGoodNodeTranslation();
+        final FromGoodNodeTranslation<L> nodeTranslation = new FromGoodNodeTranslation<>();
 
-        final Map<VariationTreeNode, VariationTreeNode>   matching = new HashMap<>();
-        final Map<VariationTreeNode, DiffType>            coloring = new HashMap<>();
-        final Map<VariationTreeNode, DiffLineNumberRange> lines    = new HashMap<>();
-        final Set<DiffNode> splittedNodes = new HashSet<>();
+        final Map<VariationTreeNode<L>, VariationTreeNode<L>> matching = new HashMap<>();
+        final Map<VariationTreeNode<L>, DiffType>             coloring = new HashMap<>();
+        final Map<VariationTreeNode<L>, DiffLineNumberRange>  lines    = new HashMap<>();
+        final Set<DiffNode<L>> splittedNodes = new HashSet<>();
 
-        final List<EdgeToConstruct> edgesToConstruct = new ArrayList<>();
+        final List<EdgeToConstruct<L>> edgesToConstruct = new ArrayList<>();
 
-        final VariationTreeNode root = fromGood(d.getRoot(), nodeTranslation, coloring, lines);
+        final VariationTreeNode<L> root = fromGood(d.getRoot(), nodeTranslation, coloring, lines);
 
         d.forAll(diffNode -> {
             if (diffNode == d.getRoot()) {
                 return;
             }
 
-            final DiffNode pbefore = diffNode.getParent(BEFORE);
-            final DiffNode pafter = diffNode.getParent(AFTER);
+            final DiffNode<L> pbefore = diffNode.getParent(BEFORE);
+            final DiffNode<L> pafter = diffNode.getParent(AFTER);
 
             final DiffType color = diffNode.getDiffType();
 
@@ -250,14 +252,14 @@ public record BadVDiff(
 
                 final DiffLineNumberRange dRange = new DiffLineNumberRange(diffNode.getFromLine(), diffNode.getToLine());
 
-                var selfs = new VariationTreeNode[2];
+                VariationTreeNode<L>[] selfs = Cast.unchecked(Array.newInstance(VariationTreeNode.class, 2));
                 Time.forAll(time -> {
-                    final VariationTreeNode self = plain(diffNode);
+                    final VariationTreeNode<L> self = plain(diffNode);
                     selfs[time.ordinal()] = self;
 
                     nodeTranslation.put(diffNode, time, self);
 
-                    edgesToConstruct.add(new EdgeToConstruct(self, diffNode.getParent(time), time));
+                    edgesToConstruct.add(new EdgeToConstruct<>(self, diffNode.getParent(time), time));
 
                     // further metadata to copy
                     lines.put(self, dRange);
@@ -269,7 +271,7 @@ public record BadVDiff(
 
                 splittedNodes.add(diffNode);
             } else {
-                final VariationTreeNode self = fromGood(diffNode, nodeTranslation, coloring, lines);
+                final VariationTreeNode<L> self = fromGood(diffNode, nodeTranslation, coloring, lines);
 
                 /*
                  * Else is important in the following branching:
@@ -280,23 +282,23 @@ public record BadVDiff(
                  *   fail since every node can have only one parent.
                  */
                 if (pbefore != null) {
-                    edgesToConstruct.add(new EdgeToConstruct(
+                    edgesToConstruct.add(new EdgeToConstruct<>(
                             self, pbefore, BEFORE
                     ));
                 } else if (pafter != null) {
-                    edgesToConstruct.add(new EdgeToConstruct(
+                    edgesToConstruct.add(new EdgeToConstruct<>(
                             self, pafter, AFTER
                     ));
                 }
             }
         });
 
-        for (final EdgeToConstruct e : edgesToConstruct) {
+        for (final EdgeToConstruct<L> e : edgesToConstruct) {
             nodeTranslation.get(e.parent, e.t).addChild(e.child);
         }
 
-        return new BadVDiff(
-                new VariationTree(root, new BadVDiffFromDiffTreeSource(d.getSource())),
+        return new BadVDiff<>(
+                new VariationTree<>(root, new BadVDiffFromDiffTreeSource(d.getSource())),
                 matching,
                 coloring,
                 lines
@@ -307,7 +309,7 @@ public record BadVDiff(
      * Inverse of {@link #fromGood(DiffTree)}.
      * Restores the DiffTree that is represented by this bad tree diff.
      */
-    public DiffTree toGood() {
+    public DiffTree<L> toGood() {
         /*
         Store the command to construct an edge from the given child to the
         given parent at the given time.
@@ -319,16 +321,16 @@ public record BadVDiff(
         (i.e., another node in the tree with which x has to be merged) has not yet been translated.
         Thus, we cannot construct an edge from the translation of x to the translation of p in place.
          */
-        record EdgeToConstruct(
-                DiffNode child,
-                VariationTreeNode parent,
+        record EdgeToConstruct<L extends Label>(
+                DiffNode<L> child,
+                VariationTreeNode<L> parent,
                 Time time
         ) {}
 
-        final List<EdgeToConstruct>            edgesToConstruct = new ArrayList<>();
-        final Map<VariationTreeNode, DiffNode> nodeTranslation  = new HashMap<>();
+        final List<EdgeToConstruct<L>>               edgesToConstruct = new ArrayList<>();
+        final Map<VariationTreeNode<L>, DiffNode<L>> nodeTranslation  = new HashMap<>();
 
-        final DiffNode root = toGood(diff.root());
+        final DiffNode<L> root = toGood(diff.root());
         nodeTranslation.put(diff.root(), root);
 
         diff.forAllPreorder(vtnode -> {
@@ -338,23 +340,23 @@ public record BadVDiff(
                 return;
             }
 
-            final VariationTreeNode parent = vtnode.getParent();
+            final VariationTreeNode<L> parent = vtnode.getParent();
             Assert.assertNotNull(parent);
 
-            final VariationTreeNode badBuddy = matching.get(vtnode);
+            final VariationTreeNode<L> badBuddy = matching.get(vtnode);
             if (badBuddy == null || !diff.contains(badBuddy)) {
                 // v was not cloned.
                 // We can just directly convert it to a DiffNode.
-                final DiffNode vGood = toGood(vtnode);
+                final DiffNode<L> vGood = toGood(vtnode);
 
                 nodeTranslation.put(vtnode, vGood);
                 coloring.get(vtnode).forAllTimesOfExistence(
-                        t -> edgesToConstruct.add(new EdgeToConstruct(vGood, parent, t))
+                        t -> edgesToConstruct.add(new EdgeToConstruct<>(vGood, parent, t))
                 );
             } else {
                 // v was cloned.
                 // We have to merge it with its cloning partner.
-                final DiffNode vGood = mergeToGood(vtnode, badBuddy);
+                final DiffNode<L> vGood = mergeToGood(vtnode, badBuddy);
 
                 final DiffType vColor = coloring.get(vtnode);
                 final DiffType badBuddyColor = coloring.get(badBuddy);
@@ -367,15 +369,15 @@ public record BadVDiff(
                 // invoke the callback for a single time:
                 // BEFORE for REM and AFTER for ADD.
                 vColor.forAllTimesOfExistence(
-                        t -> edgesToConstruct.add(new EdgeToConstruct(vGood, parent, t))
+                        t -> edgesToConstruct.add(new EdgeToConstruct<>(vGood, parent, t))
                 );
                 badBuddyColor.forAllTimesOfExistence(
-                        t -> edgesToConstruct.add(new EdgeToConstruct(vGood, badBuddy.getParent(), t))
+                        t -> edgesToConstruct.add(new EdgeToConstruct<>(vGood, badBuddy.getParent(), t))
                 );
             }
         });
 
-        for (final EdgeToConstruct e : edgesToConstruct) {
+        for (final EdgeToConstruct<L> e : edgesToConstruct) {
             nodeTranslation.get(e.parent()).addChild(e.child(), e.time());
         }
 
@@ -384,22 +386,22 @@ public record BadVDiff(
             source = s.initialDiffTree();
         }
 
-        return new DiffTree(root, source);
+        return new DiffTree<>(root, source);
     }
 
-    public BadVDiff deepCopy() {
-        final Map<VariationTreeNode, VariationTreeNode> oldToNew = new HashMap<>();
-        final VariationTree diffCopy = diff().deepCopy(oldToNew);
+    public BadVDiff<L> deepCopy() {
+        final Map<VariationTreeNode<L>, VariationTreeNode<L>> oldToNew = new HashMap<>();
+        final VariationTree<L> diffCopy = diff().deepCopy(oldToNew);
 
-        final Map<VariationTreeNode, VariationTreeNode> matchingCopy = new HashMap<>();
-        for (Map.Entry<VariationTreeNode, VariationTreeNode> entry : matching().entrySet()) {
+        final Map<VariationTreeNode<L>, VariationTreeNode<L>> matchingCopy = new HashMap<>();
+        for (Map.Entry<VariationTreeNode<L>, VariationTreeNode<L>> entry : matching().entrySet()) {
             matchingCopy.put(
                     oldToNew.get(entry.getKey()),
                     oldToNew.get(entry.getValue())
             );
         }
 
-        return new BadVDiff(
+        return new BadVDiff<>(
                 diffCopy,
                 matchingCopy,
                 MapUtils.TransKeys(coloring(), oldToNew, HashMap::new),
@@ -407,17 +409,17 @@ public record BadVDiff(
         );
     }
 
-    private void prettyPrint(final String indent, StringBuilder b, VariationTreeNode n) {
+    private void prettyPrint(final String indent, StringBuilder b, VariationTreeNode<L> n) {
         if (!n.isRoot()) {
             final String prefix = coloring.get(n).symbol + indent;
-            b.append(n.getLabelLines().stream().collect(Collectors.joining(
+            b.append(n.getLabel().getLines().stream().collect(Collectors.joining(
                     StringUtils.LINEBREAK + prefix,
                             prefix,
                             StringUtils.LINEBREAK)
             ));
         }
 
-        for (VariationTreeNode child : n.getChildren()) {
+        for (VariationTreeNode<L> child : n.getChildren()) {
             prettyPrint("  " + indent, b, child);
         }
 

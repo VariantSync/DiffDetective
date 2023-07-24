@@ -1,5 +1,6 @@
 package org.variantsync.diffdetective.variation.diff.serialize;
 
+import org.variantsync.diffdetective.variation.Label;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.variation.diff.serialize.edgeformat.EdgeLabelFormat;
@@ -21,20 +22,20 @@ import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
  * {@code Format}.
  * </ul>
  */
-public class Format {
-    private final DiffNodeLabelFormat nodeFormat;
-    private final EdgeLabelFormat edgeFormat;
+public class Format<L extends Label> {
+    private final DiffNodeLabelFormat<? super L> nodeFormat;
+    private final EdgeLabelFormat<? super L> edgeFormat;
 
-    public Format(DiffNodeLabelFormat nodeFormat, EdgeLabelFormat edgeFormat) {
+    public Format(DiffNodeLabelFormat<? super L> nodeFormat, EdgeLabelFormat<? super L> edgeFormat) {
         this.nodeFormat = nodeFormat;
         this.edgeFormat = edgeFormat;
     }
 
-    public DiffNodeLabelFormat getNodeFormat() {
+    public DiffNodeLabelFormat<? super L> getNodeFormat() {
         return nodeFormat;
     }
 
-    public EdgeLabelFormat getEdgeFormat() {
+    public EdgeLabelFormat<? super L> getEdgeFormat() {
         return edgeFormat;
     }
 
@@ -49,7 +50,7 @@ public class Format {
      * @param diffTree to be exported
      * @param callback is called for each node
      */
-    public void forEachNode(DiffTree diffTree, Consumer<DiffNode> callback) {
+    public <La extends L> void forEachNode(DiffTree<La> diffTree, Consumer<DiffNode<La>> callback) {
         diffTree.forAll(callback);
     }
 
@@ -65,7 +66,7 @@ public class Format {
      * @param diffTree to be exported
      * @param callback is called for each unique edge
      */
-    public void forEachEdge(DiffTree diffTree, Consumer<StyledEdge> callback) {
+    public <La extends L> void forEachEdge(DiffTree<La> diffTree, Consumer<StyledEdge<La>> callback) {
         diffTree.forAll((node) -> {
             var beforeParent = node.getParent(BEFORE);
             var afterParent = node.getParent(AFTER);
@@ -95,13 +96,13 @@ public class Format {
      * @param style the export style of the constructed edge
      * @param callback the consumer which is called with the resulting {@link StyledEdge}
      */
-    protected void sortedEdgeWithLabel(
-            DiffNode originalFrom,
-            DiffNode originalTo,
+    protected <La extends L> void sortedEdgeWithLabel(
+            DiffNode<La> originalFrom,
+            DiffNode<La> originalTo,
             StyledEdge.Style style,
-            Consumer<StyledEdge> callback
+            Consumer<StyledEdge<La>> callback
     ) {
         var edge = edgeFormat.getEdgeDirection().sort(originalFrom, originalTo);
-        callback.accept(new StyledEdge(edge.first(), edge.second(), style));
+        callback.accept(new StyledEdge<>(edge.first(), edge.second(), style));
     }
 }

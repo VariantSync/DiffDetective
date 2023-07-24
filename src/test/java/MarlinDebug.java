@@ -13,6 +13,7 @@ import org.variantsync.diffdetective.datasets.PatchDiffParseOptions;
 import org.variantsync.diffdetective.datasets.Repository;
 import org.variantsync.diffdetective.diff.git.CommitDiff;
 import org.variantsync.diffdetective.diff.git.PatchDiff;
+import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParser;
 import org.variantsync.diffdetective.variation.diff.parse.IllFormedAnnotationException;
@@ -92,12 +93,12 @@ public class MarlinDebug {
         Clock clock = new Clock();
         final CommitDiff commitDiff = DiffTreeParser.parseCommit(repoInspection.repo, commitHash);
         Logger.info("  Done after {}", clock.printPassedSeconds());
-        final List<DiffTreeTransformer> transform = DiffTreeMiner.Postprocessing(repoInspection.repo);
+        final List<DiffTreeTransformer<DiffLinesLabel>> transform = DiffTreeMiner.Postprocessing(repoInspection.repo);
 
         for (final PatchDiff patch : commitDiff.getPatchDiffs()) {
             if (patch.isValid()) {
                 Logger.info("  Begin processing {}", patch);
-                final DiffTree t = patch.getDiffTree();
+                final DiffTree<DiffLinesLabel> t = patch.getDiffTree();
                 Logger.info("    Begin transform");
                 clock.start();
                 DiffTreeTransformer.apply(transform, t);

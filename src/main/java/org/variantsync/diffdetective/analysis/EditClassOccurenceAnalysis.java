@@ -27,7 +27,7 @@ public class EditClassOccurenceAnalysis implements Analysis.Hooks {
 
     @Override
     public void initializeResults(Analysis analysis) {
-        analysis.append(EditClassCount.KEY, new EditClassCount());
+        analysis.append(EditClassCount.KEY, new EditClassCount(ProposedEditClasses.Instance));
     }
 
     @Override

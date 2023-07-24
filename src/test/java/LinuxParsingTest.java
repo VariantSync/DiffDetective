@@ -1,3 +1,4 @@
+import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParseOptions;
 import org.variantsync.diffdetective.variation.diff.render.DiffTreeRenderer;
@@ -15,7 +16,7 @@ public class LinuxParsingTest {
     public void test1() throws IOException, DiffParseException {
         final String testFilename = "test1.diff";
         final Path path = testDir.resolve(testFilename);
-        final DiffTree t = DiffTree.fromFile(path, new DiffTreeParseOptions(false, true));
+        final DiffTree<DiffLinesLabel> t = DiffTree.fromFile(path, new DiffTreeParseOptions(false, true));
 
 //        new FeatureExpressionFilter(LinuxKernel::isFeature).transform(t);
 

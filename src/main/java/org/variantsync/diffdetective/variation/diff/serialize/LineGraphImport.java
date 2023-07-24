@@ -7,6 +7,7 @@ import org.variantsync.diffdetective.variation.diff.DiffNode;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.variation.diff.source.DiffTreeSource;
 import org.variantsync.diffdetective.variation.diff.source.LineGraphFileSource;
+import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.NodeType;
 import org.variantsync.functjonal.Pair;
 
@@ -33,7 +34,7 @@ public class LineGraphImport {
      * @return All {@link DiffTree DiffTrees} contained in the linegraph file.
 	 * @throws IOException when {@link LineGraphImport#fromLineGraph(BufferedReader, Path, LineGraphImportOptions)} throws.
      */
-    public static List<DiffTree> fromFile(final Path path, final LineGraphImportOptions options) throws IOException {
+    public static List<DiffTree<DiffLinesLabel>> fromFile(final Path path, final LineGraphImportOptions<DiffLinesLabel> options) throws IOException {
         Assert.assertTrue(Files.isRegularFile(path));
         Assert.assertTrue(FileUtils.isLineGraph(path));
         try (BufferedReader input = Files.newBufferedReader(path)) {
@@ -49,16 +50,16 @@ public class LineGraphImport {
 	 * @param options Options for the import, such as hints for the used formats for node and edge labels.
 	 * @return All {@link DiffTree DiffTrees} contained in the linegraph text.
 	 */
-	public static List<DiffTree> fromLineGraph(final BufferedReader lineGraph, final Path originalFile, final LineGraphImportOptions options) throws IOException {
+	public static List<DiffTree<DiffLinesLabel>> fromLineGraph(final BufferedReader lineGraph, final Path originalFile, final LineGraphImportOptions<DiffLinesLabel> options) throws IOException {
 		// All DiffTrees read from the line graph
-		List<DiffTree> diffTreeList = new ArrayList<>();
-		
+		List<DiffTree<DiffLinesLabel>> diffTreeList = new ArrayList<>();
+
 		// All DiffNodes of one DiffTree for determining the root node
-		List<DiffNode> diffNodeList = new ArrayList<>();
-		
+		List<DiffNode<DiffLinesLabel>> diffNodeList = new ArrayList<>();
+
 		// A hash map of DiffNodes
 		// <id of DiffNode, DiffNode>
-		HashMap<Integer, DiffNode> diffNodes = new HashMap<>();
+		HashMap<Integer, DiffNode<DiffLinesLabel>> diffNodes = new HashMap<>();
 
 		// The previously read DiffTree
 		String previousDiffTreeLine = "";
@@ -70,7 +71,7 @@ public class LineGraphImport {
 				// the line represents a DiffTree
 				
 				if (!diffNodeList.isEmpty()) {
-					DiffTree curDiffTree = parseDiffTree(previousDiffTreeLine, originalFile, diffNodeList, options); // parse to DiffTree
+					DiffTree<DiffLinesLabel> curDiffTree = parseDiffTree(previousDiffTreeLine, originalFile, diffNodeList, options); // parse to DiffTree
 					diffTreeList.add(curDiffTree); // add newly computed DiffTree to the list of all DiffTrees
 					
 					// Remove all DiffNodes from list
@@ -82,7 +83,7 @@ public class LineGraphImport {
 				// the line represents a DiffNode
 				
 				// parse node from input line
-				final Pair<Integer, DiffNode> idAndNode = options.nodeFormat().fromLineGraphLine(ln);
+				final Pair<Integer, DiffNode<DiffLinesLabel>> idAndNode = options.nodeFormat().fromLineGraphLine(ln);
 			
 				// add DiffNode to lists of current DiffTree
 				diffNodeList.add(idAndNode.second());
@@ -104,7 +105,7 @@ public class LineGraphImport {
 		}
 
 		if (!diffNodeList.isEmpty()) {
-			DiffTree curDiffTree = parseDiffTree(previousDiffTreeLine, originalFile, diffNodeList, options); // parse to DiffTree
+			DiffTree<DiffLinesLabel> curDiffTree = parseDiffTree(previousDiffTreeLine, originalFile, diffNodeList, options); // parse to DiffTree
 			diffTreeList.add(curDiffTree); // add newly computed DiffTree to the list of all DiffTrees
 		}
 		
@@ -121,7 +122,7 @@ public class LineGraphImport {
 	 * @param options {@link LineGraphImportOptions}
 	 * @return {@link DiffTree} generated from the given, already parsed parameters.
 	 */
-	private static DiffTree parseDiffTree(final String lineGraph, final Path inFile, final List<DiffNode> diffNodeList, final LineGraphImportOptions options) {
+	private static DiffTree<DiffLinesLabel> parseDiffTree(final String lineGraph, final Path inFile, final List<DiffNode<DiffLinesLabel>> diffNodeList, final LineGraphImportOptions<DiffLinesLabel> options) {
 		DiffTreeSource diffTreeSource = options.treeFormat().fromLineGraphLine(lineGraph);
 
 		if (diffTreeSource == null || DiffTreeSource.Unknown.equals(diffTreeSource)) {
@@ -136,14 +137,14 @@ public class LineGraphImport {
 			return DiffGraph.fromNodes(diffNodeList, diffTreeSource);
 		} else if (options.graphFormat() == GraphFormat.DIFFTREE) {
 			// If you should interpret the input data as DiffTrees, always expect a root to be present. Parse all nodes (v) to a list of nodes. Search for the root. Assert that there is exactly one root.
-            DiffNode root = null;
-            for (final DiffNode v : diffNodeList) {
+            DiffNode<DiffLinesLabel> root = null;
+            for (final DiffNode<DiffLinesLabel> v : diffNodeList) {
                 if (v.isRoot()) {
                     // v is root candidate
                     if (root != null) {
                         throw new RuntimeException("Not a DiffTree: Got more than one root! Got \"" + root + "\" and \"" + v + "\"!");
                     }
-                    if (v.nodeType == NodeType.IF) {
+                    if (v.getNodeType() == NodeType.IF) {
                         root = v;
                     } else {
                         throw new RuntimeException("Not a DiffTree but a DiffGraph: The node \"" + v + "\" is not labeled as IF but has no parents!");
@@ -155,9 +156,9 @@ public class LineGraphImport {
                 throw new RuntimeException("Not a DiffTree but a DiffGraph: No root found!");
             }
 
-//            countRootTypes.merge(root.nodeType, 1, Integer::sum);
+//            countRootTypes.merge(root.getNodeType(), 1, Integer::sum);
 
-			return new DiffTree(root, diffTreeSource);
+			return new DiffTree<>(root, diffTreeSource);
 		} else {
 			throw new RuntimeException("Unsupported GraphFormat");
 		}

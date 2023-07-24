@@ -21,6 +21,7 @@ import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.preliminary.GitDiff;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.util.StringUtils;
+import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParser;
 import org.variantsync.functjonal.iteration.MappedIterator;
@@ -36,7 +37,6 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /**
  * This class creates a GitDiff-object from a git repository (Git-object).
@@ -375,7 +375,7 @@ public class GitDiffer {
                         fullDiff += StringUtils.LINEBREAK;
                     }
 
-                    final DiffTree diffTree = DiffTreeParser.createDiffTree(
+                    final DiffTree<DiffLinesLabel> diffTree = DiffTreeParser.createDiffTree(
                             fullDiff,
                             parseOptions.diffTreeParseOptions()
                     );

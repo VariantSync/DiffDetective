@@ -4,15 +4,17 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.variantsync.diffdetective.variation.diff.transform.DiffTreeTransformer;
+import org.variantsync.diffdetective.variation.DiffLinesLabel;
 
 public class PreprocessingAnalysis implements Analysis.Hooks {
-    private final List<DiffTreeTransformer> preprocessors;
+    private final List<DiffTreeTransformer<DiffLinesLabel>> preprocessors;
 
-    public PreprocessingAnalysis(List<DiffTreeTransformer> preprocessors) {
+    public PreprocessingAnalysis(List<DiffTreeTransformer<DiffLinesLabel>> preprocessors) {
         this.preprocessors = preprocessors;
     }
 
-    public PreprocessingAnalysis(DiffTreeTransformer... preprocessors) {
+    @SafeVarargs
+    public PreprocessingAnalysis(DiffTreeTransformer<DiffLinesLabel>... preprocessors) {
         this.preprocessors = Arrays.asList(preprocessors);
     }
 

@@ -1,5 +1,6 @@
 package org.variantsync.diffdetective.variation.diff.traverse;
 
+import org.variantsync.diffdetective.variation.Label;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
 
@@ -21,11 +22,11 @@ import java.util.function.Consumer;
  *
  * @author Paul Bittner
  */
-public class DiffTreeTraversal {
-    private final Set<DiffNode> visited;
-    private final DiffTreeVisitor visitor;
+public class DiffTreeTraversal<L extends Label> {
+    private final Set<DiffNode<L>> visited;
+    private final DiffTreeVisitor<L> visitor;
 
-    private DiffTreeTraversal(final DiffTreeVisitor visitor) {
+    private DiffTreeTraversal(final DiffTreeVisitor<L> visitor) {
         this.visitor = visitor;
         this.visited = new HashSet<>();
     }
@@ -35,8 +36,8 @@ public class DiffTreeTraversal {
      * @param visitor Visitor that is invoked on each node and always decides how to proceed the traversal.
      * @return The new traversal.
      */
-    public static DiffTreeTraversal with(final DiffTreeVisitor visitor) {
-        return new DiffTreeTraversal(visitor);
+    public static <L extends Label> DiffTreeTraversal<L> with(final DiffTreeVisitor<L> visitor) {
+        return new DiffTreeTraversal<>(visitor);
     }
 
     /**
@@ -44,7 +45,7 @@ public class DiffTreeTraversal {
      * @param procedure Callback that is invoked exactly once on each DiffNode in a DiffTree.
      * @return The new traversal that will visit each node exactly once.
      */
-    public static DiffTreeTraversal forAll(final Consumer<DiffNode> procedure) {
+    public static <L extends Label> DiffTreeTraversal<L> forAll(final Consumer<DiffNode<L>> procedure) {
         return with((traversal, subtree) -> {
             procedure.accept(subtree);
             traversal.visitChildrenOf(subtree);
@@ -55,7 +56,7 @@ public class DiffTreeTraversal {
      * Start the traversal of the given tree at its root.
      * @param tree The tree to traverse.
      */
-    public void visit(final DiffTree tree) {
+    public void visit(final DiffTree<L> tree) {
         visit(tree.getRoot());
     }
 
@@ -63,7 +64,7 @@ public class DiffTreeTraversal {
      * Start the traversal of a DiffTree at the given DiffNode.
      * @param subtree The node at which to start the traversal.
      */
-    public void visit(final DiffNode subtree) {
+    public void visit(final DiffNode<L> subtree) {
         if (markAsVisited(subtree)) {
             visitor.visit(this, subtree);
         }
@@ -73,8 +74,8 @@ public class DiffTreeTraversal {
      * Continues the traversal by visiting all children of the given node sequentially.
      * @param subtree The node whose children to visit.
      */
-    public void visitChildrenOf(final DiffNode subtree) {
-        for (final DiffNode child : subtree.getAllChildren()) {
+    public void visitChildrenOf(final DiffNode<L> subtree) {
+        for (final DiffNode<L> child : subtree.getAllChildren()) {
             visit(child);
         }
     }
@@ -85,7 +86,7 @@ public class DiffTreeTraversal {
      * @return True if the node was unvisited and is now marked visited.
      *         False if the node was already marked visited.
      */
-    private boolean markAsVisited(final DiffNode node) {
+    private boolean markAsVisited(final DiffNode<L> node) {
         return visited.add(node);
     }
 }

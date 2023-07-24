@@ -1,8 +1,10 @@
 package org.variantsync.diffdetective.variation.diff;
 
+import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.diff.source.DiffTreeSource;
 
 import java.util.Collection;
+
 import static org.variantsync.diffdetective.variation.diff.Time.AFTER;
 import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
 
@@ -20,7 +22,7 @@ public final class DiffGraph {
     /**
      * Invokes {@link DiffGraph#fromNodes(Collection, DiffTreeSource)} )} with an unknown DiffTreeSource.
      */
-    public static DiffTree fromNodes(final Collection<DiffNode> nodes) {
+    public static DiffTree<DiffLinesLabel> fromNodes(final Collection<DiffNode<DiffLinesLabel>> nodes) {
         return fromNodes(nodes, DiffTreeSource.Unknown);
     }
 
@@ -31,9 +33,8 @@ public final class DiffGraph {
      * @param source the source where the DiffGraph came from.
      * @return A DiffTree representing the DiffGraph with a synthetic root node.
      */
-    public static DiffTree fromNodes(final Collection<DiffNode> nodes, final DiffTreeSource source) {
-        final DiffNode newRoot = DiffNode.createRoot();
-        newRoot.setLabel(DIFFGRAPH_LABEL);
+    public static DiffTree<DiffLinesLabel> fromNodes(final Collection<DiffNode<DiffLinesLabel>> nodes, final DiffTreeSource source) {
+        final DiffNode<DiffLinesLabel> newRoot = DiffNode.createRoot(DiffLinesLabel.ofCodeBlock(DIFFGRAPH_LABEL));
         nodes.stream()
                 .filter(DiffNode::isRoot)
                 .forEach(n ->
@@ -41,6 +42,6 @@ public final class DiffGraph {
                                 () -> newRoot.addChild(n, BEFORE),
                                 () -> newRoot.addChild(n, AFTER)
                         ));
-        return new DiffTree(newRoot, source);
+        return new DiffTree<>(newRoot, source);
     }
 }

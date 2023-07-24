@@ -9,6 +9,7 @@ import org.variantsync.diffdetective.diff.git.DiffFilter;
 import org.variantsync.diffdetective.diff.git.PatchDiff;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.util.IO;
+import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.diff.DiffTree;
 import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParseOptions;
 import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParser;
@@ -46,10 +47,10 @@ public class GitDifferTest {
             var actualPath = testDir.resolve(commitHash + "_actual.lg");
             var expectedPath = testDir.resolve(commitHash + ".lg");
 
-            DiffTree diffTree = patch.getDiffTree();
+            DiffTree<DiffLinesLabel> diffTree = patch.getDiffTree();
 
             try (var output = IO.newBufferedOutputStream(actualPath)) {
-                new LineGraphExporter(new Format(new FullNodeFormat(), new ChildOrderEdgeFormat()))
+                new LineGraphExporter<>(new Format<>(new FullNodeFormat(), new ChildOrderEdgeFormat<>()))
                         .exportDiffTree(diffTree, output);
             }
 
