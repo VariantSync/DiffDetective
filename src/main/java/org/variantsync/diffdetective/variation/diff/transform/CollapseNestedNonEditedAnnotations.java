@@ -4,9 +4,9 @@ import org.prop4j.And;
 import org.prop4j.Node;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
-import org.variantsync.diffdetective.variation.diff.DiffTree;
+import org.variantsync.diffdetective.variation.diff.VariationDiff;
 import org.variantsync.diffdetective.variation.diff.DiffType;
-import org.variantsync.diffdetective.variation.diff.traverse.DiffTreeTraversal;
+import org.variantsync.diffdetective.variation.diff.traverse.VariationDiffTraversal;
 import org.variantsync.functjonal.Cast;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.NodeType;
@@ -31,19 +31,19 @@ import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
  *
  * @author Paul Bittner
  */
-public class CollapseNestedNonEditedAnnotations implements DiffTreeTransformer<DiffLinesLabel> {
+public class CollapseNestedNonEditedAnnotations implements VariationDiffTransformer<DiffLinesLabel> {
     private final List<Stack<DiffNode<DiffLinesLabel>>> chainCandidates = new ArrayList<>();
     private final List<Stack<DiffNode<DiffLinesLabel>>> chains = new ArrayList<>();
 
     @Override
-    public List<Class<? extends DiffTreeTransformer<DiffLinesLabel>>> getDependencies() {
+    public List<Class<? extends VariationDiffTransformer<DiffLinesLabel>>> getDependencies() {
         return List.of(Cast.unchecked(CutNonEditedSubtrees.class));
     }
 
     @Override
-    public void transform(final DiffTree<DiffLinesLabel> diffTree) {
+    public void transform(final VariationDiff<DiffLinesLabel> variationDiff) {
         // find all chains
-        diffTree.traverse(this::findChains);
+        variationDiff.traverse(this::findChains);
 
         // Ignore unfinished chainCandidates.
         // For all these chains, no end was found, so they should not be extracted.
@@ -70,7 +70,7 @@ public class CollapseNestedNonEditedAnnotations implements DiffTreeTransformer<D
         chains.add(chain);
     }
 
-    private void findChains(DiffTreeTraversal<DiffLinesLabel> traversal, DiffNode<DiffLinesLabel> subtree) {
+    private void findChains(VariationDiffTraversal<DiffLinesLabel> traversal, DiffNode<DiffLinesLabel> subtree) {
         if (subtree.isNon() && subtree.isAnnotation()) {
             if (isHead(subtree)) {
                 final Stack<DiffNode<DiffLinesLabel>> s = new Stack<>();

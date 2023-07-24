@@ -75,7 +75,7 @@ public class LineGraphExportAnalysis implements Analysis.Hooks {
     }
 
     @Override
-    public boolean analyzeDiffTree(Analysis analysis) throws Exception {
+    public boolean analyzeVariationDiff(Analysis analysis) throws Exception {
         // BUG? All linegraphs are aggregated in the result but actually, we want to export them to a separate file
         //      linegraphs should be aggregated somewhere else and then exported, for example, at the end of a thread's
         //      job.

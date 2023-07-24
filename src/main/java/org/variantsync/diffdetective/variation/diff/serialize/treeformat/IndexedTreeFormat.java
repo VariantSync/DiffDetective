@@ -1,13 +1,13 @@
 package org.variantsync.diffdetective.variation.diff.serialize.treeformat;
 
-import org.variantsync.diffdetective.variation.diff.source.DiffTreeSource;
+import org.variantsync.diffdetective.variation.diff.source.VariationDiffSource;
 
 /**
  * Exports tree by indexing them.
- * This format keeps an internal counter that is incremented on each call of {@link #toLabel(DiffTreeSource)}.
+ * This format keeps an internal counter that is incremented on each call of {@link #toLabel(VariationDiffSource)}.
  * Thus, every produced label will have the successive index of the previously produced label.
  */
-public class IndexedTreeFormat implements DiffTreeLabelFormat {
+public class IndexedTreeFormat implements VariationDiffLabelFormat {
     private int nextId = 0;
 
     /**
@@ -25,12 +25,12 @@ public class IndexedTreeFormat implements DiffTreeLabelFormat {
     }
 
     @Override
-    public DiffTreeSource fromLabel(String label) {
-        return DiffTreeSource.Unknown;
+    public VariationDiffSource fromLabel(String label) {
+        return VariationDiffSource.Unknown;
     }
 
     @Override
-    public String toLabel(DiffTreeSource diffTreeSource) {
+    public String toLabel(VariationDiffSource variationDiffSource) {
         final String result = "" + nextId;
         ++nextId;
         return result;

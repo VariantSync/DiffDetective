@@ -17,7 +17,7 @@ import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.NodeType;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
-import org.variantsync.diffdetective.variation.diff.DiffTree;
+import org.variantsync.diffdetective.variation.diff.VariationDiff;
 import org.variantsync.diffdetective.variation.diff.DiffType;
 import org.variantsync.functjonal.list.FilteredMappedListView;
 
@@ -28,7 +28,7 @@ import java.util.Stack;
 import java.util.regex.Pattern;
 
 /**
- * Parser that parses {@link DiffTree}s from text-based diffs.
+ * Parser that parses {@link VariationDiff}s from text-based diffs.
  * <p>
  * Note: Weird line continuations and comments can cause misidentification of conditional macros.
  * The following examples are all correct according to the C11 standard: (comment end is marked by
@@ -50,7 +50,7 @@ import java.util.regex.Pattern;
  * #endif
  * </code>
  */
-public class DiffTreeParser {
+public class VariationDiffParser {
     /**
      * One line of a diff.
      * In contrast to {@link LogicalLine}, this represents a physical line corresponding to a diff
@@ -74,24 +74,24 @@ public class DiffTreeParser {
 
 
     /* Settings */
-    final DiffTreeParseOptions options;
+    final VariationDiffParseOptions options;
 
 
     /* State */
 
     /**
      * A stack containing the current path before the edit from the root of the currently parsed
-     * {@link DiffTree} to the currently parsed {@link DiffNode}.
+     * {@link VariationDiff} to the currently parsed {@link DiffNode}.
      * <p>
-     * The granularity of the {@link DiffTree}s parsed by this class is always lines because line
+     * The granularity of the {@link VariationDiff}s parsed by this class is always lines because line
      * diffs can't represent different granularities. This implies that there are no nested artifact
-     * nodes in the resulting {@link DiffTree} and therefore {@code beforeStack} will never contain
+     * nodes in the resulting {@link VariationDiff} and therefore {@code beforeStack} will never contain
      * an artifact node.
      */
     private final Stack<DiffNode<DiffLinesLabel>> beforeStack = new Stack<>();
     /**
      * A stack containing the current path after the edit from the root of the currently parsed
-     * {@link DiffTree} to the currently parsed {@link DiffNode}.
+     * {@link VariationDiff} to the currently parsed {@link DiffNode}.
      * <p>
      * See {@link #beforeStack} for more explanations.
      */
@@ -101,45 +101,45 @@ public class DiffTreeParser {
      * The last artifact node which was parsed by {@link #parseLine}.
      * If the last parsed {@code DiffNode} was not an artifact, {@code lastArtifact} is {@code null}.
      * <p>
-     * This state is used to implement {@link DiffTreeParseOptions#collapseMultipleCodeLines()}.
+     * This state is used to implement {@link VariationDiffParseOptions#collapseMultipleCodeLines()}.
      */
     private DiffNode<DiffLinesLabel> lastArtifact = null;
 
 
     /**
-     * The same as {@link DiffTreeParser#createDiffTree(BufferedReader, DiffTreeParseOptions)}
+     * The same as {@link VariationDiffParser#createVariationDiff(BufferedReader, VariationDiffParseOptions)}
      * but with the diff given as a single string with line breaks instead of a {@link BufferedReader}.
      *
      * @throws DiffParseException if {@code fullDiff} couldn't be parsed
      */
-    public static DiffTree<DiffLinesLabel> createDiffTree(
+    public static VariationDiff<DiffLinesLabel> createVariationDiff(
             final String fullDiff,
-            final DiffTreeParseOptions parseOptions
+            final VariationDiffParseOptions parseOptions
     ) throws DiffParseException {
         try {
-            return createDiffTree(new BufferedReader(new StringReader(fullDiff)), parseOptions);
+            return createVariationDiff(new BufferedReader(new StringReader(fullDiff)), parseOptions);
         } catch (IOException e) {
             throw new AssertionError("No actual IO should be performed because only a StringReader is used");
         }
     }
 
     /**
-     * Default parsing method for {@link DiffTree}s from diffs.
+     * Default parsing method for {@link VariationDiff}s from diffs.
      * This implementation has options to collapse multiple code lines into one node and to
      * discard empty lines.
      * This parsing algorithm is described in detail in Sören Viegener's bachelor's thesis.
      *
      * @param fullDiff The full diff of a patch obtained from a buffered reader.
-     * @param options {@link DiffTreeParseOptions} for the parsing process.
-     * @return A parsed {@link DiffTree} upon success or an error indicating why parsing failed.
+     * @param options {@link VariationDiffParseOptions} for the parsing process.
+     * @return A parsed {@link VariationDiff} upon success or an error indicating why parsing failed.
      * @throws IOException when reading from {@code fullDiff} fails.
      * @throws DiffParseException if an error in the diff or macro syntax is detected
      */
-    public static DiffTree<DiffLinesLabel> createDiffTree(
+    public static VariationDiff<DiffLinesLabel> createVariationDiff(
             BufferedReader fullDiff,
-            final DiffTreeParseOptions options
+            final VariationDiffParseOptions options
     ) throws IOException, DiffParseException {
-        return new DiffTreeParser(
+        return new VariationDiffParser(
             options
         ).parse(() -> {
             String line = fullDiff.readLine();
@@ -155,20 +155,20 @@ public class DiffTreeParser {
 
     /**
      * Parses a variation tree from a source file.
-     * This method is similar to {@link #createDiffTree(BufferedReader, DiffTreeParseOptions)}
+     * This method is similar to {@link #createVariationDiff(BufferedReader, VariationDiffParseOptions)}
      * but acts as if all lines where unmodified.
      *
      * @param file The source code file (not a diff) to be parsed.
-     * @param options {@link DiffTreeParseOptions} for the parsing process.
-     * @return A parsed {@link DiffTree}.
+     * @param options {@link VariationDiffParseOptions} for the parsing process.
+     * @return A parsed {@link VariationDiff}.
      * @throws IOException iff {@code file} throws an {@code IOException}
      * @throws DiffParseException if an error in the diff or macro syntax is detected
      */
-    public static DiffTree<DiffLinesLabel> createVariationTree(
+    public static VariationDiff<DiffLinesLabel> createVariationTree(
             BufferedReader file,
-            DiffTreeParseOptions options
+            VariationDiffParseOptions options
     ) throws IOException, DiffParseException {
-        return new DiffTreeParser(
+        return new VariationDiffParser(
             options
         ).parse(() -> {
             String line = file.readLine();
@@ -191,10 +191,10 @@ public class DiffTreeParser {
     /**
      * Initializes the parse state.
      *
-     * @see #createDiffTree(BufferedReader, DiffTreeParseOptions)
+     * @see #createVariationDiff(BufferedReader, VariationDiffParseOptions)
      */
-    private DiffTreeParser(
-            DiffTreeParseOptions options
+    private VariationDiffParser(
+            VariationDiffParseOptions options
     ) {
         this.options = options;
     }
@@ -204,12 +204,12 @@ public class DiffTreeParser {
      *
      * @param lines should supply successive lines of the diff to be parsed, or {@code null} if
      * there are no more lines to be parsed.
-     * @return the parsed {@code DiffTree}
+     * @return the parsed {@code VariationDiff}
      * @throws IOException iff {@code lines.get()} throws {@code IOException}
      * @throws DiffParseException if an error in the line diff or the underlying preprocessor syntax
      * is detected
      */
-    private DiffTree<DiffLinesLabel> parse(
+    private VariationDiff<DiffLinesLabel> parse(
         FailableSupplier<DiffLine, IOException> lines
     ) throws IOException, DiffParseException {
         DiffNode<DiffLinesLabel> root = DiffNode.createRoot(new DiffLinesLabel());
@@ -292,7 +292,7 @@ public class DiffTreeParser {
         afterStack.clear();
         lastArtifact = null;
 
-        return new DiffTree<>(root);
+        return new VariationDiff<>(root);
     }
 
     /**
@@ -421,7 +421,7 @@ public class DiffTreeParser {
     }
 
     /**
-     * Adds a fully parsed node into the {@code DiffTree}.
+     * Adds a fully parsed node into the {@code VariationDiff}.
      * Annotations also pushed to the relevant stacks.
      *
      * @param newNode the fully parsed node to be added

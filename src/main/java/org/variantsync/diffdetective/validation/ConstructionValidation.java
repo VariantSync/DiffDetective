@@ -37,11 +37,11 @@ import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.Label;
 import org.variantsync.diffdetective.variation.diff.Construction;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
-import org.variantsync.diffdetective.variation.diff.DiffTree;
+import org.variantsync.diffdetective.variation.diff.VariationDiff;
 import org.variantsync.diffdetective.variation.diff.Projection;
 import org.variantsync.diffdetective.variation.diff.Time;
-import org.variantsync.diffdetective.variation.diff.filter.DiffTreeFilter;
-import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParser;
+import org.variantsync.diffdetective.variation.diff.filter.VariationDiffFilter;
+import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParser;
 import org.variantsync.functjonal.category.InplaceSemigroup;
 import org.variantsync.functjonal.map.MergeMap;
 
@@ -54,11 +54,11 @@ import static org.variantsync.diffdetective.variation.diff.Time.AFTER;
 import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
 
 /**
- * Validates, evaluates and benchmarks the construction of {@link DiffTree}s using Gumtree.
+ * Validates, evaluates and benchmarks the construction of {@link VariationDiff}s using Gumtree.
  *
  * This experiment computes the variation diff from
  * <ol>
- * <li>a line matching ({@link DiffTreeParser#createDiffTree Viegener's algorithm}
+ * <li>a line matching ({@link VariationDiffParser#createVariationDiff Viegener's algorithm}
  * <li>a tree matching computed by Gumtree ({@link Construction#diffUsingMatching}
  * <li>a hybrid matching ({@link Construction#improveMatching})
  * </ol>
@@ -184,7 +184,7 @@ public class ConstructionValidation implements Analysis.Hooks {
                 new Analysis(
                     "ConstructionValidation",
                     List.of(
-                        new FilterAnalysis(DiffTreeFilter.notEmpty()),
+                        new FilterAnalysis(VariationDiffFilter.notEmpty()),
                         new ConstructionValidation(
                             // new CompositeMatchers.XyMatcher(),
                             new CompositeMatchers.ClassicGumtree(),
@@ -207,25 +207,25 @@ public class ConstructionValidation implements Analysis.Hooks {
     private class Statistics {
         public long variationTreeParseDuration = 0;
         public boolean oldAndHybridAreEqual = false;
-        public DiffTreeStatistics[] diffTree = new DiffTreeStatistics[3];
+        public VariationDiffStatistics[] variationDiff = new VariationDiffStatistics[3];
 
         public Statistics() {
-            for (int i = 0; i < diffTree.length; ++i) {
-                diffTree[i] = new DiffTreeStatistics();
+            for (int i = 0; i < variationDiff.length; ++i) {
+                variationDiff[i] = new VariationDiffStatistics();
             }
         }
 
         public void writeCsvCells(Writer destination) throws IOException {
             writeCsvCell(destination, String.valueOf(variationTreeParseDuration));
             destination.write(String.valueOf(oldAndHybridAreEqual));
-            for (int i = 0; i < diffTree.length; ++i) {
+            for (int i = 0; i < variationDiff.length; ++i) {
                 destination.write(CSV.DEFAULT_CSV_DELIMITER);
-                diffTree[i].writeCsvCells(destination);
+                variationDiff[i].writeCsvCells(destination);
             }
         }
     }
 
-    private class DiffTreeStatistics {
+    private class VariationDiffStatistics {
         public long matchingDuration = 0;
         public long constructionDuration = 0;
         public long metricDuration = 0;
@@ -275,46 +275,46 @@ public class ConstructionValidation implements Analysis.Hooks {
 
 
     @Override
-    public boolean analyzeDiffTree(Analysis analysis) throws Exception, DiffParseException {
+    public boolean analyzeVariationDiff(Analysis analysis) throws Exception, DiffParseException {
         Logger.info("current patch: {} {} (by thread {})", analysis.getCurrentPatch().getFileName(), analysis.getCurrentPatch().getCommitHash(), Thread.currentThread().getId());
         Statistics statistics = new Statistics();
         try {
-            statistics.diffTree[0].matchingDuration = 0;
-            statistics.diffTree[0].constructionDuration = 0;
+            statistics.variationDiff[0].matchingDuration = 0;
+            statistics.variationDiff[0].constructionDuration = 0;
 
             Clock clock = new Clock();
-            final DiffTree<DiffLinesLabel> beforeVariationTree = parseVariationTree(analysis, analysis.getCurrentCommit().getParent(0));
-            final DiffTree<DiffLinesLabel> afterVariationTree = parseVariationTree(analysis, analysis.getCurrentCommit());
+            final VariationDiff<DiffLinesLabel> beforeVariationTree = parseVariationTree(analysis, analysis.getCurrentCommit().getParent(0));
+            final VariationDiff<DiffLinesLabel> afterVariationTree = parseVariationTree(analysis, analysis.getCurrentCommit());
             statistics.variationTreeParseDuration += clock.getPassedMilliseconds();
 
             beforeVariationTree.assertConsistency();
             afterVariationTree.assertConsistency();
 
             clock.start();
-            final DiffNode<DiffLinesLabel> newDiffTreeRoot = Construction.diffUsingMatching(
+            final DiffNode<DiffLinesLabel> newVariationDiffRoot = Construction.diffUsingMatching(
                 beforeVariationTree.getRoot().projection(BEFORE),
                 afterVariationTree.getRoot().projection(AFTER),
-                augmentedMatcher(statistics.diffTree[1])
+                augmentedMatcher(statistics.variationDiff[1])
             );
-            final var newDiffTree = new DiffTree<DiffLinesLabel>(newDiffTreeRoot);
-            statistics.diffTree[1].constructionDuration += clock.getPassedMilliseconds() - statistics.diffTree[1].matchingDuration;
+            final var newVariationDiff = new VariationDiff<DiffLinesLabel>(newVariationDiffRoot);
+            statistics.variationDiff[1].constructionDuration += clock.getPassedMilliseconds() - statistics.variationDiff[1].matchingDuration;
 
-            newDiffTree.assertConsistency();
+            newVariationDiff.assertConsistency();
 
-            final DiffTree<DiffLinesLabel> improvedDiffTree = analysis.getCurrentDiffTree().deepCopy();
-            improvedDiffTree.assertConsistency();
+            final VariationDiff<DiffLinesLabel> improvedVariationDiff = analysis.getCurrentVariationDiff().deepCopy();
+            improvedVariationDiff.assertConsistency();
             clock.start();
-            Construction.improveMatching(improvedDiffTree.getRoot(), augmentedMatcher(statistics.diffTree[2]));
-            statistics.diffTree[2].constructionDuration += clock.getPassedMilliseconds() - statistics.diffTree[2].matchingDuration;
-            improvedDiffTree.assertConsistency();
+            Construction.improveMatching(improvedVariationDiff.getRoot(), augmentedMatcher(statistics.variationDiff[2]));
+            statistics.variationDiff[2].constructionDuration += clock.getPassedMilliseconds() - statistics.variationDiff[2].matchingDuration;
+            improvedVariationDiff.assertConsistency();
 
-            counts(analysis.getCurrentDiffTree(), statistics.diffTree[0]);
-            counts(newDiffTree, statistics.diffTree[1]);
-            counts(improvedDiffTree, statistics.diffTree[2]);
+            counts(analysis.getCurrentVariationDiff(), statistics.variationDiff[0]);
+            counts(newVariationDiff, statistics.variationDiff[1]);
+            counts(improvedVariationDiff, statistics.variationDiff[2]);
 
-            var compareResults0 = compare(analysis.getCurrentDiffTree(), newDiffTree);
-            var compareResults1 = compare(analysis.getCurrentDiffTree(), improvedDiffTree);
-            var compareResults2 = compare(newDiffTree, improvedDiffTree);
+            var compareResults0 = compare(analysis.getCurrentVariationDiff(), newVariationDiff);
+            var compareResults1 = compare(analysis.getCurrentVariationDiff(), improvedVariationDiff);
+            var compareResults2 = compare(newVariationDiff, improvedVariationDiff);
 
             var result = analysis.get(RESULT);
             result.comparisons[0].append(compareResults0);
@@ -337,7 +337,7 @@ public class ConstructionValidation implements Analysis.Hooks {
         destination.close();
     }
 
-    private void counts(DiffTree<DiffLinesLabel> tree, DiffTreeStatistics statistics) {
+    private void counts(VariationDiff<DiffLinesLabel> tree, VariationDiffStatistics statistics) {
         Clock clock = new Clock();
         tree.forAll(node -> {
             ++statistics.nodeCount;
@@ -374,7 +374,7 @@ public class ConstructionValidation implements Analysis.Hooks {
         statistics.metricDuration += clock.getPassedMilliseconds();
     }
 
-    private DiffTree<DiffLinesLabel> parseVariationTree(Analysis analysis, RevCommit commit) throws IOException, DiffParseException {
+    private VariationDiff<DiffLinesLabel> parseVariationTree(Analysis analysis, RevCommit commit) throws IOException, DiffParseException {
         try (BufferedReader afterFile =
             new BufferedReader(
                 /*
@@ -389,11 +389,11 @@ public class ConstructionValidation implements Analysis.Hooks {
                         analysis.getCurrentPatch().getFileName()),
                     0xfeff)) // BOM, same as GitDiffer.BOM_PATTERN
         ) {
-            return DiffTreeParser.createVariationTree(afterFile, analysis.getRepository().getParseOptions().diffTreeParseOptions());
+            return VariationDiffParser.createVariationTree(afterFile, analysis.getRepository().getParseOptions().variationDiffParseOptions());
         }
     }
 
-    private <L extends Label> ComparisonResult compare(DiffTree<L> a, DiffTree<L> b) {
+    private <L extends Label> ComparisonResult compare(VariationDiff<L> a, VariationDiff<L> b) {
         ComparisonResult comparisonResult = new ComparisonResult();
         boolean[] equal = new boolean[] { true };
         Clock clock = new Clock();
@@ -423,7 +423,7 @@ public class ConstructionValidation implements Analysis.Hooks {
         return comparisonResult;
     }
 
-    private <L extends Label> void parallelPreOrderWalk(DiffTree<L> nodeA, DiffTree<L> nodeB, BiConsumer<DiffNode<L>, DiffNode<L>> consumer) {
+    private <L extends Label> void parallelPreOrderWalk(VariationDiff<L> nodeA, VariationDiff<L> nodeB, BiConsumer<DiffNode<L>, DiffNode<L>> consumer) {
         Time.forAll(time -> {
             parallelPreOrderWalk(
                 nodeA.getRoot().projection(time),
@@ -469,7 +469,7 @@ public class ConstructionValidation implements Analysis.Hooks {
         Assert.assertFalse(childrenB.hasNext());
     }
 
-    private Matcher augmentedMatcher(DiffTreeStatistics statistics) {
+    private Matcher augmentedMatcher(VariationDiffStatistics statistics) {
         return new Matcher() {
             @Override
             public MappingStore match(Tree src, Tree dst, MappingStore mappings) {

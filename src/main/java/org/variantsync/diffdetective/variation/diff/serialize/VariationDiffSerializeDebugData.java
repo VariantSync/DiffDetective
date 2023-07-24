@@ -11,11 +11,11 @@ import java.util.LinkedHashMap;
  * Debug data that keeps track of the number of exported nodes and their diffTypes.
  * @author Paul Bittner
  */
-public class DiffTreeSerializeDebugData implements Metadata<DiffTreeSerializeDebugData> {
+public class VariationDiffSerializeDebugData implements Metadata<VariationDiffSerializeDebugData> {
     /**
      * Inplace semigroup that sums all counts and writes them to the first given debug data.
      */
-    public static final InplaceSemigroup<DiffTreeSerializeDebugData> ISEMIGROUP = (a, b) -> {
+    public static final InplaceSemigroup<VariationDiffSerializeDebugData> ISEMIGROUP = (a, b) -> {
         a.numExportedNonNodes += b.numExportedNonNodes;
         a.numExportedAddNodes += b.numExportedAddNodes;
         a.numExportedRemNodes += b.numExportedRemNodes;
@@ -53,7 +53,7 @@ public class DiffTreeSerializeDebugData implements Metadata<DiffTreeSerializeDeb
     }
 
     @Override
-    public InplaceSemigroup<DiffTreeSerializeDebugData> semigroup() {
+    public InplaceSemigroup<VariationDiffSerializeDebugData> semigroup() {
         return ISEMIGROUP;
     }
 }

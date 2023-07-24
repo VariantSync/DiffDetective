@@ -82,7 +82,7 @@ public class ShortTable extends TableDefinition {
                 col("\\#diffs", RIGHT, row -> t.makeReadable(row.get(StatisticsAnalysis.RESULT).processedTrees)),
                 col("\\#artifact nodes", RIGHT_DASH, row -> t.makeReadable(row
                         .get(EditClassCount.KEY)
-                        .getOccurences()
+                        .getOccurrences()
                         .values().stream()
                         .map(EditClassCount.Occurrences::getTotalAmount)
                         .reduce(0, Integer::sum)
@@ -113,7 +113,7 @@ public class ShortTable extends TableDefinition {
      * @see column
      */
     private static String absoluteCountOf(final ShortTable t, final EditClass editClass, final ContentRow row) {
-        return t.makeReadable(row.get(EditClassCount.KEY).getOccurences().get(editClass).getTotalAmount());
+        return t.makeReadable(row.get(EditClassCount.KEY).getOccurrences().get(editClass).getTotalAmount());
     }
 
     /**
@@ -128,7 +128,7 @@ public class ShortTable extends TableDefinition {
      */
     private static String relativeCountOf(final ShortTable t, final EditClass editClass, final ContentRow row) {
         final LinkedHashMap<EditClass, EditClassCount.Occurrences> editClassOccurrences =
-                row.get(EditClassCount.KEY).getOccurences();
+                row.get(EditClassCount.KEY).getOccurrences();
 
         int numTotalMatches = 0;
         for (final Map.Entry<EditClass, EditClassCount.Occurrences> occurrence : editClassOccurrences.entrySet()) {

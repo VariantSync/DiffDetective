@@ -12,13 +12,13 @@ import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.Label;
-import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParseOptions;
-import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParser;
-import org.variantsync.diffdetective.variation.diff.source.DiffTreeSource;
+import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParseOptions;
+import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParser;
 import org.variantsync.diffdetective.variation.diff.source.PatchFile;
 import org.variantsync.diffdetective.variation.diff.source.PatchString;
-import org.variantsync.diffdetective.variation.diff.traverse.DiffTreeTraversal;
-import org.variantsync.diffdetective.variation.diff.traverse.DiffTreeVisitor;
+import org.variantsync.diffdetective.variation.diff.source.VariationDiffSource;
+import org.variantsync.diffdetective.variation.diff.traverse.VariationDiffTraversal;
+import org.variantsync.diffdetective.variation.diff.traverse.VariationDiffVisitor;
 import org.variantsync.functjonal.Cast;
 import org.variantsync.functjonal.Result;
 
@@ -43,64 +43,64 @@ import static org.variantsync.functjonal.Functjonal.when;
 /**
  * Implementation of variation tree diffs from our ESEC/FSE'22 paper.
  * An instance of this class represents a variation tree diff. It stores the root of the graph as a {@link DiffNode}.
- * It optionally holds a {@link DiffTreeSource} that describes how the variation tree diff was obtained.
+ * It optionally holds a {@link VariationDiffSource} that describes how the variation tree diff was obtained.
  * The graph structure is implemented by the {@link DiffNode} class.
  *
  * @param <L> The type of label stored in this tree.
  *
  * @author Paul Bittner, Sören Viegener
  */
-public class DiffTree<L extends Label> {
+public class VariationDiff<L extends Label> {
     private final DiffNode<L> root;
-    private DiffTreeSource source;
+    private VariationDiffSource source;
 
     /**
-     * Creates a DiffTree that only consists of the single given root node.
+     * Creates a VariationDiff that only consists of the single given root node.
      * @param root The root of this tree.
      */
-    public DiffTree(DiffNode<L> root) {
-        this(root, DiffTreeSource.Unknown);
+    public VariationDiff(DiffNode<L> root) {
+        this(root, VariationDiffSource.Unknown);
     }
 
     /**
-     * Creates a DiffTree that only consists of the single given root node.
+     * Creates a VariationDiff that only consists of the single given root node.
      * Remembers the given source as the tree's source of creation.
      * @param root The root of this tree.
-     * @param source The data from which the DiffTree was created.
+     * @param source The data from which the VariationDiff was created.
      */
-    public DiffTree(DiffNode<L> root, DiffTreeSource source) {
+    public VariationDiff(DiffNode<L> root, VariationDiffSource source) {
         this.root = root;
         this.source = source;
     }
 
     /**
-     * Parses a DiffTree from the given file.
+     * Parses a VariationDiff from the given file.
      * The file should contain a text-based diff without any meta information.
      * So just lines preceded by "+", "-", or " " are expected.
      * @param p Path to a diff file.
-     * @param parseOptions {@link DiffTreeParseOptions} for the parsing process.
-     * @return A result either containing the parsed DiffTree or an error message in case of failure.
+     * @param parseOptions {@link VariationDiffParseOptions} for the parsing process.
+     * @return A result either containing the parsed VariationDiff or an error message in case of failure.
      * @throws IOException when the given file could not be read for some reason.
      */
-    public static DiffTree<DiffLinesLabel> fromFile(final Path p, DiffTreeParseOptions parseOptions) throws IOException, DiffParseException {
+    public static VariationDiff<DiffLinesLabel> fromFile(final Path p, VariationDiffParseOptions parseOptions) throws IOException, DiffParseException {
         try (BufferedReader file = Files.newBufferedReader(p)) {
-            final DiffTree<DiffLinesLabel> tree = DiffTreeParser.createDiffTree(file, parseOptions);
+            final VariationDiff<DiffLinesLabel> tree = VariationDiffParser.createVariationDiff(file, parseOptions);
             tree.setSource(new PatchFile(p));
             return tree;
         }
     }
 
     /**
-     * Parses a DiffTree from the given unix diff.
+     * Parses a VariationDiff from the given unix diff.
      * The file should contain a text-based diff without any meta information.
      * So just lines preceded by "+", "-", or " " are expected.
      * @param diff The diff as text. Lines should be separated by a newline character. Each line should be preceded by either "+", "-", or " ".
-     * @param parseOptions {@link DiffTreeParseOptions} for the parsing process.
-     * @return A result either containing the parsed DiffTree or an error message in case of failure.
+     * @param parseOptions {@link VariationDiffParseOptions} for the parsing process.
+     * @return A result either containing the parsed VariationDiff or an error message in case of failure.
      * @throws DiffParseException if {@code diff} couldn't be parsed
      */
-    public static DiffTree<DiffLinesLabel> fromDiff(final String diff, final DiffTreeParseOptions parseOptions) throws DiffParseException {
-        final DiffTree<DiffLinesLabel> tree = DiffTreeParser.createDiffTree(diff, parseOptions);
+    public static VariationDiff<DiffLinesLabel> fromDiff(final String diff, final VariationDiffParseOptions parseOptions) throws DiffParseException {
+        final VariationDiff<DiffLinesLabel> tree = VariationDiffParser.createVariationDiff(diff, parseOptions);
         tree.setSource(new PatchString(diff));
         return tree;
     }
@@ -114,17 +114,17 @@ public class DiffTree<L extends Label> {
      *
      * @param patchReference the patch to be parsed
      * @param repository the repository which contains the path {@code patchReference}
-     * @return a {@link DiffTree} representing the referenced patch, or a list of errors
-     * encountered while trying to parse the {@link DiffTree}
+     * @return a {@link VariationDiff} representing the referenced patch, or a list of errors
+     * encountered while trying to parse the {@link VariationDiff}
      */
-    public static Result<DiffTree<DiffLinesLabel>, List<DiffError>> fromPatch(final PatchReference patchReference, final Repository repository) throws IOException {
+    public static Result<VariationDiff<DiffLinesLabel>, List<DiffError>> fromPatch(final PatchReference patchReference, final Repository repository) throws IOException {
         final CommitDiffResult result = new GitDiffer(repository).createCommitDiff(patchReference.getCommitHash());
         final Path changedFile = Path.of(patchReference.getFileName());
         if (result.diff().isPresent()) {
             final CommitDiff commit = result.diff().get();
             for (final PatchDiff patch : commit.getPatchDiffs()) {
                 if (changedFile.equals(Path.of(patch.getFileName()))) {
-                    return Result.Success(patch.getDiffTree());
+                    return Result.Success(patch.getVariationDiff());
                 }
             }
 
@@ -145,24 +145,24 @@ public class DiffTree<L extends Label> {
     }
 
     /**
-     * Invokes the given callback for each node in this DiffTree.
+     * Invokes the given callback for each node in this VariationDiff.
      * @param procedure callback
      * @return this
      */
-    public DiffTree<L> forAll(final Consumer<DiffNode<L>> procedure) {
-        DiffTreeTraversal.forAll(procedure).visit(this);
+    public VariationDiff<L> forAll(final Consumer<DiffNode<L>> procedure) {
+        VariationDiffTraversal.forAll(procedure).visit(this);
         return this;
     }
 
 
     /**
-     * Traverse this DiffTree with the given visitor.
+     * Traverse this VariationDiff with the given visitor.
      * When visiting a node, the visitor decides how to proceed.
      * @param visitor visitor that is invoked on the root first and then decides how to proceed the traversal.
      * @return this
      */
-    public DiffTree<L> traverse(final DiffTreeVisitor<L> visitor) {
-        DiffTreeTraversal.with(visitor).visit(this);
+    public VariationDiff<L> traverse(final VariationDiffVisitor<L> visitor) {
+        VariationDiffTraversal.with(visitor).visit(this);
         return this;
     }
 
@@ -174,7 +174,7 @@ public class DiffTree<L extends Label> {
      */
     public boolean allMatch(final Predicate<DiffNode<L>> condition) {
         final AtomicBoolean all = new AtomicBoolean(true);
-        DiffTreeTraversal.<L>with((traversal, subtree) -> {
+        VariationDiffTraversal.<L>with((traversal, subtree) -> {
             if (condition.test(subtree)) {
                 for (final DiffNode<L> child : subtree.getAllChildren()) {
                     traversal.visit(child);
@@ -195,7 +195,7 @@ public class DiffTree<L extends Label> {
      */
     public boolean anyMatch(final Predicate<DiffNode<L>> condition) {
         final AtomicBoolean matchFound = new AtomicBoolean(false);
-        DiffTreeTraversal.<L>with((traversal, subtree) -> {
+        VariationDiffTraversal.<L>with((traversal, subtree) -> {
             if (condition.test(subtree)) {
                 matchFound.set(true);
             } else {
@@ -226,7 +226,7 @@ public class DiffTree<L extends Label> {
     }
 
     /**
-     * Obtain the DiffNode with the given id in this DiffTree.
+     * Obtain the DiffNode with the given id in this VariationDiff.
      * @param id The id of the node to search.
      * @return The node with the given id if existing, null otherwise.
      */
@@ -250,7 +250,7 @@ public class DiffTree<L extends Label> {
 
     /**
      * Returns all nodes that satisfy the given predicate.
-     * Traverses the DiffTree once.
+     * Traverses the VariationDiff once.
      * @param property Filter for nodes. Should return true if a node should be included.
      * @return A List of all nodes satisfying the given predicate.
      */
@@ -261,24 +261,24 @@ public class DiffTree<L extends Label> {
     }
 
     /**
-     * Returns all artifact nodes of this DiffTree.
-     * @see DiffTree#computeAllNodesThat
+     * Returns all artifact nodes of this VariationDiff.
+     * @see VariationDiff#computeAllNodesThat
      */
     public List<DiffNode<L>> computeArtifactNodes() {
         return computeAllNodesThat(DiffNode<L>::isArtifact);
     }
 
     /**
-     * Returns all mapping nodes of this DiffTree.
-     * @see DiffTree#computeAllNodesThat
+     * Returns all mapping nodes of this VariationDiff.
+     * @see VariationDiff#computeAllNodesThat
      */
     public List<DiffNode<L>> computeAnnotationNodes() {
         return computeAllNodesThat(DiffNode<L>::isAnnotation);
     }
 
     /**
-     * Returns all nodes in this DiffTree.
-     * Traverses the DiffTree once.
+     * Returns all nodes in this VariationDiff.
+     * Traverses the VariationDiff once.
      */
     public List<DiffNode<L>> computeAllNodes() {
         final List<DiffNode<L>> allnodes = new ArrayList<>();
@@ -302,23 +302,23 @@ public class DiffTree<L extends Label> {
     }
 
     /**
-     * Sets the source of this DiffTree.
-     * @see DiffTreeSource
+     * Sets the source of this VariationDiff.
+     * @see VariationDiffSource
      */
-    public void setSource(final DiffTreeSource source) {
+    public void setSource(final VariationDiffSource source) {
         this.source = source;
     }
 
     /**
-     * Returns the source of this DiffTree (i.e., the data this DiffTree was created from).
-     * @see DiffTreeSource
+     * Returns the source of this VariationDiff (i.e., the data this VariationDiff was created from).
+     * @see VariationDiffSource
      */
-    public DiffTreeSource getSource() {
+    public VariationDiffSource getSource() {
         return source;
     }
 
     /**
-     * Returns the number of nodes in this DiffTree.
+     * Returns the number of nodes in this VariationDiff.
      */
     public int computeSize() {
         AtomicInteger size = new AtomicInteger();
@@ -335,7 +335,7 @@ public class DiffTree<L extends Label> {
     }
 
     /**
-     * Removes the given node from the DiffTree but keeps its children.
+     * Removes the given node from the VariationDiff but keeps its children.
      * The children are moved up, meaning that they are located below the parent of the given
      * node afterwards.
      * @param node The node to remove. Cannot be the root.
@@ -353,7 +353,7 @@ public class DiffTree<L extends Label> {
     }
 
     /**
-     * Helper class to check for cycles in DiffTrees.
+     * Helper class to check for cycles in VariationDiffs.
      * When traversing the tree, an object of this class remembers visited nodes to see
      * if it walks in cycles.
      * Function programmers might think of this as a state monad.
@@ -415,10 +415,10 @@ public class DiffTree<L extends Label> {
     }
 
     /**
-     * Checks whether this DiffTree is consistent.
-     * Throws an error when this DiffTree is inconsistent (e.g., if it has cycles or an invalid internal state).
+     * Checks whether this VariationDiff is consistent.
+     * Throws an error when this VariationDiff is inconsistent (e.g., if it has cycles or an invalid internal state).
      * Has no side-effects otherwise.
-     * @see DiffTree#isConsistent
+     * @see VariationDiff#isConsistent
      */
     public void assertConsistency() {
         final AllPathsEndAtRoot c = new AllPathsEndAtRoot(root);
@@ -429,7 +429,7 @@ public class DiffTree<L extends Label> {
     }
 
     /**
-     * Checks whether this DiffTree is consistent.
+     * Checks whether this VariationDiff is consistent.
      * @return A result that indicates either consistency or inconsistency.
      */
     public ConsistencyResult isConsistent() {
@@ -442,16 +442,16 @@ public class DiffTree<L extends Label> {
         return ConsistencyResult.Success();
     }
 
-    public boolean isSameAs(DiffTree<L> b) {
+    public boolean isSameAs(VariationDiff<L> b) {
         return getRoot().isSameAs(b.getRoot());
     }
 
     @Override
     public String toString() {
-        return "DiffTree of " + source;
+        return "VariationDiff of " + source;
     }
 
-    public DiffTree<L> deepCopy() {
-        return new DiffTree<>(getRoot().deepCopy(), getSource());
+    public VariationDiff<L> deepCopy() {
+        return new VariationDiff<>(getRoot().deepCopy(), getSource());
     }
 }

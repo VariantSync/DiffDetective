@@ -6,12 +6,12 @@ import com.github.gumtreediff.matchers.Matchers;
 import com.github.gumtreediff.tree.Tree;
 
 import org.variantsync.diffdetective.diff.text.DiffLineNumber;
-import org.variantsync.diffdetective.gumtree.DiffTreeAdapter;
+import org.variantsync.diffdetective.gumtree.VariationDiffAdapter;
 import org.variantsync.diffdetective.gumtree.VariationTreeAdapter;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.variation.Label;
 import org.variantsync.diffdetective.variation.diff.source.VariationTreeDiffSource;
-import org.variantsync.diffdetective.variation.diff.traverse.DiffTreeTraversal;
+import org.variantsync.diffdetective.variation.diff.traverse.VariationDiffTraversal;
 import org.variantsync.diffdetective.variation.tree.VariationNode;
 import org.variantsync.diffdetective.variation.tree.VariationTree;
 import org.variantsync.functjonal.Cast;
@@ -27,19 +27,19 @@ import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
 
 public class Construction {
     /**
-     * Create a {@link DiffTree} by matching nodes between {@code before} and {@code after} with the
+     * Create a {@link VariationDiff} by matching nodes between {@code before} and {@code after} with the
      * default GumTree matcher.
      *
      * @see diffUsingMatching(VariationNode, VariationNode, Matcher)
      */
-    public static <L extends Label> DiffTree<L> diffUsingMatching(VariationTree<L> before, VariationTree<L> after) {
+    public static <L extends Label> VariationDiff<L> diffUsingMatching(VariationTree<L> before, VariationTree<L> after) {
         DiffNode<L> root = diffUsingMatching(
             before.root(),
             after.root(),
             Matchers.getInstance().getMatcher()
         );
 
-        return new DiffTree<>(root, new VariationTreeDiffSource(before.source(), after.source()));
+        return new VariationDiff<>(root, new VariationTreeDiffSource(before.source(), after.source()));
     }
 
     /**
@@ -79,7 +79,7 @@ public class Construction {
         VariationNode<B, L> after,
         Matcher matcher
     ) {
-        var src = new DiffTreeAdapter<L>(before, BEFORE);
+        var src = new VariationDiffAdapter<L>(before, BEFORE);
         var dst = new VariationTreeAdapter<L>(after);
 
         MappingStore matching = matcher.match(src, dst);
@@ -91,7 +91,7 @@ public class Construction {
         }
 
         int[] currentID = new int[1];
-        DiffTreeTraversal.<L>forAll((node) -> {
+        VariationDiffTraversal.<L>forAll((node) -> {
             node.setFromLine(node.getFromLine().withLineNumberInDiff(currentID[0]));
             node.setToLine(node.getToLine().withLineNumberInDiff(currentID[0]));
             ++currentID[0];
@@ -107,11 +107,11 @@ public class Construction {
      * variation tree
      * @param root the variation diff whose before projection is modified
      */
-    private static <L extends Label> void removeUnmapped(MappingStore mappings, DiffTreeAdapter<L> root) {
+    private static <L extends Label> void removeUnmapped(MappingStore mappings, VariationDiffAdapter<L> root) {
         for (var node : root.preOrder()) {
             Tree dst = mappings.getDstForSrc(node);
             if (dst == null || !dst.getLabel().equals(node.getLabel())) {
-                var diffNode = Cast.<Tree, DiffTreeAdapter<L>>unchecked(node).getDiffNode();
+                var diffNode = Cast.<Tree, VariationDiffAdapter<L>>unchecked(node).getDiffNode();
                 diffNode.diffType = REM;
                 diffNode.drop(AFTER);
             }
@@ -148,7 +148,7 @@ public class Construction {
                 Cast.unchecked(variationNode.getLabel().clone())
             );
         } else {
-            diffNode = Cast.<Tree, DiffTreeAdapter<L>>unchecked(src).getDiffNode();
+            diffNode = Cast.<Tree, VariationDiffAdapter<L>>unchecked(src).getDiffNode();
             if (diffNode.getParent(AFTER) != null) {
                 // Always drop and reinsert it because it could have moved.
                 diffNode.drop(AFTER);
@@ -174,8 +174,8 @@ public class Construction {
      * @see "Constructing Variation Diffs Using Tree Diffing Algorithms"
      */
     public static <L extends Label> DiffNode<L> improveMatching(DiffNode<L> tree, Matcher matcher) {
-        var src = new DiffTreeAdapter<>(tree, BEFORE);
-        var dst = new DiffTreeAdapter<>(tree, AFTER);
+        var src = new VariationDiffAdapter<L>(tree, BEFORE);
+        var dst = new VariationDiffAdapter<L>(tree, AFTER);
 
         MappingStore matching = new MappingStore(src, dst);
         extractMatching(src, dst, matching);
@@ -184,7 +184,7 @@ public class Construction {
 
         for (var srcNode : src.preOrder()) {
             var dstNode = matching.getDstForSrc(srcNode);
-            var beforeNode = Cast.<Tree, DiffTreeAdapter<L>>unchecked(srcNode).getDiffNode();
+            var beforeNode = Cast.<Tree, VariationDiffAdapter<L>>unchecked(srcNode).getDiffNode();
             if (dstNode == null || !srcNode.getLabel().equals(dstNode.getLabel())) {
                 if (beforeNode.isNon()) {
                     splitNode(beforeNode);
@@ -192,7 +192,7 @@ public class Construction {
 
                 Assert.assertTrue(beforeNode.isRem());
             } else {
-                var afterNode = Cast.<Tree, DiffTreeAdapter<L>>unchecked(dstNode).getDiffNode();
+                var afterNode = Cast.<Tree, VariationDiffAdapter<L>>unchecked(dstNode).getDiffNode();
 
                 if (beforeNode != afterNode) {
                     if (beforeNode.isNon()) {
@@ -269,30 +269,30 @@ public class Construction {
     }
 
     /**
-     * Makes the implicit matching of a {@code DiffTree} explicit.
+     * Makes the implicit matching of a {@code VariationDiff} explicit.
      *
-     * @param src the source nodes of the matching, must be of the same {@link DiffTree} as {@code
+     * @param src the source nodes of the matching, must be of the same {@link VariationDiff} as {@code
      * dst.
-     * @param dst the destination nodes of the matching, must be of the same {@link DiffTree} as
+     * @param dst the destination nodes of the matching, must be of the same {@link VariationDiff} as
      * {@code src}
      * @param result the destination where the matching between {@code src} and {@code dst} is added
      */
     private static <L extends Label> void extractMatching(
-        DiffTreeAdapter<L> src,
-        DiffTreeAdapter<L> dst,
+        VariationDiffAdapter<L> src,
+        VariationDiffAdapter<L> dst,
         MappingStore result
     ) {
         Map<DiffNode<L>, Tree> matching = new HashMap<>();
 
         for (var srcNode : src.preOrder()) {
-            DiffNode<L> diffNode = Cast.<Tree, DiffTreeAdapter<L>>unchecked(srcNode).getDiffNode();
+            DiffNode<L> diffNode = Cast.<Tree, VariationDiffAdapter<L>>unchecked(srcNode).getDiffNode();
             if (diffNode.isNon()) {
                 matching.put(diffNode, srcNode);
             }
         }
 
         for (var dstNode : dst.preOrder()) {
-            DiffNode<L> diffNode = Cast.<Tree, DiffTreeAdapter<L>>unchecked(dstNode).getDiffNode();
+            DiffNode<L> diffNode = Cast.<Tree, VariationDiffAdapter<L>>unchecked(dstNode).getDiffNode();
             if (diffNode.isNon()) {
                 Assert.assertTrue(matching.get(diffNode) != null);
                 result.addMapping(matching.get(diffNode), dstNode);

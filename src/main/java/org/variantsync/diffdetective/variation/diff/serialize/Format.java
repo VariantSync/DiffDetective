@@ -2,7 +2,7 @@ package org.variantsync.diffdetective.variation.diff.serialize;
 
 import org.variantsync.diffdetective.variation.Label;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
-import org.variantsync.diffdetective.variation.diff.DiffTree;
+import org.variantsync.diffdetective.variation.diff.VariationDiff;
 import org.variantsync.diffdetective.variation.diff.serialize.edgeformat.EdgeLabelFormat;
 import org.variantsync.diffdetective.variation.diff.serialize.nodeformat.DiffNodeLabelFormat;
 
@@ -12,10 +12,10 @@ import static org.variantsync.diffdetective.variation.diff.Time.AFTER;
 import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
 
 /**
- * Format used for exporting a {@link DiffTree}.
+ * Format used for exporting a {@link VariationDiff}.
  * For easy reusability this class is composed of separate node and edge formats.
  *
- * The exported {@link DiffTree} can be influenced in the following ways:
+ * The exported {@link VariationDiff} can be influenced in the following ways:
  * <ul>
  * <li>Providing both a node and an edge label format.
  * <li>Changing the order, filtering or adding the nodes and edges by creating a subclass of
@@ -40,22 +40,23 @@ public class Format<L extends Label> {
     }
 
     /**
-     * Iterates over all {@link DiffNode}s in {@code diffTree} and calls {@code callback}.
+     * Iterates over all {@link DiffNode}s in {@code variationDiff} and calls {@code callback}.
      *
      * Exporters should use this method to enable subclasses of {@code Format} to filter nodes, add
      * new nodes and change the order of the exported nodes.
      *
-     * This implementation is equivalent to {@link DiffTree#forAll}.
+     * This implementation is equivalent to {@link VariationDiff#forAll}.
      *
-     * @param diffTree to be exported
+     * @param variationDiff to be exported
      * @param callback is called for each node
      */
-    public <La extends L> void forEachNode(DiffTree<La> diffTree, Consumer<DiffNode<La>> callback) {
-        diffTree.forAll(callback);
+    public <La extends L> void forEachNode(VariationDiff<La> variationDiff, Consumer<DiffNode<La>> callback) {
+        variationDiff.forAll(callback);
     }
 
     /**
-     * Iterates over all edges in {@code diffTree} and calls {@code callback}, visiting parallel edges only once.
+     * Iterates over all edges in {@code variationDiff} and calls {@code callback}, visiting
+     * parallel edges only once.
      *
      * If an edge is unchanged (there are equal before and after edges) {@code callback} is only
      * called once.
@@ -63,11 +64,11 @@ public class Format<L extends Label> {
      * Exporters should use this method to enable subclasses of {@code Format} to filter edges, add
      * new edges and change the order of the exported edges.
      *
-     * @param diffTree to be exported
+     * @param variationDiff to be exported
      * @param callback is called for each unique edge
      */
-    public <La extends L> void forEachEdge(DiffTree<La> diffTree, Consumer<StyledEdge<La>> callback) {
-        diffTree.forAll((node) -> {
+    public <La extends L> void forEachEdge(VariationDiff<La> variationDiff, Consumer<StyledEdge<La>> callback) {
+        variationDiff.forAll((node) -> {
             var beforeParent = node.getParent(BEFORE);
             var afterParent = node.getParent(AFTER);
 

@@ -7,7 +7,7 @@ import org.variantsync.diffdetective.variation.Label;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
 import org.variantsync.diffdetective.variation.diff.serialize.LineGraphConstants;
 import org.variantsync.diffdetective.variation.diff.serialize.LinegraphFormat;
-import org.variantsync.diffdetective.variation.diff.source.DiffTreeSource;
+import org.variantsync.diffdetective.variation.diff.source.VariationDiffSource;
 import org.variantsync.functjonal.Pair;
 
 /**
@@ -49,7 +49,7 @@ public interface DiffNodeLabelFormat<L extends Label> extends LinegraphFormat {
     }
 
     /**
-     * Converts a line describing a graph (starting with "t # ") in line graph format into a {@link DiffTreeSource}.
+     * Converts a line describing a graph (starting with "t # ") in line graph format into a {@link VariationDiffSource}.
      *
      * @param lineGraphLine A line from a line graph file starting with "t #"
      * @return A pair with the first element being the id of the node specified in the given lineGrapLine.

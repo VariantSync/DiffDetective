@@ -6,19 +6,19 @@ import org.variantsync.diffdetective.datasets.Repository;
 import org.variantsync.diffdetective.diff.git.PatchDiff;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.feature.CPPAnnotationParser;
-import org.variantsync.diffdetective.mining.DiffTreeMiner;
+import org.variantsync.diffdetective.mining.VariationDiffMiner;
 import org.variantsync.diffdetective.mining.RWCompositePatternNodeFormat;
 import org.variantsync.diffdetective.mining.RWCompositePatternTreeFormat;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.util.FileUtils;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
-import org.variantsync.diffdetective.variation.diff.DiffTree;
-import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParseOptions;
-import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParser;
-import org.variantsync.diffdetective.variation.diff.render.DiffTreeRenderer;
+import org.variantsync.diffdetective.variation.diff.VariationDiff;
+import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParseOptions;
+import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParser;
+import org.variantsync.diffdetective.variation.diff.render.VariationDiffRenderer;
 import org.variantsync.diffdetective.variation.diff.render.RenderOptions;
 import org.variantsync.diffdetective.variation.diff.serialize.nodeformat.MappingsDiffNodeFormat;
-import org.variantsync.diffdetective.variation.diff.transform.DiffTreeTransformer;
+import org.variantsync.diffdetective.variation.diff.transform.VariationDiffTransformer;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -36,7 +36,7 @@ import java.util.function.Function;
  * @author Paul Bittner
  */
 public class SimpleRenderer {
-    private static final DiffTreeRenderer renderer = DiffTreeRenderer.WithinDiffDetective();
+    private static final VariationDiffRenderer renderer = VariationDiffRenderer.WithinDiffDetective();
     private static final RenderOptions<DiffLinesLabel> renderOptions = new RenderOptions.Builder<DiffLinesLabel>()
 //            .setNodeFormat(new ReleaseMiningDiffNodeFormat()),
             .setNodeFormat(new MappingsDiffNodeFormat<>())
@@ -98,10 +98,10 @@ public class SimpleRenderer {
             renderer.renderFile(fileToRender, RENDER_OPTIONS_TO_USE);
         } else if (SUPPORTED_FILE_TYPES.stream().anyMatch(extension -> FileUtils.hasExtension(fileToRender, extension))) {
             Logger.info("Rendering {}", fileToRender);
-            final DiffTree<DiffLinesLabel> t;
+            final VariationDiff<DiffLinesLabel> t;
             try {
-                t = DiffTree.fromFile(fileToRender,
-                        new DiffTreeParseOptions(
+                t = VariationDiff.fromFile(fileToRender,
+                        new VariationDiffParseOptions(
                                 CPPAnnotationParser.Default, collapseMultipleCodeLines, ignoreEmptyLines
                         ));
             } catch (IOException | DiffParseException e) {
@@ -161,10 +161,10 @@ public class SimpleRenderer {
             final Repository repository = Repository.fromDirectory(repoPath, repoName);
             repository.setParseOptions(repository.getParseOptions().withDiffStoragePolicy(PatchDiffParseOptions.DiffStoragePolicy.REMEMBER_STRIPPED_DIFF));
 
-            final List<DiffTreeTransformer<DiffLinesLabel>> transform = DiffTreeMiner.Postprocessing(repository);
-            final PatchDiff patch = DiffTreeParser.parsePatch(repository, file, commit);
+            final List<VariationDiffTransformer<DiffLinesLabel>> transform = VariationDiffMiner.Postprocessing(repository);
+            final PatchDiff patch = VariationDiffParser.parsePatch(repository, file, commit);
             Assert.assertNotNull(patch != null);
-            DiffTreeTransformer.apply(transform, patch.getDiffTree());
+            VariationDiffTransformer.apply(transform, patch.getVariationDiff());
             renderer.render(patch, Path.of("render", repoName), RENDER_OPTIONS_TO_USE);
         }
 

@@ -3,7 +3,7 @@ package org.variantsync.diffdetective.variation.diff.transform;
 import org.variantsync.diffdetective.diff.text.DiffLineNumber;
 import org.variantsync.diffdetective.variation.Label;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
-import org.variantsync.diffdetective.variation.diff.DiffTree;
+import org.variantsync.diffdetective.variation.diff.VariationDiff;
 import org.variantsync.diffdetective.variation.diff.DiffType;
 import org.variantsync.functjonal.Pair;
 
@@ -20,10 +20,10 @@ import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
  * but for each line in the nodes individually.
  * @author Paul Bittner
  */
-public class NaiveMovedArtifactDetection<L extends Label> implements DiffTreeTransformer<L> {
+public class NaiveMovedArtifactDetection<L extends Label> implements VariationDiffTransformer<L> {
     @Override
-    public void transform(final DiffTree<L> diffTree) {
-        final List<Pair<DiffNode<L>, DiffNode<L>>> twins = findArtifactTwins(diffTree);
+    public void transform(final VariationDiff<L> variationDiff) {
+        final List<Pair<DiffNode<L>, DiffNode<L>>> twins = findArtifactTwins(variationDiff);
 
         for (final Pair<DiffNode<L>, DiffNode<L>> twin : twins) {
             final DiffNode<L> added;
@@ -50,8 +50,8 @@ public class NaiveMovedArtifactDetection<L extends Label> implements DiffTreeTra
         }
     }
 
-    private static <L extends Label> List<Pair<DiffNode<L>, DiffNode<L>>> findArtifactTwins(final DiffTree<L> diffTree) {
-        final List<DiffNode<L>> artifactNodes = diffTree.computeArtifactNodes();
+    private static <L extends Label> List<Pair<DiffNode<L>, DiffNode<L>>> findArtifactTwins(final VariationDiff<L> variationDiff) {
+        final List<DiffNode<L>> artifactNodes = variationDiff.computeArtifactNodes();
         final List<Pair<DiffNode<L>, DiffNode<L>>> twins = new ArrayList<>();
 
         while (!artifactNodes.isEmpty()) {

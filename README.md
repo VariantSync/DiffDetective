@@ -19,7 +19,7 @@ This replication package consists of four parts:
 4. **Dataset Overview**: We provide an overview of the 44 inspected datasets with updated links to their repositories in the file [docs/datasets/all.md][dataset].
 
 ## 1. DiffDetective
-DiffDetective is a java library and command-line tool to parse and classify edits to variability in git histories of preprocessor-based software product lines by creating [variation diffs][difftree_class] and operating on them.
+DiffDetective is a java library and command-line tool to parse and classify edits to variability in git histories of preprocessor-based software product lines by creating [variation diffs][variationdiff_class] and operating on them.
 
 We offer a [Docker](https://www.docker.com/) setup to easily __replicate__ the validation performed in our paper. 
 In the following, we provide a quickstart guide for running the replication.
@@ -69,7 +69,7 @@ Moreover, the results comprise the (LaTeX) tables that are part of our paper and
 ### Documentation
 
 DiffDetective is documented with javadoc. The documentation can be accessed on this [website][documentation]. Notable classes of our library are:
-- [DiffTree](https://variantsync.github.io/DiffDetective/docs/javadoc/org/variantsync/diffdetective/diff/difftree/DiffTree.html) and [DiffNode](https://variantsync.github.io/DiffDetective/docs/javadoc/org/variantsync/diffdetective/diff/difftree/DiffNode.html) implement variation diffs from our paper. A variation diff is represented by an instance of the `DiffTree` class. It stores the root node of the diff and offers various methods to parse, traverse, and analyze variation diffs. `DiffNode`s represent individual nodes within a variation diff.
+- [VariationDiff](https://variantsync.github.io/DiffDetective/docs/javadoc/org/variantsync/diffdetective/variation/diff/VariationDiff.html) and [DiffNode](https://variantsync.github.io/DiffDetective/docs/javadoc/org/variantsync/diffdetective/variation/diff/DiffNode.html) implement variation diffs from our paper. A variation diff is represented by an instance of the `VariationDiff` class. It stores the root node of the diff and offers various methods to parse, traverse, and analyze variation diffs. `DiffNode`s represent individual nodes within a variation diff.
 - [EditClassValidation](https://variantsync.github.io/DiffDetective/docs/javadoc/org/variantsync/diffdetective/validation/EditClassValidation.html) contains the main method for our validation.
 - [ProposedEditClasses](https://variantsync.github.io/DiffDetective/docs/javadoc/org/variantsync/diffdetective/editclass/proposed/ProposedEditClasses.html) holds the catalog of the nine edit classes we proposed in our paper. It implements the interface [EditClassCatalogue](https://variantsync.github.io/DiffDetective/docs/javadoc/org/variantsync/diffdetective/editclass/EditClassCatalogue.html), which allows to define custom edit classifications.
 - [BooleanAbstraction](https://variantsync.github.io/DiffDetective/docs/javadoc/org/variantsync/diffdetective/feature/BooleanAbstraction.html) contains data and methods for boolean abstraction of higher-order logic formulas. We use this for macro parsing.
@@ -112,7 +112,7 @@ You can also run DiffDetective on other datasets by providing the path to the da
 
 The input file must have the same format as the other dataset files (i.e., repositories are listed in a Markdown table). You can find [dataset files](docs/datasets/all.md) in the [docs/datasets](docs/datasets) folder.
 
-[difftree_class]: https://variantsync.github.io/DiffDetective/docs/javadoc/org/variantsync/diffdetective/diff/difftree/DiffTree.html
+[variationdiff_class]: https://variantsync.github.io/DiffDetective/docs/javadoc/org/variantsync/diffdetective/variation/diff/VariationDiff.html
 [haskell]: https://www.haskell.org/
 [dataset]: docs/datasets/all.md
 [appendix]: appendix.pdf

@@ -14,12 +14,12 @@ import org.variantsync.diffdetective.datasets.Repository;
 import org.variantsync.diffdetective.diff.git.CommitDiff;
 import org.variantsync.diffdetective.diff.git.PatchDiff;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
-import org.variantsync.diffdetective.variation.diff.DiffTree;
-import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParser;
+import org.variantsync.diffdetective.variation.diff.VariationDiff;
+import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParser;
 import org.variantsync.diffdetective.variation.diff.parse.IllFormedAnnotationException;
-import org.variantsync.diffdetective.variation.diff.transform.DiffTreeTransformer;
+import org.variantsync.diffdetective.variation.diff.transform.VariationDiffTransformer;
 import org.variantsync.diffdetective.feature.CPPAnnotationParser;
-import org.variantsync.diffdetective.mining.DiffTreeMiner;
+import org.variantsync.diffdetective.mining.VariationDiffMiner;
 import org.variantsync.diffdetective.editclass.proposed.ProposedEditClasses;
 import org.variantsync.diffdetective.util.Clock;
 import org.variantsync.diffdetective.validation.EditClassValidation;
@@ -91,17 +91,17 @@ public class MarlinDebug {
         Logger.info(">>> Testing commit {} of {}", commitHash, repoInspection.repo.getRepositoryName());
         Logger.info("  Begin parsing");
         Clock clock = new Clock();
-        final CommitDiff commitDiff = DiffTreeParser.parseCommit(repoInspection.repo, commitHash);
+        final CommitDiff commitDiff = VariationDiffParser.parseCommit(repoInspection.repo, commitHash);
         Logger.info("  Done after {}", clock.printPassedSeconds());
-        final List<DiffTreeTransformer<DiffLinesLabel>> transform = DiffTreeMiner.Postprocessing(repoInspection.repo);
+        final List<VariationDiffTransformer<DiffLinesLabel>> transform = VariationDiffMiner.Postprocessing(repoInspection.repo);
 
         for (final PatchDiff patch : commitDiff.getPatchDiffs()) {
             if (patch.isValid()) {
                 Logger.info("  Begin processing {}", patch);
-                final DiffTree<DiffLinesLabel> t = patch.getDiffTree();
+                final VariationDiff<DiffLinesLabel> t = patch.getVariationDiff();
                 Logger.info("    Begin transform");
                 clock.start();
-                DiffTreeTransformer.apply(transform, t);
+                VariationDiffTransformer.apply(transform, t);
                 Logger.info("    Done after {}", clock.printPassedSeconds());
                 Logger.info("    Begin elementary pattern matching");
                 clock.start();
@@ -136,7 +136,7 @@ public class MarlinDebug {
         final RevWalk revWalk = new RevWalk(git.getRepository());
         final RevCommit childCommit = revWalk.parseCommit(ObjectId.fromString(commitHash));
 
-        DiffTreeMiner.AnalysisFactory.apply(
+        VariationDiffMiner.AnalysisFactory.apply(
             repoInspection.repo,
             repoInspection.outputPath
         ).processCommits(List.of(childCommit));

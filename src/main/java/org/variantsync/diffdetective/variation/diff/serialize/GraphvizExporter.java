@@ -2,7 +2,7 @@ package org.variantsync.diffdetective.variation.diff.serialize;
 
 import org.variantsync.diffdetective.util.TriConsumer;
 import org.variantsync.diffdetective.variation.Label;
-import org.variantsync.diffdetective.variation.diff.DiffTree;
+import org.variantsync.diffdetective.variation.diff.VariationDiff;
 
 import java.io.*;
 import java.util.List;
@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 
 /**
  * Exporter for the Graphviz dot format.
- * Using this exporter the Graphviz application can be used to layout a {@link DiffTree} for
+ * Using this exporter the Graphviz application can be used to layout a {@link VariationDiff} for
  * visualisation.
  *
  * Currently only basic layout relevant information is exported, so if the result is rendered directly by Graphviz no styling is applied.
@@ -69,25 +69,25 @@ public class GraphvizExporter<L extends Label> implements Exporter<L> {
     }
 
     /**
-     * Export {@code diffTree} as Graphviz graph into {@code destination}.
+     * Export {@code variationDiff} as Graphviz graph into {@code destination}.
      * The exported graph is unstyled, but includes all necessary layout information.
      *
-     * @param diffTree to be exported
+     * @param variationDiff to be exported
      * @param destination where the result should be written
      */
     @Override
-    public <La extends L> void exportDiffTree(DiffTree<La> diffTree, OutputStream destination) throws IOException {
+    public <La extends L> void exportVariationDiff(VariationDiff<La> variationDiff, OutputStream destination) throws IOException {
         var output = new PrintStream(destination);
 
         output.println("digraph g {");
 
-        format.forEachNode(diffTree, (node) -> {
+        format.forEachNode(variationDiff, (node) -> {
             output.format("  %d [label=\"%s\"];%n",
                     node.getID(),
                     escape(format.getNodeFormat().toMultilineLabel(node)));
         });
 
-        format.forEachEdge(diffTree, (edge) -> {
+        format.forEachEdge(variationDiff, (edge) -> {
             output.format("  %d -> %d;%n", edge.from().getID(), edge.to().getID());
         });
 
@@ -98,18 +98,18 @@ public class GraphvizExporter<L extends Label> implements Exporter<L> {
     /**
      * Runs the Graphviz {@code dot} program returning its result.
      *
-     * @param diffTree is the tree to be layouted by Graphviz.
+     * @param variationDiff is the tree to be layouted by Graphviz.
      * @param algorithm the layout algorithm used by Graphviz
      * @param outputFormat is the requested format which is passed to the {@code dot} program with
      * the {@code -T} flag.
      * @return a buffered {@code InputStream} of the Graphviz output
      */
     public <La extends L> InputStream computeGraphvizLayout(
-            DiffTree<La> diffTree,
+            VariationDiff<La> variationDiff,
             LayoutAlgorithm algorithm,
             OutputFormat outputFormat)
             throws IOException {
-        // Print error messages to stderr so grogramming errors in {@code exportDiffTree} can be
+        // Print error messages to stderr so grogramming errors in {@code exportVariationDiff} can be
         // diagnosed more easily.
         var graphvizProcess =
             new ProcessBuilder(algorithm.getExecutableName(), "-T" + outputFormat.getFormatName())
@@ -122,7 +122,7 @@ public class GraphvizExporter<L extends Label> implements Exporter<L> {
         // the OS buffer fills up, but Graphviz needs the whole graph to generate a layout so this
         // should be safe.
         var graphizInput = new BufferedOutputStream(graphvizProcess.getOutputStream());
-        exportDiffTree(diffTree, graphizInput);
+        exportVariationDiff(variationDiff, graphizInput);
         graphizInput.close();
 
         return new BufferedInputStream(graphvizProcess.getInputStream());
@@ -151,7 +151,7 @@ public class GraphvizExporter<L extends Label> implements Exporter<L> {
     }
 
     public static <L extends Label> void layoutNodesIn(
-            final DiffTree<L> diffTree,
+            final VariationDiff<L> variationDiff,
             Format<? super L> format,
             GraphvizExporter.LayoutAlgorithm algorithm,
             TriConsumer<Integer, Double, Double> positionNode) throws IOException {
@@ -159,7 +159,7 @@ public class GraphvizExporter<L extends Label> implements Exporter<L> {
         try (
                 var graphvizExporter = new GraphvizExporter<>(format)
                         .computeGraphvizLayout(
-                                diffTree,
+                                variationDiff,
                                 algorithm,
                                 GraphvizExporter.OutputFormat.PLAIN);
                 var unbufferedGraphvizOutput = new InputStreamReader(graphvizExporter);

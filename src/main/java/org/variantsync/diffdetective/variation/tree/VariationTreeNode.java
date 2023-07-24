@@ -9,7 +9,7 @@ import org.variantsync.diffdetective.variation.Label;
 import org.variantsync.diffdetective.variation.NodeType;
 import org.variantsync.diffdetective.variation.VariationLabel;
 import org.variantsync.diffdetective.variation.diff.DiffNode; // For Javdoc
-import org.variantsync.diffdetective.variation.diff.DiffTree; // For Javdoc
+import org.variantsync.diffdetective.variation.diff.VariationDiff; // For Javdoc
 import org.variantsync.diffdetective.variation.diff.DiffType;
 
 import java.util.*;
@@ -41,11 +41,11 @@ import java.util.*;
  * implementation. This allows the usage of a projection of a {@link DiffNode} instead of a concrete
  * variation node.
  *
- * <p>To compare two variation trees use {@link DiffTree} which uses the aforementioned
+ * <p>To compare two variation trees use {@link VariationDiff} which uses the aforementioned
  * {@link DiffNode}s.
  *
  * @see VariationTree
- * @see DiffTree
+ * @see VariationDiff
  * @see DiffNode
  * @author Benjamin Moosherr
  */

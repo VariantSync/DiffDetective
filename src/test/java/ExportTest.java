@@ -2,12 +2,12 @@ import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
-import org.variantsync.diffdetective.variation.diff.DiffTree;
+import org.variantsync.diffdetective.variation.diff.VariationDiff;
 import org.variantsync.diffdetective.variation.diff.serialize.*;
 import org.variantsync.diffdetective.variation.diff.serialize.edgeformat.DefaultEdgeLabelFormat;
 import org.variantsync.diffdetective.variation.diff.serialize.nodeformat.LabelOnlyDiffNodeFormat;
 import org.variantsync.diffdetective.variation.diff.serialize.nodeformat.LineNumberFormat;
-import org.variantsync.diffdetective.variation.diff.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
+import org.variantsync.diffdetective.variation.diff.serialize.treeformat.CommitDiffVariationDiffLabelFormat;
 
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -34,8 +34,8 @@ public class ExportTest {
      */
     private final static LineGraphImportOptions<DiffLinesLabel> importOptions =
         new LineGraphImportOptions<>(
-            GraphFormat.DIFFTREE,
-            new CommitDiffDiffTreeLabelFormat(),
+            GraphFormat.VARIATION_DIFF,
+            new CommitDiffVariationDiffLabelFormat(),
             new LabelOnlyDiffNodeFormat<>(),
             new DefaultEdgeLabelFormat<>()
         );
@@ -58,9 +58,9 @@ public class ExportTest {
         var expectedPath = RESOURCE_DIR.resolve("expected.tex");
 
         // Deserialize the test case.
-        DiffTree<DiffLinesLabel> diffTree;
+        VariationDiff<DiffLinesLabel> variationDiff;
         try (BufferedReader lineGraph = Files.newBufferedReader(testCasePath)) {
-            diffTree = LineGraphImport.fromLineGraph(lineGraph, testCasePath, importOptions).get(0);
+            variationDiff = LineGraphImport.fromLineGraph(lineGraph, testCasePath, importOptions).get(0);
         }
 
         // Export the test case
@@ -68,7 +68,7 @@ public class ExportTest {
                 var unbufferedOutput = Files.newOutputStream(actualPath);
                 var output = new BufferedOutputStream(unbufferedOutput)
         ) {
-            new TikzExporter<>(format).exportDiffTree(diffTree, output);
+            new TikzExporter<>(format).exportVariationDiff(variationDiff, output);
         }
 
         try (
@@ -76,7 +76,7 @@ public class ExportTest {
                 var actualFile = Files.newBufferedReader(actualPath);
         ) {
             if (!IOUtils.contentEqualsIgnoreEOL(expectedFile, actualFile)) {
-                fail("The DiffTree in file " + testCasePath + " didn't parse correctly. "
+                fail("The VariationDiff in file " + testCasePath + " didn't parse correctly. "
                     + "Expected the content of " + expectedPath + " but got the content of " + actualPath + ". ");
             } else {
                 // Keep output file for debugging on errors

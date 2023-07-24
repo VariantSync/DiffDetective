@@ -76,22 +76,22 @@ public class EditClassCount implements Metadata<EditClassCount> {
      */
     public static InplaceSemigroup<EditClassCount> ISEMIGROUP() {
         return (a, b) -> MergeMap.putAllValues(
-            a.occurences,
-            b.occurences,
+            a.occurrences,
+            b.occurrences,
             Occurrences.ISEMIGROUP
         );
     }
 
-    private final LinkedHashMap<EditClass, Occurrences> occurences;
+    private final LinkedHashMap<EditClass, Occurrences> occurrences;
 
     /**
      * Create a new empty count that reports occurrences of the given edit class.
      * @param editClasses edit classes whose occurrences should be counted.
      */
     public EditClassCount(final EditClassCatalogue editClasses) {
-        occurences = new LinkedHashMap<>();
+        occurrences = new LinkedHashMap<>();
         for (final EditClass p : editClasses.all()) {
-            occurences.put(p, new Occurrences());
+            occurrences.put(p, new Occurrences());
         }
     }
 
@@ -106,16 +106,16 @@ public class EditClassCount implements Metadata<EditClassCount> {
      */
     public void reportOccurrenceFor(final EditClass editClass, CommitDiff commit) {
         Assert.assertTrue(
-                occurences.containsKey(editClass),
+                occurrences.containsKey(editClass),
                 () -> "Reported unkown edit class \""
                         + editClass.getName()
                         + "\" but expected one of "
-                        + occurences.keySet().stream()
+                        + occurrences.keySet().stream()
                           .map(EditClass::getName)
                           .collect(Collectors.joining())
                         + "!"
         );
-        occurences.get(editClass).increment(commit);
+        occurrences.get(editClass).increment(commit);
     }
     
     /**
@@ -156,7 +156,7 @@ public class EditClassCount implements Metadata<EditClassCount> {
             }
             
             // add occurrence
-            count.occurences.put(editClass, occurence);
+            count.occurrences.put(editClass, occurence);
         }
         
         return count;
@@ -165,7 +165,7 @@ public class EditClassCount implements Metadata<EditClassCount> {
     @Override
     public LinkedHashMap<String, String> snapshot() {
         return Functjonal.bimap(
-                occurences,
+                occurrences,
                 EditClass::getName,
                 Occurrences::toString,
                 LinkedHashMap::new
@@ -174,7 +174,7 @@ public class EditClassCount implements Metadata<EditClassCount> {
 
     @Override
     public void setFromSnapshot(LinkedHashMap<String, String> snap) {
-        for (var occurrence : occurences.entrySet()) {
+        for (var occurrence : occurrences.entrySet()) {
             var editClass = occurrence.getKey();
             var value = snap.get(editClass.getName());
             if (value != null) {
@@ -192,7 +192,7 @@ public class EditClassCount implements Metadata<EditClassCount> {
                 }
 
                 // add occurrence
-                occurences.put(editClass, occurence);
+                occurrences.put(editClass, occurence);
             }
         }
     }
@@ -208,7 +208,7 @@ public class EditClassCount implements Metadata<EditClassCount> {
     /**
      * Returns the current occurrence count for each considered edit class.
      */
-    public LinkedHashMap<EditClass, Occurrences> getOccurences() {
-        return occurences;
+    public LinkedHashMap<EditClass, Occurrences> getOccurrences() {
+        return occurrences;
     }
 }

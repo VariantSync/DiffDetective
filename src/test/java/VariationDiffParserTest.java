@@ -5,9 +5,9 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.util.IO;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
-import org.variantsync.diffdetective.variation.diff.DiffTree;
-import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParseOptions;
-import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParser;
+import org.variantsync.diffdetective.variation.diff.VariationDiff;
+import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParseOptions;
+import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParser;
 import org.variantsync.diffdetective.variation.diff.serialize.Format;
 import org.variantsync.diffdetective.variation.diff.serialize.LineGraphExporter;
 import org.variantsync.diffdetective.variation.diff.serialize.TikzExporter;
@@ -22,7 +22,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.stream.Stream;
 
-public class DiffTreeParserTest {
+public class VariationDiffParserTest {
     private final static Path testDir = Constants.RESOURCE_DIR.resolve("diffs").resolve("parser");
     private final static String testCaseSuffix = ".diff";
 
@@ -59,11 +59,11 @@ public class DiffTreeParserTest {
         var actualPath = testDir.resolve(basename + "_actual.lg");
         var expectedPath = testDir.resolve(basename + "_expected.lg");
 
-        DiffTree<DiffLinesLabel> diffTree;
+        VariationDiff<DiffLinesLabel> variationDiff;
         try (var inputFile = Files.newBufferedReader(testCasePath)) {
-            diffTree = DiffTreeParser.createDiffTree(
+            variationDiff = VariationDiffParser.createVariationDiff(
                 inputFile,
-                new DiffTreeParseOptions(
+                new VariationDiffParseOptions(
                         false,
                         false
                 )
@@ -72,7 +72,7 @@ public class DiffTreeParserTest {
 
         try (var output = IO.newBufferedOutputStream(actualPath)) {
             new LineGraphExporter<>(new Format<>(new FullNodeFormat(), new ChildOrderEdgeFormat<>()))
-                .exportDiffTree(diffTree, output);
+                .exportVariationDiff(variationDiff, output);
         }
 
         try (
@@ -86,8 +86,8 @@ public class DiffTreeParserTest {
                 // Keep output files if the test failed
                 var visualizationPath = testDir.resolve("tex").resolve(basename + ".tex");
                 new TikzExporter<>(new Format<>(new FullNodeFormat(), new DefaultEdgeLabelFormat<>()))
-                    .exportFullLatexExample(diffTree, visualizationPath);
-                fail("The DiffTree in file " + testCasePath + " didn't parse correctly. "
+                    .exportFullLatexExample(variationDiff, visualizationPath);
+                fail("The VariationDiff in file " + testCasePath + " didn't parse correctly. "
                     + "Expected the content of " + expectedPath + " but got the content of " + actualPath + ". "
                     + "Note: A visualisation is available at " + visualizationPath);
             }
