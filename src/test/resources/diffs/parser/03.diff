@@ -1,0 +1,11 @@
+ #if A \
+-  && B \
+-  && C \
++  || B \
+-  && D
++  || C \
+   // Foo
+ Code
+-#endif \
++#endif
+   // Bar

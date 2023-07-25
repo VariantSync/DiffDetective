@@ -9,8 +9,9 @@ import java.util.concurrent.*;
  * The results of the given tasks can be received in the correct order using {@link next}. That
  * means the {@link next} method is deterministic if all tasks are deterministic.
  *
- * <p>No extra thread for scheduling is used so new tasks are only scheduled if {@link next} is
- * called.
+ * <p>Upon creation of a ScheduledTasksIterator, all given tasks are scheduled for execution. However, the results of these
+ * tasks become available in the same order as the tasks have been provided. This means, that the iterator will block
+ * until the result of the next task is available, even if all other remaining tasks are complete.
  */
 public class ScheduledTasksIterator<T> implements Iterator<T>, AutoCloseable {
     private final Iterator<? extends Callable<T>> remainingTasks;
@@ -20,7 +21,7 @@ public class ScheduledTasksIterator<T> implements Iterator<T>, AutoCloseable {
     /**
      * Starts scheduling {@code tasks} in {@code nThreads} other threads.
      * The results of these tasks can be retrieved by calling {@link next}. The order of these
-     * results not deterministic and can't be assumed to be the same as in {@code tasks}.
+     * results is deterministic and is the same as the order of the provided {@code tasks}.
      *
      * @param tasks the tasks which will be executed in other threads
      * @param nThreads the number of threads which work on {@code tasks} in parallel
@@ -29,8 +30,8 @@ public class ScheduledTasksIterator<T> implements Iterator<T>, AutoCloseable {
         this.remainingTasks = tasks;
         this.futures = new LinkedList<>();
         this.threadPool = Executors.newFixedThreadPool(nThreads);
-        for (int i = 0; i < nThreads; i++) {
-            scheduleNext();
+        while (this.remainingTasks.hasNext()) {
+            futures.add(threadPool.submit(remainingTasks.next()));
         }
     }
 
@@ -42,16 +43,6 @@ public class ScheduledTasksIterator<T> implements Iterator<T>, AutoCloseable {
      */
     public ScheduledTasksIterator(final Iterable<? extends Callable<T>> tasks, final int nThreads) {
         this(tasks.iterator(), nThreads);
-    }
-
-    /**
-     * Schedule the next task on the thread pool and adds the result future to the {@code futures}
-     * queue.
-     */
-    private synchronized void scheduleNext() {
-        if (this.remainingTasks.hasNext()) {
-            futures.add(threadPool.submit(remainingTasks.next()));
-        }
     }
 
     @Override
@@ -70,7 +61,6 @@ public class ScheduledTasksIterator<T> implements Iterator<T>, AutoCloseable {
      */
     @Override
     public T next() {
-        scheduleNext();
         try {
             return futures.removeFirst().get();
         } catch (final InterruptedException | ExecutionException e) {
@@ -80,7 +70,7 @@ public class ScheduledTasksIterator<T> implements Iterator<T>, AutoCloseable {
 
     /** Stops all scheduled tasks and releases the used thread resources. */
     @Override
-    public void close() throws Exception {
+    public void close() {
         threadPool.shutdown();
     }
 }

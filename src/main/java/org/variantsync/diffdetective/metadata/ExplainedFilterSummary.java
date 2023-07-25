@@ -1,6 +1,7 @@
 package org.variantsync.diffdetective.metadata;
 
-import org.variantsync.diffdetective.diff.difftree.filter.ExplainedFilter;
+import org.variantsync.diffdetective.analysis.AnalysisResult.ResultKey;
+import org.variantsync.diffdetective.variation.diff.filter.ExplainedFilter;
 import org.variantsync.functjonal.Functjonal;
 import org.variantsync.functjonal.category.InplaceSemigroup;
 import org.variantsync.functjonal.map.MergeMap;
@@ -14,6 +15,8 @@ import java.util.stream.Collectors;
  * @author Paul Bittner
  */
 public class ExplainedFilterSummary implements Metadata<ExplainedFilterSummary> {
+    public static final ResultKey<ExplainedFilterSummary> KEY = new ResultKey<>("ExplainedFilterSummary");
+
     /**
      * Prefix for exported filter reasons.
      */
@@ -93,6 +96,18 @@ public class ExplainedFilterSummary implements Metadata<ExplainedFilterSummary> 
                 ExplainedFilter.Explanation::getFilterCount,
                 LinkedHashMap::new
         );
+    }
+
+    @Override
+    public void setFromSnapshot(LinkedHashMap<String, String> snap) {
+        for (var entry : snap.entrySet()) {
+            final String key = entry.getKey();
+            if (key.startsWith(FILTERED_MESSAGE_BEGIN)) {
+                final String name = key.substring(FILTERED_MESSAGE_BEGIN.length(), key.length() - FILTERED_MESSAGE_END.length());
+
+                explanations.put(name, new ExplainedFilter.Explanation(Integer.parseInt(entry.getValue()), name));
+            }
+        }
     }
 
     @Override

@@ -2,7 +2,7 @@ package org.variantsync.diffdetective.feature;
 
 import org.prop4j.Literal;
 import org.prop4j.Node;
-import org.variantsync.diffdetective.diff.difftree.parse.IllFormedAnnotationException;
+import org.variantsync.diffdetective.variation.diff.parse.IllFormedAnnotationException;
 
 /**
  * A parser of C-preprocessor annotations.
@@ -38,16 +38,29 @@ public class CPPAnnotationParser {
     /**
      * Parses the condition of the given line of source code that contains a preprocessor macro (i.e., IF, IFDEF, ELIF).
      * @param line The line of code of a preprocessor annotation.
-     * @return The formula of the macro in the given line. If no such formula could be parsed, returns a Literal with the line as name.
+     * @return The formula of the macro in the given line.
+     *         If no such formula could be parsed, returns a Literal with the line's condition as name.
      * @throws IllFormedAnnotationException when {@link CPPDiffLineFormulaExtractor#extractFormula(String)} throws.
      */
     public Node parseDiffLine(String line) throws IllFormedAnnotationException {
-        final String formulaStr = extractor.extractFormula(line);
-        Node formula = formulaParser.parse(formulaStr);
+        return parseCondition(extractor.extractFormula(line));
+    }
+
+    /**
+     * Parses a condition of a preprocessor macro (i.e., IF, IFDEF, ELIF).
+     * The given input should not start with preprocessor annotations.
+     * If the input starts with a preprocessor annotation, use {@link #parseDiffLine} instead.
+     * The input should have been prepared by {@link CPPDiffLineFormulaExtractor}.
+     * @param condition The condition of a preprocessor annotation.
+     * @return The formula of the condition.
+     *         If no such formula could be parsed, returns a Literal with the condition as name.
+     */
+    public Node parseCondition(String condition) {
+        Node formula = formulaParser.parse(condition);
 
         if (formula == null) {
 //            Logger.warn("Could not parse expression '{}' to feature mapping. Using it as literal.", fmString);
-            formula = new Literal(line);
+            formula = new Literal(condition);
         }
 
         return formula;

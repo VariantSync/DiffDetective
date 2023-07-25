@@ -1,0 +1,9 @@
+ #if A
+   #if B
+     #if C
+       1
++foo
+       2
+     #endif
+   #endif
+ #endif

@@ -30,7 +30,10 @@ public interface PropositionalFormulaParser {
 
         // if parsing succeeded
         if (node != null) {
-            node = FixTrueFalse.EliminateTrueAndFalseInplace(node);
+            // TODO: Is this our desired behaviour?
+            //       If so, should we document it by not using get here
+            //       and instead keeping the witness that this call happened?
+            node = FixTrueFalse.EliminateTrueAndFalseInplace(node).get();
         }
 
         return node;

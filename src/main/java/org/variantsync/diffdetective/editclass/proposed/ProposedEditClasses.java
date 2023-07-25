@@ -2,13 +2,16 @@ package org.variantsync.diffdetective.editclass.proposed;
 
 import org.prop4j.Node;
 import org.variantsync.diffdetective.analysis.logic.SAT;
-import org.variantsync.diffdetective.diff.difftree.DiffNode;
-import org.variantsync.diffdetective.diff.difftree.DiffType;
-import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.editclass.EditClass;
 import org.variantsync.diffdetective.editclass.EditClassCatalogue;
+import org.variantsync.diffdetective.util.Assert;
+import org.variantsync.diffdetective.variation.diff.DiffNode;
+import org.variantsync.diffdetective.variation.diff.DiffType;
 
 import java.util.*;
+
+import static org.variantsync.diffdetective.variation.diff.Time.AFTER;
+import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
 
 /**
  * The catalog of edit classes proposed in our ESEC/FSE'22 paper.
@@ -64,7 +67,7 @@ public class ProposedEditClasses implements EditClassCatalogue {
     }
 
     @Override
-    public EditClass match(DiffNode node)
+    public EditClass match(DiffNode<?> node)
     {
         // This is an inlined version of all edit classes to optimize runtime when detecting the class of a certain node.
 
@@ -72,17 +75,17 @@ public class ProposedEditClasses implements EditClassCatalogue {
         // Each returned value is not null but an actual edit class object.
         // Since the given node may be any node, we have proven that every node is classified by at least one edit class.
         if (!node.isArtifact()) {
-            throw new IllegalArgumentException("Expected an artifact node but got " + node.nodeType + "!");
+            throw new IllegalArgumentException("Expected an artifact node but got " + node.getNodeType() + "!");
         }
 
         if (node.isAdd()) {
-            if (node.getAfterParent().isAdd()) {
+            if (node.getParent(AFTER).isAdd()) {
                 return AddWithMapping;
             } else {
                 return AddToPC;
             }
         } else if (node.isRem()) {
-            if (node.getBeforeParent().isRem()) {
+            if (node.getParent(BEFORE).isRem()) {
                 return RemWithMapping;
             } else {
                 return RemFromPC;
@@ -90,8 +93,12 @@ public class ProposedEditClasses implements EditClassCatalogue {
         } else {
             Assert.assertTrue(node.isNon());
 
-            final Node pcb = node.getBeforePresenceCondition();
-            final Node pca = node.getAfterPresenceCondition();
+            if (node.beforePathEqualsAfterPath()) {
+                return Untouched;
+            }
+
+            final Node pcb = node.getPresenceCondition(BEFORE);
+            final Node pca = node.getPresenceCondition(AFTER);
 
             final boolean beforeVariantsSubsetOfAfterVariants;
             final boolean afterVariantsSubsetOfBeforeVariants;
@@ -111,11 +118,7 @@ public class ProposedEditClasses implements EditClassCatalogue {
 
             // If the set of variants stayed the same.
             if (beforeVariantsSubsetOfAfterVariants && afterVariantsSubsetOfBeforeVariants) {
-                if (node.beforePathEqualsAfterPath()) {
-                    return Untouched;
-                } else {
-                    return Refactoring;
-                }
+                return Refactoring;
             }
             // If the set of variants grew.
             if (beforeVariantsSubsetOfAfterVariants) { // && !afterVariantsSubsetOfBeforeVariants

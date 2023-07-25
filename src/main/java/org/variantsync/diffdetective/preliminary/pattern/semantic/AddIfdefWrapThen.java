@@ -1,11 +1,13 @@
 package org.variantsync.diffdetective.preliminary.pattern.semantic;
 
 import org.prop4j.Not;
-import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.preliminary.analysis.data.PatternMatch;
 import org.variantsync.diffdetective.preliminary.evaluation.FeatureContext;
+import org.variantsync.diffdetective.variation.diff.DiffNode;
 
 import java.util.Optional;
+
+import static org.variantsync.diffdetective.variation.diff.Time.AFTER;
 
 @Deprecated
 class AddIfdefWrapThen extends SemanticPattern {
@@ -22,11 +24,11 @@ class AddIfdefWrapThen extends SemanticPattern {
             which has an added code child
      */
     @Override
-    public Optional<PatternMatch<DiffNode>> match(DiffNode annotationNode) {
+    public Optional<PatternMatch<DiffNode<?>>> match(DiffNode<?> annotationNode) {
         if(annotationNode.isAdd() && annotationNode.isIf()){
             boolean nonCodeInIf = false;
-            DiffNode elseNode = null;
-            for(DiffNode child : annotationNode.getAllChildren()){
+            DiffNode<?> elseNode = null;
+            for(DiffNode<?> child : annotationNode.getAllChildren()){
                 if(child.isElif()){
                     return Optional.empty();
                 }
@@ -43,7 +45,7 @@ class AddIfdefWrapThen extends SemanticPattern {
             }
 
             boolean addedCodeInElse = false;
-            for(DiffNode child : elseNode.getAllChildren()){
+            for(DiffNode<?> child : elseNode.getAllChildren()){
                 if(child.isArtifact() && child.isAdd()){
                     addedCodeInElse = true;
                 }
@@ -54,8 +56,8 @@ class AddIfdefWrapThen extends SemanticPattern {
             }
 
             return Optional.of(new PatternMatch<>(this,
-                    annotationNode.getLinesInDiff().getFromInclusive(), elseNode.getLinesInDiff().getToExclusive(),
-                    annotationNode.getAfterFeatureMapping()
+                    annotationNode.getLinesInDiff().fromInclusive(), elseNode.getLinesInDiff().toExclusive(),
+                    annotationNode.getFeatureMapping(AFTER)
             ));
         }
 
@@ -63,7 +65,7 @@ class AddIfdefWrapThen extends SemanticPattern {
     }
 
     @Override
-    public FeatureContext[] getFeatureContexts(PatternMatch<DiffNode> patternMatch) {
+    public FeatureContext[] getFeatureContexts(PatternMatch<DiffNode<?>> patternMatch) {
         return new FeatureContext[]{
                 new FeatureContext(new Not(patternMatch.getFeatureMappings()[0]))
         };

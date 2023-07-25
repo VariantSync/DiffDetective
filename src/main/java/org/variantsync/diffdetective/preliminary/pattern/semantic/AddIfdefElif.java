@@ -1,14 +1,16 @@
 package org.variantsync.diffdetective.preliminary.pattern.semantic;
 
 import org.prop4j.Node;
-import org.variantsync.diffdetective.diff.Lines;
-import org.variantsync.diffdetective.diff.difftree.DiffNode;
+import org.variantsync.diffdetective.util.LineRange;
 import org.variantsync.diffdetective.preliminary.analysis.data.PatternMatch;
 import org.variantsync.diffdetective.preliminary.evaluation.FeatureContext;
+import org.variantsync.diffdetective.variation.diff.DiffNode;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import static org.variantsync.diffdetective.variation.diff.Time.AFTER;
 
 @Deprecated
 class AddIfdefElif extends SemanticPattern {
@@ -26,11 +28,11 @@ class AddIfdefElif extends SemanticPattern {
                 they also need to have an added code child
      */
     @Override
-    public Optional<PatternMatch<DiffNode>> match(DiffNode annotationNode) {
+    public Optional<PatternMatch<DiffNode<?>>> match(DiffNode<?> annotationNode) {
         if(annotationNode.isAdd() && annotationNode.isIf()){
             boolean addedCodeInIf = false;
-            DiffNode elifNode = null;
-            for(DiffNode child : annotationNode.getAllChildren()){
+            DiffNode<?> elifNode = null;
+            for(DiffNode<?> child : annotationNode.getAllChildren()){
                 if(child.isArtifact() && child.isAdd()){
                     addedCodeInIf = true;
                 }
@@ -40,14 +42,14 @@ class AddIfdefElif extends SemanticPattern {
             }
 
             List<Node> mappings = new ArrayList<>();
-            mappings.add(annotationNode.getAfterFeatureMapping());
+            mappings.add(annotationNode.getFeatureMapping(AFTER));
             if(elifNode == null || !addedCodeInIf || !isValidElif(elifNode, mappings)){
                 return Optional.empty();
             }
 
-            final Lines diffLines = annotationNode.getLinesInDiff();
+            final LineRange diffLines = annotationNode.getLinesInDiff();
             return Optional.of(new PatternMatch<>(this,
-                    diffLines.getFromInclusive(), diffLines.getToExclusive(),
+                    diffLines.fromInclusive(), diffLines.toExclusive(),
                     mappings.toArray(new Node[0])
             ));
         }
@@ -55,11 +57,11 @@ class AddIfdefElif extends SemanticPattern {
         return Optional.empty();
     }
 
-    private boolean isValidElif(DiffNode elifNode, List<Node> mappings) {
+    private boolean isValidElif(DiffNode<?> elifNode, List<Node> mappings) {
         boolean addedCode = false;
-        DiffNode nextNode = null;
+        DiffNode<?> nextNode = null;
 
-        for(DiffNode child : elifNode.getAllChildren()){
+        for(DiffNode<?> child : elifNode.getAllChildren()){
             if(child.isArtifact() && child.isAdd()){
                 addedCode = true;
             }
@@ -68,7 +70,7 @@ class AddIfdefElif extends SemanticPattern {
             }
         }
         if(addedCode && nextNode != null){
-            mappings.add(elifNode.getAfterFeatureMapping());
+            mappings.add(elifNode.getFeatureMapping(AFTER));
             return isValidElif(nextNode, mappings);
         }
 
@@ -76,7 +78,7 @@ class AddIfdefElif extends SemanticPattern {
     }
 
     @Override
-    public FeatureContext[] getFeatureContexts(PatternMatch<DiffNode> patternMatch) {
+    public FeatureContext[] getFeatureContexts(PatternMatch<DiffNode<?>> patternMatch) {
         FeatureContext[] featureContexts = new FeatureContext[patternMatch.getFeatureMappings().length];
         for (int i = 0; i < featureContexts.length; i++) {
             featureContexts[i] = new FeatureContext(patternMatch.getFeatureMappings()[i]);

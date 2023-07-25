@@ -1,15 +1,15 @@
 package org.variantsync.diffdetective.editclass;
 
-import org.variantsync.diffdetective.diff.difftree.DiffNode;
-import org.variantsync.diffdetective.diff.difftree.DiffTree;
-import org.variantsync.diffdetective.diff.difftree.DiffType;
 import org.variantsync.diffdetective.preliminary.pattern.Pattern;
+import org.variantsync.diffdetective.variation.diff.DiffNode;
+import org.variantsync.diffdetective.variation.diff.VariationDiff;
+import org.variantsync.diffdetective.variation.diff.DiffType;
 
 /**
  * Abstract edit class according to our ESEC/FSE'22 paper.
  * @author Paul Bittner, Sören Viegener
  */
-public abstract class EditClass extends Pattern<DiffNode> {
+public abstract class EditClass extends Pattern<DiffNode<?>> {
     private final DiffType diffType;
 
     /**
@@ -33,20 +33,20 @@ public abstract class EditClass extends Pattern<DiffNode> {
      * Returns true iff the given node matches this edit class.
      * @param artifactNode Node which has node type ARTIFACT and whose DiffType is the same as {@link getDiffType()}.
      */
-    protected abstract boolean matchesArtifactNode(DiffNode artifactNode);
+    protected abstract boolean matchesArtifactNode(DiffNode<?> artifactNode);
 
     /**
      * Returns true if this edit class matches the given node and is an artifact.
      */
     @Override
-    public final boolean matches(DiffNode node) {
+    public final boolean matches(DiffNode<?> node) {
         return node.isArtifact() && node.diffType == diffType && matchesArtifactNode(node);
     }
 
     /**
      * Returns true iff this edit class matches at leat one node on the given tree.
      */
-    public boolean anyMatch(final DiffTree t) {
+    public boolean anyMatch(final VariationDiff<?> t) {
         return t.anyMatch(this::matches);
     }
 }

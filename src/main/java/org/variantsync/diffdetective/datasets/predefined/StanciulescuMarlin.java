@@ -1,9 +1,9 @@
 package org.variantsync.diffdetective.datasets.predefined;
 
 import org.eclipse.jgit.diff.DiffEntry;
-import org.variantsync.diffdetective.datasets.ParseOptions;
+import org.variantsync.diffdetective.datasets.PatchDiffParseOptions;
 import org.variantsync.diffdetective.datasets.Repository;
-import org.variantsync.diffdetective.diff.DiffFilter;
+import org.variantsync.diffdetective.diff.git.DiffFilter;
 
 import java.nio.file.Path;
 
@@ -39,6 +39,6 @@ public class StanciulescuMarlin {
         return Repository
                 .fromZip(marlinPath, "Marlin_old")
                 .setDiffFilter(DIFF_FILTER)
-                .setParseOptions(new ParseOptions(Marlin.ANNOTATION_PARSER));
+                .setParseOptions(PatchDiffParseOptions.Default.withAnnotationParser(Marlin.ANNOTATION_PARSER));
     }
 }

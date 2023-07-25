@@ -1,0 +1,5 @@
+#ifdef A
+Line A
+#elif B
+Line B
+#endif // A
