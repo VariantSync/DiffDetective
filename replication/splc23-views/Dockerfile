@@ -38,7 +38,7 @@ WORKDIR /home/sherlock
 # Copy the compiled JAR file from the first stage into the second stage
 # Syntax: COPY --from=STAGE_ID SOURCE_PATH TARGET_PATH
 WORKDIR /home/sherlock/holmes
-COPY --from=0 /home/user/target/diffdetective-1.0.0-jar-with-dependencies.jar ./DiffDetective.jar
+COPY --from=0 /home/user/target/diffdetective-2.0.0-jar-with-dependencies.jar ./DiffDetective.jar
 WORKDIR /home/sherlock
 
 # Copy the setup
