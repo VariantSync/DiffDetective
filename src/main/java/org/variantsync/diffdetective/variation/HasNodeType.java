@@ -1,6 +1,4 @@
-package org.variantsync.diffdetective.variation.tree;
-
-import org.variantsync.diffdetective.variation.NodeType;
+package org.variantsync.diffdetective.variation;
 
 /**
  * Mixin providing convenience methods for checking certain node types.

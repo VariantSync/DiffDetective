@@ -2,7 +2,6 @@ package org.variantsync.diffdetective.variation;
 
 import java.util.List;
 
-import org.variantsync.diffdetective.variation.tree.HasNodeType;
 import org.variantsync.diffdetective.variation.tree.VariationTree; // For Javadoc
 import org.variantsync.functjonal.Cast;
 

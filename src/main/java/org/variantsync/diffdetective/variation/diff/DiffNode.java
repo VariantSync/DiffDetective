@@ -6,10 +6,10 @@ import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.util.LineRange;
 import org.variantsync.diffdetective.util.fide.FixTrueFalse;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
+import org.variantsync.diffdetective.variation.HasNodeType;
 import org.variantsync.diffdetective.variation.Label;
 import org.variantsync.diffdetective.variation.NodeType;
 import org.variantsync.diffdetective.variation.VariationLabel;
-import org.variantsync.diffdetective.variation.tree.HasNodeType;
 import org.variantsync.diffdetective.variation.tree.VariationNode;
 import org.variantsync.functjonal.Cast;
 

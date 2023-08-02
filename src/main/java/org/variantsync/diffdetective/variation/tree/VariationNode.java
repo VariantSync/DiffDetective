@@ -4,10 +4,11 @@ import org.prop4j.And;
 import org.prop4j.Node;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.util.LineRange;
+import org.variantsync.diffdetective.util.StringUtils;
 import org.variantsync.diffdetective.util.fide.FixTrueFalse;
+import org.variantsync.diffdetective.variation.HasNodeType;
 import org.variantsync.diffdetective.variation.Label;
 import org.variantsync.diffdetective.variation.NodeType;
-import org.variantsync.diffdetective.util.StringUtils;
 import org.variantsync.diffdetective.variation.diff.DiffNode; // For Javadoc
 import org.variantsync.diffdetective.variation.diff.Projection; // For Javadoc
 
