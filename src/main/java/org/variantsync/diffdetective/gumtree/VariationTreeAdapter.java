@@ -6,7 +6,8 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import org.variantsync.diffdetective.variation.Label;
-import org.variantsync.diffdetective.variation.tree.VariationNode;
+import org.variantsync.diffdetective.variation.VariationLabel;
+import org.variantsync.diffdetective.variation.tree.TreeNode;
 
 import com.github.gumtreediff.tree.AbstractTree;
 import com.github.gumtreediff.tree.Tree;
@@ -23,13 +24,13 @@ import com.github.gumtreediff.tree.TypeSet;
  */
 public class VariationTreeAdapter<L extends Label> extends AbstractTree {
     private String cachedLabel;
-    private VariationNode<?, L> backingNode;
+    private TreeNode<?, VariationLabel<L>> backingNode;
 
-    public VariationTreeAdapter(VariationNode<?, L> node) {
+    public VariationTreeAdapter(TreeNode<?, VariationLabel<L>> node) {
         this.backingNode = node;
 
-        if (backingNode.isConditionalAnnotation()) {
-            cachedLabel = backingNode.getFormula().toString();
+        if (backingNode.getLabel().isConditionalAnnotation()) {
+            cachedLabel = backingNode.getLabel().getFormula().toString();
         } else {
             cachedLabel = backingNode.getLabel().getLines().stream().collect(Collectors.joining("\n"));
         }
@@ -41,11 +42,11 @@ public class VariationTreeAdapter<L extends Label> extends AbstractTree {
         setChildren(children);
     }
 
-    protected VariationTreeAdapter newInstance(VariationNode<?, L> node) {
+    protected VariationTreeAdapter<L> newInstance(TreeNode<?, VariationLabel<L>> node) {
         return new VariationTreeAdapter<>(node);
     }
 
-    public VariationNode<?, L> getVariationNode() {
+    public TreeNode<?, VariationLabel<L>> getVariationNode() {
         return backingNode;
     }
 
@@ -83,7 +84,7 @@ public class VariationTreeAdapter<L extends Label> extends AbstractTree {
 
     @Override
     public Type getType() {
-        return TypeSet.type(backingNode.getNodeType().toString());
+        return TypeSet.type(backingNode.getLabel().getNodeType().toString());
     }
 
     @Override

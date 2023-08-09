@@ -10,7 +10,8 @@ import org.variantsync.diffdetective.variation.HasNodeType;
 import org.variantsync.diffdetective.variation.Label;
 import org.variantsync.diffdetective.variation.NodeType;
 import org.variantsync.diffdetective.variation.VariationLabel;
-import org.variantsync.diffdetective.variation.tree.VariationNode;
+import org.variantsync.diffdetective.variation.tree.TreeNode;
+import org.variantsync.diffdetective.variation.tree.VariationTreeNode;
 import org.variantsync.functjonal.Cast;
 
 import java.lang.reflect.Array;
@@ -45,11 +46,6 @@ public class DiffNode<L extends Label> implements HasNodeType {
      * represented element in the diff (e.g., mapping or artifact).
      */
     public final VariationLabel<L> label;
-
-    private DiffLineNumber from = DiffLineNumber.Invalid();
-    private DiffLineNumber to = DiffLineNumber.Invalid();
-
-    private Node featureMapping;
 
     /**
      * The parents {@link DiffNode} before and after the edit.
@@ -90,14 +86,15 @@ public class DiffNode<L extends Label> implements HasNodeType {
     public DiffNode(DiffType diffType, NodeType nodeType,
                     DiffLineNumber fromLines, DiffLineNumber toLines,
                     Node featureMapping, L label) {
+        this(diffType, new VariationLabel<>(nodeType, label));
+    }
+
+    public DiffNode(DiffType diffType, VariationLabel<L> label) {
         children[BEFORE.ordinal()] = new ArrayList<>();
         children[AFTER.ordinal()] = new ArrayList<>();
 
         this.diffType = diffType;
-        this.label = new VariationLabel<>(nodeType, label);
-        this.from = fromLines;
-        this.to = toLines;
-        this.featureMapping = featureMapping;
+        this.label = label;
     }
 
     /**
@@ -132,6 +129,13 @@ public class DiffNode<L extends Label> implements HasNodeType {
     }
 
     /**
+     * TODO
+     */
+    public VariationLabel<L> getVariationLabel() {
+        return label;
+    }
+
+    /**
      * Returns the lines in the diff that are represented by this DiffNode as a single text.
      */
     public L getLabel() {
@@ -152,7 +156,7 @@ public class DiffNode<L extends Label> implements HasNodeType {
      * @return The first {@code if} node in the path to the root at the time {@code time}
      */
     public DiffNode<L> getIfNode(Time time) {
-        return projection(time).getIfNode().getBackingNode();
+        return VariationTreeNode.getIfNode(projection(time)).getBackingNode();
     }
 
     /**
@@ -357,11 +361,7 @@ public class DiffNode<L extends Label> implements HasNodeType {
      * Returns the starting line number of this node's corresponding text block.
      */
     public DiffLineNumber getFromLine() {
-        return from;
-    }
-
-    public void setFromLine(DiffLineNumber from) {
-        this.from = from.as(diffType);
+        return label.getFirstLine();
     }
 
     /**
@@ -369,11 +369,7 @@ public class DiffNode<L extends Label> implements HasNodeType {
      * The line number is exclusive (i.e., it points 1 behind the last included line).
      */
     public DiffLineNumber getToLine() {
-        return to;
-    }
-
-    public void setToLine(DiffLineNumber to) {
-        this.to = to.as(diffType);
+        return label.getLastLine();
     }
 
     /**
@@ -408,7 +404,7 @@ public class DiffNode<L extends Label> implements HasNodeType {
      * @see NodeType#isAnnotation
      */
     public Node getFormula() {
-        return featureMapping;
+        return label.getFormula();
     }
 
     public void setFormula(Node featureMapping) {
@@ -423,7 +419,7 @@ public class DiffNode<L extends Label> implements HasNodeType {
                 }
         );
 
-        this.featureMapping = featureMapping;
+        label.setFormula(featureMapping);
     }
 
     /**
@@ -474,7 +470,7 @@ public class DiffNode<L extends Label> implements HasNodeType {
      * @return The feature mapping of this node for the given parent edges.
      */
     public Node getFeatureMapping(Time time) {
-        return projection(time).getFeatureMapping();
+        return VariationTreeNode.getFeatureMapping(projection(time));
     }
 
     /**
@@ -484,7 +480,7 @@ public class DiffNode<L extends Label> implements HasNodeType {
      * @return The presence condition of this node for the given parent edges.
      */
     public Node getPresenceCondition(Time time) {
-        return projection(time).getPresenceCondition();
+        return VariationTreeNode.getPresenceCondition(projection(time));
     }
 
     /**
@@ -685,20 +681,14 @@ public class DiffNode<L extends Label> implements HasNodeType {
     }
 
     /**
-     * Transforms a {@code VariationNode} into a {@code DiffNode} by diffing {@code variationNode}
-     * to itself. Acts on only the given node and does not perform recursive translations.
+     * Transforms a {@code Node<VariationLabel>} into a {@code DiffNode} by diffing {@code
+     * variationNode} to itself. Only acts on the given node and does not perform recursive
+     * translations.
      */
-    public static <T extends VariationNode<T, L>, L extends Label> DiffNode<L> unchangedFlat(VariationNode<T, L> variationNode) {
-        int from = variationNode.getLineRange().fromInclusive();
-        int to = variationNode.getLineRange().toExclusive();
-
-        return new DiffNode<>(
+    public static <L extends Label, N extends TreeNode<N, VariationLabel<L>>> DiffNode<L> unchangedFlat(N variationNode) {
+        return new DiffNode<L>(
                 DiffType.NON,
-                variationNode.getNodeType(),
-                new DiffLineNumber(from, from, from),
-                new DiffLineNumber(to, to, to),
-                variationNode.getFormula(),
-                variationNode.getLabel()
+                Cast.<Label, VariationLabel<L>>unchecked(variationNode.getLabel().clone())
         );
     }
 
@@ -711,11 +701,11 @@ public class DiffNode<L extends Label> implements HasNodeType {
      *
      * @param convert A function to translate single nodes (without their hierarchy).
      */
-    public static <T extends VariationNode<T, L1>, L1 extends Label, L2 extends Label> DiffNode<L2> unchanged(
+    public static <T extends TreeNode<T, L1>, L1 extends VariationLabel<?>, L2 extends Label> DiffNode<L2> unchanged(
             final Function<? super T, DiffNode<L2>> convert,
-            VariationNode<T, L1> variationNode) {
+            T variationNode) {
 
-        var diffNode = convert.apply(variationNode.upCast());
+        var diffNode = convert.apply(variationNode);
 
         for (var variationChildNode : variationNode.getChildren()) {
             var diffChildNode = unchanged(convert, variationChildNode);
@@ -765,7 +755,7 @@ public class DiffNode<L extends Label> implements HasNodeType {
      * This is the inverse of {@link projection} iff the original {@link DiffNode} wasn't modified
      * (all node had a {@link getDiffType diff type} of {@link DiffType#NON}).
      */
-    public static <T extends VariationNode<T, L>, L extends Label> DiffNode<L> unchanged(VariationNode<T, L> variationNode) {
+    public static <L extends Label, T extends TreeNode<T, VariationLabel<L>>> DiffNode<L> unchanged(T variationNode) {
         return unchanged(DiffNode::unchangedFlat, variationNode);
     }
 
@@ -813,7 +803,7 @@ public class DiffNode<L extends Label> implements HasNodeType {
             s = "ROOT";
         } else {
             s = String.format("%s_%s from %d to %d with \"%s\"", diffType, getNodeType(),
-                    from.inDiff(), to.inDiff(), featureMapping);
+                    from.inDiff(), to.inDiff(), label.getFormula());
         }
         return s;
     }

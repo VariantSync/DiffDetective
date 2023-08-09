@@ -10,9 +10,10 @@ import org.variantsync.diffdetective.gumtree.VariationDiffAdapter;
 import org.variantsync.diffdetective.gumtree.VariationTreeAdapter;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.variation.Label;
+import org.variantsync.diffdetective.variation.VariationLabel;
 import org.variantsync.diffdetective.variation.diff.source.VariationTreeDiffSource;
 import org.variantsync.diffdetective.variation.diff.traverse.VariationDiffTraversal;
-import org.variantsync.diffdetective.variation.tree.VariationNode;
+import org.variantsync.diffdetective.variation.tree.TreeNode;
 import org.variantsync.diffdetective.variation.tree.VariationTree;
 import org.variantsync.functjonal.Cast;
 
@@ -52,9 +53,9 @@ public class Construction {
      * @param after the variation tree after an edit
      * @see diffUsingMatching(DiffNode, VariationNode, Matcher)
      */
-    public static <A extends VariationNode<A, L>, B extends VariationNode<B, L>, L extends Label> DiffNode<L> diffUsingMatching(
-        VariationNode<A, L> before,
-        VariationNode<B, L> after,
+    public static <L extends Label, TA extends TreeNode<TA, VariationLabel<L>>, TB extends TreeNode<TB, VariationLabel<L>>> DiffNode<L> diffUsingMatching(
+        TA before,
+        TB after,
         Matcher matcher
     ) {
         return diffUsingMatching(DiffNode.unchanged(before), after, matcher);
@@ -74,9 +75,9 @@ public class Construction {
      * @param after the variation tree after an edit
      * @see "Constructing Variation Diffs Using Tree Diffing Algorithms"
      */
-    public static <B extends VariationNode<B, L>, L extends Label> DiffNode<L> diffUsingMatching(
+    public static <L extends Label, T extends TreeNode<T, VariationLabel<L>>> DiffNode<L> diffUsingMatching(
         DiffNode<L> before,
-        VariationNode<B, L> after,
+        T after,
         Matcher matcher
     ) {
         var src = new VariationDiffAdapter<L>(before, BEFORE);
@@ -131,7 +132,7 @@ public class Construction {
      * @param afterNode a desired child of {@code parent}'s {@code AFTER} projection
      */
     private static <L extends Label> void addUnmapped(MappingStore mappings, DiffNode<L> parent, VariationTreeAdapter<L> afterNode) {
-        VariationNode<?, L> variationNode = afterNode.getVariationNode();
+        TreeNode<?, VariationLabel<L>> variationNode = afterNode.getVariationNode();
         DiffNode<L> diffNode;
 
         Tree src = mappings.getSrcForDst(afterNode);
@@ -141,10 +142,10 @@ public class Construction {
 
             diffNode = new DiffNode<L>(
                 ADD,
-                variationNode.getNodeType(),
+                variationNode.getLabel().getNodeType(),
                 new DiffLineNumber(DiffLineNumber.InvalidLineNumber, from, from),
                 new DiffLineNumber(DiffLineNumber.InvalidLineNumber, to, to),
-                variationNode.getFormula(),
+                variationNode.getLabel().getFormula(),
                 Cast.unchecked(variationNode.getLabel().clone())
             );
         } else {

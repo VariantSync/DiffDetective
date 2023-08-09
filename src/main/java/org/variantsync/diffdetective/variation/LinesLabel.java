@@ -12,6 +12,10 @@ import org.variantsync.diffdetective.util.StringUtils;
  */
 public class LinesLabel implements Label {
     private final List<String> lines;
+    /**
+     * The range of line numbers of this node's corresponding source code.
+     */
+    private LineRange lineRange;
 
     public LinesLabel() {
         this(new ArrayList<>());

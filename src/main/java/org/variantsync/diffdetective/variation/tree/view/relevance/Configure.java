@@ -4,7 +4,9 @@ import org.prop4j.Node;
 import org.prop4j.NodeWriter;
 import org.variantsync.diffdetective.analysis.logic.SAT;
 import org.variantsync.diffdetective.util.fide.FixTrueFalse;
-import org.variantsync.diffdetective.variation.tree.VariationNode;
+import org.variantsync.diffdetective.variation.VariationLabel;
+import org.variantsync.diffdetective.variation.tree.TreeNode;
+import org.variantsync.diffdetective.variation.tree.VariationTreeNode;
 
 import java.util.function.Consumer;
 
@@ -36,22 +38,22 @@ public class Configure implements Relevance {
     }
 
     @Override
-    public boolean test(VariationNode<?, ?> v) {
+    public boolean test(TreeNode<?, VariationLabel<?>> v) {
         return SAT.isSatisfiable(
                 FixTrueFalse.Formula.and(
                         configuration,
-                        FixTrueFalse.EliminateTrueAndFalse(v.getPresenceCondition())
+                        FixTrueFalse.EliminateTrueAndFalse(VariationTreeNode.getPresenceCondition(v.upCast()))
                 )
         );
     }
 
     @Override
-    public <TreeNode extends VariationNode<TreeNode, ?>> void computeViewNodes(TreeNode v, Consumer<TreeNode> markRelevant) {
+    public <T extends TreeNode<T, VariationLabel<?>>> void computeViewNodes(T v, Consumer<T> markRelevant) {
         markRelevant.accept(v);
 
-        for (final TreeNode c : v.getChildren()) {
+        for (final T c : v.getChildren()) {
             // If the child is an artifact it has the same presence condition as we do, so it is also included in the view.
-            if (c.isArtifact() || test(c)) {
+            if (c.getLabel().isArtifact() || test(c)) {
                 computeViewNodes(c, markRelevant);
             }
         }

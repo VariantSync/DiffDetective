@@ -1,6 +1,7 @@
 package org.variantsync.diffdetective.variation.tree.view.relevance;
 
-import org.variantsync.diffdetective.variation.tree.VariationNode;
+import org.variantsync.diffdetective.variation.VariationLabel;
+import org.variantsync.diffdetective.variation.tree.TreeNode;
 
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -13,7 +14,7 @@ import java.util.function.Predicate;
  * Moreover, this interface provides methods to access a predicates metadata for debugging
  * and (de-)serialization.
  */
-public interface Relevance extends Predicate<VariationNode<?, ?>> {
+public interface Relevance extends Predicate<TreeNode<?, VariationLabel<?>>> {
     /**
      * @return The name of this relevance predicate's type.
      */
@@ -28,7 +29,7 @@ public interface Relevance extends Predicate<VariationNode<?, ?>> {
      * Delegates to {@link Relevance#computeViewNodesCheckAll(Relevance, VariationNode, Consumer)} with this relevance
      * as the first parameter.
      */
-    default <TreeNode extends VariationNode<TreeNode, ?>> void computeViewNodes(final TreeNode v, final Consumer<TreeNode> markRelevant) {
+    default <T extends TreeNode<T, VariationLabel<?>>> void computeViewNodes(final T v, final Consumer<T> markRelevant) {
         computeViewNodesCheckAll(this, v, markRelevant);
     }
 
@@ -43,8 +44,8 @@ public interface Relevance extends Predicate<VariationNode<?, ?>> {
      * @param markRelevant Callback that is invoked on each tree node that is deemed relevant.
      * @param <TreeNode> The type of the nodes within the given tree.
      */
-    static <TreeNode extends VariationNode<TreeNode, ?>> void computeViewNodesCheckAll(final Relevance rho, final TreeNode v, final Consumer<TreeNode> markRelevant) {
-        for (final TreeNode c : v.getChildren()) {
+    static <T extends TreeNode<T, VariationLabel<?>>> void computeViewNodesCheckAll(final Relevance rho, final T v, final Consumer<T> markRelevant) {
+        for (final T c : v.getChildren()) {
             if (rho.test(c)) {
                 c.forMeAndMyAncestors(markRelevant);
             }

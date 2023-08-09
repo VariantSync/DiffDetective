@@ -1,10 +1,9 @@
 package org.variantsync.diffdetective.variation;
 
 import org.variantsync.diffdetective.variation.diff.DiffNode; // For Javadoc
-import org.variantsync.diffdetective.variation.tree.VariationNode; // For Javadoc
 
 /**
- * The type of nodes of a {@link DiffNode} and a {@link VariationNode}.
+ * The type of nodes of a {@link DiffNode} and stored in a {@link VariationLabel}.
  * Corresponds to the tau function from our paper.
  */
 public enum NodeType {

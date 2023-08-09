@@ -2,11 +2,9 @@ package org.variantsync.diffdetective.variation.diff;
 
 import java.util.List;
 
-import org.prop4j.Node;
-import org.variantsync.diffdetective.util.LineRange;
 import org.variantsync.diffdetective.variation.Label;
-import org.variantsync.diffdetective.variation.NodeType;
-import org.variantsync.diffdetective.variation.tree.VariationNode;
+import org.variantsync.diffdetective.variation.VariationLabel;
+import org.variantsync.diffdetective.variation.tree.TreeNode;
 import org.variantsync.functjonal.list.FilteredMappedListView;
 
 /**
@@ -20,7 +18,7 @@ import org.variantsync.functjonal.list.FilteredMappedListView;
  *
  * @see DiffNode#projection
  */
-public class Projection<L extends Label> extends VariationNode<Projection<L>, L> {
+public class Projection<L extends Label> extends TreeNode<Projection<L>, VariationLabel<L>> {
     private DiffNode<L> backingNode;
     private Time time;
 
@@ -51,25 +49,9 @@ public class Projection<L extends Label> extends VariationNode<Projection<L>, L>
         return this;
     }
 
-
     @Override
-    public NodeType getNodeType() {
-        return getBackingNode().getNodeType();
-    }
-
-    @Override
-    public L getLabel() {
-        return getBackingNode().getLabel();
-    }
-
-    @Override
-    public LineRange getLineRange() {
-        return getBackingNode().getLinesAtTime(time);
-    }
-
-    @Override
-    public void setLineRange(LineRange lineRange) {
-        getBackingNode().setLinesAtTime(lineRange, time);
+    public VariationLabel<L> getLabel() {
+        return getBackingNode().getVariationLabel();
     }
 
     @Override
@@ -110,11 +92,6 @@ public class Projection<L extends Label> extends VariationNode<Projection<L>, L>
     @Override
     public void removeAllChildren() {
         getBackingNode().removeChildren(time);
-    }
-
-    @Override
-    public Node getFormula() {
-        return getBackingNode().getFormula();
     }
 
     @Override

@@ -58,10 +58,8 @@ public class Show {
 
                 return new DiffNode<>(
                         badVDiff.coloring().get(v),
-                        v.getNodeType(),
                         new DiffLineNumber(from, from, from),
                         new DiffLineNumber(to, to, to),
-                        v.getFormula(),
                         v.getLabel()
                 );
             }

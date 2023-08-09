@@ -1,10 +1,11 @@
 package org.variantsync.diffdetective.gumtree;
 
 import org.variantsync.diffdetective.variation.Label;
+import org.variantsync.diffdetective.variation.VariationLabel;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
 import org.variantsync.diffdetective.variation.diff.Projection;
 import org.variantsync.diffdetective.variation.diff.Time;
-import org.variantsync.diffdetective.variation.tree.VariationNode;
+import org.variantsync.diffdetective.variation.tree.TreeNode;
 import org.variantsync.functjonal.Cast;
 
 /**
@@ -22,11 +23,11 @@ public class VariationDiffAdapter<L extends Label> extends VariationTreeAdapter<
         super(node);
     }
 
-    protected VariationTreeAdapter<L> newInstance(VariationNode<?, L> node) {
+    protected VariationTreeAdapter<L> newInstance(TreeNode<?, VariationLabel<L>> node) {
         return new VariationDiffAdapter<>(Cast.unchecked(node));
     }
 
     public DiffNode<L> getDiffNode() {
-        return Cast.<VariationNode<?, L>, Projection<L>>unchecked(getVariationNode()).getBackingNode();
+        return Cast.<TreeNode<?, VariationLabel<L>>, Projection<L>>unchecked(getVariationNode()).getBackingNode();
     }
 }

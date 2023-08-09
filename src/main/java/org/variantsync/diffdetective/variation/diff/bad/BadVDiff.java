@@ -4,13 +4,14 @@ import org.variantsync.diffdetective.diff.text.DiffLineNumberRange;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.util.StringUtils;
 import org.variantsync.diffdetective.variation.Label;
+import org.variantsync.diffdetective.variation.VariationLabel;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
-import org.variantsync.diffdetective.variation.diff.VariationDiff;
 import org.variantsync.diffdetective.variation.diff.DiffType;
 import org.variantsync.diffdetective.variation.diff.Time;
+import org.variantsync.diffdetective.variation.diff.VariationDiff;
 import org.variantsync.diffdetective.variation.diff.source.VariationDiffSource;
+import org.variantsync.diffdetective.variation.tree.ConcreteTreeNode;
 import org.variantsync.diffdetective.variation.tree.VariationTree;
-import org.variantsync.diffdetective.variation.tree.VariationTreeNode;
 import org.variantsync.functjonal.Cast;
 import org.variantsync.functjonal.map.MapUtils;
 
@@ -65,9 +66,9 @@ import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
  */
 public record BadVDiff<L extends Label>(
         VariationTree<L> diff,
-        Map<VariationTreeNode<L>, VariationTreeNode<L>> matching,
-        Map<VariationTreeNode<L>, DiffType> coloring,
-        Map<VariationTreeNode<L>, DiffLineNumberRange> lines
+        Map<ConcreteTreeNode<VariationLabel<L>>, ConcreteTreeNode<VariationLabel<L>>> matching,
+        Map<ConcreteTreeNode<VariationLabel<L>>, DiffType> coloring,
+        Map<ConcreteTreeNode<VariationLabel<L>>, DiffLineNumberRange> lines
 )
 {
     /**
@@ -75,15 +76,15 @@ public record BadVDiff<L extends Label>(
      * converted to in {@link #fromGood(VariationDiff)}.
      */
     private static class FromGoodNodeTranslation<L extends Label> {
-        private final Map<DiffNode<L>, Map<Time, VariationTreeNode<L>>> translate = new HashMap<>();
+        private final Map<DiffNode<L>, Map<Time, ConcreteTreeNode<VariationLabel<L>>>> translate = new HashMap<>();
 
         /**
          * Remember that the given DiffNode d was translated to the given
-         * VariationTreeNode v at all times d exists.
+         * ConcreteTreeNode v at all times d exists.
          * @param d The DiffNode from the initial good VariationDiff.
-         * @param v The VariationTreeNode d was translated to.
+         * @param v The ConcreteTreeNode d was translated to.
          */
-        void put(DiffNode<L> d, VariationTreeNode<L> v) {
+        void put(DiffNode<L> d, ConcreteTreeNode<VariationLabel<L>> v) {
             d.getDiffType().forAllTimesOfExistence(
                     t -> put(d, t, v)
             );
@@ -91,24 +92,24 @@ public record BadVDiff<L extends Label>(
 
         /**
          * Remember that the given DiffNode d was translated to the given
-         * VariationTreeNode v at time t.
+         * ConcreteTreeNode v at time t.
          * @param d The DiffNode from the initial good VariationDiff.
          * @param t The time at which the translated node v represents the initial DiffNode d.
-         * @param v The VariationTreeNode d was translated to.
+         * @param v The ConcreteTreeNode d was translated to.
          */
-        void put(DiffNode<L> d, Time t, VariationTreeNode<L> v) {
+        void put(DiffNode<L> d, Time t, ConcreteTreeNode<VariationLabel<L>> v) {
             translate.putIfAbsent(d, new HashMap<>());
             translate.get(d).put(t, v);
         }
 
         /**
-         * Returns the VariationTreeNode that represents the given DiffNode d
+         * Returns the ConcreteTreeNode that represents the given DiffNode d
          * at the given time t in the produced bad diff.
          *
          * @param d The DiffNode from the initial good VariationDiff.
          * @param t The time for which we seek the node that represents the initial DiffNode d.
          */
-        VariationTreeNode<L> get(DiffNode<L> d, Time t) {
+        ConcreteTreeNode<VariationLabel<L>> get(DiffNode<L> d, Time t) {
             return translate.getOrDefault(d, new HashMap<>()).get(t);
         }
     }
@@ -119,32 +120,27 @@ public record BadVDiff<L extends Label>(
      *        {@link DiffNode#getFormula() formula},
      *        {@link DiffNode#getLinesInDiff() line numbers in the diff},
      *        and {@link DiffNode#getLabelLines() label} but no edge information.
-     * @param n The node to convert to a plain VariationTreeNode.
+     * @param n The node to convert to a plain ConcreteTreeNode.
      */
-    private static <L extends Label> VariationTreeNode<L> plain(final DiffNode<L> n) {
-        return new VariationTreeNode<>(
-                n.getNodeType(),
-                n.getFormula(),
-                n.getLinesInDiff(),
-                n.getLabel()
-        );
+    private static <L extends Label> ConcreteTreeNode<VariationLabel<L>> plain(final DiffNode<L> n) {
+        return new ConcreteTreeNode<>(n.getVariationLabel());
     }
 
     /**
      * Performs a {@link #plain(DiffNode) plain} conversion of the given DiffNode n
-     * to a VariationTreeNode.
+     * to a ConcreteTreeNode.
      * Additionally, stores metadata to invert this operation in the given maps.
      * For further information on these maps,
      * have a look at {@link BadVDiff the documentation of this class}.
      *
      * @param nodeTranslation see {@link FromGoodNodeTranslation}
      */
-    private static <L extends Label> VariationTreeNode<L> fromGood(
+    private static <L extends Label> ConcreteTreeNode<VariationLabel<L>> fromGood(
             final DiffNode<L> n,
             final FromGoodNodeTranslation<L> nodeTranslation,
-            final Map<VariationTreeNode<L>, DiffType> coloring,
-            final Map<VariationTreeNode<L>, DiffLineNumberRange> lines) {
-        final VariationTreeNode<L> result = plain(n);
+            final Map<ConcreteTreeNode<VariationLabel<L>>, DiffType> coloring,
+            final Map<ConcreteTreeNode<VariationLabel<L>>, DiffLineNumberRange> lines) {
+        final ConcreteTreeNode<VariationLabel<L>> result = plain(n);
         nodeTranslation.put(n, result);
         coloring.put(result, n.getDiffType());
         lines.put(result, new DiffLineNumberRange(n.getFromLine(), n.getToLine()));
@@ -154,16 +150,9 @@ public record BadVDiff<L extends Label>(
     /**
      * Inverse of {@link #fromGood(DiffNode, FromGoodNodeTranslation, Map, Map)}.
      */
-    private DiffNode<L> toGood(final VariationTreeNode<L> n) {
+    private DiffNode<L> toGood(final ConcreteTreeNode<VariationLabel<L>> n) {
         final DiffLineNumberRange nlines = lines.get(n);
-        return new DiffNode<L>(
-                coloring.get(n),
-                n.getNodeType(),
-                nlines.from(),
-                nlines.to(),
-                n.getFormula(),
-                n.getLabel()
-        );
+        return new DiffNode<L>(coloring.get(n), nlines, n.getLabel());
     }
 
     /**
@@ -171,22 +160,15 @@ public record BadVDiff<L extends Label>(
      * It is asserted that both given nodes have the same {@link org.variantsync.diffdetective.variation.NodeType},
      * label, formula, and line numbers.
      */
-    private DiffNode<L> mergeToGood(final VariationTreeNode<L> before, final VariationTreeNode<L> after) {
-        Assert.assertEquals(before.getNodeType(), after.getNodeType());
+    private DiffNode<L> mergeToGood(final ConcreteTreeNode<VariationLabel<L>> before, final ConcreteTreeNode<VariationLabel<L>> after) {
+        Assert.assertEquals(before.getLabel().getNodeType(), after.getLabel().getNodeType());
         Assert.assertEquals(lines.get(before), lines.get(after));
-        Assert.assertEquals(before.getFormula(), after.getFormula());
+        Assert.assertEquals(before.getLabel().getFormula(), after.getLabel().getFormula());
         Assert.assertEquals(before.getLabel(), after.getLabel());
 
         final DiffLineNumberRange nlines = lines.get(before);
 
-        return new DiffNode<>(
-                NON,
-                before.getNodeType(),
-                nlines.from(),
-                nlines.to(),
-                before.getFormula(),
-                before.getLabel()
-        );
+        return new DiffNode<>(NON, nlines, before.getLabel());
     }
 
     /**
@@ -196,21 +178,21 @@ public record BadVDiff<L extends Label>(
      */
     public static <L extends Label> BadVDiff<L> fromGood(VariationDiff<L> d) {
         record EdgeToConstruct<L extends Label>(
-                VariationTreeNode<L> child,
+                ConcreteTreeNode<VariationLabel<L>> child,
                 DiffNode<L> parent,
                 Time t
         ) {}
 
         final FromGoodNodeTranslation<L> nodeTranslation = new FromGoodNodeTranslation<>();
 
-        final Map<VariationTreeNode<L>, VariationTreeNode<L>> matching = new HashMap<>();
-        final Map<VariationTreeNode<L>, DiffType>             coloring = new HashMap<>();
-        final Map<VariationTreeNode<L>, DiffLineNumberRange>  lines    = new HashMap<>();
+        final Map<ConcreteTreeNode<VariationLabel<L>>, ConcreteTreeNode<VariationLabel<L>>> matching = new HashMap<>();
+        final Map<ConcreteTreeNode<VariationLabel<L>>, DiffType>             coloring = new HashMap<>();
+        final Map<ConcreteTreeNode<VariationLabel<L>>, DiffLineNumberRange>  lines    = new HashMap<>();
         final Set<DiffNode<L>> splittedNodes = new HashSet<>();
 
         final List<EdgeToConstruct<L>> edgesToConstruct = new ArrayList<>();
 
-        final VariationTreeNode<L> root = fromGood(d.getRoot(), nodeTranslation, coloring, lines);
+        final ConcreteTreeNode<VariationLabel<L>> root = fromGood(d.getRoot(), nodeTranslation, coloring, lines);
 
         d.forAll(diffNode -> {
             if (diffNode == d.getRoot()) {
@@ -252,9 +234,9 @@ public record BadVDiff<L extends Label>(
 
                 final DiffLineNumberRange dRange = new DiffLineNumberRange(diffNode.getFromLine(), diffNode.getToLine());
 
-                VariationTreeNode<L>[] selfs = Cast.unchecked(Array.newInstance(VariationTreeNode.class, 2));
+                ConcreteTreeNode<VariationLabel<L>>[] selfs = Cast.unchecked(Array.newInstance(ConcreteTreeNode.class, 2));
                 Time.forAll(time -> {
-                    final VariationTreeNode<L> self = plain(diffNode);
+                    final ConcreteTreeNode<VariationLabel<L>> self = plain(diffNode);
                     selfs[time.ordinal()] = self;
 
                     nodeTranslation.put(diffNode, time, self);
@@ -271,7 +253,7 @@ public record BadVDiff<L extends Label>(
 
                 splittedNodes.add(diffNode);
             } else {
-                final VariationTreeNode<L> self = fromGood(diffNode, nodeTranslation, coloring, lines);
+                final ConcreteTreeNode<VariationLabel<L>> self = fromGood(diffNode, nodeTranslation, coloring, lines);
 
                 /*
                  * Else is important in the following branching:
@@ -323,12 +305,12 @@ public record BadVDiff<L extends Label>(
          */
         record EdgeToConstruct<L extends Label>(
                 DiffNode<L> child,
-                VariationTreeNode<L> parent,
+                ConcreteTreeNode<VariationLabel<L>> parent,
                 Time time
         ) {}
 
         final List<EdgeToConstruct<L>>               edgesToConstruct = new ArrayList<>();
-        final Map<VariationTreeNode<L>, DiffNode<L>> nodeTranslation  = new HashMap<>();
+        final Map<ConcreteTreeNode<VariationLabel<L>>, DiffNode<L>> nodeTranslation  = new HashMap<>();
 
         final DiffNode<L> root = toGood(diff.root());
         nodeTranslation.put(diff.root(), root);
@@ -340,10 +322,10 @@ public record BadVDiff<L extends Label>(
                 return;
             }
 
-            final VariationTreeNode<L> parent = vtnode.getParent();
+            final ConcreteTreeNode<VariationLabel<L>> parent = vtnode.getParent();
             Assert.assertNotNull(parent);
 
-            final VariationTreeNode<L> badBuddy = matching.get(vtnode);
+            final ConcreteTreeNode<VariationLabel<L>> badBuddy = matching.get(vtnode);
             if (badBuddy == null || !diff.contains(badBuddy)) {
                 // v was not cloned.
                 // We can just directly convert it to a DiffNode.
@@ -390,11 +372,11 @@ public record BadVDiff<L extends Label>(
     }
 
     public BadVDiff<L> deepCopy() {
-        final Map<VariationTreeNode<L>, VariationTreeNode<L>> oldToNew = new HashMap<>();
+        final Map<ConcreteTreeNode<VariationLabel<L>>, ConcreteTreeNode<VariationLabel<L>>> oldToNew = new HashMap<>();
         final VariationTree<L> diffCopy = diff().deepCopy(oldToNew);
 
-        final Map<VariationTreeNode<L>, VariationTreeNode<L>> matchingCopy = new HashMap<>();
-        for (Map.Entry<VariationTreeNode<L>, VariationTreeNode<L>> entry : matching().entrySet()) {
+        final Map<ConcreteTreeNode<VariationLabel<L>>, ConcreteTreeNode<VariationLabel<L>>> matchingCopy = new HashMap<>();
+        for (Map.Entry<ConcreteTreeNode<VariationLabel<L>>, ConcreteTreeNode<VariationLabel<L>>> entry : matching().entrySet()) {
             matchingCopy.put(
                     oldToNew.get(entry.getKey()),
                     oldToNew.get(entry.getValue())
@@ -409,7 +391,7 @@ public record BadVDiff<L extends Label>(
         );
     }
 
-    private void prettyPrint(final String indent, StringBuilder b, VariationTreeNode<L> n) {
+    private void prettyPrint(final String indent, StringBuilder b, ConcreteTreeNode<VariationLabel<L>> n) {
         if (!n.isRoot()) {
             final String prefix = coloring.get(n).symbol + indent;
             b.append(n.getLabel().getLines().stream().collect(Collectors.joining(
@@ -419,11 +401,11 @@ public record BadVDiff<L extends Label>(
             ));
         }
 
-        for (VariationTreeNode<L> child : n.getChildren()) {
+        for (ConcreteTreeNode<VariationLabel<L>> child : n.getChildren()) {
             prettyPrint("  " + indent, b, child);
         }
 
-        if (n.getNodeType().isAnnotation() && !n.isRoot()) {
+        if (n.getLabel().getNodeType().isAnnotation() && !n.isRoot()) {
             b
                     .append(coloring.get(n).symbol)
                     .append(indent)

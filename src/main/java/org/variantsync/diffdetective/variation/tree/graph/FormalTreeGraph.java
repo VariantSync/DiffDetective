@@ -1,8 +1,9 @@
 package org.variantsync.diffdetective.variation.tree.graph;
 
 import org.variantsync.diffdetective.variation.Label;
+import org.variantsync.diffdetective.variation.VariationLabel;
+import org.variantsync.diffdetective.variation.tree.TreeNode;
 import org.variantsync.diffdetective.variation.tree.VariationTree;
-import org.variantsync.diffdetective.variation.tree.VariationTreeNode;
 
 import java.util.HashSet;
 import java.util.Objects;
@@ -20,10 +21,10 @@ import java.util.Set;
  * @author Paul Bittner
  */
 public record FormalTreeGraph<L extends Label>(
-            Set<VariationTreeNode<L>> nodes,
-            Set<Edge<L>> edges
+            Set<TreeNode<?, VariationLabel<L>>> nodes,
+            Set<Edge<VariationLabel<L>>> edges
 ) {
-    public record Edge<L extends Label>(VariationTreeNode<L> child, VariationTreeNode<L> parent) {}
+    public record Edge<L extends Label>(TreeNode<?, VariationLabel<L>> child, TreeNode<?, VariationLabel<L>> parent) {}
 
     /**
      * Creates a GraphView for a given VariationTree.
@@ -35,8 +36,8 @@ public record FormalTreeGraph<L extends Label>(
      * @return the graph view
      */
     public static <L extends Label> FormalTreeGraph<L> fromTree(final VariationTree<L> t) {
-        final Set<VariationTreeNode<L>> nodes = new HashSet<>();
-        final Set<Edge<L>> edges = new HashSet<>();
+        final Set<TreeNode<?, VariationLabel<L>>> nodes = new HashSet<>();
+        final Set<Edge<VariationLabel<L>>> edges = new HashSet<>();
 
         t.forAllPreorder(n -> {
             nodes.add(n);
@@ -45,7 +46,7 @@ public record FormalTreeGraph<L extends Label>(
             }
         });
 
-        return new FormalTreeGraph<>(nodes, edges);
+        return new FormalTreeGraph<L>(nodes, edges);
     }
 
     @Override
