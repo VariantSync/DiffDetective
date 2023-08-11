@@ -64,6 +64,27 @@ public class Assert {
         }
     }
 
+    /**
+     * Abort program execution if {@code condition} is true.
+     *
+     * <p>If the checked condition is not obvious in the source code
+     * {@link assertTrue(boolean, String)} should be used to help identifying issues quickly.
+     *
+     * @param condition the condition which has to be false
+     * @throws AssertionError if {@code condition} is true
+     */
+    public static void assertFalse(boolean condition) {
+        assertTrue(!condition);
+    }
+
+    public static void assertFalse(boolean condition, final Supplier<String> errorMessage) {
+        assertTrue(!condition, errorMessage);
+    }
+
+    public static void assertFalse(boolean condition, String errorMessage) {
+        assertTrue(!condition, errorMessage);
+    }
+
     /** Throws {@link AssertionError} with {@code errorMessage} as error message. */
     public static void fail(String errorMessage) {
         throw new AssertionError(errorMessage);
@@ -73,6 +94,23 @@ public class Assert {
     public static void assertNotNull(Object o) {
         if (o == null) {
             fail("Given object is null but assumed to be not null.");
+        }
+    }
+
+    /** Abort program execution if {@code o} is not {@code null}. */
+    public static void assertNull(Object o) {
+        if (o != null) {
+            fail("Given object is not null but assumed to be null.");
+        }
+    }
+
+    public static <T> void assertEquals(T expected, T actual) {
+        if (expected == null) {
+            if (actual != null) {
+                fail("expected is null but actual is not!");
+            }
+        } else {
+            assertTrue(expected.equals(actual), expected + " != " + actual);
         }
     }
 }

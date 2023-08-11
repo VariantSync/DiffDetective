@@ -14,7 +14,7 @@ public interface CSV {
     /** The default delimiter for DiffDetective tables. */
     String DEFAULT_CSV_DELIMITER = ";";
 
-    /** Convert this value into a CSV row using the {@link DEFAULT_CSV_DELIMITER}. */
+    /** Convert this value into a CSV row using the {@link #DEFAULT_CSV_DELIMITER}. */
     default String toCSV() {
         return toCSV(DEFAULT_CSV_DELIMITER);
     }

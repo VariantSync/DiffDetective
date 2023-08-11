@@ -1,0 +1,5 @@
+#ifdef CONFIG_B
+#ifdef CONFIG_A
+Line
+#endif
+#endif

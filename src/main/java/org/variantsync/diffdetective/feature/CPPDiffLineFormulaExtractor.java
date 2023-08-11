@@ -1,7 +1,8 @@
 package org.variantsync.diffdetective.feature;
 
-import org.variantsync.diffdetective.diff.difftree.parse.IllFormedAnnotationException;
+import org.variantsync.diffdetective.variation.diff.parse.IllFormedAnnotationException;
 
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -17,8 +18,8 @@ public class CPPDiffLineFormulaExtractor {
     // ^[+-]?\s*#\s*(if|ifdef|ifndef|elif)(\s+(.*)|\((.*)\))$
     private static final String CPP_ANNOTATION_REGEX = "^[+-]?\\s*#\\s*(if|ifdef|ifndef|elif)(\\s+(.*)|\\((.*)\\))$";
     private static final Pattern CPP_ANNOTATION_REGEX_PATTERN = Pattern.compile(CPP_ANNOTATION_REGEX);
-    private static final Pattern COMMENT_PATTERN = Pattern.compile("/\\*.*\\*/");
-    private static final Pattern DEFINED_PATTERN = Pattern.compile("defined\\(([^)]*)\\)");
+    private static final Pattern COMMENT_PATTERN = Pattern.compile("/\\*.*?\\*/");
+    private static final Pattern DEFINED_PATTERN = Pattern.compile("\\bdefined\\b(\\s*\\(\\s*(\\w*)\\s*\\))?");
 
     /**
      * Resolves any macros in the given formula that are relevant for feature annotations.
@@ -40,6 +41,8 @@ public class CPPDiffLineFormulaExtractor {
     public String extractFormula(final String line) throws IllFormedAnnotationException {
         // TODO: There still regexes here in replaceAll that could be optimized by precompiling the regexes once.
         final Matcher matcher = CPP_ANNOTATION_REGEX_PATTERN.matcher(line);
+        final Supplier<IllFormedAnnotationException> couldNotExtractFormula = () ->
+                IllFormedAnnotationException.IfWithoutCondition("Could not extract formula from line \""+ line + "\".");
 
         String fm;
         if (matcher.find()) {
@@ -49,27 +52,31 @@ public class CPPDiffLineFormulaExtractor {
                 fm = matcher.group(4);
             }
         } else {
-            throw IllFormedAnnotationException.IfWithoutCondition("Could not extract formula from line \""+ line + "\".");
+            throw couldNotExtractFormula.get();
         }
 
         // remove comments
         fm = fm.split("//")[0];
         fm = COMMENT_PATTERN.matcher(fm).replaceAll("");
 
+        // remove defined()
+        fm = DEFINED_PATTERN.matcher(fm).replaceAll("DEFINED_$2");
+
         // remove whitespace
         fm = fm.replaceAll("\\s", "");
 
-        // remove defined()
-        fm = DEFINED_PATTERN.matcher(fm).replaceAll("$1");
-        fm = fm.replaceAll("defined ", " ");
         fm = resolveFeatureMacroFunctions(fm);
 
         ////// abstract arithmetics
         fm = BooleanAbstraction.arithmetics(fm);
-        fm = BooleanAbstraction.functionCalls(fm);
+        fm = BooleanAbstraction.parentheses(fm);
+
+        if (fm.isEmpty()) {
+            throw couldNotExtractFormula.get();
+        }
 
         // negate for ifndef
-        if (line.contains("ifndef")) {
+        if ("ifndef".equals(matcher.group(1))) {
             fm = "!(" + fm + ")";
         }
 

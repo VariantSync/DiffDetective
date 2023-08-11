@@ -1,6 +1,7 @@
 package org.variantsync.diffdetective.metadata;
 
 import org.tinylog.Logger;
+import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.util.IO;
 import org.variantsync.functjonal.Cast;
 import org.variantsync.functjonal.category.InplaceSemigroup;
@@ -9,6 +10,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.function.BiFunction;
 
 /**
  * Generic interface to model composable and printable metadata.
@@ -21,6 +23,8 @@ public interface Metadata<T> {
      *         The return type has to be a LinkedHashMap to obtain insertion-order iteration.
      */
     LinkedHashMap<String, ?> snapshot();
+
+    void setFromSnapshot(LinkedHashMap<String, String> snapshot);
 
     /**
      * Metadata should be composable.
@@ -38,12 +42,70 @@ public interface Metadata<T> {
     }
 
     /**
+     * Composes two equal values by returning that value unmodified.
+     * This method is intended to be used to implement a semigroup for objects which can't be merged
+     * but should always be the same anyway. If {@code !a.equals(b)} then an {@code AssertionError}
+     * is thrown.
+     *
+     * <p>The value {@code null} is treated as the neutral element in the sense that no exception is
+     * thrown if an element is {@code null}. In this case return value is defined by {@code
+     * mergeEqual(a, null) == a} and {@code mergeEqual(b, null) == b}.
+     *
+     * @param a the first element to merge
+     * @param b the second element to merge
+     * @param <T> the type of the objects to be merged
+     * @return {@code a} or {@code b}
+     */
+    static <T> T mergeEqual(T a, T b) {
+        if (b == null) {
+            return a;
+        }
+
+        if (a != null) {
+            Assert.assertTrue(a.equals(b));
+        }
+
+        return b;
+    }
+
+    /**
+     * Same as {@link #mergeEqual(Object, Object)} but does not crash when the two values are unequal.
+     * Instead, both values are merged using the supplied function.
+     * The supplied function is called only if the two given values are unequal (according to {@link Object#equals(Object)}).
+     *
+     * <p>The value {@code null} is treated as the neutral element in the sense that no exception is
+     * thrown if an element is {@code null}. In this case return value is defined by {@code
+     * mergeIfEqualElse(a, null, f) == a} and {@code mergeIfEqualElse(b, null, f) == b}.
+     *
+     * @param a the first element to merge
+     * @param b the second element to merge
+     * @param ifUnequal merge operator called when the two values are unequal
+     * @param <T> the type of the objects to be merged
+     * @return {@code a} if both given values are equal, otherwise the result of {@code ifUnequal.apply(a, b)}
+     */
+    static <T> T mergeIfEqualElse(T a, T b, BiFunction<T, T, T> ifUnequal) {
+        if (b == null) {
+            return a;
+        }
+
+        if (a == null) {
+            return b;
+        }
+
+        if (a.equals(b)) {
+            return a;
+        } else {
+            return ifUnequal.apply(a, b);
+        }
+    }
+
+    /**
      * Prints all key-value pairs to a single string.
      * Falls back to {@link #show(String, Object)} on each entry.
      * @param properties The key-value store to print.
      * @return A string showing all key-value pairs.
      */
-    static String show(final Map<String, ?> properties) {
+    public static String show(final Map<String, ?> properties) {
         StringBuilder result = new StringBuilder();
         for (final Map.Entry<String, ?> property : properties.entrySet()) {
             result.append(show(property.getKey(), property.getValue()));
@@ -75,7 +137,7 @@ public interface Metadata<T> {
             return result;
         } catch (IOException e) {
             Logger.error(e);
-            System.exit(0);
+            System.exit(1);
             return "";
         }
     }

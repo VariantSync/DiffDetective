@@ -1,9 +1,10 @@
 package org.variantsync.diffdetective.tablegen.styles;
 
 import org.apache.commons.lang3.function.TriFunction;
-import org.variantsync.diffdetective.metadata.EditClassCount;
+import org.variantsync.diffdetective.analysis.StatisticsAnalysis;
 import org.variantsync.diffdetective.editclass.EditClass;
 import org.variantsync.diffdetective.editclass.proposed.ProposedEditClasses;
+import org.variantsync.diffdetective.metadata.EditClassCount;
 import org.variantsync.diffdetective.tablegen.ColumnDefinition;
 import org.variantsync.diffdetective.tablegen.Row;
 import org.variantsync.diffdetective.tablegen.TableDefinition;
@@ -77,12 +78,11 @@ public class ShortTable extends TableDefinition {
                 col("Name", LEFT, row -> row.dataset().name().toLowerCase(Locale.US)),
                 col("Domain", LEFT_DASH, row -> row.dataset().domain()),
                 col("\\#total\\\\ commits", RIGHT, row -> t.makeReadable(row.results().totalCommits)),
-                col("\\#processed commits", RIGHT, row -> t.makeReadable(row.results().exportedCommits)),
-                col("\\#diffs", RIGHT, row -> t.makeReadable(row.results().exportedTrees)),
+                col("\\#processed commits", RIGHT, row -> t.makeReadable(row.get(StatisticsAnalysis.RESULT).processedCommits)),
+                col("\\#diffs", RIGHT, row -> t.makeReadable(row.get(StatisticsAnalysis.RESULT).processedPatches)),
                 col("\\#artifact nodes", RIGHT_DASH, row -> t.makeReadable(row
-                        .results()
-                        .editClassCounts
-                        .getOccurences()
+                        .get(EditClassCount.KEY)
+                        .getOccurrences()
                         .values().stream()
                         .map(EditClassCount.Occurrences::getTotalAmount)
                         .reduce(0, Integer::sum)
@@ -95,7 +95,7 @@ public class ShortTable extends TableDefinition {
             }
         }
 
-        cols.add(col("runtime", DASH_RIGHT, row -> t.makeReadable(row.results().runtimeInSeconds) + "s"));
+        cols.add(col("runtime", DASH_RIGHT, row -> t.makeReadable(row.get(StatisticsAnalysis.RESULT).runtimeInSeconds) + "s"));
         cols.add(col("avg. runtime~/\\\\ processed commit", RIGHT, row -> t.makeReadable(row.automationResult().avgTimeMS()) + "ms"));
         cols.add(col("median runtime~/\\\\ processed commit", RIGHT, row -> t.makeReadable(row.automationResult().median().milliseconds()) + "ms"));
 
@@ -113,7 +113,7 @@ public class ShortTable extends TableDefinition {
      * @see column
      */
     private static String absoluteCountOf(final ShortTable t, final EditClass editClass, final ContentRow row) {
-        return t.makeReadable(row.results().editClassCounts.getOccurences().get(editClass).getTotalAmount());
+        return t.makeReadable(row.get(EditClassCount.KEY).getOccurrences().get(editClass).getTotalAmount());
     }
 
     /**
@@ -128,7 +128,7 @@ public class ShortTable extends TableDefinition {
      */
     private static String relativeCountOf(final ShortTable t, final EditClass editClass, final ContentRow row) {
         final LinkedHashMap<EditClass, EditClassCount.Occurrences> editClassOccurrences =
-                row.results().editClassCounts.getOccurences();
+                row.get(EditClassCount.KEY).getOccurrences();
 
         int numTotalMatches = 0;
         for (final Map.Entry<EditClass, EditClassCount.Occurrences> occurrence : editClassOccurrences.entrySet()) {

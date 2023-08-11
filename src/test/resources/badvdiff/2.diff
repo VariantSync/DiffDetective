@@ -1,0 +1,10 @@
+ #if A
+   #if B
+     b
+   #endif
+   #if C
+     l
+   #else
+     r
+   #endif
+ #endif

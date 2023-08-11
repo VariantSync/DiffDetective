@@ -1,11 +1,12 @@
 package org.variantsync.diffdetective.preliminary.pattern.semantic;
 
-import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.preliminary.analysis.data.PatternMatch;
 import org.variantsync.diffdetective.preliminary.evaluation.FeatureContext;
+import org.variantsync.diffdetective.variation.diff.DiffNode;
 
-import java.util.Collection;
 import java.util.Optional;
+
+import static org.variantsync.diffdetective.variation.diff.Time.AFTER;
 
 @Deprecated
 class MoveElse extends SemanticPattern {
@@ -20,11 +21,11 @@ class MoveElse extends SemanticPattern {
         the parent has a child that is either also a child of the added or the removed else node
      */
     @Override
-    public Optional<PatternMatch<DiffNode>> match(DiffNode annotationNode) {
+    public Optional<PatternMatch<DiffNode<?>>> match(DiffNode<?> annotationNode) {
         if(annotationNode.isAdd() && annotationNode.isElse()){
 
-            DiffNode removedElse = null;
-            for(DiffNode parentsChild : annotationNode.getAfterParent().getAllChildren()){
+            DiffNode<?> removedElse = null;
+            for(DiffNode<?> parentsChild : annotationNode.getParent(AFTER).getAllChildren()){
                 if(parentsChild.isElse() && parentsChild.isRem()){
                     removedElse = parentsChild;
                     break;
@@ -35,18 +36,16 @@ class MoveElse extends SemanticPattern {
                 return Optional.empty();
             }
 
-            Collection<DiffNode> commonAddElse = annotationNode.getAllChildren();
-            commonAddElse.retainAll(annotationNode.getAfterParent().getAllChildren());
+            var annotationChildren = annotationNode.getParent(AFTER).getAllChildrenSet();
+            var commonAddElse = annotationNode.getAllChildrenStream().filter(annotationChildren::contains);
+            var commonRemElse = removedElse.getAllChildrenStream().filter(annotationChildren::contains);
 
-            Collection<DiffNode> commonRemElse = removedElse.getAllChildren();
-            commonRemElse.retainAll(annotationNode.getAfterParent().getAllChildren());
-
-            if(commonAddElse.isEmpty() && commonRemElse.isEmpty()){
+            if(commonAddElse.limit(1).count() == 0 && commonRemElse.limit(1).count() == 0){
                 return Optional.empty();
             }
 
             return Optional.of(new PatternMatch<>(this,
-                    annotationNode.getLinesInDiff().getFromInclusive(), removedElse.getLinesInDiff().getToExclusive()
+                    annotationNode.getLinesInDiff().fromInclusive(), removedElse.getLinesInDiff().toExclusive()
             ));
         }
 
@@ -54,7 +53,7 @@ class MoveElse extends SemanticPattern {
     }
 
     @Override
-    public FeatureContext[] getFeatureContexts(PatternMatch<DiffNode> patternMatch) {
+    public FeatureContext[] getFeatureContexts(PatternMatch<DiffNode<?>> patternMatch) {
         return new FeatureContext[0];
     }
 }

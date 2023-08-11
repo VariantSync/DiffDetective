@@ -26,16 +26,22 @@ public record DatasetDescription(
         String domain,
         String commits
 ) {
+    public static DatasetDescription summary(final String name, final String repoURL) {
+        return new DatasetDescription(name, repoURL, "", "");
+    }
+
     /**
      * Loads all dataset descriptions in the given markdown file.
      * This expects the markdown file only be a table with the columns
-     * - Project name
-     * - Domain
-     * - Source code available (**y**es/**n**o)?: This should only be a "y" or "n"
-     * - Is it a git repository (**y**es/**n**o)?: This should only be a "y" or "n"
-     * - Repository URL
-     * - Clone URL
-     * - Estimated number of commits
+     * <ul>
+     * <li>Project name
+     * <li>Domain
+     * <li>Source code available (**y**es/**n**o)?: This should only be a "y" or "n"
+     * <li>Is it a git repository (**y**es/**n**o)?: This should only be a "y" or "n"
+     * <li>Repository URL
+     * <li>Clone URL
+     * <li>Estimated number of commits
+     * </ul>
      * The first row is expected to be the header.
      * The second row is expected to be a separator and is skipped on parsing.
      * All further rows are expected to describe one dataset each.

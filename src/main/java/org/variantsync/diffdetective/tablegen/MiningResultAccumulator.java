@@ -1,18 +1,5 @@
 package org.variantsync.diffdetective.tablegen;
 
-import org.tinylog.Logger;
-import org.variantsync.diffdetective.analysis.AnalysisResult;
-import org.variantsync.diffdetective.analysis.AutomationResult;
-import org.variantsync.diffdetective.analysis.HistoryAnalysis;
-import org.variantsync.diffdetective.analysis.MetadataKeys;
-import org.variantsync.diffdetective.datasets.DatasetDescription;
-import org.variantsync.diffdetective.datasets.DefaultDatasets;
-import org.variantsync.diffdetective.tablegen.rows.ContentRow;
-import org.variantsync.diffdetective.tablegen.styles.ShortTable;
-import org.variantsync.diffdetective.tablegen.styles.VariabilityShare;
-import org.variantsync.diffdetective.util.IO;
-import org.variantsync.diffdetective.validation.FindMedianCommitTime;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -21,41 +8,56 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import org.tinylog.Logger;
+import org.variantsync.diffdetective.analysis.Analysis;
+import org.variantsync.diffdetective.analysis.AnalysisResult;
+import org.variantsync.diffdetective.analysis.AutomationResult;
+import org.variantsync.diffdetective.analysis.StatisticsAnalysis;
+import org.variantsync.diffdetective.datasets.DatasetDescription;
+import org.variantsync.diffdetective.datasets.DefaultDatasets;
+import org.variantsync.diffdetective.editclass.proposed.ProposedEditClasses;
+import org.variantsync.diffdetective.experiments.esecfse22.FindMedianCommitTime;
+import org.variantsync.diffdetective.metadata.EditClassCount;
+import org.variantsync.diffdetective.metadata.ExplainedFilterSummary;
+import org.variantsync.diffdetective.tablegen.rows.ContentRow;
+import org.variantsync.diffdetective.tablegen.styles.ShortTable;
+import org.variantsync.diffdetective.tablegen.styles.VariabilityShare;
+import org.variantsync.diffdetective.util.IO;
+
 /** Accumulates multiple {@link AnalysisResult}s of several datasets. */
 public class MiningResultAccumulator {
-    /** Specification of the information loaded by {@link getAllTotalResultsIn}. */
-    private final static Map<String, BiConsumer<AnalysisResult, String>> CustomEntryParsers = Map.ofEntries(
-            AnalysisResult.storeAsCustomInfo(MetadataKeys.TREEFORMAT),
-            AnalysisResult.storeAsCustomInfo(MetadataKeys.NODEFORMAT),
-            AnalysisResult.storeAsCustomInfo(MetadataKeys.EDGEFORMAT),
-            AnalysisResult.storeAsCustomInfo(MetadataKeys.TASKNAME),
-            Map.entry("org/variantsync/diffdetective/analysis", (r, val) -> r.putCustomInfo(MetadataKeys.TASKNAME, val))
-    );
-
     /**
      * Finds all {@code AnalysisResult}s in {@code folderPath} recursively.
-     * All files having a {@link HistoryAnalysis#TOTAL_RESULTS_FILE_NAME} filename ending are
+     * All files having a {@link Analysis#TOTAL_RESULTS_FILE_NAME} filename ending are
      * parsed and associated with their filename.
      *
      * @param folderPath the folder which is scanned for analysis results recursively
      * @return an association between the parsed filenames and their parsed content
      */
     public static Map<String, AnalysisResult> getAllTotalResultsIn(final Path folderPath) throws IOException {
-        // get all files in the directory which are outputs of DiffTreeMiningResult
+        // get all files in the directory which are outputs of VariationDiffMiningResult
         final List<Path> paths = Files.walk(folderPath)
                 .filter(Files::isRegularFile)
-                .filter(p -> p.toString().endsWith(HistoryAnalysis.TOTAL_RESULTS_FILE_NAME))
+                .filter(p -> p.toString().endsWith(Analysis.TOTAL_RESULTS_FILE_NAME))
                 .peek(path -> Logger.info("Processing file {}", path))
                 .toList();
 
         final Map<String, AnalysisResult> results = new HashMap<>();
         for (final Path p : paths) {
-            results.put(p.getParent().getFileName().toString(), AnalysisResult.importFrom(p, CustomEntryParsers));
+            var result = new AnalysisResult();
+
+            // FIXME: Here, we actually have to use the Analysis::initializeResult method on all Hooks of the Analysis
+            //        that produced the results we accumulate. Maybe Java reflection can help?
+            result.append(StatisticsAnalysis.RESULT, new StatisticsAnalysis.Result());
+            result.append(ExplainedFilterSummary.KEY, new ExplainedFilterSummary());
+//            result.append(EditClassCount.KEY, new EditClassCount(ProposedEditClasses.Instance));
+
+            result.setFrom(p);
+            results.put(p.getParent().getFileName().toString(), result);
         }
         return results;
     }
@@ -113,9 +115,16 @@ public class MiningResultAccumulator {
             throw new IllegalArgumentException("Expected path to directory but the given path is not a directory!");
         }
 
+        // TODO: Implement argument parser
+        final boolean exportESECFSETables = false;
+
         final Map<String, AnalysisResult> allResults = getAllTotalResultsIn(inputPath);
         final AnalysisResult ultimateResult = computeTotalMetadataResult(allResults.values());
-        HistoryAnalysis.exportMetadataToFile(inputPath.resolve("ultimateresult" + AnalysisResult.EXTENSION), ultimateResult);
+        Analysis.exportMetadataToFile(inputPath.resolve("ultimateresult" + Analysis.EXTENSION), ultimateResult);
+
+        if (!exportESECFSETables) {
+            return;
+        }
 
         final Map<String, DatasetDescription> datasetByName;
         try {
@@ -143,7 +152,7 @@ public class MiningResultAccumulator {
                          automationResult = FindMedianCommitTime.getResultOfDirectory(automationResultDir);
                     } catch (IOException e) {
                         Logger.error("Could not load automation results for dataset {} in {}", dataset.name(), automationResultDir);
-                        System.exit(0);
+                        System.exit(1);
                         return null;
                     }
 

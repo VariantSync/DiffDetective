@@ -2,12 +2,12 @@ package org.variantsync.diffdetective.preliminary.analysis;
 
 import org.prop4j.Node;
 import org.tinylog.Logger;
-import org.variantsync.diffdetective.diff.difftree.DiffNode;
 import org.variantsync.diffdetective.preliminary.analysis.data.CommitDiffAnalysisResult;
 import org.variantsync.diffdetective.preliminary.analysis.data.GDAnalysisResult;
 import org.variantsync.diffdetective.preliminary.analysis.data.PatchDiffAnalysisResult;
 import org.variantsync.diffdetective.preliminary.analysis.data.PatternMatch;
 import org.variantsync.diffdetective.util.IO;
+import org.variantsync.diffdetective.variation.diff.DiffNode;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -43,7 +43,7 @@ public class GDAnalysisUtils {
                 analysisResult.getCommitDiffAnalysisResults()) {
             for (PatchDiffAnalysisResult patchResult :
                     commitResult.getPatchDiffAnalysisResults()) {
-                for (PatternMatch<DiffNode> patternMatch : patchResult.getPatternMatches()) {
+                for (PatternMatch<DiffNode<?>> patternMatch : patchResult.getPatternMatches()) {
                     commits.add(commitResult.getCommitDiff().getCommitHash());
                     patches.add(patchResult.getPatchDiff().getFileName());
                     patterns.add(patternMatch.getPatternName());

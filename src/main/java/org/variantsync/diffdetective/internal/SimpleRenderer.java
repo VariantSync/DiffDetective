@@ -1,21 +1,24 @@
 package org.variantsync.diffdetective.internal;
 
 import org.tinylog.Logger;
-import org.variantsync.diffdetective.datasets.ParseOptions;
+import org.variantsync.diffdetective.datasets.PatchDiffParseOptions;
 import org.variantsync.diffdetective.datasets.Repository;
-import org.variantsync.diffdetective.diff.PatchDiff;
-import org.variantsync.diffdetective.diff.difftree.DiffTree;
-import org.variantsync.diffdetective.diff.difftree.parse.DiffNodeParser;
-import org.variantsync.diffdetective.diff.difftree.parse.DiffTreeParser;
-import org.variantsync.diffdetective.diff.difftree.render.DiffTreeRenderer;
-import org.variantsync.diffdetective.diff.difftree.render.RenderOptions;
-import org.variantsync.diffdetective.diff.difftree.serialize.nodeformat.MappingsDiffNodeFormat;
-import org.variantsync.diffdetective.diff.difftree.transform.DiffTreeTransformer;
-import org.variantsync.diffdetective.mining.DiffTreeMiner;
+import org.variantsync.diffdetective.diff.git.PatchDiff;
+import org.variantsync.diffdetective.diff.result.DiffParseException;
+import org.variantsync.diffdetective.feature.CPPAnnotationParser;
+import org.variantsync.diffdetective.mining.VariationDiffMiner;
 import org.variantsync.diffdetective.mining.RWCompositePatternNodeFormat;
 import org.variantsync.diffdetective.mining.RWCompositePatternTreeFormat;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.util.FileUtils;
+import org.variantsync.diffdetective.variation.DiffLinesLabel;
+import org.variantsync.diffdetective.variation.diff.VariationDiff;
+import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParseOptions;
+import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParser;
+import org.variantsync.diffdetective.variation.diff.render.VariationDiffRenderer;
+import org.variantsync.diffdetective.variation.diff.render.RenderOptions;
+import org.variantsync.diffdetective.variation.diff.serialize.nodeformat.MappingsDiffNodeFormat;
+import org.variantsync.diffdetective.variation.diff.transform.VariationDiffTransformer;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -33,21 +36,21 @@ import java.util.function.Function;
  * @author Paul Bittner
  */
 public class SimpleRenderer {
-    private static final DiffTreeRenderer renderer = DiffTreeRenderer.WithinDiffDetective();
-    private static final RenderOptions renderOptions = new RenderOptions.Builder()
+    private static final VariationDiffRenderer renderer = VariationDiffRenderer.WithinDiffDetective();
+    private static final RenderOptions<DiffLinesLabel> renderOptions = new RenderOptions.Builder<DiffLinesLabel>()
 //            .setNodeFormat(new ReleaseMiningDiffNodeFormat()),
-            .setNodeFormat(new MappingsDiffNodeFormat())
-            .setDpi(RenderOptions.DEFAULT.dpi() / 2)
-            .setNodesize(3*RenderOptions.DEFAULT.nodesize())
-            .setEdgesize(2*RenderOptions.DEFAULT.edgesize())
-            .setArrowsize(2*RenderOptions.DEFAULT.arrowsize())
+            .setNodeFormat(new MappingsDiffNodeFormat<>())
+            .setDpi(RenderOptions.DEFAULT().dpi() / 2)
+            .setNodesize(3*RenderOptions.DEFAULT().nodesize())
+            .setEdgesize(2*RenderOptions.DEFAULT().edgesize())
+            .setArrowsize(2*RenderOptions.DEFAULT().arrowsize())
             .setFontsize(8)
 //            .addExtraArguments("--format", "patternsrelease")
             .setCleanUpTemporaryFiles(false)
             .build();
-    private static final RenderOptions vulkanRenderOptions = new RenderOptions.Builder()
+    private static final RenderOptions<DiffLinesLabel> vulkanRenderOptions = new RenderOptions.Builder<DiffLinesLabel>()
 //            .setNodeFormat(new ReleaseMiningDiffNodeFormat()),
-            .setNodeFormat(new MappingsDiffNodeFormat())
+            .setNodeFormat(new MappingsDiffNodeFormat<>())
             .setDpi(1500)
             .setNodesize(3)
             .setEdgesize(0.1)
@@ -58,27 +61,27 @@ public class SimpleRenderer {
             .setWithlabels(false)
             .build();
 
-    private static final RenderOptions renderExampleOptions = new RenderOptions.Builder()
+    private static final RenderOptions<DiffLinesLabel> renderExampleOptions = new RenderOptions.Builder<DiffLinesLabel>()
             .setTreeFormat(new RWCompositePatternTreeFormat())
-            .setNodesize(3*RenderOptions.DEFAULT.nodesize())
-            .setEdgesize(2*RenderOptions.DEFAULT.edgesize())
-            .setArrowsize(2*RenderOptions.DEFAULT.arrowsize())
+            .setNodesize(3*RenderOptions.DEFAULT().nodesize())
+            .setEdgesize(2*RenderOptions.DEFAULT().edgesize())
+            .setArrowsize(2*RenderOptions.DEFAULT().arrowsize())
             .setFontsize(8)
             .addExtraArguments("--startlineno", "4201")
             .build();
 
-    private static final RenderOptions renderCompositePatterns = new RenderOptions.Builder()
-            .setNodesize(3*RenderOptions.DEFAULT.nodesize())
-            .setEdgesize(2*RenderOptions.DEFAULT.edgesize())
-            .setArrowsize(2*RenderOptions.DEFAULT.arrowsize())
-            .setFontsize(2*RenderOptions.DEFAULT.fontsize())
+    private static final RenderOptions<DiffLinesLabel> renderCompositePatterns = new RenderOptions.Builder<DiffLinesLabel>()
+            .setNodesize(3*RenderOptions.DEFAULT().nodesize())
+            .setEdgesize(2*RenderOptions.DEFAULT().edgesize())
+            .setArrowsize(2*RenderOptions.DEFAULT().arrowsize())
+            .setFontsize(2*RenderOptions.DEFAULT().fontsize())
             .setTreeFormat(new RWCompositePatternTreeFormat())
             .setNodeFormat(new RWCompositePatternNodeFormat())
             .setCleanUpTemporaryFiles(true)
             .addExtraArguments("--format", "patternsdebug")
             .build();
 
-    private static final RenderOptions RENDER_OPTIONS_TO_USE = renderExampleOptions;
+    private static final RenderOptions<DiffLinesLabel> RENDER_OPTIONS_TO_USE = renderExampleOptions;
 
     private final static boolean collapseMultipleCodeLines = true;
     private final static boolean ignoreEmptyLines = true;
@@ -95,10 +98,13 @@ public class SimpleRenderer {
             renderer.renderFile(fileToRender, RENDER_OPTIONS_TO_USE);
         } else if (SUPPORTED_FILE_TYPES.stream().anyMatch(extension -> FileUtils.hasExtension(fileToRender, extension))) {
             Logger.info("Rendering {}", fileToRender);
-            final DiffTree t;
+            final VariationDiff<DiffLinesLabel> t;
             try {
-                t = DiffTree.fromFile(fileToRender, collapseMultipleCodeLines, ignoreEmptyLines, DiffNodeParser.Default).unwrap().getSuccess();
-            } catch (IOException e) {
+                t = VariationDiff.fromFile(fileToRender,
+                        new VariationDiffParseOptions(
+                                CPPAnnotationParser.Default, collapseMultipleCodeLines, ignoreEmptyLines
+                        ));
+            } catch (IOException | DiffParseException e) {
                 Logger.error(e, "Could not read given file '{}'", fileToRender);
                 return;
             }
@@ -153,12 +159,12 @@ public class SimpleRenderer {
             final String file = args[2];
 
             final Repository repository = Repository.fromDirectory(repoPath, repoName);
-            repository.setParseOptions(repository.getParseOptions().withDiffStoragePolicy(ParseOptions.DiffStoragePolicy.REMEMBER_STRIPPED_DIFF));
+            repository.setParseOptions(repository.getParseOptions().withDiffStoragePolicy(PatchDiffParseOptions.DiffStoragePolicy.REMEMBER_STRIPPED_DIFF));
 
-            final List<DiffTreeTransformer> transform = DiffTreeMiner.Postprocessing(repository);
-            final PatchDiff patch = DiffTreeParser.parsePatch(repository, file, commit);
+            final List<VariationDiffTransformer<DiffLinesLabel>> transform = VariationDiffMiner.Postprocessing(repository);
+            final PatchDiff patch = VariationDiffParser.parsePatch(repository, file, commit);
             Assert.assertNotNull(patch != null);
-            DiffTreeTransformer.apply(transform, patch.getDiffTree());
+            VariationDiffTransformer.apply(transform, patch.getVariationDiff());
             renderer.render(patch, Path.of("render", repoName), RENDER_OPTIONS_TO_USE);
         }
 

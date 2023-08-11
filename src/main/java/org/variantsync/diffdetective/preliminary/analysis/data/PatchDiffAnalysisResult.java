@@ -1,7 +1,7 @@
 package org.variantsync.diffdetective.preliminary.analysis.data;
 
-import org.variantsync.diffdetective.diff.PatchDiff;
-import org.variantsync.diffdetective.diff.difftree.DiffNode;
+import org.variantsync.diffdetective.diff.git.PatchDiff;
+import org.variantsync.diffdetective.variation.diff.DiffNode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,18 +14,18 @@ import java.util.List;
 @Deprecated
 public class PatchDiffAnalysisResult {
     private final PatchDiff patchDiff;
-    private final List<PatternMatch<DiffNode>> patternMatches;
+    private final List<PatternMatch<DiffNode<?>>> patternMatches;
 
     public PatchDiffAnalysisResult(PatchDiff patchDiff) {
         this.patchDiff = patchDiff;
         this.patternMatches = new ArrayList<>();
     }
 
-    public void addPatternMatches(List<PatternMatch<DiffNode>> patternMatches){
+    public void addPatternMatches(List<PatternMatch<DiffNode<?>>> patternMatches){
         this.patternMatches.addAll(patternMatches);
     }
 
-    public List<PatternMatch<DiffNode>> getPatternMatches() {
+    public List<PatternMatch<DiffNode<?>>> getPatternMatches() {
         return patternMatches;
     }
 

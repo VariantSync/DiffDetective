@@ -41,4 +41,9 @@ public class Clock {
     public static String printPassedSeconds(double seconds) {
         return seconds + "s";
     }
+
+    @Override
+    public String toString() {
+        return printPassedSeconds();
+    }
 }

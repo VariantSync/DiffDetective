@@ -1,0 +1,5 @@
+ #ifdef A
+ Code 1
+-#endif
+ Code 2
++#endif

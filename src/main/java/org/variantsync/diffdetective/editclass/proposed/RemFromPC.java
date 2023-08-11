@@ -1,8 +1,10 @@
 package org.variantsync.diffdetective.editclass.proposed;
 
-import org.variantsync.diffdetective.diff.difftree.DiffNode;
-import org.variantsync.diffdetective.diff.difftree.DiffType;
 import org.variantsync.diffdetective.editclass.EditClass;
+import org.variantsync.diffdetective.variation.diff.DiffNode;
+import org.variantsync.diffdetective.variation.diff.DiffType;
+
+import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
 
 /**
  * Our RemFromPC edit class from the ESEC/FSE'22 paper.
@@ -14,7 +16,7 @@ final class RemFromPC extends EditClass {
     }
 
     @Override
-    protected boolean matchesArtifactNode(DiffNode artifactNode) {
-        return !artifactNode.getBeforeParent().isRem();
+    protected boolean matchesArtifactNode(DiffNode<?> artifactNode) {
+        return !artifactNode.getParent(BEFORE).isRem();
     }
 }

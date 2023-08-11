@@ -1,10 +1,10 @@
 package org.variantsync.diffdetective.mining.formats;
 
-import org.variantsync.diffdetective.diff.difftree.NodeType;
-import org.variantsync.diffdetective.diff.difftree.DiffNode;
-import org.variantsync.diffdetective.diff.difftree.DiffType;
-import org.variantsync.diffdetective.editclass.EditClass;
 import org.variantsync.diffdetective.editclass.proposed.ProposedEditClasses;
+import org.variantsync.diffdetective.variation.diff.DiffNode;
+import org.variantsync.diffdetective.variation.diff.DiffType;
+import org.variantsync.diffdetective.variation.DiffLinesLabel;
+import org.variantsync.diffdetective.variation.NodeType;
 import org.variantsync.functjonal.Pair;
 
 import java.util.Arrays;
@@ -16,11 +16,11 @@ import java.util.Arrays;
  */
 public class DebugMiningDiffNodeFormat implements MiningNodeFormat {
 	@Override
-	public String toLabel(final DiffNode node) {
+	public String toLabel(final DiffNode<? extends DiffLinesLabel> node) {
         if (node.isArtifact()) {
             return ProposedEditClasses.Instance.match(node).getName();
         } else {
-            return node.diffType + "_" + node.nodeType;
+            return node.diffType + "_" + node.getNodeType();
         }
 	}
 
@@ -34,7 +34,7 @@ public class DebugMiningDiffNodeFormat implements MiningNodeFormat {
             final NodeType nt = NodeType.fromName(tag.substring(nodeTypeBegin));
             return new Pair<>(dt, nt);
         } else {
-            final EditClass editClass = ProposedEditClasses.Instance.fromName(tag).orElseThrow(
+            final var editClass = ProposedEditClasses.Instance.fromName(tag).orElseThrow(
                     () -> new IllegalStateException("Label \"" + tag + "\" is neither an annotation label, nor an edit class!")
             );
 

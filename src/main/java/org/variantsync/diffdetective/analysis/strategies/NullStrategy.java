@@ -1,6 +1,8 @@
 package org.variantsync.diffdetective.analysis.strategies;
 
-import org.variantsync.diffdetective.diff.CommitDiff;
+import java.io.OutputStream;
+
+import org.variantsync.diffdetective.diff.git.CommitDiff;
 
 /**
  * Empty strategy that does nothing.
@@ -8,8 +10,8 @@ import org.variantsync.diffdetective.diff.CommitDiff;
  */
 public class NullStrategy extends AnalysisStrategy {
     @Override
-    public void onCommit(CommitDiff commit, String lineGraph) {
-
+    public OutputStream onCommit(CommitDiff commit) {
+        return OutputStream.nullOutputStream();
     }
 
     @Override

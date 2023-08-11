@@ -1,38 +1,39 @@
 package org.variantsync.diffdetective.mining.postprocessing;
 
-import org.variantsync.diffdetective.diff.difftree.DiffTree;
-import org.variantsync.diffdetective.diff.difftree.filter.DiffTreeFilter;
-import org.variantsync.diffdetective.diff.difftree.filter.ExplainedFilter;
-import org.variantsync.diffdetective.diff.difftree.filter.TaggedPredicate;
-import org.variantsync.diffdetective.diff.difftree.transform.CutNonEditedSubtrees;
-import org.variantsync.diffdetective.diff.difftree.transform.DiffTreeTransformer;
 import org.variantsync.diffdetective.metadata.ExplainedFilterSummary;
+import org.variantsync.diffdetective.variation.Label;
+import org.variantsync.diffdetective.variation.diff.VariationDiff;
+import org.variantsync.diffdetective.variation.diff.filter.VariationDiffFilter;
+import org.variantsync.diffdetective.variation.diff.filter.ExplainedFilter;
+import org.variantsync.diffdetective.variation.diff.filter.TaggedPredicate;
+import org.variantsync.diffdetective.variation.diff.transform.CutNonEditedSubtrees;
+import org.variantsync.diffdetective.variation.diff.transform.VariationDiffTransformer;
 
 import java.util.List;
 import java.util.Map;
 
 /**
  * Generic Postprocessor for mined patterns.
- * Patterns are represented as DiffTrees and might be filtered or transformed.
+ * Patterns are represented as VariationDiffs and might be filtered or transformed.
  */
-public class Postprocessor {
-    private final List<DiffTreeTransformer> transformers;
-    private final ExplainedFilter<DiffTree> filters;
+public class Postprocessor<L extends Label> {
+    private final List<VariationDiffTransformer<L>> transformers;
+    private final ExplainedFilter<VariationDiff<L>> filters;
 
     /**
      * Result type for prostprocessing.
      * It contains the actual result, the list of processed trees, as well as metadata.
-     * The filterCounts document which filter caused how many difftrees to be filtered out.
+     * The filterCounts document which filter caused how many variation diffs to be filtered out.
      * Notice, that filters were ordered and when a filter was applied, subsequent filters were not tested.
      * Thus, each filter operated on the unfiltered trees of the previous filter.
      */
-    public record Result(List<DiffTree> processedTrees, Map<String, Integer> filterCounts) {}
+    public record Result<L extends Label>(List<VariationDiff<L>> processedTrees, Map<String, Integer> filterCounts) {}
 
     private Postprocessor(
-            final List<DiffTreeTransformer> transformers,
-            final List<TaggedPredicate<String, DiffTree>> namedFilters) {
+            final List<VariationDiffTransformer<L>> transformers,
+            final List<TaggedPredicate<String, ? super VariationDiff<L>>> namedFilters) {
         this.transformers = transformers;
-        this.filters = new ExplainedFilter<>(namedFilters.stream());
+        this.filters = new ExplainedFilter<VariationDiff<L>>(namedFilters.stream());
     }
 
     /**
@@ -44,14 +45,14 @@ public class Postprocessor {
      *   - {@link CutNonEditedSubtrees}
      * @return the default postprocessor.
      */
-    public static Postprocessor Default() {
-        return new Postprocessor(
-                List.of(new CutNonEditedSubtrees()),
+    public static <L extends Label> Postprocessor<L> Default() {
+        return new Postprocessor<>(
+                List.of(new CutNonEditedSubtrees<>()),
                 List.of(
                         // Filter ill-formed patterns
-                        DiffTreeFilter.consistent(),
-                        DiffTreeFilter.moreThanOneArtifactNode(),
-                        DiffTreeFilter.hasAtLeastOneEditToVariability()
+                        VariationDiffFilter.consistent(),
+                        VariationDiffFilter.moreThanOneArtifactNode(),
+                        VariationDiffFilter.hasAtLeastOneEditToVariability()
                 )
         );
     }
@@ -60,15 +61,15 @@ public class Postprocessor {
      * Performs the postprocessing described by this Postprocessor object on the list of subgraphs.
      * To that end, all filters and transformers will be applied.
      * @param frequentSubgraphs A list of subgraphs to which to apply the postprocessing.
-     * @return The processed difftrees as well as some metadata.
+     * @return The processed variation diffs as well as some metadata.
      */
-    public Result postprocess(final List<DiffTree> frequentSubgraphs) {
-        final List<DiffTree> processedTrees = frequentSubgraphs.stream()
+    public Result<L> postprocess(final List<VariationDiff<L>> frequentSubgraphs) {
+        final List<VariationDiff<L>> processedTrees = frequentSubgraphs.stream()
                 .filter(filters)
-                .peek(tree -> DiffTreeTransformer.apply(transformers, tree))
+                .peek(tree -> VariationDiffTransformer.apply(transformers, tree))
                 .toList();
 
         final Map<String, Integer> filterCounts = new ExplainedFilterSummary(filters).snapshot();
-        return new Result(processedTrees, filterCounts);
+        return new Result<>(processedTrees, filterCounts);
     }
 }

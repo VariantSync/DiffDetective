@@ -2,7 +2,7 @@ package org.variantsync.diffdetective.datasets;
 
 import org.eclipse.jgit.api.Git;
 import org.tinylog.Logger;
-import org.variantsync.diffdetective.diff.DiffFilter;
+import org.variantsync.diffdetective.diff.git.DiffFilter;
 import org.variantsync.diffdetective.load.GitLoader;
 import org.variantsync.diffdetective.util.IO;
 import org.variantsync.functjonal.Lazy;
@@ -47,7 +47,7 @@ public class Repository {
     /**
      * Options to configure parsing and memory consumption (e.g., by not keeping full diffs in memory).
      */
-	private ParseOptions parseOptions;
+	private PatchDiffParseOptions parseOptions;
 
 	private final Lazy<Git> git = Lazy.of(this::load);
 	
@@ -66,7 +66,7 @@ public class Repository {
 			final Path localPath,
 			final URI remote,
 			final String repositoryName,
-			final ParseOptions parseOptions,
+			final PatchDiffParseOptions parseOptions,
 			final DiffFilter diffFilter) {
 		this.repoLocation = repoLocation;
 		this.localPath = localPath;
@@ -86,7 +86,7 @@ public class Repository {
 			final URI remote,
 			final String repositoryName) {
 		this(repoLocation, localPath, remote, repositoryName,
-                ParseOptions.Default, DiffFilter.ALLOW_ALL);
+                PatchDiffParseOptions.Default, DiffFilter.ALLOW_ALL);
 	}
 
 	/**
@@ -189,7 +189,7 @@ public class Repository {
 	 * @param parseOptions Options for parsing the evolution history.
 	 * @return this
 	 */
-	public Repository setParseOptions(ParseOptions parseOptions) {
+	public Repository setParseOptions(PatchDiffParseOptions parseOptions) {
 		this.parseOptions = parseOptions;
         return this;
 	}
@@ -216,7 +216,7 @@ public class Repository {
 	/**
 	 * Options that should be used when parsing the evolution history.
 	 */
-	public ParseOptions getParseOptions() {
+	public PatchDiffParseOptions getParseOptions() {
 		return parseOptions;
 	}
 

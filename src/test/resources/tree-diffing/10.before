@@ -1,0 +1,4 @@
+#ifdef A
+456
+123
+#endif // A

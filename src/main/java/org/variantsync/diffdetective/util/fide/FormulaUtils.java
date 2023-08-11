@@ -1,8 +1,14 @@
 package org.variantsync.diffdetective.util.fide;
 
+import org.prop4j.And;
 import org.prop4j.Literal;
 import org.prop4j.Node;
 import org.prop4j.Not;
+import org.variantsync.diffdetective.analysis.logic.SAT;
+import org.variantsync.diffdetective.util.Assert;
+import org.variantsync.functjonal.Cast;
+
+import java.util.*;
 
 /** Utilities for handling {@link Node}s as logical formulas. */
 public class FormulaUtils {
@@ -31,6 +37,14 @@ public class FormulaUtils {
         return new Literal(lit.var, !lit.positive);
     }
 
+    public static Literal var(final String name) {
+        return new Literal(name, true);
+    }
+
+    public static And and(Node... nodes) {
+        return new And(nodes);
+    }
+
     /** Recursively counts the number of instances of {@link Literal} in {@code formula}. */
     public static int numberOfLiterals(final Node formula) {
         if (formula instanceof Literal) {
@@ -42,5 +56,54 @@ public class FormulaUtils {
             sum += numberOfLiterals(child);
         }
         return sum;
+    }
+
+
+    public static void sortRegularCNF(final Node rcnf) {
+        Assert.assertTrue(rcnf instanceof And);
+
+        // sort literals in clauses by string compare
+        Node[] cs = rcnf.getChildren();
+        for (final Node c : cs) {
+            Arrays.sort(c.getChildren(), (e1, e2) -> {
+                final Literal l1 = Cast.unchecked(e1);
+                final Literal l2 = Cast.unchecked(e2);
+                return ((String) l1.var).compareTo((String) l2.var);
+            });
+        }
+
+        // sort clauses by literal count
+        // clauses with equal literal count will be sorted by their literals as string (might be useless)
+        Arrays.sort(cs, Comparator
+                .comparingInt((Node e) -> e.getChildren().length)
+                .thenComparing(e -> Arrays.toString(e.getChildren())));
+    }
+
+    public static int numberOfLiteralsInRegularCNF(final Node rcnf) {
+        Assert.assertTrue(rcnf instanceof And);
+        return Arrays.stream(rcnf.getChildren())
+                .mapToInt(cs -> cs.getChildren().length)
+                .sum();
+    }
+
+    public static void removeSemanticDuplicates(final List<Node> formulas) {
+        int len = formulas.size();
+        for (int i = 0; i < len; ++i) {
+            final Node ci = formulas.get(i);
+
+            for (int j = i + 1; j < len; ++j) {
+                final Node cj = formulas.get(j);
+                if (SAT.equivalent(cj, ci)) {
+                    // remove ci
+                    // We do this by swapping it with the last element of the list, then reducing the list length by 1
+                    // and then continue inspection of the newly swapped in element (thus --i).
+                    Collections.swap(formulas, i, len - 1);
+                    --i;
+                    --len;
+                    break;
+                }
+            }
+        }
+        formulas.subList(len, formulas.size()).clear();
     }
 }

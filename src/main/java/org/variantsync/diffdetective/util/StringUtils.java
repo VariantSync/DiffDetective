@@ -44,4 +44,8 @@ public class StringUtils {
         prettyPrintNestedCollections("", b, collection);
         return b.toString();
     }
+
+    public static String clamp(int maxlen, String s) {
+        return s.substring(0, Math.min(s.length(), maxlen));
+    }
 }

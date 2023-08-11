@@ -5,7 +5,7 @@ import org.eclipse.jgit.diff.DiffEntry;
 import org.tinylog.Logger;
 import org.variantsync.diffdetective.datasets.predefined.Marlin;
 import org.variantsync.diffdetective.datasets.predefined.StanciulescuMarlin;
-import org.variantsync.diffdetective.diff.DiffFilter;
+import org.variantsync.diffdetective.diff.git.DiffFilter;
 import org.variantsync.diffdetective.util.Assert;
 
 import java.nio.file.Path;
@@ -41,6 +41,7 @@ public class DatasetFactory {
     public static final DiffFilter DEFAULT_DIFF_FILTER =
             new DiffFilter.Builder()
                     .allowMerge(false)
+                    .allowCommitsWithoutParents(false)
                     .allowedChangeTypes(DiffEntry.ChangeType.MODIFY)
                     .allowedFileExtensions("h", "hpp", "c", "cpp")
                     .build();
@@ -64,7 +65,7 @@ public class DatasetFactory {
      * For Marlin, this applies the same DiffFilter as Stanciulescu et al. did in their ICSME paper.
      * @see StanciulescuMarlin#DIFF_FILTER
      */
-    private static DiffFilter getDiffFilterFor(final String repositoryName) {
+    public static DiffFilter getDefaultDiffFilterFor(final String repositoryName) {
         if (repositoryName.equalsIgnoreCase(MARLIN)) {
             return StanciulescuMarlin.DIFF_FILTER;
         }
@@ -78,23 +79,23 @@ public class DatasetFactory {
      * Returns the default parse options for the repository with the given name.
      * For Marlin, uses the {@link Marlin#ANNOTATION_PARSER}.
      */
-    private static ParseOptions getParseOptionsFor(final String repositoryName) {
+    private static PatchDiffParseOptions getParseOptionsFor(final String repositoryName) {
         if (repositoryName.equalsIgnoreCase(MARLIN)) {
-            return new ParseOptions(Marlin.ANNOTATION_PARSER);
+            return PatchDiffParseOptions.Default.withAnnotationParser(Marlin.ANNOTATION_PARSER);
         }
-        return ParseOptions.Default;
+        return PatchDiffParseOptions.Default;
     }
 
     /**
      * Loads the repository of the given dataset description.
      * This will laod the repository with the DiffFilter and ParseOptions provided by
-     * {@link DatasetFactory#getDiffFilterFor} and {@link DatasetFactory#getParseOptionsFor}, respectively.
+     * {@link DatasetFactory#getDefaultDiffFilterFor} and {@link DatasetFactory#getParseOptionsFor}, respectively.
      * @param dataset The dataset to load.
      * @return A repository referencing the loaded dataset.
      */
     public Repository create(final DatasetDescription dataset) {
-        final DiffFilter diffFilter = getDiffFilterFor(dataset.name());
-        final ParseOptions parseOptions = getParseOptionsFor(dataset.name());
+        final DiffFilter diffFilter = getDefaultDiffFilterFor(dataset.name());
+        final PatchDiffParseOptions parseOptions = getParseOptionsFor(dataset.name());
 
         final Repository repo = Repository.tryFromRemote(
                 cloneDirectory,

@@ -1,7 +1,9 @@
 package org.variantsync.diffdetective.tablegen.styles;
 
+import org.variantsync.diffdetective.analysis.StatisticsAnalysis;
 import org.variantsync.diffdetective.editclass.EditClass;
 import org.variantsync.diffdetective.editclass.proposed.ProposedEditClasses;
+import org.variantsync.diffdetective.metadata.EditClassCount;
 import org.variantsync.diffdetective.tablegen.Row;
 import org.variantsync.diffdetective.tablegen.TableDefinition;
 import org.variantsync.diffdetective.tablegen.TableGenerator;
@@ -33,15 +35,15 @@ public class Table1 extends TableDefinition {
                 col("Name", LEFT, row -> row.dataset().name()),
                 col("Domain", LEFT, row -> row.dataset().domain()),
                 col("\\#total commits", RIGHT_DASH, row -> makeReadable(row.results().totalCommits)),
-                col("\\#processed commits", RIGHT, row -> makeReadable(row.results().exportedCommits)),
-                col("\\#diffs", RIGHT, row -> makeReadable(row.results().exportedTrees))
+                col("\\#processed commits", RIGHT, row -> makeReadable(row.get(StatisticsAnalysis.RESULT).processedCommits)),
+                col("\\#diffs", RIGHT, row -> makeReadable(row.get(StatisticsAnalysis.RESULT).processedPatches))
         ));
 
         for (final EditClass a : ProposedEditClasses.Instance.all()) {
-            this.columnDefinitions.add(col(a.getName(), RIGHT, row ->  makeReadable(row.results().editClassCounts.getOccurences().get(a).getTotalAmount())));
+            this.columnDefinitions.add(col(a.getName(), RIGHT, row ->  makeReadable(row.get(EditClassCount.KEY).getOccurrences().get(a).getTotalAmount())));
         }
 
-        this.columnDefinitions.add(col("runtime (s)", RIGHT, row -> makeReadable(row.results().runtimeInSeconds)));
+        this.columnDefinitions.add(col("runtime (s)", RIGHT, row -> makeReadable(row.get(StatisticsAnalysis.RESULT).runtimeInSeconds)));
     }
 
     /** Sorts {@code rows} alphabetically and appends {@code ultimateResult} to the result. */

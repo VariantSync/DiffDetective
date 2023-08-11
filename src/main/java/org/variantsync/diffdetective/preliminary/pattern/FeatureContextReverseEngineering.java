@@ -1,6 +1,5 @@
 package org.variantsync.diffdetective.preliminary.pattern;
 
-import org.variantsync.diffdetective.preliminary.pattern.Pattern;
 import org.variantsync.diffdetective.preliminary.analysis.data.PatternMatch;
 import org.variantsync.diffdetective.preliminary.evaluation.FeatureContext;
 
