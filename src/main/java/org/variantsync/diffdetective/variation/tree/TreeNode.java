@@ -350,6 +350,26 @@ public abstract class TreeNode<T extends TreeNode<T, L>, L extends Label> {
     }
 
     /**
+     * Returns a shallow copy of this variation node in a {@link VariationTreeNode concrete variation tree implementation}.
+     *
+     * The resulting node is shallow in the sense that it doesn't have any children or a parent but
+     * is does have copies of all other attributes. Thus, it's safe to modify the attributes of the
+     * resulting node without changing the original node.
+     *
+     * @param oldToNew A map that memorizes the translation of individual nodes.
+     * @return A deep copy of this tree.
+     */
+    public VariationTreeNode<L> toVariationNode() {
+        // Copy mutable attributes to allow modifications of the new node.
+        return new VariationTreeNode<L>(
+            getNodeType(),
+            getFormula() == null ? null : getFormula().clone(),
+            getLineRange(),
+            getLabel().clone()
+        );
+    }
+
+    /**
     * Checks that this node satisfies some easy to check invariants.
     * In particular, this method checks that
     * <ul>

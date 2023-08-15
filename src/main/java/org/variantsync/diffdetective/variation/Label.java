@@ -11,4 +11,5 @@ import org.variantsync.diffdetective.variation.tree.VariationTree; // For Javado
 public interface Label {
     List<String> getLines();
     Label clone();
+    Label newInstance();
 }
