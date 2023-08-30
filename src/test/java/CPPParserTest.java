@@ -38,6 +38,7 @@ public class CPPParserTest {
 
             new TestCase("#if A // Comment && B", "A"),
             new TestCase("#if A /* Comment */ && B", "A&&B"),
+            new TestCase("#if A && B /* Multiline Comment", "A&&B"),
 
             new TestCase("#if A == B", "A__EQ__B"),
             new TestCase("#if A == 1", "A__EQ__1"),
