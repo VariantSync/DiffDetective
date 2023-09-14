@@ -1,23 +1,23 @@
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.variantsync.diffdetective.datasets.PatchDiffParseOptions;
 import org.variantsync.diffdetective.datasets.Repository;
 import org.variantsync.diffdetective.datasets.predefined.StanciulescuMarlin;
 import org.variantsync.diffdetective.diff.git.PatchDiff;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
-import org.variantsync.diffdetective.mining.DiffTreeMiner;
-import org.variantsync.diffdetective.variation.diff.DiffTree;
-import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParseOptions;
-import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParser;
-import org.variantsync.diffdetective.variation.diff.render.DiffTreeRenderer;
+import org.variantsync.diffdetective.mining.VariationDiffMiner;
+import org.variantsync.diffdetective.variation.DiffLinesLabel;
+import org.variantsync.diffdetective.variation.diff.VariationDiff;
+import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParseOptions;
+import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParser;
+import org.variantsync.diffdetective.variation.diff.render.VariationDiffRenderer;
 import org.variantsync.diffdetective.variation.diff.render.RenderOptions;
 import org.variantsync.diffdetective.variation.diff.serialize.GraphFormat;
 import org.variantsync.diffdetective.variation.diff.serialize.LineGraphConstants;
 import org.variantsync.diffdetective.variation.diff.serialize.edgeformat.DefaultEdgeLabelFormat;
 import org.variantsync.diffdetective.variation.diff.serialize.nodeformat.TypeDiffNodeFormat;
-import org.variantsync.diffdetective.variation.diff.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
-import org.variantsync.diffdetective.variation.diff.transform.DiffTreeTransformer;
+import org.variantsync.diffdetective.variation.diff.serialize.treeformat.CommitDiffVariationDiffLabelFormat;
+import org.variantsync.diffdetective.variation.diff.transform.VariationDiffTransformer;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -31,11 +31,11 @@ public class TreeTransformersTest {
     private static final boolean RENDER = true;
     private static final Path resDir = Constants.RESOURCE_DIR.resolve("diffs/collapse");
     private static final Path genDir = resDir.resolve("gen");
-    private static final RenderOptions renderOptions = new RenderOptions(
-            GraphFormat.DIFFTREE,
-            new CommitDiffDiffTreeLabelFormat(),
-            new TypeDiffNodeFormat(),
-            new DefaultEdgeLabelFormat(),
+    private static final RenderOptions<DiffLinesLabel> renderOptions = new RenderOptions<>(
+            GraphFormat.VARIATION_DIFF,
+            new CommitDiffVariationDiffLabelFormat(),
+            new TypeDiffNodeFormat<>(),
+            new DefaultEdgeLabelFormat<>(),
             false,
             500,
             50,
@@ -49,36 +49,36 @@ public class TreeTransformersTest {
     private static final Consumer<String> INFO = System.out::println;
 
     private void transformAndRender(String diffFileName) throws IOException, DiffParseException {
-        final DiffTree t = DiffTree.fromFile(resDir.resolve(diffFileName), new DiffTreeParseOptions(true, true));
+        final VariationDiff<DiffLinesLabel> t = VariationDiff.fromFile(resDir.resolve(diffFileName), new VariationDiffParseOptions(true, true));
         transformAndRender(t, diffFileName, "0", null);
     }
 
-    private void transformAndRender(DiffTree diffTree, String name, String commit, Repository repository) {
-        final DiffTreeRenderer renderer = DiffTreeRenderer.WithinDiffDetective();
+    private void transformAndRender(VariationDiff<DiffLinesLabel> variationDiff, String name, String commit, Repository repository) {
+        final VariationDiffRenderer renderer = VariationDiffRenderer.WithinDiffDetective();
         final String treeName = name + LineGraphConstants.TREE_NAME_SEPARATOR + commit;
 
         INFO.accept("Original State");
         if (RENDER) {
-            renderer.render(diffTree, treeName + "_0", genDir, renderOptions);
+            renderer.render(variationDiff, treeName + "_0", genDir, renderOptions);
         }
 
         int i = 1;
-        int prevSize = diffTree.computeSize();
-        final List<DiffTreeTransformer> transformers = DiffTreeMiner.Postprocessing(repository);
-        for (final DiffTreeTransformer f : transformers) {
+        int prevSize = variationDiff.computeSize();
+        final List<VariationDiffTransformer<DiffLinesLabel>> transformers = VariationDiffMiner.Postprocessing(repository);
+        for (final VariationDiffTransformer<DiffLinesLabel> f : transformers) {
             INFO.accept("Applying transformation " + f + ".");
-            f.transform(diffTree);
+            f.transform(variationDiff);
 
-            final int currentSize = diffTree.computeSize();
+            final int currentSize = variationDiff.computeSize();
             if (prevSize != currentSize) {
                 INFO.accept((currentSize < prevSize ? "Reduced" : "Increased") + " the number of nodes from " + prevSize + " to " + currentSize + ".");
             }
             prevSize = currentSize;
 
-            diffTree.assertConsistency();
+            variationDiff.assertConsistency();
 
             if (RENDER) {
-                renderer.render(diffTree, treeName + "_" + i, genDir, renderOptions);
+                renderer.render(variationDiff, treeName + "_" + i, genDir, renderOptions);
             }
             ++i;
         }
@@ -87,7 +87,7 @@ public class TreeTransformersTest {
     @BeforeEach
     public void init() {
 //        Main.setupLogger(Level.INFO);
-//        DiffTreeTransformer.checkDependencies(transformers);
+//        VariationDiffTransformer.checkDependencies(transformers);
     }
 
     @Test
@@ -102,9 +102,9 @@ public class TreeTransformersTest {
 
     private void testCommit(String file, String commitHash) throws IOException {
         final Repository marlin = StanciulescuMarlin.fromZipInDiffDetectiveAt(Path.of("."));
-        final PatchDiff patch = DiffTreeParser.parsePatch(marlin, file, commitHash);
+        final PatchDiff patch = VariationDiffParser.parsePatch(marlin, file, commitHash);
         assertNotNull(patch);
-        transformAndRender(patch.getDiffTree(), file, commitHash, marlin);
+        transformAndRender(patch.getVariationDiff(), file, commitHash, marlin);
     }
 
     @Test

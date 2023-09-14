@@ -8,7 +8,7 @@ import org.variantsync.diffdetective.variation.tree.VariationNode;
  */
 public record Trace(String featureName) implements Relevance {
     @Override
-    public boolean test(VariationNode<?> v) {
+    public boolean test(VariationNode<?, ?> v) {
         return v.getPresenceCondition().getUniqueContainedFeatures().stream().anyMatch(
                 otherFeatureName -> featureName().equals(otherFeatureName)
         );

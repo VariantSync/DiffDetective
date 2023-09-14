@@ -2,13 +2,12 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.tinylog.Logger;
-import org.variantsync.diffdetective.datasets.PatchDiffParseOptions;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.util.StringUtils;
-import org.variantsync.diffdetective.variation.diff.DiffTree;
+import org.variantsync.diffdetective.variation.DiffLinesLabel;
+import org.variantsync.diffdetective.variation.diff.VariationDiff;
 import org.variantsync.diffdetective.variation.diff.bad.BadVDiff;
-import org.variantsync.diffdetective.variation.diff.graph.FormalDiffGraph;
-import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParseOptions;
+import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParseOptions;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -27,14 +26,14 @@ public class BadVDiffTest {
         final Path testfile = resDir.resolve(filename + ".diff");
         Logger.debug("Testing " + testfile);
 
-        final DiffTree initialVDiff = DiffTree.fromFile(testfile, new DiffTreeParseOptions(false, false));
+        final VariationDiff<DiffLinesLabel> initialVDiff = VariationDiff.fromFile(testfile, new VariationDiffParseOptions(false, false));
         Logger.debug("Initial:" + StringUtils.LINEBREAK + initialVDiff);
         initialVDiff.assertConsistency();
 
-        final BadVDiff badDiff = BadVDiff.fromGood(initialVDiff);
+        final BadVDiff<DiffLinesLabel> badDiff = BadVDiff.fromGood(initialVDiff);
         Logger.debug("Bad:" + StringUtils.LINEBREAK + badDiff.prettyPrint());
 
-        final DiffTree goodDiff = badDiff.toGood();
+        final VariationDiff<DiffLinesLabel> goodDiff = badDiff.toGood();
         Logger.debug("Good:" + StringUtils.LINEBREAK + goodDiff);
         goodDiff.assertConsistency();
 

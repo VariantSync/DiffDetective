@@ -3,17 +3,18 @@ package org.variantsync.diffdetective.variation.diff.serialize.nodeformat;
 import org.prop4j.NodeWriter;
 import org.variantsync.diffdetective.util.LaTeX;
 import org.variantsync.diffdetective.util.StringUtils;
+import org.variantsync.diffdetective.variation.Label;
 import org.variantsync.diffdetective.variation.NodeType;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
 
 import java.util.Arrays;
 import java.util.List;
 
-public class PaperNodeFormat implements DiffNodeLabelFormat {
+public class PaperNodeFormat<L extends Label> implements DiffNodeLabelFormat<L> {
     public static final int MAX_ARTIFACT_LABEL_LENGTH = 12;
 
     @Override
-    public String toLabel(DiffNode node) {
+    public String toLabel(DiffNode<? extends L> node) {
         if (node.isRoot()) {
             return "r";
         }
@@ -48,7 +49,7 @@ public class PaperNodeFormat implements DiffNodeLabelFormat {
     }
 
     @Override
-    public List<String> toMultilineLabel(DiffNode node) {
+    public List<String> toMultilineLabel(DiffNode<? extends L> node) {
         return Arrays.stream(toLabel(node).split(StringUtils.LINEBREAK)).toList();
     }
 }

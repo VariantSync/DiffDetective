@@ -11,7 +11,7 @@ import org.variantsync.diffdetective.variation.tree.VariationNode;
  */
 public record TraceSup(Node configuration) implements Relevance {
     @Override
-    public boolean test(VariationNode<?> variationNode) {
+    public boolean test(VariationNode<?, ?> variationNode) {
         return SAT.implies(variationNode.getPresenceCondition(), configuration);
     }
 

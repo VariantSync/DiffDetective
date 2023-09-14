@@ -21,8 +21,9 @@ import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.preliminary.GitDiff;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.util.StringUtils;
-import org.variantsync.diffdetective.variation.diff.DiffTree;
-import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParser;
+import org.variantsync.diffdetective.variation.DiffLinesLabel;
+import org.variantsync.diffdetective.variation.diff.VariationDiff;
+import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParser;
 import org.variantsync.functjonal.iteration.MappedIterator;
 import org.variantsync.functjonal.iteration.SideEffectIterator;
 import org.variantsync.functjonal.iteration.Yield;
@@ -36,7 +37,6 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /**
  * This class creates a GitDiff-object from a git repository (Git-object).
@@ -45,7 +45,7 @@ import java.util.stream.Collectors;
  * Then a CommitDiff is created for each commit.
  * File changes in each commit are filtered using the given DiffFilter.
  * Then a PatchDiff is created from each file change.
- * Finally, each patch is parsed to a DiffTree.
+ * Finally, each patch is parsed to a VariationDiff.
  *
  * @author Soeren Viegener, Paul Maximilian Bittner
  */
@@ -375,9 +375,9 @@ public class GitDiffer {
                         fullDiff += StringUtils.LINEBREAK;
                     }
 
-                    final DiffTree diffTree = DiffTreeParser.createDiffTree(
+                    final VariationDiff<DiffLinesLabel> variationDiff = VariationDiffParser.createVariationDiff(
                             fullDiff,
-                            parseOptions.diffTreeParseOptions()
+                            parseOptions.variationDiffParseOptions()
                     );
 
                     // not storing the full diff reduces memory usage by around 40-50%
@@ -392,7 +392,7 @@ public class GitDiffer {
                             commitDiff,
                             diffEntry,
                             diffToRemember,
-                            diffTree
+                            variationDiff
                     ));
                 } catch (IOException e) {
                     Logger.debug(e, "Could not obtain full diff of file " + filename + " before commit " + parentCommit + "!");

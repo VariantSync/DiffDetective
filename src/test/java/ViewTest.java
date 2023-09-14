@@ -8,10 +8,11 @@ import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.show.Show;
 import org.variantsync.diffdetective.show.engine.GameEngine;
 import org.variantsync.diffdetective.util.StringUtils;
-import org.variantsync.diffdetective.variation.diff.DiffTree;
+import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.diff.Time;
+import org.variantsync.diffdetective.variation.diff.VariationDiff;
 import org.variantsync.diffdetective.variation.diff.bad.BadVDiff;
-import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParseOptions;
+import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParseOptions;
 import org.variantsync.diffdetective.variation.diff.transform.CutNonEditedSubtrees;
 import org.variantsync.diffdetective.variation.diff.view.DiffView;
 import org.variantsync.diffdetective.variation.diff.view.ViewSource;
@@ -32,18 +33,18 @@ public class ViewTest {
     private static final Path resDir = Constants.RESOURCE_DIR.resolve("badvdiff");
 
     private static void showViews(
-            DiffTree initialVDiff,
+            VariationDiff<?> initialVDiff,
             Relevance query
     ) {
         // treeify
-        final BadVDiff badDiff = BadVDiff.fromGood(initialVDiff);
+        final BadVDiff<?> badDiff = BadVDiff.fromGood(initialVDiff);
 
         // create view
-        final BadVDiff view = badDiff.deepCopy();
+        final BadVDiff<?> view = badDiff.deepCopy();
         TreeView.treeInline(view.diff(), query);
 
         // unify
-        final DiffTree goodDiff = view.toGood();
+        final VariationDiff<?> goodDiff = view.toGood();
         goodDiff.assertConsistency();
 
         GameEngine.showAndAwaitAll(
@@ -63,7 +64,7 @@ public class ViewTest {
         final Path testfile = resDir.resolve(filenameWithEnding);
         Logger.debug("Testing " + testfile);
 //        is(  /* Check both of the above conditions, for symbols.  */)
-        final DiffTree D = DiffTree.fromFile(testfile, DiffTreeParseOptions.Default);
+        final VariationDiff<DiffLinesLabel> D = VariationDiff.fromFile(testfile, VariationDiffParseOptions.Default);
         D.assertConsistency();
 
         final Relevance debugQuery = new Search("  /* Check both of the above conditions, for symbols.  */");
@@ -85,7 +86,7 @@ public class ViewTest {
         Logger.debug("Testing " + testfile);
 
         // Load diff
-        final DiffTree initialVDiff = DiffTree.fromFile(testfile, DiffTreeParseOptions.Default);
+        final VariationDiff<DiffLinesLabel> initialVDiff = VariationDiff.fromFile(testfile, VariationDiffParseOptions.Default);
         initialVDiff.assertConsistency();
 
         List<Relevance> queries = List.of(
@@ -124,9 +125,9 @@ public class ViewTest {
         final Literal featureRing = var("Ring");
         final Literal featureDoubleLink = var("DoubleLink");
 
-        final DiffTree d = DiffTree.fromFile(testfile, DiffTreeParseOptions.Default);
-        final VariationTree b = d.project(Time.BEFORE);
-        final VariationTree a = d.project(Time.AFTER);
+        final VariationDiff<DiffLinesLabel> d = VariationDiff.fromFile(testfile, VariationDiffParseOptions.Default);
+        final VariationTree<DiffLinesLabel> b = d.project(Time.BEFORE);
+        final VariationTree<DiffLinesLabel> a = d.project(Time.AFTER);
 
         // Queries of Listing 3 and 4
         final Relevance bobsQuery1 = new Configure(and(negate(featureDoubleLink)));
@@ -175,17 +176,17 @@ public class ViewTest {
     })
     void testAllConfigs(String filename) throws IOException, DiffParseException {
         final Path testfile = resDir.resolve(filename + ".diff");
-        final DiffTree d = DiffTree.fromFile(testfile, DiffTreeParseOptions.Default);
+        final VariationDiff<DiffLinesLabel> d = VariationDiff.fromFile(testfile, VariationDiffParseOptions.Default);
 
         final List<Node> configs = UniqueViewsAlgorithm.getUniquePartialConfigs(d, false);
-        final List<DiffTree> views = new ArrayList<>();
+        final List<VariationDiff<DiffLinesLabel>> views = new ArrayList<>();
 
         final StringBuilder str = new StringBuilder();
         for (int i = 0; i < configs.size(); ++i) {
             final Node config = configs.get(i);
 
             final Relevance q = new Configure(config);
-            final DiffTree view = DiffView.optimized(d, q);
+            final VariationDiff<DiffLinesLabel> view = DiffView.optimized(d, q);
             views.add(view);
 
             str
@@ -202,7 +203,7 @@ public class ViewTest {
                     .append(" --- ")
                     .append(
                             view.computeArtifactNodes().stream()
-                                    .map(a -> a.getLabel().lines().stream()
+                                    .map(a -> a.getLabel().getLines().stream()
                                             .map(String::trim)
                                             .collect(Collectors.joining(StringUtils.LINEBREAK))
                                     )
@@ -218,8 +219,8 @@ public class ViewTest {
 //        }
 
         for (int i = 0; i < configs.size(); ++i) {
-            final DiffTree view = views.get(i);
-            final Relevance q = ((ViewSource) view.getSource()).relevance();
+            final VariationDiff<DiffLinesLabel> view = views.get(i);
+            final Relevance q = ((ViewSource<?>) view.getSource()).relevance();
             Show.diff(view, i + ".) view(D, " + q + ")").showAndAwait();
         }
     }
@@ -235,10 +236,10 @@ public class ViewTest {
     })
     void cutTest(String filename) throws IOException, DiffParseException {
         final Path testfile = resDir.resolve(filename + ".diff");
-        final DiffTree d = DiffTree.fromFile(testfile, DiffTreeParseOptions.Default);
+        final VariationDiff<DiffLinesLabel> d = VariationDiff.fromFile(testfile, VariationDiffParseOptions.Default);
 
         Show.diff(d, "original").showAndAwait();
-        new CutNonEditedSubtrees(true).transform(d);
+        CutNonEditedSubtrees.genericTransform(true, d);
         Show.diff(d, "cut").showAndAwait();
     }
 }

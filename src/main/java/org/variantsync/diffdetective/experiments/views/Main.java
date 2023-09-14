@@ -6,8 +6,8 @@ import org.variantsync.diffdetective.analysis.FilterAnalysis;
 import org.variantsync.diffdetective.analysis.StatisticsAnalysis;
 import org.variantsync.diffdetective.datasets.PatchDiffParseOptions;
 import org.variantsync.diffdetective.datasets.Repository;
-import org.variantsync.diffdetective.variation.diff.filter.DiffTreeFilter;
-import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParseOptions;
+import org.variantsync.diffdetective.variation.diff.filter.VariationDiffFilter;
+import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParseOptions;
 import org.variantsync.diffdetective.variation.tree.view.relevance.Search;
 
 import java.io.IOException;
@@ -34,8 +34,8 @@ public class Main {
      * Maybe it has something to do with linebreak or whitespace characters?
      */
     private static final Search bugRelevance = new Search("  /* Check both of the above conditions, for symbols.  */");
-    public static DiffTreeParseOptions DIFFTREE_PARSE_OPTIONS =
-            new DiffTreeParseOptions(
+    public static VariationDiffParseOptions VARIATION_DIFF_PARSE_OPTIONS =
+            new VariationDiffParseOptions(
                     true,
                     false
             );
@@ -51,7 +51,7 @@ public class Main {
                 "Views Analysis",
                 new ArrayList<>(List.of(
                         new FilterAnalysis( // filters unwanted trees
-                                DiffTreeFilter.notEmpty()
+                                VariationDiffFilter.notEmpty()
                         ),
                         new ViewAnalysis(),
                         new StatisticsAnalysis()
@@ -74,7 +74,7 @@ public class Main {
                 defaultOptions.datasetsFile(),
                 repo -> new PatchDiffParseOptions(
                         PatchDiffParseOptions.DiffStoragePolicy.DO_NOT_REMEMBER,
-                        DIFFTREE_PARSE_OPTIONS
+                        VARIATION_DIFF_PARSE_OPTIONS
                 ),
                 defaultOptions.getFilterForRepo(),
                 true,

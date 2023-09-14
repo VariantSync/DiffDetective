@@ -19,13 +19,14 @@ import org.variantsync.diffdetective.analysis.AutomationResult;
 import org.variantsync.diffdetective.analysis.StatisticsAnalysis;
 import org.variantsync.diffdetective.datasets.DatasetDescription;
 import org.variantsync.diffdetective.datasets.DefaultDatasets;
+import org.variantsync.diffdetective.editclass.proposed.ProposedEditClasses;
+import org.variantsync.diffdetective.experiments.esecfse22.FindMedianCommitTime;
 import org.variantsync.diffdetective.metadata.EditClassCount;
 import org.variantsync.diffdetective.metadata.ExplainedFilterSummary;
 import org.variantsync.diffdetective.tablegen.rows.ContentRow;
 import org.variantsync.diffdetective.tablegen.styles.ShortTable;
 import org.variantsync.diffdetective.tablegen.styles.VariabilityShare;
 import org.variantsync.diffdetective.util.IO;
-import org.variantsync.diffdetective.experiments.esecfse22.FindMedianCommitTime;
 
 /** Accumulates multiple {@link AnalysisResult}s of several datasets. */
 public class MiningResultAccumulator {
@@ -38,7 +39,7 @@ public class MiningResultAccumulator {
      * @return an association between the parsed filenames and their parsed content
      */
     public static Map<String, AnalysisResult> getAllTotalResultsIn(final Path folderPath) throws IOException {
-        // get all files in the directory which are outputs of DiffTreeMiningResult
+        // get all files in the directory which are outputs of VariationDiffMiningResult
         final List<Path> paths = Files.walk(folderPath)
                 .filter(Files::isRegularFile)
                 .filter(p -> p.toString().endsWith(Analysis.TOTAL_RESULTS_FILE_NAME))
@@ -53,7 +54,7 @@ public class MiningResultAccumulator {
             //        that produced the results we accumulate. Maybe Java reflection can help?
             result.append(StatisticsAnalysis.RESULT, new StatisticsAnalysis.Result());
             result.append(ExplainedFilterSummary.KEY, new ExplainedFilterSummary());
-//            result.append(EditClassCount.KEY, new EditClassCount());
+//            result.append(EditClassCount.KEY, new EditClassCount(ProposedEditClasses.Instance));
 
             result.setFrom(p);
             results.put(p.getParent().getFileName().toString(), result);

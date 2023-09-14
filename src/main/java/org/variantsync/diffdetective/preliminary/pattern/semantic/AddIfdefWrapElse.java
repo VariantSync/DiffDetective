@@ -23,11 +23,11 @@ class AddIfdefWrapElse extends SemanticPattern {
             which has an unchanged code child
      */
     @Override
-    public Optional<PatternMatch<DiffNode>> match(DiffNode annotationNode) {
+    public Optional<PatternMatch<DiffNode<?>>> match(DiffNode<?> annotationNode) {
         if(annotationNode.isAdd() && annotationNode.isIf()){
             boolean addedCodeInIf = false;
-            DiffNode elseNode = null;
-            for(DiffNode child : annotationNode.getAllChildren()){
+            DiffNode<?> elseNode = null;
+            for(DiffNode<?> child : annotationNode.getAllChildren()){
                 if(child.isElif()){
                     return Optional.empty();
                 }
@@ -44,7 +44,7 @@ class AddIfdefWrapElse extends SemanticPattern {
             }
 
             boolean noneCodeInElse = false;
-            for(DiffNode child : elseNode.getAllChildren()){
+            for(DiffNode<?> child : elseNode.getAllChildren()){
                 if(child.isArtifact() && child.isNon()){
                     noneCodeInElse = true;
                 }
@@ -64,7 +64,7 @@ class AddIfdefWrapElse extends SemanticPattern {
     }
 
     @Override
-    public FeatureContext[] getFeatureContexts(PatternMatch<DiffNode> patternMatch) {
+    public FeatureContext[] getFeatureContexts(PatternMatch<DiffNode<?>> patternMatch) {
         return new FeatureContext[]{
                 new FeatureContext(patternMatch.getFeatureMappings()[0])
         };

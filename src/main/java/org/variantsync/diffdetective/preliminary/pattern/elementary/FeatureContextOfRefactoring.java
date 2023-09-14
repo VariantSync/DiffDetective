@@ -9,14 +9,14 @@ import org.variantsync.diffdetective.preliminary.pattern.Pattern;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
 
 @Deprecated
-public final class FeatureContextOfRefactoring implements FeatureContextReverseEngineering<DiffNode> {
+public final class FeatureContextOfRefactoring implements FeatureContextReverseEngineering<DiffNode<?>> {
     @Override
-    public Pattern<DiffNode> getPattern() {
+    public Pattern<DiffNode<?>> getPattern() {
         return ProposedEditClasses.Refactoring;
     }
 
     @Override
-    public PatternMatch<DiffNode> createMatch(DiffNode codeNode) {
+    public PatternMatch<DiffNode<?>> createMatch(DiffNode<?> codeNode) {
         final LineRange diffLines = codeNode.getLinesInDiff();
         return new PatternMatch<>(this,
                 diffLines.fromInclusive(), diffLines.toExclusive()
@@ -24,7 +24,7 @@ public final class FeatureContextOfRefactoring implements FeatureContextReverseE
     }
 
     @Override
-    public FeatureContext[] getFeatureContexts(PatternMatch<DiffNode> patternMatch) {
+    public FeatureContext[] getFeatureContexts(PatternMatch<DiffNode<?>> patternMatch) {
         return new FeatureContext[0];
     }
 }

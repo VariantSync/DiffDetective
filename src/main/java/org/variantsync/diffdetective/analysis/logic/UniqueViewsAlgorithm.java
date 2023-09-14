@@ -5,7 +5,7 @@ import org.prop4j.Node;
 import org.variantsync.diffdetective.editclass.proposed.ProposedEditClasses;
 import org.variantsync.diffdetective.util.fide.FixTrueFalse;
 import org.variantsync.diffdetective.util.fide.FormulaUtils;
-import org.variantsync.diffdetective.variation.diff.DiffTree;
+import org.variantsync.diffdetective.variation.diff.VariationDiff;
 
 import java.util.*;
 
@@ -28,7 +28,7 @@ public class UniqueViewsAlgorithm {
      * @param simplify Whether to simplify formulas in between the algorithm.
      * @return
      */
-    public static List<Node> getUniquePartialConfigs(DiffTree d, boolean simplify) {
+    public static List<Node> getUniquePartialConfigs(VariationDiff<?> d, boolean simplify) {
         final Set<Node> deselectedPCs = new LinkedHashSet<>();
 
         // Collect all PCs negated

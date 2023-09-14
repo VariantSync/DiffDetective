@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.variantsync.diffdetective.diff.text.DiffLineNumber;
 import org.variantsync.diffdetective.util.Assert;
-import org.variantsync.diffdetective.variation.diff.DiffNode;
+import org.variantsync.diffdetective.variation.DiffLinesLabel;
 
 /**
  * A logical line consisting of multiple physical lines of a text file joined by line continuations.
@@ -18,7 +18,7 @@ import org.variantsync.diffdetective.variation.diff.DiffNode;
  * @author Benjamin Moosherr
  */
 class LogicalLine {
-    private List<DiffNode.Label.Line> lines;
+    private List<DiffLinesLabel.Line> lines;
     private boolean isContinued;
     private DiffLineNumber startLineNumber;
 
@@ -51,7 +51,7 @@ class LogicalLine {
         if (!hasStarted()) {
             startLineNumber = lineNumber;
         }
-        lines.add(new DiffNode.Label.Line(line, lineNumber));
+        lines.add(new DiffLinesLabel.Line(line, lineNumber));
         isContinued = line.endsWith("\\");
     }
 
@@ -82,7 +82,7 @@ class LogicalLine {
      * Returns all physical lines {@link consume}d for the current logical line.
      * The backslashes of line continuations are still part of the strings.
      */
-    public List<DiffNode.Label.Line> getLines() {
+    public List<DiffLinesLabel.Line> getLines() {
         return lines;
     }
 

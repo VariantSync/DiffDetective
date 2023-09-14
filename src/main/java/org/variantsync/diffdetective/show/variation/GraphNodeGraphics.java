@@ -11,16 +11,16 @@ import java.awt.geom.AffineTransform;
 
 public class GraphNodeGraphics extends EntityGraphics {
     //// Represented content
-    final NodeView node;
+    final NodeView<?> node;
 
     //// Rendering values
     double circle_borderwidth_relative = 0.05;
     double textbox_borderwidth_absolute = 2;
     double textbox_insets_absolute = 12;
     int textbox_borderarcwidth_absolute = 7;
-    Font basic = new Font(null, Font.PLAIN, DiffTreeApp.DEFAULT_FONT_SIZE);
+    Font basic = new Font(null, Font.PLAIN, VariationDiffApp.DEFAULT_FONT_SIZE);
 
-    public GraphNodeGraphics(NodeView node) {
+    public GraphNodeGraphics(NodeView<?> node) {
         this.node = node;
     }
 

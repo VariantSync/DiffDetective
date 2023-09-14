@@ -6,6 +6,8 @@ import org.variantsync.diffdetective.editclass.EditClass;
 import org.variantsync.diffdetective.editclass.EditClassCatalogue;
 import org.variantsync.diffdetective.editclass.proposed.ProposedEditClasses;
 import org.variantsync.diffdetective.util.Assert;
+import org.variantsync.diffdetective.variation.Label;
+import org.variantsync.functjonal.Cast;
 import org.variantsync.functjonal.Functjonal;
 import org.variantsync.functjonal.category.InplaceSemigroup;
 import org.variantsync.functjonal.map.MergeMap;
@@ -72,29 +74,24 @@ public class EditClassCount implements Metadata<EditClassCount> {
      * class.
      * @see Occurrences#ISEMIGROUP
      */
-    public static InplaceSemigroup<EditClassCount> ISEMIGROUP = (a, b) -> MergeMap.putAllValues(
-            a.occurences,
-            b.occurences,
+    public static InplaceSemigroup<EditClassCount> ISEMIGROUP() {
+        return (a, b) -> MergeMap.putAllValues(
+            a.occurrences,
+            b.occurrences,
             Occurrences.ISEMIGROUP
-    );
-
-    private final LinkedHashMap<EditClass, Occurrences> occurences;
-
-    /**
-     * Create a new empty count with the {@link ProposedEditClasses default edit class catalog}.
-     */
-    public EditClassCount() {
-        this(ProposedEditClasses.Instance);
+        );
     }
+
+    private final LinkedHashMap<EditClass, Occurrences> occurrences;
 
     /**
      * Create a new empty count that reports occurrences of the given edit class.
      * @param editClasses edit classes whose occurrences should be counted.
      */
     public EditClassCount(final EditClassCatalogue editClasses) {
-        occurences = new LinkedHashMap<>();
+        occurrences = new LinkedHashMap<>();
         for (final EditClass p : editClasses.all()) {
-            occurences.put(p, new Occurrences());
+            occurrences.put(p, new Occurrences());
         }
     }
 
@@ -109,16 +106,16 @@ public class EditClassCount implements Metadata<EditClassCount> {
      */
     public void reportOccurrenceFor(final EditClass editClass, CommitDiff commit) {
         Assert.assertTrue(
-                occurences.containsKey(editClass),
+                occurrences.containsKey(editClass),
                 () -> "Reported unkown edit class \""
                         + editClass.getName()
                         + "\" but expected one of "
-                        + occurences.keySet().stream()
+                        + occurrences.keySet().stream()
                           .map(EditClass::getName)
                           .collect(Collectors.joining())
                         + "!"
         );
-        occurences.get(editClass).increment(commit);
+        occurrences.get(editClass).increment(commit);
     }
     
     /**
@@ -128,7 +125,7 @@ public class EditClassCount implements Metadata<EditClassCount> {
      * @return {@link EditClassCount}
      */
     public static EditClassCount parse(final List<String> lines, final String uuid) {
-        EditClassCount count = new EditClassCount();
+        EditClassCount count = new EditClassCount(ProposedEditClasses.Instance);
         String[] keyValuePair;
         String key;
         String value;
@@ -159,7 +156,7 @@ public class EditClassCount implements Metadata<EditClassCount> {
             }
             
             // add occurrence
-            count.occurences.put(editClass, occurence);
+            count.occurrences.put(editClass, occurence);
         }
         
         return count;
@@ -168,7 +165,7 @@ public class EditClassCount implements Metadata<EditClassCount> {
     @Override
     public LinkedHashMap<String, String> snapshot() {
         return Functjonal.bimap(
-                occurences,
+                occurrences,
                 EditClass::getName,
                 Occurrences::toString,
                 LinkedHashMap::new
@@ -177,20 +174,14 @@ public class EditClassCount implements Metadata<EditClassCount> {
 
     @Override
     public void setFromSnapshot(LinkedHashMap<String, String> snap) {
-        for (var entry : snap.entrySet()) {
-            if (ProposedEditClasses.All.stream().anyMatch(editClass -> editClass.getName().equals(entry.getKey()))) {
-                var key = entry.getKey(); // edit class
-                var value = entry.getValue(); // key value content
+        for (var occurrence : occurrences.entrySet()) {
+            var editClass = occurrence.getKey();
+            var value = snap.get(editClass.getName());
+            if (value != null) {
                 value = value.replaceAll("[{} ]", ""); // remove unnecessary symbols
                 var innerKeyValuePair = value.split(";");
                 var total = Integer.parseInt(innerKeyValuePair[0].split("=")[1]); // total count
                 var commits = Integer.parseInt(innerKeyValuePair[1].split("=")[1]);
-
-                // get edit class from key
-                final String finalKey = key;
-                EditClass editClass = ProposedEditClasses.Instance.fromName(key).orElseThrow(
-                        () -> new RuntimeException("Could not find EditClass with name " + finalKey)
-                );
 
                 Occurrences occurence = new Occurrences();
                 occurence.totalAmount = total;
@@ -201,7 +192,7 @@ public class EditClassCount implements Metadata<EditClassCount> {
                 }
 
                 // add occurrence
-                occurences.put(editClass, occurence);
+                occurrences.put(editClass, occurence);
             }
         }
     }
@@ -211,13 +202,13 @@ public class EditClassCount implements Metadata<EditClassCount> {
      */
     @Override
     public InplaceSemigroup<EditClassCount> semigroup() {
-        return ISEMIGROUP;
+        return ISEMIGROUP();
     }
 
     /**
      * Returns the current occurrence count for each considered edit class.
      */
-    public LinkedHashMap<EditClass, Occurrences> getOccurences() {
-        return occurences;
+    public LinkedHashMap<EditClass, Occurrences> getOccurrences() {
+        return occurrences;
     }
 }

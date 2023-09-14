@@ -1,5 +1,6 @@
 package org.variantsync.diffdetective.variation.diff.serialize;
 
+import org.variantsync.diffdetective.variation.Label;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
 
 /**
@@ -9,7 +10,7 @@ import org.variantsync.diffdetective.variation.diff.DiffNode;
  * {@code to}. Information related to the type of the relation between {@code from} and {@code to}
  * should be encoded into {@code style}.
  */
-public record StyledEdge(DiffNode from, DiffNode to, Style style) {
+public record StyledEdge<L extends Label>(DiffNode<L> from, DiffNode<L> to, Style style) {
     public record Style(String lineGraphType, String tikzStyle) {
     }
 

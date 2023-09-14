@@ -1,7 +1,12 @@
 package org.variantsync.diffdetective.variation.diff.serialize.edgeformat;
 
+import static org.variantsync.diffdetective.variation.diff.Time.AFTER;
+import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
+
+import org.variantsync.diffdetective.variation.Label;
+import org.variantsync.diffdetective.variation.diff.VariationDiff; // For JavaDoc
+import org.variantsync.diffdetective.variation.diff.Time;
 import org.variantsync.diffdetective.variation.diff.serialize.StyledEdge;
-import org.variantsync.diffdetective.variation.diff.DiffTree; // For JavaDoc
 
 /**
  * An edge format encoding the child index of this edge.
@@ -10,15 +15,20 @@ import org.variantsync.diffdetective.variation.diff.DiffTree; // For JavaDoc
  *
  * This index is encoded into decimal and delimited by a semicolon from the previous value.
  *
- * This format is mainly useful to equivalence of two {@link DiffTree}s, for example in tests.
+ * This format is mainly useful to equivalence of two {@link VariationDiff}s, for example in tests.
  *
  * @author Benjamin Moosherr
  */
-public class ChildOrderEdgeFormat extends EdgeLabelFormat {
+public class ChildOrderEdgeFormat<L extends Label> extends EdgeLabelFormat<L> {
     @Override
-    public String labelOf(StyledEdge edge) {
-        int i = edge.from().indexOfChild(edge.to());
-        int j = edge.to().indexOfChild(edge.from());
-        return String.format(";%d", i < 0 ? j : i);
+    public <La extends L> String labelOf(StyledEdge<La> edge) {
+        int[] index = new int[2];
+        Time.forAll(time -> {
+            int i = edge.from().indexOfChild(edge.to(), time);
+            int j = edge.to().indexOfChild(edge.from(), time);
+            index[time.ordinal()] = i < 0 ? j : i;
+        });
+
+        return String.format(";%d,%d", index[BEFORE.ordinal()], index[AFTER.ordinal()]);
     }
 }

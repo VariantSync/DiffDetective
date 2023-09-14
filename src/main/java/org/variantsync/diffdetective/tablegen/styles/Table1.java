@@ -40,7 +40,7 @@ public class Table1 extends TableDefinition {
         ));
 
         for (final EditClass a : ProposedEditClasses.Instance.all()) {
-            this.columnDefinitions.add(col(a.getName(), RIGHT, row ->  makeReadable(row.get(EditClassCount.KEY).getOccurences().get(a).getTotalAmount())));
+            this.columnDefinitions.add(col(a.getName(), RIGHT, row ->  makeReadable(row.get(EditClassCount.KEY).getOccurrences().get(a).getTotalAmount())));
         }
 
         this.columnDefinitions.add(col("runtime (s)", RIGHT, row -> makeReadable(row.get(StatisticsAnalysis.RESULT).runtimeInSeconds)));

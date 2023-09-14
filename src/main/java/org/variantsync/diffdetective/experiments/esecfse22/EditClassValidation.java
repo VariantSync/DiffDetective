@@ -12,12 +12,14 @@ import org.variantsync.diffdetective.metadata.EditClassCount;
 import org.variantsync.diffdetective.mining.formats.DirectedEdgeLabelFormat;
 import org.variantsync.diffdetective.mining.formats.MiningNodeFormat;
 import org.variantsync.diffdetective.mining.formats.ReleaseMiningDiffNodeFormat;
-import org.variantsync.diffdetective.variation.diff.filter.DiffTreeFilter;
-import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParseOptions;
+import org.variantsync.diffdetective.variation.DiffLinesLabel;
+import org.variantsync.diffdetective.variation.Label;
+import org.variantsync.diffdetective.variation.diff.filter.VariationDiffFilter;
+import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParseOptions;
 import org.variantsync.diffdetective.variation.diff.serialize.GraphFormat;
 import org.variantsync.diffdetective.variation.diff.serialize.LineGraphExportOptions;
 import org.variantsync.diffdetective.variation.diff.serialize.edgeformat.EdgeLabelFormat;
-import org.variantsync.diffdetective.variation.diff.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
+import org.variantsync.diffdetective.variation.diff.serialize.treeformat.CommitDiffVariationDiffLabelFormat;
 import org.variantsync.diffdetective.variation.diff.transform.CutNonEditedSubtrees;
 
 import java.io.IOException;
@@ -36,8 +38,8 @@ public class EditClassValidation implements Analysis.Hooks {
     public static final BiFunction<Repository, Path, Analysis> AnalysisFactory = (repo, repoOutputDir) -> new Analysis(
         "EditClassValidation",
         List.of(
-            new PreprocessingAnalysis(new CutNonEditedSubtrees()),
-            new FilterAnalysis(DiffTreeFilter.notEmpty()), // filters unwanted trees
+            new PreprocessingAnalysis(new CutNonEditedSubtrees<>()),
+            new FilterAnalysis(VariationDiffFilter.notEmpty()), // filters unwanted trees
             new EditClassValidation(),
             new StatisticsAnalysis()
         ),
@@ -53,9 +55,9 @@ public class EditClassValidation implements Analysis.Hooks {
     }
 
     /**
-     * Returns the edge format that should be used for IO of edges in DiffTrees.
+     * Returns the edge format that should be used for IO of edges in VariationDiffs.
      */
-    private static EdgeLabelFormat EdgeFormat(final MiningNodeFormat nodeFormat) {
+    private static EdgeLabelFormat<DiffLinesLabel> EdgeFormat(final MiningNodeFormat nodeFormat) {
         final EdgeLabelFormat.Direction direction = EdgeLabelFormat.Direction.ParentToChild;
         return new DirectedEdgeLabelFormat(nodeFormat, false, direction);
     }
@@ -63,12 +65,12 @@ public class EditClassValidation implements Analysis.Hooks {
     /**
      * Creates new export options for running the validation on the given repository.
      */
-    public static LineGraphExportOptions ValidationExportOptions(final Repository repository) {
+    public static LineGraphExportOptions<DiffLinesLabel> ValidationExportOptions(final Repository repository) {
         final MiningNodeFormat nodeFormat = NodeFormat();
-        return new LineGraphExportOptions(
-                GraphFormat.DIFFTREE
-                // We have to ensure that all DiffTrees have unique IDs, so use name of changed file and commit hash.
-                , new CommitDiffDiffTreeLabelFormat()
+        return new LineGraphExportOptions<DiffLinesLabel>(
+                GraphFormat.VARIATION_DIFF
+                // We have to ensure that all VariationDiffs have unique IDs, so use name of changed file and commit hash.
+                , new CommitDiffVariationDiffLabelFormat()
                 , nodeFormat
                 , EdgeFormat(nodeFormat)
                 , LineGraphExportOptions.LogError()
@@ -92,8 +94,8 @@ public class EditClassValidation implements Analysis.Hooks {
                     final PatchDiffParseOptions defaultPatchDiffParseOptions = defaultOptions.getParseOptionsForRepo().apply(repo);
                     return new PatchDiffParseOptions(
                             defaultPatchDiffParseOptions.diffStoragePolicy(),
-                            new DiffTreeParseOptions(
-                                    defaultPatchDiffParseOptions.diffTreeParseOptions().annotationParser(),
+                            new VariationDiffParseOptions(
+                                    defaultPatchDiffParseOptions.variationDiffParseOptions().annotationParser(),
                                     true,
                                     true
                             )
@@ -111,12 +113,12 @@ public class EditClassValidation implements Analysis.Hooks {
 
     @Override
     public void initializeResults(Analysis analysis) {
-        analysis.append(EditClassCount.KEY, new EditClassCount());
+        analysis.append(EditClassCount.KEY, new EditClassCount(ProposedEditClasses.Instance));
     }
 
     @Override
-    public boolean analyzeDiffTree(Analysis analysis) {
-        analysis.getCurrentDiffTree().forAll(node -> {
+    public boolean analyzeVariationDiff(Analysis analysis) {
+        analysis.getCurrentVariationDiff().forAll(node -> {
             if (node.isArtifact()) {
                 analysis.get(EditClassCount.KEY).reportOccurrenceFor(
                     ProposedEditClasses.Instance.match(node),

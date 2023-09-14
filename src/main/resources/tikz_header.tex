@@ -6,7 +6,7 @@
 \usetikzlibrary{shapes.symbols}
 \usetikzlibrary{arrows.meta}
 
-%%% COLORS FOR DIFF SNIPPETS AND DIFFTREE NODES
+%%% COLORS FOR DIFF SNIPPETS AND VARIATION DIFF NODES
 \definecolor{darkpastelgreen}{rgb}{0.01, 0.75, 0.24}
 \definecolor{darkpastelblue}{rgb}{0.47, 0.62, 0.8}
 \definecolor{pastelorange}{rgb}{1.0, 0.7, 0.28}
@@ -24,7 +24,7 @@
 \newcommand{\epRemColor}{diffRemColourDarkened}
 \newcommand{\epNonColor}{gray}
 
-%%% COLORS FOR DIFFTREES
+%%% COLORS FOR VARIATION DIFFS
 \newcommand{\vtdEdgeBeforeColor}{diffRemColourDarkened}
 \newcommand{\vtdEdgeAfterColor}{diffAddColourDarkened}
 
@@ -47,6 +47,7 @@
 	rem/.style = {fill=diffRemColour, dashed},
 	before/.style = {color=\vtdEdgeBeforeColor},
 	after/.style = {color=\vtdEdgeAfterColor},
+	unchanged/.style = {},
 	vtdarrow/.style = {black, {Latex[length=1.5mm,width=1.5mm]}-, line width = 0.35mm},
 	vtddashed/.style = {black, dash pattern=on 2pt off 2pt, line width = 0.35mm},
 	node distance = {9.5mm},

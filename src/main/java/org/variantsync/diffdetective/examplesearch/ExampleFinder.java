@@ -12,18 +12,19 @@ import org.variantsync.diffdetective.show.Show;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.util.IO;
 import org.variantsync.diffdetective.util.StringUtils;
-import org.variantsync.diffdetective.variation.diff.DiffTree;
+import org.variantsync.diffdetective.variation.DiffLinesLabel;
+import org.variantsync.diffdetective.variation.diff.VariationDiff;
 import org.variantsync.diffdetective.variation.diff.Time;
 import org.variantsync.diffdetective.variation.diff.filter.ExplainedFilter;
-import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParseOptions;
-import org.variantsync.diffdetective.variation.diff.render.DiffTreeRenderer;
+import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParseOptions;
 import org.variantsync.diffdetective.variation.diff.render.PatchDiffRenderer;
 import org.variantsync.diffdetective.variation.diff.render.RenderOptions;
+import org.variantsync.diffdetective.variation.diff.render.VariationDiffRenderer;
 import org.variantsync.diffdetective.variation.diff.serialize.GraphFormat;
 import org.variantsync.diffdetective.variation.diff.serialize.edgeformat.DefaultEdgeLabelFormat;
 import org.variantsync.diffdetective.variation.diff.serialize.nodeformat.MappingsDiffNodeFormat;
-import org.variantsync.diffdetective.variation.diff.serialize.treeformat.CommitDiffDiffTreeLabelFormat;
-import org.variantsync.diffdetective.variation.diff.source.DiffTreeSource;
+import org.variantsync.diffdetective.variation.diff.serialize.treeformat.CommitDiffVariationDiffLabelFormat;
+import org.variantsync.diffdetective.variation.diff.source.VariationDiffSource;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -34,41 +35,41 @@ import java.util.function.Predicate;
 
 /**
  * Helper class to find suitable running examples.
- * An example finder inspects each DiffTree, checks some requirements relevant for the
+ * An example finder inspects each VariationDiff, checks some requirements relevant for the
  * desired running example and writes candidates to a file and renders them.
- * An example finder should be side-effect free (i.e., it does not alter or transform the given DiffTree, just observes it).
+ * An example finder should be side-effect free (i.e., it does not alter or transform the given VariationDiff, just observes it).
  */
 public class ExampleFinder implements Analysis.Hooks {
     /**
      * Default render options for exporting example candidates.
      */
-    public static final RenderOptions ExportOptions = new RenderOptions(
-            GraphFormat.DIFFTREE,
-            new CommitDiffDiffTreeLabelFormat(),
-            new MappingsDiffNodeFormat(),
-            new DefaultEdgeLabelFormat(),
+    public static final RenderOptions<DiffLinesLabel> ExportOptions = new RenderOptions<>(
+            GraphFormat.VARIATION_DIFF,
+            new CommitDiffVariationDiffLabelFormat(),
+            new MappingsDiffNodeFormat<>(),
+            new DefaultEdgeLabelFormat<>(),
             false,
             1000,
-            RenderOptions.DEFAULT.nodesize()/3,
-            0.5*RenderOptions.DEFAULT.edgesize(),
-            RenderOptions.DEFAULT.arrowsize()/2,
+            RenderOptions.DEFAULT().nodesize()/3,
+            0.5*RenderOptions.DEFAULT().edgesize(),
+            RenderOptions.DEFAULT().arrowsize()/2,
             2,
             true,
             List.of()
     );
 
-    private final ExplainedFilter<DiffTree> isGoodExample;
+    private final ExplainedFilter<VariationDiff<? extends DiffLinesLabel>> isGoodExample;
     private final PatchDiffRenderer exampleExport;
 
     /**
      * Creates a new ExampleFinder.
-     * @param isGoodExample Function that decides whether a DiffTree is an example candidate or not.
+     * @param isGoodExample Function that decides whether a VariationDiff is an example candidate or not.
      *                      Should return {@link Optional#empty()} when the given tree is not a good example and thus, should not be considered.
-     *                      Should return a Difftree when the given tree is a good example candidate and should be exported.
-     *                      The returned DiffTree might be the exact same DiffTree or a subtree (e.g., to only export a certain subtree that is relevant).
+     *                      Should return a VariationDiff when the given tree is a good example candidate and should be exported.
+     *                      The returned VariationDiff might be the exact same VariationDiff or a subtree (e.g., to only export a certain subtree that is relevant).
      * @param renderer The renderer to use for rendering example candidates.
      */
-    public ExampleFinder(final ExplainedFilter<DiffTree> isGoodExample, DiffTreeRenderer renderer) {
+    public ExampleFinder(final ExplainedFilter<VariationDiff<? extends DiffLinesLabel>> isGoodExample, VariationDiffRenderer renderer) {
         this.isGoodExample = isGoodExample;
         this.exampleExport = new PatchDiffRenderer(renderer, ExportOptions);
     }
@@ -99,19 +100,19 @@ public class ExampleFinder implements Analysis.Hooks {
 //        Logger.info(localDiff);
 
         final Repository currentRepo = analysis.getRepository();
-        final DiffTree diffTree = analysis.getCurrentDiffTree();
-        final CPPAnnotationParser annotationParser = analysis.getRepository().getParseOptions().diffTreeParseOptions().annotationParser();
+        final VariationDiff<DiffLinesLabel> variationDiff = analysis.getCurrentVariationDiff();
+        final CPPAnnotationParser annotationParser = analysis.getRepository().getParseOptions().variationDiffParseOptions().annotationParser();
 
-        // We do not want a difftree for the entire file but only for the local change to have a small example.
-        final DiffTree localTree;
+        // We do not want a variationDiff for the entire file but only for the local change to have a small example.
+        final VariationDiff<DiffLinesLabel> localTree;
         try {
-            localTree = DiffTree.fromDiff(localDiff, new DiffTreeParseOptions(annotationParser, true, true));
-            // Not every local diff can be parsed to a difftree because diffs are unaware of the underlying language (i.e., CPP).
+            localTree = VariationDiff.fromDiff(localDiff, new VariationDiffParseOptions(annotationParser, true, true));
+            // Not every local diff can be parsed to a VariationDiff because diffs are unaware of the underlying language (i.e., CPP).
             // We want only running examples whose diffs describe entire diff trees for easier understanding.
             if (isGoodExample.test(localTree)) {
-                Assert.assertTrue(diffTree.getSource() instanceof GitPatch);
-                final GitPatch diffTreeSource = (GitPatch) diffTree.getSource();
-                localTree.setSource(diffTreeSource.shallowClone());
+                Assert.assertTrue(variationDiff.getSource() instanceof GitPatch);
+                final GitPatch variationDiffSource = (GitPatch) variationDiff.getSource();
+                localTree.setSource(variationDiffSource.shallowClone());
             } else {
                 return false;
             }
@@ -135,10 +136,10 @@ public class ExampleFinder implements Analysis.Hooks {
     }
 
     @Override
-    public boolean analyzeDiffTree(Analysis analysis) {
-        // We do not want a difftree for the entire file but only for the local change to have a small example.
+    public boolean analyzeVariationDiff(Analysis analysis) {
+        // We do not want a VariationDiff for the entire file but only for the local change to have a small example.
         // Analyze all patches individually
-        final String localDiffs = getDiff(analysis.getCurrentDiffTree());
+        final String localDiffs = getDiff(analysis.getCurrentVariationDiff());
 
         boolean exampleFound = false;
         for (List<String> diffLines : split(localDiffs.lines().toList(), s -> s.startsWith("@"))) {
@@ -147,7 +148,7 @@ public class ExampleFinder implements Analysis.Hooks {
         return exampleFound;
     }
 
-    private void exportExample(final Analysis analysis, final String tdiff, final DiffTree vdiff, Path outputDir) {
+    private void exportExample(final Analysis analysis, final String tdiff, final VariationDiff<DiffLinesLabel> vdiff, Path outputDir) {
         Assert.assertTrue(vdiff.getSource() instanceof GitPatch);
         final Repository repo = analysis.getRepository();
         final GitPatch patch = (GitPatch) vdiff.getSource();
@@ -183,8 +184,8 @@ public class ExampleFinder implements Analysis.Hooks {
         }
     }
 
-    static String getDiff(final DiffTree tree) {
-        final DiffTreeSource source = tree.getSource();
+    static String getDiff(final VariationDiff<?> tree) {
+        final VariationDiffSource source = tree.getSource();
         Assert.assertTrue(source instanceof TextBasedDiff);
         return ((TextBasedDiff) source).getDiff();
     }

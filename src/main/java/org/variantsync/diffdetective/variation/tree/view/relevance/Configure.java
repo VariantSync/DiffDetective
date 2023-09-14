@@ -36,7 +36,7 @@ public class Configure implements Relevance {
     }
 
     @Override
-    public boolean test(VariationNode<?> v) {
+    public boolean test(VariationNode<?, ?> v) {
         return SAT.isSatisfiable(
                 FixTrueFalse.Formula.and(
                         configuration,
@@ -46,7 +46,7 @@ public class Configure implements Relevance {
     }
 
     @Override
-    public <TreeNode extends VariationNode<TreeNode>> void computeViewNodes(TreeNode v, Consumer<TreeNode> markRelevant) {
+    public <TreeNode extends VariationNode<TreeNode, ?>> void computeViewNodes(TreeNode v, Consumer<TreeNode> markRelevant) {
         markRelevant.accept(v);
 
         for (final TreeNode c : v.getChildren()) {

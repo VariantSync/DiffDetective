@@ -1,9 +1,9 @@
 package org.variantsync.diffdetective.variation.diff.serialize;
 
 /**
- * Refers to the structure that is represented by a DiffTree.
+ * Refers to the structure that is represented by a VariationDiff.
  * For some purposes, certain diff graphs might also be represented
- * as a DiffTree with an artificial root.
+ * as a VariationDiff with an artificial root.
  */
 public enum GraphFormat {
     /**
@@ -11,7 +11,7 @@ public enum GraphFormat {
      */
     DIFFGRAPH,
     /**
-     * Default value. Describes a DiffTree that does not model anything other than a DiffTree.
+     * Default value. Describes a VariationDiff that does not model anything other than a VariationDiff.
      */
-    DIFFTREE
+    VARIATION_DIFF
 }

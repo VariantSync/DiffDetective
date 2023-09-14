@@ -4,13 +4,8 @@ import org.prop4j.And;
 import org.prop4j.Literal;
 import org.prop4j.Node;
 import org.prop4j.Not;
-import org.tinylog.Logger;
 import org.variantsync.diffdetective.analysis.logic.SAT;
-import org.variantsync.diffdetective.editclass.proposed.ProposedEditClasses;
-import org.variantsync.diffdetective.experiments.views.ViewAnalysis;
 import org.variantsync.diffdetective.util.Assert;
-import org.variantsync.diffdetective.variation.diff.DiffTree;
-import org.variantsync.diffdetective.variation.diff.Time;
 import org.variantsync.functjonal.Cast;
 
 import java.util.*;

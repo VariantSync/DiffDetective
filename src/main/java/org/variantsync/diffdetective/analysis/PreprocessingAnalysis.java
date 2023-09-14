@@ -3,23 +3,25 @@ package org.variantsync.diffdetective.analysis;
 import java.util.Arrays;
 import java.util.List;
 
-import org.variantsync.diffdetective.variation.diff.transform.DiffTreeTransformer;
+import org.variantsync.diffdetective.variation.diff.transform.VariationDiffTransformer;
+import org.variantsync.diffdetective.variation.DiffLinesLabel;
 
 public class PreprocessingAnalysis implements Analysis.Hooks {
-    private final List<DiffTreeTransformer> preprocessors;
+    private final List<VariationDiffTransformer<DiffLinesLabel>> preprocessors;
 
-    public PreprocessingAnalysis(List<DiffTreeTransformer> preprocessors) {
+    public PreprocessingAnalysis(List<VariationDiffTransformer<DiffLinesLabel>> preprocessors) {
         this.preprocessors = preprocessors;
     }
 
-    public PreprocessingAnalysis(DiffTreeTransformer... preprocessors) {
+    @SafeVarargs
+    public PreprocessingAnalysis(VariationDiffTransformer<DiffLinesLabel>... preprocessors) {
         this.preprocessors = Arrays.asList(preprocessors);
     }
 
     @Override
-    public boolean analyzeDiffTree(Analysis analysis) {
-        DiffTreeTransformer.apply(preprocessors, analysis.getCurrentDiffTree());
-        analysis.getCurrentDiffTree().assertConsistency();
+    public boolean analyzeVariationDiff(Analysis analysis) {
+        VariationDiffTransformer.apply(preprocessors, analysis.getCurrentVariationDiff());
+        analysis.getCurrentVariationDiff().assertConsistency();
         return true;
     }
 }

@@ -1,5 +1,6 @@
 package org.variantsync.diffdetective.variation.tree.graph;
 
+import org.variantsync.diffdetective.variation.Label;
 import org.variantsync.diffdetective.variation.tree.VariationTree;
 import org.variantsync.diffdetective.variation.tree.VariationTreeNode;
 
@@ -13,16 +14,16 @@ import java.util.Set;
  * The view invalidates as soon as the viewed VariationTree is altered as the view
  * will not update itself.
  *
- * @param nodes The set of all nodes in a DiffTree.
- * @param edges The set of all edges in a DiffTree.
+ * @param nodes The set of all nodes in a VariationDiff.
+ * @param edges The set of all edges in a VariationDiff.
  *
  * @author Paul Bittner
  */
-public record FormalTreeGraph(
-            Set<VariationTreeNode> nodes,
-            Set<Edge> edges
+public record FormalTreeGraph<L extends Label>(
+            Set<VariationTreeNode<L>> nodes,
+            Set<Edge<L>> edges
 ) {
-    public record Edge(VariationTreeNode child, VariationTreeNode parent) {}
+    public record Edge<L extends Label>(VariationTreeNode<L> child, VariationTreeNode<L> parent) {}
 
     /**
      * Creates a GraphView for a given VariationTree.
@@ -33,25 +34,25 @@ public record FormalTreeGraph(
      * @param t The VariationTree to view as a list of nodes and edges.
      * @return the graph view
      */
-    public static FormalTreeGraph fromTree(final VariationTree t) {
-        final Set<VariationTreeNode> nodes = new HashSet<>();
-        final Set<Edge> edges = new HashSet<>();
+    public static <L extends Label> FormalTreeGraph<L> fromTree(final VariationTree<L> t) {
+        final Set<VariationTreeNode<L>> nodes = new HashSet<>();
+        final Set<Edge<L>> edges = new HashSet<>();
 
         t.forAllPreorder(n -> {
             nodes.add(n);
             if (n.getParent() != null) {
-                edges.add(new Edge(n, n.getParent()));
+                edges.add(new Edge<>(n, n.getParent()));
             }
         });
 
-        return new FormalTreeGraph(nodes, edges);
+        return new FormalTreeGraph<>(nodes, edges);
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        FormalTreeGraph that = (FormalTreeGraph) o;
+        FormalTreeGraph<?> that = (FormalTreeGraph<?>) o;
         return Objects.equals(nodes, that.nodes) && Objects.equals(edges, that.edges);
     }
 

@@ -19,7 +19,7 @@ final class Untouched extends EditClass {
     }
 
     @Override
-    protected boolean matchesArtifactNode(DiffNode artifactNode) {
+    protected boolean matchesArtifactNode(DiffNode<?> artifactNode) {
         return artifactNode.beforePathEqualsAfterPath();
     }
 }

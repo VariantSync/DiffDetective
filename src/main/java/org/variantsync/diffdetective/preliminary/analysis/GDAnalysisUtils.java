@@ -44,7 +44,7 @@ public class GDAnalysisUtils {
                 analysisResult.getCommitDiffAnalysisResults()) {
             for (PatchDiffAnalysisResult patchResult :
                     commitResult.getPatchDiffAnalysisResults()) {
-                for (PatternMatch<DiffNode> patternMatch : patchResult.getPatternMatches()) {
+                for (PatternMatch<DiffNode<?>> patternMatch : patchResult.getPatternMatches()) {
                     commits.add(commitResult.getCommitDiff().getCommitHash());
                     patches.add(patchResult.getPatchDiff().getFileName(Time.AFTER));
                     patterns.add(patternMatch.getPatternName());

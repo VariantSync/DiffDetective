@@ -3,20 +3,21 @@ package org.variantsync.diffdetective.analysis;
 import java.util.Arrays;
 
 import org.variantsync.diffdetective.metadata.ExplainedFilterSummary;
-import org.variantsync.diffdetective.variation.diff.DiffTree;
+import org.variantsync.diffdetective.variation.DiffLinesLabel;
+import org.variantsync.diffdetective.variation.diff.VariationDiff;
 import org.variantsync.diffdetective.variation.diff.filter.ExplainedFilter;
 import org.variantsync.diffdetective.variation.diff.filter.TaggedPredicate;
 
 public class FilterAnalysis implements Analysis.Hooks {
-    private ExplainedFilter<DiffTree> treeFilter;
+    private ExplainedFilter<VariationDiff<? extends DiffLinesLabel>> treeFilter;
 
-    public FilterAnalysis(ExplainedFilter<DiffTree> treeFilter) {
+    public FilterAnalysis(ExplainedFilter<VariationDiff<? extends DiffLinesLabel>> treeFilter) {
         this.treeFilter = treeFilter;
     }
 
     @SafeVarargs
-    public FilterAnalysis(TaggedPredicate<String, DiffTree>... treeFilter) {
-        this.treeFilter = new ExplainedFilter<DiffTree>(Arrays.stream(treeFilter));
+    public FilterAnalysis(TaggedPredicate<String, VariationDiff<? extends DiffLinesLabel>>... treeFilter) {
+        this.treeFilter = new ExplainedFilter<>(Arrays.stream(treeFilter));
     }
 
     @Override
@@ -25,8 +26,8 @@ public class FilterAnalysis implements Analysis.Hooks {
     }
 
     @Override
-    public boolean analyzeDiffTree(Analysis analysis) throws Exception {
-        return treeFilter.test(analysis.getCurrentDiffTree());
+    public boolean analyzeVariationDiff(Analysis analysis) throws Exception {
+        return treeFilter.test(analysis.getCurrentVariationDiff());
     }
 
     @Override

@@ -13,7 +13,7 @@ import java.util.function.Predicate;
  * Moreover, this interface provides methods to access a predicates metadata for debugging
  * and (de-)serialization.
  */
-public interface Relevance extends Predicate<VariationNode<?>> {
+public interface Relevance extends Predicate<VariationNode<?, ?>> {
     /**
      * @return The name of this relevance predicate's type.
      */
@@ -28,7 +28,7 @@ public interface Relevance extends Predicate<VariationNode<?>> {
      * Delegates to {@link Relevance#computeViewNodesCheckAll(Relevance, VariationNode, Consumer)} with this relevance
      * as the first parameter.
      */
-    default <TreeNode extends VariationNode<TreeNode>> void computeViewNodes(final TreeNode v, final Consumer<TreeNode> markRelevant) {
+    default <TreeNode extends VariationNode<TreeNode, ?>> void computeViewNodes(final TreeNode v, final Consumer<TreeNode> markRelevant) {
         computeViewNodesCheckAll(this, v, markRelevant);
     }
 
@@ -43,7 +43,7 @@ public interface Relevance extends Predicate<VariationNode<?>> {
      * @param markRelevant Callback that is invoked on each tree node that is deemed relevant.
      * @param <TreeNode> The type of the nodes within the given tree.
      */
-    static <TreeNode extends VariationNode<TreeNode>> void computeViewNodesCheckAll(final Relevance rho, final TreeNode v, final Consumer<TreeNode> markRelevant) {
+    static <TreeNode extends VariationNode<TreeNode, ?>> void computeViewNodesCheckAll(final Relevance rho, final TreeNode v, final Consumer<TreeNode> markRelevant) {
         for (final TreeNode c : v.getChildren()) {
             if (rho.test(c)) {
                 c.forMeAndMyAncestors(markRelevant);

@@ -16,7 +16,7 @@ final class AddWithMapping extends EditClass {
     }
 
     @Override
-    protected boolean matchesArtifactNode(DiffNode artifactNode) {
+    protected boolean matchesArtifactNode(DiffNode<?> artifactNode) {
         return artifactNode.getParent(AFTER).isAdd();
     }
 }

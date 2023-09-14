@@ -1,9 +1,10 @@
 package org.variantsync.diffdetective.variation.diff.transform;
 
+import org.variantsync.diffdetective.variation.Label;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
-import org.variantsync.diffdetective.variation.diff.DiffTree;
-import org.variantsync.diffdetective.variation.diff.traverse.DiffTreeTraversal;
-import org.variantsync.diffdetective.variation.diff.traverse.DiffTreeVisitor;
+import org.variantsync.diffdetective.variation.diff.VariationDiff;
+import org.variantsync.diffdetective.variation.diff.traverse.VariationDiffTraversal;
+import org.variantsync.diffdetective.variation.diff.traverse.VariationDiffVisitor;
 
 import java.util.ArrayList;
 
@@ -11,14 +12,14 @@ import static org.variantsync.diffdetective.variation.diff.Time.AFTER;
 import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
 
 /**
- * This transformer removes all subtrees from a DiffTree that are non-edited.
+ * This transformer removes all subtrees from a VariationDiff that are non-edited.
  * A subtree is unedited, if all nodes in it are unchanged and all nodes have the same
  * before and after parent.
  * Such subtrees just model state but not an edit and thus are removed from the validation
  * of our edit classes in our ESEC/FSE'22 paper.
  * @author Paul Bittner
  */
-public class CutNonEditedSubtrees implements DiffTreeTransformer, DiffTreeVisitor {
+public class CutNonEditedSubtrees<L extends Label> implements VariationDiffTransformer<L>, VariationDiffVisitor<L> {
     private final boolean keepDummy;
 
     /**
@@ -34,15 +35,23 @@ public class CutNonEditedSubtrees implements DiffTreeTransformer, DiffTreeVisito
         this(false);
     }
 
-    @Override
-    public void transform(final DiffTree diffTree) {
-        diffTree.traverse(this);
+    public static <L extends Label> void genericTransform(VariationDiff<L> variationDiff) {
+        new CutNonEditedSubtrees<L>().transform(variationDiff);
+    }
+
+    public static <L extends Label> void genericTransform(boolean keepDummy, VariationDiff<L> variationDiff) {
+        new CutNonEditedSubtrees<L>(keepDummy).transform(variationDiff);
     }
 
     @Override
-    public void visit(final DiffTreeTraversal traversal, final DiffNode subtree) {
-        final ArrayList<DiffNode> collapsableChildren = new ArrayList<>();
-        for (final DiffNode child : subtree.getAllChildren()) {
+    public void transform(final VariationDiff<L> variationDiff) {
+        variationDiff.traverse(this);
+    }
+
+    @Override
+    public void visit(final VariationDiffTraversal<L> traversal, final DiffNode<L> subtree) {
+        final ArrayList<DiffNode<L>> collapsableChildren = new ArrayList<>();
+        for (final DiffNode<L> child : subtree.getAllChildren()) {
             traversal.visit(child);
 
             /*
@@ -66,7 +75,7 @@ public class CutNonEditedSubtrees implements DiffTreeTransformer, DiffTreeVisito
              *        => s.isNon()
              */
             if (
-                    child.getAllChildren().isEmpty()
+                    child.isLeaf()
                             && child.getParent(AFTER) == subtree
                             && child.getParent(BEFORE) == subtree)
             {

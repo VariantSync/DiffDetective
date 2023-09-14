@@ -1,8 +1,9 @@
 package org.variantsync.diffdetective.variation.diff.transform;
 
 import org.variantsync.diffdetective.diff.text.DiffLineNumber;
+import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
-import org.variantsync.diffdetective.variation.diff.DiffTree;
+import org.variantsync.diffdetective.variation.diff.VariationDiff;
 import org.variantsync.diffdetective.variation.diff.DiffType;
 import org.variantsync.diffdetective.variation.diff.Time;
 
@@ -18,7 +19,7 @@ import java.util.List;
  * This means, all inserted star-children will be merged into a single child, and for deletions respectively.
  * @author Paul Bittner, Benjamin Moosherr
  */
-public class Starfold implements DiffTreeTransformer {
+public class Starfold implements VariationDiffTransformer<DiffLinesLabel> {
     private final boolean respectNodeOrder;
 
     private Starfold(boolean respectNodeOrder) {
@@ -44,27 +45,27 @@ public class Starfold implements DiffTreeTransformer {
     }
 
     @Override
-    public void transform(DiffTree diffTree) {
+    public void transform(VariationDiff<DiffLinesLabel> variationDiff) {
         // All non-artifact nodes are potential roots of stars.
-        final List<DiffNode> annotations = diffTree.computeAllNodesThat(Starfold::isStarRoot);
+        final List<DiffNode<DiffLinesLabel>> annotations = variationDiff.computeAllNodesThat(Starfold::isStarRoot);
 //        System.out.println("Inspecting " + annotations.size() + " star roots.");
-        for (DiffNode annotation : annotations) {
+        for (DiffNode<DiffLinesLabel> annotation : annotations) {
 //            System.out.println("Found star root " + annotation);
             foldStar(annotation);
         }
     }
 
-    private void foldStar(final DiffNode starRoot) {
+    private void foldStar(final DiffNode<DiffLinesLabel> starRoot) {
         // We fold the stars for each time respectively.
         Time.forAll(t -> foldStarAtTime(starRoot, t));
     }
 
-    private void foldStarAtTime(final DiffNode starRoot, Time time) {
+    private void foldStarAtTime(final DiffNode<DiffLinesLabel> starRoot, Time time) {
 //        System.out.println("Fold " + starRoot + " at time " + time);
         final DiffType targetDiffType = DiffType.thatExistsOnlyAt(time);
-        final List<DiffNode> starArms = new ArrayList<>();
+        final List<DiffNode<DiffLinesLabel>> starArms = new ArrayList<>();
 
-        for (DiffNode child : starRoot.getAllChildren()) {
+        for (DiffNode<DiffLinesLabel> child : starRoot.getAllChildren()) {
             if (!starRoot.isChild(child, time)) {
                 continue;
             }
@@ -84,17 +85,17 @@ public class Starfold implements DiffTreeTransformer {
         mergeArms(starRoot, time, targetDiffType, starArms);
     }
 
-    private void mergeArms(final DiffNode starRoot, Time time, final DiffType targetDiffType, final List<DiffNode> starArms) {
+    private void mergeArms(final DiffNode<DiffLinesLabel> starRoot, Time time, final DiffType targetDiffType, final List<DiffNode<DiffLinesLabel>> starArms) {
         // If there is more than one arm, merge.
         if (starArms.size() > 1) {
-            final int targetIndex = starRoot.indexOfChild(starArms.get(0));
+            final int targetIndex = starRoot.indexOfChild(starArms.get(0), time);
             starRoot.removeChildren(starArms);
             starRoot.insertChild(
                     DiffNode.createArtifact(
                             targetDiffType,
                             DiffLineNumber.Invalid(),
                             DiffLineNumber.Invalid(),
-                            DiffNode.Label.withInvalidLineNumbers(starArms.stream().flatMap(node -> node.getLabelLines().stream()).toList())
+                            new DiffLinesLabel(starArms.stream().flatMap(node -> node.getLabel().getDiffLines().stream()).toList())
                     ),
                     targetIndex,
                     time
@@ -102,11 +103,11 @@ public class Starfold implements DiffTreeTransformer {
         }
     }
 
-    private static boolean isStarRoot(final DiffNode node) {
+    private static boolean isStarRoot(final DiffNode<?> node) {
         return !node.isArtifact() && node.isNon();
     }
 
-    private static boolean isStarArm(final DiffNode node) {
+    private static boolean isStarArm(final DiffNode<?> node) {
         return node.isLeaf() && node.isArtifact();
     }
 }

@@ -4,11 +4,12 @@ import org.prop4j.And;
 import org.prop4j.Node;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.util.LineRange;
-import org.variantsync.diffdetective.util.StringUtils;
 import org.variantsync.diffdetective.util.fide.FixTrueFalse;
+import org.variantsync.diffdetective.variation.Label;
 import org.variantsync.diffdetective.variation.NodeType;
-import org.variantsync.diffdetective.variation.diff.DiffNode;
-import org.variantsync.diffdetective.variation.diff.Projection;
+import org.variantsync.diffdetective.util.StringUtils;
+import org.variantsync.diffdetective.variation.diff.DiffNode; // For Javadoc
+import org.variantsync.diffdetective.variation.diff.Projection; // For Javadoc
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -22,7 +23,7 @@ import static org.variantsync.diffdetective.util.fide.FormulaUtils.negate;
  * <p>Provides common methods for querying variation trees and changing their structure. This class
  * doesn't provide mutation methods for attributes which may be shared between different underlying
  * nodes (for example a {@link Projection projection} of a {@link DiffNode}). Most prominently,
- * there are no methods to change the {@link getNodeType type} or the {@link getLabelLines label}
+ * there are no methods to change the {@link getNodeType type} or the {@link getLabel label}
  * of this node.
  *
  * <p>There are many methods which are not abstract. These are convenience methods or algorithms
@@ -31,15 +32,12 @@ import static org.variantsync.diffdetective.util.fide.FormulaUtils.negate;
  * alternative {@code Algorithm.run(node)}).
  *
  * @param <T> the derived type (the type extending this class)
+ * @param <L> The type of label stored in this tree.
  *
  * @see assertConsistency
  * @author Benjamin Moosherr
  */
-public abstract class VariationNode<T extends VariationNode<T>> implements HasNodeType {
-    public interface Label {
-        public List<String> lines();
-    }
-
+public abstract class VariationNode<T extends VariationNode<T, L>, L extends Label> implements HasNodeType {
     /**
      * Returns this instance as the derived class type {@code T}.
      * The deriving class will only have to return {@code this} here but this can't be implemented
@@ -55,7 +53,7 @@ public abstract class VariationNode<T extends VariationNode<T>> implements HasNo
      * can't be accessed if the type of the variable of this instance is {@code T} so a down cast is
      * required. This function only exists to document this necessity and make it more readable.
      */
-    public VariationNode<T> downCast() {
+    public VariationNode<T, L> downCast() {
         return this;
     }
 
@@ -75,16 +73,7 @@ public abstract class VariationNode<T extends VariationNode<T>> implements HasNo
      * {@link #getFormula()}. In either case, this label may be an arbitrary value,
      * selected according to the needs of the user of this class.
      */
-    public abstract Label getLabel();
-
-    /**
-     * Returns the label of this node as an unmodifiable list of lines.
-     *
-     * @see getLabel
-     */
-    public List<String> getLabelLines() {
-        return getLabel().lines();
-    }
+    public abstract L getLabel();
 
     /**
      * Returns the range of line numbers of this node's corresponding source code.
@@ -233,13 +222,11 @@ public abstract class VariationNode<T extends VariationNode<T>> implements HasNo
      * Removes the given node from this node's children list and sets the parent of {@code child}
      * to {@code null}.
      *
-     * @return {@code true} iff the child was removed, {@code false} iff {@code child} is not a
-     * child of this node
      * @throws IllegalArgumentException if {@code childe} is not a child of this node
      * @see removeChildren
      * @see getChildren
      */
-    public abstract boolean removeChild(final T child);
+    public abstract void removeChild(final T child);
 
     /**
      * Removes the given nodes from the children list using {@link removeChild}.
@@ -465,7 +452,7 @@ public abstract class VariationNode<T extends VariationNode<T>> implements HasNo
      * If the type parameter {@code T} of this class is {@link VariationTreeNode} then this is
      * effectively a deep copy.
      */
-    public VariationTreeNode toVariationTree() {
+    public VariationTreeNode<L> toVariationTree() {
         return toVariationTree(new HashMap<>());
     }
 
@@ -482,18 +469,13 @@ public abstract class VariationNode<T extends VariationNode<T>> implements HasNo
      * @param oldToNew A map that memorizes the translation of individual nodes.
      * @return A deep copy of this tree.
      */
-    public VariationTreeNode toVariationTree(final Map<? super T, VariationTreeNode> oldToNew) {
-        Node formula = getFormula();
-        if (formula != null) {
-            formula = formula.clone();
-        }
-
+    public VariationTreeNode<L> toVariationTree(final Map<? super T, VariationTreeNode<L>> oldToNew) {
         // Copy mutable attributes to allow modifications of the new node.
-        var newNode = new VariationTreeNode(
+        var newNode = new VariationTreeNode<L>(
             getNodeType(),
-            formula,
+            getFormula() == null ? null : getFormula().clone(),
             getLineRange(),
-            new ArrayList<>(getLabel().lines())
+            getLabel()
         );
         oldToNew.put(this.upCast(), newNode);
 
@@ -582,7 +564,7 @@ public abstract class VariationNode<T extends VariationNode<T>> implements HasNo
      * <p>This method assumes that all labels of this subtree represent source code lines.
      */
     public void printSourceCode(final StringBuilder output) {
-        for (final String line : getLabelLines()) {
+        for (final String line : getLabel().getLines()) {
             output.append(line);
             output.append(StringUtils.LINEBREAK);
         }
@@ -602,7 +584,7 @@ public abstract class VariationNode<T extends VariationNode<T>> implements HasNo
      * Returns true if this subtree is exactly equal to {@code other}.
      * This check uses equality checks instead of identity.
      */
-    public boolean isSameAs(VariationNode<T> other) {
+    public boolean isSameAs(VariationNode<T, L> other) {
         if (!shallowIsSameAs(other)) {
             return false;
         }
@@ -622,7 +604,7 @@ public abstract class VariationNode<T extends VariationNode<T>> implements HasNo
      * Returns true if this node is exactly equal to {@code other} without checking any children.
      * This check uses equality checks instead of identity.
      */
-    protected boolean shallowIsSameAs(VariationNode<T> other) {
+    protected boolean shallowIsSameAs(VariationNode<T, L> other) {
         return
             this.getNodeType().equals(other.getNodeType()) &&
             this.getLabel().equals(other.getLabel()) &&

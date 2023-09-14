@@ -1,6 +1,7 @@
 package org.variantsync.diffdetective.variation.diff.serialize.nodeformat;
 
 import org.variantsync.diffdetective.diff.text.DiffLineNumber; // For Javadoc
+import org.variantsync.diffdetective.variation.Label;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
 
 /**
@@ -11,10 +12,10 @@ import org.variantsync.diffdetective.variation.diff.DiffNode;
  * @see DiffLineNumber#inDiff
  * @author Paul Bittner, Kevin Jedelhauser
  */
-public class FormulasAndLineNumbersNodeFormat implements DiffNodeLabelFormat {
+public class FormulasAndLineNumbersNodeFormat<L extends Label> implements DiffNodeLabelFormat<L> {
     @Override
-    public String toLabel(DiffNode node) {
-        final String lineNumbers = node.getFromLine().inDiff() + "-" + node.getToLine().inDiff() + ": " + node.nodeType;
+    public String toLabel(DiffNode<? extends L> node) {
+        final String lineNumbers = node.getFromLine().inDiff() + "-" + node.getToLine().inDiff() + ": " + node.getNodeType();
         if (node.isAnnotation()) {
             return lineNumbers + " " + node.getFormula();
         }

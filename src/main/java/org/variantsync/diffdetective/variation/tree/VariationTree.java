@@ -3,11 +3,13 @@ package org.variantsync.diffdetective.variation.tree;
 import org.variantsync.diffdetective.datasets.PatchDiffParseOptions;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.util.Assert;
+import org.variantsync.diffdetective.variation.DiffLinesLabel;
+import org.variantsync.diffdetective.variation.Label;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
-import org.variantsync.diffdetective.variation.diff.DiffTree;
+import org.variantsync.diffdetective.variation.diff.VariationDiff;
 import org.variantsync.diffdetective.variation.diff.Projection;
-import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParseOptions;
-import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParser;
+import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParseOptions;
+import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParser;
 import org.variantsync.diffdetective.variation.diff.source.FromVariationTreeSource;
 import org.variantsync.diffdetective.variation.tree.source.LocalFileSource;
 import org.variantsync.diffdetective.variation.tree.source.VariationTreeSource;
@@ -30,20 +32,22 @@ import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
  *
  * @param root the root of the variation tree
  * @param source from which source code the variation tree was obtained
+ * @param <L> The type of label stored in this tree.
+ *
  * @see VariationTreeNode
  * @author Benjamin Moosherr
  */
-public record VariationTree(
-    VariationTreeNode root,
+public record VariationTree<L extends Label>(
+    VariationTreeNode<L> root,
     VariationTreeSource source
 ) {
     /** Creates a {@code VariationTree} with the given root and an unknown source. */
-    public VariationTree(VariationTreeNode root) {
+    public VariationTree(VariationTreeNode<L> root) {
         this(root, VariationTreeSource.Unknown);
     }
 
     /** Creates a {@code VariationTree} with the given root and source. */
-    public VariationTree(VariationTreeNode root, VariationTreeSource source) {
+    public VariationTree(VariationTreeNode<L> root, VariationTreeSource source) {
         this.root = root;
         this.source = source;
 
@@ -51,12 +55,12 @@ public record VariationTree(
     }
 
     /**
-     * Same as {@link #fromFile(BufferedReader, VariationTreeSource, DiffTreeParseOptions)}
+     * Same as {@link #fromFile(BufferedReader, VariationTreeSource, VariationDiffParseOptions)}
      * but registers {@code path} as source.
      */
-    public static VariationTree fromFile(
+    public static VariationTree<DiffLinesLabel> fromFile(
         final Path path,
-        final DiffTreeParseOptions parseOptions
+        final VariationDiffParseOptions parseOptions
     ) throws IOException, DiffParseException {
         try (BufferedReader file = Files.newBufferedReader(path)) {
             return fromFile(
@@ -76,41 +80,41 @@ public record VariationTree(
      * @throws IOException if {@code input} throws {@code IOException}
      * @throws DiffParseException if some preprocessor annotations can't be parsed
      */
-    public static VariationTree fromFile(
+    public static VariationTree<DiffLinesLabel> fromFile(
             final BufferedReader input,
             final VariationTreeSource source,
-            final DiffTreeParseOptions parseOptions
+            final VariationDiffParseOptions parseOptions
             ) throws IOException, DiffParseException {
-        VariationTreeNode tree = DiffTreeParser
+        VariationTreeNode<DiffLinesLabel> tree = VariationDiffParser
             .createVariationTree(input, parseOptions)
             .getRoot()
             // Arbitrarily choose the BEFORE projection as both should be equal.
             .projection(BEFORE)
             .toVariationTree();
 
-        return new VariationTree(tree, source);
+        return new VariationTree<>(tree, source);
     }
 
-    public static VariationTree fromProjection(final Projection projection, final VariationTreeSource source) {
+    public static <L extends Label> VariationTree<L> fromProjection(final Projection<L> projection, final VariationTreeSource source) {
         return fromVariationNode(projection, source);
     }
 
-    public static <T extends VariationNode<T>> VariationTree fromVariationNode(final VariationNode<T> node, final VariationTreeSource source) {
-        return new VariationTree(
+    public static <T extends VariationNode<T, L>, L extends Label> VariationTree<L> fromVariationNode(final VariationNode<T, L> node, final VariationTreeSource source) {
+        return new VariationTree<>(
                 node.toVariationTree(),
                 source
         );
     }
 
-    public DiffTree toDiffTree(final Function<VariationTreeNode, DiffNode> nodeConverter) {
-        return new DiffTree(
+    public VariationDiff<L> toVariationDiff(final Function<VariationTreeNode<L>, DiffNode<L>> nodeConverter) {
+        return new VariationDiff<>(
                 DiffNode.unchanged(nodeConverter, root()),
                 new FromVariationTreeSource(source())
         );
     }
 
-    public DiffTree toCompletelyUnchangedDiffTree() {
-        return toDiffTree(DiffNode::unchangedFlat);
+    public VariationDiff<L> toCompletelyUnchangedVariationDiff() {
+        return toVariationDiff(DiffNode::unchangedFlat);
     }
 
     /**
@@ -118,7 +122,7 @@ public record VariationTree(
      * @param action callback
      * @return this
      */
-    public VariationTree forAllPreorder(final Consumer<VariationTreeNode> action) {
+    public VariationTree<L> forAllPreorder(final Consumer<VariationTreeNode<L>> action) {
         root.forAllPreorder(action);
         return this;
     }
@@ -129,7 +133,7 @@ public record VariationTree(
      * @param condition A condition to check on each node.
      * @return True iff the given condition returns true for at least one node in this tree.
      */
-    public boolean anyMatch(final Predicate<VariationTreeNode> condition) {
+    public boolean anyMatch(final Predicate<VariationTreeNode<L>> condition) {
         return root().anyMatch(condition);
     }
 
@@ -139,7 +143,7 @@ public record VariationTree(
      * equality (i.e., nodes are compared using ==).
      * @param node The node to check for containment.
      */
-    public boolean contains(VariationTreeNode node) {
+    public boolean contains(VariationTreeNode<L> node) {
         return anyMatch(n -> n == node);
     }
 
@@ -152,7 +156,7 @@ public record VariationTree(
         return size.get();
     }
 
-    public VariationTree deepCopy() {
+    public VariationTree<L> deepCopy() {
         return deepCopy(new HashMap<>());
     }
 
@@ -166,8 +170,8 @@ public record VariationTree(
      * @param oldToNew A map that memorizes the translation of individual nodes.
      * @return A deep copy of this tree.
      */
-    public VariationTree deepCopy(final Map<VariationTreeNode, VariationTreeNode> oldToNew) {
-        return new VariationTree(root.deepCopy(oldToNew), this.source);
+    public VariationTree<L> deepCopy(final Map<VariationTreeNode<L>, VariationTreeNode<L>> oldToNew) {
+        return new VariationTree<>(root.deepCopy(oldToNew), this.source);
     }
 
     @Override

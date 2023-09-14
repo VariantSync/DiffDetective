@@ -28,7 +28,7 @@ public class EditClassOccurenceAnalysis implements Analysis.Hooks {
 
     @Override
     public void initializeResults(Analysis analysis) {
-        analysis.append(EditClassCount.KEY, new EditClassCount());
+        analysis.append(EditClassCount.KEY, new EditClassCount(ProposedEditClasses.Instance));
     }
 
     @Override
@@ -46,11 +46,11 @@ public class EditClassOccurenceAnalysis implements Analysis.Hooks {
     }
 
     @Override
-    public boolean analyzeDiffTree(Analysis analysis) throws IOException {
+    public boolean analyzeVariationDiff(Analysis analysis) throws IOException {
         var editClassCounts = new LinkedHashMap<EditClass, Integer>();
         ProposedEditClasses.Instance.all().forEach(e -> editClassCounts.put(e, 0));
 
-        analysis.getCurrentDiffTree().forAll(node -> {
+        analysis.getCurrentVariationDiff().forAll(node -> {
             if (node.isArtifact()) {
                 final EditClass editClass = ProposedEditClasses.Instance.match(node);
 

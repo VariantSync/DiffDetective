@@ -28,11 +28,11 @@ class AddIfdefElif extends SemanticPattern {
                 they also need to have an added code child
      */
     @Override
-    public Optional<PatternMatch<DiffNode>> match(DiffNode annotationNode) {
+    public Optional<PatternMatch<DiffNode<?>>> match(DiffNode<?> annotationNode) {
         if(annotationNode.isAdd() && annotationNode.isIf()){
             boolean addedCodeInIf = false;
-            DiffNode elifNode = null;
-            for(DiffNode child : annotationNode.getAllChildren()){
+            DiffNode<?> elifNode = null;
+            for(DiffNode<?> child : annotationNode.getAllChildren()){
                 if(child.isArtifact() && child.isAdd()){
                     addedCodeInIf = true;
                 }
@@ -57,11 +57,11 @@ class AddIfdefElif extends SemanticPattern {
         return Optional.empty();
     }
 
-    private boolean isValidElif(DiffNode elifNode, List<Node> mappings) {
+    private boolean isValidElif(DiffNode<?> elifNode, List<Node> mappings) {
         boolean addedCode = false;
-        DiffNode nextNode = null;
+        DiffNode<?> nextNode = null;
 
-        for(DiffNode child : elifNode.getAllChildren()){
+        for(DiffNode<?> child : elifNode.getAllChildren()){
             if(child.isArtifact() && child.isAdd()){
                 addedCode = true;
             }
@@ -78,7 +78,7 @@ class AddIfdefElif extends SemanticPattern {
     }
 
     @Override
-    public FeatureContext[] getFeatureContexts(PatternMatch<DiffNode> patternMatch) {
+    public FeatureContext[] getFeatureContexts(PatternMatch<DiffNode<?>> patternMatch) {
         FeatureContext[] featureContexts = new FeatureContext[patternMatch.getFeatureMappings().length];
         for (int i = 0; i < featureContexts.length; i++) {
             featureContexts[i] = new FeatureContext(patternMatch.getFeatureMappings()[i]);

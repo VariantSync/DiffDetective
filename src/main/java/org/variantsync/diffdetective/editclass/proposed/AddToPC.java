@@ -1,6 +1,7 @@
 package org.variantsync.diffdetective.editclass.proposed;
 
 import org.variantsync.diffdetective.editclass.EditClass;
+import org.variantsync.diffdetective.variation.Label;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
 import org.variantsync.diffdetective.variation.diff.DiffType;
 
@@ -16,7 +17,7 @@ final class AddToPC extends EditClass {
     }
 
     @Override
-    protected boolean matchesArtifactNode(DiffNode node) {
+    protected boolean matchesArtifactNode(DiffNode<?> node) {
         return !node.getParent(AFTER).isAdd();
     }
 }

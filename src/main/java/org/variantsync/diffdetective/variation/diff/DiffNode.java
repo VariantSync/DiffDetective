@@ -4,100 +4,70 @@ import org.prop4j.Node;
 import org.variantsync.diffdetective.diff.text.DiffLineNumber;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.util.LineRange;
-import org.variantsync.diffdetective.util.StringUtils;
 import org.variantsync.diffdetective.util.fide.FixTrueFalse;
+import org.variantsync.diffdetective.variation.DiffLinesLabel;
+import org.variantsync.diffdetective.variation.Label;
 import org.variantsync.diffdetective.variation.NodeType;
+import org.variantsync.diffdetective.variation.VariationLabel;
 import org.variantsync.diffdetective.variation.tree.HasNodeType;
 import org.variantsync.diffdetective.variation.tree.VariationNode;
-import org.variantsync.functjonal.list.FilteredMappedListView;
+import org.variantsync.functjonal.Cast;
 
+import java.lang.reflect.Array;
 import java.util.*;
 import java.util.function.Function;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.variantsync.diffdetective.variation.diff.Time.AFTER;
 import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
 
 /**
- * Implementation of a node in a {@link DiffTree}.
+ * Implementation of a node in a {@link VariationDiff}.
  * A DiffNode represents a single node within a variation tree diff (according to our ESEC/FSE'22 paper), but is specialized
  * to the target domain of preprocessor-based software product lines.
  * Thus, opposed to the generic mathematical model of variation tree diffs, a DiffNode always stores lines of text, line numbers, and child ordering information as its label.
  * Each DiffNode may be edited according to its {@link DiffType} and represents a source code element according to its {@link NodeType}.
  * DiffNode's store parent and child information to build a graph.
+ *
+ * @param <L> The type of label stored in this node.
+ *
  * @author Paul Bittner, Sören Viegener, Benjamin Moosherr
  */
-public class DiffNode implements HasNodeType {
-    public record Label(List<Line> diffLines) implements VariationNode.Label {
-        public record Line(String content, DiffLineNumber lineNumber) {
-            public static Line withInvalidLineNumber(String content) {
-                return new Line(content, DiffLineNumber.Invalid());
-            }
-        }
-
-        public Label() {
-            this(new ArrayList<>());
-        }
-
-        public static Label withInvalidLineNumbers(List<String> lines) {
-            return new Label(lines.stream().map(Line::withInvalidLineNumber).toList());
-        }
-
-        public static Label ofCodeBlock(String codeBlock) {
-            return withInvalidLineNumbers(Arrays.asList(StringUtils.LINEBREAK_REGEX.split(codeBlock, -1)));
-        }
-
-        @Override
-        public List<String> lines() {
-            return FilteredMappedListView.map(diffLines, line -> line.content);
-        }
-
-        @Override
-        public String toString() {
-            return diffLines
-                .stream()
-                .map(Line::content)
-                .collect(Collectors.joining(StringUtils.LINEBREAK));
-        }
-    }
-
+public class DiffNode<L extends Label> implements HasNodeType {
     /**
      * The diff type of this node, which determines if this node represents
      * an inserted, removed, or unchanged element in a diff.
      */
-    public final DiffType diffType;
+    public DiffType diffType;
 
     /**
-     * The node type of this node, which determines the type of the represented
-     * element in the diff (e.g., mapping or artifact).
+     * The label together with the node type of this node, which determines the type of the
+     * represented element in the diff (e.g., mapping or artifact).
      */
-    public final NodeType nodeType;
+    public final VariationLabel<L> label;
 
     private DiffLineNumber from = DiffLineNumber.Invalid();
     private DiffLineNumber to = DiffLineNumber.Invalid();
 
     private Node featureMapping;
-    private Label label;
 
     /**
      * The parents {@link DiffNode} before and after the edit.
      * This array has to be indexed by {@code Time.ordinal()}
      *
      * Invariant: Iff {@code getParent(time) != null} then
-     * {@code getParent(time).childOrder.contains(this)}.
+     * {@code getParent(time).getChildOrder(time).contains(this)}.
      */
-    private DiffNode[] parents = new DiffNode[2];
+    private DiffNode<L>[] parents = Cast.unchecked(Array.newInstance(DiffNode.class, 2));
 
     /**
-     * We use a list for children to maintain order.
+     * The children before and after the edit.
+     * This array has to be indexed by {@code Time.ordinal()}
      *
-     * Invariant: Iff {@code childOrder.contains(child)} then
-     * {@code child.getParent(BEFORE) == this || child.getParent(AFTER) == this}.
-     *
-     * Note that it's explicitly allowed to have
-     * {@code child.getParent(BEFORE) == this && child.getParent(AFTER) == this}.
+     * Invariant: Iff {@code getChildOrder(time).contains(child)} then
+     * {@code child.getParent(time) == this}.
      */
-    private final List<DiffNode> childOrder;
+    private final List<DiffNode<L>>[] children = Cast.unchecked(Array.newInstance(List.class, 2));
 
     /**
      * Cache for before and after projections.
@@ -106,27 +76,7 @@ public class DiffNode implements HasNodeType {
      *
      * <p>This field is required to allow identity tests of {@link Projection}s with {@code ==}.
      */
-    private Projection[] projections = new Projection[2];
-
-    /**
-     * The same as {@link DiffNode#DiffNode(DiffType, NodeType, DiffLineNumber, DiffLineNumber, Node, List<String>)}
-     * but a minimum label consisting of the lines of {@code label}.
-     */
-    public DiffNode(DiffType diffType, NodeType nodeType,
-                    DiffLineNumber fromLines, DiffLineNumber toLines,
-                    Node featureMapping, String label) {
-        this(diffType, nodeType, fromLines, toLines, featureMapping, Label.ofCodeBlock(label));
-    }
-
-    /**
-     * The same as {@link DiffNode#DiffNode(DiffType, NodeType, DiffLineNumber, DiffLineNumber, Node, Label)}
-     * but a minimum label only storing a list of lines.
-     */
-    public DiffNode(DiffType diffType, NodeType nodeType,
-                    DiffLineNumber fromLines, DiffLineNumber toLines,
-                    Node featureMapping, List<String> label) {
-        this(diffType, nodeType, fromLines, toLines, featureMapping, Label.withInvalidLineNumbers(label));
-    }
+    private Projection<L>[] projections = Cast.unchecked(Array.newInstance(Projection.class, 2));
 
     /**
      * Creates a DiffNode with the given parameters.
@@ -139,86 +89,61 @@ public class DiffNode implements HasNodeType {
      */
     public DiffNode(DiffType diffType, NodeType nodeType,
                     DiffLineNumber fromLines, DiffLineNumber toLines,
-                    Node featureMapping, Label label) {
-        this.childOrder = new ArrayList<>();
+                    Node featureMapping, L label) {
+        children[BEFORE.ordinal()] = new ArrayList<>();
+        children[AFTER.ordinal()] = new ArrayList<>();
 
         this.diffType = diffType;
-        this.nodeType = nodeType;
+        this.label = new VariationLabel<>(nodeType, label);
         this.from = fromLines;
         this.to = toLines;
         this.featureMapping = featureMapping;
-        this.label = label;
     }
 
     /**
      * Creates a new root node.
      * The root is a neutral annotation (i.e., its feature mapping is "true").
      */
-    public static DiffNode createRoot() {
-        return new DiffNode(
+    public static <L extends Label> DiffNode<L> createRoot(L label) {
+        return new DiffNode<>(
                 DiffType.NON,
                 NodeType.IF,
                 DiffLineNumber.Invalid(),
                 DiffLineNumber.Invalid(),
                 FixTrueFalse.True,
-                new Label()
+                label
         );
     }
 
     /**
      * Creates an artifact node with the given parameters.
-     * For parameter descriptions, see {@link DiffNode#DiffNode(DiffType, NodeType, DiffLineNumber, DiffLineNumber, Node, String)}.
+     * For parameter descriptions, see {@link DiffNode#DiffNode(DiffType, NodeType, DiffLineNumber, DiffLineNumber, Node, L)}.
      * The <code>code</code> parameter will be set as the node's label by splitting it into lines.
      */
-    public static DiffNode createArtifact(DiffType diffType, DiffLineNumber fromLines, DiffLineNumber toLines, String code) {
-        return new DiffNode(diffType, NodeType.ARTIFACT, fromLines, toLines, null, Label.ofCodeBlock(code));
+    public static DiffNode<DiffLinesLabel> createArtifact(DiffType diffType, DiffLineNumber fromLines, DiffLineNumber toLines, String code) {
+        return new DiffNode<>(diffType, NodeType.ARTIFACT, fromLines, toLines, null, DiffLinesLabel.ofCodeBlock(code));
     }
 
     /**
      * The same as {@link DiffNode#createArtifact(DiffType, DiffLineNumber, DiffLineNumber, String)} but with a generic label.
      */
-    public static DiffNode createArtifact(DiffType diffType, DiffLineNumber fromLines, DiffLineNumber toLines, Label label) {
-        return new DiffNode(diffType, NodeType.ARTIFACT, fromLines, toLines, null, label);
-    }
-
-    /**
-     * The same as {@link DiffNode#addDiffLines(List<Label.Line>)} with an invalid line number for each line.
-     */
-    public void addLines(final List<String> lines) {
-        this.label.diffLines().addAll(FilteredMappedListView.map(lines, Label.Line::withInvalidLineNumber));
-    }
-
-    /**
-     * Adds the given lines to the source code lines of this node.
-     * @param lines Lines to add.
-     */
-    public void addDiffLines(final List<Label.Line> lines) {
-        this.label.diffLines().addAll(lines);
-    }
-
-
-    /**
-     * Returns the lines in the diff that are represented by this DiffNode.
-     * The returned list is unmodifiable.
-     */
-    public List<String> getLabelLines() {
-        return label.lines();
+    public static <L extends Label> DiffNode<L> createArtifact(DiffType diffType, DiffLineNumber fromLines, DiffLineNumber toLines, L label) {
+        return new DiffNode<L>(diffType, NodeType.ARTIFACT, fromLines, toLines, null, label);
     }
 
     /**
      * Returns the lines in the diff that are represented by this DiffNode as a single text.
-     * @see DiffNode#getLabelLines
      */
-    public Label getLabel() {
-        return label;
+    public L getLabel() {
+        return label.getInnerLabel();
     }
 
     /**
      * Sets the lines in the diff that are represented by this DiffNode to the given code.
      * Lines are identified by linebreak characters.
      */
-    public void setLabel(String code) {
-        label = Label.ofCodeBlock(code);
+    public void setLabel(L newLabel) {
+        label.setInnerLabel(newLabel);
     }
 
     /**
@@ -226,7 +151,7 @@ public class DiffNode implements HasNodeType {
      * {@code time}.
      * @return The first {@code if} node in the path to the root at the time {@code time}
      */
-    public DiffNode getIfNode(Time time) {
+    public DiffNode<L> getIfNode(Time time) {
         return projection(time).getIfNode().getBackingNode();
     }
 
@@ -259,7 +184,7 @@ public class DiffNode implements HasNodeType {
      * Returns the number of unique child nodes.
      */
     public int getTotalNumberOfChildren() {
-        return childOrder.size();
+        return (int) getAllChildrenStream().count();
     }
 
     /**
@@ -288,29 +213,18 @@ public class DiffNode implements HasNodeType {
     }
 
     /**
-     * Sets the parent at {@code time} checking that this node doesn't currently have a parent.
-     */
-    private void setParent(final DiffNode newParent, Time time) {
-        Assert.assertTrue(getParent(time) == null);
-        parents[time.ordinal()] = newParent;
-    }
-
-    /**
      * Adds this subtree below the given parents.
      * Inverse of drop.
      * @param newBeforeParent Node that should be this node's before parent. May be null.
      * @param newAfterParent Node that should be this node's after parent. May be null.
-     * @return True iff this node could be added as child to at least one of the given non-null parents.
      */
-    public boolean addBelow(final DiffNode newBeforeParent, final DiffNode newAfterParent) {
-        boolean success = false;
-        if (newBeforeParent != null) {
-            success |= newBeforeParent.addChild(this, BEFORE);
+    public void addBelow(final DiffNode<L> newBeforeParent, final DiffNode<L> newAfterParent) {
+        if (getDiffType().existsAtTime(BEFORE) && newBeforeParent != null) {
+            newBeforeParent.addChild(this, BEFORE);
         }
-        if (newAfterParent != null) {
-            success |= newAfterParent.addChild(this, AFTER);
+        if (getDiffType().existsAtTime(AFTER) && newAfterParent != null) {
+            newAfterParent.addChild(this, AFTER);
         }
-        return success;
     }
 
     /**
@@ -320,58 +234,51 @@ public class DiffNode implements HasNodeType {
     public void drop() {
         Time.forAll(time -> {
             if (getParent(time) != null) {
-                getParent(time).removeChild(this, time);
+                drop(time);
             }
         });
     }
 
     /**
-     * Remove this node as the parent of {@code child} but it doesn't change {@link childOrder}.
+     * Removes this subtree from its parents at the time {@code time}.
      */
-    private void dropChild(final DiffNode child, Time time) {
-        Assert.assertTrue(child.getParent(time) == this);
-        child.parents[time.ordinal()] = null;
+    public void drop(Time time) {
+        Assert.assertTrue(getParent(time) != null);
+
+        getParent(time).removeChild(this, time);
     }
 
     /**
-     * Returns the index of the given child in the list of children of thus node.
+     * Returns the index of the given child in the list of children of this node.
      * Returns -1 if the given node is not a child of this node.
      */
-    public int indexOfChild(final DiffNode child) {
-        return childOrder.indexOf(child);
+    public int indexOfChild(final DiffNode<L> child, Time time) {
+        return children[time.ordinal()].indexOf(child);
     }
 
     /**
      * Insert {@code child} as child at the time {@code time} at the position {@code index}.
      */
-    public boolean insertChild(final DiffNode child, int index, Time time) {
-        if (child.getDiffType().existsAtTime(time)) {
-            if (!isChild(child)) {
-                childOrder.add(index, child);
-            }
-            child.setParent(this, time);
-            return true;
-        }
-        return false;
+    public void insertChild(final DiffNode<L> child, int index, Time time) {
+        Assert.assertTrue(child.getDiffType().existsAtTime(time));
+        Assert.assertFalse(isChild(child, time), () ->
+            "Given child " + child + " already has a " + time + " parent (" + child.getParent(time) + ")!");
+
+        children[time.ordinal()].add(index, child);
+        child.parents[time.ordinal()] = this;
     }
 
     /**
      * The same as {@link DiffNode#insertChild} but puts the node at the end of the children
      * list instead of inserting it at a specific index.
      */
-    public boolean addChild(final DiffNode child, Time time) {
-        if (child.getDiffType().existsAtTime(time)) {
-            if (child.getParent(time) != null) {
-                throw new IllegalArgumentException("Given child " + child + " already has a before parent (" + child.getParent(time) + ")!");
-            }
+    public void addChild(final DiffNode<L> child, Time time) {
+        Assert.assertTrue(child.getDiffType().existsAtTime(time));
+        Assert.assertFalse(isChild(child, time), () ->
+            "Given child " + child + " already has a " + time + " parent (" + child.getParent(time) + ")!");
 
-            if (!isChild(child)) {
-                childOrder.add(child);
-            }
-            child.setParent(this, time);
-            return true;
-        }
-        return false;
+        children[time.ordinal()].add(child);
+        child.parents[time.ordinal()] = this;
     }
 
     /**
@@ -379,8 +286,8 @@ public class DiffNode implements HasNodeType {
      * @param children Nodes to add as children.
      * @param time whether to add {@code children} before or after the edit
      */
-    public void addChildren(final Collection<DiffNode> children, Time time) {
-        for (final DiffNode child : children) {
+    public void addChildren(final Collection<DiffNode<L>> children, Time time) {
+        for (final DiffNode<L> child : children) {
             addChild(child, time);
         }
     }
@@ -390,15 +297,12 @@ public class DiffNode implements HasNodeType {
      * The node might still remain a child after or before the edit.
      * @param child the child to remove
      * @param time whether {@code child} should be removed before or after the edit
-     * @return True iff the child was removed, false iff it's not a child at {@code time}.
      */
-    public boolean removeChild(final DiffNode child, Time time) {
-        if (isChild(child, time)) {
-            dropChild(child, time);
-            removeFromCache(child);
-            return true;
-        }
-        return false;
+    public void removeChild(final DiffNode<L> child, Time time) {
+        Assert.assertTrue(isChild(child, time));
+
+        child.parents[time.ordinal()] = null;
+        children[time.ordinal()].remove(child);
     }
 
     /**
@@ -406,9 +310,13 @@ public class DiffNode implements HasNodeType {
      * None of the given nodes will be a child, neither before nor after the edit, afterwards.
      * @param childrenToRemove Nodes that should not be children of this node anymore.
      */
-    public void removeChildren(final Collection<DiffNode> childrenToRemove) {
-        for (final DiffNode childToRemove : childrenToRemove) {
-            Time.forAll(time -> removeChild(childToRemove, time));
+    public void removeChildren(final Collection<DiffNode<L>> childrenToRemove) {
+        for (final DiffNode<L> childToRemove : childrenToRemove) {
+            Time.forAll(time -> {
+                if (isChild(childToRemove, time)) {
+                    removeChild(childToRemove, time);
+                }
+            });
         }
     }
 
@@ -418,35 +326,14 @@ public class DiffNode implements HasNodeType {
      * @param time whether to remove all children before or after the edit
      * @return All removed children.
      */
-    public List<DiffNode> removeChildren(Time time) {
-        final List<DiffNode> orphans = new ArrayList<>();
-
-        // Note that the following method call can't be written using a foreach loop reusing
-        // {@code removeBeforeChild} because lists can't be modified during traversal.
-        childOrder.removeIf(child -> {
-            if (!isChild(child, time)) {
-                return false;
-            }
-
-            orphans.add(child);
-            dropChild(child, time);
-            return !isChild(child, time.other());
-        });
-
-        return orphans;
-    }
-
-    /**
-     * If the given node is neither a before nor after child, it will be removed
-     * from the internal cache that stores the order of children.
-     * This method does nothing the given node is (still) a child.
-     * @param child The node to remove from the order cache if it is no child.
-     * @see DiffNode#isChild(DiffNode)
-     */
-    private void removeFromCache(final DiffNode child) {
-        if (!isChild(child)) {
-            childOrder.remove(child);
+    public List<DiffNode<L>> removeChildren(Time time) {
+        for (var child : children[time.ordinal()]) {
+            child.parents[time.ordinal()] = null;
         }
+
+        final List<DiffNode<L>> orphans = children[time.ordinal()];
+        children[time.ordinal()] = new ArrayList<>();
+        return orphans;
     }
 
     /**
@@ -455,14 +342,14 @@ public class DiffNode implements HasNodeType {
      * The given node will have no children afterwards.
      * @param other The node whose children should be stolen.
      */
-    public void stealChildrenOf(final DiffNode other) {
+    public void stealChildrenOf(final DiffNode<L> other) {
         Time.forAll(time -> addChildren(other.removeChildren(time), time));
     }
 
     /**
      * Returns the parent of this node before or after the edit.
      */
-    public DiffNode getParent(Time time) {
+    public DiffNode<L> getParent(Time time) {
         return parents[time.ordinal()];
     }
 
@@ -540,18 +427,41 @@ public class DiffNode implements HasNodeType {
     }
 
     /**
-     * Returns the list representing the order of the children.
-     * Any child occurs exactly once, even if this node is it's before and after parent.
+     * Returns the order of the children at {@code time}.
      */
-    public List<DiffNode> getChildOrder() {
-        return Collections.unmodifiableList(childOrder);
+    public List<DiffNode<L>> getChildOrder(Time time) {
+        return Collections.unmodifiableList(children[time.ordinal()]);
     }
 
     /**
-     * Legacy alias for {@link DiffNode#getChildOrder()}.
+     * Returns an efficient stream representation of all direct children without duplicates.
+     * In particular, children which are both before and after children of this node are only
+     * contained once. The order of the children is unspecified.
      */
-    public List<DiffNode> getAllChildren() {
-        return getChildOrder();
+    public Stream<DiffNode<L>> getAllChildrenStream() {
+        return Stream.concat(
+            children[BEFORE.ordinal()].stream(),
+            children[AFTER.ordinal()].stream().filter(child -> child.getParent(BEFORE) != this)
+        );
+    };
+
+    /**
+     * Returns an efficient iterable representation of all direct children without duplicates.
+     * Note: The returned iterable can only be traversed once.
+     * @see getAllChildrenStream
+     */
+    public Iterable<DiffNode<L>> getAllChildren() {
+        return getAllChildrenStream()::iterator;
+    }
+
+    /**
+     * Returns a new set with all children of this node without duplicates.
+     * @see getAllChildren
+     */
+    public Set<DiffNode<L>> getAllChildrenSet() {
+        var result = new HashSet<DiffNode<L>>();
+        getAllChildrenStream().forEach(result::add);
+        return result;
     }
 
     /**
@@ -580,14 +490,14 @@ public class DiffNode implements HasNodeType {
     /**
      * Returns true iff this node is the before or after parent of the given node.
      */
-    public boolean isChild(DiffNode child) {
+    public boolean isChild(DiffNode<L> child) {
         return isChild(child, BEFORE) || isChild(child, AFTER);
     }
 
     /**
      * Returns true iff this node is the parent of the given node at the given time.
      */
-    public boolean isChild(DiffNode child, Time time) {
+    public boolean isChild(DiffNode<L> child, Time time) {
         return child.getParent(time) == this;
     }
 
@@ -595,7 +505,7 @@ public class DiffNode implements HasNodeType {
      * Returns true iff this node has no children.
      */
     public boolean isLeaf() {
-        return childOrder.isEmpty();
+        return children[BEFORE.ordinal()].isEmpty() && children[AFTER.ordinal()].isEmpty();
     }
 
     /**
@@ -631,7 +541,7 @@ public class DiffNode implements HasNodeType {
 
     @Override
     public NodeType getNodeType() {
-        return nodeType;
+        return label.getNodeType();
     }
 
     /**
@@ -664,19 +574,19 @@ public class DiffNode implements HasNodeType {
         id |= diffType.ordinal();
 
         id <<= NodeType.getRequiredBitCount();
-        id |= nodeType.ordinal();
+        id |= getNodeType().ordinal();
         return id;
     }
 
     /**
      * Reconstructs a node from the given id and sets the given label.
-     * An id uniquely determines a node's {@link DiffNode#nodeType}, {@link DiffNode#diffType}, and {@link DiffLineNumber#inDiff line number in the diff}.
+     * An id uniquely determines a node's {@link DiffNode#getNodeType}, {@link DiffNode#diffType}, and {@link DiffLineNumber#inDiff line number in the diff}.
      * The almost-inverse function is {@link DiffNode#getID()} but the conversion is not lossless.
      * @param id The id from which to reconstruct the node.
      * @param label The label the node should have.
      * @return The reconstructed DiffNode.
      */
-    public static DiffNode fromID(int id, String label) {
+    public static DiffNode<DiffLinesLabel> fromID(int id, String label) {
         final int nodeTypeBitmask = (1 << NodeType.getRequiredBitCount()) - 1;
         final int nodeTypeOrdinal = id & nodeTypeBitmask;
         id >>= NodeType.getRequiredBitCount();
@@ -688,18 +598,18 @@ public class DiffNode implements HasNodeType {
         final int fromInDiff = id - 1;
 
         var nodeType = NodeType.values()[nodeTypeOrdinal];
-        return new DiffNode(
+        return new DiffNode<>(
                 DiffType.values()[diffTypeOrdinal],
                 nodeType,
                 new DiffLineNumber(fromInDiff, DiffLineNumber.InvalidLineNumber, DiffLineNumber.InvalidLineNumber),
                 DiffLineNumber.Invalid(),
                 nodeType.isConditionalAnnotation() ? FixTrueFalse.True : null,
-                Label.ofCodeBlock(label)
+                DiffLinesLabel.ofCodeBlock(label)
         );
     }
 
     /**
-     * Checks that the DiffTree is in a valid state.
+     * Checks that the VariationDiff is in a valid state.
      * In particular, this method checks that all edges are well-formed (e.g., edges can be inconsistent because edges are double-linked).
      * This method also checks that a node with exactly one parent was edited, and that a node with exactly two parents was not edited.
      * @see Assert#assertTrue
@@ -707,7 +617,7 @@ public class DiffNode implements HasNodeType {
      */
     public void assertConsistency() {
         // check consistency of children lists and edges
-        for (final DiffNode c : childOrder) {
+        for (final DiffNode<L> c : getAllChildren()) {
             Assert.assertTrue(isChild(c), () -> "Child " + c + " of " + this + " is neither a before nor an after child!");
             Time.forAll(time -> {
                 if (c.getParent(time) != null) {
@@ -716,8 +626,11 @@ public class DiffNode implements HasNodeType {
             });
         }
 
-        final DiffNode pb = getParent(BEFORE);
-        final DiffNode pa = getParent(AFTER);
+        final DiffNode<L> pb = getParent(BEFORE);
+        final DiffNode<L> pa = getParent(AFTER);
+
+        Assert.assertTrue(pb == null || pb.getDiffType().existsAtTime(BEFORE));
+        Assert.assertTrue(pa == null || pa.getDiffType().existsAtTime(AFTER));
 
         // a node with exactly one parent was edited
         if (pb == null && pa != null) {
@@ -750,7 +663,7 @@ public class DiffNode implements HasNodeType {
         if (this.isIf() || this.isElif()) {
             Assert.assertTrue(this.getFormula() != null, "If or elif without feature mapping!");
         } else {
-            Assert.assertTrue(this.getFormula() == null, "Node with type " + nodeType + " has a non null feature mapping");
+            Assert.assertTrue(this.getFormula() == null, "Node with type " + getNodeType() + " has a non null feature mapping");
         }
     }
 
@@ -761,11 +674,11 @@ public class DiffNode implements HasNodeType {
      * <a href="https://github.com/SoftVarE-Group/Papers/raw/main/2022/2022-ESECFSE-Bittner.pdf">
      * our paper</a>.
      */
-    public Projection projection(Time time) {
+    public Projection<L> projection(Time time) {
         Assert.assertTrue(getDiffType().existsAtTime(time));
 
         if (projections[time.ordinal()] == null) {
-            projections[time.ordinal()] = new Projection(this, time);
+            projections[time.ordinal()] = new Projection<>(this, time);
         }
 
         return projections[time.ordinal()];
@@ -775,17 +688,17 @@ public class DiffNode implements HasNodeType {
      * Transforms a {@code VariationNode} into a {@code DiffNode} by diffing {@code variationNode}
      * to itself. Acts on only the given node and does not perform recursive translations.
      */
-    public static <T extends VariationNode<T>> DiffNode unchangedFlat(T variationNode) {
+    public static <T extends VariationNode<T, L>, L extends Label> DiffNode<L> unchangedFlat(VariationNode<T, L> variationNode) {
         int from = variationNode.getLineRange().fromInclusive();
         int to = variationNode.getLineRange().toExclusive();
 
-        return new DiffNode(
+        return new DiffNode<>(
                 DiffType.NON,
                 variationNode.getNodeType(),
                 new DiffLineNumber(from, from, from),
                 new DiffLineNumber(to, to, to),
                 variationNode.getFormula(),
-                Label.withInvalidLineNumbers(variationNode.getLabel().lines())
+                variationNode.getLabel()
         );
     }
 
@@ -798,9 +711,9 @@ public class DiffNode implements HasNodeType {
      *
      * @param convert A function to translate single nodes (without their hierarchy).
      */
-    public static <T extends VariationNode<T>> DiffNode unchanged(
-            final Function<T, DiffNode> convert,
-            T variationNode) {
+    public static <T extends VariationNode<T, L1>, L1 extends Label, L2 extends Label> DiffNode<L2> unchanged(
+            final Function<? super T, DiffNode<L2>> convert,
+            VariationNode<T, L1> variationNode) {
 
         var diffNode = convert.apply(variationNode.upCast());
 
@@ -812,6 +725,39 @@ public class DiffNode implements HasNodeType {
         return diffNode;
     }
 
+    public DiffNode<L> deepCopy() {
+        return deepCopy(new HashMap<>());
+    }
+
+    public DiffNode<L> deepCopy(HashMap<DiffNode<L>, DiffNode<L>> oldToNew) {
+        DiffNode<L> copy = oldToNew.get(this);
+        if (copy == null) {
+            copy = shallowCopy();
+
+            final var copyFinal = copy;
+            Time.forAll(time -> {
+                for (var child : getChildOrder(time)) {
+                    copyFinal.addChild(child.deepCopy(oldToNew), time);
+                }
+            });
+
+            oldToNew.put(this, copy);
+        }
+
+        return copy;
+    }
+
+    public DiffNode<L> shallowCopy() {
+        return new DiffNode<L>(
+            getDiffType(),
+            getNodeType(),
+            getFromLine(),
+            getToLine(),
+            getFormula(),
+            Cast.unchecked(label.clone())
+        );
+    }
+
     /**
      * Transforms a {@code VariationNode} into a {@code DiffNode} by diffing {@code variationNode}
      * to itself. Recursively translates all children.
@@ -819,7 +765,7 @@ public class DiffNode implements HasNodeType {
      * This is the inverse of {@link projection} iff the original {@link DiffNode} wasn't modified
      * (all node had a {@link getDiffType diff type} of {@link DiffType#NON}).
      */
-    public static <T extends VariationNode<T>> DiffNode unchanged(T variationNode) {
+    public static <T extends VariationNode<T, L>, L extends Label> DiffNode<L> unchanged(VariationNode<T, L> variationNode) {
         return unchanged(DiffNode::unchangedFlat, variationNode);
     }
 
@@ -827,11 +773,11 @@ public class DiffNode implements HasNodeType {
      * Returns true if this subtree is exactly equal to {@code other}.
      * This check uses equality checks instead of identity.
      */
-    public boolean isSameAs(DiffNode other) {
+    public boolean isSameAs(DiffNode<L> other) {
         return isSameAs(this, other, new HashSet<>());
     }
 
-    private static boolean isSameAs(DiffNode a, DiffNode b, Set<DiffNode> visited) {
+    private static <L extends Label> boolean isSameAs(DiffNode<L> a, DiffNode<L> b, Set<DiffNode<L>> visited) {
         if (!visited.add(a)) {
             return true;
         }
@@ -847,8 +793,8 @@ public class DiffNode implements HasNodeType {
             return false;
         }
 
-        Iterator<DiffNode> aIt = a.getAllChildren().iterator();
-        Iterator<DiffNode> bIt = b.getAllChildren().iterator();
+        Iterator<DiffNode<L>> aIt = a.getAllChildren().iterator();
+        Iterator<DiffNode<L>> bIt = b.getAllChildren().iterator();
         while (aIt.hasNext() && bIt.hasNext()) {
             if (!isSameAs(aIt.next(), bIt.next(), visited)) {
                 return false;
@@ -862,11 +808,11 @@ public class DiffNode implements HasNodeType {
     public String toString() {
         String s;
         if (isArtifact()) {
-            s = String.format("%s_%s from %d to %d", diffType, nodeType, from.inDiff(), to.inDiff());
+            s = String.format("%s_%s from %d to %d", diffType, getNodeType(), from.inDiff(), to.inDiff());
         } else if (isRoot()) {
             s = "ROOT";
         } else {
-            s = String.format("%s_%s from %d to %d with \"%s\"", diffType, nodeType,
+            s = String.format("%s_%s from %d to %d with \"%s\"", diffType, getNodeType(),
                     from.inDiff(), to.inDiff(), featureMapping);
         }
         return s;

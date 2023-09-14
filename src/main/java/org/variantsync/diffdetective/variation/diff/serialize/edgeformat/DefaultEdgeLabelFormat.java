@@ -1,5 +1,6 @@
 package org.variantsync.diffdetective.variation.diff.serialize.edgeformat;
 
+import org.variantsync.diffdetective.variation.Label;
 import org.variantsync.diffdetective.variation.diff.serialize.StyledEdge;
 
 /**
@@ -7,7 +8,7 @@ import org.variantsync.diffdetective.variation.diff.serialize.StyledEdge;
  * This format does not add any extra information to edge's labels.
  * @author Paul Bittner
  */
-public class DefaultEdgeLabelFormat extends EdgeLabelFormat {
+public class DefaultEdgeLabelFormat<L extends Label> extends EdgeLabelFormat<L> {
     /**
      * Creates a new default edge label format.
      */
@@ -24,7 +25,7 @@ public class DefaultEdgeLabelFormat extends EdgeLabelFormat {
     }
 
     @Override
-    public String labelOf(StyledEdge edge) {
+    public <La extends L> String labelOf(StyledEdge<La> edge) {
         return "";
     }
 }

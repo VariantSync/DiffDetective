@@ -1,10 +1,9 @@
 package org.variantsync.diffdetective.experiments.views.result;
 
 import org.variantsync.diffdetective.util.CSV;
-import org.variantsync.diffdetective.variation.diff.DiffTree;
+import org.variantsync.diffdetective.variation.diff.VariationDiff;
 import org.variantsync.diffdetective.variation.diff.view.DiffView;
 import org.variantsync.diffdetective.variation.tree.view.relevance.Relevance;
-import org.variantsync.diffdetective.variation.tree.view.relevance.Configure;
 
 import static org.variantsync.functjonal.Functjonal.intercalate;
 
@@ -15,8 +14,8 @@ import static org.variantsync.functjonal.Functjonal.intercalate;
  * @param commit The commit on which views were generated.
  * @param file The file of the patch that was analysed.
  * @param relevance The relevance predicate from which the views were generated.
- * @param msNaive Milliseconds it took to generate the view with the {@link DiffView#naive(DiffTree, Relevance) naive algorithm}
- * @param msOptimized Milliseconds it took to generate the view with the {@link DiffView#optimized(DiffTree, Relevance) optimized algorithm}
+ * @param msNaive Milliseconds it took to generate the view with the {@link DiffView#naive(VariationDiff, Relevance) naive algorithm}
+ * @param msOptimized Milliseconds it took to generate the view with the {@link DiffView#optimized(VariationDiff, Relevance) optimized algorithm}
  * @param diffStatistics Various statistics on the variation diff of the analysed patch. 
  * @param viewStatistics The same statistics as for the original variation diff but for the produced view.
  */
@@ -42,7 +41,7 @@ public record ViewEvaluation(
          * @param d A variation diff to extract statistics from.
          * @return The extracted statistics.
          */
-        public static DiffStatistics of(final DiffTree d) {
+        public static DiffStatistics of(final VariationDiff<?> d) {
             final int[] nodeCount = {0};
             final int[] annotationNodeCount = {0};
 

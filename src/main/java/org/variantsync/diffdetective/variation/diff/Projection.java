@@ -1,10 +1,10 @@
 package org.variantsync.diffdetective.variation.diff;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.prop4j.Node;
 import org.variantsync.diffdetective.util.LineRange;
+import org.variantsync.diffdetective.variation.Label;
 import org.variantsync.diffdetective.variation.NodeType;
 import org.variantsync.diffdetective.variation.tree.VariationNode;
 import org.variantsync.functjonal.list.FilteredMappedListView;
@@ -20,8 +20,8 @@ import org.variantsync.functjonal.list.FilteredMappedListView;
  *
  * @see DiffNode#projection
  */
-public class Projection extends VariationNode<Projection> {
-    private DiffNode backingNode;
+public class Projection<L extends Label> extends VariationNode<Projection<L>, L> {
+    private DiffNode<L> backingNode;
     private Time time;
 
     /**
@@ -33,7 +33,7 @@ public class Projection extends VariationNode<Projection> {
      * @param backingNode the {@link DiffNode} which should be projected
      * @param time which projection this should be
      */
-    Projection(DiffNode backingNode, Time time) {
+    Projection(DiffNode<L> backingNode, Time time) {
         this.backingNode = backingNode;
         this.time = time;
     }
@@ -42,23 +42,23 @@ public class Projection extends VariationNode<Projection> {
         return time;
     }
 
-    public DiffNode getBackingNode() {
+    public DiffNode<L> getBackingNode() {
         return backingNode;
     }
 
     @Override
-    public Projection upCast() {
+    public Projection<L> upCast() {
         return this;
     }
 
 
     @Override
     public NodeType getNodeType() {
-        return getBackingNode().nodeType;
+        return getBackingNode().getNodeType();
     }
 
     @Override
-    public Label getLabel() {
+    public L getLabel() {
         return getBackingNode().getLabel();
     }
 
@@ -73,7 +73,7 @@ public class Projection extends VariationNode<Projection> {
     }
 
     @Override
-    public Projection getParent() {
+    public Projection<L> getParent() {
         var parent = getBackingNode().getParent(time);
 
         if (parent == null) {
@@ -85,47 +85,26 @@ public class Projection extends VariationNode<Projection> {
 
 
     @Override
-    public List<Projection> getChildren() {
-        return FilteredMappedListView.filterMap(
-            getBackingNode().getChildOrder(),
-            (child) -> {
-                if (getBackingNode().isChild(child, time)) {
-                    return Optional.of(child.projection(time));
-                } else {
-                    return Optional.empty();
-                }
-            }
+    public List<Projection<L>> getChildren() {
+        return FilteredMappedListView.map(
+            getBackingNode().getChildOrder(time),
+            child -> child.projection(time)
         );
     }
 
     @Override
-    public void addChild(final Projection child) {
+    public void addChild(final Projection<L> child) {
         getBackingNode().addChild(child.getBackingNode(), time);
     }
 
     @Override
-    public void insertChild(final Projection child, int index) {
-        // The method `DiffNode.addChild` can't be used here because `index` has a different
-        // meaning: For `DiffNode.addChild` it counts all children, before and after, but here
-        // it only counts children at `time`.
-
-        var iterator = getBackingNode().getChildOrder().listIterator();
-        for (int i = 0; i < index; ) {
-            if (!iterator.hasNext()) {
-                throw new IllegalArgumentException();
-            }
-
-            if (iterator.next().getDiffType().existsAtTime(time)) {
-                ++i;
-            }
-        }
-
-        getBackingNode().insertChild(child.getBackingNode(), iterator.nextIndex(), time);
+    public void insertChild(final Projection<L> child, int index) {
+        getBackingNode().insertChild(child.getBackingNode(), index, time);
     }
 
     @Override
-    public boolean removeChild(final Projection child) {
-        return getBackingNode().removeChild(child.getBackingNode(), time);
+    public void removeChild(final Projection<L> child) {
+        getBackingNode().removeChild(child.getBackingNode(), time);
     }
 
     @Override

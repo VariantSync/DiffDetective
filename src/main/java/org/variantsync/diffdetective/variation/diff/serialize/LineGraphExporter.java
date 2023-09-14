@@ -3,35 +3,36 @@ package org.variantsync.diffdetective.variation.diff.serialize;
 import java.io.OutputStream;
 import java.io.PrintStream;
 
-import org.variantsync.diffdetective.variation.diff.DiffTree;
+import org.variantsync.diffdetective.variation.Label;
+import org.variantsync.diffdetective.variation.diff.VariationDiff;
 import org.variantsync.functjonal.Functjonal;
 
 /**
- * Exporter that converts a single DiffTree's nodes and edges to linegraph.
+ * Exporter that converts a single VariationDiff's nodes and edges to linegraph.
  */
-public class LineGraphExporter implements Exporter {
-    private final Format format;
-    private final DiffTreeSerializeDebugData debugData;
+public class LineGraphExporter<L extends Label> implements Exporter<L> {
+    private final Format<? super L> format;
+    private final VariationDiffSerializeDebugData debugData;
 
-    public LineGraphExporter(Format format) {
+    public LineGraphExporter(Format<? super L> format) {
         this.format = format;
-        this.debugData = new DiffTreeSerializeDebugData();
+        this.debugData = new VariationDiffSerializeDebugData();
     }
 
-    public LineGraphExporter(LineGraphExportOptions options) {
-        this(new Format(options.nodeFormat(), options.edgeFormat()));
+    public LineGraphExporter(LineGraphExportOptions<? super L> options) {
+        this(new Format<L>(options.nodeFormat(), options.edgeFormat()));
     }
 
     /**
-     * Export a line graph of {@code diffTree} into {@code destination}.
+     * Export a line graph of {@code variationDiff} into {@code destination}.
      *
-     * @param diffTree to be exported
+     * @param variationDiff to be exported
      * @param destination where the result should be written
      */
     @Override
-    public void exportDiffTree(DiffTree diffTree, OutputStream destination) {
+    public <La extends L> void exportVariationDiff(VariationDiff<La> variationDiff, OutputStream destination) {
         var output = new PrintStream(destination);
-        format.forEachNode(diffTree, (node) -> {
+        format.forEachNode(variationDiff, (node) -> {
             switch (node.diffType) {
                 case ADD -> ++debugData.numExportedAddNodes;
                 case REM -> ++debugData.numExportedRemNodes;
@@ -41,7 +42,7 @@ public class LineGraphExporter implements Exporter {
             output.println(LineGraphConstants.LG_NODE + " " + node.getID() + " " + format.getNodeFormat().toLabel(node));
         });
 
-        format.forEachEdge(diffTree, edge -> {
+        format.forEachEdge(variationDiff, edge -> {
             output.print(Functjonal.unwords(LineGraphConstants.LG_EDGE, edge.from().getID(), edge.to().getID(), ""));
             output.print(edge.style().lineGraphType());
             output.print(format.getEdgeFormat().labelOf(edge));
@@ -52,7 +53,7 @@ public class LineGraphExporter implements Exporter {
     /**
      * Returns debug metadata that was recorded during export.
      */
-    public DiffTreeSerializeDebugData getDebugData() {
+    public VariationDiffSerializeDebugData getDebugData() {
         return debugData;
     }
 }

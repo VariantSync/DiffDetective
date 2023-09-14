@@ -1,11 +1,12 @@
 package org.variantsync.diffdetective.mining.postprocessing;
 
 import org.tinylog.Logger;
-import org.variantsync.diffdetective.mining.DiffTreeMiner;
+import org.variantsync.diffdetective.mining.VariationDiffMiner;
 import org.variantsync.diffdetective.util.FileUtils;
 import org.variantsync.diffdetective.util.IO;
-import org.variantsync.diffdetective.variation.diff.DiffTree;
-import org.variantsync.diffdetective.variation.diff.render.DiffTreeRenderer;
+import org.variantsync.diffdetective.variation.DiffLinesLabel;
+import org.variantsync.diffdetective.variation.diff.VariationDiff;
+import org.variantsync.diffdetective.variation.diff.render.VariationDiffRenderer;
 import org.variantsync.diffdetective.variation.diff.render.RenderOptions;
 import org.variantsync.diffdetective.variation.diff.serialize.*;
 import org.variantsync.diffdetective.variation.diff.serialize.treeformat.IndexedTreeFormat;
@@ -23,21 +24,21 @@ import java.util.stream.Collectors;
  * Performs a postprocessing on mined frequent subgraphs in edits to find edit classes.
  */
 public class MiningPostprocessing {
-    private static final DiffTreeRenderer DefaultRenderer = DiffTreeRenderer.WithinDiffDetective();
+    private static final VariationDiffRenderer DefaultRenderer = VariationDiffRenderer.WithinDiffDetective();
     private static final boolean RENDER_CANDIDATES = false;
-    private static final LineGraphImportOptions IMPORT_OPTIONS = new LineGraphImportOptions(
+    private static final LineGraphImportOptions<DiffLinesLabel> IMPORT_OPTIONS = new LineGraphImportOptions<>(
             GraphFormat.DIFFGRAPH,
             new IndexedTreeFormat(),
-            DiffTreeMiner.NodeFormat(),
-            DiffTreeMiner.EdgeFormat()
+            VariationDiffMiner.NodeFormat(),
+            VariationDiffMiner.EdgeFormat()
     );
-    private static final LineGraphExportOptions EXPORT_OPTIONS = new LineGraphExportOptions(
-            GraphFormat.DIFFTREE,
+    private static final LineGraphExportOptions<DiffLinesLabel> EXPORT_OPTIONS = new LineGraphExportOptions<>(
+            GraphFormat.VARIATION_DIFF,
             IMPORT_OPTIONS.treeFormat(),
-            DiffTreeMiner.NodeFormat(),
-            DiffTreeMiner.EdgeFormat()
+            VariationDiffMiner.NodeFormat(),
+            VariationDiffMiner.EdgeFormat()
     );
-    public static final RenderOptions DefaultRenderOptions = new RenderOptions.Builder()
+    public static final RenderOptions<DiffLinesLabel> DefaultRenderOptions = new RenderOptions.Builder<DiffLinesLabel>()
             .setGraphFormat(EXPORT_OPTIONS.graphFormat())
             .setTreeFormat(EXPORT_OPTIONS.treeFormat())
             .setNodeFormat(EXPORT_OPTIONS.nodeFormat())
@@ -81,7 +82,7 @@ public class MiningPostprocessing {
      * @return The list of all diffgraphs parsed from linegraph files in the given directory.
      * @throws IOException If the directory could not be accessed ({@link Files#list}).
      */
-    public static List<DiffTree> parseFrequentSubgraphsIn(final Path path) throws IOException {
+    public static List<VariationDiff<DiffLinesLabel>> parseFrequentSubgraphsIn(final Path path) throws IOException {
         if (Files.isDirectory(path)) {
             try {
                 return Files.list(path)
@@ -106,15 +107,15 @@ public class MiningPostprocessing {
     }
 
     public static void postprocessAndInterpretResults(
-            final List<DiffTree> frequentSubgraphs,
-            final Postprocessor postprocessor,
+            final List<VariationDiff<DiffLinesLabel>> frequentSubgraphs,
+            final Postprocessor<DiffLinesLabel> postprocessor,
             final Consumer<String> printer,
-            final DiffTreeRenderer renderer,
-            RenderOptions renderOptions,
+            final VariationDiffRenderer renderer,
+            RenderOptions<? super DiffLinesLabel> renderOptions,
             final Path outputDir)
     {
-        final Postprocessor.Result result = postprocessor.postprocess(frequentSubgraphs);
-        final List<DiffTree> semanticPatterns = result.processedTrees();
+        final Postprocessor.Result<DiffLinesLabel> result = postprocessor.postprocess(frequentSubgraphs);
+        final List<VariationDiff<DiffLinesLabel>> semanticPatterns = result.processedTrees();
 
         printer.accept("Of " + frequentSubgraphs.size() + " mined subgraphs "
                 + semanticPatterns.size() + " are candidates for semantic patterns.");
@@ -126,12 +127,12 @@ public class MiningPostprocessing {
 
         if (RENDER_CANDIDATES && renderer != null) {
             if (renderOptions == null) {
-                renderOptions = RenderOptions.DEFAULT;
+                renderOptions = RenderOptions.DEFAULT();
             }
 
             printer.accept("Exporting and rendering semantic patterns to " + outputDir);
             int patternNo = 0;
-            for (final DiffTree semanticPattern : semanticPatterns) {
+            for (final VariationDiff<DiffLinesLabel> semanticPattern : semanticPatterns) {
                 renderer.render(semanticPattern, "SemanticPatternCandidate_" + patternNo, outputDir, renderOptions);
                 ++patternNo;
             }

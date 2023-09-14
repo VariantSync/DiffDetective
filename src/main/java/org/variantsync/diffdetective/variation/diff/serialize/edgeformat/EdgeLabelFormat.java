@@ -1,6 +1,6 @@
 package org.variantsync.diffdetective.variation.diff.serialize.edgeformat;
 
-import org.variantsync.diffdetective.util.Assert;
+import org.variantsync.diffdetective.variation.Label;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
 import org.variantsync.diffdetective.variation.diff.Time;
 import org.variantsync.diffdetective.variation.diff.serialize.LineGraphConstants;
@@ -19,7 +19,7 @@ import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
  *
  * @author Kevin Jedelhauser, Paul Maximilian Bittner
  */
-public abstract class EdgeLabelFormat implements LinegraphFormat {
+public abstract class EdgeLabelFormat<L extends Label> implements LinegraphFormat {
     /**
      * Creates a new format with the {@link Direction#Default default direction}.
      */
@@ -96,16 +96,16 @@ public abstract class EdgeLabelFormat implements LinegraphFormat {
      * @param edgeLabel The label that describes the time, the edge exists at, by being prefixed with one of the
      *                  LineGraphConstants described above.
      */
-    protected void connectAccordingToLabel(final DiffNode child, final DiffNode parent, final String edgeLabel) {
+    protected <La extends L> void connectAccordingToLabel(final DiffNode<La> child, final DiffNode<La> parent, final String edgeLabel) {
         if (edgeLabel.startsWith(LineGraphConstants.BEFORE_AND_AFTER_PARENT)) {
             // Nothing has been changed. The child-parent relationship remains the same
-            Time.forAll(time -> Assert.assertTrue(parent.addChild(child, time)));
+            Time.forAll(time -> parent.addChild(child, time));
         } else if (edgeLabel.startsWith(LineGraphConstants.BEFORE_PARENT)) {
             // The child DiffNode lost its parent DiffNode (an orphan DiffNode)
-            Assert.assertTrue(parent.addChild(child, BEFORE));
+            parent.addChild(child, BEFORE);
         } else if (edgeLabel.startsWith(LineGraphConstants.AFTER_PARENT)) {
             // The parent DiffNode has a new child DiffNode
-            Assert.assertTrue(parent.addChild(child, AFTER));
+            parent.addChild(child, AFTER);
         } else {
             throw new IllegalArgumentException("Syntax error. Invalid name in edge label " + edgeLabel);
         }
@@ -120,7 +120,7 @@ public abstract class EdgeLabelFormat implements LinegraphFormat {
      * @param nodes All nodes that have been parsed so far, indexed by their id.
      * @throws IllegalArgumentException when a node referenced in the lineGraphLine does not exist in the given map.
      */
-    public void connect(final String lineGraphLine, final Map<Integer, DiffNode> nodes) throws IllegalArgumentException {
+    public <La extends L> void connect(final String lineGraphLine, final Map<Integer, DiffNode<La>> nodes) throws IllegalArgumentException {
         if (!lineGraphLine.startsWith(LineGraphConstants.LG_EDGE)) throw new IllegalArgumentException("Failed to parse DiffNode: Expected \"v ...\" but got \"" + lineGraphLine + "\"!"); // check if encoded DiffNode
 
         String[] edge = lineGraphLine.split(" ");
@@ -131,8 +131,8 @@ public abstract class EdgeLabelFormat implements LinegraphFormat {
         final Pair<String, String> fromAndToIds = edgeDirection.sort(edge[1], edge[2]);
 
         // Both child and parent DiffNode should exist since all DiffNodes have been read in before. Otherwise, the line graph input is faulty
-        DiffNode childNode = nodes.get(Integer.parseInt(fromAndToIds.first()));
-        DiffNode parentNode = nodes.get(Integer.parseInt(fromAndToIds.second()));
+        DiffNode<La> childNode = nodes.get(Integer.parseInt(fromAndToIds.first()));
+        DiffNode<La> parentNode = nodes.get(Integer.parseInt(fromAndToIds.second()));
 
         if (childNode == null) {
             throw new IllegalArgumentException(fromAndToIds.first() + " does not exits. Faulty line graph.");
@@ -151,7 +151,7 @@ public abstract class EdgeLabelFormat implements LinegraphFormat {
      * @param edge The {@link StyledEdge} to be labeled
      * @return a label for {@code edge}
      */
-    public abstract String labelOf(StyledEdge edge);
+    public abstract <La extends L> String labelOf(StyledEdge<La> edge);
 
     /**
      * Converts a {@link StyledEdge} into a multi line label suitable for exporting.
@@ -161,7 +161,7 @@ public abstract class EdgeLabelFormat implements LinegraphFormat {
      * @param edge The {@link StyledEdge} to be labeled
      * @return a list of lines of the label for {@code edge}
      */
-    public List<String> multilineLabelOf(StyledEdge edge) {
+    public <La extends L> List<String> multilineLabelOf(StyledEdge<La> edge) {
         return List.of(labelOf(edge));
     }
 }

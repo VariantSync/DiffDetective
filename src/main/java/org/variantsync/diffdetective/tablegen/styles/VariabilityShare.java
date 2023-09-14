@@ -1,8 +1,8 @@
 package org.variantsync.diffdetective.tablegen.styles;
 
-import org.variantsync.diffdetective.metadata.EditClassCount;
 import org.variantsync.diffdetective.editclass.EditClass;
 import org.variantsync.diffdetective.editclass.proposed.ProposedEditClasses;
+import org.variantsync.diffdetective.metadata.EditClassCount;
 import org.variantsync.diffdetective.tablegen.Row;
 import org.variantsync.diffdetective.tablegen.TableDefinition;
 import org.variantsync.diffdetective.tablegen.rows.ContentRow;
@@ -52,7 +52,7 @@ public class VariabilityShare extends TableDefinition {
 
     /** Returns the number of occurrences of edit classes present in the table. */
     private static Stream<Map.Entry<EditClass, EditClassCount.Occurrences>> getVariationalEditClasses(final ContentRow row) {
-        return row.get(EditClassCount.KEY).getOccurences().entrySet().stream()
+        return row.get(EditClassCount.KEY).getOccurrences().entrySet().stream()
                 .filter(entry -> isEditToVariability(entry.getKey()));
     }
 
@@ -69,7 +69,7 @@ public class VariabilityShare extends TableDefinition {
      */
     private String getRelativeShareOf(final EditClass editClass, final ContentRow row) {
         final int totalAmount = countEditsToVariability(row);
-        return makeReadable(100.0 *  ((double)row.get(EditClassCount.KEY).getOccurences().get(editClass).getTotalAmount()) / ((double) totalAmount)) + "\\%";
+        return makeReadable(100.0 *  ((double)row.get(EditClassCount.KEY).getOccurrences().get(editClass).getTotalAmount()) / ((double) totalAmount)) + "\\%";
     }
 
     /**

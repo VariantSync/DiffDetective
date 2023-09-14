@@ -33,10 +33,10 @@ public class GDEvaluator {
             "Start Line", "End Line", "Feature Context"};
 
     private final GDAnalysisResult analysisResult;
-    private final GDAnalyzer<DiffNode> analyzer;
-    private final List<PatternMatchEvaluation> pmEvaluations;
+    private final GDAnalyzer analyzer;
+    private final List<PatternMatchEvaluation<DiffNode<?>>> pmEvaluations;
 
-    public GDEvaluator(GDAnalyzer<DiffNode> analyzer, GDAnalysisResult analysisResult) {
+    public GDEvaluator(GDAnalyzer analyzer, GDAnalysisResult analysisResult) {
         this.analyzer = analyzer;
         this.analysisResult = analysisResult;
         this.pmEvaluations = getEvaluations();
@@ -48,14 +48,14 @@ public class GDEvaluator {
      *
      * @return The list of PatternMatchEvaluations
      */
-    private List<PatternMatchEvaluation> getEvaluations() {
-        List<PatternMatchEvaluation> evaluations = new ArrayList<>();
+    private List<PatternMatchEvaluation<DiffNode<?>>> getEvaluations() {
+        List<PatternMatchEvaluation<DiffNode<?>>> evaluations = new ArrayList<>();
         for (CommitDiffAnalysisResult commitResult :
                 analysisResult.getCommitDiffAnalysisResults()) {
             for (PatchDiffAnalysisResult patchResult :
                     commitResult.getPatchDiffAnalysisResults()) {
-                for (PatternMatch<DiffNode> patternMatch : patchResult.getPatternMatches()) {
-                    PatternMatchEvaluation pme = new PatternMatchEvaluation(commitResult,
+                for (PatternMatch<DiffNode<?>> patternMatch : patchResult.getPatternMatches()) {
+                    PatternMatchEvaluation<DiffNode<?>> pme = new PatternMatchEvaluation<DiffNode<?>>(commitResult,
                             patchResult, patternMatch, patternMatch.getFeatureContexts());
                     evaluations.add(pme);
                 }
@@ -72,7 +72,7 @@ public class GDEvaluator {
     public <E> int[] getPatternCounts(List<Pattern<E>> patterns) {
         int[] patternCounts = new int[patterns.size()];
 
-        for (PatternMatchEvaluation pme : pmEvaluations) {
+        for (PatternMatchEvaluation<DiffNode<?>> pme : pmEvaluations) {
             for (int i = 0; i < patterns.size(); i++) {
                 if (pme.getPatternMatch().getPattern().getClass() == patterns.get(i).getClass()) {
                     patternCounts[i]++;
@@ -94,7 +94,7 @@ public class GDEvaluator {
         for (CommitDiffAnalysisResult cdar : analysisResult.getCommitDiffAnalysisResults()) {
             for (PatchDiffAnalysisResult pdar : cdar.getPatchDiffAnalysisResults()) {
                 for (int i = 0; i < patterns.size(); i++) {
-                    for (PatternMatch<DiffNode> pm : pdar.getPatternMatches()) {
+                    for (PatternMatch<DiffNode<?>> pm : pdar.getPatternMatches()) {
                         if (pm.getPattern().getClass() == patterns.get(i).getClass()) {
                             patternCounts[i]++;
                             break;
@@ -109,7 +109,7 @@ public class GDEvaluator {
     private <E> int[] getLineCounts(List<Pattern<E>> patterns) {
         int[] lineCounts = new int[patterns.size()];
 
-        for (PatternMatchEvaluation pme : pmEvaluations) {
+        for (PatternMatchEvaluation<DiffNode<?>> pme : pmEvaluations) {
             for (int i = 0; i < patterns.size(); i++) {
                 if (pme.getPatternMatch().getPattern().getClass() == patterns.get(i).getClass()) {
                     lineCounts[i] += pme.getPatternMatch().getEndLineDiff() - pme.getPatternMatch().getStartLineDiff();
@@ -121,7 +121,7 @@ public class GDEvaluator {
 
     public int getUnknownFeatureContextAmount() {
         int amount = 0;
-        for (PatternMatchEvaluation pme : pmEvaluations) {
+        for (PatternMatchEvaluation<DiffNode<?>> pme : pmEvaluations) {
             if (pme.isFeatureContextUnknown()) {
                 amount++;
             }
@@ -131,7 +131,7 @@ public class GDEvaluator {
 
     public int getFeatureContextNullAmount() {
         int amount = 0;
-        for (PatternMatchEvaluation pme : pmEvaluations) {
+        for (PatternMatchEvaluation<DiffNode<?>> pme : pmEvaluations) {
             if (!pme.isFeatureContextUnknown() && pme.canFeatureContextBeNull()) {
                 amount++;
             }
@@ -147,7 +147,7 @@ public class GDEvaluator {
                 analysisResult.getCommitDiffAnalysisResults()) {
             for (PatchDiffAnalysisResult patchResult :
                     commitResult.getPatchDiffAnalysisResults()) {
-                for (PatternMatch<DiffNode> patternMatch : patchResult.getPatternMatches()) {
+                for (PatternMatch<DiffNode<?>> patternMatch : patchResult.getPatternMatches()) {
                     if (patternName.equals(patternMatch.getPatternName())) {
                         patches.add(patchResult.getPatchDiff());
                     }
@@ -199,7 +199,7 @@ public class GDEvaluator {
     public int[] getFeatureContextComplexityAmounts() {
         int[] amounts =
                 new int[getMaxFeatureContextComplexityPme().getFeatureContextComplexity() + 1];
-        for (PatternMatchEvaluation pme : pmEvaluations) {
+        for (PatternMatchEvaluation<DiffNode<?>> pme : pmEvaluations) {
             if (!pme.isFeatureContextUnknown()) {
                 amounts[pme.getFeatureContextComplexity()]++;
             }
@@ -210,7 +210,7 @@ public class GDEvaluator {
     public double getAvgFeatureContextComplexity() {
         int sum = 0;
         int amount = 0;
-        for (PatternMatchEvaluation pme : pmEvaluations) {
+        for (PatternMatchEvaluation<DiffNode<?>> pme : pmEvaluations) {
             if (!pme.isFeatureContextUnknown()) {
                 sum += pme.getFeatureContextComplexity();
                 amount++;
@@ -219,10 +219,10 @@ public class GDEvaluator {
         return (double) sum / amount;
     }
 
-    public PatternMatchEvaluation getMinFeatureContextComplexityPme() {
+    public PatternMatchEvaluation<DiffNode<?>> getMinFeatureContextComplexityPme() {
         int min = Integer.MAX_VALUE;
-        PatternMatchEvaluation minPme = null;
-        for (PatternMatchEvaluation pme : pmEvaluations) {
+        PatternMatchEvaluation<DiffNode<?>> minPme = null;
+        for (PatternMatchEvaluation<DiffNode<?>> pme : pmEvaluations) {
             if (!pme.isFeatureContextUnknown() && pme.getFeatureContextComplexity() < min) {
                 min = pme.getFeatureContextComplexity();
                 minPme = pme;
@@ -231,10 +231,10 @@ public class GDEvaluator {
         return minPme;
     }
 
-    public PatternMatchEvaluation getMaxFeatureContextComplexityPme() {
+    public PatternMatchEvaluation<DiffNode<?>> getMaxFeatureContextComplexityPme() {
         int max = Integer.MIN_VALUE;
-        PatternMatchEvaluation maxPme = null;
-        for (PatternMatchEvaluation pme : pmEvaluations) {
+        PatternMatchEvaluation<DiffNode<?>> maxPme = null;
+        for (PatternMatchEvaluation<DiffNode<?>> pme : pmEvaluations) {
             if (!pme.isFeatureContextUnknown() && pme.getFeatureContextComplexity() > max) {
                 max = pme.getFeatureContextComplexity();
                 maxPme = pme;
@@ -310,7 +310,7 @@ public class GDEvaluator {
      */
     public List<FeatureContext> getDifferentFeatureContextsFromCommit(CommitDiffAnalysisResult commitResult) {
         List<FeatureContext[]> allFeatureContexts = new ArrayList<>();
-        for (PatternMatchEvaluation pme : pmEvaluations) {
+        for (PatternMatchEvaluation<DiffNode<?>> pme : pmEvaluations) {
             if (!pme.isFeatureContextUnknown() && pme.getCommit().equals(commitResult)) {
                 allFeatureContexts.add(pme.getFeatureContexts());
             }
@@ -416,7 +416,7 @@ public class GDEvaluator {
         List<Integer> endLines = new ArrayList<>();
         List<String> featureContexts = new ArrayList<>();
 
-        for (PatternMatchEvaluation pme : pmEvaluations) {
+        for (PatternMatchEvaluation<DiffNode<?>> pme : pmEvaluations) {
             commits.add(pme.getCommit().getCommitDiff().getCommitHash());
             patches.add(pme.getPatch().getPatchDiff().getFileName(Time.AFTER));
             patterns.add(pme.getPatternMatch().getPatternName());
@@ -572,13 +572,13 @@ public class GDEvaluator {
 
         System.out.printf("Average feature context complexity: %f%n",
                 getAvgFeatureContextComplexity());
-        PatternMatchEvaluation maxPme = getMaxFeatureContextComplexityPme();
+        PatternMatchEvaluation<DiffNode<?>> maxPme = getMaxFeatureContextComplexityPme();
         if (maxPme != null) {
             System.out.printf("Max feature context complexity: %d (%s)%n",
                     maxPme.getFeatureContextComplexity(),
                     Arrays.toString(maxPme.getFeatureContexts()));
         }
-        PatternMatchEvaluation minPme = getMinFeatureContextComplexityPme();
+        PatternMatchEvaluation<DiffNode<?>> minPme = getMinFeatureContextComplexityPme();
         if (minPme != null) {
             System.out.printf("Min feature context complexity: %d (%s)%n",
                     minPme.getFeatureContextComplexity(),

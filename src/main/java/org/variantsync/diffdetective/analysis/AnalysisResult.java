@@ -133,7 +133,7 @@ public final class AnalysisResult implements Metadata<AnalysisResult> {
     }
 
     /**
-     * Report errors (that for example occurred when parsing DiffTrees).
+     * Report errors (that for example occurred when parsing VariationDiffs).
      * @param errors A list of errors to report.
      */
     public void reportDiffErrors(final List<DiffError> errors) {

@@ -8,9 +8,9 @@ import org.variantsync.diffdetective.variation.tree.VariationNode;
  */
 public record Search(String artifact) implements Relevance {
     @Override
-    public boolean test(VariationNode<?> v) {
+    public boolean test(VariationNode<?, ?> v) {
         if (v.isArtifact()) {
-            return v.getLabelLines().contains(artifact);
+            return v.getLabel().getLines().contains(artifact);
         }
 
         return false;

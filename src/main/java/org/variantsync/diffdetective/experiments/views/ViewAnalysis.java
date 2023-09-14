@@ -8,14 +8,15 @@ import org.variantsync.diffdetective.editclass.proposed.ProposedEditClasses;
 import org.variantsync.diffdetective.experiments.views.result.ViewEvaluation;
 import org.variantsync.diffdetective.util.*;
 import org.variantsync.diffdetective.util.fide.FixTrueFalse;
-import org.variantsync.diffdetective.variation.diff.DiffTree;
+import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.diff.Projection;
 import org.variantsync.diffdetective.variation.diff.Time;
+import org.variantsync.diffdetective.variation.diff.VariationDiff;
 import org.variantsync.diffdetective.variation.diff.view.DiffView;
+import org.variantsync.diffdetective.variation.tree.view.relevance.Configure;
+import org.variantsync.diffdetective.variation.tree.view.relevance.Relevance;
 import org.variantsync.diffdetective.variation.tree.view.relevance.Search;
 import org.variantsync.diffdetective.variation.tree.view.relevance.Trace;
-import org.variantsync.diffdetective.variation.tree.view.relevance.Relevance;
-import org.variantsync.diffdetective.variation.tree.view.relevance.Configure;
 
 import java.io.IOException;
 import java.util.*;
@@ -60,8 +61,8 @@ public class ViewAnalysis implements Analysis.Hooks {
     /**
      * Benchmark for view generation on the given variation diff with the given relevance.
      * This method generates a view once with each algorithm:
-     * - once with the {@link DiffView#naive(DiffTree, Relevance) naive algorithm} view_naive (Equation 8 from our paper),
-     * - and once with the {@link DiffView#optimized(DiffTree, Relevance) optimized algorithm} view_smart (Equation 10 in our paper).
+     * - once with the {@link DiffView#naive(VariationDiff, Relevance) naive algorithm} view_naive (Equation 8 from our paper),
+     * - and once with the {@link DiffView#optimized(VariationDiff, Relevance) optimized algorithm} view_smart (Equation 10 in our paper).
      * This method measures both algorithms runtimes and stores the runtimes and metadata in terms of a
      * {@link ViewEvaluation} in this objects {@link #csv} field.
      * @param analysis The current instance of the analysis that is run.
@@ -69,14 +70,14 @@ public class ViewAnalysis implements Analysis.Hooks {
      * @param d The variation diff to benchmark view generation on.
      * @param rho A relevance predicate that determines which nodes should be contained in the view.
      */
-    private void runRelevanceExperiment(Analysis analysis, final DiffTree d, final Relevance rho) {
+    private void runRelevanceExperiment(Analysis analysis, final VariationDiff<DiffLinesLabel> d, final Relevance rho) {
         final long preprocessingTime, naiveTime, optimizedTime;
 
         //Show.diff(d, "D").showAndAwait();
 
         final Clock c = new Clock();
 
-        final BiPredicate<Time, Projection> inV = DiffView.computeWhenNodesAreRelevant(d, rho);
+        final BiPredicate<Time, Projection<DiffLinesLabel>> inV = DiffView.computeWhenNodesAreRelevant(d, rho);
 
         preprocessingTime = c.getPassedMilliseconds();
 
@@ -91,7 +92,7 @@ public class ViewAnalysis implements Analysis.Hooks {
 
         // measure optimized view generation
         c.start();
-        final DiffTree view = DiffView.optimized(d, rho, inV);
+        final VariationDiff<DiffLinesLabel> view = DiffView.optimized(d, rho, inV);
         optimizedTime = c.getPassedMilliseconds();
 
         // export results
@@ -116,23 +117,23 @@ public class ViewAnalysis implements Analysis.Hooks {
     /**
      * Runs the feasibility study on the current variation diff.
      * Creates random relevance predicates as explained in Section 6 of our paper.
-     * Then runs {@link #runRelevanceExperiment(Analysis, DiffTree, Relevance)} for each relevance on the
+     * Then runs {@link #runRelevanceExperiment(Analysis, VariationDiff, Relevance)} for each relevance on the
      * current variation diff.
      * @param analysis The current instance of the analysis that is run.
      *                 Used to access metadata of the current commit that is processed.
-     * @return {@link Analysis.Hooks#analyzeDiffTree(Analysis)}
+     * @return {@link Analysis.Hooks#analyzeVariationDiff(Analysis)}
      * @throws Exception
      */
     @Override
-    public boolean analyzeDiffTree(Analysis analysis) throws Exception {
-        final DiffTree d                    = analysis.getCurrentDiffTree();
+    public boolean analyzeVariationDiff(Analysis analysis) throws Exception {
+        final VariationDiff<DiffLinesLabel> d = analysis.getCurrentVariationDiff();
         final Collection<Relevance> queries = generateRandomRelevances(d);
 
         for (final Relevance r : queries) {
             runRelevanceExperiment(analysis, d, r);
         }
 
-        return Analysis.Hooks.super.analyzeDiffTree(analysis);
+        return Analysis.Hooks.super.analyzeVariationDiff(analysis);
     }
 
     /**
@@ -143,7 +144,7 @@ public class ViewAnalysis implements Analysis.Hooks {
      * @param d The variation diff to generate relevance predicates for.
      * @return A list of three random relevance predicates.
      */
-    private List<Relevance> generateRandomRelevances(final DiffTree d) {
+    private List<Relevance> generateRandomRelevances(final VariationDiff<DiffLinesLabel> d) {
         final List<Node>  deselectedPCs = new ArrayList<>();
         final Set<String> features      = new HashSet<>();
         final Set<String> artifacts     = new HashSet<>();
@@ -156,7 +157,7 @@ public class ViewAnalysis implements Analysis.Hooks {
                 }
 
                 // Collect all artifact names.
-                artifacts.addAll(a.getLabelLines());
+                artifacts.addAll(a.getLabel().getLines());
             }
 
             // Collect all features

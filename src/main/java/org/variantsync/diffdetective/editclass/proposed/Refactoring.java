@@ -19,7 +19,7 @@ final class Refactoring extends EditClass {
     }
 
     @Override
-    protected boolean matchesArtifactNode(DiffNode artifactNode) {
+    protected boolean matchesArtifactNode(DiffNode<?> artifactNode) {
         if (artifactNode.beforePathEqualsAfterPath()) {
             return false;
         }

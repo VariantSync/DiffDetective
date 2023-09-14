@@ -1,5 +1,6 @@
 package org.variantsync.diffdetective.variation.tree.view;
 
+import org.variantsync.diffdetective.variation.Label;
 import org.variantsync.diffdetective.variation.tree.VariationNode;
 import org.variantsync.diffdetective.variation.tree.VariationTree;
 import org.variantsync.diffdetective.variation.tree.VariationTreeNode;
@@ -29,7 +30,7 @@ public final class TreeView {
      * @param inView A predicate that determines for each node whether it should be within the view or not.
      * @param <TreeNode> he type of the nodes within the given tree.
      */
-    public static <TreeNode extends VariationNode<TreeNode>> void treeInline(final TreeNode v, final Predicate<TreeNode> inView) {
+    public static <TreeNode extends VariationNode<TreeNode, ?>> void treeInline(final TreeNode v, final Predicate<TreeNode> inView) {
         final List<TreeNode> boringChildren = new ArrayList<>(v.getChildren().size());
         for (final TreeNode child : v.getChildren()) {
             if (!inView.test(child)) {
@@ -51,8 +52,8 @@ public final class TreeView {
      * @param r A relevance predicate that determines for each node in the tree whether it should be
      *          contained in the view or should be excluded. Will not be altered by running this procedure.
      */
-    public static void treeInline(final VariationTree t, final Relevance r) {
-        final Set<VariationTreeNode> interestingNodes = new HashSet<>();
+    public static <L extends Label> void treeInline(final VariationTree<L> t, final Relevance r) {
+        final Set<VariationTreeNode<L>> interestingNodes = new HashSet<>();
         r.computeViewNodes(t.root(), interestingNodes::add);
         treeInline(t.root(), interestingNodes::contains);
     }
@@ -67,8 +68,8 @@ public final class TreeView {
      *          tree whether it should be contained in the view or should be excluded.
      * @return A variation tree that represents a view on the given variation tree t.
      */
-    public static VariationTree tree(final VariationTree t, final Relevance r) {
-        final VariationTree copy = t.deepCopy();
+    public static VariationTree<?> tree(final VariationTree<?> t, final Relevance r) {
+        final VariationTree<?> copy = t.deepCopy();
         treeInline(copy, r);
         return copy;
     }
