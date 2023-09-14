@@ -35,6 +35,7 @@ public class CPPParserTest {
             new TestCase("#if A >= B && C > D", "A__GEQ__B&&C__GT__D"),
             new TestCase("#if A * (B + C)", "A__MUL____LB__B__ADD__C__RB__"),
             new TestCase("#if defined(A) && (B * 2) > C", "DEFINED_A&&__LB__B__MUL__2__RB____GT__C"),
+            new TestCase("#if(STDC == 1) && (defined(LARGE) || defined(COMPACT))", "__LB__STDC__EQ__1__RB__&&(DEFINED_LARGE||DEFINED_COMPACT)"),
 
             new TestCase("#if A // Comment && B", "A"),
             new TestCase("#if A /* Comment */ && B", "A&&B"),
