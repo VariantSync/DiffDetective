@@ -818,24 +818,4 @@ public class DiffNode<L extends Label> implements HasNodeType {
         return s;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        DiffNode diffNode = (DiffNode) o;
-        return diffType == diffNode.diffType && nodeType == diffNode.nodeType && from.equals(diffNode.from) && to.equals(diffNode.to) && Objects.equals(featureMapping, diffNode.featureMapping) && label.equals(diffNode.label);
-    }
-
-    /**
-     * Compute a hash using all available attributes.
-     *
-     * This implementation doesn't strictly adhere to the contract required by {@code Object},
-     * because some attributes (for example the line numbers) can be changed during the lifetime of
-     * a {@code DiffNode}. So when using something like a {@code HashSet} the user of {@code
-     * DiffNode} has to be careful not to change any attributes of a stored {@code DiffNode}.
-     */
-    @Override
-    public int hashCode() {
-        return Objects.hash(diffType, nodeType, from, to, featureMapping, label);
-    }
 }

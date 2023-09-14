@@ -3,7 +3,6 @@ package org.variantsync.diffdetective.diff.git;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.variantsync.diffdetective.diff.text.TextBasedDiff;
 import org.variantsync.diffdetective.variation.diff.Time;
-import org.variantsync.diffdetective.variation.diff.source.DiffTreeSource;
 import org.variantsync.diffdetective.variation.diff.VariationDiff; // For Javadoc
 import org.variantsync.diffdetective.variation.diff.source.VariationDiffSource;
 

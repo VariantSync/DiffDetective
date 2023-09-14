@@ -14,10 +14,10 @@ import org.variantsync.diffdetective.diff.git.PatchDiff;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.show.Show;
 import org.variantsync.diffdetective.show.engine.GameEngine;
-import org.variantsync.diffdetective.variation.diff.DiffTree;
+import org.variantsync.diffdetective.variation.diff.VariationDiff;
 import org.variantsync.diffdetective.variation.diff.Time;
-import org.variantsync.diffdetective.variation.diff.filter.DiffTreeFilter;
-import org.variantsync.diffdetective.variation.diff.parse.DiffTreeParseOptions;
+import org.variantsync.diffdetective.variation.diff.filter.VariationDiffFilter;
+import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParseOptions;
 import org.variantsync.diffdetective.variation.diff.transform.CutNonEditedSubtrees;
 
 import java.io.IOException;
@@ -30,7 +30,7 @@ public class ASTest implements Analysis.Hooks {
             "PCAnalysis",
             List.of(
                     new PreprocessingAnalysis(new CutNonEditedSubtrees()),
-                    new FilterAnalysis(DiffTreeFilter.notEmpty()), // filters unwanted trees
+                    new FilterAnalysis(VariationDiffFilter.notEmpty()), // filters unwanted trees
                     pcAnalysis
             ),
             repo,
@@ -38,7 +38,7 @@ public class ASTest implements Analysis.Hooks {
     );
 
     private static GameEngine inspect(final Path p) throws IOException, DiffParseException {
-        return Show.diff(DiffTree.fromFile(p, new DiffTreeParseOptions(false, false)));
+        return Show.diff(VariationDiff.fromFile(p, new VariationDiffParseOptions(false, false)));
     }
 
     /**
@@ -58,8 +58,8 @@ public class ASTest implements Analysis.Hooks {
                     final PatchDiffParseOptions repoDefault = repo.getParseOptions();
                     return new PatchDiffParseOptions(
                             PatchDiffParseOptions.DiffStoragePolicy.REMEMBER_STRIPPED_DIFF,
-                            new DiffTreeParseOptions(
-                                    repoDefault.diffTreeParseOptions().annotationParser(),
+                            new VariationDiffParseOptions(
+                                    repoDefault.variationDiffParseOptions().annotationParser(),
                                     false,
                                     false
                             )
@@ -95,9 +95,9 @@ public class ASTest implements Analysis.Hooks {
     }
 
     @Override
-    public boolean analyzeDiffTree(Analysis analysis) {
+    public boolean analyzeVariationDiff(Analysis analysis) {
         // Get the ground truth for this file
-        final DiffTree d = analysis.getCurrentDiffTree();
+        final VariationDiff d = analysis.getCurrentVariationDiff();
         Logger.info("    has VDiff");
         Show.diff(d).showAndAwait();
         return true;

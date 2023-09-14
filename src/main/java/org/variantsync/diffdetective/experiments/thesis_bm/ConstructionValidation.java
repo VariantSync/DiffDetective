@@ -276,7 +276,7 @@ public class ConstructionValidation implements Analysis.Hooks {
 
     @Override
     public boolean analyzeVariationDiff(Analysis analysis) throws Exception, DiffParseException {
-        Logger.info("current patch: {} {} (by thread {})", analysis.getCurrentPatch().getFileName(), analysis.getCurrentPatch().getCommitHash(), Thread.currentThread().getId());
+        Logger.info("current patch: {} {} (by thread {})", analysis.getCurrentPatch().getFileName(AFTER), analysis.getCurrentPatch().getCommitHash(), Thread.currentThread().getId());
         Statistics statistics = new Statistics();
         try {
             statistics.variationDiff[0].matchingDuration = 0;
@@ -325,7 +325,7 @@ public class ConstructionValidation implements Analysis.Hooks {
             statistics.writeCsvCells(destination);
             destination.newLine();
         } catch (Throwable t) {
-            Logger.error(t, "{} {}", analysis.getCurrentPatch().getFileName(), analysis.getCurrentPatch().getCommitHash());
+            Logger.error(t, "{} {}", analysis.getCurrentPatch().getFileName(AFTER), analysis.getCurrentPatch().getCommitHash());
         }
         return true;
     }
@@ -386,7 +386,7 @@ public class ConstructionValidation implements Analysis.Hooks {
                     GitDiffer.getBeforeFullFile(
                         analysis.getRepository().getGitRepo().run(),
                         commit,
-                        analysis.getCurrentPatch().getFileName()),
+                        analysis.getCurrentPatch().getFileName(AFTER)),
                     0xfeff)) // BOM, same as GitDiffer.BOM_PATTERN
         ) {
             return VariationDiffParser.createVariationTree(afterFile, analysis.getRepository().getParseOptions().variationDiffParseOptions());
