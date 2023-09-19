@@ -36,6 +36,8 @@ public class CPPParserTest {
             new TestCase("#if A * (B + C)", "A__MUL____LB__B__ADD__C__RB__"),
             new TestCase("#if defined(A) && (B * 2) > C", "DEFINED_A&&__LB__B__MUL__2__RB____GT__C"),
             new TestCase("#if(STDC == 1) && (defined(LARGE) || defined(COMPACT))", "__LB__STDC__EQ__1__RB__&&(DEFINED_LARGE||DEFINED_COMPACT)"),
+            new TestCase("#if (('Z' - 'A') == 25)", "__LB____LB__'Z'__SUB__'A'__RB____EQ__25__RB__"),
+            new TestCase("#if APR_CHARSET_EBCDIC && !(('Z' - 'A') == 25)", "APR_CHARSET_EBCDIC&&!__LB____LB__'Z'__SUB__'A'__RB____EQ__25__RB__"),
 
             new TestCase("#if A // Comment && B", "A"),
             new TestCase("#if A /* Comment */ && B", "A&&B"),

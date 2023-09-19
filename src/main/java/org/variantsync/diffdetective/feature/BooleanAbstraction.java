@@ -139,7 +139,7 @@ public class BooleanAbstraction {
 
     private static final Pattern COMMA = Pattern.compile(",");
     private static final String COMMA_REPLACEMENT = "__";
-    private static final Pattern CALL = Pattern.compile("\\((\\w*)\\)");
+    private static final Pattern CALL = Pattern.compile("\\(([^\\s|&]*)\\)");
     private static final String CALL_REPLACEMENT = BRACKET_L + "$1" + BRACKET_R;
 
     private static String abstractAll(String formula, final List<Replacement> replacements) {
