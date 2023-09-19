@@ -39,6 +39,8 @@ public class CPPParserTest {
             new TestCase("#if (('Z' - 'A') == 25)", "__LB____LB__'Z'__SUB__'A'__RB____EQ__25__RB__"),
             new TestCase("#if APR_CHARSET_EBCDIC && !(('Z' - 'A') == 25)", "APR_CHARSET_EBCDIC&&!__LB____LB__'Z'__SUB__'A'__RB____EQ__25__RB__"),
             new TestCase("#if __has_include(<nss3/nss.h>)", "__has_include__LB____LT__nss3__DIV__nss.h__GT____RB__"),
+            new TestCase("# if ((GNUTLS_VERSION_MAJOR + (GNUTLS_VERSION_MINOR > 0 || GNUTLS_VERSION_PATCH >= 20)) > 3)",
+                    "__LB____LB__GNUTLS_VERSION_MAJOR__ADD____LB__GNUTLS_VERSION_MINOR__GT__0__OR__GNUTLS_VERSION_PATCH__GEQ__20__RB____RB____GT__3__RB__"),
 
             new TestCase("#if A // Comment && B", "A"),
             new TestCase("#if A /* Comment */ && B", "A&&B"),
