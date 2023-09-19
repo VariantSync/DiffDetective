@@ -38,6 +38,7 @@ public class CPPParserTest {
             new TestCase("#if(STDC == 1) && (defined(LARGE) || defined(COMPACT))", "__LB__STDC__EQ__1__RB__&&(DEFINED_LARGE||DEFINED_COMPACT)"),
             new TestCase("#if (('Z' - 'A') == 25)", "__LB____LB__'Z'__SUB__'A'__RB____EQ__25__RB__"),
             new TestCase("#if APR_CHARSET_EBCDIC && !(('Z' - 'A') == 25)", "APR_CHARSET_EBCDIC&&!__LB____LB__'Z'__SUB__'A'__RB____EQ__25__RB__"),
+            new TestCase("#if __has_include(<nss3/nss.h>)", "__has_include__LB____LT__nss3__DIV__nss.h__GT____RB__"),
 
             new TestCase("#if A // Comment && B", "A"),
             new TestCase("#if A /* Comment */ && B", "A&&B"),
