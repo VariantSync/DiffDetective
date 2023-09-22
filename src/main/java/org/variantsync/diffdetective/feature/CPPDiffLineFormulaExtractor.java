@@ -26,6 +26,8 @@ public class CPPDiffLineFormulaExtractor {
     private static final Pattern COMMENT_PATTERN = Pattern.compile("(/\\*.*?\\*/)|(/\\*.*)");
     private static final Pattern DEFINED_PATTERN = Pattern.compile("\\bdefined\\b(\\s*\\(\\s*(\\w*)\\s*\\))?");
 
+    private static final CExpressionSimplifier expressionSimplifier = new CExpressionSimplifier();
+
     /**
      * Resolves any macros in the given formula that are relevant for feature annotations.
      * For example, in {@link org.variantsync.diffdetective.datasets.predefined.MarlinCPPDiffLineFormulaExtractor Marlin},
@@ -70,15 +72,10 @@ public class CPPDiffLineFormulaExtractor {
         // remove whitespace
         fm = fm.replaceAll("\\s", "");
 
-        CExpressionLexer lexer = new CExpressionLexer(CharStreams.fromString(fm));
-        CommonTokenStream tokens = new CommonTokenStream(lexer);
-        CExpressionParser parser = new CExpressionParser(tokens);
-        ParseTree tree = parser.conditionalExpression();
-        System.out.println(tree.toStringTree(parser));
-
         fm = resolveFeatureMacroFunctions(fm);
 
         ////// abstract arithmetics
+        fm = expressionSimplifier.simplify(fm);
         fm = BooleanAbstraction.arithmetics(fm);
         fm = BooleanAbstraction.parentheses(fm);
 
