@@ -1,12 +1,10 @@
 package org.variantsync.diffdetective.feature;
 
-import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
-import org.tinylog.Logger;
-import org.variantsync.diffdetective.feature.antlr.CLexer;
-import org.variantsync.diffdetective.feature.antlr.CParser;
+import org.variantsync.diffdetective.feature.antlr.CExpressionLexer;
+import org.variantsync.diffdetective.feature.antlr.CExpressionParser;
 import org.variantsync.diffdetective.variation.diff.parse.IllFormedAnnotationException;
 
 import java.util.function.Supplier;
@@ -72,9 +70,9 @@ public class CPPDiffLineFormulaExtractor {
         // remove whitespace
         fm = fm.replaceAll("\\s", "");
 
-        CLexer lexer = new CLexer(CharStreams.fromString(fm));
+        CExpressionLexer lexer = new CExpressionLexer(CharStreams.fromString(fm));
         CommonTokenStream tokens = new CommonTokenStream(lexer);
-        CParser parser = new CParser(tokens);
+        CExpressionParser parser = new CExpressionParser(tokens);
         ParseTree tree = parser.conditionalExpression();
         System.out.println(tree.toStringTree(parser));
 
