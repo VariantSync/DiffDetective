@@ -15,13 +15,6 @@ import java.util.function.Function;
 public abstract class BasicCExpressionVisitor extends AbstractParseTreeVisitor<StringBuilder> implements CExpressionVisitor<StringBuilder> {
 	public BasicCExpressionVisitor() {}
 
-	// conditionalExpression
-	//    :   logicalOrExpression
-	//    ;
-	@Override public StringBuilder visitConditionalExpression(CExpressionParser.ConditionalExpressionContext ctx) {
-		return ctx.logicalOrExpression().accept(this);
-	}
-
 	// primaryExpression
 	//    :   Identifier
 	//    |   Constant

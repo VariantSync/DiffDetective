@@ -19,8 +19,21 @@ public class ControllingCExpressionVisitor extends BasicCExpressionVisitor {
 		CommonTokenStream tokens = new CommonTokenStream(lexer);
 		CExpressionParser parser = new CExpressionParser(tokens);
 		ParseTree tree = parser.conditionalExpression();
-		System.out.println(tree.toStringTree(parser));
 		return tree.accept(this).toString();
+	}
+
+	// conditionalExpression
+	//    :   logicalOrExpression ('?' conditionalExpression ':' conditionalExpression)?
+	//    ;
+	@Override public StringBuilder visitConditionalExpression(CExpressionParser.ConditionalExpressionContext ctx) {
+		if (!ctx.conditionalExpression().isEmpty()) {
+			// logicalOrExpression '?' conditionalExpression ':' conditionalExpression
+			// We have to abstract the expression if it is a ternary expression
+			return ctx.accept(abstractingVisitor);
+		} else {
+			// logicalOrExpression
+			return ctx.logicalOrExpression().accept(this);
+		}
 	}
 
 	// multiplicativeExpression

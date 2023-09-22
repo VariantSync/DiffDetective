@@ -14,6 +14,15 @@ public class AbstractingCExpressionVisitor extends BasicCExpressionVisitor {
 
 	public AbstractingCExpressionVisitor() {}
 
+	// conditionalExpression
+	//    :   logicalOrExpression '?' conditionalExpression ':' conditionalExpression
+	//    ;
+	@Override public StringBuilder visitConditionalExpression(CExpressionParser.ConditionalExpressionContext ctx) {
+		return visitExpression(ctx,
+				childContext -> childContext instanceof CExpressionParser.LogicalOrExpressionContext
+						|| childContext instanceof CExpressionParser.ConditionalExpressionContext);
+	}
+
 	// primaryExpression
 	//    :   Identifier
 	//    |   Constant
@@ -161,6 +170,8 @@ public class AbstractingCExpressionVisitor extends BasicCExpressionVisitor {
 					case "|" -> sb.append(BooleanAbstraction.OR);
 					case "&&" -> sb.append(BooleanAbstraction.L_AND);
 					case "||" -> sb.append(BooleanAbstraction.L_OR);
+					case "?" -> sb.append(BooleanAbstraction.THEN);
+					case ":" -> sb.append(BooleanAbstraction.ELSE);
 					default -> throw new IllegalStateException();
 				}
 			} else {

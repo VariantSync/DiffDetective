@@ -3,7 +3,7 @@ grammar CExpression;
 // https://github.com/antlr/grammars-v4/blob/master/c/CExpression.g4
 
 conditionalExpression
-    :   logicalOrExpression
+    :   logicalOrExpression ('?' conditionalExpression ':' conditionalExpression)?
     ;
 
 primaryExpression
