@@ -38,7 +38,6 @@ public class CPPParserTest {
             new TestCase("#if(STDC == 1) && (defined(LARGE) || defined(COMPACT))", "(STDC__EQ__1)&&(DEFINED_LARGE||DEFINED_COMPACT)"),
             new TestCase("#if (('Z' - 'A') == 25)", "(__LB__'Z'__SUB__'A'__RB____EQ__25)"),
             new TestCase("#if APR_CHARSET_EBCDIC && !(('Z' - 'A') == 25)", "APR_CHARSET_EBCDIC&&!(__LB__'Z'__SUB__'A'__RB____EQ__25)"),
-            new TestCase("#if __has_include(<nss3/nss.h>)", "__has_include__LB____LT__nss3__DIV__nss.h__GT____RB__"),
             new TestCase("# if ((GNUTLS_VERSION_MAJOR + (GNUTLS_VERSION_MINOR > 0 || GNUTLS_VERSION_PATCH >= 20)) > 3)",
                     "(__LB__GNUTLS_VERSION_MAJOR__ADD____LB__GNUTLS_VERSION_MINOR__GT__0__L_OR__GNUTLS_VERSION_PATCH__GEQ__20__RB____RB____GT__3)"),
 
@@ -48,6 +47,32 @@ public class CPPParserTest {
             new TestCase("#if ((A && B) > C)", "(__LB__A__L_AND__B__RB____GT__C)"),
             new TestCase("#if A && ((B + 1) > (C || D))", "A&&(__LB__B__ADD__1__RB____GT____LB__C__L_OR__D__RB__)"),
 
+            new TestCase("#if __has_include", "__has_include"),
+            new TestCase("#if defined __has_include", "defined___has_include"),
+            new TestCase("#if __has_include(<nss3/nss.h>)", "__has_include__LB____LT__nss3__DIV__nss__DOT__h__GT____RB__"),
+            new TestCase("#if __has_include(<nss.h>)", "__has_include__LB____LT__nss__DOT__h__GT____RB__"),
+            new TestCase("#if __has_include(\"nss3/nss.h\")", "__has_include__LB____QUOTE__nss3__DIV__nss__DOT__h__QUOTE____RB__"),
+            new TestCase("#if __has_include(\"nss.h\")", "__has_include__LB____QUOTE__nss__DOT__h__QUOTE____RB__"),
+
+            new TestCase("#if __has_attribute", "TODO"),
+            new TestCase("#if defined __has_attribute", "TODO"),
+            new TestCase("#  if __has_attribute (nonnull)", "TODO"),
+            new TestCase("#if defined __has_attribute && __has_attribute (nonnull)", "TODO"),
+
+            new TestCase("#if defined __has_cpp_attribute", "TODO"),
+            new TestCase("#if __has_cpp_attribute", "TODO"),
+            new TestCase("#if __has_cpp_attribute (nonnull)", "TODO"),
+            new TestCase("#if __has_cpp_attribute (nonnull) && A", "TODO"),
+
+            new TestCase("#if defined __has_c_attribute", "TODO"),
+            new TestCase("#if __has_c_attribute", "TODO"),
+            new TestCase("#if __has_c_attribute (nonnull)", "TODO"),
+            new TestCase("#if __has_c_attribute (nonnull) && A", "TODO"),
+
+            new TestCase("#if defined __has_builtin", "TODO"),
+            new TestCase("#if __has_builtin", "TODO"),
+            new TestCase("#if __has_builtin (__nonnull)", "TODO"),
+            new TestCase("#if __has_builtin (nonnull) && A", "TODO"),
 
             new TestCase("#if A // Comment && B", "A"),
             new TestCase("#if A /* Comment */ && B", "A&&B"),
