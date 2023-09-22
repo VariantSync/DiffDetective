@@ -77,6 +77,12 @@ public interface CExpressionVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitInclusiveOrExpression(CExpressionParser.InclusiveOrExpressionContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link CExpressionParser#specialOperator}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitSpecialOperator(CExpressionParser.SpecialOperatorContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link CExpressionParser#logicalAndExpression}.
 	 * @param ctx the parse tree
 	 * @return the visitor result

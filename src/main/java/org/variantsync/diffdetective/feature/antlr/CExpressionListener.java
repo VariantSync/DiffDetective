@@ -118,6 +118,16 @@ public interface CExpressionListener extends ParseTreeListener {
 	 */
 	void exitInclusiveOrExpression(CExpressionParser.InclusiveOrExpressionContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link CExpressionParser#specialOperator}.
+	 * @param ctx the parse tree
+	 */
+	void enterSpecialOperator(CExpressionParser.SpecialOperatorContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link CExpressionParser#specialOperator}.
+	 * @param ctx the parse tree
+	 */
+	void exitSpecialOperator(CExpressionParser.SpecialOperatorContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link CExpressionParser#logicalAndExpression}.
 	 * @param ctx the parse tree
 	 */

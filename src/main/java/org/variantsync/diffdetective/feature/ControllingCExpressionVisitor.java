@@ -111,6 +111,29 @@ public class ControllingCExpressionVisitor extends BasicCExpressionVisitor {
 		}
 	}
 
+	// specialOperator
+	//    :   '__has_attribute' ('(' inclusiveOrExpression ')')?
+	//    |   '__has_cpp_attribute' ('(' inclusiveOrExpression ')')?
+	//    |   '__has_c_attribute' ('(' inclusiveOrExpression ')')?
+	//    |   '__has_builtin' ('(' inclusiveOrExpression ')')?
+	//    |   '__has_include' ('(' PathLiteral ')')?
+	//    |   inclusiveOrExpression
+	//    ;
+	@Override public StringBuilder visitSpecialOperator(CExpressionParser.SpecialOperatorContext ctx) {
+		if (ctx.children.size() > 1 || ctx.inclusiveOrExpression() == null) {
+			// : '__has_attribute' ('(' inclusiveOrExpression ')')?
+			// | '__has_cpp_attribute' ('(' inclusiveOrExpression ')')?
+			// | '__has_c_attribute' ('(' inclusiveOrExpression ')')?
+			// | '__has_builtin' ('(' inclusiveOrExpression ')')?
+			// We have to abstract the special operator
+			return ctx.accept(abstractingVisitor);
+		} else {
+			// inclusiveOrExpression
+			// There is exactly one child expression
+			return ctx.inclusiveOrExpression().accept(this);
+		}
+	}
+
 	// andExpression
 	//    :   equalityExpression ( '&' equalityExpression)*
 	//    ;

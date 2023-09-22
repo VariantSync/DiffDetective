@@ -149,6 +149,18 @@ public class CExpressionBaseListener implements CExpressionListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterSpecialOperator(CExpressionParser.SpecialOperatorContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitSpecialOperator(CExpressionParser.SpecialOperatorContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterLogicalAndExpression(CExpressionParser.LogicalAndExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
