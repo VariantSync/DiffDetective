@@ -55,8 +55,24 @@ public class BooleanAbstraction {
     public static final String ELSE = "__ELSE__";
     /** Abstraction value for opening brackets <code>(</code>. */
     public static final String BRACKET_L = "__LB__";
-    /** Abstraction value for clsong brackets <code>)</code>. */
+    /** Abstraction value for closing brackets <code>)</code>. */
     public static final String BRACKET_R = "__RB__";
+    /** Abstraction value for unary 'and' <code>&</code>. */
+    public static final String U_AND = "__U_AND__";
+    /** Abstraction value for unary star <code>*</code>. */
+    public static final String U_STAR = "__U_STAR__";
+    /** Abstraction value for unary plus <code>+</code>. */
+    public static final String U_PLUS = "__U_PLUS__";
+    /** Abstraction value for unary minus <code>-</code>. */
+    public static final String U_MINUS = "__U_MINUS__";
+    /** Abstraction value for unary tilde <code>~</code>. */
+    public static final String U_TILDE = "__U_TILDE__";
+    /** Abstraction value for unary not <code>!</code>. */
+    public static final String U_NOT = "__U_NOT__";
+    /** Abstraction value for logical and <code>&&</code>. */
+    public static final String L_AND = "__L_AND__";
+    /** Abstraction value for logical or <code>||</code>. */
+    public static final String L_OR = "__L_OR__";
 
     private static class Replacement {
         private Pattern pattern;
