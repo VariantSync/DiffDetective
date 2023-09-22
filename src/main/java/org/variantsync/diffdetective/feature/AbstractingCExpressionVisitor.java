@@ -1,27 +1,18 @@
-// Generated from /home/alex/programming/DiffDetective/src/main/resources/grammars/CExpression.g4 by ANTLR 4.13.1
 package org.variantsync.diffdetective.feature;
 import org.antlr.v4.runtime.ParserRuleContext;
-import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.variantsync.diffdetective.feature.antlr.CExpressionParser;
-import org.variantsync.diffdetective.feature.antlr.CExpressionVisitor;
 
 import java.util.function.Function;
 
 /**
+ * Visitor that abstracts all symbols that might interfere with further formula analysis.
  */
 @SuppressWarnings("CheckReturnValue")
-public class AbstractingCExpressionVisitor extends AbstractParseTreeVisitor<StringBuilder> implements CExpressionVisitor<StringBuilder> {
+public class AbstractingCExpressionVisitor extends BasicCExpressionVisitor {
 
 	public AbstractingCExpressionVisitor() {}
-
-	// conditionalExpression
-	//    :   logicalOrExpression
-	//    ;
-	@Override public StringBuilder visitConditionalExpression(CExpressionParser.ConditionalExpressionContext ctx) {
-		return ctx.logicalOrExpression().accept(this);
-	}
 
 	// primaryExpression
 	//    :   Identifier
@@ -31,23 +22,6 @@ public class AbstractingCExpressionVisitor extends AbstractParseTreeVisitor<Stri
 	//    |   unaryOperator primaryExpression
 	//    ;
 	@Override public StringBuilder visitPrimaryExpression(CExpressionParser.PrimaryExpressionContext ctx) {
-		// Identifier
-		if (ctx.Identifier() != null) {
-			// Terminal
-			return new StringBuilder(ctx.Identifier().getText());
-		}
-		// Constant
-		if (ctx.Constant() != null) {
-			// Terminal
-			return new StringBuilder(ctx.Constant().getText());
-		}
-		// StringLiteral*
-		if (!ctx.StringLiteral().isEmpty()) {
-			// Terminal
-			StringBuilder sb = new StringBuilder();
-			ctx.StringLiteral().forEach(sb::append);
-			return sb;
-		}
 		// '(' conditionalExpression ')'
 		if (ctx.conditionalExpression() != null) {
 			StringBuilder sb = ctx.conditionalExpression().accept(this);
@@ -62,7 +36,7 @@ public class AbstractingCExpressionVisitor extends AbstractParseTreeVisitor<Stri
 			return sb;
 		}
 		// For all other variants, we delegate
-		throw new IllegalStateException();
+		return super.visitPrimaryExpression(ctx);
 	}
 
 	// unaryOperator

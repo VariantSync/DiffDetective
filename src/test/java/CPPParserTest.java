@@ -25,10 +25,10 @@ public class CPPParserTest {
             new TestCase("#if A || B", "A||B"),
             new TestCase("#if A && (B || C)", "A&&(B||C)"),
 
-            new TestCase("#if 1 > -42", "1__GT____SUB__42"),
-            new TestCase("#if 1 > +42", "1__GT____ADD__42"),
+            new TestCase("#if 1 > -42", "1__GT____U_MINUS__42"),
+            new TestCase("#if 1 > +42", "1__GT____U_PLUS__42"),
             new TestCase("#if 42 > A", "42__GT__A"),
-            new TestCase("#if 42 > ~A", "42__GT____NOT__A"),
+            new TestCase("#if 42 > ~A", "42__GT____U_TILDE__A"),
             new TestCase("#if A + B > 42", "A__ADD__B__GT__42"),
             new TestCase("#if A << B", "A__LSHIFT__B"),
             new TestCase("#if A ? B : C", "A__THEN__B__ELSE__C"),
@@ -40,13 +40,13 @@ public class CPPParserTest {
             new TestCase("#if APR_CHARSET_EBCDIC && !(('Z' - 'A') == 25)", "APR_CHARSET_EBCDIC&&!__LB____LB__'Z'__SUB__'A'__RB____EQ__25__RB__"),
             new TestCase("#if __has_include(<nss3/nss.h>)", "__has_include__LB____LT__nss3__DIV__nss.h__GT____RB__"),
             new TestCase("# if ((GNUTLS_VERSION_MAJOR + (GNUTLS_VERSION_MINOR > 0 || GNUTLS_VERSION_PATCH >= 20)) > 3)",
-                    "__LB____LB__GNUTLS_VERSION_MAJOR__ADD____LB__GNUTLS_VERSION_MINOR__GT__0__OR__GNUTLS_VERSION_PATCH__GEQ__20__RB____RB____GT__3__RB__"),
+                    "__LB____LB__GNUTLS_VERSION_MAJOR__ADD____LB__GNUTLS_VERSION_MINOR__GT__0__L_OR__GNUTLS_VERSION_PATCH__GEQ__20__RB____RB____GT__3__RB__"),
 
-            new TestCase("#if A && (B > C)", "A&&(B__GT__C)"),
-            new TestCase("#if (A && B) > C", "__LB__A__AND__B__RB____GT__C"),
-            new TestCase("#if C == (A || B)", "C__EQ____LB__A__OR__B__RB__"),
-            new TestCase("#if ((A && B) > C)", "(__LB__A__AND__B__RB____GT__C)"),
-            new TestCase("#if A && ((B + 1) > (C || D))", "A&&(__LB__B__ADD__1__RB____GT____LB__C__OR__D__RB)"),
+            new TestCase("#if A && (B > C)", "A&&__LB__B__GT__C__RB__"),
+            new TestCase("#if (A && B) > C", "__LB__A__L_AND__B__RB____GT__C"),
+            new TestCase("#if C == (A || B)", "C__EQ____LB__A__L_OR__B__RB__"),
+            new TestCase("#if ((A && B) > C)", "__LB____LB__A__L_AND__B__RB____GT__C__RB__"),
+            new TestCase("#if A && ((B + 1) > (C || D))", "A&&__LB____LB__B__ADD__1__RB____GT____LB__C__L_OR__D__RB____RB__"),
 
 
             new TestCase("#if A // Comment && B", "A"),
