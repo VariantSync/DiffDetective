@@ -1,10 +1,5 @@
 package org.variantsync.diffdetective.feature;
 
-import org.antlr.v4.runtime.CharStreams;
-import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.tree.ParseTree;
-import org.variantsync.diffdetective.feature.antlr.CExpressionLexer;
-import org.variantsync.diffdetective.feature.antlr.CExpressionParser;
 import org.variantsync.diffdetective.variation.diff.parse.IllFormedAnnotationException;
 
 import java.util.function.Supplier;
@@ -26,7 +21,7 @@ public class CPPDiffLineFormulaExtractor {
     private static final Pattern COMMENT_PATTERN = Pattern.compile("(/\\*.*?\\*/)|(/\\*.*)");
     private static final Pattern DEFINED_PATTERN = Pattern.compile("\\bdefined\\b(\\s*\\(\\s*(\\w*)\\s*\\))?");
 
-    private static final CExpressionSimplifier expressionSimplifier = new CExpressionSimplifier();
+    private static final ControllingCExpressionVisitor expressionSimplifier = new ControllingCExpressionVisitor();
 
     /**
      * Resolves any macros in the given formula that are relevant for feature annotations.
