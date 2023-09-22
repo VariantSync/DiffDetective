@@ -42,6 +42,13 @@ public class CPPParserTest {
             new TestCase("# if ((GNUTLS_VERSION_MAJOR + (GNUTLS_VERSION_MINOR > 0 || GNUTLS_VERSION_PATCH >= 20)) > 3)",
                     "__LB____LB__GNUTLS_VERSION_MAJOR__ADD____LB__GNUTLS_VERSION_MINOR__GT__0__OR__GNUTLS_VERSION_PATCH__GEQ__20__RB____RB____GT__3__RB__"),
 
+            new TestCase("#if A && (B > C)", "A&&(B__GT__C)"),
+            new TestCase("#if (A && B) > C", "__LB__A__AND__B__RB____GT__C"),
+            new TestCase("#if C == (A || B)", "C__EQ____LB__A__OR__B__RB__"),
+            new TestCase("#if ((A && B) > C)", "(__LB__A__AND__B__RB____GT__C)"),
+            new TestCase("#if A && ((B + 1) > (C || D))", "A&&(__LB__B__ADD__1__RB____GT____LB__C__OR__D__RB)"),
+
+
             new TestCase("#if A // Comment && B", "A"),
             new TestCase("#if A /* Comment */ && B", "A&&B"),
             new TestCase("#if A && B /* Multiline Comment", "A&&B"),
