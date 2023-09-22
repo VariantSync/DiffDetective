@@ -71,8 +71,6 @@ public class CPPDiffLineFormulaExtractor {
 
         ////// abstract arithmetics
         fm = expressionSimplifier.simplify(fm);
-        fm = BooleanAbstraction.arithmetics(fm);
-        fm = BooleanAbstraction.parentheses(fm);
 
         if (fm.isEmpty()) {
             throw couldNotExtractFormula.get();
