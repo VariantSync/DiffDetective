@@ -50,8 +50,17 @@ inclusiveOrExpression
     :   exclusiveOrExpression ('|' exclusiveOrExpression)*
     ;
 
+specialOperator
+    :   HasAttribute ('(' inclusiveOrExpression ')')?
+    |   HasCPPAttribute ('(' inclusiveOrExpression ')')?
+    |   HasCAttribute ('(' inclusiveOrExpression ')')?
+    |   HasBuiltin ('(' inclusiveOrExpression ')')?
+    |   HasInclude ('(' PathLiteral ')')?
+    |   inclusiveOrExpression
+    ;
+
 logicalAndExpression
-    :   inclusiveOrExpression ('&&' inclusiveOrExpression)*
+    :   specialOperator ('&&' specialOperator)*
     ;
 
 logicalOrExpression
@@ -113,6 +122,12 @@ NotEqual : '!=';
 Arrow : '->';
 Dot : '.';
 Ellipsis : '...';
+
+HasAttribute : '__has_attribute';
+HasCPPAttribute : '__has_cpp_attribute';
+HasCAttribute : '__has_c_attribute';
+HasBuiltin : '__has_builtin';
+HasInclude : '__has_include';
 
 Identifier
     :   IdentifierNondigit
@@ -329,6 +344,11 @@ HexadecimalEscapeSequence
 
 StringLiteral
     :   EncodingPrefix? '"' SCharSequence? '"'
+    ;
+
+PathLiteral
+    :   '<' SCharSequence? '>'
+    |   '"' SCharSequence? '"'
     ;
 
 fragment

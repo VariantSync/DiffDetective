@@ -129,11 +129,23 @@ public class AbstractingCExpressionVisitor extends BasicCExpressionVisitor {
 		return visitExpression(ctx, childContext -> childContext instanceof CExpressionParser.ExclusiveOrExpressionContext);
 	}
 
+	// specialOperator
+	//    :   '__has_attribute' ('(' inclusiveOrExpression ')')?
+	//    |   '__has_cpp_attribute' ('(' inclusiveOrExpression ')')?
+	//    |   '__has_c_attribute' ('(' inclusiveOrExpression ')')?
+	//    |   '__has_builtin' ('(' inclusiveOrExpression ')')?
+	//    |   '__has_include' ('(' PathLiteral ')')?
+	//    |   inclusiveOrExpression
+	//    ;
+	@Override public StringBuilder visitSpecialOperator(CExpressionParser.SpecialOperatorContext ctx) {
+		return visitExpression(ctx, childContext -> childContext instanceof CExpressionParser.InclusiveOrExpressionContext);
+	}
+
 	// logicalAndExpression
 	//    :   inclusiveOrExpression ('&&' inclusiveOrExpression)*
 	//    ;
 	@Override public StringBuilder visitLogicalAndExpression(CExpressionParser.LogicalAndExpressionContext ctx) {
-		return visitExpression(ctx, childExpression -> childExpression instanceof CExpressionParser.InclusiveOrExpressionContext);
+		return visitExpression(ctx, childExpression -> childExpression instanceof CExpressionParser.SpecialOperatorContext);
 	}
 
 	// logicalOrExpression
@@ -172,7 +184,16 @@ public class AbstractingCExpressionVisitor extends BasicCExpressionVisitor {
 					case "||" -> sb.append(BooleanAbstraction.L_OR);
 					case "?" -> sb.append(BooleanAbstraction.THEN);
 					case ":" -> sb.append(BooleanAbstraction.ELSE);
-					default -> throw new IllegalStateException();
+					case "." -> sb.append(BooleanAbstraction.DOT);
+					case "\"" -> sb.append(BooleanAbstraction.QUOTE);
+					case "(" -> sb.append(BooleanAbstraction.BRACKET_L);
+					case ")" -> sb.append(BooleanAbstraction.BRACKET_R);
+					case "__has_attribute" -> sb.append(BooleanAbstraction.HAS_ATTRIBUTE);
+					case "__has_cpp_attribute" -> sb.append(BooleanAbstraction.HAS_CPP_ATTRIBUTE);
+					case "__has_c_attribute" -> sb.append(BooleanAbstraction.HAS_C_ATTRIBUTE);
+					case "__has_builtin" -> sb.append(BooleanAbstraction.HAS_BUILTIN);
+					case "__has_include" -> sb.append(BooleanAbstraction.HAS_INCLUDE);
+					default -> sb.append(BooleanAbstraction.abstractAll(terminal.getText()));
 				}
 			} else {
 				// loop does not work as expected

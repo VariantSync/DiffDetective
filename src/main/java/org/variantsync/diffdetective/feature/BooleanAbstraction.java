@@ -73,6 +73,15 @@ public class BooleanAbstraction {
     public static final String L_AND = "__L_AND__";
     /** Abstraction value for logical or <code>||</code>. */
     public static final String L_OR = "__L_OR__";
+    /** Abstraction value for dots in paths <code>.</code>. */
+    public static final String DOT = "__DOT__";
+    /** Abstraction value for quotation marks in paths <code>"</code>. */
+    public static final String QUOTE = "__QUOTE__";
+    public static final String HAS_ATTRIBUTE = "HAS_ATTRIBUTE_";
+    public static final String HAS_CPP_ATTRIBUTE = "HAS_CPP_ATTRIBUTE_";
+    public static final String HAS_C_ATTRIBUTE = "HAS_C_ATTRIBUTE_";
+    public static final String HAS_BUILTIN = "HAS_BUILTIN_";
+    public static final String HAS_INCLUDE = "HAS_INCLUDE_";
 
     private static class Replacement {
         private Pattern pattern;
@@ -129,7 +138,7 @@ public class BooleanAbstraction {
         }
     }
 
-    private static final List<Replacement> ARITHMETICS = List.of(
+    private static final List<Replacement> REPLACEMENTS = List.of(
         // These replacements are carefully ordered by their length (longest first) to ensure that
         // the longest match is replaced first.
         Replacement.literal("<<", LSHIFT),
@@ -149,6 +158,17 @@ public class BooleanAbstraction {
         Replacement.literal("~", NOT),
         Replacement.literal("?", THEN),
         Replacement.literal(":", ELSE),
+        Replacement.literal( "&&", L_AND), 
+        Replacement.literal( "||", L_OR), 
+        Replacement.literal( ".", DOT), 
+        Replacement.literal( "\"", QUOTE), 
+        Replacement.literal( "(", BRACKET_L), 
+        Replacement.literal( ")", BRACKET_R), 
+        Replacement.literal( "__has_attribute", HAS_ATTRIBUTE), 
+        Replacement.literal( "__has_cpp_attribute", HAS_CPP_ATTRIBUTE), 
+        Replacement.literal( "__has_c_attribute", HAS_C_ATTRIBUTE), 
+        Replacement.literal( "__has_builtin", HAS_BUILTIN), 
+        Replacement.literal( "__has_include", HAS_INCLUDE), 
         Replacement.onlyFullWord("&", AND), // && has to be left untouched
         Replacement.onlyFullWord("|", OR) // || has to be left untouched
     );
@@ -158,8 +178,8 @@ public class BooleanAbstraction {
     private static final Pattern CALL = Pattern.compile("\\(([^\\s|&]*)\\)");
     private static final String CALL_REPLACEMENT = BRACKET_L + "$1" + BRACKET_R;
 
-    private static String abstractAll(String formula, final List<Replacement> replacements) {
-        for (var replacement : replacements) {
+    public static String abstractAll(String formula) {
+        for (var replacement : BooleanAbstraction.REPLACEMENTS) {
             formula = replacement.applyTo(formula);
         }
         return formula;
@@ -173,7 +193,7 @@ public class BooleanAbstraction {
      * @return A copy of the formula with abstracted arithmetics.
      */
     public static String arithmetics(final String formula) {
-        return abstractAll(formula, ARITHMETICS);
+        return abstractAll(formula);
     }
 
     /**

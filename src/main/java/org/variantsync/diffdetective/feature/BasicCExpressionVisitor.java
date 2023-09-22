@@ -67,7 +67,7 @@ public abstract class BasicCExpressionVisitor extends AbstractParseTreeVisitor<S
 	//    :   inclusiveOrExpression ('&&' inclusiveOrExpression)*
 	//    ;
 	@Override public StringBuilder visitLogicalAndExpression(CExpressionParser.LogicalAndExpressionContext ctx) {
-		return visitLogicalExpression(ctx, childExpression -> childExpression instanceof CExpressionParser.InclusiveOrExpressionContext);
+		return visitLogicalExpression(ctx, childExpression -> childExpression instanceof CExpressionParser.SpecialOperatorContext);
 	}
 
 	// logicalOrExpression
