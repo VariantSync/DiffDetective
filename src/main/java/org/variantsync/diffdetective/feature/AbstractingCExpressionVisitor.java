@@ -251,39 +251,7 @@ public class AbstractingCExpressionVisitor extends BasicCExpressionVisitor {
 				sb.append(subtree.accept(this));
 			} else if (subtree instanceof TerminalNode terminal) {
 				// Some operator that requires abstraction
-				switch (terminal.getText()) {
-					case "*" -> sb.append(BooleanAbstraction.MUL);
-					case "/" -> sb.append(BooleanAbstraction.DIV);
-					case "%" -> sb.append(BooleanAbstraction.MOD);
-					case "+" -> sb.append(BooleanAbstraction.ADD);
-					case "-" -> sb.append(BooleanAbstraction.SUB);
-					case "<<" -> sb.append(BooleanAbstraction.LSHIFT);
-					case ">>" -> sb.append(BooleanAbstraction.RSHIFT);
-					case "<" -> sb.append(BooleanAbstraction.LT);
-					case ">" -> sb.append(BooleanAbstraction.GT);
-					case "<=" -> sb.append(BooleanAbstraction.LEQ);
-					case ">=" -> sb.append(BooleanAbstraction.GEQ);
-					case "==" -> sb.append(BooleanAbstraction.EQ);
-					case "!=" -> sb.append(BooleanAbstraction.NEQ);
-					case "&" -> sb.append(BooleanAbstraction.AND);
-					case "^" -> sb.append(BooleanAbstraction.XOR);
-					case "|" -> sb.append(BooleanAbstraction.OR);
-					case "&&" -> sb.append(BooleanAbstraction.L_AND);
-					case "||" -> sb.append(BooleanAbstraction.L_OR);
-					case "?" -> sb.append(BooleanAbstraction.THEN);
-					case ":" -> sb.append(BooleanAbstraction.ELSE);
-					case "." -> sb.append(BooleanAbstraction.DOT);
-					case "\"" -> sb.append(BooleanAbstraction.QUOTE);
-					case "(" -> sb.append(BooleanAbstraction.BRACKET_L);
-					case ")" -> sb.append(BooleanAbstraction.BRACKET_R);
-					case "__has_attribute" -> sb.append(BooleanAbstraction.HAS_ATTRIBUTE);
-					case "__has_cpp_attribute" -> sb.append(BooleanAbstraction.HAS_CPP_ATTRIBUTE);
-					case "__has_c_attribute" -> sb.append(BooleanAbstraction.HAS_C_ATTRIBUTE);
-					case "__has_builtin" -> sb.append(BooleanAbstraction.HAS_BUILTIN);
-					case "__has_include" -> sb.append(BooleanAbstraction.HAS_INCLUDE);
-					case "defined" -> sb.append(BooleanAbstraction.DEFINED);
-					default -> sb.append(BooleanAbstraction.abstractAll(terminal.getText()));
-				}
+				sb.append(BooleanAbstraction.abstractFirstOrAll(terminal.getText()));
 			} else {
 				// loop does not work as expected
 				throw new IllegalStateException();
