@@ -63,7 +63,11 @@ public class CPPDiffLineFormulaExtractor {
         fm = COMMENT_PATTERN.matcher(fm).replaceAll("");
 
         // abstract arithmetics
-        fm = expressionSimplifier.simplify(fm);
+        try {
+            fm = expressionSimplifier.simplify(fm);
+        } catch (Exception e) {
+            throw couldNotExtractFormula.get();
+        }
 
         if (fm.isEmpty()) {
             throw couldNotExtractFormula.get();
