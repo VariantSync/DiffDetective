@@ -1,5 +1,6 @@
 package org.variantsync.diffdetective.feature;
 
+import org.tinylog.Logger;
 import org.variantsync.diffdetective.variation.diff.parse.IllFormedAnnotationException;
 
 import java.util.function.Supplier;
@@ -66,6 +67,7 @@ public class CPPDiffLineFormulaExtractor {
         try {
             fm = expressionSimplifier.simplify(fm);
         } catch (Exception e) {
+            Logger.warn(e);
             throw couldNotExtractFormula.get();
         }
 

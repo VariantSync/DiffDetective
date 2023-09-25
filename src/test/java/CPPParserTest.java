@@ -92,7 +92,14 @@ public class CPPParserTest {
             new TestCase("#if MACRO (A, B + C)", "MACRO___LB__A__B__ADD__C__RB__"),
             new TestCase("#if MACRO (A, B) == 1", "MACRO___LB__A__B__RB____EQ__1"),
 
-            new TestCase("#if ifndef", "ifndef")
+            new TestCase("#if ifndef", "ifndef"),
+
+                new TestCase("#if __has_include_next(<rewrite-includes8.h>)", ""),
+                new TestCase("#if __is_target_arch(x86)", ""),
+                new TestCase("#if A || (defined(OpenBSD) && (OpenBSD >= 199630))", ""),
+                new TestCase("#if MACRO(part:part)", ""),
+                new TestCase("#if A = 3", ""),
+                new TestCase("#if __has_warning(\"-Wan-island-to-discover\"_bar)", "")
         );
     }
 

@@ -147,7 +147,7 @@ public class AbstractingCExpressionVisitor extends BasicCExpressionVisitor {
 	//    |   HasCPPAttribute ('(' specialOperatorArgument ')')?
 	//    |   HasCAttribute ('(' specialOperatorArgument ')')?
 	//    |   HasBuiltin ('(' specialOperatorArgument ')')?
-	//    |   HasInclude ('(' (PathLiteral | StringLiteral) ')')?
+	//    |   HasInclude ('(' specialOperatorArgument ')')?
 	//    |   Defined ('(' specialOperatorArgument ')')?
 	//    |   Defined specialOperatorArgument?
 	//    ;
@@ -163,10 +163,12 @@ public class AbstractingCExpressionVisitor extends BasicCExpressionVisitor {
 	//    |   HasInclude
 	//    |   Defined
 	//    |   Identifier
+	//    |   PathLiteral
+	//    |   StringLiteral
 	//    ;
 	@Override
 	public StringBuilder visitSpecialOperatorArgument(CExpressionParser.SpecialOperatorArgumentContext ctx) {
-		return new StringBuilder(ctx.getText());
+		return new StringBuilder(BooleanAbstraction.abstractAll(ctx.getText()));
 	}
 
 	// logicalAndExpression
@@ -239,7 +241,7 @@ public class AbstractingCExpressionVisitor extends BasicCExpressionVisitor {
 		if (ctx.conditionalExpression() != null) {
 			return ctx.conditionalExpression().accept(this);
 		} else {
-			return new StringBuilder(ctx.DigitSequence().getText());
+			return new StringBuilder(BooleanAbstraction.abstractAll(ctx.getText()));
 		}
 	}
 

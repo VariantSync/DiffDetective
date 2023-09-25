@@ -21,7 +21,7 @@ specialOperator
     |   HasCPPAttribute ('(' specialOperatorArgument ')')?
     |   HasCAttribute ('(' specialOperatorArgument ')')?
     |   HasBuiltin ('(' specialOperatorArgument ')')?
-    |   HasInclude ('(' (PathLiteral | StringLiteral) ')')?
+    |   HasInclude ('(' specialOperatorArgument ')')?
     |   Defined ('(' specialOperatorArgument ')')?
     |   Defined specialOperatorArgument?
     ;
@@ -34,6 +34,8 @@ specialOperatorArgument
     |   HasInclude
     |   Defined
     |   Identifier
+    |   PathLiteral
+    |   StringLiteral
     ;
 
 unaryOperator
@@ -97,6 +99,8 @@ argumentExpressionList
 assignmentExpression
     :   conditionalExpression
     |   DigitSequence // for
+    |   PathLiteral
+    |   StringLiteral
     ;
 
 LeftParen : '(';
