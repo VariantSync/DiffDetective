@@ -89,7 +89,7 @@ public class BooleanAbstraction {
         private String replacement;
 
         /**
-         * @param original the literal string to be replaced if it matches a whole word
+         * @param pattern the literal string to be replaced if it matches a whole word
          * @param replacement the replacement with special escape codes according to
          * {@link Matcher#replaceAll}
          */
@@ -170,15 +170,16 @@ public class BooleanAbstraction {
         Replacement.literal( "__has_c_attribute", HAS_C_ATTRIBUTE), 
         Replacement.literal( "__has_builtin", HAS_BUILTIN), 
         Replacement.literal( "__has_include", HAS_INCLUDE), 
+        Replacement.literal( "defined", DEFINED),
         Replacement.onlyFullWord("&", AND), // && has to be left untouched
         Replacement.onlyFullWord("|", OR) // || has to be left untouched
     );
 
-    private static final Pattern COMMA = Pattern.compile(",");
-    private static final String COMMA_REPLACEMENT = "__";
-    private static final Pattern CALL = Pattern.compile("\\(([^\\s|&]*)\\)");
-    private static final String CALL_REPLACEMENT = BRACKET_L + "$1" + BRACKET_R;
-
+    /**
+     * Apply all possible abstraction replacements for substrings of the given formula.
+     * @param formula the formula to abstract
+     * @return a fully abstracted formula
+     */
     public static String abstractAll(String formula) {
         for (var replacement : BooleanAbstraction.REPLACEMENTS) {
             formula = replacement.applyTo(formula);
@@ -187,43 +188,18 @@ public class BooleanAbstraction {
     }
 
     /**
-     * Abstracts all arithmetics in the given formula.
-     * For example, a formula "3 >= 1 + 2" would be abstracted to a single variable "3__GEQ__1__ADD__2".
-     * The given formula should be a string of a CPP conforming condition.
-     * @param formula The formula whose arithmetics should be abstracted.
-     * @return A copy of the formula with abstracted arithmetics.
+     * Search for the first replacement that matches the entire formula and apply it. If no
+     * replacement for the entire formula is found, all possible replacements are applied to
+     * substrings of the formula.
+     * @param formula the formula to abstract
+     * @return a fully abstracted formula
      */
-    public static String arithmetics(final String formula) {
+    public static String abstractFirstOrAll(String formula) {
+        for (Replacement replacement : REPLACEMENTS) {
+            if (replacement.pattern.pattern().equals(formula)) {
+                return replacement.replacement;
+            }
+        }
         return abstractAll(formula);
-    }
-
-    /**
-     * Abstracts parentheses, including the commas of macro calls, in the given formula.
-     *
-     * For example, a call "FOO(3, 4, lol)" would be abstracted to a single variable "FOO__3__4__lol".
-     * The given formula should be a string of a CPP conforming condition.
-     * @param formula The formula whose function calls should be abstracted.
-     * @return A copy of the formula with abstracted function calls.
-     */
-    public static String parentheses(String formula) {
-        ////// abstract function calls
-        /// replace commata in macro calls
-        formula = COMMA.matcher(formula).replaceAll(COMMA_REPLACEMENT);
-
-        /// inline macro calls as long as there are some
-        /// Example
-        ///    bar(2, foo(A__MUL__(B__PLUS__C))
-        /// -> bar(2__foo(A__MUL__(B__PLUS__C))) // because of the comma replacement above
-        /// -> bar(2__foo(A__MUL____LB__B__PLUS__C__RB__))
-        /// -> bar(2__foo__LB__A__MUL____LB__B__PLUS__C__RB____RB__)
-        /// -> bar__LB__2__foo__LB__A__MUL____LB__B__PLUS__C__RB____RB____RB__
-        String old;
-        do {
-            old = formula;
-            formula = CALL.matcher(formula).replaceAll(CALL_REPLACEMENT);
-//            formula = formula.replaceAll("(\\w+)\\((\\w*)\\)", "$1__$2");
-        } while (!old.equals(formula));
-
-        return formula;
     }
 }

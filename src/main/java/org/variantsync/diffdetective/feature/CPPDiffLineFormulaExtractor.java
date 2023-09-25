@@ -19,7 +19,6 @@ public class CPPDiffLineFormulaExtractor {
     private static final String CPP_ANNOTATION_REGEX = "^[+-]?\\s*#\\s*(if|ifdef|ifndef|elif)(\\s+(.*)|(\\(.*\\)))$";
     private static final Pattern CPP_ANNOTATION_REGEX_PATTERN = Pattern.compile(CPP_ANNOTATION_REGEX);
     private static final Pattern COMMENT_PATTERN = Pattern.compile("(/\\*.*?\\*/)|(/\\*.*)");
-    private static final Pattern DEFINED_PATTERN = Pattern.compile("\\bdefined\\b(\\s*\\(\\s*(\\w*)\\s*\\))?");
 
     private static final ControllingCExpressionVisitor expressionSimplifier = new ControllingCExpressionVisitor();
 
@@ -58,18 +57,12 @@ public class CPPDiffLineFormulaExtractor {
         }
 
         // remove comments
+        // We have to handle this separately, because we are processing the input line-by-line and ANTLR will not be able to
+        // correctly parse (multi-line) block comments
         fm = fm.split("//")[0];
         fm = COMMENT_PATTERN.matcher(fm).replaceAll("");
 
-        // remove defined()
-//        fm = DEFINED_PATTERN.matcher(fm).replaceAll("DEFINED_$2");
-
-        // remove whitespace
-//        fm = fm.replaceAll("\\s", "");
-
-//        fm = resolveFeatureMacroFunctions(fm);
-
-        ////// abstract arithmetics
+        // abstract arithmetics
         fm = expressionSimplifier.simplify(fm);
 
         if (fm.isEmpty()) {
