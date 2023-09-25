@@ -23,6 +23,18 @@ public interface CExpressionVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitPrimaryExpression(CExpressionParser.PrimaryExpressionContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link CExpressionParser#specialOperator}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitSpecialOperator(CExpressionParser.SpecialOperatorContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link CExpressionParser#specialOperatorArgument}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitSpecialOperatorArgument(CExpressionParser.SpecialOperatorArgumentContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link CExpressionParser#unaryOperator}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -77,12 +89,6 @@ public interface CExpressionVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitInclusiveOrExpression(CExpressionParser.InclusiveOrExpressionContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link CExpressionParser#specialOperator}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitSpecialOperator(CExpressionParser.SpecialOperatorContext ctx);
-	/**
 	 * Visit a parse tree produced by {@link CExpressionParser#logicalAndExpression}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -94,4 +100,28 @@ public interface CExpressionVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitLogicalOrExpression(CExpressionParser.LogicalOrExpressionContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link CExpressionParser#logicalOperand}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitLogicalOperand(CExpressionParser.LogicalOperandContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link CExpressionParser#macroExpression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitMacroExpression(CExpressionParser.MacroExpressionContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link CExpressionParser#argumentExpressionList}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitArgumentExpressionList(CExpressionParser.ArgumentExpressionListContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link CExpressionParser#assignmentExpression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitAssignmentExpression(CExpressionParser.AssignmentExpressionContext ctx);
 }

@@ -82,6 +82,7 @@ public class BooleanAbstraction {
     public static final String HAS_C_ATTRIBUTE = "HAS_C_ATTRIBUTE_";
     public static final String HAS_BUILTIN = "HAS_BUILTIN_";
     public static final String HAS_INCLUDE = "HAS_INCLUDE_";
+    public static final String DEFINED = "DEFINED_";
 
     private static class Replacement {
         private Pattern pattern;

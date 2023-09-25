@@ -62,12 +62,12 @@ public class CPPDiffLineFormulaExtractor {
         fm = COMMENT_PATTERN.matcher(fm).replaceAll("");
 
         // remove defined()
-        fm = DEFINED_PATTERN.matcher(fm).replaceAll("DEFINED_$2");
+//        fm = DEFINED_PATTERN.matcher(fm).replaceAll("DEFINED_$2");
 
         // remove whitespace
-        fm = fm.replaceAll("\\s", "");
+//        fm = fm.replaceAll("\\s", "");
 
-        fm = resolveFeatureMacroFunctions(fm);
+//        fm = resolveFeatureMacroFunctions(fm);
 
         ////// abstract arithmetics
         fm = expressionSimplifier.simplify(fm);

@@ -29,6 +29,8 @@ public class AbstractingCExpressionVisitor extends BasicCExpressionVisitor {
 	//    |   StringLiteral+
 	//    |   '(' conditionalExpression ')'
 	//    |   unaryOperator primaryExpression
+	//    |   macroExpression
+	//    |   specialOperator
 	//    ;
 	@Override public StringBuilder visitPrimaryExpression(CExpressionParser.PrimaryExpressionContext ctx) {
 		// '(' conditionalExpression ')'
@@ -44,6 +46,17 @@ public class AbstractingCExpressionVisitor extends BasicCExpressionVisitor {
 			sb.append(ctx.primaryExpression().accept(this));
 			return sb;
 		}
+
+		// macroExpression
+		if (ctx.macroExpression() != null) {
+			return ctx.macroExpression().accept(this);
+		}
+
+		// specialOperator
+		if (ctx.specialOperator() != null) {
+			return ctx.specialOperator().accept(this);
+		}
+
 		// For all other variants, we delegate
 		return super.visitPrimaryExpression(ctx);
 	}
@@ -130,22 +143,36 @@ public class AbstractingCExpressionVisitor extends BasicCExpressionVisitor {
 	}
 
 	// specialOperator
-	//    :   '__has_attribute' ('(' inclusiveOrExpression ')')?
-	//    |   '__has_cpp_attribute' ('(' inclusiveOrExpression ')')?
-	//    |   '__has_c_attribute' ('(' inclusiveOrExpression ')')?
-	//    |   '__has_builtin' ('(' inclusiveOrExpression ')')?
-	//    |   '__has_include' ('(' PathLiteral ')')?
-	//    |   inclusiveOrExpression
+	//    :   HasAttribute ('(' Identifier ')')?
+	//    |   HasCPPAttribute ('(' Identifier ')')?
+	//    |   HasCAttribute ('(' Identifier ')')?
+	//    |   HasBuiltin ('(' Identifier ')')?
+	//    |   HasInclude ('(' PathLiteral ')')?
+	//    |   Defined ('(' Identifier ')')?
 	//    ;
 	@Override public StringBuilder visitSpecialOperator(CExpressionParser.SpecialOperatorContext ctx) {
-		return visitExpression(ctx, childContext -> childContext instanceof CExpressionParser.InclusiveOrExpressionContext);
+		return visitExpression(ctx, childContext -> childContext instanceof CExpressionParser.SpecialOperatorArgumentContext);
+	}
+
+	// specialOperatorArgument
+	//    :   HasAttribute
+	//    |   HasCPPAttribute
+	//    |   HasCAttribute
+	//    |   HasBuiltin
+	//    |   HasInclude
+	//    |   Defined
+	//    |   Identifier
+	//    ;
+	@Override
+	public StringBuilder visitSpecialOperatorArgument(CExpressionParser.SpecialOperatorArgumentContext ctx) {
+		return new StringBuilder(ctx.getText());
 	}
 
 	// logicalAndExpression
-	//    :   inclusiveOrExpression ('&&' inclusiveOrExpression)*
+	//    :   logicalOperand ( '&&' logicalOperand)*
 	//    ;
 	@Override public StringBuilder visitLogicalAndExpression(CExpressionParser.LogicalAndExpressionContext ctx) {
-		return visitExpression(ctx, childExpression -> childExpression instanceof CExpressionParser.SpecialOperatorContext);
+		return visitExpression(ctx, childExpression -> childExpression instanceof CExpressionParser.LogicalOperandContext);
 	}
 
 	// logicalOrExpression
@@ -153,6 +180,66 @@ public class AbstractingCExpressionVisitor extends BasicCExpressionVisitor {
 	//    ;
 	@Override public StringBuilder visitLogicalOrExpression(CExpressionParser.LogicalOrExpressionContext ctx) {
 		return visitExpression(ctx, childExpression -> childExpression instanceof CExpressionParser.LogicalAndExpressionContext);
+	}
+
+	// logicalOperand
+	//    :   inclusiveOrExpression
+	//    |   macroExpression
+	//    ;
+	@Override
+	public StringBuilder visitLogicalOperand(CExpressionParser.LogicalOperandContext ctx) {
+		if (ctx.inclusiveOrExpression() != null) {
+			return ctx.inclusiveOrExpression().accept(this);
+		} else {
+			return ctx.macroExpression().accept(this);
+		}
+	}
+
+	// macroExpression
+	//    :   Identifier '(' argumentExpressionList? ')'
+	//    |   Identifier assignmentExpression
+	//    ;
+	@Override
+	public StringBuilder visitMacroExpression(CExpressionParser.MacroExpressionContext ctx) {
+		StringBuilder sb = new StringBuilder();
+		sb.append(ctx.Identifier().getText().toUpperCase()).append("_");
+		if (ctx.assignmentExpression() != null) {
+			sb.append(ctx.assignmentExpression().accept(this));
+		} else if (ctx.argumentExpressionList() != null) {
+			sb.append(ctx.argumentExpressionList().accept(this));
+		}
+		return sb;
+	}
+
+	// argumentExpressionList
+	//    :   assignmentExpression (',' assignmentExpression)*
+	//    ;
+	@Override
+	public StringBuilder visitArgumentExpressionList(CExpressionParser.ArgumentExpressionListContext ctx) {
+		StringBuilder sb = new StringBuilder();
+		sb.append(BooleanAbstraction.BRACKET_L);
+		for (int i = 0; i < ctx.assignmentExpression().size(); i++) {
+			sb.append(ctx.assignmentExpression(i).accept(this));
+			if (i < ctx.assignmentExpression().size()-1) {
+				// For each ',' separating arguments
+				sb.append("__");
+			}
+		}
+		sb.append(BooleanAbstraction.BRACKET_R);
+		return sb;
+	}
+
+	// assignmentExpression
+	//    :   conditionalExpression
+	//    |   DigitSequence // for
+	//    ;
+	@Override
+	public StringBuilder visitAssignmentExpression(CExpressionParser.AssignmentExpressionContext ctx) {
+		if (ctx.conditionalExpression() != null) {
+			return ctx.conditionalExpression().accept(this);
+		} else {
+			return new StringBuilder(ctx.DigitSequence().getText());
+		}
 	}
 
 	private StringBuilder visitExpression(ParserRuleContext expressionContext, Function<ParseTree, Boolean> instanceCheck) {
@@ -193,6 +280,7 @@ public class AbstractingCExpressionVisitor extends BasicCExpressionVisitor {
 					case "__has_c_attribute" -> sb.append(BooleanAbstraction.HAS_C_ATTRIBUTE);
 					case "__has_builtin" -> sb.append(BooleanAbstraction.HAS_BUILTIN);
 					case "__has_include" -> sb.append(BooleanAbstraction.HAS_INCLUDE);
+					case "defined" -> sb.append(BooleanAbstraction.DEFINED);
 					default -> sb.append(BooleanAbstraction.abstractAll(terminal.getText()));
 				}
 			} else {

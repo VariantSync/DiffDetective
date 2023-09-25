@@ -21,6 +21,7 @@ public abstract class BasicCExpressionVisitor extends AbstractParseTreeVisitor<S
 	//    |   StringLiteral+
 	//    |   '(' conditionalExpression ')'
 	//    |   unaryOperator primaryExpression
+	//    |   macroExpression
 	//    ;
 	@Override public StringBuilder visitPrimaryExpression(CExpressionParser.PrimaryExpressionContext ctx) {
 		// Identifier
@@ -62,35 +63,4 @@ public abstract class BasicCExpressionVisitor extends AbstractParseTreeVisitor<S
 	//    ;
 	@Override public StringBuilder visitUnaryOperator(CExpressionParser.UnaryOperatorContext ctx) { return new StringBuilder(ctx.getText()); }
 
-
-	// logicalAndExpression
-	//    :   inclusiveOrExpression ('&&' inclusiveOrExpression)*
-	//    ;
-	@Override public StringBuilder visitLogicalAndExpression(CExpressionParser.LogicalAndExpressionContext ctx) {
-		return visitLogicalExpression(ctx, childExpression -> childExpression instanceof CExpressionParser.SpecialOperatorContext);
-	}
-
-	// logicalOrExpression
-	//    :   logicalAndExpression ( '||' logicalAndExpression)*
-	//    ;
-	@Override public StringBuilder visitLogicalOrExpression(CExpressionParser.LogicalOrExpressionContext ctx) {
-		return visitLogicalExpression(ctx, childExpression -> childExpression instanceof CExpressionParser.LogicalAndExpressionContext);
-	}
-
-	private StringBuilder visitLogicalExpression(ParserRuleContext expressionContext, Function<ParseTree, Boolean> instanceCheck) {
-		StringBuilder sb = new StringBuilder();
-		for (ParseTree subtree : expressionContext.children) {
-			if (instanceCheck.apply(subtree)) {
-				// logicalAndExpression | InclusiveOrExpression
-				sb.append(subtree.accept(this));
-			} else if (subtree instanceof TerminalNode terminal) {
-				// '&&' | '||'
-				sb.append(terminal.getText());
-			} else {
-				// loop does not work as expected
-				throw new IllegalStateException();
-			}
-		}
-		return sb;
-	}
 }
