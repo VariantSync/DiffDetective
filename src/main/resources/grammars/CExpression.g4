@@ -12,6 +12,28 @@ primaryExpression
     |   StringLiteral+
     |   '(' conditionalExpression ')'
     |   unaryOperator primaryExpression
+    |   macroExpression
+    |   specialOperator
+    ;
+
+specialOperator
+    :   HasAttribute ('(' specialOperatorArgument ')')?
+    |   HasCPPAttribute ('(' specialOperatorArgument ')')?
+    |   HasCAttribute ('(' specialOperatorArgument ')')?
+    |   HasBuiltin ('(' specialOperatorArgument ')')?
+    |   HasInclude ('(' PathLiteral ')')?
+    |   Defined ('(' specialOperatorArgument ')')?
+    |   Defined specialOperatorArgument?
+    ;
+
+specialOperatorArgument
+    :   HasAttribute
+    |   HasCPPAttribute
+    |   HasCAttribute
+    |   HasBuiltin
+    |   HasInclude
+    |   Defined
+    |   Identifier
     ;
 
 unaryOperator
@@ -50,23 +72,32 @@ inclusiveOrExpression
     :   exclusiveOrExpression ('|' exclusiveOrExpression)*
     ;
 
-specialOperator
-    :   HasAttribute ('(' inclusiveOrExpression ')')?
-    |   HasCPPAttribute ('(' inclusiveOrExpression ')')?
-    |   HasCAttribute ('(' inclusiveOrExpression ')')?
-    |   HasBuiltin ('(' inclusiveOrExpression ')')?
-    |   HasInclude ('(' PathLiteral ')')?
-    |   inclusiveOrExpression
-    ;
-
 logicalAndExpression
-    :   specialOperator ('&&' specialOperator)*
+    :   logicalOperand ( '&&' logicalOperand)*
     ;
 
 logicalOrExpression
     :   logicalAndExpression ( '||' logicalAndExpression)*
     ;
 
+logicalOperand
+    :   inclusiveOrExpression
+    |   macroExpression
+    ;
+
+macroExpression
+    :   Identifier '(' argumentExpressionList? ')'
+    |   Identifier assignmentExpression
+    ;
+
+argumentExpressionList
+    :   assignmentExpression (',' assignmentExpression)*
+    ;
+
+assignmentExpression
+    :   conditionalExpression
+    |   DigitSequence // for
+    ;
 
 LeftParen : '(';
 RightParen : ')';
@@ -128,6 +159,7 @@ HasCPPAttribute : '__has_cpp_attribute';
 HasCAttribute : '__has_c_attribute';
 HasBuiltin : '__has_builtin';
 HasInclude : '__has_include';
+Defined : 'defined';
 
 Identifier
     :   IdentifierNondigit

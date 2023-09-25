@@ -41,6 +41,30 @@ public class CExpressionBaseListener implements CExpressionListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterSpecialOperator(CExpressionParser.SpecialOperatorContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitSpecialOperator(CExpressionParser.SpecialOperatorContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterSpecialOperatorArgument(CExpressionParser.SpecialOperatorArgumentContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitSpecialOperatorArgument(CExpressionParser.SpecialOperatorArgumentContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterUnaryOperator(CExpressionParser.UnaryOperatorContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -149,18 +173,6 @@ public class CExpressionBaseListener implements CExpressionListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterSpecialOperator(CExpressionParser.SpecialOperatorContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitSpecialOperator(CExpressionParser.SpecialOperatorContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterLogicalAndExpression(CExpressionParser.LogicalAndExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -180,6 +192,54 @@ public class CExpressionBaseListener implements CExpressionListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitLogicalOrExpression(CExpressionParser.LogicalOrExpressionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterLogicalOperand(CExpressionParser.LogicalOperandContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitLogicalOperand(CExpressionParser.LogicalOperandContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterMacroExpression(CExpressionParser.MacroExpressionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitMacroExpression(CExpressionParser.MacroExpressionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterArgumentExpressionList(CExpressionParser.ArgumentExpressionListContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitArgumentExpressionList(CExpressionParser.ArgumentExpressionListContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterAssignmentExpression(CExpressionParser.AssignmentExpressionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitAssignmentExpression(CExpressionParser.AssignmentExpressionContext ctx) { }
 
 	/**
 	 * {@inheritDoc}

@@ -1,9 +1,13 @@
 package org.variantsync.diffdetective.feature;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.TerminalNode;
 import org.variantsync.diffdetective.feature.antlr.CExpressionLexer;
 import org.variantsync.diffdetective.feature.antlr.CExpressionParser;
+
+import java.util.function.Function;
 
 /**
  * Visitor that controls how subtrees are evaluated further.
@@ -34,6 +38,30 @@ public class ControllingCExpressionVisitor extends BasicCExpressionVisitor {
 			// logicalOrExpression
 			return ctx.logicalOrExpression().accept(this);
 		}
+	}
+
+	// primaryExpression
+	//    :   Identifier
+	//    |   Constant
+	//    |   StringLiteral+
+	//    |   '(' conditionalExpression ')'
+	//    |   unaryOperator primaryExpression
+	//    |   macroExpression
+	//    |   specialOperator
+	//    ;
+	@Override public StringBuilder visitPrimaryExpression(CExpressionParser.PrimaryExpressionContext ctx) {
+		// macroExpression
+		if (ctx.macroExpression() != null) {
+			return ctx.macroExpression().accept(abstractingVisitor);
+		}
+
+		// specialOperator
+		if (ctx.specialOperator() != null) {
+			return ctx.specialOperator().accept(abstractingVisitor);
+		}
+
+		// For all other variants, we delegate
+		return super.visitPrimaryExpression(ctx);
 	}
 
 	// multiplicativeExpression
@@ -112,26 +140,46 @@ public class ControllingCExpressionVisitor extends BasicCExpressionVisitor {
 	}
 
 	// specialOperator
-	//    :   '__has_attribute' ('(' inclusiveOrExpression ')')?
-	//    |   '__has_cpp_attribute' ('(' inclusiveOrExpression ')')?
-	//    |   '__has_c_attribute' ('(' inclusiveOrExpression ')')?
-	//    |   '__has_builtin' ('(' inclusiveOrExpression ')')?
-	//    |   '__has_include' ('(' PathLiteral ')')?
-	//    |   inclusiveOrExpression
+	//    :   HasAttribute ('(' specialOperatorArgument ')')?
+	//    |   HasCPPAttribute ('(' specialOperatorArgument ')')?
+	//    |   HasCAttribute ('(' specialOperatorArgument ')')?
+	//    |   HasBuiltin ('(' specialOperatorArgument ')')?
+	//    |   HasInclude ('(' PathLiteral ')')?
+	//    |   Defined ('(' specialOperatorArgument ')')?
+	//    |   Defined specialOperatorArgument?
 	//    ;
 	@Override public StringBuilder visitSpecialOperator(CExpressionParser.SpecialOperatorContext ctx) {
-		if (ctx.children.size() > 1 || ctx.inclusiveOrExpression() == null) {
-			// : '__has_attribute' ('(' inclusiveOrExpression ')')?
-			// | '__has_cpp_attribute' ('(' inclusiveOrExpression ')')?
-			// | '__has_c_attribute' ('(' inclusiveOrExpression ')')?
-			// | '__has_builtin' ('(' inclusiveOrExpression ')')?
-			// We have to abstract the special operator
-			return ctx.accept(abstractingVisitor);
-		} else {
-			// inclusiveOrExpression
-			// There is exactly one child expression
-			return ctx.inclusiveOrExpression().accept(this);
-		}
+		// We have to abstract the special operator
+		return ctx.accept(abstractingVisitor);
+	}
+
+	// specialOperatorArgument
+	//    :   HasAttribute
+	//    |   HasCPPAttribute
+	//    |   HasCAttribute
+	//    |   HasBuiltin
+	//    |   HasInclude
+	//    |   Defined
+	//    |   Identifier
+	//    ;
+	@Override
+	public StringBuilder visitSpecialOperatorArgument(CExpressionParser.SpecialOperatorArgumentContext ctx) {
+		return ctx.accept(abstractingVisitor);
+	}
+
+	@Override
+	public StringBuilder visitMacroExpression(CExpressionParser.MacroExpressionContext ctx) {
+		return ctx.accept(abstractingVisitor);
+	}
+
+	@Override
+	public StringBuilder visitArgumentExpressionList(CExpressionParser.ArgumentExpressionListContext ctx) {
+		return ctx.accept(abstractingVisitor);
+	}
+
+	@Override
+	public StringBuilder visitAssignmentExpression(CExpressionParser.AssignmentExpressionContext ctx) {
+		return ctx.accept(abstractingVisitor);
 	}
 
 	// andExpression
@@ -177,5 +225,49 @@ public class ControllingCExpressionVisitor extends BasicCExpressionVisitor {
 			// There is exactly one child expression
 			return ctx.exclusiveOrExpression(0).accept(this);
 		}
+	}
+
+	// logicalAndExpression
+	//    :   logicalOperand ( '&&' logicalOperand)*
+	//    ;
+	@Override public StringBuilder visitLogicalAndExpression(CExpressionParser.LogicalAndExpressionContext ctx) {
+		return visitLogicalExpression(ctx, childExpression -> childExpression instanceof CExpressionParser.LogicalOperandContext);
+	}
+
+	// logicalOrExpression
+	//    :   logicalAndExpression ( '||' logicalAndExpression)*
+	//    ;
+	@Override public StringBuilder visitLogicalOrExpression(CExpressionParser.LogicalOrExpressionContext ctx) {
+		return visitLogicalExpression(ctx, childExpression -> childExpression instanceof CExpressionParser.LogicalAndExpressionContext);
+	}
+
+	// logicalOperand
+	//    :   inclusiveOrExpression
+	//    |   macroExpression
+	//    ;
+	@Override
+	public StringBuilder visitLogicalOperand(CExpressionParser.LogicalOperandContext ctx) {
+		if (ctx.inclusiveOrExpression() != null) {
+			return ctx.inclusiveOrExpression().accept(this);
+		} else {
+			return ctx.macroExpression().accept(abstractingVisitor);
+		}
+	}
+
+	private StringBuilder visitLogicalExpression(ParserRuleContext expressionContext, Function<ParseTree, Boolean> instanceCheck) {
+		StringBuilder sb = new StringBuilder();
+		for (ParseTree subtree : expressionContext.children) {
+			if (instanceCheck.apply(subtree)) {
+				// logicalAndExpression | InclusiveOrExpression
+				sb.append(subtree.accept(this));
+			} else if (subtree instanceof TerminalNode terminal) {
+				// '&&' | '||'
+				sb.append(terminal.getText());
+			} else {
+				// loop does not work as expected
+				throw new IllegalStateException();
+			}
+		}
+		return sb;
 	}
 }

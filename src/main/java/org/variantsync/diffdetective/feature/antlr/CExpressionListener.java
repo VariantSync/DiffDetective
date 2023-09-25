@@ -28,6 +28,26 @@ public interface CExpressionListener extends ParseTreeListener {
 	 */
 	void exitPrimaryExpression(CExpressionParser.PrimaryExpressionContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link CExpressionParser#specialOperator}.
+	 * @param ctx the parse tree
+	 */
+	void enterSpecialOperator(CExpressionParser.SpecialOperatorContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link CExpressionParser#specialOperator}.
+	 * @param ctx the parse tree
+	 */
+	void exitSpecialOperator(CExpressionParser.SpecialOperatorContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link CExpressionParser#specialOperatorArgument}.
+	 * @param ctx the parse tree
+	 */
+	void enterSpecialOperatorArgument(CExpressionParser.SpecialOperatorArgumentContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link CExpressionParser#specialOperatorArgument}.
+	 * @param ctx the parse tree
+	 */
+	void exitSpecialOperatorArgument(CExpressionParser.SpecialOperatorArgumentContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link CExpressionParser#unaryOperator}.
 	 * @param ctx the parse tree
 	 */
@@ -118,16 +138,6 @@ public interface CExpressionListener extends ParseTreeListener {
 	 */
 	void exitInclusiveOrExpression(CExpressionParser.InclusiveOrExpressionContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link CExpressionParser#specialOperator}.
-	 * @param ctx the parse tree
-	 */
-	void enterSpecialOperator(CExpressionParser.SpecialOperatorContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link CExpressionParser#specialOperator}.
-	 * @param ctx the parse tree
-	 */
-	void exitSpecialOperator(CExpressionParser.SpecialOperatorContext ctx);
-	/**
 	 * Enter a parse tree produced by {@link CExpressionParser#logicalAndExpression}.
 	 * @param ctx the parse tree
 	 */
@@ -147,4 +157,44 @@ public interface CExpressionListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitLogicalOrExpression(CExpressionParser.LogicalOrExpressionContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link CExpressionParser#logicalOperand}.
+	 * @param ctx the parse tree
+	 */
+	void enterLogicalOperand(CExpressionParser.LogicalOperandContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link CExpressionParser#logicalOperand}.
+	 * @param ctx the parse tree
+	 */
+	void exitLogicalOperand(CExpressionParser.LogicalOperandContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link CExpressionParser#macroExpression}.
+	 * @param ctx the parse tree
+	 */
+	void enterMacroExpression(CExpressionParser.MacroExpressionContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link CExpressionParser#macroExpression}.
+	 * @param ctx the parse tree
+	 */
+	void exitMacroExpression(CExpressionParser.MacroExpressionContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link CExpressionParser#argumentExpressionList}.
+	 * @param ctx the parse tree
+	 */
+	void enterArgumentExpressionList(CExpressionParser.ArgumentExpressionListContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link CExpressionParser#argumentExpressionList}.
+	 * @param ctx the parse tree
+	 */
+	void exitArgumentExpressionList(CExpressionParser.ArgumentExpressionListContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link CExpressionParser#assignmentExpression}.
+	 * @param ctx the parse tree
+	 */
+	void enterAssignmentExpression(CExpressionParser.AssignmentExpressionContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link CExpressionParser#assignmentExpression}.
+	 * @param ctx the parse tree
+	 */
+	void exitAssignmentExpression(CExpressionParser.AssignmentExpressionContext ctx);
 }
