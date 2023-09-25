@@ -143,12 +143,13 @@ public class AbstractingCExpressionVisitor extends BasicCExpressionVisitor {
 	}
 
 	// specialOperator
-	//    :   HasAttribute ('(' Identifier ')')?
-	//    |   HasCPPAttribute ('(' Identifier ')')?
-	//    |   HasCAttribute ('(' Identifier ')')?
-	//    |   HasBuiltin ('(' Identifier ')')?
-	//    |   HasInclude ('(' PathLiteral ')')?
-	//    |   Defined ('(' Identifier ')')?
+	//    :   HasAttribute ('(' specialOperatorArgument ')')?
+	//    |   HasCPPAttribute ('(' specialOperatorArgument ')')?
+	//    |   HasCAttribute ('(' specialOperatorArgument ')')?
+	//    |   HasBuiltin ('(' specialOperatorArgument ')')?
+	//    |   HasInclude ('(' (PathLiteral | StringLiteral) ')')?
+	//    |   Defined ('(' specialOperatorArgument ')')?
+	//    |   Defined specialOperatorArgument?
 	//    ;
 	@Override public StringBuilder visitSpecialOperator(CExpressionParser.SpecialOperatorContext ctx) {
 		return visitExpression(ctx, childContext -> childContext instanceof CExpressionParser.SpecialOperatorArgumentContext);

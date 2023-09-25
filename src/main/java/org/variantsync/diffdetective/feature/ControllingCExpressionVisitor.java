@@ -144,7 +144,7 @@ public class ControllingCExpressionVisitor extends BasicCExpressionVisitor {
 	//    |   HasCPPAttribute ('(' specialOperatorArgument ')')?
 	//    |   HasCAttribute ('(' specialOperatorArgument ')')?
 	//    |   HasBuiltin ('(' specialOperatorArgument ')')?
-	//    |   HasInclude ('(' PathLiteral ')')?
+	//    |   HasInclude ('(' (PathLiteral | StringLiteral) ')')?
 	//    |   Defined ('(' specialOperatorArgument ')')?
 	//    |   Defined specialOperatorArgument?
 	//    ;
