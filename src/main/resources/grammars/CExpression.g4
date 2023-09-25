@@ -21,7 +21,7 @@ specialOperator
     |   HasCPPAttribute ('(' specialOperatorArgument ')')?
     |   HasCAttribute ('(' specialOperatorArgument ')')?
     |   HasBuiltin ('(' specialOperatorArgument ')')?
-    |   HasInclude ('(' PathLiteral ')')?
+    |   HasInclude ('(' (PathLiteral | StringLiteral) ')')?
     |   Defined ('(' specialOperatorArgument ')')?
     |   Defined specialOperatorArgument?
     ;
@@ -380,7 +380,6 @@ StringLiteral
 
 PathLiteral
     :   '<' SCharSequence? '>'
-    |   '"' SCharSequence? '"'
     ;
 
 fragment

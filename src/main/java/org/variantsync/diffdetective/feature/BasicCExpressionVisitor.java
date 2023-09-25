@@ -1,12 +1,7 @@
 package org.variantsync.diffdetective.feature;
-import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
-import org.antlr.v4.runtime.tree.ParseTree;
-import org.antlr.v4.runtime.tree.TerminalNode;
 import org.variantsync.diffdetective.feature.antlr.CExpressionParser;
 import org.variantsync.diffdetective.feature.antlr.CExpressionVisitor;
-
-import java.util.function.Function;
 
 /**
  * Visitor that implements basic functionality for grammar rules that do not require special handling.
