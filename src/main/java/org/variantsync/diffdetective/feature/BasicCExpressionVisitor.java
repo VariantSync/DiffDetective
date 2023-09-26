@@ -23,12 +23,12 @@ public abstract class BasicCExpressionVisitor extends AbstractParseTreeVisitor<S
 		// Identifier
 		if (ctx.Identifier() != null) {
 			// Terminal
-			return new StringBuilder(ctx.Identifier().getText());
+			return new StringBuilder(ctx.Identifier().getText().trim());
 		}
 		// Constant
 		if (ctx.Constant() != null) {
 			// Terminal
-			return new StringBuilder(ctx.Constant().getText());
+			return new StringBuilder(ctx.Constant().getText().trim());
 		}
 		// '(' conditionalExpression ')'
 		if (ctx.expression() != null) {

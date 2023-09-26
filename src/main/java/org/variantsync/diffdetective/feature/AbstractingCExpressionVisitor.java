@@ -65,7 +65,7 @@ public class AbstractingCExpressionVisitor extends BasicCExpressionVisitor {
 		if (!ctx.StringLiteral().isEmpty()) {
 			// Terminal
 			StringBuilder sb = new StringBuilder();
-			ctx.StringLiteral().stream().map(ParseTree::getText).map(BooleanAbstraction::abstractAll).forEach(sb::append);
+			ctx.StringLiteral().stream().map(ParseTree::getText).map(String::trim).map(BooleanAbstraction::abstractAll).forEach(sb::append);
 			return sb;
 		}
 
@@ -188,7 +188,7 @@ public class AbstractingCExpressionVisitor extends BasicCExpressionVisitor {
 	//    ;
 	@Override
 	public StringBuilder visitSpecialOperatorArgument(CExpressionParser.SpecialOperatorArgumentContext ctx) {
-		return new StringBuilder(BooleanAbstraction.abstractAll(ctx.getText()));
+		return new StringBuilder(BooleanAbstraction.abstractAll(ctx.getText().trim()));
 	}
 
 	// logicalAndExpression
@@ -225,7 +225,7 @@ public class AbstractingCExpressionVisitor extends BasicCExpressionVisitor {
 	@Override
 	public StringBuilder visitMacroExpression(CExpressionParser.MacroExpressionContext ctx) {
 		StringBuilder sb = new StringBuilder();
-		sb.append(ctx.Identifier().getText().toUpperCase()).append("_");
+		sb.append(ctx.Identifier().getText().trim().toUpperCase()).append("_");
 		if (ctx.assignmentExpression() != null) {
 			sb.append(ctx.assignmentExpression().accept(this));
 		} else if (ctx.argumentExpressionList() != null) {
@@ -271,7 +271,7 @@ public class AbstractingCExpressionVisitor extends BasicCExpressionVisitor {
 			sb.append(ctx.assignmentExpression().accept(this));
 			return sb;
 		} else {
-			return new StringBuilder(BooleanAbstraction.abstractAll(ctx.getText()));
+			return new StringBuilder(BooleanAbstraction.abstractAll(ctx.getText().trim()));
 		}
 	}
 
@@ -280,7 +280,7 @@ public class AbstractingCExpressionVisitor extends BasicCExpressionVisitor {
 	//    ;
 	@Override
 	public StringBuilder visitAssignmentOperator(CExpressionParser.AssignmentOperatorContext ctx) {
-		return new StringBuilder(BooleanAbstraction.abstractFirstOrAll(ctx.getText()));
+		return new StringBuilder(BooleanAbstraction.abstractFirstOrAll(ctx.getText().trim()));
 	}
 
 	// expression
@@ -299,7 +299,7 @@ public class AbstractingCExpressionVisitor extends BasicCExpressionVisitor {
 				sb.append(subtree.accept(this));
 			} else if (subtree instanceof TerminalNode terminal) {
 				// Some operator that requires abstraction
-				sb.append(BooleanAbstraction.abstractFirstOrAll(terminal.getText()));
+				sb.append(BooleanAbstraction.abstractFirstOrAll(terminal.getText().trim()));
 			} else {
 				// loop does not work as expected
 				throw new IllegalStateException();
