@@ -8,6 +8,16 @@ import org.antlr.v4.runtime.tree.ParseTreeListener;
  */
 public interface CExpressionListener extends ParseTreeListener {
 	/**
+	 * Enter a parse tree produced by {@link CExpressionParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void enterExpression(CExpressionParser.ExpressionContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link CExpressionParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void exitExpression(CExpressionParser.ExpressionContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link CExpressionParser#conditionalExpression}.
 	 * @param ctx the parse tree
 	 */
@@ -217,14 +227,4 @@ public interface CExpressionListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitAssignmentOperator(CExpressionParser.AssignmentOperatorContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link CExpressionParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void enterExpression(CExpressionParser.ExpressionContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link CExpressionParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void exitExpression(CExpressionParser.ExpressionContext ctx);
 }

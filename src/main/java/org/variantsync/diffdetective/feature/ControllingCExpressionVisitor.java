@@ -1,12 +1,14 @@
 package org.variantsync.diffdetective.feature;
-import org.antlr.v4.runtime.CharStreams;
-import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.*;
+import org.antlr.v4.runtime.atn.ATNConfigSet;
+import org.antlr.v4.runtime.dfa.DFA;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
+import org.tinylog.Logger;
 import org.variantsync.diffdetective.feature.antlr.CExpressionLexer;
 import org.variantsync.diffdetective.feature.antlr.CExpressionParser;
 
+import java.util.BitSet;
 import java.util.function.Function;
 
 /**
@@ -22,6 +24,25 @@ public class ControllingCExpressionVisitor extends BasicCExpressionVisitor {
 		CExpressionLexer lexer = new CExpressionLexer(CharStreams.fromString(formula));
 		CommonTokenStream tokens = new CommonTokenStream(lexer);
 		CExpressionParser parser = new CExpressionParser(tokens);
+		parser.addErrorListener(new ANTLRErrorListener() {
+			@Override
+			public void syntaxError(Recognizer<?, ?> recognizer, Object o, int i, int i1, String s, RecognitionException e) {
+				Logger.warn("syntax error: {} ; {}", s, e);
+				Logger.warn("formula: {}", formula);
+			}
+
+			@Override
+			public void reportAmbiguity(Parser parser, DFA dfa, int i, int i1, boolean b, BitSet bitSet, ATNConfigSet atnConfigSet) {
+			}
+
+			@Override
+			public void reportAttemptingFullContext(Parser parser, DFA dfa, int i, int i1, BitSet bitSet, ATNConfigSet atnConfigSet) {
+			}
+
+			@Override
+			public void reportContextSensitivity(Parser parser, DFA dfa, int i, int i1, int i2, ATNConfigSet atnConfigSet) {
+			}
+		});
 		ParseTree tree = parser.expression();
 		return tree.accept(this).toString();
 	}

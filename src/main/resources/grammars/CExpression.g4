@@ -3,7 +3,7 @@ grammar CExpression;
 // https://github.com/antlr/grammars-v4/blob/master/c/C.g4
 
 expression
-    :   assignmentExpression (',' assignmentExpression)*
+    :   assignmentExpression (',' assignmentExpression)* EOF?
     ;
 
 conditionalExpression
@@ -401,7 +401,7 @@ StringLiteral
     ;
 
 PathLiteral
-    :   '<' SCharSequence? '>'
+    :   '<' ~[<>]+ '>'
     ;
 
 fragment
