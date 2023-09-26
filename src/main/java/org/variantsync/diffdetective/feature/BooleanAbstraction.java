@@ -51,8 +51,8 @@ public class BooleanAbstraction {
     public static final String XOR = "__XOR__";
     /** Abstraction value for the condition of the ternary operator <code>?</code>. */
     public static final String THEN = "__THEN__";
-    /** Abstraction value for the alternative of the ternary operator <code>:</code>. */
-    public static final String ELSE = "__ELSE__";
+    /** Abstraction value for the alternative of the ternary operator <code>:</code>, or just colons. */
+    public static final String COLON = "__COLON__";
     /** Abstraction value for opening brackets <code>(</code>. */
     public static final String BRACKET_L = "__LB__";
     /** Abstraction value for closing brackets <code>)</code>. */
@@ -83,6 +83,17 @@ public class BooleanAbstraction {
     public static final String HAS_BUILTIN = "HAS_BUILTIN_";
     public static final String HAS_INCLUDE = "HAS_INCLUDE_";
     public static final String DEFINED = "DEFINED_";
+    public static final String ASSIGN = "__ASSIGN__";
+    public static final String STAR_ASSIGN = "__STA___ASSIGN__";
+    public static final String DIV_ASSIGN = "__DIV___ASSIGN__";
+    public static final String MOD_ASSIGN = "__MOD___ASSIGN__";
+    public static final String PLUS_ASSIGN = "__PLU___ASSIGN__";
+    public static final String MINUS_ASSIGN = "__MIN___ASSIGN__";
+    public static final String LEFT_SHIFT_ASSIGN = "__LSH___ASSIGN__";
+    public static final String RIGHT_SHIFT_ASSIGN = "__RSH___ASSIGN__";
+    public static final String AND_ASSIGN = "__AND___ASSIGN__";
+    public static final String XOR_ASSIGN = "__XOR___ASSIGN__";
+    public static final String OR_ASSIGN = "__OR___ASSIGN__";
 
     private static class Replacement {
         private Pattern pattern;
@@ -158,7 +169,7 @@ public class BooleanAbstraction {
         Replacement.literal("^", XOR),
         Replacement.literal("~", NOT),
         Replacement.literal("?", THEN),
-        Replacement.literal(":", ELSE),
+        Replacement.literal(":", COLON),
         Replacement.literal( "&&", L_AND), 
         Replacement.literal( "||", L_OR), 
         Replacement.literal( ".", DOT), 
@@ -171,6 +182,17 @@ public class BooleanAbstraction {
         Replacement.literal( "__has_builtin", HAS_BUILTIN), 
         Replacement.literal( "__has_include", HAS_INCLUDE), 
         Replacement.literal( "defined", DEFINED),
+        Replacement.literal( "=", ASSIGN),
+        Replacement.literal( "*=", STAR_ASSIGN),
+        Replacement.literal( "/=", DIV_ASSIGN),
+        Replacement.literal( "%=", MOD_ASSIGN),
+        Replacement.literal( "+=", PLUS_ASSIGN),
+        Replacement.literal( "-=", MINUS_ASSIGN),
+        Replacement.literal( "<<=", LEFT_SHIFT_ASSIGN),
+        Replacement.literal( ">>=", RIGHT_SHIFT_ASSIGN),
+        Replacement.literal( "&=", AND_ASSIGN),
+        Replacement.literal( "^=", XOR_ASSIGN),
+        Replacement.literal( "|=", OR_ASSIGN),
         Replacement.onlyFullWord("&", AND), // && has to be left untouched
         Replacement.onlyFullWord("|", OR) // || has to be left untouched
     );
