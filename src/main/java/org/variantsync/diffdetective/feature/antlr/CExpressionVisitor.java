@@ -41,6 +41,12 @@ public interface CExpressionVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitUnaryOperator(CExpressionParser.UnaryOperatorContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link CExpressionParser#namespaceExpression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitNamespaceExpression(CExpressionParser.NamespaceExpressionContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link CExpressionParser#multiplicativeExpression}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -124,4 +130,16 @@ public interface CExpressionVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitAssignmentExpression(CExpressionParser.AssignmentExpressionContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link CExpressionParser#assignmentOperator}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitAssignmentOperator(CExpressionParser.AssignmentOperatorContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link CExpressionParser#expression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitExpression(CExpressionParser.ExpressionContext ctx);
 }

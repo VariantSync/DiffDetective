@@ -2,15 +2,22 @@ grammar CExpression;
 // I took the official C grammar and pruned it down to the rules related to expressions
 // https://github.com/antlr/grammars-v4/blob/master/c/C.g4
 
+expression
+    :   assignmentExpression (',' assignmentExpression)*
+    ;
+
 conditionalExpression
-    :   logicalOrExpression ('?' conditionalExpression ':' conditionalExpression)?
+    :   logicalOrExpression ('?' expression ':' conditionalExpression)?
+    // Capture weird concatenations that were observed in the ESEC/FSE subjects
+    // e.g., __has_warning("-Wan-island-to-discover"_bar)
+    |   logicalOrExpression conditionalExpression*
     ;
 
 primaryExpression
     :   Identifier
     |   Constant
     |   StringLiteral+
-    |   '(' conditionalExpression ')'
+    |   '(' expression ')'
     |   unaryOperator primaryExpression
     |   macroExpression
     |   specialOperator
@@ -42,8 +49,12 @@ unaryOperator
     :   '&' | '*' | '+' | '-' | '~' | '!'
     ;
 
+namespaceExpression
+    :   primaryExpression (':' primaryExpression)*
+    ;
+
 multiplicativeExpression
-    :   primaryExpression (('*'|'/'|'%') primaryExpression)*
+    :   namespaceExpression (('*'|'/'|'%') namespaceExpression)*
     ;
 
 additiveExpression
@@ -94,6 +105,7 @@ macroExpression
 
 argumentExpressionList
     :   assignmentExpression (',' assignmentExpression)*
+    |   assignmentExpression (assignmentExpression)*
     ;
 
 assignmentExpression
@@ -101,7 +113,13 @@ assignmentExpression
     |   DigitSequence // for
     |   PathLiteral
     |   StringLiteral
+    |   primaryExpression assignmentOperator assignmentExpression
     ;
+
+assignmentOperator
+    :   '=' | '*=' | '/=' | '%=' | '+=' | '-=' | '<<=' | '>>=' | '&=' | '^=' | '|='
+    ;
+
 
 LeftParen : '(';
 RightParen : ')';

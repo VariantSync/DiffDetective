@@ -32,7 +32,7 @@ public class CPPParserTest {
             new TestCase("#if 42 > ~A", "42__GT____U_TILDE__A"),
             new TestCase("#if A + B > 42", "A__ADD__B__GT__42"),
             new TestCase("#if A << B", "A__LSHIFT__B"),
-            new TestCase("#if A ? B : C", "A__THEN__B__ELSE__C"),
+            new TestCase("#if A ? B : C", "A__THEN__B__COLON__C"),
             new TestCase("#if A >= B && C > D", "A__GEQ__B&&C__GT__D"),
             new TestCase("#if A * (B + C)", "A__MUL____LB__B__ADD__C__RB__"),
             new TestCase("#if defined(A) && (B * 2) > C", "DEFINED___LB__A__RB__&&__LB__B__MUL__2__RB____GT__C"),
@@ -49,28 +49,28 @@ public class CPPParserTest {
             new TestCase("#if A && ((B + 1) > (C || D))", "A&&(__LB__B__ADD__1__RB____GT____LB__C__L_OR__D__RB__)"),
 
             new TestCase("#if __has_include", "HAS_INCLUDE_"),
-            new TestCase("#if defined __has_include", "DEFINED___has_include"),
+            new TestCase("#if defined __has_include", "DEFINED_HAS_INCLUDE_"),
             new TestCase("#if __has_include(<nss3/nss.h>)", "HAS_INCLUDE___LB____LT__nss3__DIV__nss__DOT__h__GT____RB__"),
             new TestCase("#if __has_include(<nss.h>)", "HAS_INCLUDE___LB____LT__nss__DOT__h__GT____RB__"),
             new TestCase("#if __has_include(\"nss3/nss.h\")", "HAS_INCLUDE___LB____QUOTE__nss3__DIV__nss__DOT__h__QUOTE____RB__"),
             new TestCase("#if __has_include(\"nss.h\")", "HAS_INCLUDE___LB____QUOTE__nss__DOT__h__QUOTE____RB__"),
 
             new TestCase("#if __has_attribute", "HAS_ATTRIBUTE_"),
-            new TestCase("#if defined __has_attribute", "DEFINED___has_attribute"),
+            new TestCase("#if defined __has_attribute", "DEFINED_HAS_ATTRIBUTE_"),
             new TestCase("#  if __has_attribute (nonnull)", "HAS_ATTRIBUTE___LB__nonnull__RB__"),
-            new TestCase("#if defined __has_attribute && __has_attribute (nonnull)", "DEFINED___has_attribute&&HAS_ATTRIBUTE___LB__nonnull__RB__"),
+            new TestCase("#if defined __has_attribute && __has_attribute (nonnull)", "DEFINED_HAS_ATTRIBUTE_&&HAS_ATTRIBUTE___LB__nonnull__RB__"),
 
-            new TestCase("#if defined __has_cpp_attribute", "DEFINED___has_cpp_attribute"),
             new TestCase("#if __has_cpp_attribute", "HAS_CPP_ATTRIBUTE_"),
+            new TestCase("#if defined __has_cpp_attribute", "DEFINED_HAS_CPP_ATTRIBUTE_"),
             new TestCase("#if __has_cpp_attribute (nonnull)", "HAS_CPP_ATTRIBUTE___LB__nonnull__RB__"),
             new TestCase("#if __has_cpp_attribute (nonnull) && A", "HAS_CPP_ATTRIBUTE___LB__nonnull__RB__&&A"),
 
-            new TestCase("#if defined __has_c_attribute", "DEFINED___has_c_attribute"),
+            new TestCase("#if defined __has_c_attribute", "DEFINED_HAS_C_ATTRIBUTE_"),
             new TestCase("#if __has_c_attribute", "HAS_C_ATTRIBUTE_"),
             new TestCase("#if __has_c_attribute (nonnull)", "HAS_C_ATTRIBUTE___LB__nonnull__RB__"),
             new TestCase("#if __has_c_attribute (nonnull) && A", "HAS_C_ATTRIBUTE___LB__nonnull__RB__&&A"),
 
-            new TestCase("#if defined __has_builtin", "DEFINED___has_builtin"),
+            new TestCase("#if defined __has_builtin", "DEFINED_HAS_BUILTIN_"),
             new TestCase("#if __has_builtin", "HAS_BUILTIN_"),
             new TestCase("#if __has_builtin (__nonnull)", "HAS_BUILTIN___LB____nonnull__RB__"),
             new TestCase("#if __has_builtin (nonnull) && A", "HAS_BUILTIN___LB__nonnull__RB__&&A"),
@@ -94,12 +94,14 @@ public class CPPParserTest {
 
             new TestCase("#if ifndef", "ifndef"),
 
-                new TestCase("#if __has_include_next(<rewrite-includes8.h>)", ""),
-                new TestCase("#if __is_target_arch(x86)", ""),
-                new TestCase("#if A || (defined(OpenBSD) && (OpenBSD >= 199630))", ""),
-                new TestCase("#if MACRO(part:part)", ""),
-                new TestCase("#if A = 3", ""),
-                new TestCase("#if __has_warning(\"-Wan-island-to-discover\"_bar)", "")
+            new TestCase("#if __has_include_next(<rewrite-includes8.h>)", "__HAS_INCLUDE_NEXT___LB____LT__rewrite__SUB__includes8__DOT__h__GT____RB__"),
+            new TestCase("#if __is_target_arch(x86)", "__IS_TARGET_ARCH___LB__x86__RB__"),
+            new TestCase("#if A || (defined(OpenBSD) && (OpenBSD >= 199630))", "A||(DEFINED___LB__OpenBSD__RB__&&(OpenBSD__GEQ__199630))"),
+            new TestCase("#if MACRO(part:part)", "MACRO___LB__part__COLON__part__RB__"),
+            new TestCase("#if MACRO(x=1)", "MACRO___LB__x__ASSIGN__1__RB__"),
+            new TestCase("#if A = 3", "A__ASSIGN__3"),
+            new TestCase("#if __has_warning(\"-Wan-island-to-discover\"_bar)",
+                    "__HAS_WARNING___LB____QUOTE____SUB__Wan__SUB__island__SUB__to__SUB__discover__QUOTE___bar__RB__")
         );
     }
 

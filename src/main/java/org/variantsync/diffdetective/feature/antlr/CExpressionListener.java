@@ -58,6 +58,16 @@ public interface CExpressionListener extends ParseTreeListener {
 	 */
 	void exitUnaryOperator(CExpressionParser.UnaryOperatorContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link CExpressionParser#namespaceExpression}.
+	 * @param ctx the parse tree
+	 */
+	void enterNamespaceExpression(CExpressionParser.NamespaceExpressionContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link CExpressionParser#namespaceExpression}.
+	 * @param ctx the parse tree
+	 */
+	void exitNamespaceExpression(CExpressionParser.NamespaceExpressionContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link CExpressionParser#multiplicativeExpression}.
 	 * @param ctx the parse tree
 	 */
@@ -197,4 +207,24 @@ public interface CExpressionListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitAssignmentExpression(CExpressionParser.AssignmentExpressionContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link CExpressionParser#assignmentOperator}.
+	 * @param ctx the parse tree
+	 */
+	void enterAssignmentOperator(CExpressionParser.AssignmentOperatorContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link CExpressionParser#assignmentOperator}.
+	 * @param ctx the parse tree
+	 */
+	void exitAssignmentOperator(CExpressionParser.AssignmentOperatorContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link CExpressionParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void enterExpression(CExpressionParser.ExpressionContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link CExpressionParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void exitExpression(CExpressionParser.ExpressionContext ctx);
 }

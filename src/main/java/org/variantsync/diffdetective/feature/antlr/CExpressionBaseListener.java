@@ -77,6 +77,18 @@ public class CExpressionBaseListener implements CExpressionListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterNamespaceExpression(CExpressionParser.NamespaceExpressionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitNamespaceExpression(CExpressionParser.NamespaceExpressionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterMultiplicativeExpression(CExpressionParser.MultiplicativeExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -240,6 +252,30 @@ public class CExpressionBaseListener implements CExpressionListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitAssignmentExpression(CExpressionParser.AssignmentExpressionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterAssignmentOperator(CExpressionParser.AssignmentOperatorContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitAssignmentOperator(CExpressionParser.AssignmentOperatorContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterExpression(CExpressionParser.ExpressionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitExpression(CExpressionParser.ExpressionContext ctx) { }
 
 	/**
 	 * {@inheritDoc}

@@ -14,9 +14,10 @@ public abstract class BasicCExpressionVisitor extends AbstractParseTreeVisitor<S
 	//    :   Identifier
 	//    |   Constant
 	//    |   StringLiteral+
-	//    |   '(' conditionalExpression ')'
+	//    |   '(' expression ')'
 	//    |   unaryOperator primaryExpression
 	//    |   macroExpression
+	//    |   specialOperator
 	//    ;
 	@Override public StringBuilder visitPrimaryExpression(CExpressionParser.PrimaryExpressionContext ctx) {
 		// Identifier
@@ -29,16 +30,9 @@ public abstract class BasicCExpressionVisitor extends AbstractParseTreeVisitor<S
 			// Terminal
 			return new StringBuilder(ctx.Constant().getText());
 		}
-		// StringLiteral*
-		if (!ctx.StringLiteral().isEmpty()) {
-			// Terminal
-			StringBuilder sb = new StringBuilder();
-			ctx.StringLiteral().forEach(sb::append);
-			return sb;
-		}
 		// '(' conditionalExpression ')'
-		if (ctx.conditionalExpression() != null) {
-			StringBuilder sb = ctx.conditionalExpression().accept(this);
+		if (ctx.expression() != null) {
+			StringBuilder sb = ctx.expression().accept(this);
 			sb.insert(0, "(");
 			sb.append(")");
 			return sb;

@@ -15,11 +15,15 @@ public class AbstractingCExpressionVisitor extends BasicCExpressionVisitor {
 	public AbstractingCExpressionVisitor() {}
 
 	// conditionalExpression
-	//    :   logicalOrExpression '?' conditionalExpression ':' conditionalExpression
+	//    :   logicalOrExpression ('?' expression ':' conditionalExpression)?
+	//    // Capture weird concatenations that were observed in the ESEC/FSE subjects
+	//    // e.g., __has_warning("-Wan-island-to-discover"_bar)
+	//    |   logicalOrExpression conditionalExpression*
 	//    ;
 	@Override public StringBuilder visitConditionalExpression(CExpressionParser.ConditionalExpressionContext ctx) {
 		return visitExpression(ctx,
 				childContext -> childContext instanceof CExpressionParser.LogicalOrExpressionContext
+						|| childContext instanceof CExpressionParser.ExpressionContext
 						|| childContext instanceof CExpressionParser.ConditionalExpressionContext);
 	}
 
@@ -27,15 +31,15 @@ public class AbstractingCExpressionVisitor extends BasicCExpressionVisitor {
 	//    :   Identifier
 	//    |   Constant
 	//    |   StringLiteral+
-	//    |   '(' conditionalExpression ')'
+	//    |   '(' expression ')'
 	//    |   unaryOperator primaryExpression
 	//    |   macroExpression
 	//    |   specialOperator
 	//    ;
 	@Override public StringBuilder visitPrimaryExpression(CExpressionParser.PrimaryExpressionContext ctx) {
-		// '(' conditionalExpression ')'
-		if (ctx.conditionalExpression() != null) {
-			StringBuilder sb = ctx.conditionalExpression().accept(this);
+		// '(' expression ')'
+		if (ctx.expression() != null) {
+			StringBuilder sb = ctx.expression().accept(this);
 			sb.insert(0, BooleanAbstraction.BRACKET_L);
 			sb.append(BooleanAbstraction.BRACKET_R);
 			return sb;
@@ -55,6 +59,14 @@ public class AbstractingCExpressionVisitor extends BasicCExpressionVisitor {
 		// specialOperator
 		if (ctx.specialOperator() != null) {
 			return ctx.specialOperator().accept(this);
+		}
+
+		// StringLiteral*
+		if (!ctx.StringLiteral().isEmpty()) {
+			// Terminal
+			StringBuilder sb = new StringBuilder();
+			ctx.StringLiteral().stream().map(ParseTree::getText).map(BooleanAbstraction::abstractAll).forEach(sb::append);
+			return sb;
 		}
 
 		// For all other variants, we delegate
@@ -86,11 +98,19 @@ public class AbstractingCExpressionVisitor extends BasicCExpressionVisitor {
 		throw new IllegalStateException();
 	}
 
+	// namespaceExpression
+	//    :   primaryExpression (':' primaryExpression)*
+	//    ;
+	@Override
+	public StringBuilder visitNamespaceExpression(CExpressionParser.NamespaceExpressionContext ctx) {
+		return visitExpression(ctx, childContext -> childContext instanceof CExpressionParser.PrimaryExpressionContext);
+	}
+
 	// multiplicativeExpression
-	//    :   primaryExpression (('*'|'/'|'%') primaryExpression)*
+	//    :   namespaceExpression (('*'|'/'|'%') namespaceExpression)*
 	//    ;
 	@Override public StringBuilder visitMultiplicativeExpression(CExpressionParser.MultiplicativeExpressionContext ctx) {
-		return visitExpression(ctx, childContext -> childContext instanceof CExpressionParser.PrimaryExpressionContext);
+		return visitExpression(ctx, childContext -> childContext instanceof CExpressionParser.NamespaceExpressionContext);
 	}
 
 	// additiveExpression
@@ -216,6 +236,7 @@ public class AbstractingCExpressionVisitor extends BasicCExpressionVisitor {
 
 	// argumentExpressionList
 	//    :   assignmentExpression (',' assignmentExpression)*
+	//    |   assignmentExpression (assignmentExpression)*
 	//    ;
 	@Override
 	public StringBuilder visitArgumentExpressionList(CExpressionParser.ArgumentExpressionListContext ctx) {
@@ -235,14 +256,39 @@ public class AbstractingCExpressionVisitor extends BasicCExpressionVisitor {
 	// assignmentExpression
 	//    :   conditionalExpression
 	//    |   DigitSequence // for
+	//    |   PathLiteral
+	//    |   StringLiteral
+	//    |   primaryExpression assignmentOperator assignmentExpression
 	//    ;
 	@Override
 	public StringBuilder visitAssignmentExpression(CExpressionParser.AssignmentExpressionContext ctx) {
 		if (ctx.conditionalExpression() != null) {
 			return ctx.conditionalExpression().accept(this);
+		} else if (ctx.primaryExpression() != null) {
+			StringBuilder sb = new StringBuilder();
+			sb.append(ctx.primaryExpression().accept(this));
+			sb.append(ctx.assignmentOperator().accept(this));
+			sb.append(ctx.assignmentExpression().accept(this));
+			return sb;
 		} else {
 			return new StringBuilder(BooleanAbstraction.abstractAll(ctx.getText()));
 		}
+	}
+
+	// assignmentOperator
+	//    :   '=' | '*=' | '/=' | '%=' | '+=' | '-=' | '<<=' | '>>=' | '&=' | '^=' | '|='
+	//    ;
+	@Override
+	public StringBuilder visitAssignmentOperator(CExpressionParser.AssignmentOperatorContext ctx) {
+		return new StringBuilder(BooleanAbstraction.abstractFirstOrAll(ctx.getText()));
+	}
+
+	// expression
+	//    :   assignmentExpression (',' assignmentExpression)*
+	//    ;
+	@Override
+	public StringBuilder visitExpression(CExpressionParser.ExpressionContext ctx) {
+		return visitExpression(ctx, childContext -> childContext instanceof CExpressionParser.AssignmentExpressionContext);
 	}
 
 	private StringBuilder visitExpression(ParserRuleContext expressionContext, Function<ParseTree, Boolean> instanceCheck) {

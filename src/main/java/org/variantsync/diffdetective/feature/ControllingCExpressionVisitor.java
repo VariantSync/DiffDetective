@@ -22,16 +22,20 @@ public class ControllingCExpressionVisitor extends BasicCExpressionVisitor {
 		CExpressionLexer lexer = new CExpressionLexer(CharStreams.fromString(formula));
 		CommonTokenStream tokens = new CommonTokenStream(lexer);
 		CExpressionParser parser = new CExpressionParser(tokens);
-		ParseTree tree = parser.conditionalExpression();
+		ParseTree tree = parser.expression();
 		return tree.accept(this).toString();
 	}
 
 	// conditionalExpression
-	//    :   logicalOrExpression ('?' conditionalExpression ':' conditionalExpression)?
+	//    :   logicalOrExpression ('?' expression ':' conditionalExpression)?
+	//    // Capture weird concatenations that were observed in the ESEC/FSE subjects
+	//    // e.g., __has_warning("-Wan-island-to-discover"_bar)
+	//    |   logicalOrExpression conditionalExpression*
 	//    ;
 	@Override public StringBuilder visitConditionalExpression(CExpressionParser.ConditionalExpressionContext ctx) {
-		if (!ctx.conditionalExpression().isEmpty()) {
-			// logicalOrExpression '?' conditionalExpression ':' conditionalExpression
+		if (ctx.expression() != null || !ctx.conditionalExpression().isEmpty()) {
+			// logicalOrExpression '?' expression ':' conditionalExpression
+			// | logicalOrExpression conditionalExpression*
 			// We have to abstract the expression if it is a ternary expression
 			return ctx.accept(abstractingVisitor);
 		} else {
@@ -44,7 +48,7 @@ public class ControllingCExpressionVisitor extends BasicCExpressionVisitor {
 	//    :   Identifier
 	//    |   Constant
 	//    |   StringLiteral+
-	//    |   '(' conditionalExpression ')'
+	//    |   '(' expression ')'
 	//    |   unaryOperator primaryExpression
 	//    |   macroExpression
 	//    |   specialOperator
@@ -60,14 +64,20 @@ public class ControllingCExpressionVisitor extends BasicCExpressionVisitor {
 			return ctx.specialOperator().accept(abstractingVisitor);
 		}
 
+		// StringLiteral
+		if (!ctx.StringLiteral().isEmpty()) {
+			return ctx.accept(abstractingVisitor);
+		}
+
 		// For all other variants, we delegate
 		return super.visitPrimaryExpression(ctx);
 	}
 
-	// multiplicativeExpression
-	//    :   primaryExpression (('*'|'/'|'%') primaryExpression)*
+	// namespaceExpression
+	//    :   primaryExpression (':' primaryExpression)*
 	//    ;
-	@Override public StringBuilder visitMultiplicativeExpression(CExpressionParser.MultiplicativeExpressionContext ctx) {
+	@Override
+	public StringBuilder visitNamespaceExpression(CExpressionParser.NamespaceExpressionContext ctx) {
 		if (ctx.primaryExpression().size() > 1) {
 			// primaryExpression (('*'|'/'|'%') primaryExpression)+
 			// We have to abstract the arithmetic expression if there is more than one operand
@@ -76,6 +86,21 @@ public class ControllingCExpressionVisitor extends BasicCExpressionVisitor {
 			// primaryExpression
 			// There is exactly one child expression
 			return ctx.primaryExpression(0).accept(this);
+		}
+	}
+
+	// multiplicativeExpression
+	//    :   primaryExpression (('*'|'/'|'%') primaryExpression)*
+	//    ;
+	@Override public StringBuilder visitMultiplicativeExpression(CExpressionParser.MultiplicativeExpressionContext ctx) {
+		if (ctx.namespaceExpression().size() > 1) {
+			// primaryExpression (('*'|'/'|'%') primaryExpression)+
+			// We have to abstract the arithmetic expression if there is more than one operand
+			return ctx.accept(abstractingVisitor);
+		} else {
+			// primaryExpression
+			// There is exactly one child expression
+			return ctx.namespaceExpression(0).accept(this);
 		}
 	}
 
@@ -172,14 +197,51 @@ public class ControllingCExpressionVisitor extends BasicCExpressionVisitor {
 		return ctx.accept(abstractingVisitor);
 	}
 
+	// argumentExpressionList
+	//    :   assignmentExpression (',' assignmentExpression)*
+	//    |   assignmentExpression (assignmentExpression)*
+	//    ;
 	@Override
 	public StringBuilder visitArgumentExpressionList(CExpressionParser.ArgumentExpressionListContext ctx) {
 		return ctx.accept(abstractingVisitor);
 	}
 
+	// assignmentExpression
+	//    :   conditionalExpression
+	//    |   DigitSequence // for
+	//    |   PathLiteral
+	//    |   StringLiteral
+	//    |   primaryExpression assignmentOperator assignmentExpression
+	//    ;
 	@Override
 	public StringBuilder visitAssignmentExpression(CExpressionParser.AssignmentExpressionContext ctx) {
+		if (ctx.conditionalExpression() != null) {
+			return ctx.conditionalExpression().accept(this);
+		} else {
+			return ctx.accept(abstractingVisitor);
+		}
+	}
+
+	// assignmentOperator
+	//    :   '=' | '*=' | '/=' | '%=' | '+=' | '-=' | '<<=' | '>>=' | '&=' | '^=' | '|='
+	//    ;
+	@Override
+	public StringBuilder visitAssignmentOperator(CExpressionParser.AssignmentOperatorContext ctx) {
 		return ctx.accept(abstractingVisitor);
+	}
+
+	// expression
+	//    :   assignmentExpression (',' assignmentExpression)*
+	//    ;
+	@Override
+	public StringBuilder visitExpression(CExpressionParser.ExpressionContext ctx) {
+		if (ctx.assignmentExpression().size() > 1) {
+			// assignmentExpression (',' assignmentExpression)+
+			return ctx.accept(abstractingVisitor);
+		} else {
+			// assignmentExpression
+			return ctx.assignmentExpression(0).accept(this);
+		}
 	}
 
 	// andExpression
