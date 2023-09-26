@@ -425,10 +425,13 @@ SChar
     |   '\\\r\n' // Added line
     ;
 
-MultiLineMacro:
-	'#' (~[\n]*? '\\' '\r'? '\n')+ ~ [\n]+ -> channel (HIDDEN);
+//MultiLineMacro:
+//	'#' (~[\n]*? '\\' '\r'? '\n')+ ~ [\n]+ -> channel (HIDDEN);
+//
+//Directive: '#' ~ [\n]* -> channel (HIDDEN);
 
-Directive: '#' ~ [\n]* -> channel (HIDDEN);
+NumberSign
+    :   '#' -> channel (HIDDEN);
 
 // ignore the following asm blocks:
 /*

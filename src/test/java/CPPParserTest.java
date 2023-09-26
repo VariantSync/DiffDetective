@@ -101,6 +101,7 @@ public class CPPParserTest {
             new TestCase("#if MACRO(x=1)", "MACRO___LB__x__ASSIGN__1__RB__"),
             new TestCase("#if A = 3", "A__ASSIGN__3"),
             new TestCase("#if (WSIZE<<1) > (1<<BITS)", "__LB__WSIZE__LSHIFT__1__RB____GT____LB__1__LSHIFT__BITS__RB__"),
+            new TestCase("#if #cpu(sparc)", "CPU___LB__sparc__RB__"),
             new TestCase("#if __has_warning(\"-Wan-island-to-discover\"_bar)",
                     "__HAS_WARNING___LB____QUOTE____SUB__Wan__SUB__island__SUB__to__SUB__discover__QUOTE___bar__RB__")
         );
