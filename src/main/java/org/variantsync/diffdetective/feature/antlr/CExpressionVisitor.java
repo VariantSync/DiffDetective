@@ -11,6 +11,12 @@ import org.antlr.v4.runtime.tree.ParseTreeVisitor;
  */
 public interface CExpressionVisitor<T> extends ParseTreeVisitor<T> {
 	/**
+	 * Visit a parse tree produced by {@link CExpressionParser#expression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitExpression(CExpressionParser.ExpressionContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link CExpressionParser#conditionalExpression}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -136,10 +142,4 @@ public interface CExpressionVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitAssignmentOperator(CExpressionParser.AssignmentOperatorContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link CExpressionParser#expression}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitExpression(CExpressionParser.ExpressionContext ctx);
 }
