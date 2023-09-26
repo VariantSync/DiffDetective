@@ -94,6 +94,7 @@ public class BooleanAbstraction {
     public static final String AND_ASSIGN = "__AND___ASSIGN__";
     public static final String XOR_ASSIGN = "__XOR___ASSIGN__";
     public static final String OR_ASSIGN = "__OR___ASSIGN__";
+    public static final String WHITESPACE = "_";
 
     private static class Replacement {
         private Pattern pattern;
@@ -193,6 +194,7 @@ public class BooleanAbstraction {
         Replacement.literal( "&=", AND_ASSIGN),
         Replacement.literal( "^=", XOR_ASSIGN),
         Replacement.literal( "|=", OR_ASSIGN),
+        new Replacement( Pattern.compile("\\s+"), WHITESPACE),
         Replacement.onlyFullWord("&", AND), // && has to be left untouched
         Replacement.onlyFullWord("|", OR) // || has to be left untouched
     );

@@ -345,7 +345,7 @@ public class ControllingCExpressionVisitor extends BasicCExpressionVisitor {
 				sb.append(subtree.accept(this));
 			} else if (subtree instanceof TerminalNode terminal) {
 				// '&&' | '||'
-				sb.append(terminal.getText());
+				sb.append(terminal.getText().trim());
 			} else {
 				// loop does not work as expected
 				throw new IllegalStateException();
