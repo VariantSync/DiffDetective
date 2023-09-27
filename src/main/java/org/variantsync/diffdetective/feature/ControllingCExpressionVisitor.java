@@ -75,6 +75,12 @@ public class ControllingCExpressionVisitor extends BasicCExpressionVisitor {
 	//    |   specialOperator
 	//    ;
 	@Override public StringBuilder visitPrimaryExpression(CExpressionParser.PrimaryExpressionContext ctx) {
+		// Identifier
+		if (ctx.Identifier() != null) {
+			// Terminal
+			return ctx.accept(abstractingVisitor);
+		}
+
 		// macroExpression
 		if (ctx.macroExpression() != null) {
 			return ctx.macroExpression().accept(abstractingVisitor);

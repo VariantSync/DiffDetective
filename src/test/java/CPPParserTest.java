@@ -102,6 +102,8 @@ public class CPPParserTest {
             new TestCase("#if A = 3", "A__ASSIGN__3"),
             new TestCase("#if (WSIZE<<1) > (1<<BITS)", "__LB__WSIZE__LSHIFT__1__RB____GT____LB__1__LSHIFT__BITS__RB__"),
             new TestCase("#if #cpu(sparc)", "CPU___LB__sparc__RB__"),
+            new TestCase("#ifdef \\U0001000", "__B_SLASH__U0001000"),
+            new TestCase("#if (defined(NetBSD) && (NetBSD >= 199905) && (NetBSD < 1991011)) ||     (__FreeBSD_version >= 300000) || defined(OpenBSD)", "(DEFINED___LB__NetBSD__RB__&&(NetBSD__GEQ__199905)&&(NetBSD__LT__1991011))||(__FreeBSD_version__GEQ__300000)||DEFINED___LB__OpenBSD__RB__"),
             new TestCase("#if __has_warning(\"-Wan-island-to-discover\"_bar)",
                     "__HAS_WARNING___LB____QUOTE____SUB__Wan__SUB__island__SUB__to__SUB__discover__QUOTE___bar__RB__")
         );
