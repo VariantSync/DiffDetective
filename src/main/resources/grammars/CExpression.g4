@@ -3,7 +3,7 @@ grammar CExpression;
 // https://github.com/antlr/grammars-v4/blob/master/c/C.g4
 
 expression
-    :   assignmentExpression (',' assignmentExpression)* EOF?
+    :   assignmentExpression (',' assignmentExpression)*
     ;
 
 conditionalExpression
@@ -184,7 +184,7 @@ HasInclude : '__has_include';
 Defined : 'defined';
 
 Identifier
-    :   IdentifierNondigit
+    :   ('\\')? IdentifierNondigit
         (   IdentifierNondigit
         |   Digit
         )*
@@ -401,7 +401,7 @@ StringLiteral
     ;
 
 PathLiteral
-    :   '<' ~[<>]+ '>'
+    :   '<' ~[<> \t]+ '>'
     ;
 
 fragment

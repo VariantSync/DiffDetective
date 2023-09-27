@@ -37,6 +37,11 @@ public class AbstractingCExpressionVisitor extends BasicCExpressionVisitor {
 	//    |   specialOperator
 	//    ;
 	@Override public StringBuilder visitPrimaryExpression(CExpressionParser.PrimaryExpressionContext ctx) {
+		// Identifier
+		if (ctx.Identifier() != null) {
+			// Terminal
+			return new StringBuilder(BooleanAbstraction.abstractAll(ctx.Identifier().getText().trim()));
+		}
 		// '(' expression ')'
 		if (ctx.expression() != null) {
 			StringBuilder sb = ctx.expression().accept(this);

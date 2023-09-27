@@ -20,11 +20,6 @@ public abstract class BasicCExpressionVisitor extends AbstractParseTreeVisitor<S
 	//    |   specialOperator
 	//    ;
 	@Override public StringBuilder visitPrimaryExpression(CExpressionParser.PrimaryExpressionContext ctx) {
-		// Identifier
-		if (ctx.Identifier() != null) {
-			// Terminal
-			return new StringBuilder(ctx.Identifier().getText().trim());
-		}
 		// Constant
 		if (ctx.Constant() != null) {
 			// Terminal
