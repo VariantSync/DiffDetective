@@ -77,7 +77,12 @@ public enum DiffError {
     /**
      * A line continuation without a following line.
      */
-    INVALID_LINE_CONTINUATION("a line continuation was detected but there are no more lines");
+    INVALID_LINE_CONTINUATION("a line continuation was detected but there are no more lines"),
+
+    /**
+     * A line with an un-parseable formula.
+     */
+    UN_PARSEABLE_FORMULA("the extracted formula cannot be parsed");
 
     private final String message;
 

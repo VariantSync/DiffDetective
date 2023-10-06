@@ -19,6 +19,12 @@ public final class DiffParseException extends Exception {
         this.lineNumber = lineNumber;
     }
 
+    public DiffParseException(Exception other, DiffLineNumber lineNumber) {
+        super(other);
+        this.error = DiffError.UN_PARSEABLE_FORMULA;
+        this.lineNumber = lineNumber;
+    }
+
     public DiffError getError() {
         return error;
     }

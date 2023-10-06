@@ -13,6 +13,7 @@ import org.variantsync.diffdetective.diff.git.PatchDiff;
 import org.variantsync.diffdetective.diff.result.DiffError;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.diff.text.DiffLineNumber;
+import org.variantsync.diffdetective.error.UnParseableFormulaException;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.NodeType;
@@ -358,8 +359,8 @@ public class VariationDiffParser {
 
                 addNode(newNode);
                 lastArtifact = newNode.isArtifact() ? newNode : null;
-            } catch (IllFormedAnnotationException e) {
-                throw new DiffParseException(e.getType(), fromLine);
+            } catch (UnParseableFormulaException e) {
+                throw new DiffParseException(e, fromLine);
             }
         }
     }

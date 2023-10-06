@@ -1,7 +1,8 @@
 package org.variantsync.diffdetective.feature;
 
 import org.tinylog.Logger;
-import org.variantsync.diffdetective.variation.diff.parse.IllFormedAnnotationException;
+import org.variantsync.diffdetective.error.UnParseableFormulaException;
+import org.variantsync.diffdetective.error.UncheckedUnParseableFormulaException;
 
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
@@ -40,11 +41,11 @@ public class CPPDiffLineFormulaExtractor {
      * @param line The line of which to get the feature mapping
      * @return The feature mapping as a String of the given line
      */
-    public String extractFormula(final String line) throws IllFormedAnnotationException {
+    public String extractFormula(final String line) throws UnParseableFormulaException {
         // TODO: There still regexes here in replaceAll that could be optimized by precompiling the regexes once.
         final Matcher matcher = CPP_ANNOTATION_REGEX_PATTERN.matcher(line);
-        final Supplier<IllFormedAnnotationException> couldNotExtractFormula = () ->
-                IllFormedAnnotationException.IfWithoutCondition("Could not extract formula from line \""+ line + "\".");
+        final Supplier<UnParseableFormulaException> couldNotExtractFormula = () ->
+               new UnParseableFormulaException("Could not extract formula from line \""+ line + "\".");
 
         String fm;
         if (matcher.find()) {
@@ -66,9 +67,11 @@ public class CPPDiffLineFormulaExtractor {
         // abstract arithmetics
         try {
             fm = expressionSimplifier.simplify(fm);
+        } catch (UncheckedUnParseableFormulaException e) {
+            throw e.inner();
         } catch (Exception e) {
             Logger.warn(e);
-            throw couldNotExtractFormula.get();
+            throw new UnParseableFormulaException(e);
         }
 
         if (fm.isEmpty()) {

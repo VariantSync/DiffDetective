@@ -1,3 +1,4 @@
+import org.variantsync.diffdetective.error.UnParseableFormulaException;
 import org.variantsync.diffdetective.variation.diff.parse.IllFormedAnnotationException;
 import org.variantsync.diffdetective.feature.CPPDiffLineFormulaExtractor;
 import org.junit.jupiter.api.Disabled;
@@ -134,7 +135,7 @@ public class CPPParserTest {
 
     @ParameterizedTest
     @MethodSource("testCases")
-    public void testCase(TestCase testCase) throws IllFormedAnnotationException {
+    public void testCase(TestCase testCase) throws UnParseableFormulaException {
         assertEquals(
             testCase.expected,
             new CPPDiffLineFormulaExtractor().extractFormula(testCase.formula())
@@ -144,7 +145,7 @@ public class CPPParserTest {
     @ParameterizedTest
     @MethodSource("throwingTestCases")
     public void throwingTestCase(ThrowingTestCase testCase) {
-        assertThrows(IllFormedAnnotationException.class, () ->
+        assertThrows(UnParseableFormulaException.class, () ->
             new CPPDiffLineFormulaExtractor().extractFormula(testCase.formula)
         );
     }
@@ -152,7 +153,7 @@ public class CPPParserTest {
     @Disabled("WONTFIX")
     @ParameterizedTest
     @MethodSource("wontfixTestCases")
-    public void wontfixTestCase(TestCase testCase) throws IllFormedAnnotationException {
+    public void wontfixTestCase(TestCase testCase) throws UnParseableFormulaException {
         assertEquals(
             testCase.expected,
             new CPPDiffLineFormulaExtractor().extractFormula(testCase.formula())

@@ -5,6 +5,7 @@ import org.antlr.v4.runtime.dfa.DFA;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.tinylog.Logger;
+import org.variantsync.diffdetective.error.UncheckedUnParseableFormulaException;
 import org.variantsync.diffdetective.feature.antlr.CExpressionLexer;
 import org.variantsync.diffdetective.feature.antlr.CExpressionParser;
 
@@ -29,6 +30,7 @@ public class ControllingCExpressionVisitor extends BasicCExpressionVisitor {
 			public void syntaxError(Recognizer<?, ?> recognizer, Object o, int i, int i1, String s, RecognitionException e) {
 				Logger.warn("syntax error: {} ; {}", s, e);
 				Logger.warn("formula: {}", formula);
+				throw new UncheckedUnParseableFormulaException(s, e);
 			}
 
 			@Override
