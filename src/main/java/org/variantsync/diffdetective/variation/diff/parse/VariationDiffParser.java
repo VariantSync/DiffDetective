@@ -13,6 +13,7 @@ import org.variantsync.diffdetective.diff.git.PatchDiff;
 import org.variantsync.diffdetective.diff.result.DiffError;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.diff.text.DiffLineNumber;
+import org.variantsync.diffdetective.error.UnParseableFormulaException;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.NodeType;
@@ -20,7 +21,6 @@ import org.variantsync.diffdetective.variation.diff.DiffNode;
 import org.variantsync.diffdetective.variation.diff.VariationDiff;
 import org.variantsync.diffdetective.variation.diff.DiffType;
 import org.variantsync.diffdetective.variation.diff.Time;
-import org.variantsync.functjonal.list.FilteredMappedListView;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -360,8 +360,8 @@ public class VariationDiffParser {
 
                 addNode(newNode);
                 lastArtifact = newNode.isArtifact() ? newNode : null;
-            } catch (IllFormedAnnotationException e) {
-                throw new DiffParseException(e.getType(), fromLine);
+            } catch (UnParseableFormulaException e) {
+                throw new DiffParseException(e, fromLine);
             }
         }
     }

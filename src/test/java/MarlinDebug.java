@@ -13,6 +13,7 @@ import org.variantsync.diffdetective.datasets.PatchDiffParseOptions;
 import org.variantsync.diffdetective.datasets.Repository;
 import org.variantsync.diffdetective.diff.git.CommitDiff;
 import org.variantsync.diffdetective.diff.git.PatchDiff;
+import org.variantsync.diffdetective.error.UnParseableFormulaException;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.diff.VariationDiff;
 import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParser;
@@ -173,7 +174,7 @@ public class MarlinDebug {
     }
 
     @Test
-    public void testFormulaParsing() throws IllFormedAnnotationException {
+    public void testFormulaParsing() throws UnParseableFormulaException {
         final String original = "#if defined ( a ) && x > 200 + 2 && A && (foo(3, 4) || bar ( 3 , 4, 9, baz(3)) || z==3-1) && h<=7/2 && x == 4 % 2 && m>=k && k<11*3";
 //        String adapted = original;
 //        adapted = adapted.replaceAll("\\(\\)", "");

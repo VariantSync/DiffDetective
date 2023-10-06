@@ -433,6 +433,9 @@ SChar
 NumberSign
     :   '#' -> channel (HIDDEN);
 
+AtSign
+    :   '@' -> channel (HIDDEN);
+
 // ignore the following asm blocks:
 /*
     asm
