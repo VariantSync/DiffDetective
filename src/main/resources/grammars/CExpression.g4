@@ -436,6 +436,9 @@ NumberSign
 AtSign
     :   '@' -> channel (HIDDEN);
 
+Dollar
+    :   '$' -> channel (HIDDEN);
+
 // ignore the following asm blocks:
 /*
     asm
