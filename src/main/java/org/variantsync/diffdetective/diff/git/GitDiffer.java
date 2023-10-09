@@ -402,8 +402,6 @@ public class GitDiffer {
                     logMessage
                             .append("parse exception for commit ")
                             .append(childCommit.getName())
-                            .append(" with parent ")
-                            .append(parentCommit.getName())
                             .append("\n");
                     logMessage
                             .append(e)
