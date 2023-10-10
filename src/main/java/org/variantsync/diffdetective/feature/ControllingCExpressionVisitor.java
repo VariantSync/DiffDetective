@@ -1,6 +1,7 @@
 package org.variantsync.diffdetective.feature;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.atn.ATNConfigSet;
+import org.antlr.v4.runtime.atn.PredictionMode;
 import org.antlr.v4.runtime.dfa.DFA;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
@@ -51,14 +52,10 @@ public class ControllingCExpressionVisitor extends BasicCExpressionVisitor {
 
 	// conditionalExpression
 	//    :   logicalOrExpression ('?' expression ':' conditionalExpression)?
-	//    // Capture weird concatenations that were observed in the ESEC/FSE subjects
-	//    // e.g., __has_warning("-Wan-island-to-discover"_bar)
-	//    |   logicalOrExpression conditionalExpression*
 	//    ;
 	@Override public StringBuilder visitConditionalExpression(CExpressionParser.ConditionalExpressionContext ctx) {
-		if (ctx.expression() != null || !ctx.conditionalExpression().isEmpty()) {
+		if (ctx.expression() != null) {
 			// logicalOrExpression '?' expression ':' conditionalExpression
-			// | logicalOrExpression conditionalExpression*
 			// We have to abstract the expression if it is a ternary expression
 			return ctx.accept(abstractingVisitor);
 		} else {
@@ -68,24 +65,24 @@ public class ControllingCExpressionVisitor extends BasicCExpressionVisitor {
 	}
 
 	// primaryExpression
-	//    :   Identifier
+	//    :   macroExpression
+	//    |   Identifier
 	//    |   Constant
 	//    |   StringLiteral+
 	//    |   '(' expression ')'
 	//    |   unaryOperator primaryExpression
-	//    |   macroExpression
 	//    |   specialOperator
 	//    ;
 	@Override public StringBuilder visitPrimaryExpression(CExpressionParser.PrimaryExpressionContext ctx) {
+		// macroExpression
+		if (ctx.macroExpression() != null) {
+			return ctx.macroExpression().accept(abstractingVisitor);
+		}
+
 		// Identifier
 		if (ctx.Identifier() != null) {
 			// Terminal
 			return ctx.accept(abstractingVisitor);
-		}
-
-		// macroExpression
-		if (ctx.macroExpression() != null) {
-			return ctx.macroExpression().accept(abstractingVisitor);
 		}
 
 		// specialOperator
@@ -199,7 +196,7 @@ public class ControllingCExpressionVisitor extends BasicCExpressionVisitor {
 	//    |   HasCAttribute ('(' specialOperatorArgument ')')?
 	//    |   HasBuiltin ('(' specialOperatorArgument ')')?
 	//    |   HasInclude ('(' (PathLiteral | StringLiteral) ')')?
-	//    |   Defined ('(' specialOperatorArgument ')')?
+	//    |   Defined ('(' specialOperatorArgument ')')
 	//    |   Defined specialOperatorArgument?
 	//    ;
 	@Override public StringBuilder visitSpecialOperator(CExpressionParser.SpecialOperatorContext ctx) {
@@ -221,6 +218,9 @@ public class ControllingCExpressionVisitor extends BasicCExpressionVisitor {
 		return ctx.accept(abstractingVisitor);
 	}
 
+	// macroExpression
+	//    :   Identifier '(' argumentExpressionList? ')'
+	//    ;
 	@Override
 	public StringBuilder visitMacroExpression(CExpressionParser.MacroExpressionContext ctx) {
 		return ctx.accept(abstractingVisitor);
@@ -334,15 +334,10 @@ public class ControllingCExpressionVisitor extends BasicCExpressionVisitor {
 
 	// logicalOperand
 	//    :   inclusiveOrExpression
-	//    |   macroExpression
 	//    ;
 	@Override
 	public StringBuilder visitLogicalOperand(CExpressionParser.LogicalOperandContext ctx) {
-		if (ctx.inclusiveOrExpression() != null) {
-			return ctx.inclusiveOrExpression().accept(this);
-		} else {
-			return ctx.macroExpression().accept(abstractingVisitor);
-		}
+		return ctx.inclusiveOrExpression().accept(this);
 	}
 
 	private StringBuilder visitLogicalExpression(ParserRuleContext expressionContext, Function<ParseTree, Boolean> instanceCheck) {
