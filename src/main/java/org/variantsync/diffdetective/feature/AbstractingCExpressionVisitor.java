@@ -16,9 +16,6 @@ public class AbstractingCExpressionVisitor extends BasicCExpressionVisitor {
 
 	// conditionalExpression
 	//    :   logicalOrExpression ('?' expression ':' conditionalExpression)?
-	//    // Capture weird concatenations that were observed in the ESEC/FSE subjects
-	//    // e.g., __has_warning("-Wan-island-to-discover"_bar)
-	//    |   logicalOrExpression conditionalExpression*
 	//    ;
 	@Override public StringBuilder visitConditionalExpression(CExpressionParser.ConditionalExpressionContext ctx) {
 		return visitExpression(ctx,
@@ -28,15 +25,19 @@ public class AbstractingCExpressionVisitor extends BasicCExpressionVisitor {
 	}
 
 	// primaryExpression
-	//    :   Identifier
+	//    :   macroExpression
+	//    |	  Identifier
 	//    |   Constant
 	//    |   StringLiteral+
 	//    |   '(' expression ')'
 	//    |   unaryOperator primaryExpression
-	//    |   macroExpression
 	//    |   specialOperator
 	//    ;
 	@Override public StringBuilder visitPrimaryExpression(CExpressionParser.PrimaryExpressionContext ctx) {
+		// macroExpression
+		if (ctx.macroExpression() != null) {
+			return ctx.macroExpression().accept(this);
+		}
 		// Identifier
 		if (ctx.Identifier() != null) {
 			// Terminal
@@ -55,17 +56,10 @@ public class AbstractingCExpressionVisitor extends BasicCExpressionVisitor {
 			sb.append(ctx.primaryExpression().accept(this));
 			return sb;
 		}
-
-		// macroExpression
-		if (ctx.macroExpression() != null) {
-			return ctx.macroExpression().accept(this);
-		}
-
 		// specialOperator
 		if (ctx.specialOperator() != null) {
 			return ctx.specialOperator().accept(this);
 		}
-
 		// StringLiteral*
 		if (!ctx.StringLiteral().isEmpty()) {
 			// Terminal
@@ -173,7 +167,7 @@ public class AbstractingCExpressionVisitor extends BasicCExpressionVisitor {
 	//    |   HasCAttribute ('(' specialOperatorArgument ')')?
 	//    |   HasBuiltin ('(' specialOperatorArgument ')')?
 	//    |   HasInclude ('(' specialOperatorArgument ')')?
-	//    |   Defined ('(' specialOperatorArgument ')')?
+	//    |   Defined ('(' specialOperatorArgument ')')
 	//    |   Defined specialOperatorArgument?
 	//    ;
 	@Override public StringBuilder visitSpecialOperator(CExpressionParser.SpecialOperatorContext ctx) {
@@ -212,28 +206,20 @@ public class AbstractingCExpressionVisitor extends BasicCExpressionVisitor {
 
 	// logicalOperand
 	//    :   inclusiveOrExpression
-	//    |   macroExpression
 	//    ;
 	@Override
 	public StringBuilder visitLogicalOperand(CExpressionParser.LogicalOperandContext ctx) {
-		if (ctx.inclusiveOrExpression() != null) {
-			return ctx.inclusiveOrExpression().accept(this);
-		} else {
-			return ctx.macroExpression().accept(this);
-		}
+		return ctx.inclusiveOrExpression().accept(this);
 	}
 
 	// macroExpression
 	//    :   Identifier '(' argumentExpressionList? ')'
-	//    |   Identifier assignmentExpression
 	//    ;
 	@Override
 	public StringBuilder visitMacroExpression(CExpressionParser.MacroExpressionContext ctx) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(ctx.Identifier().getText().trim().toUpperCase()).append("_");
-		if (ctx.assignmentExpression() != null) {
-			sb.append(ctx.assignmentExpression().accept(this));
-		} else if (ctx.argumentExpressionList() != null) {
+		if (ctx.argumentExpressionList() != null) {
 			sb.append(ctx.argumentExpressionList().accept(this));
 		}
 		return sb;

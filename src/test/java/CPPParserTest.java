@@ -110,7 +110,7 @@ public class CPPParserTest {
 //                    "     /*  || (__STDC_VERSION__ == 199901L && !defined __HP_cc)\n" +
 //                    "         || (__STDC_VERSION__ >= 201112L && !defined __STDC_NO_VLA__) */ ))\n", ""),
             new TestCase("#if __has_warning(\"-Wan-island-to-discover\"_bar)",
-                    "__HAS_WARNING___LB____QUOTE____SUB__Wan__SUB__island__SUB__to__SUB__discover__QUOTE___bar__RB__")
+                    "__HAS_WARNING___LB____QUOTE____SUB__Wan__SUB__island__SUB__to__SUB__discover__QUOTE_____bar__RB__")
         );
     }
 

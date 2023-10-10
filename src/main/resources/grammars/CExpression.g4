@@ -8,18 +8,15 @@ expression
 
 conditionalExpression
     :   logicalOrExpression ('?' expression ':' conditionalExpression)?
-    // Capture weird concatenations that were observed in the ESEC/FSE subjects
-    // e.g., __has_warning("-Wan-island-to-discover"_bar)
-    |   logicalOrExpression conditionalExpression*
     ;
 
 primaryExpression
-    :   Identifier
+    :   macroExpression
+    |   Identifier
     |   Constant
     |   StringLiteral+
     |   '(' expression ')'
     |   unaryOperator primaryExpression
-    |   macroExpression
     |   specialOperator
     ;
 
@@ -29,7 +26,7 @@ specialOperator
     |   HasCAttribute ('(' specialOperatorArgument ')')?
     |   HasBuiltin ('(' specialOperatorArgument ')')?
     |   HasInclude ('(' specialOperatorArgument ')')?
-    |   Defined ('(' specialOperatorArgument ')')?
+    |   Defined ('(' specialOperatorArgument ')')
     |   Defined specialOperatorArgument?
     ;
 
@@ -95,12 +92,10 @@ logicalOrExpression
 
 logicalOperand
     :   inclusiveOrExpression
-    |   macroExpression
     ;
 
 macroExpression
     :   Identifier '(' argumentExpressionList? ')'
-    |   Identifier assignmentExpression
     ;
 
 argumentExpressionList
