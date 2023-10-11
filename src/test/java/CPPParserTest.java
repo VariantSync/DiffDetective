@@ -38,8 +38,8 @@ public class CPPParserTest {
             new TestCase("#if A * (B + C)", "A__MUL____LB__B__ADD__C__RB__"),
             new TestCase("#if defined(A) && (B * 2) > C", "DEFINED___LB__A__RB__&&__LB__B__MUL__2__RB____GT__C"),
             new TestCase("#if(STDC == 1) && (defined(LARGE) || defined(COMPACT))", "(STDC__EQ__1)&&(DEFINED___LB__LARGE__RB__||DEFINED___LB__COMPACT__RB__)"),
-            new TestCase("#if (('Z' - 'A') == 25)", "(__LB__'Z'__SUB__'A'__RB____EQ__25)"),
-            new TestCase("#if APR_CHARSET_EBCDIC && !(('Z' - 'A') == 25)", "APR_CHARSET_EBCDIC&&!(__LB__'Z'__SUB__'A'__RB____EQ__25)"),
+            new TestCase("#if (('Z' - 'A') == 25)", "(__LB____SQUOTE__Z__SQUOTE____SUB____SQUOTE__A__SQUOTE____RB____EQ__25)"),
+            new TestCase("#if APR_CHARSET_EBCDIC && !(('Z' - 'A') == 25)", "APR_CHARSET_EBCDIC&&!(__LB____SQUOTE__Z__SQUOTE____SUB____SQUOTE__A__SQUOTE____RB____EQ__25)"),
             new TestCase("# if ((GNUTLS_VERSION_MAJOR + (GNUTLS_VERSION_MINOR > 0 || GNUTLS_VERSION_PATCH >= 20)) > 3)",
                     "(__LB__GNUTLS_VERSION_MAJOR__ADD____LB__GNUTLS_VERSION_MINOR__GT__0__L_OR__GNUTLS_VERSION_PATCH__GEQ__20__RB____RB____GT__3)"),
 
@@ -101,6 +101,7 @@ public class CPPParserTest {
             new TestCase("#if MACRO(part:part)", "MACRO___LB__part__COLON__part__RB__"),
             new TestCase("#if MACRO(x=1)", "MACRO___LB__x__ASSIGN__1__RB__"),
             new TestCase("#if A = 3", "A__ASSIGN__3"),
+            new TestCase("#if ' ' == 32", "__SQUOTE_____SQUOTE____EQ__32"),
             new TestCase("#if (WSIZE<<1) > (1<<BITS)", "__LB__WSIZE__LSHIFT__1__RB____GT____LB__1__LSHIFT__BITS__RB__"),
             new TestCase("#if #cpu(sparc)", "CPU___LB__sparc__RB__"),
             new TestCase("#ifdef \\U0001000", "__B_SLASH__U0001000"),

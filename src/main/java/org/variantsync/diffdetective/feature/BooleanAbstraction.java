@@ -77,6 +77,8 @@ public class BooleanAbstraction {
     public static final String DOT = "__DOT__";
     /** Abstraction value for quotation marks in paths <code>"</code>. */
     public static final String QUOTE = "__QUOTE__";
+    /** Abstraction value for single quotation marks <code>'</code>. */
+    public static final String SQUOTE = "__SQUOTE__";
     public static final String HAS_ATTRIBUTE = "HAS_ATTRIBUTE_";
     public static final String HAS_CPP_ATTRIBUTE = "HAS_CPP_ATTRIBUTE_";
     public static final String HAS_C_ATTRIBUTE = "HAS_C_ATTRIBUTE_";
@@ -176,7 +178,8 @@ public class BooleanAbstraction {
         Replacement.literal( "||", L_OR), 
         Replacement.literal( ".", DOT), 
         Replacement.literal( "\"", QUOTE), 
-        Replacement.literal( "(", BRACKET_L), 
+        Replacement.literal( "'", SQUOTE),
+        Replacement.literal( "(", BRACKET_L),
         Replacement.literal( ")", BRACKET_R), 
         Replacement.literal( "__has_attribute", HAS_ATTRIBUTE), 
         Replacement.literal( "__has_cpp_attribute", HAS_CPP_ATTRIBUTE), 
