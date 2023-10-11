@@ -67,7 +67,11 @@ public class AbstractingCExpressionVisitor extends BasicCExpressionVisitor {
 			ctx.StringLiteral().stream().map(ParseTree::getText).map(String::trim).map(BooleanAbstraction::abstractAll).forEach(sb::append);
 			return sb;
 		}
-
+		// Constant
+		if (ctx.Constant() != null) {
+			// Terminal
+			return new StringBuilder(BooleanAbstraction.abstractAll(ctx.Constant().getText().trim()));
+		}
 		// For all other variants, we delegate
 		return super.visitPrimaryExpression(ctx);
 	}
