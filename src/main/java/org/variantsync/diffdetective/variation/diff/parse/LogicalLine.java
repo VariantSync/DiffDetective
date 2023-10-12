@@ -52,6 +52,7 @@ class LogicalLine {
             startLineNumber = lineNumber;
         }
         lines.add(new DiffLinesLabel.Line(line, lineNumber));
+        // TODO: implement handling of multi-line macros separated by comments
         isContinued = line.endsWith("\\");
     }
 
