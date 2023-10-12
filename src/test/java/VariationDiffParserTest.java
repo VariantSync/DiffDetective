@@ -26,7 +26,7 @@ public class VariationDiffParserTest {
     private final static Path testDir = Constants.RESOURCE_DIR.resolve("diffs").resolve("parser");
     private final static String testCaseSuffix = ".diff";
 
-    private static Stream<Path> findTestCases(Path dir) throws IOException {
+    protected static Stream<Path> findTestCases(Path dir) throws IOException {
         return Files
             .list(dir)
             .filter(filename -> filename.getFileName().toString().endsWith(testCaseSuffix));
@@ -56,8 +56,8 @@ public class VariationDiffParserTest {
     public void testCase(Path testCasePath) throws IOException, DiffParseException {
         String filename = testCasePath.getFileName().toString();
         String basename = filename.substring(0, filename.length() - testCaseSuffix.length());
-        var actualPath = testDir.resolve(basename + "_actual.lg");
-        var expectedPath = testDir.resolve(basename + "_expected.lg");
+        var actualPath = testCasePath.getParent().resolve(basename + "_actual.lg");
+        var expectedPath = testCasePath.getParent().resolve(basename + "_expected.lg");
 
         VariationDiff<DiffLinesLabel> variationDiff;
         try (var inputFile = Files.newBufferedReader(testCasePath)) {
@@ -84,7 +84,7 @@ public class VariationDiffParserTest {
                 Files.delete(actualPath);
             } else {
                 // Keep output files if the test failed
-                var visualizationPath = testDir.resolve("tex").resolve(basename + ".tex");
+                var visualizationPath = testCasePath.getParent().resolve("tex").resolve(basename + ".tex");
                 new TikzExporter<>(new Format<>(new FullNodeFormat(), new DefaultEdgeLabelFormat<>()))
                     .exportFullLatexExample(variationDiff, visualizationPath);
                 fail("The VariationDiff in file " + testCasePath + " didn't parse correctly. "
