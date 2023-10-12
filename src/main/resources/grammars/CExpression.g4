@@ -179,17 +179,16 @@ HasInclude : '__has_include';
 Defined : 'defined';
 
 Identifier
-    :   ('\\')? IdentifierNondigit
-        (   IdentifierNondigit
+    :   ('\\')? (   IdentifierNondigit
         |   Digit
-        )*
+        )+
     ;
 
 fragment
 IdentifierNondigit
     :   Nondigit
     |   UniversalCharacterName
-    //|   // other implementation-defined characters...
+    //|   // other implementation-defined characters...y
     ;
 
 fragment
