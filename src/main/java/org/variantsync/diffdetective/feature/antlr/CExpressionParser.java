@@ -27,7 +27,8 @@ public class CExpressionParser extends Parser {
 		Dot=45, Ellipsis=46, HasAttribute=47, HasCPPAttribute=48, HasCAttribute=49, 
 		HasBuiltin=50, HasInclude=51, Defined=52, Identifier=53, Constant=54, 
 		DigitSequence=55, StringLiteral=56, PathLiteral=57, NumberSign=58, AtSign=59, 
-		Dollar=60, AsmBlock=61, Whitespace=62, Newline=63, BlockComment=64, LineComment=65;
+		Dollar=60, AsmBlock=61, Whitespace=62, Newline=63, BlockComment=64, OpenBlockComment=65, 
+		LineComment=66;
 	public static final int
 		RULE_expression = 0, RULE_conditionalExpression = 1, RULE_primaryExpression = 2, 
 		RULE_specialOperator = 3, RULE_specialOperatorArgument = 4, RULE_unaryOperator = 5, 
@@ -73,7 +74,7 @@ public class CExpressionParser extends Parser {
 			"HasAttribute", "HasCPPAttribute", "HasCAttribute", "HasBuiltin", "HasInclude", 
 			"Defined", "Identifier", "Constant", "DigitSequence", "StringLiteral", 
 			"PathLiteral", "NumberSign", "AtSign", "Dollar", "AsmBlock", "Whitespace", 
-			"Newline", "BlockComment", "LineComment"
+			"Newline", "BlockComment", "OpenBlockComment", "LineComment"
 		};
 	}
 	private static final String[] _SYMBOLIC_NAMES = makeSymbolicNames();
@@ -1913,7 +1914,7 @@ public class CExpressionParser extends Parser {
 	}
 
 	public static final String _serializedATN =
-		"\u0004\u0001A\u00ff\u0002\u0000\u0007\u0000\u0002\u0001\u0007\u0001\u0002"+
+		"\u0004\u0001B\u00ff\u0002\u0000\u0007\u0000\u0002\u0001\u0007\u0001\u0002"+
 		"\u0002\u0007\u0002\u0002\u0003\u0007\u0003\u0002\u0004\u0007\u0004\u0002"+
 		"\u0005\u0007\u0005\u0002\u0006\u0007\u0006\u0002\u0007\u0007\u0007\u0002"+
 		"\b\u0007\b\u0002\t\u0007\t\u0002\n\u0007\n\u0002\u000b\u0007\u000b\u0002"+

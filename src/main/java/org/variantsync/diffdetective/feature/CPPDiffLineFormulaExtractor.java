@@ -58,12 +58,6 @@ public class CPPDiffLineFormulaExtractor {
             throw couldNotExtractFormula.get();
         }
 
-        // remove comments
-        // We have to handle this separately, because we are processing the input line-by-line and ANTLR will not be able to
-        // correctly parse (multi-line) block comments
-        fm = fm.split("//")[0];
-        fm = COMMENT_PATTERN.matcher(fm).replaceAll("");
-
         // abstract arithmetics
         try {
             fm = expressionSimplifier.simplify(fm);
