@@ -1,0 +1,16 @@
+v 16 NON;IF;(old: -1, diff: -1, new: -1);(old: -1, diff: -1, new: -1);True
+v 136 REM;IF;(old: 1, diff: 1, new: -1);(old: 7, diff: 8, new: -1);A & B & D;# if A && \;/* inline;comment */ \;  B \; && D
+v 531 NON;ARTIFACT;(old: 6, diff: 7, new: 6);(old: 7, diff: 8, new: 7);;  baz();
+v 659 NON;ARTIFACT;(old: 8, diff: 9, new: 8);(old: 9, diff: 10, new: 9);;
+v 720 NON;IF;(old: 9, diff: 10, new: 9);(old: 15, diff: 17, new: 15);A & B & D;# if A && \;/* inline;comment */ \; B \; && D
+v 1099 REM;ARTIFACT;(old: 14, diff: 16, new: -1);(old: 15, diff: 17, new: -1);;   vaz();
+v 1027 ADD;ARTIFACT;(old: -1, diff: 15, new: 14);(old: -1, diff: 16, new: 15);;   baz();
+v 128 ADD;IF;(old: -1, diff: 1, new: 1);(old: -1, diff: 8, new: 7);A & C & D;# if A && \;/* inline;comment */ \;  C \; && D
+e 136 16 b;0,-1
+e 531 136 b;0,-1
+e 531 128 a;-1,0
+e 659 16 ba;1,1
+e 720 16 ba;2,2
+e 1099 720 b;0,-1
+e 1027 720 a;-1,0
+e 128 16 a;-1,0

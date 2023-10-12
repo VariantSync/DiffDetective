@@ -1,12 +1,12 @@
- # if defined A &&  /* inline
+ # if A &&  /* inline
 + comment */ C \
 - comment */ B \
   && D
    baz();
  #endif
 
- # if defined A &&  /* inline
-comment */ C \
+ # if A &&  /* inline
+ comment */ C \
   && D
 +   baz();
 -   vaz();

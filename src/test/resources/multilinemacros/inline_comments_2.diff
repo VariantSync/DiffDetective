@@ -1,15 +1,15 @@
- # if defined A && \
-/* inline
-comment */ \
+ # if A && \
+ /* inline
+ comment */ \
 +  C \
 -  B \
   && D
    baz();
  #endif
 
- # if defined A && \
-/* inline
-comment */ \
+ # if A && \
+ /* inline
+ comment */ \
   B \
   && D
 +   baz();

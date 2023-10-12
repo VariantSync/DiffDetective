@@ -1,19 +1,19 @@
- # if defined A && \
-/* inline
-comment
-with multiple
-lines
-*/ \
+ # if A && \
+ /* inline
+ comment
+ with multiple
+ lines
+ */ \
 +  C \
 -  B \
   && D
    baz();
  #endif
 
- # if defined A && /* inline
-comment
-with multiple
-lines */ \
+ # if A && /* inline
+ comment
+ with multiple
+ lines */ \
   B \
   && D
 +   baz();
