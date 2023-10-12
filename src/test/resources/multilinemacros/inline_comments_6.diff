@@ -1,0 +1,7 @@
+ # if A &&  /* inline
+ // Some inner line comment
++ comment */ C \
+- comment */ B \
+  && D
+   baz();
+ #endif

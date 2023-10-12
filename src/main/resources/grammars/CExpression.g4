@@ -461,6 +461,11 @@ BlockComment
         -> channel(HIDDEN)
     ;
 
+OpenBlockComment
+    :  '/*' ~[*/]*
+        -> channel(HIDDEN)
+        ;
+
 LineComment
     :   '//' ~[\r\n]*
         -> channel(HIDDEN)
