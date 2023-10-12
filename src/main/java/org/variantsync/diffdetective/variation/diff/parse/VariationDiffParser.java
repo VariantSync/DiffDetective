@@ -270,6 +270,9 @@ public class VariationDiffParser {
         }
 
         if (beforeLine.hasStarted() || afterLine.hasStarted()) {
+            Logger.debug("line continuation but no more lines");
+            Logger.debug("beforeLine: " + beforeLine);
+            Logger.debug("afterLine: " + afterLine);
             throw new DiffParseException(
                 DiffError.INVALID_LINE_CONTINUATION,
                 lineNumber

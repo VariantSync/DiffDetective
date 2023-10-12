@@ -402,6 +402,12 @@ public class GitDiffer {
                     logMessage
                             .append("parse exception for commit ")
                             .append(childCommit.getName())
+                            .append(" in line ")
+                            .append(e.getLineNumber())
+                            .append(" of patch ")
+                            .append(diffEntry.getOldPath())
+                            .append(" -> ")
+                            .append(diffEntry.getNewPath())
                             .append("\n");
                     logMessage
                             .append(e)
