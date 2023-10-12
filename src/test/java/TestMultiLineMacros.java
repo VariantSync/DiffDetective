@@ -26,18 +26,17 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.stream.Stream;
 
-public class TestMultiLineMacros extends VariationDiffParserTest {
+public class TestMultiLineMacros {
 
     private final static Path testDir = Constants.RESOURCE_DIR.resolve("multilinemacros");
-    private final static String testCaseSuffix = ".diff";
 
     public static Stream<Path> multilineTests() throws IOException {
-        return findTestCases(testDir);
+        return VariationDiffParserTest.findTestCases(testDir);
     }
 
     @ParameterizedTest
     @MethodSource("multilineTests")
     public void testMultiline(Path basename) throws IOException, DiffParseException {
-        testCase(basename);
+        VariationDiffParserTest.testCase(basename);
     }
 }

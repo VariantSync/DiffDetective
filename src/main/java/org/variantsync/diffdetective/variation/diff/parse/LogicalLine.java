@@ -2,6 +2,8 @@ package org.variantsync.diffdetective.variation.diff.parse;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.variantsync.diffdetective.diff.text.DiffLineNumber;
 import org.variantsync.diffdetective.util.Assert;
@@ -22,6 +24,8 @@ class LogicalLine {
     private boolean isContinued;
     private boolean inComment;
     private DiffLineNumber startLineNumber;
+
+    private final static Pattern LINE_COMMENT = Pattern.compile("[^(/*)]*?//[^(*/)]*?");
 
     /**
      * Constructs an empty logical line.
@@ -60,10 +64,19 @@ class LogicalLine {
         // Handle multi-line inline macros
         int commentStart = line.lastIndexOf("/*");
         int commentEnd = line.lastIndexOf("*/");
+        Matcher lineCommentMatcher = LINE_COMMENT.matcher(line);
+        int lineCommentStart = lineCommentMatcher.find() ? lineCommentMatcher.start() : -1;
         if (commentStart != -1 || commentEnd != -1) {
-            // Update the value if a start or end have been found
-            // The line is part of a multi-line comment, if a comment starts in this line (after another comment ends)
-            inComment = commentStart > commentEnd;
+            if (lineCommentStart != -1 && lineCommentStart < commentStart) {
+                // Handle cases in which comments are embedded in other comments
+                // e.g., '// /* some comment'
+                // or '/* // */ text /* continuation'
+                inComment = false;
+            } else {
+                // Update the value if a start or end have been found
+                // The line is part of a multi-line comment, if a comment starts in this line (after another comment ends)
+                inComment = commentStart > commentEnd;
+            }
         }
 
         lines.add(new DiffLinesLabel.Line(line, lineNumber));
