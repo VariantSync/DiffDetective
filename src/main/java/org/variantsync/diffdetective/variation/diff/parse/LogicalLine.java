@@ -20,6 +20,7 @@ import org.variantsync.diffdetective.variation.DiffLinesLabel;
 class LogicalLine {
     private List<DiffLinesLabel.Line> lines;
     private boolean isContinued;
+    private boolean inComment;
     private DiffLineNumber startLineNumber;
 
     /**
@@ -36,6 +37,7 @@ class LogicalLine {
     public void reset() {
         lines = new ArrayList<>();
         isContinued = false;
+        inComment = false;
         startLineNumber = DiffLineNumber.Invalid();
     }
 
@@ -51,9 +53,20 @@ class LogicalLine {
         if (!hasStarted()) {
             startLineNumber = lineNumber;
         }
-        lines.add(new DiffLinesLabel.Line(line, lineNumber));
-        // TODO: implement handling of multi-line macros separated by comments
+
+        // Handle line continuations
         isContinued = line.endsWith("\\");
+
+        // Handle multi-line inline macros
+        int commentStart = line.lastIndexOf("/*");
+        int commentEnd = line.lastIndexOf("*/");
+        if (commentStart != -1 || commentEnd != -1) {
+            // Update the value if a start or end have been found
+            // The line is part of a multi-line comment, if a comment starts in this line (after another comment ends)
+            inComment = commentStart > commentEnd;
+        }
+
+        lines.add(new DiffLinesLabel.Line(line, lineNumber));
     }
 
     /**
@@ -68,7 +81,7 @@ class LogicalLine {
      * to a new logical line.
      */
     public boolean isComplete() {
-        return hasStarted() && !isContinued;
+        return hasStarted() && !isContinued && !inComment;
     }
 
     /**
@@ -93,10 +106,10 @@ class LogicalLine {
     @Override
     public String toString() {
         var logicalLine = new StringBuilder();
-        for (var it = lines.iterator(); it.hasNext(); ) {
-            String physicalLine = it.next().content();
+        for (DiffLinesLabel.Line line : lines) {
+            String physicalLine = line.content();
             // Remove the backslash of the line continuation
-            logicalLine.append(physicalLine, 0, physicalLine.length() - (it.hasNext() ? 1 : 0));
+            logicalLine.append(physicalLine, 0, physicalLine.length() - (physicalLine.endsWith("\\") ? 1 : 0));
         }
 
         return logicalLine.toString();
