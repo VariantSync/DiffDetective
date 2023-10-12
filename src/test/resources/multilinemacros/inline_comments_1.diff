@@ -1,0 +1,13 @@
+ # if defined A &&  /* inline
++ comment */ C \
+- comment */ B \
+  && D
+   baz();
+ #endif
+
+ # if defined A &&  /* inline
+comment */ C \
+  && D
++   baz();
+-   vaz();
+ #endif
