@@ -52,7 +52,7 @@ public class TestMultiLineMacros {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = { "mldiff1.txt", "diffWithComments.txt" })
+    @ValueSource(strings = { "mldiff1.txt", "diffWithComments.txt", "inline_comments_1.diff", "inline_comments_2.diff", "inline_comments_3.diff" })
     public void test(String filename) throws IOException, DiffParseException {
         final LineGraphExportOptions<DiffLinesLabel> exportOptions = new LineGraphExportOptions<>(
                 GraphFormat.VARIATION_DIFF,
