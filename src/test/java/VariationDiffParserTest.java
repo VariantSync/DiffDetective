@@ -53,7 +53,7 @@ public class VariationDiffParserTest {
         testCase(testCase);
     }
 
-    public void testCase(Path testCasePath) throws IOException, DiffParseException {
+    public static void testCase(Path testCasePath) throws IOException, DiffParseException {
         String filename = testCasePath.getFileName().toString();
         String basename = filename.substring(0, filename.length() - testCaseSuffix.length());
         var actualPath = testCasePath.getParent().resolve(basename + "_actual.lg");
