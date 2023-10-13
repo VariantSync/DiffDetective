@@ -8,16 +8,6 @@ public class UncheckedUnParseableFormulaException extends RuntimeException {
         inner = new UnParseableFormulaException(message, e);
     }
 
-    public UncheckedUnParseableFormulaException(String message) {
-        super(message);
-        inner = new UnParseableFormulaException(message);
-    }
-
-    public UncheckedUnParseableFormulaException(Exception e) {
-        super(e);
-        inner = new UnParseableFormulaException(e);
-    }
-
     public UnParseableFormulaException inner() {
         return this.inner;
     }
