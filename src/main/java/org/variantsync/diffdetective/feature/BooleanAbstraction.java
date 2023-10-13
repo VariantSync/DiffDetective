@@ -57,7 +57,7 @@ public class BooleanAbstraction {
     public static final String BRACKET_L = "__LB__";
     /** Abstraction value for closing brackets <code>)</code>. */
     public static final String BRACKET_R = "__RB__";
-    /** Abstraction value for unary 'and' <code>&</code>. */
+    /** Abstraction value for unary 'and' <code>&amp;</code>. */
     public static final String U_AND = "__U_AND__";
     /** Abstraction value for unary star <code>*</code>. */
     public static final String U_STAR = "__U_STAR__";
@@ -69,7 +69,7 @@ public class BooleanAbstraction {
     public static final String U_TILDE = "__U_TILDE__";
     /** Abstraction value for unary not <code>!</code>. */
     public static final String U_NOT = "__U_NOT__";
-    /** Abstraction value for logical and <code>&&</code>. */
+    /** Abstraction value for logical and <code>&amp;&amp;</code>. */
     public static final String L_AND = "__L_AND__";
     /** Abstraction value for logical or <code>||</code>. */
     public static final String L_OR = "__L_OR__";
@@ -103,11 +103,11 @@ public class BooleanAbstraction {
     public static final String PLUS_ASSIGN = "__PLU___ASSIGN__";
     /** Abstraction value for minus assign operator <code>-=</code>. */
     public static final String MINUS_ASSIGN = "__MIN___ASSIGN__";
-    /** Abstraction value for left shift assign operator <code><<=</code>. */
+    /** Abstraction value for left shift assign operator <code>&lt;&lt;=</code>. */
     public static final String LEFT_SHIFT_ASSIGN = "__LSH___ASSIGN__";
-    /** Abstraction value for right shift assign operator <code>>>=</code>. */
+    /** Abstraction value for right shift assign operator <code>&gt;&gt;=</code>. */
     public static final String RIGHT_SHIFT_ASSIGN = "__RSH___ASSIGN__";
-    /** Abstraction value for 'and' assign operator <code>&=</code>. */
+    /** Abstraction value for 'and' assign operator <code>&amp;=</code>. */
     public static final String AND_ASSIGN = "__AND___ASSIGN__";
     /** Abstraction value for xor assign operator <code>^=</code>. */
     public static final String XOR_ASSIGN = "__XOR___ASSIGN__";
