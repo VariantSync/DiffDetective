@@ -13,16 +13,15 @@ import java.util.regex.Pattern;
  * For example, given the annotation "#if defined(A) || B()", the extractor would extract
  * "A || B". The extractor detects if, ifdef, ifndef and elif annotations.
  * (Other annotations do not have expressions.)
- * The given pre processor statement might also a line in a diff (i.e., preceeded by a - or +).
+ * The given pre-processor statement might also a line in a diff (i.e., preceeded by a - or +).
  * @author Paul Bittner, Sören Viegener, Benjamin Moosherr
  */
 public class CPPDiffLineFormulaExtractor {
     // ^[+-]?\s*#\s*(if|ifdef|ifndef|elif)(\s+(.*)|\((.*)\))$
     private static final String CPP_ANNOTATION_REGEX = "^[+-]?\\s*#\\s*(if|ifdef|ifndef|elif)(\\s+(.*)|(\\(.*\\)))$";
     private static final Pattern CPP_ANNOTATION_REGEX_PATTERN = Pattern.compile(CPP_ANNOTATION_REGEX);
-    private static final Pattern COMMENT_PATTERN = Pattern.compile("(/\\*.*?\\*/)|(/\\*.*)");
 
-    private static final ControllingCExpressionVisitor expressionSimplifier = new ControllingCExpressionVisitor();
+    private static final ControllingCExpressionVisitor formulaAbstraction = new ControllingCExpressionVisitor();
 
     /**
      * Resolves any macros in the given formula that are relevant for feature annotations.
@@ -42,11 +41,11 @@ public class CPPDiffLineFormulaExtractor {
      * @return The feature mapping as a String of the given line
      */
     public String extractFormula(final String line) throws UnParseableFormulaException {
-        // TODO: There still regexes here in replaceAll that could be optimized by precompiling the regexes once.
         final Matcher matcher = CPP_ANNOTATION_REGEX_PATTERN.matcher(line);
         final Supplier<UnParseableFormulaException> couldNotExtractFormula = () ->
                new UnParseableFormulaException("Could not extract formula from line \""+ line + "\".");
 
+        // Retrieve the formula from the macro line
         String fm;
         if (matcher.find()) {
             if (matcher.group(3) != null) {
@@ -58,9 +57,9 @@ public class CPPDiffLineFormulaExtractor {
             throw couldNotExtractFormula.get();
         }
 
-        // abstract arithmetics
+        // abstract complex formulas (e.g., if they contain arithmetics or macro calls)
         try {
-            fm = expressionSimplifier.simplify(fm);
+            fm = formulaAbstraction.accept(fm);
         } catch (UncheckedUnParseableFormulaException e) {
             throw e.inner();
         } catch (Exception e) {

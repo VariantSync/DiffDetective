@@ -9,7 +9,7 @@ import org.variantsync.diffdetective.feature.antlr.CExpressionVisitor;
 import java.util.function.Function;
 
 /**
- * Visitor that abstracts all symbols that might interfere with further formula analysis.
+ * Visitor that abstracts all symbols of a formula that might interfere with further formula analysis.
  */
 @SuppressWarnings("CheckReturnValue")
 public class AbstractingCExpressionVisitor extends AbstractParseTreeVisitor<StringBuilder> implements CExpressionVisitor<StringBuilder> {
