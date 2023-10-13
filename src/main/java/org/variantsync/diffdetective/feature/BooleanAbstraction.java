@@ -79,80 +79,94 @@ public class BooleanAbstraction {
     public static final String QUOTE = "__QUOTE__";
     /** Abstraction value for single quotation marks <code>'</code>. */
     public static final String SQUOTE = "__SQUOTE__";
+    /** Abstraction value for has_attribute operator <code>__has_attribute(ATTRIBUTE)</code>. */
     public static final String HAS_ATTRIBUTE = "HAS_ATTRIBUTE_";
+    /** Abstraction value for has_cpp_attribute operator <code>__has_cpp_attribute(ATTRIBUTE)</code>. */
     public static final String HAS_CPP_ATTRIBUTE = "HAS_CPP_ATTRIBUTE_";
+    /** Abstraction value for has_c_attribute operator <code>__has_c_attribute(ATTRIBUTE)</code>. */
     public static final String HAS_C_ATTRIBUTE = "HAS_C_ATTRIBUTE_";
+    /** Abstraction value for has_builtin operator <code>__has_builtin(BUILTIN)</code>. */
     public static final String HAS_BUILTIN = "HAS_BUILTIN_";
+    /** Abstraction value for has_include operator <code>__has_include(INCLUDE)</code>. */
     public static final String HAS_INCLUDE = "HAS_INCLUDE_";
+    /** Abstraction value for defined operator <code>defined</code>. */
     public static final String DEFINED = "DEFINED_";
+    /** Abstraction value for assign operator <code>=</code>. */
     public static final String ASSIGN = "__ASSIGN__";
+    /** Abstraction value for star assign operator <code>*=</code>. */
     public static final String STAR_ASSIGN = "__STA___ASSIGN__";
+    /** Abstraction value for div assign operator <code>/=</code>. */
     public static final String DIV_ASSIGN = "__DIV___ASSIGN__";
+    /** Abstraction value for mod assign operator <code>%=</code>. */
     public static final String MOD_ASSIGN = "__MOD___ASSIGN__";
+    /** Abstraction value for plus assign operator <code>+=</code>. */
     public static final String PLUS_ASSIGN = "__PLU___ASSIGN__";
+    /** Abstraction value for minus assign operator <code>-=</code>. */
     public static final String MINUS_ASSIGN = "__MIN___ASSIGN__";
+    /** Abstraction value for left shift assign operator <code><<=</code>. */
     public static final String LEFT_SHIFT_ASSIGN = "__LSH___ASSIGN__";
+    /** Abstraction value for right shift assign operator <code>>>=</code>. */
     public static final String RIGHT_SHIFT_ASSIGN = "__RSH___ASSIGN__";
+    /** Abstraction value for 'and' assign operator <code>&=</code>. */
     public static final String AND_ASSIGN = "__AND___ASSIGN__";
+    /** Abstraction value for xor assign operator <code>^=</code>. */
     public static final String XOR_ASSIGN = "__XOR___ASSIGN__";
+    /** Abstraction value for 'or' assign operator <code>|=</code>. */
     public static final String OR_ASSIGN = "__OR___ASSIGN__";
+    /** Abstraction value for whitespace <code> </code>. */
     public static final String WHITESPACE = "_";
+    /** Abstraction value for backslash <code>\</code>. */
     public static final String BSLASH = "__B_SLASH__";
 
-    private static class Replacement {
-        private Pattern pattern;
-        private String replacement;
-
+    private record Replacement(Pattern pattern, String replacement) {
         /**
-         * @param pattern the literal string to be replaced if it matches a whole word
+         * @param pattern     the literal string to be replaced if it matches a whole word
          * @param replacement the replacement with special escape codes according to
-         * {@link Matcher#replaceAll}
+         *                    {@link Matcher#replaceAll}
          */
-        private Replacement(Pattern pattern, String replacement) {
-            this.pattern = pattern;
-            this.replacement = replacement;
+        private Replacement {
         }
 
-        /**
-         * Creates a new replacement matching {@code original} literally.
-         *
-         * @param original a string which is searched for literally (without any special
-         * characters)
-         * @param replacement the literal replacement for strings matched by {@code original}
-         */
-        public static Replacement literal(String original, String replacement) {
-            return new Replacement(
-                Pattern.compile(Pattern.quote(original)),
-                Matcher.quoteReplacement(replacement)
-            );
-        }
+            /**
+             * Creates a new replacement matching {@code original} literally.
+             *
+             * @param original    a string which is searched for literally (without any special
+             *                    characters)
+             * @param replacement the literal replacement for strings matched by {@code original}
+             */
+            public static Replacement literal(String original, String replacement) {
+                return new Replacement(
+                        Pattern.compile(Pattern.quote(original)),
+                        Matcher.quoteReplacement(replacement)
+                );
+            }
 
-        /**
-         * Creates a new replacement matching {@code original} literally but only on word
-         * boundaries.
-         *
-         * A word boundary is defined as the transition from a word character (alphanumerical
-         * characters) to a non-word character (everything else) or the transition from any
-         * character to a bracket (the characters {@code (} and {@code )}).
-         *
-         * @param original a string which is searched for as a whole word literally (without any
-         * special characters)
-         * @param replacement the literal replacement for strings matched by {@code original}
-         */
-        public static Replacement onlyFullWord(String original, String replacement) {
-            return new Replacement(
-                Pattern.compile("(?<=\\b|[()])" + Pattern.quote(original) + "(?=\\b|[()])"),
-                Matcher.quoteReplacement(replacement)
-            );
-        }
+            /**
+             * Creates a new replacement matching {@code original} literally but only on word
+             * boundaries.
+             * <p>
+             * A word boundary is defined as the transition from a word character (alphanumerical
+             * characters) to a non-word character (everything else) or the transition from any
+             * character to a bracket (the characters {@code (} and {@code )}).
+             *
+             * @param original    a string which is searched for as a whole word literally (without any
+             *                    special characters)
+             * @param replacement the literal replacement for strings matched by {@code original}
+             */
+            public static Replacement onlyFullWord(String original, String replacement) {
+                return new Replacement(
+                        Pattern.compile("(?<=\\b|[()])" + Pattern.quote(original) + "(?=\\b|[()])"),
+                        Matcher.quoteReplacement(replacement)
+                );
+            }
 
-        /**
-         * Replaces all patterns found in {@code value} by its replacement.
-         */
-        public String applyTo(String value) {
-            return pattern.matcher(value).replaceAll(replacement);
+            /**
+             * Replaces all patterns found in {@code value} by its replacement.
+             */
+            public String applyTo(String value) {
+                return pattern.matcher(value).replaceAll(replacement);
+            }
         }
-    }
 
     private static final List<Replacement> REPLACEMENTS = List.of(
         // These replacements are carefully ordered by their length (longest first) to ensure that
