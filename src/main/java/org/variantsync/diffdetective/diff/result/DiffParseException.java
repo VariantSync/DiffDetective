@@ -19,10 +19,24 @@ public final class DiffParseException extends Exception {
         this.lineNumber = lineNumber;
     }
 
-    public DiffParseException(Exception other, DiffLineNumber lineNumber) {
-        super(other);
-        this.error = DiffError.UN_PARSEABLE_FORMULA;
+    /**
+     * @param exception an exception that indicated the error
+     * @param error the error type to be reported
+     * @param lineNumber the source line of the error
+     */
+    private DiffParseException(Exception exception, DiffError error, DiffLineNumber lineNumber) {
+        super(exception);
+        this.error = error;
         this.lineNumber = lineNumber;
+    }
+
+    /**
+     * A DiffParseException due to an un-parsable formula.
+     * @param exception The parse exception that occurred
+     * @param lineNumber The line number of the un-parsable formula
+     */
+    public static DiffParseException UnParsable(Exception exception, DiffLineNumber lineNumber) {
+        return new DiffParseException(exception, DiffError.UN_PARSEABLE_FORMULA, lineNumber);
     }
 
     public DiffError getError() {
