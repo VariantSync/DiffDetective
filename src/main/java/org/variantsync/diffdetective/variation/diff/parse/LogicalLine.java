@@ -67,13 +67,13 @@ class LogicalLine {
         Matcher lineCommentMatcher = LINE_COMMENT.matcher(line);
         int lineCommentStart = lineCommentMatcher.find() ? lineCommentMatcher.start() : -1;
         if (commentStart != -1 || commentEnd != -1) {
+            // Update 'inComment' if a C-style comment is opened and/or closed
             if (lineCommentStart != -1 && lineCommentStart < commentStart) {
                 // Handle cases in which comments are embedded in other comments
                 // e.g., '// /* some comment'
-                // or '/* // */ text /* continuation'
                 inComment = false;
             } else {
-                // Update the value if a start or end have been found
+                // Update the value if a start and/or end have been found
                 // The line is part of a multi-line comment, if a comment starts in this line (after another comment ends)
                 inComment = commentStart > commentEnd;
             }
