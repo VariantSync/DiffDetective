@@ -15,7 +15,7 @@ import java.util.BitSet;
 import java.util.function.Function;
 
 /**
- * Visitor that controls how subtrees are evaluated further.
+ * Visitor that controls how subtrees of a parsed formula are abstracted.
  */
 @SuppressWarnings("CheckReturnValue")
 public class ControllingCExpressionVisitor extends AbstractParseTreeVisitor<StringBuilder> implements CExpressionVisitor<StringBuilder> {
@@ -23,7 +23,7 @@ public class ControllingCExpressionVisitor extends AbstractParseTreeVisitor<Stri
 
 	public ControllingCExpressionVisitor() {}
 
-	public String simplify(String formula) {
+	public String accept(String formula) {
 		CExpressionLexer lexer = new CExpressionLexer(CharStreams.fromString(formula));
 		CommonTokenStream tokens = new CommonTokenStream(lexer);
 		CExpressionParser parser = new CExpressionParser(tokens);
