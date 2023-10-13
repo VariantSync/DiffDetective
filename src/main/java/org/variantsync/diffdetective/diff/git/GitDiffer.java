@@ -421,10 +421,9 @@ public class GitDiffer {
                     if (e.getCause() != null) {
                         logMessage
                                 .append("cause: ")
-                                .append(e.getCause())
-                                .append("\n");
+                                .append(e.getCause());
                     }
-                    Logger.warn(logMessage);
+                    Logger.debug(logMessage);
                     errors.add(e.getError());
                 }
 
