@@ -1,5 +1,8 @@
 package org.variantsync.diffdetective.error;
 
+/**
+ * Runtime exception for cases in which a formula extracted from a diff cannot be parsed.
+ */
 public class UncheckedUnParseableFormulaException extends RuntimeException {
     final UnParseableFormulaException inner;
 
