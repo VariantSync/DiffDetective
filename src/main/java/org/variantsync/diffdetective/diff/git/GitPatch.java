@@ -27,7 +27,7 @@ public interface GitPatch extends VariationDiffSource, TextBasedDiff {
         public String getFileName(Time time) {
             if (time == Time.BEFORE) {
                 return oldFileName;
-            }else {
+            } else {
                 return newFileName;
             }
         }
@@ -39,7 +39,7 @@ public interface GitPatch extends VariationDiffSource, TextBasedDiff {
 
         @Override
         public String toString() {
-            return newFileName + "@ commit from " + getParentCommitHash + " (parent) to " + getCommitHash + " (child)";
+            return oldFileName + "@ " + getParentCommitHash + " (parent) to " + newFileName + " @ " + getCommitHash + " (child)";
         }
     }
 
@@ -49,7 +49,7 @@ public interface GitPatch extends VariationDiffSource, TextBasedDiff {
     DiffEntry.ChangeType getChangeType();
 
     /**
-     * Returns the name of the patched file.
+     * Returns the name of the patched file at the given time.
      */
     String getFileName(Time time);
 
