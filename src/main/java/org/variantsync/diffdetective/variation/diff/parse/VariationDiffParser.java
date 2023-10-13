@@ -364,7 +364,7 @@ public class VariationDiffParser {
                 addNode(newNode);
                 lastArtifact = newNode.isArtifact() ? newNode : null;
             } catch (UnParseableFormulaException e) {
-                throw new DiffParseException(e, fromLine);
+                throw DiffParseException.UnParsable(e, fromLine);
             }
         }
     }
