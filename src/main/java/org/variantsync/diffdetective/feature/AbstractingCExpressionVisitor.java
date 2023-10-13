@@ -1,8 +1,10 @@
 package org.variantsync.diffdetective.feature;
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.variantsync.diffdetective.feature.antlr.CExpressionParser;
+import org.variantsync.diffdetective.feature.antlr.CExpressionVisitor;
 
 import java.util.function.Function;
 
@@ -10,7 +12,7 @@ import java.util.function.Function;
  * Visitor that abstracts all symbols that might interfere with further formula analysis.
  */
 @SuppressWarnings("CheckReturnValue")
-public class AbstractingCExpressionVisitor extends BasicCExpressionVisitor {
+public class AbstractingCExpressionVisitor extends AbstractParseTreeVisitor<StringBuilder> implements CExpressionVisitor<StringBuilder> {
 
 	public AbstractingCExpressionVisitor() {}
 
@@ -43,6 +45,18 @@ public class AbstractingCExpressionVisitor extends BasicCExpressionVisitor {
 			// Terminal
 			return new StringBuilder(BooleanAbstraction.abstractAll(ctx.Identifier().getText().trim()));
 		}
+		// Constant
+		if (ctx.Constant() != null) {
+			// Terminal
+			return new StringBuilder(BooleanAbstraction.abstractAll(ctx.Constant().getText().trim()));
+		}
+		// StringLiteral+
+		if (!ctx.StringLiteral().isEmpty()) {
+			// Terminal
+			StringBuilder sb = new StringBuilder();
+			ctx.StringLiteral().stream().map(ParseTree::getText).map(String::trim).map(BooleanAbstraction::abstractAll).forEach(sb::append);
+			return sb;
+		}
 		// '(' expression ')'
 		if (ctx.expression() != null) {
 			StringBuilder sb = ctx.expression().accept(this);
@@ -60,20 +74,9 @@ public class AbstractingCExpressionVisitor extends BasicCExpressionVisitor {
 		if (ctx.specialOperator() != null) {
 			return ctx.specialOperator().accept(this);
 		}
-		// StringLiteral*
-		if (!ctx.StringLiteral().isEmpty()) {
-			// Terminal
-			StringBuilder sb = new StringBuilder();
-			ctx.StringLiteral().stream().map(ParseTree::getText).map(String::trim).map(BooleanAbstraction::abstractAll).forEach(sb::append);
-			return sb;
-		}
-		// Constant
-		if (ctx.Constant() != null) {
-			// Terminal
-			return new StringBuilder(BooleanAbstraction.abstractAll(ctx.Constant().getText().trim()));
-		}
-		// For all other variants, we delegate
-		return super.visitPrimaryExpression(ctx);
+
+		// Unreachable
+		throw new IllegalStateException("Unreachable code.");
 	}
 
 	// unaryOperator
@@ -258,14 +261,17 @@ public class AbstractingCExpressionVisitor extends BasicCExpressionVisitor {
 	@Override
 	public StringBuilder visitAssignmentExpression(CExpressionParser.AssignmentExpressionContext ctx) {
 		if (ctx.conditionalExpression() != null) {
+			// conditionalExpression
 			return ctx.conditionalExpression().accept(this);
 		} else if (ctx.primaryExpression() != null) {
+			// primaryExpression assignmentOperator assignmentExpression
 			StringBuilder sb = new StringBuilder();
 			sb.append(ctx.primaryExpression().accept(this));
 			sb.append(ctx.assignmentOperator().accept(this));
 			sb.append(ctx.assignmentExpression().accept(this));
 			return sb;
 		} else {
+			// all other cases require direct abstraction
 			return new StringBuilder(BooleanAbstraction.abstractAll(ctx.getText().trim()));
 		}
 	}
@@ -286,17 +292,23 @@ public class AbstractingCExpressionVisitor extends BasicCExpressionVisitor {
 		return visitExpression(ctx, childContext -> childContext instanceof CExpressionParser.AssignmentExpressionContext);
 	}
 
+	/**
+	 * Abstract all child nodes in the parse tree.
+	 * @param expressionContext The root of the subtree to abstract
+	 * @param instanceCheck A check for expected child node types
+	 * @return The abstracted formula of the subtree
+	 */
 	private StringBuilder visitExpression(ParserRuleContext expressionContext, Function<ParseTree, Boolean> instanceCheck) {
 		StringBuilder sb = new StringBuilder();
 		for (ParseTree subtree : expressionContext.children) {
 			if (instanceCheck.apply(subtree)) {
-				// Some operand
+				// Some operand (i.e., a subtree) that we have to visit
 				sb.append(subtree.accept(this));
 			} else if (subtree instanceof TerminalNode terminal) {
-				// Some operator that requires abstraction
+				// Some operator (i.e., a leaf node) that requires direct abstraction
 				sb.append(BooleanAbstraction.abstractFirstOrAll(terminal.getText().trim()));
 			} else {
-				// loop does not work as expected
+				// sanity check: loop does not work as expected
 				throw new IllegalStateException();
 			}
 		}

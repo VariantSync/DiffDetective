@@ -2,12 +2,14 @@ package org.variantsync.diffdetective.feature;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.atn.ATNConfigSet;
 import org.antlr.v4.runtime.dfa.DFA;
+import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.tinylog.Logger;
 import org.variantsync.diffdetective.error.UncheckedUnParseableFormulaException;
 import org.variantsync.diffdetective.feature.antlr.CExpressionLexer;
 import org.variantsync.diffdetective.feature.antlr.CExpressionParser;
+import org.variantsync.diffdetective.feature.antlr.CExpressionVisitor;
 
 import java.util.BitSet;
 import java.util.function.Function;
@@ -16,7 +18,7 @@ import java.util.function.Function;
  * Visitor that controls how subtrees are evaluated further.
  */
 @SuppressWarnings("CheckReturnValue")
-public class ControllingCExpressionVisitor extends BasicCExpressionVisitor {
+public class ControllingCExpressionVisitor extends AbstractParseTreeVisitor<StringBuilder> implements CExpressionVisitor<StringBuilder> {
 	private final AbstractingCExpressionVisitor abstractingVisitor = new AbstractingCExpressionVisitor();
 
 	public ControllingCExpressionVisitor() {}
@@ -77,26 +79,47 @@ public class ControllingCExpressionVisitor extends BasicCExpressionVisitor {
 		if (ctx.macroExpression() != null) {
 			return ctx.macroExpression().accept(abstractingVisitor);
 		}
-
 		// Identifier
 		if (ctx.Identifier() != null) {
 			// Terminal
 			return ctx.accept(abstractingVisitor);
 		}
-
+		// Constant
+		if (ctx.Constant() != null) {
+			// Terminal
+			return new StringBuilder(ctx.Constant().getText().trim());
+		}
+		// StringLiteral+
+		if (!ctx.StringLiteral().isEmpty()) {
+			return ctx.accept(abstractingVisitor);
+		}
+		// '(' expression ')'
+		if (ctx.expression() != null) {
+			StringBuilder sb = ctx.expression().accept(this);
+			sb.insert(0, "(");
+			sb.append(")");
+			return sb;
+		}
+		// unaryOperator primaryExpression
+		if (ctx.unaryOperator() != null) {
+			StringBuilder sb = ctx.unaryOperator().accept(this);
+			sb.append(ctx.primaryExpression().accept(this));
+			return sb;
+		}
 		// specialOperator
 		if (ctx.specialOperator() != null) {
 			return ctx.specialOperator().accept(abstractingVisitor);
 		}
 
-		// StringLiteral
-		if (!ctx.StringLiteral().isEmpty()) {
-			return ctx.accept(abstractingVisitor);
-		}
-
-		// For all other variants, we delegate
-		return super.visitPrimaryExpression(ctx);
+		// Unreachable
+		throw new IllegalStateException("Unreachable code.");
 	}
+
+	// unaryOperator
+	//    :   '&' | '*' | '+' | '-' | '~' | '!'
+	//    ;
+	@Override public StringBuilder visitUnaryOperator(CExpressionParser.UnaryOperatorContext ctx) { return new StringBuilder(ctx.getText()); }
+
 
 	// namespaceExpression
 	//    :   primaryExpression (':' primaryExpression)*
