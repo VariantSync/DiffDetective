@@ -118,7 +118,7 @@ public record BadVDiff<L extends Label>(
      * Copies {@link org.variantsync.diffdetective.variation.NodeType node type},
      *        {@link DiffNode#getFormula() formula},
      *        {@link DiffNode#getLinesInDiff() line numbers in the diff},
-     *        and {@link DiffNode#getLabelLines() label} but no edge information.
+     *        and {@link DiffNode#getLabel() label} but no edge information.
      * @param n The node to convert to a plain VariationTreeNode.
      */
     private static <L extends Label> VariationTreeNode<L> plain(final DiffNode<L> n) {

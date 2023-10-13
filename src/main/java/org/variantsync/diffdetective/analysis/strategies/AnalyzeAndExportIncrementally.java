@@ -76,8 +76,6 @@ public class AnalyzeAndExportIncrementally extends AnalysisStrategy {
 
     /**
      * Appends the given linegraph string at the end of the given file.
-     * @param outputPath File to which the linegraph string should be appended.
-     * @param linegraph String to append to the given file.
      */
     private void flush() {
         try (var output = IO.newBufferedOutputStream(outputPath, StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {

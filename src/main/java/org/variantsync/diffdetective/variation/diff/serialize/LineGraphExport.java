@@ -154,11 +154,9 @@ public final class LineGraphExport {
 
     /**
      * Produces the final linegraph file content.
-     * Creates a linegraph header from the given VariationDiffSource using the {@link LineGraphExportOptions#treeFormat} in the given options.
+     * Creates a linegraph header from the given VariationDiffSource using the {@link LineGraphExportOptions#treeFormat()} in the given options.
      * Then appends the already created file content for nodes and edges.
-     * @param lineGraph The string builder to write the result to.
      * @param source The {@link VariationDiffSource} that describes where the VariationDiff whose content is written to the file originated from.
-     * @param nodesAndEdges Result from {@link #toLineGraphFormat(VariationDiff, LineGraphExportOptions, OutputStream)}. Holds all nodes and edges in linegraph format, separated by a newline each.
      * @param options {@link LineGraphExportOptions} used to determine the treeFormat for the header.
      */
     private static String lineGraphHeader(final VariationDiffSource source, final LineGraphExportOptions<?> options) {
