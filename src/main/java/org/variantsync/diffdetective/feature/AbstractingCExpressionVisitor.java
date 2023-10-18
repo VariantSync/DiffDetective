@@ -9,7 +9,14 @@ import org.variantsync.diffdetective.feature.antlr.CExpressionVisitor;
 import java.util.function.Function;
 
 /**
- * Visitor that abstracts all symbols of a formula that might interfere with further formula analysis.
+ * Visitor that abstracts all symbols of a formula, given as ANTLR parse tree, that might interfere with further formula analysis.
+ * This visitor traverses the given tree and substitutes all formula substrings with replacements by calling {@link BooleanAbstraction}.
+ *
+ * <p>
+ * Not all formulas or parts of a formula might require abstraction (e.g., 'A && B'). Therefore, this visitor should not be used directly.
+ * Instead, you may use a {@link ControllingCExpressionVisitor} which internally uses an {@link AbstractingCExpressionVisitor}
+ * to control how formulas are abstracted, and only abstracts those parts of a formula that require it.
+ * </p>
  */
 @SuppressWarnings("CheckReturnValue")
 public class AbstractingCExpressionVisitor extends AbstractParseTreeVisitor<StringBuilder> implements CExpressionVisitor<StringBuilder> {

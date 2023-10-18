@@ -1,55 +1,24 @@
 package org.variantsync.diffdetective.feature;
 import org.antlr.v4.runtime.*;
-import org.antlr.v4.runtime.atn.ATNConfigSet;
-import org.antlr.v4.runtime.dfa.DFA;
 import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
-import org.tinylog.Logger;
-import org.variantsync.diffdetective.error.UncheckedUnParseableFormulaException;
-import org.variantsync.diffdetective.feature.antlr.CExpressionLexer;
 import org.variantsync.diffdetective.feature.antlr.CExpressionParser;
 import org.variantsync.diffdetective.feature.antlr.CExpressionVisitor;
 
-import java.util.BitSet;
 import java.util.function.Function;
 
 /**
- * Visitor that controls how subtrees of a parsed formula are abstracted.
+ * Visitor that controls how formulas given as an ANTLR parse tree are abstracted.
+ * To this end, the visitor traverses the parse tree, searching for subtrees that should be abstracted.
+ * If such a subtree is found, the visitor calls an {@link AbstractingCExpressionVisitor} to abstract the entire subtree.
+ * Only those parts of a formula are abstracted that require abstraction, leaving ancestors in the tree unchanged.
  */
 @SuppressWarnings("CheckReturnValue")
 public class ControllingCExpressionVisitor extends AbstractParseTreeVisitor<StringBuilder> implements CExpressionVisitor<StringBuilder> {
 	private final AbstractingCExpressionVisitor abstractingVisitor = new AbstractingCExpressionVisitor();
 
 	public ControllingCExpressionVisitor() {}
-
-	public String accept(String formula) {
-		CExpressionLexer lexer = new CExpressionLexer(CharStreams.fromString(formula));
-		CommonTokenStream tokens = new CommonTokenStream(lexer);
-		CExpressionParser parser = new CExpressionParser(tokens);
-		parser.addErrorListener(new ANTLRErrorListener() {
-			@Override
-			public void syntaxError(Recognizer<?, ?> recognizer, Object o, int i, int i1, String s, RecognitionException e) {
-				Logger.warn("syntax error: {} ; {}", s, e);
-				Logger.warn("formula: {}", formula);
-				throw new UncheckedUnParseableFormulaException(s, e);
-			}
-
-			@Override
-			public void reportAmbiguity(Parser parser, DFA dfa, int i, int i1, boolean b, BitSet bitSet, ATNConfigSet atnConfigSet) {
-			}
-
-			@Override
-			public void reportAttemptingFullContext(Parser parser, DFA dfa, int i, int i1, BitSet bitSet, ATNConfigSet atnConfigSet) {
-			}
-
-			@Override
-			public void reportContextSensitivity(Parser parser, DFA dfa, int i, int i1, int i2, ATNConfigSet atnConfigSet) {
-			}
-		});
-		ParseTree tree = parser.expression();
-		return tree.accept(this).toString();
-	}
 
 	// conditionalExpression
 	//    :   logicalOrExpression ('?' expression ':' conditionalExpression)?
