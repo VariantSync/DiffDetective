@@ -94,19 +94,19 @@ public class CPPParserTest {
 
             new TestCase("#if ifndef", "ifndef"),
 
-            new TestCase("#if __has_include_next(<rewrite-includes8.h>)", "__HAS_INCLUDE_NEXT___LB____LT__rewrite__SUB__includes8__DOT__h__GT____RB__"),
+            new TestCase("#if __has_include_next(<some-header.h>)", "__HAS_INCLUDE_NEXT___LB____LT__some__SUB__header__DOT__h__GT____RB__"),
             new TestCase("#if __is_target_arch(x86)", "__IS_TARGET_ARCH___LB__x86__RB__"),
-            new TestCase("#if A || (defined(OpenBSD) && (OpenBSD >= 199630))", "A||(DEFINED___LB__OpenBSD__RB__&&(OpenBSD__GEQ__199630))"),
+            new TestCase("#if A || (defined(NAME) && (NAME >= 199630))", "A||(DEFINED___LB__NAME__RB__&&(NAME__GEQ__199630))"),
             new TestCase("#if MACRO(part:part)", "MACRO___LB__part__COLON__part__RB__"),
             new TestCase("#if MACRO(x=1)", "MACRO___LB__x__ASSIGN__1__RB__"),
             new TestCase("#if A = 3", "A__ASSIGN__3"),
             new TestCase("#if ' ' == 32", "__SQUOTE_____SQUOTE____EQ__32"),
-            new TestCase("#if (WSIZE<<1) > (1<<BITS)", "__LB__WSIZE__LSHIFT__1__RB____GT____LB__1__LSHIFT__BITS__RB__"),
+            new TestCase("#if (NAME<<1) > (1<<BITS)", "__LB__NAME__LSHIFT__1__RB____GT____LB__1__LSHIFT__BITS__RB__"),
             new TestCase("#if #cpu(sparc)", "CPU___LB__sparc__RB__"),
             new TestCase("#ifdef \\U0001000", "__B_SLASH__U0001000"),
-            new TestCase("#if (defined(NetBSD) && (NetBSD >= 199905) && (NetBSD < 1991011)) ||     (__FreeBSD_version >= 300000) || defined(OpenBSD)", "(DEFINED___LB__NetBSD__RB__&&(NetBSD__GEQ__199905)&&(NetBSD__LT__1991011))||(__FreeBSD_version__GEQ__300000)||DEFINED___LB__OpenBSD__RB__"),
-            new TestCase("#if __has_warning(\"-Wan-island-to-discover\"_bar)",
-                    "__HAS_WARNING___LB____QUOTE____SUB__Wan__SUB__island__SUB__to__SUB__discover__QUOTE_____bar__RB__")
+            new TestCase("#if (defined(NAME) && (NAME >= 199905) && (NAME < 1991011)) ||     (NAME >= 300000) || defined(NAME)", "(DEFINED___LB__NAME__RB__&&(NAME__GEQ__199905)&&(NAME__LT__1991011))||(NAME__GEQ__300000)||DEFINED___LB__NAME__RB__"),
+            new TestCase("#if __has_warning(\"-Wa-warning\"_foo)",
+                    "__HAS_WARNING___LB____QUOTE____SUB__Wa__SUB__warning__QUOTE_____foo__RB__")
         );
     }
 
