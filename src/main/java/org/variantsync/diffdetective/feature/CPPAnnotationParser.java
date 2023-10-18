@@ -2,7 +2,7 @@ package org.variantsync.diffdetective.feature;
 
 import org.prop4j.Literal;
 import org.prop4j.Node;
-import org.variantsync.diffdetective.error.UnParseableFormulaException;
+import org.variantsync.diffdetective.error.UnparseableFormulaException;
 
 /**
  * A parser of C-preprocessor annotations.
@@ -40,9 +40,9 @@ public class CPPAnnotationParser {
      * @param line The line of code of a preprocessor annotation.
      * @return The formula of the macro in the given line.
      *         If no such formula could be parsed, returns a Literal with the line's condition as name.
-     * @throws UnParseableFormulaException when {@link CPPDiffLineFormulaExtractor#extractFormula(String)} throws.
+     * @throws UnparseableFormulaException when {@link CPPDiffLineFormulaExtractor#extractFormula(String)} throws.
      */
-    public Node parseDiffLine(String line) throws UnParseableFormulaException {
+    public Node parseDiffLine(String line) throws UnparseableFormulaException {
         return parseCondition(extractor.extractFormula(line));
     }
 

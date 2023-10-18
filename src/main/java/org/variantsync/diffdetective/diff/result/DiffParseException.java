@@ -31,12 +31,12 @@ public final class DiffParseException extends Exception {
     }
 
     /**
-     * A DiffParseException due to an un-parsable formula.
+     * A DiffParseException due to an unparseable formula.
      * @param exception The parse exception that occurred
-     * @param lineNumber The line number of the un-parsable formula
+     * @param lineNumber The line number of the unparseable formula
      */
-    public static DiffParseException UnParsable(Exception exception, DiffLineNumber lineNumber) {
-        return new DiffParseException(exception, DiffError.UN_PARSEABLE_FORMULA, lineNumber);
+    public static DiffParseException Unparseable(Exception exception, DiffLineNumber lineNumber) {
+        return new DiffParseException(exception, DiffError.UNPARSEABLE_FORMULA, lineNumber);
     }
 
     public DiffError getError() {

@@ -1,7 +1,7 @@
 package org.variantsync.diffdetective.feature;
 
 import org.tinylog.Logger;
-import org.variantsync.diffdetective.error.UnParseableFormulaException;
+import org.variantsync.diffdetective.error.UnparseableFormulaException;
 import org.variantsync.diffdetective.error.UncheckedUnParseableFormulaException;
 
 import java.util.function.Supplier;
@@ -40,10 +40,10 @@ public class CPPDiffLineFormulaExtractor {
      * @param line The line of which to get the feature mapping
      * @return The feature mapping as a String of the given line
      */
-    public String extractFormula(final String line) throws UnParseableFormulaException {
+    public String extractFormula(final String line) throws UnparseableFormulaException {
         final Matcher matcher = CPP_ANNOTATION_REGEX_PATTERN.matcher(line);
-        final Supplier<UnParseableFormulaException> couldNotExtractFormula = () ->
-               new UnParseableFormulaException("Could not extract formula from line \""+ line + "\".");
+        final Supplier<UnparseableFormulaException> couldNotExtractFormula = () ->
+               new UnparseableFormulaException("Could not extract formula from line \""+ line + "\".");
 
         // Retrieve the formula from the macro line
         String fm;
@@ -64,7 +64,7 @@ public class CPPDiffLineFormulaExtractor {
             throw e.inner();
         } catch (Exception e) {
             Logger.warn(e);
-            throw new UnParseableFormulaException(e);
+            throw new UnparseableFormulaException(e);
         }
 
         if (fm.isEmpty()) {
