@@ -231,18 +231,28 @@ public class BooleanAbstraction {
     }
 
     /**
-     * Search for the first replacement that matches the entire formula and apply it. If no
-     * replacement for the entire formula is found, all possible replacements are applied to
-     * substrings of the formula.
-     * @param formula the formula to abstract
-     * @return a fully abstracted formula
+     * <p>
+     * Search for the first replacement that matches the entire text and apply it. This is the case, if the given text
+     * corresponds to a single token (e.g., '&&', '||'). If no replacement for the entire text is found (e.g., if the token
+     * has no replacement), all possible replacements are applied to abstract substrings of the token that require
+     * abstraction.
+     * </p>
+     *
+     * <p>The purpose of this method is to achieve a slight speedup for scenarios in which the text usually contains a single
+     * token. For example, this is useful when abstracting individual tokens of an extracted preprocessor formula
+     * in {@link AbstractingCExpressionVisitor}. In all other cases, directly calling {@link #abstractAll(String)} should
+     * be preferred.
+     * </p>
+     *
+     * @param text the text to abstract
+     * @return a fully abstracted text
      */
-    public static String abstractFirstOrAll(String formula) {
+    public static String abstractToken(String text) {
         for (Replacement replacement : REPLACEMENTS) {
-            if (replacement.pattern.pattern().equals(formula)) {
-                return replacement.replacement;
+            if (replacement.pattern.matcher(text).matches()) {
+                return replacement.applyTo(text);
             }
         }
-        return abstractAll(formula);
+        return abstractAll(text);
     }
 }

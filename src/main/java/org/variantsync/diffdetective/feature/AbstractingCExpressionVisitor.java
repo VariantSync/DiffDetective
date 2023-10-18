@@ -288,7 +288,7 @@ public class AbstractingCExpressionVisitor extends AbstractParseTreeVisitor<Stri
 	//    ;
 	@Override
 	public StringBuilder visitAssignmentOperator(CExpressionParser.AssignmentOperatorContext ctx) {
-		return new StringBuilder(BooleanAbstraction.abstractFirstOrAll(ctx.getText().trim()));
+		return new StringBuilder(BooleanAbstraction.abstractToken(ctx.getText().trim()));
 	}
 
 	// expression
@@ -313,7 +313,7 @@ public class AbstractingCExpressionVisitor extends AbstractParseTreeVisitor<Stri
 				sb.append(subtree.accept(this));
 			} else if (subtree instanceof TerminalNode terminal) {
 				// Some operator (i.e., a leaf node) that requires direct abstraction
-				sb.append(BooleanAbstraction.abstractFirstOrAll(terminal.getText().trim()));
+				sb.append(BooleanAbstraction.abstractToken(terminal.getText().trim()));
 			} else {
 				// sanity check: loop does not work as expected
 				throw new IllegalStateException();
