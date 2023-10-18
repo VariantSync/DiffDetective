@@ -1,9 +1,16 @@
 package org.variantsync.diffdetective.feature;
 
+import org.antlr.v4.runtime.*;
+import org.antlr.v4.runtime.atn.ATNConfigSet;
+import org.antlr.v4.runtime.dfa.DFA;
+import org.antlr.v4.runtime.tree.ParseTree;
 import org.tinylog.Logger;
 import org.variantsync.diffdetective.error.UnparseableFormulaException;
 import org.variantsync.diffdetective.error.UncheckedUnParseableFormulaException;
+import org.variantsync.diffdetective.feature.antlr.CExpressionLexer;
+import org.variantsync.diffdetective.feature.antlr.CExpressionParser;
 
+import java.util.BitSet;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -20,8 +27,6 @@ public class CPPDiffLineFormulaExtractor {
     // ^[+-]?\s*#\s*(if|ifdef|ifndef|elif)(\s+(.*)|\((.*)\))$
     private static final String CPP_ANNOTATION_REGEX = "^[+-]?\\s*#\\s*(if|ifdef|ifndef|elif)(\\s+(.*)|(\\(.*\\)))$";
     private static final Pattern CPP_ANNOTATION_REGEX_PATTERN = Pattern.compile(CPP_ANNOTATION_REGEX);
-
-    private static final ControllingCExpressionVisitor formulaAbstraction = new ControllingCExpressionVisitor();
 
     /**
      * Resolves any macros in the given formula that are relevant for feature annotations.
@@ -59,7 +64,7 @@ public class CPPDiffLineFormulaExtractor {
 
         // abstract complex formulas (e.g., if they contain arithmetics or macro calls)
         try {
-            fm = formulaAbstraction.accept(fm);
+            fm = abstractFormula(fm);
         } catch (UncheckedUnParseableFormulaException e) {
             throw e.inner();
         } catch (Exception e) {
@@ -77,5 +82,44 @@ public class CPPDiffLineFormulaExtractor {
         }
 
         return fm;
+    }
+
+    /**
+     * Abstract the given formula.
+     * <p>
+     * First, the visitor uses ANTLR to parse the formula into a parse tree gives the tree to a {@link ControllingCExpressionVisitor}.
+     * The visitor traverses the tree starting from the root, searching for subtrees that must be abstracted.
+     * If such a subtree is found, the visitor calls an {@link AbstractingCExpressionVisitor} to abstract the part of
+     * the formula in the subtree.
+     *  </p>
+     * @param formula that is to be abstracted
+     * @return the abstracted formula
+     */
+    private String abstractFormula(String formula) {
+        CExpressionLexer lexer = new CExpressionLexer(CharStreams.fromString(formula));
+        CommonTokenStream tokens = new CommonTokenStream(lexer);
+        CExpressionParser parser = new CExpressionParser(tokens);
+        parser.addErrorListener(new ANTLRErrorListener() {
+            @Override
+            public void syntaxError(Recognizer<?, ?> recognizer, Object o, int i, int i1, String s, RecognitionException e) {
+                Logger.warn("syntax error: {} ; {}", s, e);
+                Logger.warn("formula: {}", formula);
+                throw new UncheckedUnParseableFormulaException(s, e);
+            }
+
+            @Override
+            public void reportAmbiguity(Parser parser, DFA dfa, int i, int i1, boolean b, BitSet bitSet, ATNConfigSet atnConfigSet) {
+            }
+
+            @Override
+            public void reportAttemptingFullContext(Parser parser, DFA dfa, int i, int i1, BitSet bitSet, ATNConfigSet atnConfigSet) {
+            }
+
+            @Override
+            public void reportContextSensitivity(Parser parser, DFA dfa, int i, int i1, int i2, ATNConfigSet atnConfigSet) {
+            }
+        });
+        ParseTree tree = parser.expression();
+        return tree.accept(new ControllingCExpressionVisitor()).toString();
     }
 }

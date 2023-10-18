@@ -25,6 +25,10 @@ class LogicalLine {
     private boolean inComment;
     private DiffLineNumber startLineNumber;
 
+    // C++-style comments that are not embedded in C-style comments
+    // The regex assumes that C-style comments may begin in a preceding line
+    // e.g., '// Some comment'
+    // , but not '/* outer comment // inner comment */' or '/* preceding line \n// inner comment */'
     private final static Pattern LINE_COMMENT = Pattern.compile("[^(/*)]*?//[^(*/)]*?");
 
     /**
