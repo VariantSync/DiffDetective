@@ -1,5 +1,5 @@
 grammar CExpression;
-// I took the official C grammar and pruned it down to the rules related to expressions
+// A copy of the official C ANTLR grammar that was adjusted to parse C preprocessor expressions
 // https://github.com/antlr/grammars-v4/blob/master/c/C.g4
 
 expression
