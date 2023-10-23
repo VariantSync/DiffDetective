@@ -233,7 +233,7 @@ public class BooleanAbstraction {
     /**
      * <p>
      * Search for the first replacement that matches the entire text and apply it. This is the case, if the given text
-     * corresponds to a single token (e.g., '&&', '||'). If no replacement for the entire text is found (e.g., if the token
+     * corresponds to a single token (e.g., '&amp;&amp;', '||'). If no replacement for the entire text is found (e.g., if the token
      * has no replacement), all possible replacements are applied to abstract substrings of the token that require
      * abstraction.
      * </p>
