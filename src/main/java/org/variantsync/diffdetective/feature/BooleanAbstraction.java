@@ -79,18 +79,6 @@ public class BooleanAbstraction {
     public static final String QUOTE = "__QUOTE__";
     /** Abstraction value for single quotation marks <code>'</code>. */
     public static final String SQUOTE = "__SQUOTE__";
-    /** Abstraction value for has_attribute operator <code>__has_attribute(ATTRIBUTE)</code>. */
-    public static final String HAS_ATTRIBUTE = "HAS_ATTRIBUTE_";
-    /** Abstraction value for has_cpp_attribute operator <code>__has_cpp_attribute(ATTRIBUTE)</code>. */
-    public static final String HAS_CPP_ATTRIBUTE = "HAS_CPP_ATTRIBUTE_";
-    /** Abstraction value for has_c_attribute operator <code>__has_c_attribute(ATTRIBUTE)</code>. */
-    public static final String HAS_C_ATTRIBUTE = "HAS_C_ATTRIBUTE_";
-    /** Abstraction value for has_builtin operator <code>__has_builtin(BUILTIN)</code>. */
-    public static final String HAS_BUILTIN = "HAS_BUILTIN_";
-    /** Abstraction value for has_include operator <code>__has_include(INCLUDE)</code>. */
-    public static final String HAS_INCLUDE = "HAS_INCLUDE_";
-    /** Abstraction value for defined operator <code>defined</code>. */
-    public static final String DEFINED = "DEFINED_";
     /** Abstraction value for assign operator <code>=</code>. */
     public static final String ASSIGN = "__ASSIGN__";
     /** Abstraction value for star assign operator <code>*=</code>. */
@@ -117,6 +105,28 @@ public class BooleanAbstraction {
     public static final String WHITESPACE = "_";
     /** Abstraction value for backslash <code>\</code>. */
     public static final String BSLASH = "__B_SLASH__";
+
+    // The preprocessor has six special operators that require additional abstraction.
+    // These operators are documented under https://gcc.gnu.org/onlinedocs/cpp/Conditional-Syntax.html
+    /** Abstraction value for has_attribute operator <code>__has_attribute(ATTRIBUTE)</code>.
+     * One of the <a href="https://gcc.gnu.org/onlinedocs/cpp/Conditional-Syntax.html">six special operators</a> that require abstraction.
+     * */
+    public static final String HAS_ATTRIBUTE = "HAS_ATTRIBUTE_";
+    /** Abstraction value for has_cpp_attribute operator <code>__has_cpp_attribute(ATTRIBUTE)</code>.
+     * One of the <a href="https://gcc.gnu.org/onlinedocs/cpp/Conditional-Syntax.html">six special preprocessor operators</a> that require abstraction. */
+    public static final String HAS_CPP_ATTRIBUTE = "HAS_CPP_ATTRIBUTE_";
+    /** Abstraction value for has_c_attribute operator <code>__has_c_attribute(ATTRIBUTE)</code>.
+     * One of the <a href="https://gcc.gnu.org/onlinedocs/cpp/Conditional-Syntax.html">six special preprocessor operators</a> that require abstraction. */
+    public static final String HAS_C_ATTRIBUTE = "HAS_C_ATTRIBUTE_";
+    /** Abstraction value for has_builtin operator <code>__has_builtin(BUILTIN)</code>.
+     * One of the <a href="https://gcc.gnu.org/onlinedocs/cpp/Conditional-Syntax.html">six special preprocessor operators</a> that require abstraction. */
+    public static final String HAS_BUILTIN = "HAS_BUILTIN_";
+    /** Abstraction value for has_include operator <code>__has_include(INCLUDE)</code>.
+     * One of the <a href="https://gcc.gnu.org/onlinedocs/cpp/Conditional-Syntax.html">six special preprocessor operators</a> that require abstraction. */
+    public static final String HAS_INCLUDE = "HAS_INCLUDE_";
+    /** Abstraction value for defined operator <code>defined</code>.
+     * One of the <a href="https://gcc.gnu.org/onlinedocs/cpp/Conditional-Syntax.html">six special preprocessor operators</a> that require abstraction. */
+    public static final String DEFINED = "DEFINED_";
 
     private record Replacement(Pattern pattern, String replacement) {
         /**
