@@ -141,7 +141,7 @@ public enum DiffType {
             return ADD;
         } else if (line.startsWith(REM.symbol)) {
             return REM;
-        } else if (line.startsWith(NON.symbol)) {
+        } else if (line.startsWith(NON.symbol) || line.isEmpty()) {
             return NON;
         } else {
             return null;

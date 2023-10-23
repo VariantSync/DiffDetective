@@ -146,8 +146,8 @@ public class VariationDiffParser {
             String line = fullDiff.readLine();
             if (line == null) {
                 return null;
-            } else if (line.length() == 0) {
-                return new DiffLine(null, "");
+            } else if (line.isEmpty()) {
+                return new DiffLine(DiffType.NON, "");
             } else {
                 return new DiffLine(DiffType.ofDiffLine(line), line.substring(1));
             }
