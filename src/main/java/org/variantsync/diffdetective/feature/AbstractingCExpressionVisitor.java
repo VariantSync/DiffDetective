@@ -13,7 +13,7 @@ import java.util.function.Function;
  * This visitor traverses the given tree and substitutes all formula substrings with replacements by calling {@link BooleanAbstraction}.
  *
  * <p>
- * Not all formulas or parts of a formula might require abstraction (e.g., 'A && B'). Therefore, this visitor should not be used directly.
+ * Not all formulas or parts of a formula might require abstraction (e.g., 'A &amp;&amp; B'). Therefore, this visitor should not be used directly.
  * Instead, you may use a {@link ControllingCExpressionVisitor} which internally uses an {@link AbstractingCExpressionVisitor}
  * to control how formulas are abstracted, and only abstracts those parts of a formula that require it.
  * </p>
