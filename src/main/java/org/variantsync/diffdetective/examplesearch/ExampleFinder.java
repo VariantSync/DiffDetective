@@ -23,6 +23,7 @@ import org.variantsync.diffdetective.variation.diff.render.VariationDiffRenderer
 import org.variantsync.diffdetective.variation.diff.serialize.GraphFormat;
 import org.variantsync.diffdetective.variation.diff.serialize.edgeformat.DefaultEdgeLabelFormat;
 import org.variantsync.diffdetective.variation.diff.serialize.nodeformat.MappingsDiffNodeFormat;
+import org.variantsync.diffdetective.variation.diff.serialize.treeformat.CommitDiffVariationDiffLabelFormat;
 import org.variantsync.diffdetective.variation.diff.source.VariationDiffSource;
 
 import java.io.IOException;

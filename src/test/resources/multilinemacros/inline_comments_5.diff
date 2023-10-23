@@ -4,14 +4,14 @@
   && D //* no continuation
    baz();
  #endif
-
+ 
  # if A &&  /* inline
  comment */ C \
   && D //* no continuation
 +   baz();
 -   vaz();
  #endif
-
+ 
  //*ptr=something
  //other comment /* inner
  text

@@ -4,7 +4,7 @@
   && D
    baz();
  #endif
-
+ 
  # if A &&  /* inline
  comment */ C \
   && D
