@@ -1,6 +1,7 @@
 package org.variantsync.diffdetective.variation.diff;
 
 import org.apache.commons.lang3.function.FailableConsumer;
+import org.tinylog.Logger;
 
 import java.util.Optional;
 import java.util.Set;
@@ -141,7 +142,15 @@ public enum DiffType {
             return ADD;
         } else if (line.startsWith(REM.symbol)) {
             return REM;
-        } else if (line.startsWith(NON.symbol) || line.isEmpty()) {
+        } else if (line.startsWith(NON.symbol)) {
+            return NON;
+        } else if (line.isEmpty()) {
+            // Treat empty lines as NON (i.e., unchanged) even though they are invalid in a diff, which expects at least
+            // one character (i.e., one of the diff type characters: '+', '-', or ' ').
+            // In contrast to other invalid cases handled by the 'else' branch, we log a warning instead of returning null,
+            // because empty lines may be created by certain text editors, such as Intellij's internal editor that may
+            // convert lines that only contain whitespace characters to empty lines upon save.
+            Logger.warn("parsing an empty line");
             return NON;
         } else {
             return null;
