@@ -13,12 +13,14 @@ import org.variantsync.diffdetective.diff.git.PatchDiff;
 import org.variantsync.diffdetective.diff.result.DiffError;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.diff.text.DiffLineNumber;
+import org.variantsync.diffdetective.error.UnparseableFormulaException;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.NodeType;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
 import org.variantsync.diffdetective.variation.diff.VariationDiff;
 import org.variantsync.diffdetective.variation.diff.DiffType;
+import org.variantsync.diffdetective.variation.diff.Time;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -144,11 +146,8 @@ public class VariationDiffParser {
             String line = fullDiff.readLine();
             if (line == null) {
                 return null;
-            } else if (line.length() == 0) {
-                return new DiffLine(null, "");
-            } else {
-                return new DiffLine(DiffType.ofDiffLine(line), line.substring(1));
             }
+            return new DiffLine(DiffType.ofDiffLine(line), line.isEmpty() ? line : line.substring(1));
         });
     }
 
@@ -267,6 +266,9 @@ public class VariationDiffParser {
         }
 
         if (beforeLine.hasStarted() || afterLine.hasStarted()) {
+            Logger.debug("line continuation but no more lines");
+            Logger.debug("beforeLine: " + beforeLine);
+            Logger.debug("afterLine: " + afterLine);
             throw new DiffParseException(
                 DiffError.INVALID_LINE_CONTINUATION,
                 lineNumber
@@ -357,8 +359,8 @@ public class VariationDiffParser {
 
                 addNode(newNode);
                 lastArtifact = newNode.isArtifact() ? newNode : null;
-            } catch (IllFormedAnnotationException e) {
-                throw new DiffParseException(e.getType(), fromLine);
+            } catch (UnparseableFormulaException e) {
+                throw DiffParseException.Unparseable(e, fromLine);
             }
         }
     }
@@ -473,7 +475,7 @@ public class VariationDiffParser {
         final CommitDiff commitDiff = parseCommit(repo, commitHash);
 
         for (final PatchDiff pd : commitDiff.getPatchDiffs()) {
-            if (file.equals(pd.getFileName())) {
+            if (file.equals(pd.getFileName(Time.AFTER))) {
                 return pd;
             }
         }

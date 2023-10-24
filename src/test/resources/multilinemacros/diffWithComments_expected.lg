@@ -1,0 +1,18 @@
+v 16 NON;IF;(old: -1, diff: -1, new: -1);(old: -1, diff: -1, new: -1);True
+v 275 NON;ARTIFACT;(old: 1, diff: 3, new: 3);(old: 2, diff: 4, new: 4);;
+v 339 NON;ARTIFACT;(old: 2, diff: 4, new: 4);(old: 3, diff: 5, new: 5);;/** hihi **/
+v 403 NON;ARTIFACT;(old: 3, diff: 5, new: 5);(old: 4, diff: 6, new: 6);;
+v 467 NON;ARTIFACT;(old: 4, diff: 6, new: 6);(old: 6, diff: 8, new: 8);;//\;a
+v 595 NON;ARTIFACT;(old: 6, diff: 8, new: 8);(old: 7, diff: 9, new: 9);;
+v 723 NON;ARTIFACT;(old: 7, diff: 10, new: 10);(old: 8, diff: 11, new: 11);;foo();
+v 131 ADD;ARTIFACT;(old: -1, diff: 1, new: 1);(old: -1, diff: 3, new: 3);;#define multi \;kulti
+v 640 ADD;IF;(old: -1, diff: 9, new: 9);(old: -1, diff: 11, new: 11);A&B;#if A & B
+e 275 16 ba;0,1
+e 339 16 ba;1,2
+e 403 16 ba;2,3
+e 467 16 ba;3,4
+e 595 16 ba;4,5
+e 723 16 b;5,-1
+e 723 640 a;-1,0
+e 131 16 a;-1,0
+e 640 16 a;-1,6

@@ -398,6 +398,32 @@ public class GitDiffer {
                     Logger.debug(e, "Could not obtain full diff of file " + filename + " before commit " + parentCommit + "!");
                     errors.add(DiffError.COULD_NOT_OBTAIN_FULLDIFF);
                 } catch (DiffParseException e) {
+                    StringBuilder logMessage = new StringBuilder();
+                    logMessage
+                            .append("parse exception for commit ")
+                            .append(childCommit.getName())
+                            .append(" in line ")
+                            .append(e.getLineNumber())
+                            .append(" of patch ")
+                            .append(diffEntry.getOldPath())
+                            .append(" -> ")
+                            .append(diffEntry.getNewPath())
+                            .append("\n");
+                    logMessage
+                            .append(e)
+                            .append("\n");
+                    if (e.getMessage() != null) {
+                        logMessage
+                                .append("error message: ")
+                                .append(e.getMessage())
+                                .append("\n");
+                    }
+                    if (e.getCause() != null) {
+                        logMessage
+                                .append("cause: ")
+                                .append(e.getCause());
+                    }
+                    Logger.debug(logMessage);
                     errors.add(e.getError());
                 }
 

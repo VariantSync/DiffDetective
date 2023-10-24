@@ -2,6 +2,7 @@ package org.variantsync.diffdetective.diff.git;
 
 import org.eclipse.jgit.diff.DiffEntry;
 import org.variantsync.diffdetective.diff.text.TextBasedDiff;
+import org.variantsync.diffdetective.variation.diff.Time;
 import org.variantsync.diffdetective.variation.diff.VariationDiff; // For Javadoc
 import org.variantsync.diffdetective.variation.diff.source.VariationDiffSource;
 
@@ -15,20 +16,30 @@ public interface GitPatch extends VariationDiffSource, TextBasedDiff {
      * Minimal default implementation of {@link GitPatch}
      * @param getDiff The diff in text form.
      * @param getChangeType The change type of this patch (e.g., file insertion or modification).
-     * @param getFileName The name of the patched file.
+     * @param oldFileName The name of the patched file before the edit.
+     * @param newFileName The name of the patched file after the edit.
      * @param getCommitHash The hash of the commit introducing the change.
      * @param getParentCommitHash The hash of the parent commit regarding which the diff was created.
      */
-    record SimpleGitPatch(String getDiff, DiffEntry.ChangeType getChangeType, String getFileName, String getCommitHash, String getParentCommitHash)
+    record SimpleGitPatch(String getDiff, DiffEntry.ChangeType getChangeType, String oldFileName, String newFileName, String getCommitHash, String getParentCommitHash)
         implements GitPatch {
         @Override
+        public String getFileName(Time time) {
+            if (time == Time.BEFORE) {
+                return oldFileName;
+            } else {
+                return newFileName;
+            }
+        }
+
+        @Override
         public GitPatch shallowClone() {
-            return new SimpleGitPatch(getDiff, getChangeType, getFileName, getCommitHash, getParentCommitHash);
+            return new SimpleGitPatch(getDiff, getChangeType, oldFileName, newFileName, getCommitHash, getParentCommitHash);
         }
 
         @Override
         public String toString() {
-            return getFileName + "@ commit from " + getParentCommitHash + " (parent) to " + getCommitHash + " (child)";
+            return oldFileName + "@ " + getParentCommitHash + " (parent) to " + newFileName + " @ " + getCommitHash + " (child)";
         }
     }
 
@@ -38,9 +49,9 @@ public interface GitPatch extends VariationDiffSource, TextBasedDiff {
     DiffEntry.ChangeType getChangeType();
 
     /**
-     * Returns the name of the patched file.
+     * Returns the name of the patched file at the given time.
      */
-    String getFileName();
+    String getFileName(Time time);
 
     /**
      * Returns the hash of the commit introducing the change.

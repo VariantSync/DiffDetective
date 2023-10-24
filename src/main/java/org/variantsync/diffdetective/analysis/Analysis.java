@@ -20,6 +20,7 @@ import org.variantsync.diffdetective.diff.git.CommitDiff;
 import org.variantsync.diffdetective.diff.git.GitDiffer;
 import org.variantsync.diffdetective.diff.git.PatchDiff;
 import org.variantsync.diffdetective.diff.result.CommitDiffResult;
+import org.variantsync.diffdetective.diff.result.DiffError;
 import org.variantsync.diffdetective.metadata.Metadata;
 import org.variantsync.diffdetective.parallel.ScheduledTasksIterator;
 import org.variantsync.diffdetective.util.Assert;
@@ -27,6 +28,7 @@ import org.variantsync.diffdetective.util.Clock;
 import org.variantsync.diffdetective.util.Diagnostics;
 import org.variantsync.diffdetective.util.InvocationCounter;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
+import org.variantsync.diffdetective.variation.diff.Time;
 import org.variantsync.diffdetective.variation.diff.VariationDiff;
 import org.variantsync.functjonal.iteration.ClusteredIterator;
 import org.variantsync.functjonal.iteration.MappedIterator;
@@ -204,11 +206,16 @@ public class Analysis {
         default void beginBatch(Analysis analysis) throws Exception {}
         default boolean beginCommit(Analysis analysis) throws Exception { return true; }
         /**
-         * Signals a parsing failure of some patch in the current commit.
+         * Signals a parsing failure of all patches in the current commit.
          * Called at most once during the commit phase. If this hook is called {@link
          * onParsedCommit} and the following patch phase invocations are skipped.
          */
         default void onFailedCommit(Analysis analysis) throws Exception {}
+        /**
+         * Signals a parsing failure of some patch in the current commit.
+         * Called at most once during the commit phase.
+         */
+        default void onFailedParse(Analysis analysis) throws Exception {}
         /**
          * Signals the completion of the commit diff extraction.
          * Called exactly once during the commit phase before the patch phase begins.
@@ -316,7 +323,8 @@ public class Analysis {
         final Hooks filterPatchHook = new Hooks() {
             @Override
             public boolean beginPatch(Analysis analysis) {
-                return fileName.equals(analysis.getCurrentPatch().getFileName());
+                return fileName.equals(analysis.getCurrentPatch().getFileName(Time.AFTER))
+                        || fileName.equals(analysis.getCurrentPatch().getFileName(Time.BEFORE));
             }
         };
 
@@ -496,6 +504,12 @@ public class Analysis {
 
         // report any errors that occurred and exit in case no VariationDiff could be parsed.
         getResult().reportDiffErrors(commitDiffResult.errors());
+        if (!commitDiffResult.errors().isEmpty()) {
+            StringBuilder sb = new StringBuilder();
+            commitDiffResult.errors().forEach(e -> sb.append(e).append("\n"));
+            Logger.debug("found commit for which at least one patch could not be parsed because:\n{}", sb);
+            runHook(hooks.listIterator(), Hooks::onFailedParse);
+        }
         if (commitDiffResult.diff().isEmpty()) {
             Logger.debug("found commit that failed entirely because:\n{}", commitDiffResult.errors());
             runHook(hooks.listIterator(), Hooks::onFailedCommit);
@@ -520,7 +534,7 @@ public class Analysis {
 
                 processPatch();
             } catch (Throwable t) {
-                Logger.error("error during {} {}", currentPatch.getFileName(), currentPatch.getCommitHash());
+                Logger.error("error during {} {}", currentPatch.getFileName(Time.AFTER), currentPatch.getCommitHash());
                 throw t;
             } finally {
                 runReverseHook(patchHook, Hooks::endPatch);

@@ -271,11 +271,9 @@ public class Construction {
     /**
      * Makes the implicit matching of a {@code VariationDiff} explicit.
      *
-     * @param src the source nodes of the matching, must be of the same {@link VariationDiff} as {@code
-     * dst.
-     * @param dst the destination nodes of the matching, must be of the same {@link VariationDiff} as
-     * {@code src}
-     * @param result the destination where the matching between {@code src} and {@code dst} is added
+     * @param src the source nodes of the matching, must be of the same {@link VariationDiff} as {@code dst}.
+     * @param dst the destination nodes of the matching, must be of the same {@link VariationDiff} as {@code src}
+     * @param result the destination where the matching between {@code src} and {@param dst} is added.
      */
     private static <L extends Label> void extractMatching(
         VariationDiffAdapter<L> src,
