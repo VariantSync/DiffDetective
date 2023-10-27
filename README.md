@@ -8,8 +8,8 @@
 
 DiffDetective is a research software to study the evolution of configurable and variational software projects, also known as software product lines.
 
-DiffDetective reads the Git history of a C-preprocessor-based software product line to analyze patches in terms of _variation diffs_ [1].
-A variation diff is a variability-aware diff that depicts changes to source code as well as to variability annotations (e.g., C-preprocessor macros such as `#if` and `#ifdef`).
+DiffDetective reads the Git history of a C-preprocessor-based software product line to analyze patches in terms of _variation diffs_.
+A variation diff is a graph that depicts changes to source code as well as to variability annotations (e.g., C-preprocessor macros such as `#if` and `#ifdef`).
 
 ![DiffDetectiveTeaser](docs/teaser.png)
 
@@ -20,24 +20,7 @@ or by first parsing both versions to an abstract representation, a variation tre
 
 ## Publications
 
-### [2] Views on Edits to Variational Software (SPLC 2023)
-
-[![Replication Package](https://img.shields.io/badge/Replication-Package-blue)](replication/splc23-views/README.md)
-[![Artifact DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.8027920.svg)](https://doi.org/10.5281/zenodo.8027920)
-
-> P. M. Bittner, A. Schultheiß, S. Greiner, B. Moosherr, S. Krieter, C. Tinnes, T. Kehrer, T. Thüm. _Views on Edits to Variational Software_. Conditionally Accepted at the 27th ACM International Systems and Software Product Line Conference (SPLC 2023)
-
-In this work, we used DiffDetective for a feasibility study of creating views on edits to C-preprocessor based software.
-The idea of a view is to act as a filter on relevant parts of a system.
-For instance, a piece of source code may be deemed relevant if it implements a certain feature.
-
-Views on edits extend views to software changes.
-A view on an edit thus is a simplified form of an edit that, for example, contains only changes to a certain feature.
-We implemented views on edits for variational systems in terms of views on variation diffs.
-
-Our replication package and further information can be found in the [README](replication/splc23-views/README.md) file in the respective directory (`replication/splc23-views`).
-
-### [1] Classifying Edits to Variability in Source Code (ESEC/FSE 2022)
+### Classifying Edits to Variability in Source Code (ESEC/FSE 2022)
 
 [![Preprint](https://img.shields.io/badge/Preprint-Read-purple)](https://github.com/SoftVarE-Group/Papers/raw/main/2022/2022-ESECFSE-Bittner.pdf)
 [![Paper](https://img.shields.io/badge/Paper-Read-purple)](https://dl.acm.org/doi/10.1145/3540250.3549108)
@@ -53,6 +36,26 @@ In this work, we used DiffDetective to classify the effect of edits on the varia
 
 Our replication package and further information can be found in the [README](replication/esecfse22/README.md) file in the respective directory (`replication/esecfse22`).
 
+### Views on Edits to Variational Software (SPLC 2023)
+
+[![Preprint](https://img.shields.io/badge/Preprint-Read-purple)](https://github.com/SoftVarE-Group/Papers/raw/main/2023/2023-SPLC-Bittner.pdf)
+[![Paper](https://img.shields.io/badge/Paper-Read-purple)](https://dl.acm.org/doi/10.1145/3579027.3608985)
+[![Replication Package](https://img.shields.io/badge/Replication-Package-blue)](replication/splc23-views/README.md)
+[![Artifact DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.8027920.svg)](https://doi.org/10.5281/zenodo.8027920)
+
+> P. M. Bittner, A. Schultheiß, S. Greiner, B. Moosherr, S. Krieter, C. Tinnes, T. Kehrer, T. Thüm. _Views on Edits to Variational Software_. In Proceedings of the 27th ACM International Systems and Software Product Line Conference (SPLC 2023), ACM, New York, NY, August 2023
+
+<img padding="10" align="right" src="https://www.acm.org/binaries/content/gallery/acm/publications/artifact-review-v1_1-badges/artifacts_evaluated_functional_v1_1.png" alt="ACM Artifacts Evaluated Reusable" width="114" height="113"/>
+
+In this work, we used DiffDetective for a feasibility study of creating views on edits to C-preprocessor based software.
+The idea of a view is to act as a filter on relevant parts of a system.
+For instance, a piece of source code may be deemed relevant if it implements a certain feature.
+
+Views on edits extend views to software changes.
+A view on an edit thus is a simplified form of an edit that, for example, contains only changes to a certain feature.
+We implemented views on edits for variational systems in terms of views on variation diffs.
+
+Our replication package and further information can be found in the [README](replication/splc23-views/README.md) file in the respective directory (`replication/splc23-views`).
 
 [documentation]: https://htmlpreview.github.io/?https://github.com/VariantSync/DiffDetective/blob/splc23-views/docs/javadoc/index.html
 [website]: https://variantsync.github.io/DiffDetective/
