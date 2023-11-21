@@ -1,4 +1,4 @@
-package org.variantsync.diffdetective.preliminary.pattern;
+package org.variantsync.diffdetective.editclass;
 
 /**
  * Abstract class for edit patterns.
