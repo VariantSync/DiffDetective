@@ -1,5 +1,3 @@
-
-
 # Explaining Edits to Variability Annotations in Evolving Software Product Lines
 
 This is the replication package for our paper _Explaining Edits to Variability Annotations in Evolving Software Product Lines_.
@@ -73,3 +71,4 @@ The input file must have the same format as the other dataset files (i.e., repos
 
 
 [resultsdir]: results
+
