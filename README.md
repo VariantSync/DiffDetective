@@ -140,6 +140,6 @@ DiffDetective was extended and used within bachelor's and master's theses:
 - _Inspecting the Evolution of Feature Annotations in Configurable Software_, Lukas Güthing, Master's Thesis, 2023: Lukas implemented different edge-types for associating variability annotations within variation diffs. He published his work later at VaMoS 2024 under the title _Explaining Edits to Variability Annotations in Evolving Software Product Lines_, illustrated above.
 - _Empirical Evaluation of Feature Trace Recording on the Edit History of Marlin_, Sören Viegener, Bachelor's Thesis, 2021, [DOI 10.18725/OPARU-38603](http://dx.doi.org/10.18725/OPARU-38603): In his thesis, Sören started the DiffDetective project and implemented the first version of an algorithm, which parses text-based diffs to C-preprocessor files to variation diffs. He also came up with an initial classification of edits, which we wanted to reuse to evaluate [Feature Trace Recording](https://variantsync.github.io/FeatureTraceRecording/), a method for deriving variability annotations from annotated patches.
 
-[documentation]: https://htmlpreview.github.io/?https://github.com/VariantSync/DiffDetective/blob/splc23-views/docs/javadoc/index.html
+[documentation]: https://variantsync.github.io/DiffDetective/docs/javadoc
 [website]: https://variantsync.github.io/DiffDetective/
 [forklg]: https://github.com/guethilu/DiffDetective
