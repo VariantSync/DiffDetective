@@ -16,9 +16,37 @@ Additionally, DiffDetective offers a **flexible framework for large-scale empiri
 
 ## Setup
 
-DiffDetective is a Java Maven library.
+DiffDetective is a Java Maven library. While DiffDetective depends on some custom libraries ([FeatureIDE library](https://featureide.github.io/), [Sat4j](https://sat4j.org/), [Functjonal](https://github.com/VariantSync/Functjonal)) these are prepackaged with DiffDetective. So **all you need is [Maven](https://maven.apache.org/)** installed.
 
-...
+DiffDetective also comes as a **nix package** (see [default.nix](default.nix)).
+
+### Setup with Maven
+
+First, clone this repository and navigate inside it:
+```shell
+git clone https://github.com/VariantSync/DiffDetective
+cd DiffDetective
+```
+
+Second, build DiffDetective and install it on your system so that you can access it from your own projects:
+```shell
+mvn install
+```
+
+DiffDetective is now available on your system. Add the following to the pom.xml of your Maven project to add DiffDetective as a dependency, but make sure to pick the right version. You can the current version of DiffDetective you installed at the top of the pom.xml file in DiffDetective. 
+
+```xml
+<dependency>
+    <groupId>org.variantsync</groupId>
+    <artifactId>DiffDetective</artifactId>
+    <version>2.0.0</version>
+</dependency>
+```
+
+If you prefer to just use a jar file, you can find a jar file with all dependencies in `DiffDetective/target/diffdetective-2.0.0-jar-with-dependencies.jar` (again, the version number might be different).
+You can (re-)produce this jar file by either running `mvn package` or `mvn install` within you local clone of DiffDetective.
+
+> Disclaimer: Setup tested with maven version 3.6.3.
 
 ## Publications
 
