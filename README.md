@@ -57,5 +57,5 @@ We implemented views on edits for variational systems in terms of views on varia
 
 Our replication package and further information can be found in the [README](replication/splc23-views/README.md) file in the respective directory (`replication/splc23-views`).
 
-[documentation]: https://htmlpreview.github.io/?https://github.com/VariantSync/DiffDetective/blob/splc23-views/docs/javadoc/index.html
+[documentation]: https://variantsync.github.io/DiffDetective/docs/javadoc
 [website]: https://variantsync.github.io/DiffDetective/

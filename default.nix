@@ -8,7 +8,7 @@
       inherit system;
     },
   doCheck ? true,
-  buildJavadoc ? true,
+  buildGitHubPages ? true,
 }:
 pkgs.stdenv.mkDerivation rec {
   pname = "DiffDetective";
@@ -30,6 +30,7 @@ pkgs.stdenv.mkDerivation rec {
     maven
     makeWrapper
     graphviz
+    (ruby.withPackages (pkgs: with pkgs; [github-pages jekyll-theme-cayman]))
   ];
 
   mavenRepo = pkgs.stdenv.mkDerivation {
@@ -62,11 +63,21 @@ pkgs.stdenv.mkDerivation rec {
   buildPhase = ''
     runHook preBuild
 
-    mvn --offline -Dmaven.repo.local="$mavenRepo" -Dmaven.test.skip=true clean package ${
-      if buildJavadoc
-      then "javadoc:javadoc"
+    mvn() {
+      command mvn --offline -Dmaven.repo.local="$mavenRepo" "$@"
+    }
+
+    ${
+      # Build the documentation before the code because we don't want to include
+      # the generated files in the GitHub Pages
+      if buildGitHubPages
+      then ''
+        mvn javadoc:javadoc
+        PAGES_REPO_NWO=VariantSync/DiffDetective JEKYLL_BUILD_REVISION= github-pages build
+      ''
       else ""
     }
+    mvn -Dmaven.test.skip=true clean package
 
     runHook postBuild
   '';
@@ -89,11 +100,9 @@ pkgs.stdenv.mkDerivation rec {
       --prefix PATH : "${pkgs.graphviz}"
 
     ${
-      if buildJavadoc
+      if buildGitHubPages
       then ''
-        local doc="$out/share/doc"
-        mkdir -p "$doc"
-        cp -r docs/javadoc "$doc/DiffDetective"
+        cp -r _site "$out/share/github-pages"
       ''
       else ""
     }
