@@ -13,7 +13,11 @@
 pkgs.stdenv.mkDerivation rec {
   pname = "DiffDetective";
   version = "2.0.0";
-  src = ./.;
+  src = with pkgs.lib.fileset;
+    toSource {
+      root = ./.;
+      fileset = gitTrackedWith {} ./.;
+    };
 
   nativeBuildInputs = with pkgs; [
     maven
