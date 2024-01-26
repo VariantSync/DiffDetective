@@ -45,7 +45,7 @@ pkgs.stdenv.mkDerivation rec {
     dontConfigure = true;
     outputHashAlgo = "sha256";
     outputHashMode = "recursive";
-    outputHash = "sha256-S6duDsKFIrm+LT1SFD/9yxiODQI09MXvI8nHhy7nd4c=";
+    outputHash = "sha256-jQxZ6eSokwM6bP/vHkYczhE7xW/rHS/IH4pGy2SzzH0=";
   };
 
   buildPhase = ''
@@ -74,7 +74,7 @@ pkgs.stdenv.mkDerivation rec {
 
     local jar="$out/share/java/DiffDetective/DiffDetective.jar"
     install -Dm644 "target/diffdetective-${version}-jar-with-dependencies.jar" "$jar"
-    makeWrapper "${pkgs.maven.jdk}/bin/java" "$out/bin/DiffDetective" --add-flags "-cp \"$jar\"" \
+    makeWrapper "${pkgs.jdk}/bin/java" "$out/bin/DiffDetective" --add-flags "-cp \"$jar\"" \
       --prefix PATH : "${pkgs.graphviz}"
 
     ${
