@@ -33,7 +33,7 @@ Second, build DiffDetective and install it on your system so that you can access
 mvn install
 ```
 
-DiffDetective is now available on your system. Add the following to the pom.xml of your Maven project to add DiffDetective as a dependency, but make sure to pick the right version. You can the current version of DiffDetective you installed at the top of the pom.xml file in DiffDetective. 
+DiffDetective is now available on your system. Add the following to the pom.xml of your Maven project to add DiffDetective as a dependency, but make sure to pick the right version number. You can find the version number of DiffDetective at the top of the pom.xml file of DiffDetective. 
 
 ```xml
 <dependency>
