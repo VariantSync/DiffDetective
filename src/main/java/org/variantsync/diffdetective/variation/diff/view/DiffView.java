@@ -74,11 +74,7 @@ public class DiffView {
         try {
             view = JGitDiff.diff(projectionViewText[0], projectionViewText[1], DiffAlgorithm.SupportedAlgorithm.MYERS, Main.VARIATION_DIFF_PARSE_OPTIONS);
         } catch (DiffParseException e) {
-            Logger.error("""
-                            Could not parse diff obtained with query {} at {}:
-                            Diff:
-                            """,
-                    d.getSource(), rho);
+            Logger.error("Could not parse diff obtained with query {} at {}", d.getSource(), rho);
             throw e;
         }
         view.setSource(new ViewSource<>(d, rho));

@@ -1,6 +1,7 @@
 package org.variantsync.diffdetective.variation.diff.construction;
 
 import org.eclipse.jgit.diff.*;
+import org.tinylog.Logger;
 import org.variantsync.diffdetective.diff.git.GitDiffer;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
@@ -92,7 +93,18 @@ public final class JGitDiff {
         //textDiff = textDiff.replace("\\ No newline at end of file\n", "");
         //textDiff = HUNK_HEADER_REGEX.matcher(textDiff).replaceAll("");
 
-        final VariationDiff<DiffLinesLabel> d = VariationDiffParser.createVariationDiff(textDiff, options);
+        final VariationDiff<DiffLinesLabel> d;
+        try {
+            d = VariationDiffParser.createVariationDiff(textDiff, options);
+        } catch (DiffParseException e) {
+            Logger.error("""
+                            Could not parse diff:
+                            
+                            {}
+                            """,
+                    textDiff);
+            throw e;
+        }
         d.setSource(new PatchString(textDiff));
         return d;
     }
