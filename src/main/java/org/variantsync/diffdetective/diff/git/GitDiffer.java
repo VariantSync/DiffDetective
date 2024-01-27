@@ -18,7 +18,6 @@ import org.variantsync.diffdetective.datasets.Repository;
 import org.variantsync.diffdetective.diff.result.CommitDiffResult;
 import org.variantsync.diffdetective.diff.result.DiffError;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
-import org.variantsync.diffdetective.preliminary.GitDiff;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.util.StringUtils;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
@@ -69,38 +68,6 @@ public class GitDiffer {
         this.git = repository.getGitRepo().run();
         this.diffFilter = repository.getDiffFilter();
         this.parseOptions = repository.getParseOptions();
-    }
-
-    /**
-     * Creates a GitDiff object.
-     * For this, each commit is iterated to create CommitDiffs
-     *
-     * @return The GitDiff object created from the Git object of this GitDiffer
-     */
-    @Deprecated
-    public GitDiff createGitDiff() {
-        final GitDiff gitDiff = new GitDiff();
-
-        final Iterable<RevCommit> commitsIterable;
-        try {
-            commitsIterable = git.log().call();
-        } catch (GitAPIException e) {
-            Logger.warn("Could not get log for git repository {}", git.toString());
-            return null;
-        }
-
-        // we specifically count the commits here because the amount of unfiltered commits is
-        // otherwise lost
-        final int[] commitAmount = {0};
-        final Iterator<RevCommit> commitIterator = new SideEffectIterator<>(
-                commitsIterable.iterator(),
-                r -> ++commitAmount[0]);
-        for (CommitDiffResult commitDiff : yieldAllValidIn(commitIterator).map(this::createCommitDiff)) {
-            commitDiff.diff().ifPresent(gitDiff::addCommitDiff);
-        }
-        gitDiff.setCommitAmount(commitAmount[0]);
-
-        return gitDiff;
     }
 
     /**
@@ -398,6 +365,32 @@ public class GitDiffer {
                     Logger.debug(e, "Could not obtain full diff of file " + filename + " before commit " + parentCommit + "!");
                     errors.add(DiffError.COULD_NOT_OBTAIN_FULLDIFF);
                 } catch (DiffParseException e) {
+                    StringBuilder logMessage = new StringBuilder();
+                    logMessage
+                            .append("parse exception for commit ")
+                            .append(childCommit.getName())
+                            .append(" in line ")
+                            .append(e.getLineNumber())
+                            .append(" of patch ")
+                            .append(diffEntry.getOldPath())
+                            .append(" -> ")
+                            .append(diffEntry.getNewPath())
+                            .append("\n");
+                    logMessage
+                            .append(e)
+                            .append("\n");
+                    if (e.getMessage() != null) {
+                        logMessage
+                                .append("error message: ")
+                                .append(e.getMessage())
+                                .append("\n");
+                    }
+                    if (e.getCause() != null) {
+                        logMessage
+                                .append("cause: ")
+                                .append(e.getCause());
+                    }
+                    Logger.debug(logMessage);
                     errors.add(e.getError());
                 }
 

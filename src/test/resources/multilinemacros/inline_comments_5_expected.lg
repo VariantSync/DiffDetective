@@ -1,0 +1,24 @@
+v 16 NON;IF;(old: -1, diff: -1, new: -1);(old: -1, diff: -1, new: -1);True
+v 136 REM;IF;(old: 1, diff: 1, new: -1);(old: 5, diff: 6, new: -1);A & B & D;# if A &&  /* inline; comment */ B \; && D //* no continuation
+v 403 NON;ARTIFACT;(old: 4, diff: 5, new: 4);(old: 5, diff: 6, new: 5);;  baz();
+v 531 NON;ARTIFACT;(old: 6, diff: 7, new: 6);(old: 7, diff: 8, new: 7);;
+v 592 NON;IF;(old: 7, diff: 8, new: 7);(old: 11, diff: 13, new: 11);A & C & D;# if A &&  /* inline;comment */ C \; && D //* no continuation
+v 843 REM;ARTIFACT;(old: 10, diff: 12, new: -1);(old: 11, diff: 13, new: -1);;   vaz();
+v 771 ADD;ARTIFACT;(old: -1, diff: 11, new: 10);(old: -1, diff: 12, new: 11);;   baz();
+v 979 NON;ARTIFACT;(old: 12, diff: 14, new: 12);(old: 13, diff: 15, new: 13);;
+v 1043 NON;ARTIFACT;(old: 13, diff: 15, new: 13);(old: 14, diff: 16, new: 14);;//*ptr=something
+v 1107 NON;ARTIFACT;(old: 14, diff: 16, new: 14);(old: 15, diff: 17, new: 15);;//other comment /* inner
+v 1171 NON;ARTIFACT;(old: 15, diff: 17, new: 15);(old: 16, diff: 18, new: 16);;text
+v 128 ADD;IF;(old: -1, diff: 1, new: 1);(old: -1, diff: 6, new: 5);A & C & D;# if A &&  /* inline; comment */ C \; && D //* no continuation
+e 136 16 b;0,-1
+e 403 136 b;0,-1
+e 403 128 a;-1,0
+e 531 16 ba;1,1
+e 592 16 ba;2,2
+e 843 592 b;0,-1
+e 771 592 a;-1,0
+e 979 16 ba;3,3
+e 1043 16 ba;4,4
+e 1107 16 ba;5,5
+e 1171 16 ba;6,6
+e 128 16 a;-1,0

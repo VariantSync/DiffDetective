@@ -11,6 +11,7 @@ import org.variantsync.diffdetective.util.IO;
 import org.variantsync.diffdetective.util.StringUtils;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.Label;
+import org.variantsync.diffdetective.variation.diff.Time;
 import org.variantsync.diffdetective.variation.diff.VariationDiff;
 import org.variantsync.diffdetective.variation.diff.serialize.VariationDiffSerializeDebugData;
 import org.variantsync.diffdetective.variation.diff.serialize.LineGraphConstants;
@@ -126,7 +127,7 @@ public class VariationDiffRenderer {
      */
     public <L extends Label> boolean render(final VariationDiff<L> tree, final GitPatch patch, final Path directory, final RenderOptions<? super L> options, final LineGraphExportOptions<? super L> exportOptions) {
         final String treeAndFileName =
-                patch.getFileName()
+                patch.getFileName(Time.AFTER)
                         + LineGraphConstants.TREE_NAME_SEPARATOR
                         + patch.getCommitHash();
         return render(tree, treeAndFileName, directory, options, exportOptions);

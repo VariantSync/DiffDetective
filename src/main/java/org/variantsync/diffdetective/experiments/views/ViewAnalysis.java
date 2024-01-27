@@ -98,7 +98,7 @@ public class ViewAnalysis implements Analysis.Hooks {
         // export results
         final ViewEvaluation e = new ViewEvaluation(
                 analysis.getCurrentCommitDiff().getAbbreviatedCommitHash(),
-                analysis.getCurrentPatch().getFileName(),
+                analysis.getCurrentPatch().getFileName(Time.AFTER),
                 rho,
                 preprocessingTime + naiveTime,
                 preprocessingTime + optimizedTime,

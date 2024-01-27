@@ -1,0 +1,17 @@
+ # if A && \
+ /* inline
+ comment */ \
++  C \
+-  B \
+  && D
+   baz();
+ #endif
+ 
+ # if A && \
+ /* inline
+ comment */ \
+  B \
+  && D
++   baz();
+-   vaz();
+ #endif

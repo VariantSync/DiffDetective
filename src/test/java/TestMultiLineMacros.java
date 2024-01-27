@@ -1,4 +1,5 @@
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.tinylog.Logger;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
@@ -23,44 +24,20 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.stream.Stream;
 
 public class TestMultiLineMacros {
-    private static final Path resDir = Constants.RESOURCE_DIR.resolve("multilinemacros");
 
-    public void diffToVariationDiff(LineGraphExportOptions<DiffLinesLabel> exportOptions, Path p) throws IOException, DiffParseException {
-        VariationDiff<DiffLinesLabel> tree;
-        try (BufferedReader fullDiff = Files.newBufferedReader(p)) {
-            tree = VariationDiffParser.createVariationDiff(
-                    fullDiff,
-                    new VariationDiffParseOptions(
-                            CPPAnnotationParser.Default,
-                            true,
-                            false
-                    ));
-        }
+    private final static Path testDir = Constants.RESOURCE_DIR.resolve("multilinemacros");
 
-        try (var destination = IO.newBufferedOutputStream(resDir.resolve("gen").resolve(p.getFileName() + ".lg"))) {
-            destination.write(("t # 1" + StringUtils.LINEBREAK).getBytes());
-
-            final VariationDiffSerializeDebugData debugData = LineGraphExport.toLineGraphFormat(tree, exportOptions, destination);
-            assertNotNull(debugData);
-            Logger.info("Parsed {} nodes of diff type NON.", debugData.numExportedNonNodes);
-            Logger.info("Parsed {} nodes of diff type ADD.", debugData.numExportedAddNodes);
-            Logger.info("Parsed {} nodes of diff type REM.", debugData.numExportedRemNodes);
-
-        }
+    public static Stream<Path> multilineTests() throws IOException {
+        return VariationDiffParserTest.findTestCases(testDir);
     }
 
     @ParameterizedTest
-    @ValueSource(strings = { "mldiff1.txt", "diffWithComments.txt" })
-    public void test(String filename) throws IOException, DiffParseException {
-        final LineGraphExportOptions<DiffLinesLabel> exportOptions = new LineGraphExportOptions<>(
-                GraphFormat.VARIATION_DIFF,
-                new CommitDiffVariationDiffLabelFormat(),
-                new DebugDiffNodeFormat<>(),
-                new DefaultEdgeLabelFormat<>()
-        );
-
-        diffToVariationDiff(exportOptions, resDir.resolve(filename));
+    @MethodSource("multilineTests")
+    public void testMultiline(Path basename) throws IOException, DiffParseException {
+        VariationDiffParserTest.testCase(basename);
     }
 }

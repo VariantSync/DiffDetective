@@ -105,12 +105,12 @@ public class ShortTable extends TableDefinition {
     /**
      * Returns a formatted string of the absolute number of occurrences of {@code editClass} in
      * {@code row}.
-     * The signature of this method is suitable to be passed to {@link column}.
+     * The signature of this method is suitable to be passed to {@link ShortTable#columns(ShortTable, TriFunction)}.
      *
      * @param t an instance of this class contained in the column definition
      * @param editClass the edit class to count
      * @param row the data to count {@code editClass} in
-     * @see column
+     * @see ShortTable#columns(ShortTable, TriFunction)
      */
     private static String absoluteCountOf(final ShortTable t, final EditClass editClass, final ContentRow row) {
         return t.makeReadable(row.get(EditClassCount.KEY).getOccurrences().get(editClass).getTotalAmount());
@@ -119,12 +119,12 @@ public class ShortTable extends TableDefinition {
     /**
      * Returns a formatted string of the relative number of occurrences of {@code editClass} in
      * {@code row}.
-     * The signature of this method is suitable to be passed to {@link column}.
+     * The signature of this method is suitable to be passed to {@link ShortTable#columns(ShortTable, TriFunction)}.
      *
      * @param t an instance of this class contained in the column definition
      * @param editClass the edit class to count
      * @param row the data to count {@code editClass} in
-     * @see column
+     * @see ShortTable#columns(ShortTable, TriFunction)
      */
     private static String relativeCountOf(final ShortTable t, final EditClass editClass, final ContentRow row) {
         final LinkedHashMap<EditClass, EditClassCount.Occurrences> editClassOccurrences =

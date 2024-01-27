@@ -1,6 +1,5 @@
 package org.variantsync.diffdetective.editclass;
 
-import org.variantsync.diffdetective.preliminary.pattern.Pattern;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
 import org.variantsync.diffdetective.variation.diff.VariationDiff;
 import org.variantsync.diffdetective.variation.diff.DiffType;

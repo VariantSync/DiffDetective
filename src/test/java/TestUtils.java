@@ -12,8 +12,6 @@ public final class TestUtils {
     /**
      * Compare two line graphs.
      *
-     * @param originalLineGraph The original line graph
-     * @param generatedLineGraph The generated line graph
      */
     public static void assertEqualToFile(final Path filePath, final String actual) throws IOException {
         try (BufferedReader expected = Files.newBufferedReader(filePath)) {

@@ -1,0 +1,18 @@
+ # if A && /* multiple inline
+ comments */ B && /* that */ C && /*
+ are distributed
+ */ \
++  E \
+-  B \
+  && D
+   baz();
+ #endif
+ 
+ # if A && /* multiple inline
+ comments */ B && /* that */ C /*
+ are distributed
+ */ \
+  && D
++   baz();
+-   vaz();
+ #endif

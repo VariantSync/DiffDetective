@@ -1,6 +1,7 @@
 package org.variantsync.diffdetective.variation.diff;
 
 import org.apache.commons.lang3.function.FailableConsumer;
+import org.tinylog.Logger;
 
 import java.util.Optional;
 import java.util.Set;
@@ -141,7 +142,10 @@ public enum DiffType {
             return ADD;
         } else if (line.startsWith(REM.symbol)) {
             return REM;
-        } else if (line.startsWith(NON.symbol)) {
+        } else if (line.startsWith(NON.symbol) || line.isEmpty()) {
+            // Diff lines should ideally have at least one character specifying a line's type (i.e., one of the diff
+            // type characters: '+', '-', or ' '). However, this is not necessarily the case and unchanged lines may
+            // be empty. We thus treat empty lines in a diff as unchanged (i.e., NON),
             return NON;
         } else {
             return null;

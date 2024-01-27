@@ -51,69 +51,134 @@ public class BooleanAbstraction {
     public static final String XOR = "__XOR__";
     /** Abstraction value for the condition of the ternary operator <code>?</code>. */
     public static final String THEN = "__THEN__";
-    /** Abstraction value for the alternative of the ternary operator <code>:</code>. */
-    public static final String ELSE = "__ELSE__";
+    /** Abstraction value for the alternative of the ternary operator <code>:</code>, or just colons. */
+    public static final String COLON = "__COLON__";
     /** Abstraction value for opening brackets <code>(</code>. */
     public static final String BRACKET_L = "__LB__";
-    /** Abstraction value for clsong brackets <code>)</code>. */
+    /** Abstraction value for closing brackets <code>)</code>. */
     public static final String BRACKET_R = "__RB__";
+    /** Abstraction value for unary 'and' <code>&amp;</code>. */
+    public static final String U_AND = "__U_AND__";
+    /** Abstraction value for unary star <code>*</code>. */
+    public static final String U_STAR = "__U_STAR__";
+    /** Abstraction value for unary plus <code>+</code>. */
+    public static final String U_PLUS = "__U_PLUS__";
+    /** Abstraction value for unary minus <code>-</code>. */
+    public static final String U_MINUS = "__U_MINUS__";
+    /** Abstraction value for unary tilde <code>~</code>. */
+    public static final String U_TILDE = "__U_TILDE__";
+    /** Abstraction value for unary not <code>!</code>. */
+    public static final String U_NOT = "__U_NOT__";
+    /** Abstraction value for logical and <code>&amp;&amp;</code>. */
+    public static final String L_AND = "__L_AND__";
+    /** Abstraction value for logical or <code>||</code>. */
+    public static final String L_OR = "__L_OR__";
+    /** Abstraction value for dots in paths <code>.</code>. */
+    public static final String DOT = "__DOT__";
+    /** Abstraction value for quotation marks in paths <code>"</code>. */
+    public static final String QUOTE = "__QUOTE__";
+    /** Abstraction value for single quotation marks <code>'</code>. */
+    public static final String SQUOTE = "__SQUOTE__";
+    /** Abstraction value for assign operator <code>=</code>. */
+    public static final String ASSIGN = "__ASSIGN__";
+    /** Abstraction value for star assign operator <code>*=</code>. */
+    public static final String STAR_ASSIGN = "__STA___ASSIGN__";
+    /** Abstraction value for div assign operator <code>/=</code>. */
+    public static final String DIV_ASSIGN = "__DIV___ASSIGN__";
+    /** Abstraction value for mod assign operator <code>%=</code>. */
+    public static final String MOD_ASSIGN = "__MOD___ASSIGN__";
+    /** Abstraction value for plus assign operator <code>+=</code>. */
+    public static final String PLUS_ASSIGN = "__PLU___ASSIGN__";
+    /** Abstraction value for minus assign operator <code>-=</code>. */
+    public static final String MINUS_ASSIGN = "__MIN___ASSIGN__";
+    /** Abstraction value for left shift assign operator <code>&lt;&lt;=</code>. */
+    public static final String LEFT_SHIFT_ASSIGN = "__LSH___ASSIGN__";
+    /** Abstraction value for right shift assign operator <code>&gt;&gt;=</code>. */
+    public static final String RIGHT_SHIFT_ASSIGN = "__RSH___ASSIGN__";
+    /** Abstraction value for 'and' assign operator <code>&amp;=</code>. */
+    public static final String AND_ASSIGN = "__AND___ASSIGN__";
+    /** Abstraction value for xor assign operator <code>^=</code>. */
+    public static final String XOR_ASSIGN = "__XOR___ASSIGN__";
+    /** Abstraction value for 'or' assign operator <code>|=</code>. */
+    public static final String OR_ASSIGN = "__OR___ASSIGN__";
+    /** Abstraction value for whitespace <code> </code>. */
+    public static final String WHITESPACE = "_";
+    /** Abstraction value for backslash <code>\</code>. */
+    public static final String BSLASH = "__B_SLASH__";
 
-    private static class Replacement {
-        private Pattern pattern;
-        private String replacement;
+    // The preprocessor has six special operators that require additional abstraction.
+    // These operators are documented under https://gcc.gnu.org/onlinedocs/cpp/Conditional-Syntax.html
+    /** Abstraction value for has_attribute operator <code>__has_attribute(ATTRIBUTE)</code>.
+     * One of the <a href="https://gcc.gnu.org/onlinedocs/cpp/Conditional-Syntax.html">six special operators</a> that require abstraction.
+     * */
+    public static final String HAS_ATTRIBUTE = "HAS_ATTRIBUTE_";
+    /** Abstraction value for has_cpp_attribute operator <code>__has_cpp_attribute(ATTRIBUTE)</code>.
+     * One of the <a href="https://gcc.gnu.org/onlinedocs/cpp/Conditional-Syntax.html">six special preprocessor operators</a> that require abstraction. */
+    public static final String HAS_CPP_ATTRIBUTE = "HAS_CPP_ATTRIBUTE_";
+    /** Abstraction value for has_c_attribute operator <code>__has_c_attribute(ATTRIBUTE)</code>.
+     * One of the <a href="https://gcc.gnu.org/onlinedocs/cpp/Conditional-Syntax.html">six special preprocessor operators</a> that require abstraction. */
+    public static final String HAS_C_ATTRIBUTE = "HAS_C_ATTRIBUTE_";
+    /** Abstraction value for has_builtin operator <code>__has_builtin(BUILTIN)</code>.
+     * One of the <a href="https://gcc.gnu.org/onlinedocs/cpp/Conditional-Syntax.html">six special preprocessor operators</a> that require abstraction. */
+    public static final String HAS_BUILTIN = "HAS_BUILTIN_";
+    /** Abstraction value for has_include operator <code>__has_include(INCLUDE)</code>.
+     * One of the <a href="https://gcc.gnu.org/onlinedocs/cpp/Conditional-Syntax.html">six special preprocessor operators</a> that require abstraction. */
+    public static final String HAS_INCLUDE = "HAS_INCLUDE_";
+    /** Abstraction value for defined operator <code>defined</code>.
+     * One of the <a href="https://gcc.gnu.org/onlinedocs/cpp/Conditional-Syntax.html">six special preprocessor operators</a> that require abstraction. */
+    public static final String DEFINED = "DEFINED_";
 
+    private record Replacement(Pattern pattern, String replacement) {
         /**
-         * @param original the literal string to be replaced if it matches a whole word
+         * @param pattern     the literal string to be replaced if it matches a whole word
          * @param replacement the replacement with special escape codes according to
-         * {@link Matcher#replaceAll}
+         *                    {@link Matcher#replaceAll}
          */
-        private Replacement(Pattern pattern, String replacement) {
-            this.pattern = pattern;
-            this.replacement = replacement;
+        private Replacement {
         }
 
-        /**
-         * Creates a new replacement matching {@code original} literally.
-         *
-         * @param original a string which is searched for literally (without any special
-         * characters)
-         * @param replacement the literal replacement for strings matched by {@code original}
-         */
-        public static Replacement literal(String original, String replacement) {
-            return new Replacement(
-                Pattern.compile(Pattern.quote(original)),
-                Matcher.quoteReplacement(replacement)
-            );
+            /**
+             * Creates a new replacement matching {@code original} literally.
+             *
+             * @param original    a string which is searched for literally (without any special
+             *                    characters)
+             * @param replacement the literal replacement for strings matched by {@code original}
+             */
+            public static Replacement literal(String original, String replacement) {
+                return new Replacement(
+                        Pattern.compile(Pattern.quote(original)),
+                        Matcher.quoteReplacement(replacement)
+                );
+            }
+
+            /**
+             * Creates a new replacement matching {@code original} literally but only on word
+             * boundaries.
+             * <p>
+             * A word boundary is defined as the transition from a word character (alphanumerical
+             * characters) to a non-word character (everything else) or the transition from any
+             * character to a bracket (the characters {@code (} and {@code )}).
+             *
+             * @param original    a string which is searched for as a whole word literally (without any
+             *                    special characters)
+             * @param replacement the literal replacement for strings matched by {@code original}
+             */
+            public static Replacement onlyFullWord(String original, String replacement) {
+                return new Replacement(
+                        Pattern.compile("(?<=\\b|[()])" + Pattern.quote(original) + "(?=\\b|[()])"),
+                        Matcher.quoteReplacement(replacement)
+                );
+            }
+
+            /**
+             * Replaces all patterns found in {@code value} by its replacement.
+             */
+            public String applyTo(String value) {
+                return pattern.matcher(value).replaceAll(replacement);
+            }
         }
 
-        /**
-         * Creates a new replacement matching {@code original} literally but only on word
-         * boundaries.
-         *
-         * A word boundary is defined as the transition from a word character (alphanumerical
-         * characters) to a non-word character (everything else) or the transition from any
-         * character to a bracket (the characters {@code (} and {@code )}).
-         *
-         * @param original a string which is searched for as a whole word literally (without any
-         * special characters)
-         * @param replacement the literal replacement for strings matched by {@code original}
-         */
-        public static Replacement onlyFullWord(String original, String replacement) {
-            return new Replacement(
-                Pattern.compile("(?<=\\b|[()])" + Pattern.quote(original) + "(?=\\b|[()])"),
-                Matcher.quoteReplacement(replacement)
-            );
-        }
-
-        /**
-         * Replaces all patterns found in {@code value} by its replacement.
-         */
-        public String applyTo(String value) {
-            return pattern.matcher(value).replaceAll(replacement);
-        }
-    }
-
-    private static final List<Replacement> ARITHMETICS = List.of(
+    private static final List<Replacement> REPLACEMENTS = List.of(
         // These replacements are carefully ordered by their length (longest first) to ensure that
         // the longest match is replaced first.
         Replacement.literal("<<", LSHIFT),
@@ -132,61 +197,72 @@ public class BooleanAbstraction {
         Replacement.literal("^", XOR),
         Replacement.literal("~", NOT),
         Replacement.literal("?", THEN),
-        Replacement.literal(":", ELSE),
+        Replacement.literal(":", COLON),
+        Replacement.literal( "&&", L_AND), 
+        Replacement.literal( "||", L_OR), 
+        Replacement.literal( ".", DOT), 
+        Replacement.literal( "\"", QUOTE), 
+        Replacement.literal( "'", SQUOTE),
+        Replacement.literal( "(", BRACKET_L),
+        Replacement.literal( ")", BRACKET_R), 
+        Replacement.literal( "__has_attribute", HAS_ATTRIBUTE), 
+        Replacement.literal( "__has_cpp_attribute", HAS_CPP_ATTRIBUTE), 
+        Replacement.literal( "__has_c_attribute", HAS_C_ATTRIBUTE), 
+        Replacement.literal( "__has_builtin", HAS_BUILTIN), 
+        Replacement.literal( "__has_include", HAS_INCLUDE), 
+        Replacement.literal( "defined", DEFINED),
+        Replacement.literal( "=", ASSIGN),
+        Replacement.literal( "*=", STAR_ASSIGN),
+        Replacement.literal( "/=", DIV_ASSIGN),
+        Replacement.literal( "%=", MOD_ASSIGN),
+        Replacement.literal( "+=", PLUS_ASSIGN),
+        Replacement.literal( "-=", MINUS_ASSIGN),
+        Replacement.literal( "<<=", LEFT_SHIFT_ASSIGN),
+        Replacement.literal( ">>=", RIGHT_SHIFT_ASSIGN),
+        Replacement.literal( "&=", AND_ASSIGN),
+        Replacement.literal( "^=", XOR_ASSIGN),
+        Replacement.literal( "|=", OR_ASSIGN),
+        Replacement.literal( "\\", BSLASH),
+        new Replacement( Pattern.compile("\\s+"), WHITESPACE),
         Replacement.onlyFullWord("&", AND), // && has to be left untouched
         Replacement.onlyFullWord("|", OR) // || has to be left untouched
     );
 
-    private static final Pattern COMMA = Pattern.compile(",");
-    private static final String COMMA_REPLACEMENT = "__";
-    private static final Pattern CALL = Pattern.compile("\\((\\w*)\\)");
-    private static final String CALL_REPLACEMENT = BRACKET_L + "$1" + BRACKET_R;
-
-    private static String abstractAll(String formula, final List<Replacement> replacements) {
-        for (var replacement : replacements) {
+    /**
+     * Apply all possible abstraction replacements for substrings of the given formula.
+     * @param formula the formula to abstract
+     * @return a fully abstracted formula
+     */
+    public static String abstractAll(String formula) {
+        for (var replacement : BooleanAbstraction.REPLACEMENTS) {
             formula = replacement.applyTo(formula);
         }
         return formula;
     }
 
     /**
-     * Abstracts all arithmetics in the given formula.
-     * For example, a formula "3 >= 1 + 2" would be abstracted to a single variable "3__GEQ__1__ADD__2".
-     * The given formula should be a string of a CPP conforming condition.
-     * @param formula The formula whose arithmetics should be abstracted.
-     * @return A copy of the formula with abstracted arithmetics.
-     */
-    public static String arithmetics(final String formula) {
-        return abstractAll(formula, ARITHMETICS);
-    }
-
-    /**
-     * Abstracts parentheses, including the commas of macro calls, in the given formula.
+     * <p>
+     * Search for the first replacement that matches the entire text and apply it. This is the case, if the given text
+     * corresponds to a single token (e.g., '&amp;&amp;', '||'). If no replacement for the entire text is found (e.g., if the token
+     * has no replacement), all possible replacements are applied to abstract substrings of the token that require
+     * abstraction.
+     * </p>
      *
-     * For example, a call "FOO(3, 4, lol)" would be abstracted to a single variable "FOO__3__4__lol".
-     * The given formula should be a string of a CPP conforming condition.
-     * @param formula The formula whose function calls should be abstracted.
-     * @return A copy of the formula with abstracted function calls.
+     * <p>The purpose of this method is to achieve a slight speedup for scenarios in which the text usually contains a single
+     * token. For example, this is useful when abstracting individual tokens of an extracted preprocessor formula
+     * in {@link AbstractingCExpressionVisitor}. In all other cases, directly calling {@link #abstractAll(String)} should
+     * be preferred.
+     * </p>
+     *
+     * @param text the text to abstract
+     * @return a fully abstracted text
      */
-    public static String parentheses(String formula) {
-        ////// abstract function calls
-        /// replace commata in macro calls
-        formula = COMMA.matcher(formula).replaceAll(COMMA_REPLACEMENT);
-
-        /// inline macro calls as long as there are some
-        /// Example
-        ///    bar(2, foo(A__MUL__(B__PLUS__C))
-        /// -> bar(2__foo(A__MUL__(B__PLUS__C))) // because of the comma replacement above
-        /// -> bar(2__foo(A__MUL____LB__B__PLUS__C__RB__))
-        /// -> bar(2__foo__LB__A__MUL____LB__B__PLUS__C__RB____RB__)
-        /// -> bar__LB__2__foo__LB__A__MUL____LB__B__PLUS__C__RB____RB____RB__
-        String old;
-        do {
-            old = formula;
-            formula = CALL.matcher(formula).replaceAll(CALL_REPLACEMENT);
-//            formula = formula.replaceAll("(\\w+)\\((\\w*)\\)", "$1__$2");
-        } while (!old.equals(formula));
-
-        return formula;
+    public static String abstractToken(String text) {
+        for (Replacement replacement : REPLACEMENTS) {
+            if (replacement.pattern.matcher(text).matches()) {
+                return replacement.applyTo(text);
+            }
+        }
+        return abstractAll(text);
     }
 }

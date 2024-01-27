@@ -21,7 +21,6 @@ import org.variantsync.diffdetective.variation.diff.serialize.treeformat.CommitD
 import org.variantsync.diffdetective.variation.diff.transform.CollapseNestedNonEditedAnnotations;
 import org.variantsync.diffdetective.variation.diff.transform.CutNonEditedSubtrees;
 import org.variantsync.diffdetective.variation.diff.transform.VariationDiffTransformer;
-import org.variantsync.diffdetective.variation.diff.transform.Starfold;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -43,7 +42,6 @@ public class VariationDiffMiner {
         final List<VariationDiffTransformer<DiffLinesLabel>> processing = new ArrayList<>();
         processing.add(new CutNonEditedSubtrees<>());
         processing.add(new CollapseNestedNonEditedAnnotations());
-        processing.add(Starfold.IgnoreNodeOrder());
         return processing;
     }
 

@@ -8,17 +8,29 @@
       inherit system;
     },
   doCheck ? true,
-  buildJavadoc ? true,
+  buildGitHubPages ? true,
 }:
 pkgs.stdenv.mkDerivation rec {
   pname = "DiffDetective";
-  version = "2.0.0";
-  src = ./.;
+  version = "2.1.0";
+  src = with pkgs.lib.fileset;
+    toSource {
+      root = ./.;
+      # This should be `gitTracked ./.`. However, this currently doesn't accept
+      # shallow repositories as used in GitHub CI.
+      fileset =
+        (import (sources.nixpkgs + "/lib/fileset/internal.nix") {inherit (pkgs) lib;})._fromFetchGit
+        "gitTracked"
+        "argument"
+        ./.
+        {shallow = true;};
+    };
 
   nativeBuildInputs = with pkgs; [
     maven
     makeWrapper
     graphviz
+    (ruby.withPackages (pkgs: with pkgs; [github-pages jekyll-theme-cayman]))
   ];
 
   mavenRepo = pkgs.stdenv.mkDerivation {
@@ -45,17 +57,27 @@ pkgs.stdenv.mkDerivation rec {
     dontConfigure = true;
     outputHashAlgo = "sha256";
     outputHashMode = "recursive";
-    outputHash = "sha256-qIKFqNwooJ0iqzkv6TTS5GM4bA6iYkVa35zqE+q5izY=";
+    outputHash = "sha256-jQxZ6eSokwM6bP/vHkYczhE7xW/rHS/IH4pGy2SzzH0=";
   };
 
   buildPhase = ''
     runHook preBuild
 
-    mvn --offline -Dmaven.repo.local="$mavenRepo" -Dmaven.test.skip=true clean package ${
-      if buildJavadoc
-      then "javadoc:javadoc"
+    mvn() {
+      command mvn --offline -Dmaven.repo.local="$mavenRepo" "$@"
+    }
+
+    ${
+      # Build the documentation before the code because we don't want to include
+      # the generated files in the GitHub Pages
+      if buildGitHubPages
+      then ''
+        mvn javadoc:javadoc
+        PAGES_REPO_NWO=VariantSync/DiffDetective JEKYLL_BUILD_REVISION= github-pages build
+      ''
       else ""
     }
+    mvn -Dmaven.test.skip=true clean package
 
     runHook postBuild
   '';
@@ -74,15 +96,13 @@ pkgs.stdenv.mkDerivation rec {
 
     local jar="$out/share/java/DiffDetective/DiffDetective.jar"
     install -Dm644 "target/diffdetective-${version}-jar-with-dependencies.jar" "$jar"
-    makeWrapper "${pkgs.maven.jdk}/bin/java" "$out/bin/DiffDetective" --add-flags "-cp \"$jar\"" \
+    makeWrapper "${pkgs.jdk}/bin/java" "$out/bin/DiffDetective" --add-flags "-cp \"$jar\"" \
       --prefix PATH : "${pkgs.graphviz}"
 
     ${
-      if buildJavadoc
+      if buildGitHubPages
       then ''
-        local doc="$out/share/doc"
-        mkdir -p "$doc"
-        cp -r docs/javadoc "$doc/DiffDetective"
+        cp -r _site "$out/share/github-pages"
       ''
       else ""
     }
