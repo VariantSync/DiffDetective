@@ -20,7 +20,7 @@ DiffDetective is a Java Maven library. While DiffDetective depends on some custo
 
 DiffDetective also comes as a **nix package** (see [default.nix](default.nix)).
 
-### Setup with Maven
+### Cloning the repository
 
 First, clone this repository and navigate inside it:
 ```shell
@@ -28,7 +28,15 @@ git clone https://github.com/VariantSync/DiffDetective
 cd DiffDetective
 ```
 
-Second, build DiffDetective and install it on your system so that you can access it from your own projects:
+### Building and installing
+
+You can build and install DiffDetective using Maven such that it can be used in your own `pom.xml`. Alternatively, you can use a jar which includes all necessary dependencies. Such a jar can either be built manually using Maven or using Nix.
+
+#### Building and installing with Maven
+
+For building and installing Maven needs to be installed. Either provide it yourselves (e.g., using the system package manager) or, if you have Nix installed, run `nix-shell` (stable Nix) or `nix develop` (Nix Flakes) to provide all necessary build tools.
+
+Next, build DiffDetective and install it on your system so that you can access it from your own projects:
 ```shell
 mvn install
 ```
@@ -47,6 +55,18 @@ If you prefer to just use a jar file, you can find a jar file with all dependenc
 You can (re-)produce this jar file by either running `mvn package` or `mvn install` within you local clone of DiffDetective.
 
 > Disclaimer: Setup tested with maven version 3.6.3.
+
+#### Building with Nix
+
+Alternatively to manual building using Maven, Nix can be used. Both a [flake.nix](flake.nix) and a [default.nix](default.nix) are provided. Hence, you can build DiffDetective using
+```shell
+nix-build # stable version
+# or
+nix build # Flake version
+```
+In case you are using Nix Flakes, you can skip cloning the repository as usual: `nix build github:VariantSync/DiffDetective#.`
+
+Afterwards, the [result](result) symlink points to the [Javadoc](result/share/github-pages/docs/javadoc/index.html), the [DiffDetective jar](result/share/java/DiffDetective/DiffDetective.jar) and a simple [script](result/bin/DiffDetective) for executing a DiffDetective main class provided as argument (e.g., evaluations used in previous research).
 
 ## Publications
 
