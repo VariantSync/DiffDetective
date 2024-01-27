@@ -16,7 +16,14 @@ pkgs.stdenv.mkDerivation rec {
   src = with pkgs.lib.fileset;
     toSource {
       root = ./.;
-      fileset = gitTrackedWith {} ./.;
+      # This should be `gitTracked ./.`. However, this currently doesn't accept
+      # shallow repositories as used in GitHub CI.
+      fileset =
+        (import (sources.nixpkgs + "/lib/fileset/internal.nix") {inherit (pkgs) lib;})._fromFetchGit
+        "gitTracked"
+        "argument"
+        ./.
+        {shallow = true;};
     };
 
   nativeBuildInputs = with pkgs; [
