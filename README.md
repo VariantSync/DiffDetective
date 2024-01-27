@@ -16,32 +16,32 @@ Additionally, DiffDetective offers a **flexible framework for large-scale empiri
 
 ## Setup
 
-DiffDetective is a Java Maven library. While DiffDetective depends on some custom libraries ([FeatureIDE library](https://featureide.github.io/), [Sat4j](https://sat4j.org/), [Functjonal](https://github.com/VariantSync/Functjonal)) these are prepackaged with DiffDetective. So **all you need is [Maven](https://maven.apache.org/)** installed.
+DiffDetective is a Java Maven library. While DiffDetective depends on some custom libraries ([FeatureIDE library](https://featureide.github.io/), [Sat4j](https://sat4j.org/), [Functjonal](https://github.com/VariantSync/Functjonal)) these are prepackaged with DiffDetective. So **all you need is Java ≥16 and [Maven](https://maven.apache.org/) or alternatively [Nix](https://nixos.org/)**. In the following, we explain the setup with Java and Maven, as well as via Nix.
 
-DiffDetective also comes as a **nix package** (see [default.nix](default.nix)).
+### Cloning the Repository
 
-### Cloning the repository
-
-First, clone this repository and navigate inside it:
+Clone this repository and navigate inside it:
 ```shell
 git clone https://github.com/VariantSync/DiffDetective
 cd DiffDetective
 ```
 
-### Building and installing
+> In case you are using Nix Flakes, you may skip cloning the repository.
 
-You can build and install DiffDetective using Maven such that it can be used in your own `pom.xml`. Alternatively, you can use a jar which includes all necessary dependencies. Such a jar can either be built manually using Maven or using Nix.
+### Building and Installing
 
-#### Building and installing with Maven
+You can build and install DiffDetective with Maven such that it can be used in your own project. Alternatively, you can use a jar which includes all necessary dependencies. Such a jar can either be built manually using Maven or using Nix.
 
-For building and installing Maven needs to be installed. Either provide it yourselves (e.g., using the system package manager) or, if you have Nix installed, run `nix-shell` (stable Nix) or `nix develop` (Nix Flakes) to provide all necessary build tools.
+#### Building and Installing With Maven
+
+First, Maven needs to be installed. Either provide it yourself (e.g., using a system package manager or on Windows, download [from their website](https://maven.apache.org/guides/getting-started/windows-prerequisites.html)) or, if you have Nix installed, run `nix-shell` (stable Nix) or `nix develop` (Nix Flakes) to provide all necessary build tools.
 
 Next, build DiffDetective and install it on your system so that you can access it from your own projects:
 ```shell
 mvn install
 ```
 
-DiffDetective is now available on your system. Add the following to the pom.xml of your Maven project to add DiffDetective as a dependency, but make sure to pick the right version number. You can find the version number of DiffDetective at the top of the pom.xml file of DiffDetective. 
+To add DiffDetective as a dependency to your own project, add the following snippet to the pom.xml of your Maven project, but make sure to pick the right version number. You can find the version number of DiffDetective at the top of the pom.xml file of DiffDetective. 
 
 ```xml
 <dependency>
@@ -51,7 +51,7 @@ DiffDetective is now available on your system. Add the following to the pom.xml 
 </dependency>
 ```
 
-If you prefer to just use a jar file, you can find a jar file with all dependencies in `DiffDetective/target/diffdetective-2.0.0-jar-with-dependencies.jar` (again, the version number might be different).
+If you prefer to just use a jar file, you can find a jar file with all dependencies at `DiffDetective/target/diffdetective-2.0.0-jar-with-dependencies.jar` (again, the version number might be different).
 You can (re-)produce this jar file by either running `mvn package` or `mvn install` within you local clone of DiffDetective.
 
 > Disclaimer: Setup tested with maven version 3.6.3.
@@ -87,6 +87,7 @@ This was the initial work, introducing DiffDetective as a means to conduct an em
 In particular, we used DiffDetective to classify the effect of edits on the variability of the edited source code in the change histories of 44 open-source C-preprocessor-based software projects.
 
 The classification is implemented within the [org.variantsync.diffdetective.editclass](src/main/java/org/variantsync/diffdetective/editclass/) package.
+The empirical evaluation of the classification, including a respective `main` method, is implemented in the [org.variantsync.diffdetective.experiments.esecfse22](src/main/java/org/variantsync/diffdetective/experiments/esecfse22) package.
 
 The original replication package can be found on the [esecfse](https://github.com/VariantSync/DiffDetective/tree/esecfse22) branch or via the DOI [10.5281/zenodo.7110095](https://doi.org/10.5281/zenodo.7110095). The replication is also available for the most recent version of DiffDetective with various improvements, which will likely yield to slightly different results than the initial study. The updated replication package can be found in the [replication/esecfse22](replication/esecfse22) subdirectory with its own [README](replication/esecfse22/README.md).
 
@@ -110,6 +111,7 @@ A view on an edit thus is a simplified form of an edit that, for example, contai
 From a mathematical perspective, creating such views is in fact a lifting of operations on single revisions of variational systems to operations on diffs of variational systems.
 
 Views are implemented within the [org.variantsync.diffdetective.variation.tree.view](src/main/java/org/variantsync/diffdetective/variation/tree/view/) and [org.variantsync.diffdetective.variation.diff.view](src/main/java/org/variantsync/diffdetective/variation/diff/view/) packages for variaton trees and diffs, respectively.
+The empirical evaluation of the view algorithms, including a respective `main` method, is implemented in the [org.variantsync.diffdetective.experiments.views](src/main/java/org/variantsync/diffdetective/experiments/views) package.
 
 The original replication package can be found on the `splc23-views` branch within the directory [replication/splc23-views](https://github.com/VariantSync/DiffDetective/tree/splc23-views/replication/splc23-views) or via the DOI [10.5281/zenodo.8027920](https://doi.org/10.5281/zenodo.8027920). The replication is also available for the most recent version of DiffDetective with an up-to-date version of DiffDetective, which will likely yield to slightly different results than the initial study. The updated replication package can be found in the [replication/splc23-views](replication/splc23-views) subdirectory with it's own [README](replication/splc23-views/README.md).
 
@@ -133,7 +135,7 @@ Edge-typed variation diffs and the replication package are implemented in a fork
 
 DiffDetective was extended and used within bachelor's and master's theses:
 
-- _Constructing Variation Diffs Using Tree Diffing Algorithms_, Benjamin Moosherr, Bachelor's Thesis, 2023, [DOI 10.18725/OPARU-50108](https://dx.doi.org/10.18725/OPARU-50108): Benjamin added support for tree-differencing and integrated the GumTree differencer ([Github](https://github.com/GumTreeDiff/gumtree), [Paper](https://doi.org/10.1145/2642937.2642982)). In his thesis, Benjamin also reviewed a range of quality metrics for tree-diffs with focus on their applicability for rating variability-aware diffs.
+- _Constructing Variation Diffs Using Tree Diffing Algorithms_, Benjamin Moosherr, Bachelor's Thesis, 2023, [DOI 10.18725/OPARU-50108](https://dx.doi.org/10.18725/OPARU-50108): Benjamin added support for tree-differencing and integrated the GumTree differencer ([Github](https://github.com/GumTreeDiff/gumtree), [Paper](https://doi.org/10.1145/2642937.2642982)). In his thesis, Benjamin also reviewed a range of quality metrics for tree-diffs with focus on their applicability for rating variability-aware diffs. The [org.variantsync.diffdetective.experiments.thesis_bm](src/main/java/org/variantsync/diffdetective/experiments/thesis_bm) package implements the corresponding empirical study and may serve as an example on how to use the tree-differencing.
 - _Reverse Engineering Feature-Aware Commits From Software Product-Line Repositories_, Lukas Bormann, Bachelor's Thesis, 2023, [10.18725/OPARU-47892](https://dx.doi.org/10.18725/OPARU-47892): Lukas implemented an algorithm for feature-based commit-untangling, which turns variation diff into a series of smaller diffs, each of which contains an edit to a single feature or feature formula. This work was later refined in our publication _Views on Edits to Variational Software_ illustrated above.
 - _Inspecting the Evolution of Feature Annotations in Configurable Software_, Lukas Güthing, Master's Thesis, 2023: Lukas implemented different edge-types for associating variability annotations within variation diffs. He published his work later at VaMoS 2024 under the title _Explaining Edits to Variability Annotations in Evolving Software Product Lines_, illustrated above.
 - _Empirical Evaluation of Feature Trace Recording on the Edit History of Marlin_, Sören Viegener, Bachelor's Thesis, 2021, [DOI 10.18725/OPARU-38603](http://dx.doi.org/10.18725/OPARU-38603): In his thesis, Sören started the DiffDetective project and implemented the first version of an algorithm, which parses text-based diffs to C-preprocessor files to variation diffs. He also came up with an initial classification of edits, which we wanted to reuse to evaluate [Feature Trace Recording](https://variantsync.github.io/FeatureTraceRecording/), a method for deriving variability annotations from annotated patches.
