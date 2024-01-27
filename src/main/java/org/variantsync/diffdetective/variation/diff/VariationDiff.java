@@ -113,7 +113,7 @@ public class VariationDiff<L extends Label> {
     /**
      * Parses a patch of a Git repository.
      *
-     * Warning: The current implementation ignored {@code patchReference.getParentCommitHash}.
+     * Warning: The current implementation ignores {@code patchReference.getParentCommitHash}.
      * It assumes that it's equal to the first parent of {@code patchReference.getCommitHash}, so
      * it cannot parse patches across multiple commits.
      *
