@@ -73,7 +73,7 @@ pkgs.stdenv.mkDerivation rec {
       if buildGitHubPages
       then ''
         mvn javadoc:javadoc
-        PAGES_REPO_NWO=VariantSync/DiffDetective JEKYLL_BUILD_REVISION= github-pages build
+        JEKYLL_ENV=production PAGES_REPO_NWO=VariantSync/DiffDetective JEKYLL_BUILD_REVISION= github-pages build
       ''
       else ""
     }
@@ -102,7 +102,8 @@ pkgs.stdenv.mkDerivation rec {
     ${
       if buildGitHubPages
       then ''
-        cp -r _site "$out/share/github-pages"
+        mkdir "$out/share/github-pages"
+        cp -r _site "$out/share/github-pages/DiffDetective"
       ''
       else ""
     }
