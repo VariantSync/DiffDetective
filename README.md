@@ -66,7 +66,7 @@ nix build # Flake version
 ```
 In case you are using Nix Flakes, you can skip cloning the repository as usual: `nix build github:VariantSync/DiffDetective#.`
 
-Afterward, the [result](result) symlink points to the [Javadoc](result/share/github-pages/docs/javadoc/index.html), the [DiffDetective jar](result/share/java/DiffDetective/DiffDetective.jar) and a simple [script](result/bin/DiffDetective) for executing a DiffDetective main class provided as argument (e.g., evaluations used in previous research, see below under 'Publications').
+Afterward, the [result](result) symlink points to the [Javadoc](result/share/github-pages/DiffDetective/docs/javadoc/index.html), the [DiffDetective jar](result/share/java/DiffDetective/DiffDetective.jar) and a simple [script](result/bin/DiffDetective) for executing a DiffDetective main class provided as argument (e.g., evaluations used in previous research, see below under 'Publications').
 
 ## Publications
 
