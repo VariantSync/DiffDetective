@@ -10,7 +10,7 @@ DiffDetective is an open-source Java library for variability-aware source code d
 
 <img alt="Variability-Aware Differencing Overview" src="docs/teaser.png" height="500" />
 
-Given two states of a C-preprocessor annotated source code file (left), for example before and after a commit, DiffDetective constructs a variability-aware diff (right) that distinguishes changes to source code from canges to variability annotations. DiffDetective can construct such a variation diff either, by first using a generic differencer, and separating the information (center path), or by first parsing both input versions to an abstract representation, a variation tree (center top and bottom), and constructing a variation diff using a tree differencing algorithm in a second step.
+Given two states of a C-preprocessor annotated source code file (left), for example before and after a commit, DiffDetective constructs a variability-aware diff (right) that distinguishes changes to source code from changes to variability annotations. DiffDetective can construct such a variation diff either, by first using a generic differencer, and separating the information (center path), or by first parsing both input versions to an abstract representation, a variation tree (center top and bottom), and constructing a variation diff using a tree differencing algorithm in a second step.
 
 Additionally, DiffDetective offers a **flexible framework for large-scale empirical analyses of git version histories** of statically configurable software. In multiple studies, DiffDetective was successfully employed to study the commit histories of up to 44 open-source git repositories, including the **Linux Kernel, GCC, Vim, Emacs, or the Godot game engine**.
 
@@ -58,7 +58,7 @@ You can (re-)produce this jar file by either running `mvn package` or `mvn insta
 
 #### Building with Nix
 
-Alternatively to manual building using Maven, Nix can be used. Both a [flake.nix](flake.nix) and a [default.nix](default.nix) are provided. Hence, you can build DiffDetective using
+Alternatively to manually building using Maven, Nix can be used. Both a [flake.nix](flake.nix) and a [default.nix](default.nix) are provided. Hence, you can build DiffDetective using
 ```shell
 nix-build # stable version
 # or
@@ -66,7 +66,7 @@ nix build # Flake version
 ```
 In case you are using Nix Flakes, you can skip cloning the repository as usual: `nix build github:VariantSync/DiffDetective#.`
 
-Afterwards, the [result](result) symlink points to the [Javadoc](result/share/github-pages/docs/javadoc/index.html), the [DiffDetective jar](result/share/java/DiffDetective/DiffDetective.jar) and a simple [script](result/bin/DiffDetective) for executing a DiffDetective main class provided as argument (e.g., evaluations used in previous research).
+Afterward, the [result](result) symlink points to the [Javadoc](result/share/github-pages/docs/javadoc/index.html), the [DiffDetective jar](result/share/java/DiffDetective/DiffDetective.jar) and a simple [script](result/bin/DiffDetective) for executing a DiffDetective main class provided as argument (e.g., evaluations used in previous research, see below under 'Publications').
 
 ## Publications
 
@@ -88,7 +88,7 @@ In particular, we used DiffDetective to classify the effect of edits on the vari
 
 The classification is implemented within the [org.variantsync.diffdetective.editclass](src/main/java/org/variantsync/diffdetective/editclass/) package.
 
-The original replication package can be found on the [esecfse](https://github.com/VariantSync/DiffDetective/tree/esecfse22) branch or via the DOI [10.5281/zenodo.7110095](https://doi.org/10.5281/zenodo.7110095). The replication is also available for the most recent version of DiffDetective with various improvements, which will likely yield to slightly different results than the initial study. The updated replication package can be found in the [replication/esecfse22](replication/esecfse22) subdirectory with it's own [README](replication/esecfse22/README.md).
+The original replication package can be found on the [esecfse](https://github.com/VariantSync/DiffDetective/tree/esecfse22) branch or via the DOI [10.5281/zenodo.7110095](https://doi.org/10.5281/zenodo.7110095). The replication is also available for the most recent version of DiffDetective with various improvements, which will likely yield to slightly different results than the initial study. The updated replication package can be found in the [replication/esecfse22](replication/esecfse22) subdirectory with its own [README](replication/esecfse22/README.md).
 
 
 ### Views on Edits to Variational Software (SPLC 2023)
@@ -125,7 +125,7 @@ The original replication package can be found on the `splc23-views` branch withi
 
 <img padding="10" align="right" src="https://www.acm.org/binaries/content/gallery/acm/publications/artifact-review-v1_1-badges/artifacts_evaluated_functional_v1_1.png" alt="ACM Artifacts Evaluated Reusable" width="114" height="113"/>
 
-In this work, we formalized an extension of variation diffs, with a typing for edges and pair-wise relations for variability annotations (i.e., mapping nodes in variation diffs). Such edge-typed variation diffs show for example that two annotations exlude or imply each other. Such edge-typed diffs might help better explaining or analyzing edits in the future.
+In this work, we formalized an extension of variation diffs, with a typing for edges and pair-wise relations for variability annotations (i.e., mapping nodes in variation diffs). Such edge-typed variation diffs show for example that two annotations exclude or imply each other. Such edge-typed diffs might help better explaining or analyzing edits in the future.
 
 Edge-typed variation diffs and the replication package are implemented in a fork of DiffDetective ([https://github.com/guethilu/DiffDetective][forklg]). The replication package is archived under the DOI [10.5281/zenodo.10286851](https://doi.org/10.5281/zenodo.10286851).
 
