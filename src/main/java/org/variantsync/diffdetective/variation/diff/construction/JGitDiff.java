@@ -16,12 +16,15 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
+import java.util.regex.Pattern;
 
 /**
  * Class which groups functions of parsing variation diffs with JGit.
  * @author Paul Bittner
  */
 public final class JGitDiff {
+    private final static Pattern NO_NEWLINE_AT_END_OF_FILE = Pattern.compile("\n\\\\ No newline at end of file");
+    
     private JGitDiff() {}
     
     /**
@@ -90,7 +93,8 @@ public final class JGitDiff {
                 new BufferedReader(new StringReader(textDiff))
         );
 
-        //textDiff = textDiff.replace("\\ No newline at end of file\n", "");
+        
+        textDiff = NO_NEWLINE_AT_END_OF_FILE.matcher(textDiff).replaceAll("");
         //textDiff = HUNK_HEADER_REGEX.matcher(textDiff).replaceAll("");
 
         final VariationDiff<DiffLinesLabel> d;
