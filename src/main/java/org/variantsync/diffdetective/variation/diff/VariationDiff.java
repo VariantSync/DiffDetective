@@ -105,9 +105,20 @@ public class VariationDiff<L extends Label> {
      * @throws DiffParseException if {@code diff} couldn't be parsed
      */
     public static VariationDiff<DiffLinesLabel> fromDiff(final String diff, final VariationDiffParseOptions parseOptions) throws DiffParseException {
-        final VariationDiff<DiffLinesLabel> tree = VariationDiffParser.createVariationDiff(diff, parseOptions);
-        tree.setSource(new PatchString(diff));
-        return tree;
+        final VariationDiff<DiffLinesLabel> d;
+        try {
+            d = VariationDiffParser.createVariationDiff(diff, parseOptions);
+        } catch (DiffParseException e) {
+            Logger.error("""
+                            Could not parse diff:
+                            
+                            {}
+                            """,
+                    diff);
+            throw e;
+        }
+        d.setSource(new PatchString(diff));
+        return d;
     }
 
     /**
