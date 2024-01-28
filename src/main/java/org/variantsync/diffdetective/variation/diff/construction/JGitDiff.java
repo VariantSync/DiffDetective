@@ -32,7 +32,7 @@ public final class JGitDiff {
      * Expects variability to be implemented via C preprocessor in those lines.
      * Uses JGit to diff the two files using the specified {@code options}, and afterwards, creates the variation diff.
      * @param linesBefore State of annotated lines before the change.
-     * @param linesAfter State of annotated lines before the change.
+     * @param linesAfter State of annotated lines after the change.
      * @param algorithm Specification of which algorithm to use for diffing with JGit.
      * @param options various options for parsing
      * @return A variation diff comprising the changes.
