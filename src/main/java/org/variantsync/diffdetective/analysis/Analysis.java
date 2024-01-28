@@ -317,7 +317,8 @@ public class Analysis {
         AnalysisResult result = null;
         try {
             final RevCommit commit = analysis.differ.getCommit(commitHash);
-            result = analysis.processCommits(List.of(commit), analysis.differ);
+            analysis.processCommitBatch(List.of(commit));
+            result = analysis.getResult();
         } catch (Exception e) {
             Logger.error("Failed to analyze {}. Exiting.", commitHash);
             System.exit(1);
@@ -413,7 +414,12 @@ public class Analysis {
                 ),
                 /// 2.) Create a MiningTask for the list of commits. This task will then be processed by one
                 ///     particular thread.
-                commitList -> () -> analysisFactory.get().processCommits(commitList, analysis.differ)
+                commitList -> () -> {
+                    Analysis thisThreadsAnalysis = analysisFactory.get();
+                    thisThreadsAnalysis.differ = analysis.differ;
+                    thisThreadsAnalysis.processCommitBatch(commitList);
+                    return thisThreadsAnalysis.getResult();
+                }
         );
         Logger.info("<<< done in {}", clock.printPassedSeconds());
 
@@ -474,29 +480,11 @@ public class Analysis {
     }
 
     /**
-     * Entry point into a sequential analysis of {@code commits} as one batch.
-     * Same as {@link #processCommits(List, GitDiffer)} with a default {@link GitDiffer}.
+     * Sequential analysis of all {@code commits} as one batch.
      *
      * @param commits the commit batch to be processed
      * @see #forEachCommit
      */
-    public AnalysisResult processCommits(List<RevCommit> commits) throws Exception {
-        return processCommits(commits, new GitDiffer(getRepository()));
-    }
-
-    /**
-     * Entry point into a sequential analysis of {@code commits} as one batch.
-     *
-     * @param commits the commit batch to be processed
-     * @param differ the differ to use
-     * @see #forEachCommit
-     */
-    public AnalysisResult processCommits(List<RevCommit> commits, GitDiffer differ) throws Exception {
-        this.differ = differ;
-        processCommitBatch(commits);
-        return getResult();
-    }
-
     protected void processCommitBatch(List<RevCommit> commits) throws Exception {
         outputFile = outputDir.resolve(commits.get(0).getId().getName());
 
