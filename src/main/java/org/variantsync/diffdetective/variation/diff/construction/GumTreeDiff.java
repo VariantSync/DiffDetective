@@ -1,4 +1,4 @@
-package org.variantsync.diffdetective.variation.diff;
+package org.variantsync.diffdetective.variation.diff.construction;
 
 import com.github.gumtreediff.matchers.MappingStore;
 import com.github.gumtreediff.matchers.Matcher;
@@ -10,6 +10,8 @@ import org.variantsync.diffdetective.gumtree.VariationDiffAdapter;
 import org.variantsync.diffdetective.gumtree.VariationTreeAdapter;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.variation.Label;
+import org.variantsync.diffdetective.variation.diff.DiffNode;
+import org.variantsync.diffdetective.variation.diff.VariationDiff;
 import org.variantsync.diffdetective.variation.diff.source.VariationTreeDiffSource;
 import org.variantsync.diffdetective.variation.diff.traverse.VariationDiffTraversal;
 import org.variantsync.diffdetective.variation.tree.VariationNode;
@@ -25,7 +27,7 @@ import static org.variantsync.diffdetective.variation.diff.DiffType.REM;
 import static org.variantsync.diffdetective.variation.diff.Time.AFTER;
 import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
 
-public class Construction {
+public class GumTreeDiff {
     /**
      * Create a {@link VariationDiff} by matching nodes between {@code before} and {@code after} with the
      * default GumTree matcher.

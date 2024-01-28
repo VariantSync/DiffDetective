@@ -1,5 +1,7 @@
 package org.variantsync.diffdetective.variation.diff;
 
+import org.apache.commons.io.IOUtils;
+import org.eclipse.jgit.diff.DiffAlgorithm;
 import org.tinylog.Logger;
 import org.variantsync.diffdetective.datasets.Repository;
 import org.variantsync.diffdetective.diff.git.CommitDiff;
@@ -12,6 +14,8 @@ import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.Label;
+import org.variantsync.diffdetective.variation.diff.construction.GumTreeDiff;
+import org.variantsync.diffdetective.variation.diff.construction.JGitDiff;
 import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParseOptions;
 import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParser;
 import org.variantsync.diffdetective.variation.diff.source.PatchFile;
@@ -101,15 +105,26 @@ public class VariationDiff<L extends Label> {
      * @throws DiffParseException if {@code diff} couldn't be parsed
      */
     public static VariationDiff<DiffLinesLabel> fromDiff(final String diff, final VariationDiffParseOptions parseOptions) throws DiffParseException {
-        final VariationDiff<DiffLinesLabel> tree = VariationDiffParser.createVariationDiff(diff, parseOptions);
-        tree.setSource(new PatchString(diff));
-        return tree;
+        final VariationDiff<DiffLinesLabel> d;
+        try {
+            d = VariationDiffParser.createVariationDiff(diff, parseOptions);
+        } catch (DiffParseException e) {
+            Logger.error("""
+                            Could not parse diff:
+                            
+                            {}
+                            """,
+                    diff);
+            throw e;
+        }
+        d.setSource(new PatchString(diff));
+        return d;
     }
 
     /**
      * Parses a patch of a Git repository.
      *
-     * Warning: The current implementation ignored {@code patchReference.getParentCommitHash}.
+     * Warning: The current implementation ignores {@code patchReference.getParentCommitHash}.
      * It assumes that it's equal to the first parent of {@code patchReference.getCommitHash}, so
      * it cannot parse patches across multiple commits.
      *
@@ -143,6 +158,48 @@ public class VariationDiff<L extends Label> {
             return Result.Failure(errors);
         }
         return Result.Failure(result.errors());
+    }
+
+    /**
+     * Create a VariationDiff from two given text files.
+     * @see #fromLines(String, String, DiffAlgorithm.SupportedAlgorithm, VariationDiffParseOptions)
+     */
+    public static VariationDiff<DiffLinesLabel> fromFiles(
+            final Path beforeFile,
+            final Path afterFile,
+            DiffAlgorithm.SupportedAlgorithm algorithm,
+            VariationDiffParseOptions options)
+            throws IOException, DiffParseException 
+    {
+        try (BufferedReader b = Files.newBufferedReader(beforeFile);
+             BufferedReader a = Files.newBufferedReader(afterFile)
+        ) {
+            return fromLines(IOUtils.toString(b), IOUtils.toString(a), algorithm, options);
+        }
+    }
+
+    /**
+     * Creates a variation diff from to line-based text inputs.
+     * This method just forwards to:
+     * @see JGitDiff#diff(String, String, DiffAlgorithm.SupportedAlgorithm, VariationDiffParseOptions) 
+     */
+    public static VariationDiff<DiffLinesLabel> fromLines(
+            String before,
+            String after,
+            DiffAlgorithm.SupportedAlgorithm algorithm,
+            VariationDiffParseOptions options) throws IOException, DiffParseException 
+    {
+        return JGitDiff.diff(before, after, algorithm, options);
+    }
+
+    /**
+     * Create a {@link VariationDiff} by matching nodes between {@code before} and {@code after} with the
+     * default GumTree matcher.
+     *
+     * @see GumTreeDiff#diffUsingMatching(VariationTree, VariationTree)  
+     */
+    public static <L extends Label> VariationDiff<L> fromTrees(VariationTree<L> before, VariationTree<L> after) {
+        return GumTreeDiff.diffUsingMatching(before, after);
     }
 
     /**

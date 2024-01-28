@@ -1,5 +1,6 @@
 package org.variantsync.diffdetective.tablegen.styles;
 
+import org.variantsync.diffdetective.analysis.Analysis;
 import org.variantsync.diffdetective.analysis.StatisticsAnalysis;
 import org.variantsync.diffdetective.editclass.EditClass;
 import org.variantsync.diffdetective.editclass.proposed.ProposedEditClasses;
@@ -34,7 +35,7 @@ public class Table1 extends TableDefinition {
         this.columnDefinitions.addAll(List.of(
                 col("Name", LEFT, row -> row.dataset().name()),
                 col("Domain", LEFT, row -> row.dataset().domain()),
-                col("\\#total commits", RIGHT_DASH, row -> makeReadable(row.results().totalCommits)),
+                col("\\#total commits", RIGHT_DASH, row -> makeReadable(row.results().get(Analysis.TotalNumberOfCommitsResult.KEY).value)),
                 col("\\#processed commits", RIGHT, row -> makeReadable(row.get(StatisticsAnalysis.RESULT).processedCommits)),
                 col("\\#diffs", RIGHT, row -> makeReadable(row.get(StatisticsAnalysis.RESULT).processedPatches))
         ));

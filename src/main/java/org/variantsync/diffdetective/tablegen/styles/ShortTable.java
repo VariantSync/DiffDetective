@@ -1,6 +1,7 @@
 package org.variantsync.diffdetective.tablegen.styles;
 
 import org.apache.commons.lang3.function.TriFunction;
+import org.variantsync.diffdetective.analysis.Analysis;
 import org.variantsync.diffdetective.analysis.StatisticsAnalysis;
 import org.variantsync.diffdetective.editclass.EditClass;
 import org.variantsync.diffdetective.editclass.proposed.ProposedEditClasses;
@@ -77,7 +78,7 @@ public class ShortTable extends TableDefinition {
         final List<ColumnDefinition> cols = new ArrayList<>(List.of(
                 col("Name", LEFT, row -> row.dataset().name().toLowerCase(Locale.US)),
                 col("Domain", LEFT_DASH, row -> row.dataset().domain()),
-                col("\\#total\\\\ commits", RIGHT, row -> t.makeReadable(row.results().totalCommits)),
+                col("\\#total\\\\ commits", RIGHT, row -> t.makeReadable(row.results().get(Analysis.TotalNumberOfCommitsResult.KEY).value)),
                 col("\\#processed commits", RIGHT, row -> t.makeReadable(row.get(StatisticsAnalysis.RESULT).processedCommits)),
                 col("\\#diffs", RIGHT, row -> t.makeReadable(row.get(StatisticsAnalysis.RESULT).processedPatches)),
                 col("\\#artifact nodes", RIGHT_DASH, row -> t.makeReadable(row
@@ -149,7 +150,7 @@ public class ShortTable extends TableDefinition {
         final List<Row> res;
 
         if (filtered) {
-            final Comparator<ContentRow> larger = (a, b) -> -Integer.compare(a.results().totalCommits, b.results().totalCommits);
+            final Comparator<ContentRow> larger = (a, b) -> -Integer.compare(a.results().get(Analysis.TotalNumberOfCommitsResult.KEY).value, b.results().get(Analysis.TotalNumberOfCommitsResult.KEY).value);
             res = rows.stream()
                     .sorted(larger)
                     .limit(4)
