@@ -39,8 +39,8 @@ import org.variantsync.functjonal.iteration.MappedIterator;
  * provides access to the current state of the analysis in one thread. Depending on the current
  * {@link Hooks phase} only a subset of the state accessible via getters may be valid.
  *
- * @see forEachRepository
- * @see forEachCommit
+ * @see #forEachRepository
+ * @see #forEachCommit
  * @author Paul Bittner, Benjamin Moosherr
  */
 public class Analysis {
@@ -54,7 +54,7 @@ public class Analysis {
     public static final String TOTAL_RESULTS_FILE_NAME = "totalresult" + EXTENSION;
     /**
      * Default value for <code>commitsToProcessPerThread</code>
-     * @see forEachCommit(Supplier, int, int)
+     * @see #forEachCommit(Supplier, int, int)
      */
     public static final int COMMITS_TO_PROCESS_PER_THREAD_DEFAULT = 1000;
 
@@ -130,7 +130,7 @@ public class Analysis {
 
     /**
      * The results of the analysis. This may be modified by any hook and should be initialized in
-     * {@link Hooks#initializeResults} (e.g. by using {@link append}).
+     * {@link Hooks#initializeResults} (e.g. by using {@link #append}).
      * Always valid.
      */
     public AnalysisResult getResult() {
@@ -138,7 +138,7 @@ public class Analysis {
     }
 
     /**
-     * Convenience getter for {@link AnalysisResult#get} on {@link getResult}.
+     * Convenience getter for {@link AnalysisResult#get} on {@link #getResult}.
      * Always valid.
      */
     public <T extends Metadata<T>> T get(ResultKey<T> resultKey) {
@@ -146,7 +146,7 @@ public class Analysis {
     }
 
     /**
-     * Convenience function for {@link AnalysisResult#append} on {@link getResult}.
+     * Convenience function for {@link AnalysisResult#append} on {@link #getResult}.
      * Always valid.
      */
     public <T extends Metadata<T>> void append(ResultKey<T> resultKey, T value) {
@@ -176,13 +176,13 @@ public class Analysis {
      * end hooks).
      *
      * <p>An analysis implementing {@code Hooks} can perform various actions during each hook. This
-     * includes the {@link append creation} and {@link get modification} of {@link getResult
+     * includes the {@link #append creation} and {@link #get modification} of {@link #getResult
      * analysis results}, modifying their internal state, performing IO operations and throwing
      * exceptions. In contrast, the only analysis state hooks are allowed to modify is the {@link
-     * getResult result} of an {@link Analysis}. All other state (e.g. {@link getCurrentCommit})
+     * #getResult result} of an {@link Analysis}. All other state (e.g. {@link #getCurrentCommit})
      * must not be modified. Care must be taken to avoid the reliance of the internal state on a
-     * specific commit batch being processed as only the {@link getResult results} of each commit
-     * batch are merged and returned by {@link forEachCommit}.
+     * specific commit batch being processed as only the {@link #getResult results} of each commit
+     * batch are merged and returned by {@link #forEachCommit}.
      *
      * <p>Hooks that return a {@code boolean} are called filter hooks and can, in addition to the
      * above, skip any further processing in the current phase (including following inner phases) by
@@ -195,8 +195,8 @@ public class Analysis {
      */
     public interface Hooks {
         /**
-         * Initialization hook for {@link getResult}. All result types should be appended with a
-         * neutral value using {@link append}. No other side effects should be performed during this
+         * Initialization hook for {@link #getResult}. All result types should be appended with a
+         * neutral value using {@link #append}. No other side effects should be performed during this
          * methods as it might be called an arbitrary amount of times.
          */
         default void initializeResults(Analysis analysis) {}
@@ -205,7 +205,7 @@ public class Analysis {
         /**
          * Signals a parsing failure of all patches in the current commit.
          * Called at most once during the commit phase. If this hook is called {@link
-         * onParsedCommit} and the following patch phase invocations are skipped.
+         * #onParsedCommit} and the following patch phase invocations are skipped.
          */
         default void onFailedCommit(Analysis analysis) throws Exception {}
         /**
@@ -232,9 +232,9 @@ public class Analysis {
     /**
      * Runs {@code analyzeRepository} on each repository, skipping repositories where an analysis
      * was already run. This skipping mechanism doesn't distinguish between different analyses as it
-     * only checks for the existence of {@link TOTAL_RESULTS_FILE_NAME}. Delete this file to rerun
+     * only checks for the existence of {@link #TOTAL_RESULTS_FILE_NAME}. Delete this file to rerun
      * the analysis.
-     *
+     * <p>
      * For each repository a directory in {@code outputDir} is passed to {@code analyzeRepository}
      * where the results of the given repository should be written.
      *
@@ -336,8 +336,8 @@ public class Analysis {
     }
 
     /**
-     * Same as {@link forEachCommit(Supplier<Analysis>, int, int)}.
-     * Defaults to {@link COMMITS_TO_PROCESS_PER_THREAD_DEFAULT} and a machine dependent number of
+     * Same as {@link #forEachCommit(Supplier, int, int)}.
+     * Defaults to {@link #COMMITS_TO_PROCESS_PER_THREAD_DEFAULT} and a machine dependent number of
      * {@link Diagnostics#getNumberOfAvailableProcessors}.
      */
     public static AnalysisResult forEachCommit(Supplier<Analysis> analysis) {
@@ -443,10 +443,10 @@ public class Analysis {
 
     /**
      * Entry point into a sequential analysis of {@code commits} as one batch.
-     * Same as {@link processCommits(List<RevCommit>, GitDiffer)} with a default {@link GitDiffer}.
+     * Same as {@link #processCommits(List, GitDiffer)} with a default {@link GitDiffer}.
      *
      * @param commits the commit batch to be processed
-     * @see forEachCommit
+     * @see #forEachCommit
      */
     public AnalysisResult processCommits(List<RevCommit> commits) throws Exception {
         return processCommits(commits, new GitDiffer(getRepository()));
@@ -457,7 +457,7 @@ public class Analysis {
      *
      * @param commits the commit batch to be processed
      * @param differ the differ to use
-     * @see forEachCommit
+     * @see #forEachCommit
      */
     public AnalysisResult processCommits(List<RevCommit> commits, GitDiffer differ) throws Exception {
         this.differ = differ;
@@ -590,7 +590,7 @@ public class Analysis {
 
     /**
      * Exports the given metadata object to a file named according
-     * {@link TOTAL_RESULTS_FILE_NAME} in the given directory.
+     * {@link #TOTAL_RESULTS_FILE_NAME} in the given directory.
      * @param outputDir The directory into which the metadata object file should be written.
      * @param metadata The metadata to serialize
      * @param <T> Type of the metadata.
