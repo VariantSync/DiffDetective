@@ -23,10 +23,7 @@ import org.variantsync.diffdetective.diff.result.CommitDiffResult;
 import org.variantsync.diffdetective.diff.result.DiffError;
 import org.variantsync.diffdetective.metadata.Metadata;
 import org.variantsync.diffdetective.parallel.ScheduledTasksIterator;
-import org.variantsync.diffdetective.util.Assert;
-import org.variantsync.diffdetective.util.Clock;
-import org.variantsync.diffdetective.util.Diagnostics;
-import org.variantsync.diffdetective.util.InvocationCounter;
+import org.variantsync.diffdetective.util.*;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.diff.Time;
 import org.variantsync.diffdetective.variation.diff.VariationDiff;
@@ -495,6 +492,9 @@ public class Analysis {
             }
         } finally {
             runReverseHook(batchHook, Hooks::endBatch);
+
+            // export the thread's result
+            getResult().exportTo(FileUtils.addExtension(outputFile, Analysis.EXTENSION));
         }
     }
 

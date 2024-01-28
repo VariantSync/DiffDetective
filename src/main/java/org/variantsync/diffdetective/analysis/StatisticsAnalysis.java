@@ -183,7 +183,6 @@ public class StatisticsAnalysis implements Analysis.Hooks {
     public void endBatch(Analysis analysis) throws IOException {
         // shutdown; report total time; export results
         analysis.get(RESULT).runtimeInSeconds = totalTime.getPassedSeconds();
-        analysis.get(RESULT).exportTo(FileUtils.addExtension(analysis.getOutputFile(), Analysis.EXTENSION));
         exportCommitTimes(commitTimes, FileUtils.addExtension(analysis.getOutputFile(), COMMIT_TIME_FILE_EXTENSION));
     }
 
