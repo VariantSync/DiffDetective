@@ -69,9 +69,9 @@ public class Analysis {
     protected final Path outputDir;
     protected Path outputFile;
     protected final AnalysisResult result;
-    
+
     /**
-     * The effective runtime in seconds that we have when using multithreading.
+     * The total number of commits in the observed history of the given repository.
      */
     public final static class TotalNumberOfCommitsResult extends SimpleMetadata<Integer, TotalNumberOfCommitsResult> {
         public final static ResultKey<TotalNumberOfCommitsResult> KEY = new ResultKey<>(TotalNumberOfCommitsResult.class.getName());
