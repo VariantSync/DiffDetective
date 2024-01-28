@@ -11,4 +11,8 @@ public record VariationTreeDiffSource(
     VariationTreeSource before,
     VariationTreeSource after
 ) implements VariationDiffSource {
+    @Override
+    public String toString() {
+        return "from trees [" + before + "] and [" + after + "]";
+    }
 }

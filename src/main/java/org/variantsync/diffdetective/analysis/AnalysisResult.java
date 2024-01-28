@@ -38,14 +38,6 @@ public final class AnalysisResult implements Metadata<AnalysisResult> {
      */
     public String repoName = NO_REPO;
     public String taskName;
-    /**
-     * The effective runtime in seconds that we have when using multithreading.
-     */
-    public double runtimeWithMultithreadingInSeconds = 0;
-    /**
-     * The total number of commits in the observed history of the given repository.
-     */
-    public int totalCommits = 0;
     public final MergeMap<DiffError, Integer> diffErrors = new MergeMap<>(new HashMap<>(), Integer::sum);
 
     private final Map<String, Metadata<?>> results = new HashMap<>();
@@ -106,8 +98,6 @@ public final class AnalysisResult implements Metadata<AnalysisResult> {
                     return ar + "; " + br;
                 });
         a.taskName = Metadata.mergeEqual(a.taskName, b.taskName);
-        a.runtimeWithMultithreadingInSeconds += b.runtimeWithMultithreadingInSeconds;
-        a.totalCommits += b.totalCommits;
         a.diffErrors.append(b.diffErrors);
         b.results.forEach((key, value) -> a.unsafeAppend(key, value));
     };
@@ -147,12 +137,11 @@ public final class AnalysisResult implements Metadata<AnalysisResult> {
         LinkedHashMap<String, Object> snap = new LinkedHashMap<>();
         snap.put(MetadataKeys.TASKNAME, taskName);
         snap.put(MetadataKeys.REPONAME, repoName);
-        snap.put(MetadataKeys.RUNTIME_WITH_MULTITHREADING, runtimeWithMultithreadingInSeconds);
-        snap.put(MetadataKeys.TOTAL_COMMITS, totalCommits);
 
         var statistics = get(StatisticsAnalysis.RESULT);
+        var globals    = get(Analysis.TotalNumberOfCommitsResult.KEY);
         if (statistics != null) {
-            snap.put(MetadataKeys.FILTERED_COMMITS, totalCommits - statistics.processedCommits - statistics.emptyCommits - statistics.failedCommits);
+            snap.put(MetadataKeys.FILTERED_COMMITS, globals.value - statistics.processedCommits - statistics.emptyCommits - statistics.failedCommits);
         }
 
         for (var result : results.values()) {
@@ -167,14 +156,6 @@ public final class AnalysisResult implements Metadata<AnalysisResult> {
     public void setFromSnapshot(LinkedHashMap<String, String> snap) {
         repoName = snap.get(MetadataKeys.REPONAME);
         taskName = snap.get(MetadataKeys.TASKNAME);
-
-        String runtime = snap.get(MetadataKeys.RUNTIME_WITH_MULTITHREADING);
-        if (runtime.endsWith("s")) {
-            runtime = runtime.substring(0, runtime.length() - 1);
-        }
-        runtimeWithMultithreadingInSeconds = Double.parseDouble(runtime);
-
-        totalCommits = Integer.parseInt(snap.get(MetadataKeys.TOTAL_COMMITS));
 
         for (var entry : snap.entrySet()) {
             String key = entry.getKey();

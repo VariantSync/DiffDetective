@@ -1,8 +1,7 @@
 package org.variantsync.diffdetective.variation.diff.view;
 
-import org.eclipse.jgit.diff.*;
+import org.eclipse.jgit.diff.DiffAlgorithm;
 import org.tinylog.Logger;
-import org.variantsync.diffdetective.diff.git.GitDiffer;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.experiments.views.Main;
 import org.variantsync.diffdetective.util.Assert;
@@ -11,16 +10,15 @@ import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.Label;
 import org.variantsync.diffdetective.variation.diff.*;
 import org.variantsync.diffdetective.variation.diff.bad.BadVDiff;
-import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParser;
+import org.variantsync.diffdetective.variation.diff.construction.JGitDiff;
 import org.variantsync.diffdetective.variation.tree.VariationTree;
 import org.variantsync.diffdetective.variation.tree.VariationTreeNode;
 import org.variantsync.diffdetective.variation.tree.view.TreeView;
 import org.variantsync.diffdetective.variation.tree.view.relevance.Relevance;
 import org.variantsync.functjonal.Cast;
 
-import java.io.*;
+import java.io.IOException;
 import java.lang.reflect.Array;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.BiPredicate;
 
@@ -72,72 +70,11 @@ public class DiffView {
      * @throws DiffParseException When the text-based diff could not be parsed to a variation diff.
      */
     private static <L extends Label> VariationDiff<DiffLinesLabel> naive(final VariationDiff<L> d, final Relevance rho, final String[] projectionViewText) throws IOException, DiffParseException {
-//        Logger.info("q = " + q);
-        final RawText[] text = new RawText[] {
-                new RawText(projectionViewText[Time.BEFORE.ordinal()].getBytes()),
-                new RawText(projectionViewText[Time.AFTER.ordinal()].getBytes())
-        };
-
-        // MYERS or HISTOGRAM
-        final DiffAlgorithm diffAlgorithm = DiffAlgorithm.getAlgorithm(DiffAlgorithm.SupportedAlgorithm.MYERS);
-        final RawTextComparator comparator = RawTextComparator.DEFAULT;
-        final EditList diff = diffAlgorithm.diff(
-                comparator,
-                text[Time.BEFORE.ordinal()],
-                text[Time.AFTER.ordinal()]
-        );
-
-        String textDiff;
-        {
-            final ByteArrayOutputStream os = new ByteArrayOutputStream();
-
-            /*
-            Using our own formatter without diff headers (paired with a maximum context (?))
-            caused the formatter to crash due to index out of bounds exceptions.
-            So I guess there is a hidden assumption in the DiffFormatter that expects the header
-            to be there.
-
-            As a fix, we also use our own construction of embedding patches into the before file to obtain a full diff.
-             */
-            // final DiffFormatter formatter = makeFormatterWithoutHeader(os);
-            // formatter.setContext(Integer.MAX_VALUE); // FULL DIFF
-            final DiffFormatter formatter = new DiffFormatter(os);
-
-            formatter.setDiffAlgorithm(diffAlgorithm);
-            formatter.setDiffComparator(comparator);
-            formatter.setOldPrefix("");
-            formatter.setNewPrefix("");
-
-            formatter.format(
-                    diff,
-                    text[Time.BEFORE.ordinal()],
-                    text[Time.AFTER.ordinal()]);
-            formatter.flush();
-            textDiff = os.toString(StandardCharsets.UTF_8);
-            formatter.close();
-            os.close();
-
-//            Logger.info("Initial Diff\n" + textDiff);
-
-            textDiff = GitDiffer.getFullDiff(
-                    new BufferedReader(new StringReader(projectionViewText[Time.BEFORE.ordinal()])),
-                    new BufferedReader(new StringReader(textDiff))
-            );
-
-            //textDiff = textDiff.replace("\\ No newline at end of file\n", "");
-            //textDiff = HUNK_HEADER_REGEX.matcher(textDiff).replaceAll("");
-        }
-//        Logger.info("Full Diff\n" + textDiff);
         final VariationDiff<DiffLinesLabel> view;
         try {
-            view = VariationDiffParser.createVariationDiff(textDiff, Main.VARIATION_DIFF_PARSE_OPTIONS);
+            view = JGitDiff.diff(projectionViewText[0], projectionViewText[1], DiffAlgorithm.SupportedAlgorithm.MYERS, Main.VARIATION_DIFF_PARSE_OPTIONS);
         } catch (DiffParseException e) {
-            Logger.error("""
-                            Could not parse diff obtained with query {} at {}:
-                            Diff:
-                            """,
-                    d.getSource(), rho);
-            System.out.println(textDiff);
+            Logger.error("Could not parse diff obtained with query {} at {}", d.getSource(), rho);
             throw e;
         }
         view.setSource(new ViewSource<>(d, rho));

@@ -20,13 +20,9 @@ import org.variantsync.diffdetective.diff.git.CommitDiff;
 import org.variantsync.diffdetective.diff.git.GitDiffer;
 import org.variantsync.diffdetective.diff.git.PatchDiff;
 import org.variantsync.diffdetective.diff.result.CommitDiffResult;
-import org.variantsync.diffdetective.diff.result.DiffError;
 import org.variantsync.diffdetective.metadata.Metadata;
 import org.variantsync.diffdetective.parallel.ScheduledTasksIterator;
-import org.variantsync.diffdetective.util.Assert;
-import org.variantsync.diffdetective.util.Clock;
-import org.variantsync.diffdetective.util.Diagnostics;
-import org.variantsync.diffdetective.util.InvocationCounter;
+import org.variantsync.diffdetective.util.*;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.diff.Time;
 import org.variantsync.diffdetective.variation.diff.VariationDiff;
@@ -42,8 +38,8 @@ import org.variantsync.functjonal.iteration.MappedIterator;
  * provides access to the current state of the analysis in one thread. Depending on the current
  * {@link Hooks phase} only a subset of the state accessible via getters may be valid.
  *
- * @see forEachRepository
- * @see forEachCommit
+ * @see #forEachRepository
+ * @see #forEachCommit
  * @author Paul Bittner, Benjamin Moosherr
  */
 public class Analysis {
@@ -57,7 +53,7 @@ public class Analysis {
     public static final String TOTAL_RESULTS_FILE_NAME = "totalresult" + EXTENSION;
     /**
      * Default value for <code>commitsToProcessPerThread</code>
-     * @see forEachCommit(Supplier, int, int)
+     * @see #forEachCommit(Supplier, int, int)
      */
     public static final int COMMITS_TO_PROCESS_PER_THREAD_DEFAULT = 1000;
 
@@ -73,6 +69,38 @@ public class Analysis {
     protected final Path outputDir;
     protected Path outputFile;
     protected final AnalysisResult result;
+    
+    /**
+     * The effective runtime in seconds that we have when using multithreading.
+     */
+    public final static class TotalNumberOfCommitsResult extends SimpleMetadata<Integer, TotalNumberOfCommitsResult> {
+        public final static ResultKey<TotalNumberOfCommitsResult> KEY = new ResultKey<>(TotalNumberOfCommitsResult.class.getName());
+
+        public TotalNumberOfCommitsResult() {
+            super(
+                    0,
+                    MetadataKeys.TOTAL_COMMITS,
+                    Integer::sum,
+                    Integer::parseInt
+            );
+        }
+    }
+
+    /**
+     * The effective runtime in seconds that we have when using multithreading.
+     */
+    public final static class RuntimeWithMultithreadingResult extends SimpleMetadata<Double, RuntimeWithMultithreadingResult> {
+        public final static ResultKey<RuntimeWithMultithreadingResult> KEY = new ResultKey<>(RuntimeWithMultithreadingResult.class.getName());
+
+        public RuntimeWithMultithreadingResult() {
+            super(
+                    0.0,
+                    MetadataKeys.RUNTIME_WITH_MULTITHREADING,
+                    Double::sum,
+                    Double::parseDouble
+            );
+        }
+    }
 
     /**
      * The repository this analysis is run on.
@@ -133,7 +161,7 @@ public class Analysis {
 
     /**
      * The results of the analysis. This may be modified by any hook and should be initialized in
-     * {@link Hooks#initializeResults} (e.g. by using {@link append}).
+     * {@link Hooks#initializeResults} (e.g. by using {@link #append}).
      * Always valid.
      */
     public AnalysisResult getResult() {
@@ -141,7 +169,7 @@ public class Analysis {
     }
 
     /**
-     * Convenience getter for {@link AnalysisResult#get} on {@link getResult}.
+     * Convenience getter for {@link AnalysisResult#get} on {@link #getResult}.
      * Always valid.
      */
     public <T extends Metadata<T>> T get(ResultKey<T> resultKey) {
@@ -149,7 +177,7 @@ public class Analysis {
     }
 
     /**
-     * Convenience function for {@link AnalysisResult#append} on {@link getResult}.
+     * Convenience function for {@link AnalysisResult#append} on {@link #getResult}.
      * Always valid.
      */
     public <T extends Metadata<T>> void append(ResultKey<T> resultKey, T value) {
@@ -179,13 +207,13 @@ public class Analysis {
      * end hooks).
      *
      * <p>An analysis implementing {@code Hooks} can perform various actions during each hook. This
-     * includes the {@link append creation} and {@link get modification} of {@link getResult
+     * includes the {@link #append creation} and {@link #get modification} of {@link #getResult
      * analysis results}, modifying their internal state, performing IO operations and throwing
      * exceptions. In contrast, the only analysis state hooks are allowed to modify is the {@link
-     * getResult result} of an {@link Analysis}. All other state (e.g. {@link getCurrentCommit})
+     * #getResult result} of an {@link Analysis}. All other state (e.g. {@link #getCurrentCommit})
      * must not be modified. Care must be taken to avoid the reliance of the internal state on a
-     * specific commit batch being processed as only the {@link getResult results} of each commit
-     * batch are merged and returned by {@link forEachCommit}.
+     * specific commit batch being processed as only the {@link #getResult results} of each commit
+     * batch are merged and returned by {@link #forEachCommit}.
      *
      * <p>Hooks that return a {@code boolean} are called filter hooks and can, in addition to the
      * above, skip any further processing in the current phase (including following inner phases) by
@@ -198,8 +226,8 @@ public class Analysis {
      */
     public interface Hooks {
         /**
-         * Initialization hook for {@link getResult}. All result types should be appended with a
-         * neutral value using {@link append}. No other side effects should be performed during this
+         * Initialization hook for {@link #getResult}. All result types should be appended with a
+         * neutral value using {@link #append}. No other side effects should be performed during this
          * methods as it might be called an arbitrary amount of times.
          */
         default void initializeResults(Analysis analysis) {}
@@ -208,7 +236,7 @@ public class Analysis {
         /**
          * Signals a parsing failure of all patches in the current commit.
          * Called at most once during the commit phase. If this hook is called {@link
-         * onParsedCommit} and the following patch phase invocations are skipped.
+         * #onParsedCommit} and the following patch phase invocations are skipped.
          */
         default void onFailedCommit(Analysis analysis) throws Exception {}
         /**
@@ -235,9 +263,9 @@ public class Analysis {
     /**
      * Runs {@code analyzeRepository} on each repository, skipping repositories where an analysis
      * was already run. This skipping mechanism doesn't distinguish between different analyses as it
-     * only checks for the existence of {@link TOTAL_RESULTS_FILE_NAME}. Delete this file to rerun
+     * only checks for the existence of {@link #TOTAL_RESULTS_FILE_NAME}. Delete this file to rerun
      * the analysis.
-     *
+     * <p>
      * For each repository a directory in {@code outputDir} is passed to {@code analyzeRepository}
      * where the results of the given repository should be written.
      *
@@ -289,7 +317,8 @@ public class Analysis {
         AnalysisResult result = null;
         try {
             final RevCommit commit = analysis.differ.getCommit(commitHash);
-            result = analysis.processCommits(List.of(commit), analysis.differ);
+            analysis.processCommitBatch(List.of(commit));
+            result = analysis.getResult();
         } catch (Exception e) {
             Logger.error("Failed to analyze {}. Exiting.", commitHash);
             System.exit(1);
@@ -297,9 +326,8 @@ public class Analysis {
 
         final double runtime = clock.getPassedSeconds();
         Logger.info("<<< done in {}", Clock.printPassedSeconds(runtime));
-
-        result.runtimeWithMultithreadingInSeconds = -1;
-        result.totalCommits = 1;
+        
+        result.get(TotalNumberOfCommitsResult.KEY).value++;
 
         exportMetadata(analysis.getOutputDir(), result);
         return result;
@@ -339,8 +367,8 @@ public class Analysis {
     }
 
     /**
-     * Same as {@link forEachCommit(Supplier<Analysis>, int, int)}.
-     * Defaults to {@link COMMITS_TO_PROCESS_PER_THREAD_DEFAULT} and a machine dependent number of
+     * Same as {@link #forEachCommit(Supplier, int, int)}.
+     * Defaults to {@link #COMMITS_TO_PROCESS_PER_THREAD_DEFAULT} and a machine dependent number of
      * {@link Diagnostics#getNumberOfAvailableProcessors}.
      */
     public static AnalysisResult forEachCommit(Supplier<Analysis> analysis) {
@@ -370,6 +398,7 @@ public class Analysis {
     ) {
         var analysis = analysisFactory.get();
         analysis.differ = new GitDiffer(analysis.getRepository());
+        analysis.result.append(RuntimeWithMultithreadingResult.KEY, new RuntimeWithMultithreadingResult());
 
         final Clock clock = new Clock();
 
@@ -385,7 +414,12 @@ public class Analysis {
                 ),
                 /// 2.) Create a MiningTask for the list of commits. This task will then be processed by one
                 ///     particular thread.
-                commitList -> () -> analysisFactory.get().processCommits(commitList, analysis.differ)
+                commitList -> () -> {
+                    Analysis thisThreadsAnalysis = analysisFactory.get();
+                    thisThreadsAnalysis.differ = analysis.differ;
+                    thisThreadsAnalysis.processCommitBatch(commitList);
+                    return thisThreadsAnalysis.getResult();
+                }
         );
         Logger.info("<<< done in {}", clock.printPassedSeconds());
 
@@ -411,8 +445,8 @@ public class Analysis {
         final double runtime = clock.getPassedSeconds();
         Logger.info("<<< done in {}", Clock.printPassedSeconds(runtime));
 
-        analysis.getResult().runtimeWithMultithreadingInSeconds = runtime;
-        analysis.getResult().totalCommits = numberOfTotalCommits.invocationCount().get();
+        analysis.getResult().get(RuntimeWithMultithreadingResult.KEY).value = runtime;
+//        analysis.getResult().get(TotalNumberOfCommitsResult.KEY).value = numberOfTotalCommits.invocationCount().get();
 
         exportMetadata(analysis.getOutputDir(), analysis.getResult());
         return analysis.getResult();
@@ -435,39 +469,22 @@ public class Analysis {
         this.hooks = hooks;
         this.repository = repository;
         this.outputDir = outputDir;
-        this.result = new AnalysisResult();
-
-        this.result.repoName = repository.getRepositoryName();
+        
+        this.result = new AnalysisResult(repository.getRepositoryName());
         this.result.taskName = taskName;
+        this.result.append(TotalNumberOfCommitsResult.KEY, new TotalNumberOfCommitsResult());
+        
         for (var hook : hooks) {
             hook.initializeResults(this);
         }
     }
 
     /**
-     * Entry point into a sequential analysis of {@code commits} as one batch.
-     * Same as {@link processCommits(List<RevCommit>, GitDiffer)} with a default {@link GitDiffer}.
+     * Sequential analysis of all {@code commits} as one batch.
      *
      * @param commits the commit batch to be processed
-     * @see forEachCommit
+     * @see #forEachCommit
      */
-    public AnalysisResult processCommits(List<RevCommit> commits) throws Exception {
-        return processCommits(commits, new GitDiffer(getRepository()));
-    }
-
-    /**
-     * Entry point into a sequential analysis of {@code commits} as one batch.
-     *
-     * @param commits the commit batch to be processed
-     * @param differ the differ to use
-     * @see forEachCommit
-     */
-    public AnalysisResult processCommits(List<RevCommit> commits, GitDiffer differ) throws Exception {
-        this.differ = differ;
-        processCommitBatch(commits);
-        return getResult();
-    }
-
     protected void processCommitBatch(List<RevCommit> commits) throws Exception {
         outputFile = outputDir.resolve(commits.get(0).getId().getName());
 
@@ -495,6 +512,9 @@ public class Analysis {
             }
         } finally {
             runReverseHook(batchHook, Hooks::endBatch);
+
+            // export the thread's result
+            getResult().exportTo(FileUtils.addExtension(outputFile, Analysis.EXTENSION));
         }
     }
 
@@ -540,6 +560,8 @@ public class Analysis {
                 runReverseHook(patchHook, Hooks::endPatch);
             }
         }
+        
+        getResult().get(TotalNumberOfCommitsResult.KEY).value++;
     }
 
     protected void processPatch() throws Exception {
@@ -590,7 +612,7 @@ public class Analysis {
 
     /**
      * Exports the given metadata object to a file named according
-     * {@link TOTAL_RESULTS_FILE_NAME} in the given directory.
+     * {@link #TOTAL_RESULTS_FILE_NAME} in the given directory.
      * @param outputDir The directory into which the metadata object file should be written.
      * @param metadata The metadata to serialize
      * @param <T> Type of the metadata.

@@ -165,7 +165,7 @@ public class MiningResultAccumulator {
                         "total",
                         "",
                         "--",
-                        ultimateResult.totalCommits + ""
+                        ultimateResult.get(Analysis.TotalNumberOfCommitsResult.KEY).value + ""
                 ),
                 ultimateResult,
                 FindMedianCommitTime.getResultOfDirectory(inputPath)

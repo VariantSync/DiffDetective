@@ -43,8 +43,8 @@ public class VariationDiffApp<L extends Label> extends App {
     public final static int DEFAULT_FONT_SIZE = 30;
     public final static <L extends Label> List<DiffNodeLabelFormat<L>> DEFAULT_FORMATS() {
         return List.of(
-            new PaperNodeFormat<>(),
             new ShowNodeFormat<>(),
+            new PaperNodeFormat<>(),
             new LabelOnlyDiffNodeFormat<>(),
             new EditClassesDiffNodeFormat<>(),
             new LineNumberFormat<>(),

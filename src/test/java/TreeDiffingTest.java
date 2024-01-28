@@ -8,7 +8,7 @@ import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.feature.CPPAnnotationParser;
 import org.variantsync.diffdetective.util.IO;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
-import org.variantsync.diffdetective.variation.diff.Construction;
+import org.variantsync.diffdetective.variation.diff.construction.GumTreeDiff;
 import org.variantsync.diffdetective.variation.diff.VariationDiff;
 import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParseOptions;
 import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParser;
@@ -80,7 +80,7 @@ public class TreeDiffingTest {
         VariationTree<DiffLinesLabel> beforeEdit = parseVariationTree(testCase.beforeEdit());
         VariationTree<DiffLinesLabel> afterEdit = parseVariationTree(testCase.afterEdit());
 
-        VariationDiff<DiffLinesLabel> variationDiff = Construction.diffUsingMatching(beforeEdit, afterEdit);
+        VariationDiff<DiffLinesLabel> variationDiff = GumTreeDiff.diffUsingMatching(beforeEdit, afterEdit);
 
         try (var output = IO.newBufferedOutputStream(testCase.actual())) {
             new LineGraphExporter<>(new Format<>(new FullNodeFormat(), new ChildOrderEdgeFormat<>()))

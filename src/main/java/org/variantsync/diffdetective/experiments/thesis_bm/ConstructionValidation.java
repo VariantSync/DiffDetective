@@ -35,7 +35,7 @@ import org.variantsync.diffdetective.util.Diagnostics;
 import org.variantsync.diffdetective.util.IO;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.Label;
-import org.variantsync.diffdetective.variation.diff.Construction;
+import org.variantsync.diffdetective.variation.diff.construction.GumTreeDiff;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
 import org.variantsync.diffdetective.variation.diff.VariationDiff;
 import org.variantsync.diffdetective.variation.diff.Projection;
@@ -59,8 +59,8 @@ import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
  * This experiment computes the variation diff from
  * <ol>
  * <li>a line matching ({@link VariationDiffParser#createVariationDiff Viegener's algorithm}
- * <li>a tree matching computed by Gumtree ({@link Construction#diffUsingMatching}
- * <li>a hybrid matching ({@link Construction#improveMatching})
+ * <li>a tree matching computed by Gumtree ({@link GumTreeDiff#diffUsingMatching}
+ * <li>a hybrid matching ({@link GumTreeDiff#improveMatching})
  * </ol>
  * compares them using some quality metrics and stores timing statistics.
  *
@@ -291,7 +291,7 @@ public class ConstructionValidation implements Analysis.Hooks {
             afterVariationTree.assertConsistency();
 
             clock.start();
-            final DiffNode<DiffLinesLabel> newVariationDiffRoot = Construction.diffUsingMatching(
+            final DiffNode<DiffLinesLabel> newVariationDiffRoot = GumTreeDiff.diffUsingMatching(
                 beforeVariationTree.getRoot().projection(BEFORE),
                 afterVariationTree.getRoot().projection(AFTER),
                 augmentedMatcher(statistics.variationDiff[1])
@@ -304,7 +304,7 @@ public class ConstructionValidation implements Analysis.Hooks {
             final VariationDiff<DiffLinesLabel> improvedVariationDiff = analysis.getCurrentVariationDiff().deepCopy();
             improvedVariationDiff.assertConsistency();
             clock.start();
-            Construction.improveMatching(improvedVariationDiff.getRoot(), augmentedMatcher(statistics.variationDiff[2]));
+            GumTreeDiff.improveMatching(improvedVariationDiff.getRoot(), augmentedMatcher(statistics.variationDiff[2]));
             statistics.variationDiff[2].constructionDuration += clock.getPassedMilliseconds() - statistics.variationDiff[2].matchingDuration;
             improvedVariationDiff.assertConsistency();
 
