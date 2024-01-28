@@ -21,7 +21,7 @@ public class StatisticsAnalysis implements Analysis.Hooks {
 
     /**
      * Invariant:
-     * {@link Result#emptyCommits} + {@link Result#failedCommits} + {@link Result#processedCommits} - {@link FilterAnalysis filteredCommits} = {@link AnalysisResult#totalCommits}
+     * {@link Result#emptyCommits} + {@link Result#failedCommits} + {@link Result#processedCommits} - {@link FilterAnalysis filteredCommits} = {@link Analysis.TotalNumberOfCommitsResult#value}
      */
     public static final class Result implements Metadata<Result> {
         /**

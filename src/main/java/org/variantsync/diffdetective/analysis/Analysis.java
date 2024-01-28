@@ -20,7 +20,6 @@ import org.variantsync.diffdetective.diff.git.CommitDiff;
 import org.variantsync.diffdetective.diff.git.GitDiffer;
 import org.variantsync.diffdetective.diff.git.PatchDiff;
 import org.variantsync.diffdetective.diff.result.CommitDiffResult;
-import org.variantsync.diffdetective.diff.result.DiffError;
 import org.variantsync.diffdetective.metadata.Metadata;
 import org.variantsync.diffdetective.parallel.ScheduledTasksIterator;
 import org.variantsync.diffdetective.util.*;
@@ -70,6 +69,38 @@ public class Analysis {
     protected final Path outputDir;
     protected Path outputFile;
     protected final AnalysisResult result;
+    
+    /**
+     * The effective runtime in seconds that we have when using multithreading.
+     */
+    public final static class TotalNumberOfCommitsResult extends SimpleMetadata<Integer, TotalNumberOfCommitsResult> {
+        public final static ResultKey<TotalNumberOfCommitsResult> KEY = new ResultKey<>(TotalNumberOfCommitsResult.class.getName());
+
+        public TotalNumberOfCommitsResult() {
+            super(
+                    0,
+                    MetadataKeys.TOTAL_COMMITS,
+                    Integer::sum,
+                    Integer::parseInt
+            );
+        }
+    }
+
+    /**
+     * The effective runtime in seconds that we have when using multithreading.
+     */
+    public final static class RuntimeWithMultithreadingResult extends SimpleMetadata<Double, RuntimeWithMultithreadingResult> {
+        public final static ResultKey<RuntimeWithMultithreadingResult> KEY = new ResultKey<>(RuntimeWithMultithreadingResult.class.getName());
+
+        public RuntimeWithMultithreadingResult() {
+            super(
+                    0.0,
+                    MetadataKeys.RUNTIME_WITH_MULTITHREADING,
+                    Double::sum,
+                    Double::parseDouble
+            );
+        }
+    }
 
     /**
      * The repository this analysis is run on.
@@ -294,9 +325,8 @@ public class Analysis {
 
         final double runtime = clock.getPassedSeconds();
         Logger.info("<<< done in {}", Clock.printPassedSeconds(runtime));
-
-        result.runtimeWithMultithreadingInSeconds = -1;
-        result.totalCommits = 1;
+        
+        result.get(TotalNumberOfCommitsResult.KEY).value++;
 
         exportMetadata(analysis.getOutputDir(), result);
         return result;
@@ -367,6 +397,7 @@ public class Analysis {
     ) {
         var analysis = analysisFactory.get();
         analysis.differ = new GitDiffer(analysis.getRepository());
+        analysis.result.append(RuntimeWithMultithreadingResult.KEY, new RuntimeWithMultithreadingResult());
 
         final Clock clock = new Clock();
 
@@ -408,8 +439,8 @@ public class Analysis {
         final double runtime = clock.getPassedSeconds();
         Logger.info("<<< done in {}", Clock.printPassedSeconds(runtime));
 
-        analysis.getResult().runtimeWithMultithreadingInSeconds = runtime;
-        analysis.getResult().totalCommits = numberOfTotalCommits.invocationCount().get();
+        analysis.getResult().get(RuntimeWithMultithreadingResult.KEY).value = runtime;
+//        analysis.getResult().get(TotalNumberOfCommitsResult.KEY).value = numberOfTotalCommits.invocationCount().get();
 
         exportMetadata(analysis.getOutputDir(), analysis.getResult());
         return analysis.getResult();
@@ -432,10 +463,11 @@ public class Analysis {
         this.hooks = hooks;
         this.repository = repository;
         this.outputDir = outputDir;
-        this.result = new AnalysisResult();
-
-        this.result.repoName = repository.getRepositoryName();
+        
+        this.result = new AnalysisResult(repository.getRepositoryName());
         this.result.taskName = taskName;
+        this.result.append(TotalNumberOfCommitsResult.KEY, new TotalNumberOfCommitsResult());
+        
         for (var hook : hooks) {
             hook.initializeResults(this);
         }
@@ -540,6 +572,8 @@ public class Analysis {
                 runReverseHook(patchHook, Hooks::endPatch);
             }
         }
+        
+        getResult().get(TotalNumberOfCommitsResult.KEY).value++;
     }
 
     protected void processPatch() throws Exception {
