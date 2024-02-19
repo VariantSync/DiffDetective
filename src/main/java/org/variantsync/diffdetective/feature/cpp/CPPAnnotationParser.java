@@ -88,8 +88,9 @@ public class CPPAnnotationParser implements AnnotationParser {
     @Override
     public AnnotationType determineAnnotationType(String text) {
         var matcher = ANNOTATION.matcher(text);
+        int nameId = 1;
         if (matcher.find()) {
-            return AnnotationType.fromName(matcher.group(0));
+            return AnnotationType.fromName(matcher.group(nameId));
         } else {
             return AnnotationType.None;
         }
