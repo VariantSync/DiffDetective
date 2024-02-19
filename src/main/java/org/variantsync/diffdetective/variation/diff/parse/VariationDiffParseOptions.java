@@ -1,7 +1,7 @@
 package org.variantsync.diffdetective.variation.diff.parse;
 
 import org.variantsync.diffdetective.feature.AnnotationParser;
-import org.variantsync.diffdetective.feature.CPPAnnotationParser;
+import org.variantsync.diffdetective.feature.cpp.CPPAnnotationParser;
 
 /**
  * Parse options that should be used when parsing {@link org.variantsync.diffdetective.variation.diff.VariationDiff}s.

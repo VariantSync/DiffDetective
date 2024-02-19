@@ -1,12 +1,12 @@
-package org.variantsync.diffdetective.feature;
+package org.variantsync.diffdetective.feature.cpp;
 
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.atn.ATNConfigSet;
 import org.antlr.v4.runtime.dfa.DFA;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.tinylog.Logger;
-import org.variantsync.diffdetective.error.UnparseableFormulaException;
 import org.variantsync.diffdetective.error.UncheckedUnParseableFormulaException;
+import org.variantsync.diffdetective.error.UnparseableFormulaException;
 import org.variantsync.diffdetective.feature.antlr.CExpressionLexer;
 import org.variantsync.diffdetective.feature.antlr.CExpressionParser;
 
@@ -21,6 +21,7 @@ import java.util.regex.Pattern;
  * "A || B". The extractor detects if, ifdef, ifndef and elif annotations.
  * (Other annotations do not have expressions.)
  * The given pre-processor statement might also a line in a diff (i.e., preceeded by a - or +).
+ *
  * @author Paul Bittner, Sören Viegener, Benjamin Moosherr
  */
 public class CPPDiffLineFormulaExtractor {
@@ -33,6 +34,7 @@ public class CPPDiffLineFormulaExtractor {
      * For example, in {@link org.variantsync.diffdetective.datasets.predefined.MarlinCPPDiffLineFormulaExtractor Marlin},
      * feature annotations are given by the custom <code>ENABLED</code> and <code>DISABLED</code> macros,
      * which have to be unwrapped.
+     *
      * @param formula The formula whose feature macros to resolve.
      * @return The parseable formula as string. The default implementation returns the input string.
      */
@@ -42,13 +44,14 @@ public class CPPDiffLineFormulaExtractor {
 
     /**
      * Extracts the feature formula as a string from a macro line (possibly within a diff).
+     *
      * @param line The line of which to get the feature mapping
      * @return The feature mapping as a String of the given line
      */
     public String extractFormula(final String line) throws UnparseableFormulaException {
         final Matcher matcher = CPP_ANNOTATION_REGEX_PATTERN.matcher(line);
         final Supplier<UnparseableFormulaException> couldNotExtractFormula = () ->
-               new UnparseableFormulaException("Could not extract formula from line \""+ line + "\".");
+                new UnparseableFormulaException("Could not extract formula from line \"" + line + "\".");
 
         // Retrieve the formula from the macro line
         String fm;
@@ -91,7 +94,8 @@ public class CPPDiffLineFormulaExtractor {
      * The visitor traverses the tree starting from the root, searching for subtrees that must be abstracted.
      * If such a subtree is found, the visitor calls an {@link AbstractingCExpressionVisitor} to abstract the part of
      * the formula in the subtree.
-     *  </p>
+     * </p>
+     *
      * @param formula that is to be abstracted
      * @return the abstracted formula
      */

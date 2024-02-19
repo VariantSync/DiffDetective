@@ -1,8 +1,11 @@
-package org.variantsync.diffdetective.feature;
+package org.variantsync.diffdetective.feature.cpp;
 
 import org.prop4j.Literal;
 import org.prop4j.Node;
 import org.variantsync.diffdetective.error.UnparseableFormulaException;
+import org.variantsync.diffdetective.feature.AnnotationParser;
+import org.variantsync.diffdetective.feature.AnnotationType;
+import org.variantsync.diffdetective.feature.PropositionalFormulaParser;
 
 import java.util.regex.Pattern;
 

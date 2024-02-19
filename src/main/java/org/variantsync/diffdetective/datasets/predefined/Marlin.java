@@ -2,8 +2,8 @@ package org.variantsync.diffdetective.datasets.predefined;
 
 import org.variantsync.diffdetective.datasets.PatchDiffParseOptions;
 import org.variantsync.diffdetective.datasets.Repository;
-import org.variantsync.diffdetective.feature.CPPAnnotationParser;
 import org.variantsync.diffdetective.feature.PropositionalFormulaParser;
+import org.variantsync.diffdetective.feature.cpp.CPPAnnotationParser;
 
 import java.nio.file.Path;
 
@@ -14,13 +14,14 @@ import java.nio.file.Path;
  */
 public class Marlin {
     public static final CPPAnnotationParser ANNOTATION_PARSER =
-        new CPPAnnotationParser(
-            PropositionalFormulaParser.Default,
-            new MarlinCPPDiffLineFormulaExtractor()
-        );
+            new CPPAnnotationParser(
+                    PropositionalFormulaParser.Default,
+                    new MarlinCPPDiffLineFormulaExtractor()
+            );
 
     /**
      * Clones Marlin from Github.
+     *
      * @param localDir Directory to clone the repository to.
      * @return Marlin repository
      */

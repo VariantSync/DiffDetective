@@ -1,12 +1,13 @@
 package org.variantsync.diffdetective.datasets;
 
-import org.variantsync.diffdetective.feature.CPPAnnotationParser;
+import org.variantsync.diffdetective.feature.cpp.CPPAnnotationParser;
 import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParseOptions;
 
 /**
  * Parse options that should be used when parsing commits and patches within a commit history.
- * @param diffStoragePolicy Decides if and how unix diffs should be remembered in a parsed
- *                          {@link org.variantsync.diffdetective.diff.git.PatchDiff} when parsing commits.
+ *
+ * @param diffStoragePolicy         Decides if and how unix diffs should be remembered in a parsed
+ *                                  {@link org.variantsync.diffdetective.diff.git.PatchDiff} when parsing commits.
  * @param variationDiffParseOptions Options for parsing a patch to a {@link
  *                                  org.variantsync.diffdetective.variation.diff.VariationDiff}. For
  *                                  more information, see {@link VariationDiffParseOptions}.

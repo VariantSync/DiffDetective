@@ -5,18 +5,18 @@ import org.variantsync.diffdetective.datasets.PatchDiffParseOptions;
 import org.variantsync.diffdetective.datasets.Repository;
 import org.variantsync.diffdetective.diff.git.PatchDiff;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
-import org.variantsync.diffdetective.feature.CPPAnnotationParser;
-import org.variantsync.diffdetective.mining.VariationDiffMiner;
+import org.variantsync.diffdetective.feature.cpp.CPPAnnotationParser;
 import org.variantsync.diffdetective.mining.RWCompositePatternNodeFormat;
 import org.variantsync.diffdetective.mining.RWCompositePatternTreeFormat;
+import org.variantsync.diffdetective.mining.VariationDiffMiner;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.util.FileUtils;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.diff.VariationDiff;
 import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParseOptions;
 import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParser;
-import org.variantsync.diffdetective.variation.diff.render.VariationDiffRenderer;
 import org.variantsync.diffdetective.variation.diff.render.RenderOptions;
+import org.variantsync.diffdetective.variation.diff.render.VariationDiffRenderer;
 import org.variantsync.diffdetective.variation.diff.serialize.nodeformat.MappingsDiffNodeFormat;
 import org.variantsync.diffdetective.variation.diff.transform.VariationDiffTransformer;
 
@@ -33,6 +33,7 @@ import java.util.function.Function;
  * directory.
  * This class is mostly used for debuggin purposes within DiffDetective and
  * contains mostly quick-and-dirty hardcoded configuration options.
+ *
  * @author Paul Bittner
  */
 public class SimpleRenderer {
@@ -41,9 +42,9 @@ public class SimpleRenderer {
 //            .setNodeFormat(new ReleaseMiningDiffNodeFormat()),
             .setNodeFormat(new MappingsDiffNodeFormat<>())
             .setDpi(RenderOptions.DEFAULT().dpi() / 2)
-            .setNodesize(3*RenderOptions.DEFAULT().nodesize())
-            .setEdgesize(2*RenderOptions.DEFAULT().edgesize())
-            .setArrowsize(2*RenderOptions.DEFAULT().arrowsize())
+            .setNodesize(3 * RenderOptions.DEFAULT().nodesize())
+            .setEdgesize(2 * RenderOptions.DEFAULT().edgesize())
+            .setArrowsize(2 * RenderOptions.DEFAULT().arrowsize())
             .setFontsize(8)
 //            .addExtraArguments("--format", "patternsrelease")
             .setCleanUpTemporaryFiles(false)
@@ -63,18 +64,18 @@ public class SimpleRenderer {
 
     private static final RenderOptions<DiffLinesLabel> renderExampleOptions = new RenderOptions.Builder<DiffLinesLabel>()
             .setTreeFormat(new RWCompositePatternTreeFormat())
-            .setNodesize(3*RenderOptions.DEFAULT().nodesize())
-            .setEdgesize(2*RenderOptions.DEFAULT().edgesize())
-            .setArrowsize(2*RenderOptions.DEFAULT().arrowsize())
+            .setNodesize(3 * RenderOptions.DEFAULT().nodesize())
+            .setEdgesize(2 * RenderOptions.DEFAULT().edgesize())
+            .setArrowsize(2 * RenderOptions.DEFAULT().arrowsize())
             .setFontsize(8)
             .addExtraArguments("--startlineno", "4201")
             .build();
 
     private static final RenderOptions<DiffLinesLabel> renderCompositePatterns = new RenderOptions.Builder<DiffLinesLabel>()
-            .setNodesize(3*RenderOptions.DEFAULT().nodesize())
-            .setEdgesize(2*RenderOptions.DEFAULT().edgesize())
-            .setArrowsize(2*RenderOptions.DEFAULT().arrowsize())
-            .setFontsize(2*RenderOptions.DEFAULT().fontsize())
+            .setNodesize(3 * RenderOptions.DEFAULT().nodesize())
+            .setEdgesize(2 * RenderOptions.DEFAULT().edgesize())
+            .setArrowsize(2 * RenderOptions.DEFAULT().arrowsize())
+            .setFontsize(2 * RenderOptions.DEFAULT().fontsize())
             .setTreeFormat(new RWCompositePatternTreeFormat())
             .setNodeFormat(new RWCompositePatternNodeFormat())
             .setCleanUpTemporaryFiles(true)
@@ -89,8 +90,7 @@ public class SimpleRenderer {
 
     private final static Function<Path, Path> GetRelativeOutputDir =
 //            Path::getParent
-            p -> p.getParent().resolve("render")
-            ;
+            p -> p.getParent().resolve("render");
 
     private static void render(final Path fileToRender) {
         if (FileUtils.isLineGraph(fileToRender)) {
@@ -125,9 +125,10 @@ public class SimpleRenderer {
      * Expects one of the following argument configurations.
      * 1.) For rendering files: Exactly one argument pointing to a file or directory to render.
      * 2.) For rendering patches: Exactly three arguments.
-     *     The first argument is the path to a local directory from which a patch should be analyzed.
-     *     The second argument is a commit hash.
-     *     The third argument is the file name of the patched file in the given commit.
+     * The first argument is the path to a local directory from which a patch should be analyzed.
+     * The second argument is a commit hash.
+     * The third argument is the file name of the patched file in the given commit.
+     *
      * @param args See above
      * @throws IOException when reading a file fails.
      */
