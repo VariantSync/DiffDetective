@@ -2,7 +2,7 @@ grammar JPPExpression;
 // A grammar for the JavaPreprocessor
 // https://www.slashdev.ca/javapp/
 
-jppExpression
+expression
     :   logicalOrExpression
     ;
 
@@ -11,10 +11,10 @@ logicalOrExpression
     ;
 
 logicalAndExpression
-    :   expression (AND expression)*
+    :   primaryExpression (AND primaryExpression)*
     ;
 
-expression
+primaryExpression
     :   definedExpression
     |   undefinedExpression
     |   comparisonExpression
