@@ -5,7 +5,7 @@ import org.variantsync.diffdetective.error.UnparseableFormulaException;
 
 public interface AnnotationParser {
     /**
-     * Determine the annotation type for the given piece of text.
+     * Determine the annotation type for the given piece of text (typically a line of source code).
      *
      * @param text The text of which the type is determined.
      * @return The annotation type of the piece of text.
@@ -13,7 +13,7 @@ public interface AnnotationParser {
     AnnotationType determineAnnotationType(String text);
 
     /**
-     * Parse the condition of the given text containing an annotation.
+     * Parse the condition of the given text containing an annotation (typically a line of source code).
      *
      * @param text The text containing a conditional annotation
      * @return The formula of the condition in the given annotation.
