@@ -1,5 +1,6 @@
 package org.variantsync.diffdetective.feature;
 
+import org.prop4j.Literal;
 import org.prop4j.Node;
 import org.prop4j.NodeReader;
 import org.variantsync.diffdetective.util.fide.FixTrueFalse;
@@ -34,6 +35,11 @@ public interface PropositionalFormulaParser {
             //       If so, should we document it by not using get here
             //       and instead keeping the witness that this call happened?
             node = FixTrueFalse.EliminateTrueAndFalseInplace(node).get();
+        }
+
+        if (node == null) {
+//            Logger.warn("Could not parse expression '{}' to feature mapping. Using it as literal.", fmString);
+            node = new Literal(text);
         }
 
         return node;

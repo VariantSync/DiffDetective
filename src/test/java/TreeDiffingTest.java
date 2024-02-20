@@ -4,7 +4,7 @@ import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
-import org.variantsync.diffdetective.feature.cpp.CPPAnnotationParser;
+import org.variantsync.diffdetective.feature.PreprocessorAnnotationParser;
 import org.variantsync.diffdetective.util.IO;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.diff.VariationDiff;
@@ -117,7 +117,7 @@ public class TreeDiffingTest {
                     VariationDiffParser.createVariationTree(
                             file,
                             new VariationDiffParseOptions(
-                                    CPPAnnotationParser.Default,
+                                    PreprocessorAnnotationParser.CPPAnnotationParser,
                                     false,
                                     false)
                     ).getRoot().projection(BEFORE).toVariationTree(),

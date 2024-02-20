@@ -5,7 +5,7 @@ import org.variantsync.diffdetective.datasets.PatchDiffParseOptions;
 import org.variantsync.diffdetective.datasets.Repository;
 import org.variantsync.diffdetective.diff.git.PatchDiff;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
-import org.variantsync.diffdetective.feature.cpp.CPPAnnotationParser;
+import org.variantsync.diffdetective.feature.PreprocessorAnnotationParser;
 import org.variantsync.diffdetective.mining.RWCompositePatternNodeFormat;
 import org.variantsync.diffdetective.mining.RWCompositePatternTreeFormat;
 import org.variantsync.diffdetective.mining.VariationDiffMiner;
@@ -102,7 +102,7 @@ public class SimpleRenderer {
             try {
                 t = VariationDiff.fromFile(fileToRender,
                         new VariationDiffParseOptions(
-                                CPPAnnotationParser.Default, collapseMultipleCodeLines, ignoreEmptyLines
+                                PreprocessorAnnotationParser.CPPAnnotationParser, collapseMultipleCodeLines, ignoreEmptyLines
                         ));
             } catch (IOException | DiffParseException e) {
                 Logger.error(e, "Could not read given file '{}'", fileToRender);

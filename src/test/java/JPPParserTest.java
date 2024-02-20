@@ -1,8 +1,12 @@
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.variantsync.diffdetective.error.UnparseableFormulaException;
+import org.variantsync.diffdetective.feature.jpp.JPPDiffLineFormulaExtractor;
 
 import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 // Test cases for a parser of https://www.slashdev.ca/javapp/
 public class JPPParserTest {
@@ -70,17 +74,18 @@ public class JPPParserTest {
     @ParameterizedTest
     @MethodSource("testCases")
     public void testCase(JPPParserTest.TestCase testCase) throws UnparseableFormulaException {
-//        assertEquals(
-//                testCase.expected,
-//                // TODO:
-//        );
+        assertEquals(
+                testCase.expected,
+                new JPPDiffLineFormulaExtractor().extractFormula(testCase.formula())
+        );
     }
 
     @ParameterizedTest
     @MethodSource("throwingTestCases")
     public void throwingTestCase(JPPParserTest.ThrowingTestCase testCase) {
-        //  assertThrows(UnparseableFormulaException.class, () -> //TODO
-        //  );
+        assertThrows(UnparseableFormulaException.class, () ->
+                new JPPDiffLineFormulaExtractor().extractFormula(testCase.formula)
+        );
     }
 
 }
