@@ -17,12 +17,14 @@ public enum NodeType {
     ARTIFACT("artifact");
 
     public final String name;
+
     NodeType(String name) {
         this.name = name;
     }
 
     /**
-     * Returns true iff this node type represents a conditional feature annotation (i.e., if or elif).
+     * Returns true iff this node type represents a conditional feature annotation
+     * (i.e., if or elif).
      */
     public boolean isConditionalAnnotation() {
         return this == IF || this == ELIF;
@@ -37,8 +39,10 @@ public enum NodeType {
 
     /**
      * Creates a NodeType from its value names.
+     * 
      * @see Enum#name()
-     * @param name a string that equals the name of one value of this enum (ignoring case)
+     * @param name a string that equals the name of one value of this enum (ignoring
+     *             case)
      * @return The NodeType that has the given name
      */
     public static NodeType fromName(final String name) {
@@ -50,6 +54,8 @@ public enum NodeType {
 
         throw new IllegalArgumentException("Given string \"" + name + "\" is not the name of a NodeType.");
     }
+
+    // TODO: fromAnnotationType constructor with switch case
 
     /**
      * Returns the number of bits required for storing {@link ordinal}.
