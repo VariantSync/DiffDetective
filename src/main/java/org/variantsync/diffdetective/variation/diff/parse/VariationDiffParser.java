@@ -325,12 +325,7 @@ public class VariationDiffParser {
             lastArtifact.setToLine(toLine);
         } else {
             try {
-                NodeType nodeType;
-                if (annotationType == AnnotationType.None) {
-                    nodeType = NodeType.ARTIFACT;
-                } else {
-                    nodeType = NodeType.fromName(annotationType.name);
-                }
+                NodeType nodeType = NodeType.fromAnnotationType(annotationType);
 
                 DiffNode<DiffLinesLabel> newNode = new DiffNode<DiffLinesLabel>(
                         diffType,
