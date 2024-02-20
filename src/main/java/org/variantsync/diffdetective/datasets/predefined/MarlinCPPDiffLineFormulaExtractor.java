@@ -16,7 +16,7 @@ public class MarlinCPPDiffLineFormulaExtractor extends CPPDiffLineFormulaExtract
     private static final Pattern DISABLED_PATTERN = Pattern.compile("DISABLED\\s*\\(([^)]*)\\)");
 
     @Override
-    protected String resolveFeatureMacroFunctions(String formula) {
+    public String resolveFeatureMacroFunctions(String formula) {
         return
                 replaceAll(ENABLED_PATTERN, "$1",
                         replaceAll(DISABLED_PATTERN, "!($1)",
