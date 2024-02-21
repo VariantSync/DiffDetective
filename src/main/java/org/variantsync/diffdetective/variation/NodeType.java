@@ -2,7 +2,7 @@ package org.variantsync.diffdetective.variation;
 
 import org.variantsync.diffdetective.feature.AnnotationType;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
-import org.variantsync.diffdetective.variation.tree.VariationNode;
+import org.variantsync.diffdetective.variation.tree.VariationNode; // For Javadoc
 
 /**
  * The type of nodes of a {@link DiffNode} and a {@link VariationNode}.
