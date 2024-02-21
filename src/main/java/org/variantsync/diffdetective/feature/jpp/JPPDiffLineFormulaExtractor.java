@@ -12,7 +12,7 @@ import java.util.regex.Pattern;
 
 /**
  * Extracts the expression from a <a href="https://www.slashdev.ca/javapp/">JavaPP (Java PreProcessor)</a> statement .
- * For example, given the annotation "//#if defined(A) || B()", the extractor would extract "A || B".
+ * For example, given the annotation "//#if defined(A) || B()", the extractor would extract "DEFINED_A || B".
  * The extractor detects if and elif annotations (other annotations do not have expressions).
  * The given JPP statement might also be a line in a diff (i.e., preceeded by a - or +).
  *
