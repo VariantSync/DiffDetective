@@ -34,18 +34,26 @@ import java.util.Stack;
  * Note: Weird line continuations and comments can cause misidentification of conditional macros.
  * The following examples are all correct according to the C11 standard: (comment end is marked by
  * {@code *\/}):
+ *
+ * <p>
  * <code>
  * /*
  * #ifdef A
  * *\/
+ * </code>
  * <p>
+ * <code>
  * #ifdef /*
  * *\/ A
  * #endif
+ * </code>
  * <p>
+ * <code>
  * # /**\/ ifdef
  * #endif
+ * </code>
  * <p>
+ * <code>
  * # \
  * ifdef
  * #endif
