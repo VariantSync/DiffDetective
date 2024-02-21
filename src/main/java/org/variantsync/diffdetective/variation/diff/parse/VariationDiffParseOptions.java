@@ -6,7 +6,7 @@ import org.variantsync.diffdetective.feature.PreprocessorAnnotationParser;
 /**
  * Parse options that should be used when parsing {@link org.variantsync.diffdetective.variation.diff.VariationDiff}s.
  *
- * @param annotationParser          A parser for parsing c preprocessor annotations.
+ * @param annotationParser          A parser for parsing annotations.
  * @param collapseMultipleCodeLines Whether multiple consecutive code lines with the same diff
  *                                  type should be collapsed into a single artifact node.
  * @param ignoreEmptyLines          Whether to add {@code DiffNode}s for empty lines (regardless of their {@code DiffType}).
@@ -37,7 +37,7 @@ public record VariationDiffParseOptions(
     /**
      * Creates VariationDiffParseOptions with the given annotation parser.
      */
-    public VariationDiffParseOptions withAnnotationParser(PreprocessorAnnotationParser annotationParser) {
+    public VariationDiffParseOptions withAnnotationParser(AnnotationParser annotationParser) {
         return new VariationDiffParseOptions(
                 annotationParser,
                 this.collapseMultipleCodeLines(),

@@ -1,6 +1,6 @@
 package org.variantsync.diffdetective.datasets;
 
-import org.variantsync.diffdetective.feature.PreprocessorAnnotationParser;
+import org.variantsync.diffdetective.feature.AnnotationParser;
 import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParseOptions;
 
 /**
@@ -27,7 +27,7 @@ public record PatchDiffParseOptions(
     /**
      * Creates PatchDiffParseOptions with the given annotation parser.
      */
-    public PatchDiffParseOptions withAnnotationParser(PreprocessorAnnotationParser annotationParser) {
+    public PatchDiffParseOptions withAnnotationParser(AnnotationParser annotationParser) {
         return new PatchDiffParseOptions(
                 this.diffStoragePolicy(),
                 this.variationDiffParseOptions().withAnnotationParser(annotationParser)
