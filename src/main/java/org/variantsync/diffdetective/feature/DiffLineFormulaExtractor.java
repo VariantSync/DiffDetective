@@ -3,17 +3,20 @@ package org.variantsync.diffdetective.feature;
 import org.variantsync.diffdetective.error.UnparseableFormulaException;
 
 /**
- * Extracts the expression from a C preprocessor statement.
- * For example, given the annotation "#if defined(A) || B()", the extractor would extract
- * "A || B". The extractor detects if, ifdef, ifndef and elif annotations.
- * (Other annotations do not have expressions.)
- * The given pre-processor statement might also a line in a diff (i.e., preceeded by a - or +).
+ * Interface for extracting a formula from a line containing an annotation.
+ * The line might be preceded by a '-', '+', or ' '.
+ * For example, given the line "+#if defined(A) || B()", the extractor should extract "defined(A) || B".
+ *
+ * <p>
+ * Further alterations of the extracted formula are allowed. For instance, the extracted formula might be abstracted
+ * (e.g., by simplifying the call to "defined(A)" leaving only the argument "A", or substituting it with "DEFINED_A").
+ * </p>
  *
  * @author Paul Bittner, Sören Viegener, Benjamin Moosherr, Alexander Schultheiß
  */
 public interface DiffLineFormulaExtractor {
     /**
-     * Extracts the feature formula as a string from a macro line (possibly within a diff).
+     * Extracts the feature formula as a string from a line (possibly within a diff).
      *
      * @param line The line of which to get the feature mapping
      * @return The feature mapping as a String of the given line
