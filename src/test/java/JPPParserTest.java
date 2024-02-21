@@ -1,12 +1,28 @@
+import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.error.UnparseableFormulaException;
+import org.variantsync.diffdetective.feature.PreprocessorAnnotationParser;
 import org.variantsync.diffdetective.feature.jpp.JPPDiffLineFormulaExtractor;
+import org.variantsync.diffdetective.util.IO;
+import org.variantsync.diffdetective.variation.DiffLinesLabel;
+import org.variantsync.diffdetective.variation.diff.VariationDiff;
+import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParseOptions;
+import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParser;
+import org.variantsync.diffdetective.variation.diff.serialize.Format;
+import org.variantsync.diffdetective.variation.diff.serialize.LineGraphExporter;
+import org.variantsync.diffdetective.variation.diff.serialize.edgeformat.ChildOrderEdgeFormat;
+import org.variantsync.diffdetective.variation.diff.serialize.nodeformat.FullNodeFormat;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.variantsync.diffdetective.util.Assert.fail;
 
 // Test cases for a parser of https://www.slashdev.ca/javapp/
 public class JPPParserTest {
@@ -71,12 +87,19 @@ public class JPPParserTest {
         );
     }
 
+    private static List<JPPParserTest.TestCase<Path, Path>> fullDiffTests() {
+        final Path basePath = Path.of("src", "test", "resources", "diffs", "jpp");
+        return List.of(
+                new JPPParserTest.TestCase<>(basePath.resolve("basic_jpp.diff"), basePath.resolve("basic_jpp_expected.lg"))
+        );
+    }
+
     @ParameterizedTest
     @MethodSource("abstractionTests")
-    public void testCase(JPPParserTest.TestCase testCase) throws UnparseableFormulaException {
+    public void testCase(JPPParserTest.TestCase<String, String> testCase) throws UnparseableFormulaException {
         assertEquals(
                 testCase.expected,
-                new JPPDiffLineFormulaExtractor().extractFormula((String) testCase.input())
+                new JPPDiffLineFormulaExtractor().extractFormula(testCase.input())
         );
     }
 
@@ -86,6 +109,41 @@ public class JPPParserTest {
         assertThrows(UnparseableFormulaException.class, () ->
                 new JPPDiffLineFormulaExtractor().extractFormula(testCase.formula)
         );
+    }
+
+    @ParameterizedTest
+    @MethodSource("fullDiffTests")
+    public void fullDiffTestCase(JPPParserTest.TestCase<Path, Path> testCase) throws IOException, DiffParseException {
+        VariationDiff<DiffLinesLabel> variationDiff;
+        try (var inputFile = Files.newBufferedReader(testCase.input)) {
+            variationDiff = VariationDiffParser.createVariationDiff(
+                    inputFile,
+                    new VariationDiffParseOptions(
+                            false,
+                            false
+                    ).withAnnotationParser(PreprocessorAnnotationParser.JPPAnnotationParser)
+            );
+        }
+
+        Path actualPath = testCase.input.getParent().resolve(testCase.input.getFileName() + "_actual");
+        try (var output = IO.newBufferedOutputStream(actualPath)) {
+            new LineGraphExporter<>(new Format<>(new FullNodeFormat(), new ChildOrderEdgeFormat<>()))
+                    .exportVariationDiff(variationDiff, output);
+        }
+
+        try (
+                var expectedFile = Files.newBufferedReader(testCase.expected);
+                var actualFile = Files.newBufferedReader(actualPath);
+        ) {
+            if (IOUtils.contentEqualsIgnoreEOL(expectedFile, actualFile)) {
+                // Delete output files if the test succeeded
+                Files.delete(actualPath);
+            } else {
+                // Keep output files if the test failed
+                fail("The VariationDiff in file " + testCase.input + " didn't parse correctly. "
+                        + "Expected the content of " + testCase.expected + " but got the content of " + actualPath + ". ");
+            }
+        }
     }
 
 }
