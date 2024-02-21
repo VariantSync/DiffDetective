@@ -14,8 +14,7 @@ import java.nio.file.Path;
  */
 public class Marlin {
     public static final PreprocessorAnnotationParser ANNOTATION_PARSER =
-            new PreprocessorAnnotationParser(
-                    PreprocessorAnnotationParser.CPP_PATTERN,
+            PreprocessorAnnotationParser.CreateCppAnnotationParser(
                     PropositionalFormulaParser.Default,
                     new MarlinCPPDiffLineFormulaExtractor()
             );

@@ -20,7 +20,7 @@ public class PreprocessorAnnotationParser implements AnnotationParser {
      * <p>
      * Note that this pattern doesn't handle comments between {@code #} and the macro name.
      */
-    public final static Pattern CPP_PATTERN =
+    protected final static Pattern CPP_PATTERN =
             Pattern.compile("^[+-]?\\s*#\\s*(if|elif|else|endif)");
 
     /**
@@ -29,7 +29,7 @@ public class PreprocessorAnnotationParser implements AnnotationParser {
      * matched and only {@code "if"} is captured.
      * <p>
      */
-    public final static Pattern JPP_PATTERN =
+    protected final static Pattern JPP_PATTERN =
             Pattern.compile("^[+-]?\\s*//\\s*#\\s*(if|elif|else|endif)");
 
     /**
@@ -72,6 +72,26 @@ public class PreprocessorAnnotationParser implements AnnotationParser {
         this.annotationPattern = annotationPattern;
         this.formulaParser = formulaParser;
         this.extractor = formulaExtractor;
+    }
+
+    /**
+     * Creates a new preprocessor annotation parser for C preprocessor annotations.
+     *
+     * @param formulaParser    Parser that is used to parse propositional formulas in conditional annotations (e.g., the formula <code>f</code> in <code>#if f</code>).
+     * @param formulaExtractor An extractor that extracts the formula part of a preprocessor annotation that is then given to the formulaParser.
+     */
+    public static PreprocessorAnnotationParser CreateCppAnnotationParser(final PropositionalFormulaParser formulaParser, DiffLineFormulaExtractor formulaExtractor) {
+        return new PreprocessorAnnotationParser(CPP_PATTERN, formulaParser, formulaExtractor);
+    }
+
+    /**
+     * Creates a new preprocessor annotation parser for <a href="https://www.slashdev.ca/javapp/">JavaPP (Java PreProcessor)</a> annotations.
+     *
+     * @param formulaParser    Parser that is used to parse propositional formulas in conditional annotations (e.g., the formula <code>f</code> in <code>#if f</code>).
+     * @param formulaExtractor An extractor that extracts the formula part of a preprocessor annotation that is then given to the formulaParser.
+     */
+    public static PreprocessorAnnotationParser CreateJppAnnotationParser(final PropositionalFormulaParser formulaParser, DiffLineFormulaExtractor formulaExtractor) {
+        return new PreprocessorAnnotationParser(JPP_PATTERN, formulaParser, formulaExtractor);
     }
 
     /**
