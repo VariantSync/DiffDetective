@@ -26,9 +26,9 @@ comparisonExpression
 
 operand
     :   propertyExpression
+    |   unaryOperator Constant
     |   Constant
     |   StringLiteral+
-    |   unaryOperator Constant
     ;
 
 definedExpression
@@ -66,9 +66,9 @@ NEQ : '!=';
 DOT : '.';
 
 Identifier
-    :   ('\\')? (   IdentifierNondigit
+    :   IdentifierNondigit (   IdentifierNondigit
         |   Digit
-        )+
+        )*
     ;
 
 fragment

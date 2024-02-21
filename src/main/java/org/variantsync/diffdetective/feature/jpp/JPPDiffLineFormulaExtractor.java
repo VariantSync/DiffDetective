@@ -29,10 +29,9 @@ public class JPPDiffLineFormulaExtractor extends AbstractingFormulaExtractor {
     /**
      * Abstract the given formula.
      * <p>
-     * First, the visitor uses ANTLR to parse the formula into a parse tree gives the tree to a {@link ControllingJPPExpressionVisitor}.
+     * First, the visitor uses ANTLR to parse the formula into a parse tree gives the tree to a {@link AbstractingJPPExpressionVisitor}.
      * The visitor traverses the tree starting from the root, searching for subtrees that must be abstracted.
-     * If such a subtree is found, the visitor calls an {@link AbstractingJPPExpressionVisitor} to abstract the part of
-     * the formula in the subtree.
+     * If such a subtree is found, the visitor abstracts the part of the formula in the subtree.
      * </p>
      *
      * @param formula that is to be abstracted
@@ -45,6 +44,6 @@ public class JPPDiffLineFormulaExtractor extends AbstractingFormulaExtractor {
         JPPExpressionParser parser = new JPPExpressionParser(tokens);
         parser.addErrorListener(new ParseErrorListener(formula));
         ParseTree tree = parser.expression();
-        return tree.accept(new ControllingJPPExpressionVisitor()).toString();
+        return tree.accept(new AbstractingJPPExpressionVisitor()).toString();
     }
 }
