@@ -3,6 +3,13 @@ package org.variantsync.diffdetective.feature;
 import org.prop4j.Node;
 import org.variantsync.diffdetective.error.UnparseableFormulaException;
 
+/**
+ * Interface for a parser that analyzes annotations in parsed text. The parser is responsible for determining the type
+ * of the annotation (see {@link AnnotationType}), and parsing the annotation into a {@link Node}.
+ * <p>
+ * See {@link PreprocessorAnnotationParser} for an example of how an implementation of AnnotationParser could look like.
+ * </p>
+ */
 public interface AnnotationParser {
     /**
      * Determine the annotation type for the given piece of text (typically a line of source code).
