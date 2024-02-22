@@ -73,7 +73,7 @@ public enum NodeType {
             case Elif -> NodeType.ELIF;
             case Else -> NodeType.ELSE;
             case None -> NodeType.ARTIFACT;
-            default -> throw new IllegalArgumentException(annotationType + "has no NodeType counterpart");
+            case Endif -> throw new IllegalArgumentException(annotationType + "has no NodeType counterpart");
         };
     }
 
