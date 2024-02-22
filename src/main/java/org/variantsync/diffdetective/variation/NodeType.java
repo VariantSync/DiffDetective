@@ -68,21 +68,13 @@ public enum NodeType {
      * @return The NodeType that fits the given AnnotationType
      */
     public static NodeType fromAnnotationType(final AnnotationType annotationType) {
-        switch (annotationType) {
-            case If -> {
-                return NodeType.IF;
-            }
-            case Elif -> {
-                return NodeType.ELIF;
-            }
-            case Else -> {
-                return NodeType.ELSE;
-            }
-            case None -> {
-                return NodeType.ARTIFACT;
-            }
+        return switch (annotationType) {
+            case If -> NodeType.IF;
+            case Elif -> NodeType.ELIF;
+            case Else -> NodeType.ELSE;
+            case None -> NodeType.ARTIFACT;
             default -> throw new IllegalArgumentException(annotationType + "has no NodeType counterpart");
-        }
+        };
     }
 
     /**
