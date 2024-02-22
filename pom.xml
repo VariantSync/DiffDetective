@@ -24,6 +24,7 @@
                 <configuration>
                     <reportOutputDirectory>docs</reportOutputDirectory>
                     <destDir>javadoc</destDir>
+                    <show>private</show>
                     <quiet>true</quiet>
                 </configuration>
             </plugin>
