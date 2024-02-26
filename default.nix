@@ -10,7 +10,7 @@
   doCheck ? true,
   buildGitHubPages ? true,
 }:
-pkgs.stdenv.mkDerivation rec {
+pkgs.stdenvNoCC.mkDerivation rec {
   pname = "DiffDetective";
   version = "2.2.0";
   src = with pkgs.lib.fileset;
