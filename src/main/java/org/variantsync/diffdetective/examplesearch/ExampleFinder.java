@@ -7,7 +7,7 @@ import org.variantsync.diffdetective.datasets.Repository;
 import org.variantsync.diffdetective.diff.git.GitPatch;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.diff.text.TextBasedDiff;
-import org.variantsync.diffdetective.feature.CPPAnnotationParser;
+import org.variantsync.diffdetective.feature.AnnotationParser;
 import org.variantsync.diffdetective.show.Show;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.util.IO;
@@ -50,9 +50,9 @@ public class ExampleFinder implements Analysis.Hooks {
             new DefaultEdgeLabelFormat<>(),
             false,
             1000,
-            RenderOptions.DEFAULT().nodesize()/3,
-            0.5*RenderOptions.DEFAULT().edgesize(),
-            RenderOptions.DEFAULT().arrowsize()/2,
+            RenderOptions.DEFAULT().nodesize() / 3,
+            0.5 * RenderOptions.DEFAULT().edgesize(),
+            RenderOptions.DEFAULT().arrowsize() / 2,
             2,
             true,
             List.of()
@@ -63,11 +63,12 @@ public class ExampleFinder implements Analysis.Hooks {
 
     /**
      * Creates a new ExampleFinder.
+     *
      * @param isGoodExample Function that decides whether a VariationDiff is an example candidate or not.
      *                      Should return {@link Optional#empty()} when the given tree is not a good example and thus, should not be considered.
      *                      Should return a VariationDiff when the given tree is a good example candidate and should be exported.
      *                      The returned VariationDiff might be the exact same VariationDiff or a subtree (e.g., to only export a certain subtree that is relevant).
-     * @param renderer The renderer to use for rendering example candidates.
+     * @param renderer      The renderer to use for rendering example candidates.
      */
     public ExampleFinder(final ExplainedFilter<VariationDiff<? extends DiffLinesLabel>> isGoodExample, VariationDiffRenderer renderer) {
         this.isGoodExample = isGoodExample;
@@ -101,7 +102,7 @@ public class ExampleFinder implements Analysis.Hooks {
 
         final Repository currentRepo = analysis.getRepository();
         final VariationDiff<DiffLinesLabel> variationDiff = analysis.getCurrentVariationDiff();
-        final CPPAnnotationParser annotationParser = analysis.getRepository().getParseOptions().variationDiffParseOptions().annotationParser();
+        final AnnotationParser annotationParser = analysis.getRepository().getParseOptions().variationDiffParseOptions().annotationParser();
 
         // We do not want a variationDiff for the entire file but only for the local change to have a small example.
         final VariationDiff<DiffLinesLabel> localTree;

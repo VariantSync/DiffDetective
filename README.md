@@ -50,11 +50,11 @@ To add DiffDetective as a dependency to your own project, add the following snip
 <dependency>
     <groupId>org.variantsync</groupId>
     <artifactId>DiffDetective</artifactId>
-    <version>2.1.0</version>
+    <version>2.2.0</version>
 </dependency>
 ```
 
-If you prefer to just use a jar file, you can find a jar file with all dependencies at `DiffDetective/target/diffdetective-2.1.0-jar-with-dependencies.jar` (again, the version number might be different).
+If you prefer to just use a jar file, you can find a jar file with all dependencies at `DiffDetective/target/diffdetective-2.2.0-jar-with-dependencies.jar` (again, the version number might be different).
 You can (re-)produce this jar file by either running `mvn package` or `mvn install` within you local clone of DiffDetective.
 
 > Disclaimer: Setup tested with maven version 3.6.3.

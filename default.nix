@@ -12,7 +12,7 @@
 }:
 pkgs.stdenv.mkDerivation rec {
   pname = "DiffDetective";
-  version = "2.1.0";
+  version = "2.2.0";
   src = with pkgs.lib.fileset;
     toSource {
       root = ./.;

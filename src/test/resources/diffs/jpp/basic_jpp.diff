@@ -1,0 +1,20 @@
++package org.argouml.application;
++
++import javax.swing.UIManager;
++//#if defined(LOGGING)
++import org.apache.log4j.BasicConfigurator;
++import org.apache.log4j.Level;
++import org.apache.log4j.Logger;
++//#endif
++import org.argouml.application.api.CommandLineInterface;
++import org.argouml.application.security.ArgoAwtExceptionHandler;
++//#if defined(COGNITIVE)
++//@#$LPS-COGNITIVE:GranularityType:Import
++import org.argouml.cognitive.AbstractCognitiveTranslator;
++import org.argouml.cognitive.ui.ToDoPane;
++//#endif
++import org.argouml.ui.cmd.InitUiCmdSubsystem;
++import org.argouml.ui.cmd.PrintManager;
++//#if defined(COGNITIVE) and defined(DEPLOYMENTDIAGRAM)
++import org.argouml.uml.diagram.activity.ui.InitActivityDiagram;
++//#endif
