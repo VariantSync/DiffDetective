@@ -120,6 +120,8 @@ public final class AnalysisResult implements Metadata<AnalysisResult> {
      */
     public AnalysisResult(final String repoName) {
         this.repoName = repoName;
+        // All analyses count the number of processed commits.
+        this.append(Analysis.TotalNumberOfCommitsResult.KEY, new Analysis.TotalNumberOfCommitsResult());
     }
 
     /**
@@ -140,7 +142,7 @@ public final class AnalysisResult implements Metadata<AnalysisResult> {
 
         var statistics = get(StatisticsAnalysis.RESULT);
         var globals    = get(Analysis.TotalNumberOfCommitsResult.KEY);
-        if (statistics != null) {
+        if (statistics != null && globals != null) {
             snap.put(MetadataKeys.FILTERED_COMMITS, globals.value - statistics.processedCommits - statistics.emptyCommits - statistics.failedCommits);
         }
 
