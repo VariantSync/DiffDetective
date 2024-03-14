@@ -95,6 +95,12 @@ public final class AnalysisResult implements Metadata<AnalysisResult> {
         a.repoName = Metadata.mergeIfEqualElse(a.repoName, b.repoName,
                 (ar, br) -> {
                     Logger.warn("Merging analysis for different repos {} and {}!", ar, br);
+                    if (NO_REPO.equals(ar)) {
+                        return br;
+                    }
+                    if (NO_REPO.equals(br)) {
+                        return ar;
+                    }
                     return ar + "; " + br;
                 });
         a.taskName = Metadata.mergeEqual(a.taskName, b.taskName);
