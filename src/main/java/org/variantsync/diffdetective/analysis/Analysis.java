@@ -472,7 +472,6 @@ public class Analysis {
         
         this.result = new AnalysisResult(repository.getRepositoryName());
         this.result.taskName = taskName;
-        this.result.append(TotalNumberOfCommitsResult.KEY, new TotalNumberOfCommitsResult());
         
         for (var hook : hooks) {
             hook.initializeResults(this);
