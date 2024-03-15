@@ -95,6 +95,12 @@ public final class AnalysisResult implements Metadata<AnalysisResult> {
         a.repoName = Metadata.mergeIfEqualElse(a.repoName, b.repoName,
                 (ar, br) -> {
                     Logger.warn("Merging analysis for different repos {} and {}!", ar, br);
+                    if (NO_REPO.equals(ar)) {
+                        return br;
+                    }
+                    if (NO_REPO.equals(br)) {
+                        return ar;
+                    }
                     return ar + "; " + br;
                 });
         a.taskName = Metadata.mergeEqual(a.taskName, b.taskName);
@@ -120,6 +126,8 @@ public final class AnalysisResult implements Metadata<AnalysisResult> {
      */
     public AnalysisResult(final String repoName) {
         this.repoName = repoName;
+        // All analyses count the number of processed commits.
+        this.append(Analysis.TotalNumberOfCommitsResult.KEY, new Analysis.TotalNumberOfCommitsResult());
     }
 
     /**
@@ -140,7 +148,7 @@ public final class AnalysisResult implements Metadata<AnalysisResult> {
 
         var statistics = get(StatisticsAnalysis.RESULT);
         var globals    = get(Analysis.TotalNumberOfCommitsResult.KEY);
-        if (statistics != null) {
+        if (statistics != null && globals != null) {
             snap.put(MetadataKeys.FILTERED_COMMITS, globals.value - statistics.processedCommits - statistics.emptyCommits - statistics.failedCommits);
         }
 
