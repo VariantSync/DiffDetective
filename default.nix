@@ -12,7 +12,11 @@
 }:
 pkgs.stdenvNoCC.mkDerivation rec {
   pname = "DiffDetective";
-  version = "2.2.0";
+  # The single source of truth for the version number is stored in `pom.xml`.
+  # Hence, this XML file needs to be parsed to extract the current version.
+  version = pkgs.lib.removeSuffix "\n" (pkgs.lib.readFile
+    (pkgs.runCommandLocal "DiffDetective-version" {}
+      "${pkgs.xq-xml}/bin/xq -x '/project/version' ${./pom.xml} > $out"));
   src = with pkgs.lib.fileset;
     toSource {
       root = ./.;
