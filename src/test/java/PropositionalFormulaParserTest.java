@@ -10,15 +10,20 @@ import java.util.List;
 
 import static org.variantsync.diffdetective.util.Assert.assertEquals;
 
+/**
+ * Class containing tests of the parsing behaviour for the default implementation of PropositionalFormulaParser.
+ * Goal: Special characters that occur in the output of a DiffLineFormulaExtractor must not confuse the parsing process of the PropositionalFormulaParser.
+ * It is not designed to extensively test the functionality of the PropositionalFormulaParser itself as this is expected to be done by FeatureIDE already.
+ *
+ * @author Maximilian Glumann
+ */
 public class PropositionalFormulaParserTest {
     private record TestCase(String formula, Node expected) {
     }
 
-    /*
-     * These testCases are based on a subset of the CPPParserTest testCases.
-     * It is not necessary to keep all testCases from CPPParserTest as most of them result in a single but long Literal anyway.
-     * The idea is to ensure that the PropositionalFormulaParser is not confused by any symbols in the output of CPPDiffLineFormulaExtractor.
-     * It is not designed to extensively test the functionality of the PropositionalFormulaParser itself as this is expected to be tested by FeatureIDE already.
+    /**
+     * These test cases are based on a subset of the CPPParserTest test cases.
+     * It is not necessary to keep all test cases from CPPParserTest as most of them result in a single but long Literal anyway.
      */
     private static List<TestCase> testCases() {
         return List.of(
@@ -59,9 +64,13 @@ public class PropositionalFormulaParserTest {
         );
     }
 
-    /*
-     * A testCase is evaluated using syntactic equivalence between expectation and result because deterministic results are expected.
-     * Therefore, modifications in FeatureIDE might break these tests although the result remains semantically equivalent.
+    /**
+     * Each test case compares the output of the default PropositionalFormularParser to the expected output.
+     * This comparison is performed using the equivalence defined by org.prop4j.Node from FeatureIDE.
+     * Therefore, nodes describing equivalent propositional formulas in different tree structures are not considered equal.
+     * As long as FeatureIDE produces a deterministic and consistent tree structure in its output, these tests will succeed.
+     * Because DiffDetective desires not only a correct but also a deterministic and consistent parser output,
+     * it is intended that these tests also break, if FeatureIDE changes its parsing behaviour in the future.
      */
     @ParameterizedTest
     @MethodSource("testCases")
