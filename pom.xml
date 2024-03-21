@@ -6,6 +6,7 @@
 
     <groupId>org.variantsync</groupId>
     <artifactId>diffdetective</artifactId>
+    <!-- The DiffDetective version, needs to be the first version tag in this file. -->
     <version>2.2.0</version>
 
     <properties>
