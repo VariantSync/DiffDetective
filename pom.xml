@@ -13,6 +13,8 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
+        <!-- Override the time stamps of build artifacts to ensure reproducibility -->
+        <project.build.outputTimestamp>1</project.build.outputTimestamp>
     </properties>
 
     <build>
