@@ -67,6 +67,7 @@ pkgs.stdenv.mkDerivation rec {
       then ''
         mvn javadoc:javadoc
         JEKYLL_ENV=production PAGES_REPO_NWO=VariantSync/DiffDetective JEKYLL_BUILD_REVISION= github-pages build
+        rm -rf _site/target
       ''
       else ""
     }
