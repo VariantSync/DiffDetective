@@ -74,7 +74,7 @@ Afterward, the [result](result) symlink points to the [Javadoc](result/share/git
 
 ## How to Get Started
 
-For a demonstration on how to get started using the library, we have prepared a demo repository [here](https://github.com/VariantSync/DiffDetective-Demo).
+For a demonstration on how to get started using the library, we have prepared a demo repository [here][demo].
 You may clone it as a template and example for including the library into your own projects.
 Additionally, there is a screencast available on YouTube, guiding you through the demo's setup and source code:
 
@@ -82,6 +82,16 @@ Additionally, there is a screencast available on YouTube, guiding you through th
 
 
 ## Publications
+
+### Variability-Aware Differencing with DiffDetective (FSE 2024)
+
+[![Preprint](https://img.shields.io/badge/Preprint-Read-purple)](https://github.com/VariantSync/DiffDetective-Demo/blob/raw/Variability-Aware%20Differencing%20with%20DiffDetective.pdf)
+[![Screencast](https://img.shields.io/badge/Screencast-Watch-purple)][screencast]
+[![Demo Repository](https://img.shields.io/badge/Demo-Try-blue)][demo]
+
+> P. M. Bittner, A. Schultheiß, B. Moosherr, T. Kehrer, T. Thüm. _Variability-Aware Differencing with DiffDetective_. Demonstrations at International Conference on the Foundations of Software Engineering 2024, ACM, New York, NY, July 2024
+
+This paper gives an overview of DiffDetective, its design, features, use-cases, and past case studies. We recommend reading this paper if you are interested in the design of DiffDetective or if you consider using it for your own projects or research. The paper is accompanied by a [demo project][demo] as well as a [screencast][screencast] (see `How to Get Started` above).
 
 ### Classifying Edits to Variability in Source Code (ESEC/FSE 2022)
 
@@ -156,3 +166,5 @@ DiffDetective was extended and used within bachelor's and master's theses:
 [documentation]: https://variantsync.github.io/DiffDetective/docs/javadoc
 [website]: https://variantsync.github.io/DiffDetective/
 [forklg]: https://github.com/guethilu/DiffDetective
+[demo]: https://github.com/VariantSync/DiffDetective-Demo
+[screencast]: https://www.youtube.com/watch?v=q6ight5EDQY
