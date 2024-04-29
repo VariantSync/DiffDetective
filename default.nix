@@ -10,28 +10,27 @@
   doCheck ? true,
   buildGitHubPages ? true,
 }:
-pkgs.stdenv.mkDerivation rec {
+pkgs.stdenvNoCC.mkDerivation rec {
   pname = "DiffDetective";
-  version = "2.1.0";
+  # The single source of truth for the version number is stored in `pom.xml`.
+  # Hence, this XML file needs to be parsed to extract the current version.
+  version = pkgs.lib.removeSuffix "\n" (pkgs.lib.readFile
+    (pkgs.runCommandLocal "DiffDetective-version" {}
+      "${pkgs.xq-xml}/bin/xq -x '/project/version' ${./pom.xml} > $out"));
   src = with pkgs.lib.fileset;
     toSource {
       root = ./.;
-      # This should be `gitTracked ./.`. However, this currently doesn't accept
-      # shallow repositories as used in GitHub CI.
-      fileset =
-        (import (sources.nixpkgs + "/lib/fileset/internal.nix") {inherit (pkgs) lib;})._fromFetchGit
-        "gitTracked"
-        "argument"
-        ./.
-        {shallow = true;};
+      fileset = gitTracked ./.;
     };
 
   nativeBuildInputs = with pkgs; [
     maven
     makeWrapper
     graphviz
-    (ruby.withPackages (pkgs: with pkgs; [github-pages jekyll-theme-cayman]))
-  ];
+  ] ++ pkgs.lib.optional buildGitHubPages (ruby.withPackages (pkgs: with pkgs; [
+    github-pages
+    jekyll-theme-cayman
+  ]));
 
   mavenRepo = pkgs.stdenv.mkDerivation {
     pname = "${pname}-mavenRepo";
@@ -60,6 +59,10 @@ pkgs.stdenv.mkDerivation rec {
     outputHash = "sha256-Gimt6L54yyaX3BtdhQlVu1j4c4y++Mip0GzMl/IfzMc=";
   };
 
+  jre-minimal = pkgs.callPackage (import "${sources.nixpkgs}/pkgs/development/compilers/openjdk/jre.nix") {
+    modules = ["java.base" "java.desktop"];
+  };
+
   buildPhase = ''
     runHook preBuild
 
@@ -74,6 +77,7 @@ pkgs.stdenv.mkDerivation rec {
       then ''
         mvn javadoc:javadoc
         JEKYLL_ENV=production PAGES_REPO_NWO=VariantSync/DiffDetective JEKYLL_BUILD_REVISION= github-pages build
+        rm -rf _site/target
       ''
       else ""
     }
@@ -96,8 +100,8 @@ pkgs.stdenv.mkDerivation rec {
 
     local jar="$out/share/java/DiffDetective/DiffDetective.jar"
     install -Dm644 "target/diffdetective-${version}-jar-with-dependencies.jar" "$jar"
-    makeWrapper "${pkgs.jdk}/bin/java" "$out/bin/DiffDetective" --add-flags "-cp \"$jar\"" \
-      --prefix PATH : "${pkgs.graphviz}"
+    makeWrapper "${jre-minimal}/bin/java" "$out/bin/DiffDetective" --add-flags "-cp \"$jar\"" \
+      --prefix PATH : "${pkgs.graphviz}/bin"
 
     ${
       if buildGitHubPages

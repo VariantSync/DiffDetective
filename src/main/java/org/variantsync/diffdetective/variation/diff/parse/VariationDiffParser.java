@@ -14,19 +14,19 @@ import org.variantsync.diffdetective.diff.result.DiffError;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.diff.text.DiffLineNumber;
 import org.variantsync.diffdetective.error.UnparseableFormulaException;
+import org.variantsync.diffdetective.feature.AnnotationType;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.NodeType;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
-import org.variantsync.diffdetective.variation.diff.VariationDiff;
 import org.variantsync.diffdetective.variation.diff.DiffType;
 import org.variantsync.diffdetective.variation.diff.Time;
+import org.variantsync.diffdetective.variation.diff.VariationDiff;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.Stack;
-import java.util.regex.Pattern;
 
 /**
  * Parser that parses {@link VariationDiff}s from text-based diffs.
@@ -34,20 +34,28 @@ import java.util.regex.Pattern;
  * Note: Weird line continuations and comments can cause misidentification of conditional macros.
  * The following examples are all correct according to the C11 standard: (comment end is marked by
  * {@code *\/}):
+ *
+ * <p>
  * <code>
  * /*
  * #ifdef A
  * *\/
- *
+ * </code>
+ * <p>
+ * <code>
  * #ifdef /*
  * *\/ A
  * #endif
- *
+ * </code>
+ * <p>
+ * <code>
  * # /**\/ ifdef
  * #endif
- *
+ * </code>
+ * <p>
+ * <code>
  * # \
- *   ifdef
+ * ifdef
  * #endif
  * </code>
  */
@@ -58,20 +66,11 @@ public class VariationDiffParser {
      * instead of some source code file.
      *
      * @param diffType the diff type of this line, may be {@code null} if this line has no valid
-     * diff type
-     * @param content the actual line content without a line delimiter
+     *                 diff type
+     * @param content  the actual line content without a line delimiter
      */
-    public record DiffLine(DiffType diffType, String content) {}
-
-    /**
-     * Matches the beginning of conditional macros.
-     * It doesn't match the whole macro name, for example for {@code #ifdef} only {@code "#if"} is
-     * matched and only {@code "if"} is captured.
-     * <p>
-     * Note that this pattern doesn't handle comments between {@code #} and the macro name.
-     */
-    private final static Pattern macroPattern =
-        Pattern.compile("^[+-]?\\s*#\\s*(if|elif|else|endif)");
+    public record DiffLine(DiffType diffType, String content) {
+    }
 
 
     /* Settings */
@@ -131,9 +130,9 @@ public class VariationDiffParser {
      * This parsing algorithm is described in detail in Sören Viegener's bachelor's thesis.
      *
      * @param fullDiff The full diff of a patch obtained from a buffered reader.
-     * @param options {@link VariationDiffParseOptions} for the parsing process.
+     * @param options  {@link VariationDiffParseOptions} for the parsing process.
      * @return A parsed {@link VariationDiff} upon success or an error indicating why parsing failed.
-     * @throws IOException when reading from {@code fullDiff} fails.
+     * @throws IOException        when reading from {@code fullDiff} fails.
      * @throws DiffParseException if an error in the diff or macro syntax is detected
      */
     public static VariationDiff<DiffLinesLabel> createVariationDiff(
@@ -141,7 +140,7 @@ public class VariationDiffParser {
             final VariationDiffParseOptions options
     ) throws IOException, DiffParseException {
         return new VariationDiffParser(
-            options
+                options
         ).parse(() -> {
             String line = fullDiff.readLine();
             if (line == null) {
@@ -156,10 +155,10 @@ public class VariationDiffParser {
      * This method is similar to {@link #createVariationDiff(BufferedReader, VariationDiffParseOptions)}
      * but acts as if all lines where unmodified.
      *
-     * @param file The source code file (not a diff) to be parsed.
+     * @param file    The source code file (not a diff) to be parsed.
      * @param options {@link VariationDiffParseOptions} for the parsing process.
      * @return A parsed {@link VariationDiff}.
-     * @throws IOException iff {@code file} throws an {@code IOException}
+     * @throws IOException        iff {@code file} throws an {@code IOException}
      * @throws DiffParseException if an error in the diff or macro syntax is detected
      */
     public static VariationDiff<DiffLinesLabel> createVariationTree(
@@ -167,7 +166,7 @@ public class VariationDiffParser {
             VariationDiffParseOptions options
     ) throws IOException, DiffParseException {
         return new VariationDiffParser(
-            options
+                options
         ).parse(() -> {
             String line = file.readLine();
             if (line == null) {
@@ -175,9 +174,9 @@ public class VariationDiffParser {
             } else {
                 if (line.startsWith("+") || line.startsWith("-")) {
                     Logger.warn(
-                        "The source file given to createVariationTree contains a plus or " +
-                        "minus sign at the start of a line. Please ensure that you are " +
-                        "actually parsing a source file and not a diff."
+                            "The source file given to createVariationTree contains a plus or " +
+                                    "minus sign at the start of a line. Please ensure that you are " +
+                                    "actually parsing a source file and not a diff."
                     );
                 }
 
@@ -201,14 +200,14 @@ public class VariationDiffParser {
      * Parses the line diff {@code fullDiff}.
      *
      * @param lines should supply successive lines of the diff to be parsed, or {@code null} if
-     * there are no more lines to be parsed.
+     *              there are no more lines to be parsed.
      * @return the parsed {@code VariationDiff}
-     * @throws IOException iff {@code lines.get()} throws {@code IOException}
+     * @throws IOException        iff {@code lines.get()} throws {@code IOException}
      * @throws DiffParseException if an error in the line diff or the underlying preprocessor syntax
-     * is detected
+     *                            is detected
      */
     private VariationDiff<DiffLinesLabel> parse(
-        FailableSupplier<DiffLine, IOException> lines
+            FailableSupplier<DiffLine, IOException> lines
     ) throws IOException, DiffParseException {
         DiffNode<DiffLinesLabel> root = DiffNode.createRoot(new DiffLinesLabel());
         beforeStack.push(root);
@@ -238,12 +237,12 @@ public class VariationDiffParser {
 
             // Do beforeLine and afterLine represent the same unchanged diff line?
             isNon = diffType == DiffType.NON &&
-                (isNon || (!beforeLine.hasStarted() && !afterLine.hasStarted()));
+                    (isNon || (!beforeLine.hasStarted() && !afterLine.hasStarted()));
 
             // Add the physical line to the logical line.
             final DiffLineNumber lineNumberFinal = lineNumber;
             diffType.forAllTimesOfExistence(beforeLine, afterLine,
-                node -> node.consume(currentLine, lineNumberFinal)
+                    node -> node.consume(currentLine, lineNumberFinal)
             );
 
             // Parse the completed logical line
@@ -270,21 +269,21 @@ public class VariationDiffParser {
             Logger.debug("beforeLine: " + beforeLine);
             Logger.debug("afterLine: " + afterLine);
             throw new DiffParseException(
-                DiffError.INVALID_LINE_CONTINUATION,
-                lineNumber
+                    DiffError.INVALID_LINE_CONTINUATION,
+                    lineNumber
             );
         }
 
         if (beforeStack.size() > 1) {
             throw new DiffParseException(
-                DiffError.NOT_ALL_ANNOTATIONS_CLOSED,
-                beforeStack.peek().getFromLine()
+                    DiffError.NOT_ALL_ANNOTATIONS_CLOSED,
+                    beforeStack.peek().getFromLine()
             );
         }
         if (afterStack.size() > 1) {
             throw new DiffParseException(
-                DiffError.NOT_ALL_ANNOTATIONS_CLOSED,
-                afterStack.peek().getFromLine()
+                    DiffError.NOT_ALL_ANNOTATIONS_CLOSED,
+                    afterStack.peek().getFromLine()
             );
         }
 
@@ -299,8 +298,8 @@ public class VariationDiffParser {
     /**
      * Parses one logical line and most notably, handles conditional macros.
      *
-     * @param line a logical line with {@code line.isComplete() == true}
-     * @param diffType whether {@code line} was added, inserted or unchanged
+     * @param line           a logical line with {@code line.isComplete() == true}
+     * @param diffType       whether {@code line} was added, inserted or unchanged
      * @param lastLineNumber the last physical line of {@code line}
      * @throws DiffParseException if erroneous preprocessor macros are detected
      */
@@ -314,21 +313,18 @@ public class VariationDiffParser {
 
         // Is this line a conditional macro?
         // Note: The following line doesn't handle comments and line continuations correctly.
-        var matcher = macroPattern.matcher(line.toString());
-        var conditionalMacroName = matcher.find()
-            ? matcher.group(1)
-            : null;
+        var annotationType = options.annotationParser().determineAnnotationType(line.toString());
 
-        if ("endif".equals(conditionalMacroName)) {
+        if (annotationType == AnnotationType.Endif) {
             lastArtifact = null;
 
             // Do not create a node for ENDIF, but update the line numbers of the closed if-chain
             // and remove that if-chain from the relevant stacks.
             diffType.forAllTimesOfExistence(beforeStack, afterStack, stack ->
-                popIfChain(stack, fromLine)
+                    popIfChain(stack, fromLine)
             );
         } else if (options.collapseMultipleCodeLines()
-                && conditionalMacroName == null
+                && annotationType == AnnotationType.None
                 && lastArtifact != null
                 && lastArtifact.diffType.equals(diffType)
                 && lastArtifact.getToLine().inDiff() == fromLine.inDiff()) {
@@ -337,24 +333,17 @@ public class VariationDiffParser {
             lastArtifact.setToLine(toLine);
         } else {
             try {
-                NodeType nodeType = NodeType.ARTIFACT;
-                if (conditionalMacroName != null) {
-                    try {
-                        nodeType = NodeType.fromName(conditionalMacroName);
-                    } catch (IllegalArgumentException e) {
-                        throw new DiffParseException(DiffError.INVALID_MACRO_NAME, fromLine);
-                    }
-                }
+                NodeType nodeType = NodeType.fromAnnotationType(annotationType);
 
                 DiffNode<DiffLinesLabel> newNode = new DiffNode<DiffLinesLabel>(
-                    diffType,
-                    nodeType,
-                    fromLine,
-                    toLine,
-                    nodeType == NodeType.ARTIFACT || nodeType == NodeType.ELSE
-                        ? null
-                        : options.annotationParser().parseDiffLine(line.toString()),
-                    new DiffLinesLabel(line.getLines())
+                        diffType,
+                        nodeType,
+                        fromLine,
+                        toLine,
+                        nodeType == NodeType.ARTIFACT || nodeType == NodeType.ELSE
+                                ? null
+                                : options.annotationParser().parseAnnotation(line.toString()),
+                        new DiffLinesLabel(line.getLines())
                 );
 
                 addNode(newNode);
@@ -370,13 +359,13 @@ public class VariationDiffParser {
      * If there were ELSEs or ELIFs between an IF and an ENDIF, they were placed on the stack and
      * have to be popped now. The {@link DiffNode#getToLine() end line numbers} are adjusted
      *
-     * @param stack the stack which should be popped
+     * @param stack          the stack which should be popped
      * @param elseLineNumber the first line of the else which causes this IF to be popped
      * @throws DiffParseException if {@code stack} doesn't contain an IF node
      */
     private void popIfChain(
-        Stack<DiffNode<DiffLinesLabel>> stack,
-        DiffLineNumber elseLineNumber
+            Stack<DiffNode<DiffLinesLabel>> stack,
+            DiffLineNumber elseLineNumber
     ) throws DiffParseException {
         DiffLineNumber previousLineNumber = elseLineNumber;
         do {
@@ -385,13 +374,13 @@ public class VariationDiffParser {
             // Set the line number of now closed annotations to the beginning of the
             // following annotation.
             annotation.setToLine(new DiffLineNumber(
-                Math.max(previousLineNumber.inDiff(), annotation.getToLine().inDiff()),
-                stack == beforeStack
-                    ? previousLineNumber.beforeEdit()
-                    : annotation.getToLine().beforeEdit(),
-                stack == afterStack
-                    ? previousLineNumber.afterEdit()
-                    : annotation.getToLine().afterEdit()
+                    Math.max(previousLineNumber.inDiff(), annotation.getToLine().inDiff()),
+                    stack == beforeStack
+                            ? previousLineNumber.beforeEdit()
+                            : annotation.getToLine().beforeEdit(),
+                    stack == afterStack
+                            ? previousLineNumber.afterEdit()
+                            : annotation.getToLine().afterEdit()
             ));
 
             previousLineNumber = annotation.getFromLine();
@@ -418,8 +407,8 @@ public class VariationDiffParser {
                 if (newNode.isElif() || newNode.isElse()) {
                     if (stack.size() == 1) {
                         throw new DiffParseException(
-                            DiffError.ELSE_OR_ELIF_WITHOUT_IF,
-                            newNode.getFromLine()
+                                DiffError.ELSE_OR_ELIF_WITHOUT_IF,
+                                newNode.getFromLine()
                         );
                     }
 
@@ -435,7 +424,8 @@ public class VariationDiffParser {
 
     /**
      * Parses the given commit of the given repository.
-     * @param repo The repository from which a commit should be parsed.
+     *
+     * @param repo       The repository from which a commit should be parsed.
      * @param commitHash Hash of the commit to parse.
      * @return A CommitDiff describing edits to variability introduced by the given commit relative
      * to its first parent commit.
@@ -463,12 +453,13 @@ public class VariationDiffParser {
 
     /**
      * Parses the given patch of the given repository.
-     * @param repo The repository from which a patch should be parsed.
-     * @param file The file that was edited by the patch.
+     *
+     * @param repo       The repository from which a patch should be parsed.
+     * @param file       The file that was edited by the patch.
      * @param commitHash The hash of the commit in which the patch was made.
      * @return A PatchDiff describing edits to variability introduced by the given patch relative to
      * the corresponding commit's first parent commit.
-     * @throws IOException when an error occurred.
+     * @throws IOException    when an error occurred.
      * @throws AssertionError when no such patch exists.
      */
     public static PatchDiff parsePatch(Repository repo, String file, String commitHash) throws IOException {

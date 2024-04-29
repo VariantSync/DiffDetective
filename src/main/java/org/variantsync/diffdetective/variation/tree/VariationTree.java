@@ -55,6 +55,14 @@ public record VariationTree<L extends Label>(
     }
 
     /**
+     * Same as {@link #fromFile(Path, VariationDiffParseOptions)}
+     * but with {@link VariationDiffParseOptions#Default} parse options.
+     */
+    public static VariationTree<DiffLinesLabel> fromFile(final Path path) throws IOException, DiffParseException {
+        return fromFile(path, VariationDiffParseOptions.Default);
+    }
+
+    /**
      * Same as {@link #fromFile(BufferedReader, VariationTreeSource, VariationDiffParseOptions)}
      * but registers {@code path} as source.
      */

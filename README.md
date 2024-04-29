@@ -44,17 +44,17 @@ Next, build DiffDetective and install it on your system so that you can access i
 mvn install
 ```
 
-To add DiffDetective as a dependency to your own project, add the following snippet to the pom.xml of your Maven project, but make sure to pick the right version number. You can find the version number of DiffDetective at the top of the pom.xml file of DiffDetective. 
+To add DiffDetective as a dependency to your own project, add the following snippet to the pom.xml of your Maven project, but make sure to pick the right version number. The current version number can be obtained by running `scripts/version.sh`
 
 ```xml
 <dependency>
     <groupId>org.variantsync</groupId>
     <artifactId>DiffDetective</artifactId>
-    <version>2.1.0</version>
+    <version>2.2.0</version>
 </dependency>
 ```
 
-If you prefer to just use a jar file, you can find a jar file with all dependencies at `DiffDetective/target/diffdetective-2.1.0-jar-with-dependencies.jar` (again, the version number might be different).
+If you prefer to just use a jar file, you can find a jar file with all dependencies at `DiffDetective/target/diffdetective-2.2.0-jar-with-dependencies.jar` (again, the version number might be different).
 You can (re-)produce this jar file by either running `mvn package` or `mvn install` within you local clone of DiffDetective.
 
 > Disclaimer: Setup tested with maven version 3.6.3.
@@ -74,7 +74,7 @@ Afterward, the [result](result) symlink points to the [Javadoc](result/share/git
 
 ## How to Get Started
 
-For a demonstration on how to get started using the library, we have prepared a demo repository [here](https://github.com/VariantSync/DiffDetective-Demo).
+For a demonstration on how to get started using the library, we have prepared a demo repository [here][demo].
 You may clone it as a template and example for including the library into your own projects.
 Additionally, there is a screencast available on YouTube, guiding you through the demo's setup and source code:
 
@@ -83,13 +83,23 @@ Additionally, there is a screencast available on YouTube, guiding you through th
 
 ## Publications
 
+### Variability-Aware Differencing with DiffDetective (FSE 2024)
+
+[![Preprint](https://img.shields.io/badge/Preprint-Read-purple)](https://github.com/VariantSync/DiffDetective-Demo/blob/raw/Variability-Aware%20Differencing%20with%20DiffDetective.pdf)
+[![Screencast](https://img.shields.io/badge/Screencast-Watch-purple)][screencast]
+[![Demo Repository](https://img.shields.io/badge/Demo-Try-blue)][demo]
+
+> P. M. Bittner, A. Schultheiß, B. Moosherr, T. Kehrer, T. Thüm. _Variability-Aware Differencing with DiffDetective_. Demonstrations at International Conference on the Foundations of Software Engineering 2024, ACM, New York, NY, July 2024
+
+This paper gives an overview of DiffDetective, its design, features, use-cases, and past case studies. We recommend reading this paper if you are interested in the design of DiffDetective or if you consider using it for your own projects or research. The paper is accompanied by a [demo project][demo] as well as a [screencast][screencast] (see `How to Get Started` above).
+
 ### Classifying Edits to Variability in Source Code (ESEC/FSE 2022)
 
 [![Preprint](https://img.shields.io/badge/Preprint-Read-purple)](https://github.com/SoftVarE-Group/Papers/raw/main/2022/2022-ESECFSE-Bittner.pdf)
 [![Paper](https://img.shields.io/badge/Paper-Read-purple)](https://dl.acm.org/doi/10.1145/3540250.3549108)
 [![Talk](https://img.shields.io/badge/Talk-Watch-purple)](https://www.youtube.com/watch?v=EnDx1AWxD24)
 [![Original Replication Package](https://img.shields.io/badge/Replication_Package-Original-blue)](https://github.com/VariantSync/DiffDetective/tree/esecfse22)
-[![Updated Replication Package](https://img.shields.io/badge/Replication_Package-Updated-blue)](replication/esecfse22/README.md)
+[![Updated Replication Package](https://img.shields.io/badge/Replication_Package-Updated-blue)](replication/esecfse22/)
 [![Artifact DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7110095.svg)](https://doi.org/10.5281/zenodo.7110095)
 
 > P. M. Bittner, C.Tinnes, A. Schultheiß, S. Viegener, T. Kehrer, T. Thüm. _Classifying Edits to Variability in Source Code_. In Proceedings of the 30th ACM Joint European Software Engineering Conference and Symposium on the Foundations of Software Engineering (ESEC/FSE 2022), ACM, New York, NY, November 2022
@@ -110,7 +120,7 @@ The original replication package can be found on the [esecfse](https://github.co
 [![Preprint](https://img.shields.io/badge/Preprint-Read-purple)](https://github.com/SoftVarE-Group/Papers/raw/main/2023/2023-SPLC-Bittner.pdf)
 [![Paper](https://img.shields.io/badge/Paper-Read-purple)](https://dl.acm.org/doi/10.1145/3579027.3608985)
 [![Original Replication Package](https://img.shields.io/badge/Replication_Package-Original-blue)](https://github.com/VariantSync/DiffDetective/tree/splc23-views/replication/splc23-views)
-[![Updated Replication Package](https://img.shields.io/badge/Replication_Package-Updated-blue)](replication/splc23-views/README.md)
+[![Updated Replication Package](https://img.shields.io/badge/Replication_Package-Updated-blue)](replication/splc23-views/)
 [![Artifact DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.8027920.svg)](https://doi.org/10.5281/zenodo.8027920)
 
 > P. M. Bittner, A. Schultheiß, S. Greiner, B. Moosherr, S. Krieter, C. Tinnes, T. Kehrer, T. Thüm. _Views on Edits to Variational Software_. In Proceedings of the 27th ACM International Systems and Software Product Line Conference (SPLC 2023), ACM, New York, NY, August 2023
@@ -156,3 +166,5 @@ DiffDetective was extended and used within bachelor's and master's theses:
 [documentation]: https://variantsync.github.io/DiffDetective/docs/javadoc
 [website]: https://variantsync.github.io/DiffDetective/
 [forklg]: https://github.com/guethilu/DiffDetective
+[demo]: https://github.com/VariantSync/DiffDetective-Demo
+[screencast]: https://www.youtube.com/watch?v=q6ight5EDQY

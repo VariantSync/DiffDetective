@@ -6,13 +6,16 @@
 
     <groupId>org.variantsync</groupId>
     <artifactId>diffdetective</artifactId>
-    <version>2.1.0</version>
+    <!-- The DiffDetective version, needs to be the first version tag in this file. -->
+    <version>2.2.0</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
+        <!-- Override the time stamps of build artifacts to ensure reproducibility -->
+        <project.build.outputTimestamp>1</project.build.outputTimestamp>
     </properties>
 
     <build>
@@ -24,6 +27,7 @@
                 <configuration>
                     <reportOutputDirectory>docs</reportOutputDirectory>
                     <destDir>javadoc</destDir>
+                    <show>private</show>
                     <quiet>true</quiet>
                 </configuration>
             </plugin>
@@ -94,16 +98,16 @@
             <groupId>org.sat4j</groupId>
             <artifactId>core</artifactId>
             <version>2.3.5</version>
-<!--            <scope>system</scope>-->
-<!--            <systemPath>${project.basedir}/lib/org.sat4j.core.jar</systemPath>-->
+            <!--            <scope>system</scope>-->
+            <!--            <systemPath>${project.basedir}/lib/org.sat4j.core.jar</systemPath>-->
         </dependency>
 
         <dependency>
             <groupId>de.ovgu</groupId>
             <artifactId>featureide.lib.fm</artifactId>
             <version>3.8.1</version>
-<!--            <scope>system</scope>-->
-<!--            <systemPath>${project.basedir}/lib/de.ovgu.featureide.lib.fm-v3.8.1.jar</systemPath>-->
+            <!--            <scope>system</scope>-->
+            <!--            <systemPath>${project.basedir}/lib/de.ovgu.featureide.lib.fm-v3.8.1.jar</systemPath>-->
         </dependency>
 
         <dependency>
