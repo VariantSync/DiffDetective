@@ -59,6 +59,10 @@ pkgs.stdenvNoCC.mkDerivation rec {
     outputHash = "sha256-Gimt6L54yyaX3BtdhQlVu1j4c4y++Mip0GzMl/IfzMc=";
   };
 
+  jre-minimal = pkgs.callPackage (import "${sources.nixpkgs}/pkgs/development/compilers/openjdk/jre.nix") {
+    modules = ["java.base" "java.desktop"];
+  };
+
   buildPhase = ''
     runHook preBuild
 
@@ -96,7 +100,7 @@ pkgs.stdenvNoCC.mkDerivation rec {
 
     local jar="$out/share/java/DiffDetective/DiffDetective.jar"
     install -Dm644 "target/diffdetective-${version}-jar-with-dependencies.jar" "$jar"
-    makeWrapper "${pkgs.jdk}/bin/java" "$out/bin/DiffDetective" --add-flags "-cp \"$jar\"" \
+    makeWrapper "${jre-minimal}/bin/java" "$out/bin/DiffDetective" --add-flags "-cp \"$jar\"" \
       --prefix PATH : "${pkgs.graphviz}/bin"
 
     ${
