@@ -27,8 +27,10 @@ pkgs.stdenvNoCC.mkDerivation rec {
     maven
     makeWrapper
     graphviz
-    (ruby.withPackages (pkgs: with pkgs; [github-pages jekyll-theme-cayman]))
-  ];
+  ] ++ pkgs.lib.optional buildGitHubPages (ruby.withPackages (pkgs: with pkgs; [
+    github-pages
+    jekyll-theme-cayman
+  ]));
 
   mavenRepo = pkgs.stdenv.mkDerivation {
     pname = "${pname}-mavenRepo";
@@ -95,7 +97,7 @@ pkgs.stdenvNoCC.mkDerivation rec {
     local jar="$out/share/java/DiffDetective/DiffDetective.jar"
     install -Dm644 "target/diffdetective-${version}-jar-with-dependencies.jar" "$jar"
     makeWrapper "${pkgs.jdk}/bin/java" "$out/bin/DiffDetective" --add-flags "-cp \"$jar\"" \
-      --prefix PATH : "${pkgs.graphviz}"
+      --prefix PATH : "${pkgs.graphviz}/bin"
 
     ${
       if buildGitHubPages
