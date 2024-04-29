@@ -99,7 +99,7 @@ This paper gives an overview of DiffDetective, its design, features, use-cases, 
 [![Paper](https://img.shields.io/badge/Paper-Read-purple)](https://dl.acm.org/doi/10.1145/3540250.3549108)
 [![Talk](https://img.shields.io/badge/Talk-Watch-purple)](https://www.youtube.com/watch?v=EnDx1AWxD24)
 [![Original Replication Package](https://img.shields.io/badge/Replication_Package-Original-blue)](https://github.com/VariantSync/DiffDetective/tree/esecfse22)
-[![Updated Replication Package](https://img.shields.io/badge/Replication_Package-Updated-blue)](replication/esecfse22/README.md)
+[![Updated Replication Package](https://img.shields.io/badge/Replication_Package-Updated-blue)](replication/esecfse22/)
 [![Artifact DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7110095.svg)](https://doi.org/10.5281/zenodo.7110095)
 
 > P. M. Bittner, C.Tinnes, A. Schultheiß, S. Viegener, T. Kehrer, T. Thüm. _Classifying Edits to Variability in Source Code_. In Proceedings of the 30th ACM Joint European Software Engineering Conference and Symposium on the Foundations of Software Engineering (ESEC/FSE 2022), ACM, New York, NY, November 2022
@@ -120,7 +120,7 @@ The original replication package can be found on the [esecfse](https://github.co
 [![Preprint](https://img.shields.io/badge/Preprint-Read-purple)](https://github.com/SoftVarE-Group/Papers/raw/main/2023/2023-SPLC-Bittner.pdf)
 [![Paper](https://img.shields.io/badge/Paper-Read-purple)](https://dl.acm.org/doi/10.1145/3579027.3608985)
 [![Original Replication Package](https://img.shields.io/badge/Replication_Package-Original-blue)](https://github.com/VariantSync/DiffDetective/tree/splc23-views/replication/splc23-views)
-[![Updated Replication Package](https://img.shields.io/badge/Replication_Package-Updated-blue)](replication/splc23-views/README.md)
+[![Updated Replication Package](https://img.shields.io/badge/Replication_Package-Updated-blue)](replication/splc23-views/)
 [![Artifact DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.8027920.svg)](https://doi.org/10.5281/zenodo.8027920)
 
 > P. M. Bittner, A. Schultheiß, S. Greiner, B. Moosherr, S. Krieter, C. Tinnes, T. Kehrer, T. Thüm. _Views on Edits to Variational Software_. In Proceedings of the 27th ACM International Systems and Software Product Line Conference (SPLC 2023), ACM, New York, NY, August 2023
