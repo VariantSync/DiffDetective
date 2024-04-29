@@ -27,8 +27,10 @@ pkgs.stdenvNoCC.mkDerivation rec {
     maven
     makeWrapper
     graphviz
-    (ruby.withPackages (pkgs: with pkgs; [github-pages jekyll-theme-cayman]))
-  ];
+  ] ++ pkgs.lib.optional buildGitHubPages (ruby.withPackages (pkgs: with pkgs; [
+    github-pages
+    jekyll-theme-cayman
+  ]));
 
   mavenRepo = pkgs.stdenv.mkDerivation {
     pname = "${pname}-mavenRepo";
