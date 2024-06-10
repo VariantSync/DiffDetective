@@ -90,7 +90,9 @@ Additionally, there is a screencast available on YouTube, guiding you through th
 
 > P. M. Bittner, A. Schultheiß, B. Moosherr, T. Kehrer, T. Thüm. _Variability-Aware Differencing with DiffDetective_. Demonstrations at International Conference on the Foundations of Software Engineering 2024, ACM, New York, NY, July 2024
 
-This paper gives an overview of DiffDetective, its design, features, use-cases, and past case studies. We recommend reading this paper if you are interested in the design of DiffDetective or if you consider using it for your own projects or research. The paper is accompanied by a [demo project][demo] as well as a [screencast][screencast] (see `How to Get Started` above).
+<img padding="10" align="right" src="https://www.acm.org/binaries/content/gallery/acm/publications/artifact-review-v1_1-badges/artifacts_evaluated_reusable_v1_1.png" alt="ACM Artifacts Evaluated Reusable" width="114" height="113"/>
+
+This paper gives an overview of DiffDetective, its design, features, use-cases, and past case studies. We recommend reading this paper if you are interested in the design of DiffDetective or if you consider using it for your own projects or research. The paper is accompanied by a [demo project][demo] as well as a [screencast][screencast] (also see `How to Get Started` above).
 
 ### Classifying Edits to Variability in Source Code (ESEC/FSE 2022)
 
