@@ -84,7 +84,7 @@ Additionally, there is a screencast available on YouTube, guiding you through th
 
 ### Variability-Aware Differencing with DiffDetective (FSE 2024)
 
-[![Preprint](https://img.shields.io/badge/Preprint-Read-purple)](https://github.com/VariantSync/DiffDetective-Demo/blob/raw/Variability-Aware%20Differencing%20with%20DiffDetective.pdf)
+[![Preprint](https://img.shields.io/badge/Preprint-Read-purple)](https://github.com/SoftVarE-Group/Papers/raw/main/2024/2024-FSE-Bittner.pdf)
 [![Screencast](https://img.shields.io/badge/Screencast-Watch-purple)][screencast]
 [![Demo Repository](https://img.shields.io/badge/Demo-Try-blue)][demo]
 
