@@ -1,4 +1,3 @@
-
 ![Maven](https://github.com/VariantSync/DiffDetective/actions/workflows/maven.yml/badge.svg)
 [![Documentation](https://img.shields.io/badge/Documentation-Read-purple)][documentation]
 [![GitHubPages](https://img.shields.io/badge/GitHub%20Pages-online-blue.svg?style=flat)][website]
@@ -7,8 +6,7 @@
 
 # DiffDetective - Variability-Aware Source Code Differencing
 
-
-<img padding="30" align="right" src="docs/logo.png" alt="ACM Artifacts Evaluated Reusable" width="350"/>
+<img padding="30" align="right" src="docs/logo.png" alt="DiffDetective Logo" width="350"/>
 
 DiffDetective is an open-source Java library for variability-aware source code differencing and the **analysis of version histories of software product lines**. This means that DiffDetective can **turn a generic differencer into a variability-aware differencer** by means of a pre- or post-processing. DiffDetective is centered around **formally verified** data structures for variability (variation trees) and variability-aware diffs (variation diffs). These data structures are **generic**, and DiffDetective currently implements **C preprocessor support** to parse respective annotations when used to implement variability. The picture below depicts the process of variability-aware differencing.
 
