@@ -1,13 +1,12 @@
-
 ![Maven](https://github.com/VariantSync/DiffDetective/actions/workflows/maven.yml/badge.svg)
 [![Documentation](https://img.shields.io/badge/Documentation-Read-purple)][documentation]
 [![GitHubPages](https://img.shields.io/badge/GitHub%20Pages-online-blue.svg?style=flat)][website]
 [![License](https://img.shields.io/badge/License-GNU%20LGPLv3-blue)](LICENSE.LGPL3)
+[![Demo Repository](https://img.shields.io/badge/Demo-Try-blue)][demo]
 
 # DiffDetective - Variability-Aware Source Code Differencing
 
-
-<img padding="30" align="right" src="docs/logo.png" alt="ACM Artifacts Evaluated Reusable" width="350"/>
+<img padding="30" align="right" src="docs/logo.png" alt="DiffDetective Logo" width="350"/>
 
 DiffDetective is an open-source Java library for variability-aware source code differencing and the **analysis of version histories of software product lines**. This means that DiffDetective can **turn a generic differencer into a variability-aware differencer** by means of a pre- or post-processing. DiffDetective is centered around **formally verified** data structures for variability (variation trees) and variability-aware diffs (variation diffs). These data structures are **generic**, and DiffDetective currently implements **C preprocessor support** to parse respective annotations when used to implement variability. The picture below depicts the process of variability-aware differencing.
 
@@ -85,13 +84,15 @@ Additionally, there is a screencast available on YouTube, guiding you through th
 
 ### Variability-Aware Differencing with DiffDetective (FSE 2024)
 
-[![Preprint](https://img.shields.io/badge/Preprint-Read-purple)](https://github.com/VariantSync/DiffDetective-Demo/blob/raw/Variability-Aware%20Differencing%20with%20DiffDetective.pdf)
+[![Preprint](https://img.shields.io/badge/Preprint-Read-purple)](https://github.com/SoftVarE-Group/Papers/raw/main/2024/2024-FSE-Bittner.pdf)
 [![Screencast](https://img.shields.io/badge/Screencast-Watch-purple)][screencast]
 [![Demo Repository](https://img.shields.io/badge/Demo-Try-blue)][demo]
 
 > P. M. Bittner, A. Schultheiß, B. Moosherr, T. Kehrer, T. Thüm. _Variability-Aware Differencing with DiffDetective_. Demonstrations at International Conference on the Foundations of Software Engineering 2024, ACM, New York, NY, July 2024
 
-This paper gives an overview of DiffDetective, its design, features, use-cases, and past case studies. We recommend reading this paper if you are interested in the design of DiffDetective or if you consider using it for your own projects or research. The paper is accompanied by a [demo project][demo] as well as a [screencast][screencast] (see `How to Get Started` above).
+<img padding="10" align="right" src="https://www.acm.org/binaries/content/gallery/acm/publications/artifact-review-v1_1-badges/artifacts_evaluated_reusable_v1_1.png" alt="ACM Artifacts Evaluated Reusable" width="114" height="113"/>
+
+This paper gives an overview of DiffDetective, its design, features, use-cases, and past case studies. We recommend reading this paper if you are interested in the design of DiffDetective or if you consider using it for your own projects or research. The paper is accompanied by a [demo project][demo] as well as a [screencast][screencast] (also see `How to Get Started` above).
 
 ### Classifying Edits to Variability in Source Code (ESEC/FSE 2022)
 
