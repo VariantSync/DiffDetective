@@ -82,11 +82,12 @@ Additionally, there is a screencast available on YouTube, guiding you through th
 
 ## Publications
 
-### Variability-Aware Differencing with DiffDetective (FSE 2024)
+### Variability-Aware Differencing with DiffDetective (FSE 2024, ⭐ [Best Demo Paper](https://2024.esec-fse.org/track/fse-2024-demonstrations?#Awards) ⭐)
 
 [![Preprint](https://img.shields.io/badge/Preprint-Read-purple)](https://github.com/SoftVarE-Group/Papers/raw/main/2024/2024-FSE-Bittner.pdf)
 [![Screencast](https://img.shields.io/badge/Screencast-Watch-purple)][screencast]
 [![Demo Repository](https://img.shields.io/badge/Demo-Try-blue)][demo]
+
 
 > P. M. Bittner, A. Schultheiß, B. Moosherr, T. Kehrer, T. Thüm. _Variability-Aware Differencing with DiffDetective_. Demonstrations at International Conference on the Foundations of Software Engineering 2024, ACM, New York, NY, July 2024
 
