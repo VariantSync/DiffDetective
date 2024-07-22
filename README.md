@@ -85,6 +85,7 @@ Additionally, there is a screencast available on YouTube, guiding you through th
 ### Variability-Aware Differencing with DiffDetective (FSE 2024, ⭐ [Best Demo Paper](https://2024.esec-fse.org/track/fse-2024-demonstrations?#Awards) ⭐)
 
 [![Preprint](https://img.shields.io/badge/Preprint-Read-purple)](https://github.com/SoftVarE-Group/Papers/raw/main/2024/2024-FSE-Bittner.pdf)
+[![Slides](https://img.shields.io/badge/Slides-Here-purple)](https://github.com/SoftVarE-Group/Slides/raw/main/2024/2024-07-17-FSE-DiffDetective.pdf)
 [![Screencast](https://img.shields.io/badge/Screencast-Watch-purple)][screencast]
 [![Demo Repository](https://img.shields.io/badge/Demo-Try-blue)][demo]
 
@@ -100,6 +101,7 @@ This paper gives an overview of DiffDetective, its design, features, use-cases, 
 [![Preprint](https://img.shields.io/badge/Preprint-Read-purple)](https://github.com/SoftVarE-Group/Papers/raw/main/2022/2022-ESECFSE-Bittner.pdf)
 [![Paper](https://img.shields.io/badge/Paper-Read-purple)](https://dl.acm.org/doi/10.1145/3540250.3549108)
 [![Talk](https://img.shields.io/badge/Talk-Watch-purple)](https://www.youtube.com/watch?v=EnDx1AWxD24)
+[![Slides](https://img.shields.io/badge/Slides-Here-purple)](https://github.com/SoftVarE-Group/Slides/raw/main/2022/2022-11-14-ESECFSE-ClassifyingEdits.pdf)
 [![Original Replication Package](https://img.shields.io/badge/Replication_Package-Original-blue)](https://github.com/VariantSync/DiffDetective/tree/esecfse22)
 [![Updated Replication Package](https://img.shields.io/badge/Replication_Package-Updated-blue)](replication/esecfse22/)
 [![Artifact DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7110095.svg)](https://doi.org/10.5281/zenodo.7110095)
@@ -121,6 +123,7 @@ The original replication package can be found on the [esecfse](https://github.co
 
 [![Preprint](https://img.shields.io/badge/Preprint-Read-purple)](https://github.com/SoftVarE-Group/Papers/raw/main/2023/2023-SPLC-Bittner.pdf)
 [![Paper](https://img.shields.io/badge/Paper-Read-purple)](https://dl.acm.org/doi/10.1145/3579027.3608985)
+[![Slides](https://img.shields.io/badge/Slides-Here-purple)](https://github.com/SoftVarE-Group/Slides/raw/main/2023/2023-08-30-SPLC-Views.pdf)
 [![Original Replication Package](https://img.shields.io/badge/Replication_Package-Original-blue)](https://github.com/VariantSync/DiffDetective/tree/splc23-views/replication/splc23-views)
 [![Updated Replication Package](https://img.shields.io/badge/Replication_Package-Updated-blue)](replication/splc23-views/)
 [![Artifact DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.8027920.svg)](https://doi.org/10.5281/zenodo.8027920)
@@ -145,6 +148,7 @@ The original replication package can be found on the `splc23-views` branch withi
 
 [![Preprint](https://img.shields.io/badge/Preprint-Read-purple)](https://github.com/SoftVarE-Group/Papers/raw/main/2024/2024-VaMoS-Guething.pdf)
 [![Paper](https://img.shields.io/badge/Paper-Read-purple)](https://doi.org/10.1145/3634713.3634725)
+[![Slides](https://img.shields.io/badge/Slides-Here-purple)](https://github.com/SoftVarE-Group/Slides/raw/main/2024/2024-02-07-VaMoS-ExplainingEdits.pdf)
 [![Replication Package](https://img.shields.io/badge/Replication_Package-at_Fork-blue)][forklg]
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.10286851.svg)](https://doi.org/10.5281/zenodo.10286851)
 
