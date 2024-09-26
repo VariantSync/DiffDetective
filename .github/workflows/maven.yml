@@ -50,3 +50,9 @@ jobs:
     - name: Publish Javadoc to Github Pages
       id: deployment
       uses: actions/deploy-pages@v1
+
+    # Kill in progress deployments because only the newest version is relevant
+    # and concurrent deployments cause CI failures.
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
