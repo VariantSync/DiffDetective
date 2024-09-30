@@ -101,6 +101,7 @@ This paper gives an overview of DiffDetective, its design, features, use-cases, 
 
 [![Preprint](https://img.shields.io/badge/Preprint-Read-purple)](https://github.com/SoftVarE-Group/Papers/raw/main/2022/2022-ESECFSE-Bittner.pdf)
 [![Paper](https://img.shields.io/badge/Paper-Read-purple)](https://dl.acm.org/doi/10.1145/3540250.3549108)
+[![Appendix](https://img.shields.io/badge/Appendix-Read-purple)](https://github.com/VariantSync/DiffDetective/raw/main/appendix/appendix-esecfse22.pdf)
 [![Talk](https://img.shields.io/badge/Talk-Watch-purple)](https://www.youtube.com/watch?v=EnDx1AWxD24)
 [![Slides](https://img.shields.io/badge/Slides-Here-purple)](https://github.com/SoftVarE-Group/Slides/raw/main/2022/2022-11-14-ESECFSE-ClassifyingEdits.pdf)
 [![Original Replication Package](https://img.shields.io/badge/Replication_Package-Original-blue)](https://github.com/VariantSync/DiffDetective/tree/esecfse22)
