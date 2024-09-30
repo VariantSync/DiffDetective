@@ -125,6 +125,7 @@ The original replication package can be found on the [esecfse](https://github.co
 
 [![Preprint](https://img.shields.io/badge/Preprint-Read-purple)](https://github.com/SoftVarE-Group/Papers/raw/main/2023/2023-SPLC-Bittner.pdf)
 [![Paper](https://img.shields.io/badge/Paper-Read-purple)](https://dl.acm.org/doi/10.1145/3579027.3608985)
+[![Appendix](https://img.shields.io/badge/Appendix-Read-purple)](https://github.com/VariantSync/DiffDetective/raw/main/appendix/appendix-splc23-views.pdf)
 [![Slides](https://img.shields.io/badge/Slides-Here-purple)](https://github.com/SoftVarE-Group/Slides/raw/main/2023/2023-08-30-SPLC-Views.pdf)
 [![Original Replication Package](https://img.shields.io/badge/Replication_Package-Original-blue)](https://github.com/VariantSync/DiffDetective/tree/splc23-views/replication/splc23-views)
 [![Updated Replication Package](https://img.shields.io/badge/Replication_Package-Updated-blue)](replication/splc23-views/)
