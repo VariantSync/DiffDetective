@@ -56,7 +56,7 @@ pkgs.stdenvNoCC.mkDerivation rec {
     dontConfigure = true;
     outputHashAlgo = "sha256";
     outputHashMode = "recursive";
-    outputHash = "sha256-Gimt6L54yyaX3BtdhQlVu1j4c4y++Mip0GzMl/IfzMc=";
+    outputHash = "sha256-TYZP4XhM3ExLNC3H/QLch6LMVQxbR1LECwubMZn+RXY=";
   };
 
   jre-minimal = pkgs.callPackage (import "${sources.nixpkgs}/pkgs/development/compilers/openjdk/jre.nix") {
