@@ -18,10 +18,13 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class TextDiffToTikz {
+public record TextDiffToTikz(boolean collapseMultipleCodeLines, boolean ignoreEmptyLines) {
     public static String[] UNICODE_PROP_SYMBOLS = new String[]{"¬", "∧", "∨", "⇒", "⇔"};
 
     /**
@@ -40,6 +43,12 @@ public class TextDiffToTikz {
             return;
         }
 
+        final Path fileToConvert = Path.of(args[0]);
+        if (!Files.exists(fileToConvert)) {
+            Logger.error("Path {} does not exist!", fileToConvert);
+            return;
+        }
+
         final GraphvizExporter.LayoutAlgorithm layout;
         if (args.length < 2) {
             layout = GraphvizExporter.LayoutAlgorithm.DOT;
@@ -47,30 +56,36 @@ public class TextDiffToTikz {
             layout = GraphvizExporter.LayoutAlgorithm.valueOf(args[1].toUpperCase());
         }
 
-        final Path fileToConvert = Path.of(args[0]);
-        if (!Files.exists(fileToConvert)) {
-            Logger.error("Path {} does not exist!", fileToConvert);
-            return;
+        // FIXME: Use a dedicated argument parser in the future.
+        boolean collapseMultipleCodeLines = false;
+        boolean ignoreEmptyLines = true;
+        List<String> flags = new ArrayList<>(Arrays.asList(args).subList(2, args.length));
+        if (flags.contains("-c") || flags.contains("--collapse-blocks")) {
+            collapseMultipleCodeLines = true;
+        }
+        if (flags.contains("-e") || flags.contains("--with-empty-lines")) {
+            ignoreEmptyLines = false;
         }
 
+        TextDiffToTikz me = new TextDiffToTikz(collapseMultipleCodeLines, ignoreEmptyLines);
         if (Files.isDirectory(fileToConvert)) {
             Logger.info("Processing directory " + fileToConvert);
             for (Path file : FileUtils.listAllFilesRecursively(fileToConvert)) {
                 if (FileUtils.hasExtension(file, ".diff")) {
-                    textDiff2Tikz(file, layout);
+                    me.textDiff2Tikz(file, layout);
                 }
             }
         } else {
-            textDiff2Tikz(fileToConvert, layout);
+            me.textDiff2Tikz(fileToConvert, layout);
         }
     }
 
-    public static void textDiff2Tikz(Path fileToConvert, GraphvizExporter.LayoutAlgorithm layout) throws IOException, DiffParseException {
+    public void textDiff2Tikz(Path fileToConvert, GraphvizExporter.LayoutAlgorithm layout) throws IOException, DiffParseException {
         Logger.info("Converting file " + fileToConvert);
         Logger.info("Using layout " + layout.getExecutableName());
         final Path targetFile = fileToConvert.resolveSibling(fileToConvert.getFileName() + ".tikz");
 
-        final VariationDiff<DiffLinesLabel> d = VariationDiff.fromFile(fileToConvert, new VariationDiffParseOptions(true, true));
+        final VariationDiff<DiffLinesLabel> d = VariationDiff.fromFile(fileToConvert, new VariationDiffParseOptions(collapseMultipleCodeLines, ignoreEmptyLines));
         final String tikz = exportAsTikz(d, layout);
         IO.write(targetFile, tikz);
         Logger.info("Wrote file " + targetFile);
@@ -79,7 +94,7 @@ public class TextDiffToTikz {
     public static String exportAsTikz(final VariationDiff<DiffLinesLabel> variationDiff, GraphvizExporter.LayoutAlgorithm layout) throws IOException {
         // Export the test case
         var tikzOutput = new ByteArrayOutputStream();
-        new TikzExporter<DiffLinesLabel>(format).exportVariationDiff(variationDiff, layout, tikzOutput);
+        new TikzExporter<>(format).exportVariationDiff(variationDiff, layout, tikzOutput);
         return tikzOutput.toString();
     }
 
