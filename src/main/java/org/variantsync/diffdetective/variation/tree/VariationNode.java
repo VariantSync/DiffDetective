@@ -483,6 +483,9 @@ public abstract class VariationNode<T extends VariationNode<T, L>, L extends Lab
             getLineRange(),
             getLabel()
         );
+        if (getEndIf() != null) {
+            newNode.setEndIf(getEndIf());
+        }
         oldToNew.put(this.upCast(), newNode);
 
         for (var child : getChildren()) {
