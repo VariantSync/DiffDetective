@@ -1,5 +1,7 @@
 package org.variantsync.diffdetective.variation.diff.parse;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.apache.commons.lang3.function.FailableSupplier;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.ObjectId;
@@ -327,7 +329,7 @@ public class VariationDiffParser {
             // Do not create a node for ENDIF, but update the line numbers of the closed if-chain
             // and remove that if-chain from the relevant stacks.
             diffType.forAllTimesOfExistence(beforeStack, afterStack, stack ->
-                    popIfChain(stack, fromLine)
+                    popIfChain(stack, fromLine, line)
             );
         } else if (options.collapseMultipleCodeLines()
                 && annotation.type() == AnnotationType.None
@@ -361,15 +363,24 @@ public class VariationDiffParser {
      *
      * @param stack          the stack which should be popped
      * @param elseLineNumber the first line of the else which causes this IF to be popped
+     * @param line           the line containing the endif
      * @throws DiffParseException if {@code stack} doesn't contain an IF node
      */
     private void popIfChain(
             Stack<DiffNode<DiffLinesLabel>> stack,
-            DiffLineNumber elseLineNumber
+            DiffLineNumber elseLineNumber,
+            LogicalLine line
     ) throws DiffParseException {
         DiffLineNumber previousLineNumber = elseLineNumber;
         do {
             DiffNode<DiffLinesLabel> annotation = stack.peek();
+            if (annotation.isIf()) {
+                List<String> list = new ArrayList<>();
+                for (int i = 0; i < line.getLines().size(); i++) {
+                    list.add(line.getLines().get(i).content());
+                }
+                annotation.setEndIf(list);
+            }
 
             // Set the line number of now closed annotations to the beginning of the
             // following annotation.

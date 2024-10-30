@@ -1,6 +1,5 @@
 package org.variantsync.diffdetective.variation;
 
-import java.util.ArrayList;
 import java.util.Stack;
 import org.variantsync.diffdetective.variation.tree.VariationTree;
 import org.variantsync.diffdetective.variation.tree.VariationTreeNode;
@@ -19,10 +18,8 @@ public class VariationUnparser {
                 result.append("\n");
             }
             if (node.isIf()) {
-                ArrayList<String> list = new ArrayList<>();
-                list.add(node.getEndIf());
                 stack.push(new VariationTreeNode<>(NodeType.ARTIFACT, null, null,
-                        DiffLinesLabel.withInvalidLineNumbers(list)));
+                        DiffLinesLabel.withInvalidLineNumbers(node.getEndIf())));
             }
             for (int i = node.getChildren().size() - 1; i >= 0; i--) {
                 stack.push(node.getChildren().get(i));

@@ -51,7 +51,7 @@ public class DiffNode<L extends Label> implements HasNodeType {
 
     private Node featureMapping;
 
-    private String endIf = null;
+    private List<String> endIf = null;
 
     /**
      * The parents {@link DiffNode} before and after the edit.
@@ -152,7 +152,7 @@ public class DiffNode<L extends Label> implements HasNodeType {
      * Returns the line with the endif of the corresponding if, if the node is an if node, otherwise null
      * @return String, the Line with endif
      */
-    public String getEndIf() {
+    public List<String> getEndIf() {
         return endIf;
     }
 
@@ -160,7 +160,7 @@ public class DiffNode<L extends Label> implements HasNodeType {
      * Sets the line with the endif of the corresponding if, if the node is an if node
      * @param endIf String, the Line with endif
      */
-    public void setEndIf(String endIf) {
+    public void setEndIf(List<String> endIf) {
         this.endIf = endIf;
     }
 

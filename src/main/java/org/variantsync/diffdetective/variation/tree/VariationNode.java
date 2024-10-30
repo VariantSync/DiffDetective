@@ -117,7 +117,7 @@ public abstract class VariationNode<T extends VariationNode<T, L>, L extends Lab
      * Returns the line with the endif of the corresponding if, if the node is an if node, otherwise null
      * @return String, the Line with endif
      */
-    public abstract String getEndIf();
+    public abstract List<String> getEndIf();
 
     /**
      * Returns {@code true} iff this node has no parent.

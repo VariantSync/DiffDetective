@@ -33,7 +33,6 @@ public class VariationUnparserTest {
         findTestCases(testDir).forEach(this::test);
     }
 
-    @Disabled
     @Test
     public void teststest() {
         Path path = testDir.resolve("test2.txt");

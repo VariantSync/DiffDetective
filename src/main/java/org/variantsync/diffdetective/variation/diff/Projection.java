@@ -123,7 +123,7 @@ public class Projection<L extends Label> extends VariationNode<Projection<L>, L>
     }
 
     @Override
-    public String getEndIf() {
+    public List<String> getEndIf() {
         return getBackingNode().getEndIf();
     }
 };
