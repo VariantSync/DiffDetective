@@ -29,13 +29,13 @@ public class VariationUnparser {
             }
             while (!stack.empty()) {
                 VariationTreeNode<T> node = stack.pop();
-                for (String line : node.getLabel().getLines()) {
-                    result.append(line);
-                    result.append("\n");
-                }
                 if (node.isIf()) {
                     stack.push(new VariationTreeNode<>(NodeType.ARTIFACT, null, null,
                             linesToLabel.apply(node.getEndIf())));
+                }
+                for (String line : node.getLabel().getLines()) {
+                    result.append(line);
+                    result.append("\n");
                 }
                 for (int i = node.getChildren().size() - 1; i >= 0; i--) {
                     stack.push(node.getChildren().get(i));
