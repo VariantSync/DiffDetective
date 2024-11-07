@@ -1,0 +1,11 @@
+#ifdef A
+  foo();
+  bar();
+#else
+  #ifdef B
+  baz();
+  #endif
+#endif
+#ifdef C
+  boob()
+#endif
