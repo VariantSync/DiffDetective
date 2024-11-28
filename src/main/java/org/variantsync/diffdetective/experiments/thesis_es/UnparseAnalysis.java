@@ -38,8 +38,8 @@ public class UnparseAnalysis implements Analysis.Hooks {
         String textDiff = patch.getDiff();
         String codeBefore = "";
         String codeAfter = "";
-        codeBefore = Files.readString(Path.of(patch.getFileName(Time.BEFORE)));
-        codeAfter = Files.readString(Path.of(patch.getFileName(Time.AFTER)));
+        codeBefore = VariationUnparser.undiff(patch.getDiff(), Time.BEFORE);
+        codeAfter = VariationUnparser.undiff(patch.getDiff(), Time.AFTER);
         codeBefore = codeBefore.replaceAll("\\r\\n", "\n");
         codeAfter = codeAfter.replaceAll("\\r\\n", "\n");
         boolean[][] diffTestAll = runTestsDiff(textDiff);
