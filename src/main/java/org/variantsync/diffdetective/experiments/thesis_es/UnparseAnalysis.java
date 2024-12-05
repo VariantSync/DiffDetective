@@ -25,12 +25,17 @@ public class UnparseAnalysis implements Analysis.Hooks {
 
     private StringBuilder csv;
 
+    // for debugging
+    private int errorCount = 0;
+
     @Override
     public void initializeResults(Analysis analysis) {
         Analysis.Hooks.super.initializeResults(analysis);
 
         csv = new StringBuilder();
         csv.append(UnparseEvaluation.makeHeader(CSV.DEFAULT_CSV_DELIMITER)).append(StringUtils.LINEBREAK);
+
+        errorCount = 0;
     }
 
     @Override
@@ -67,7 +72,8 @@ public class UnparseAnalysis implements Analysis.Hooks {
         }
         if (!boolOr(treeBeforeTest)) {
             error = error * 3;
-            errorSave[1] = codeBefore;
+            reportErrorToFile(analysis, codeBefore);
+            // errorSave[1] = codeBefore;
         }
         if (!boolOr(treeAfterTest)) {
             error = error * 5;
@@ -96,6 +102,13 @@ public class UnparseAnalysis implements Analysis.Hooks {
         IO.write(
                 FileUtils.addExtension(analysis.getOutputFile(), CSV_EXTENSION),
                 csv.toString());
+    }
+
+    private void reportErrorToFile(Analysis analysis, String errorMessage) throws IOException {
+        IO.write(
+                FileUtils.addExtension(analysis.getOutputFile().resolve("_error" + errorCount), ".txt"),
+                errorMessage);
+        ++errorCount;
     }
 
     public static String removeWhitespace1(String string) {
