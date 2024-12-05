@@ -2,6 +2,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
@@ -11,6 +12,9 @@ import org.variantsync.diffdetective.variation.diff.VariationDiff;
 import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParseOptions;
 import org.variantsync.diffdetective.variation.tree.VariationTree;
 import org.variantsync.diffdetective.variation.VariationUnparser;
+import org.variantsync.diffdetective.variation.tree.source.VariationTreeSource;
+
+import static org.variantsync.diffdetective.experiments.thesis_es.UnparseAnalysis.removeWhitespace;
 
 public class VariationUnparserTest {
     private final static Path testDirTree = Constants.RESOURCE_DIR.resolve("unparser");
@@ -41,14 +45,33 @@ public class VariationUnparserTest {
 
     @ParameterizedTest
     @MethodSource("testsTree")
-    public void testTree(Path basename) throws IOException, DiffParseException {
+    public void testTreeDir(Path basename) throws IOException, DiffParseException {
         testCaseTree(basename);
     }
 
     @ParameterizedTest
     @MethodSource("testsDiff")
-    public void testDiff(Path basename) throws IOException, DiffParseException {
+    public void testDiffDir(Path basename) throws IOException, DiffParseException {
         testCaseDiff(basename);
+    }
+
+    @Test
+    public void testDiff() {
+        String source = "";
+        String temp = "";
+        try {
+            source = Files.readString(Path.of("src", "test", "resources", "unparser", "test8.txt"));
+            VariationTree<DiffLinesLabel> tree = VariationTree.fromText(source, VariationTreeSource.Unknown,
+                    VariationDiffParseOptions.Default);
+            temp = VariationUnparser.variationTreeUnparser(tree);
+            System.out.println(removeWhitespace(source).equals(removeWhitespace(temp)));
+            // System.out.println(removeWhitespace(source));
+            // System.out.println("Ende");
+            // System.out.println(removeWhitespace(temp));
+            // System.out.println("Ende");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public static void testCaseTree(Path testCasePath) {
@@ -140,9 +163,5 @@ public class VariationUnparserTest {
             e.printStackTrace();
         }
         return temp;
-    }
-
-    public static String removeWhitespace(String string) {
-        return string.replaceAll("\\s+", "");
     }
 }
