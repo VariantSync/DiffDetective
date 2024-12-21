@@ -51,7 +51,7 @@ public class DiffNode<L extends Label> implements HasNodeType {
 
     private Node featureMapping;
 
-    private List<String> endIf = null;
+    private List<String>[] endIf = new List[2];
 
     /**
      * The parents {@link DiffNode} before and after the edit.
@@ -150,18 +150,20 @@ public class DiffNode<L extends Label> implements HasNodeType {
 
     /**
      * Returns the line with the endif of the corresponding if, if the node is an if node, otherwise null
+     * @param time when the returned endif exists
      * @return String, the Line with endif
      */
-    public List<String> getEndIf() {
-        return endIf;
+    public List<String> getEndIf(Time time) {
+        return endIf[time.ordinal()];
     }
 
     /**
      * Sets the line with the endif of the corresponding if, if the node is an if node
      * @param endIf String, the Line with endif
+     * @param time when {@code endIf} exists
      */
-    public void setEndIf(List<String> endIf) {
-        this.endIf = endIf;
+    public void setEndIf(List<String> endIf, Time time) {
+        this.endIf[time.ordinal()] = endIf;
     }
 
     /**
