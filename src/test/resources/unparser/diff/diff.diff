@@ -1,0 +1,4 @@
+ #if A
+    Code
++#endif /* G_OS_WIN32 */
+-#endif /* WIN32 */
