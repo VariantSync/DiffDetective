@@ -98,8 +98,10 @@ public class VariationUnparser {
             for (String line : textSplit) {
                 if (line.isEmpty()) {
                     result.append(line);
+                    result.append("\n");
                 } else if (line.charAt(0) != zeichen) {
                     result.append(line.substring(1));
+                    result.append("\n");
                 }
             }
             if (result.isEmpty()) {
