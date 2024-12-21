@@ -11,6 +11,8 @@ import java.util.function.BiFunction;
 import java.util.stream.Stream;
 import org.variantsync.diffdetective.AnalysisRunner;
 import org.variantsync.diffdetective.analysis.Analysis;
+import org.variantsync.diffdetective.datasets.DatasetDescription;
+import org.variantsync.diffdetective.datasets.DefaultDatasets;
 import org.variantsync.diffdetective.datasets.PatchDiffParseOptions;
 import org.variantsync.diffdetective.datasets.PatchDiffParseOptions.DiffStoragePolicy;
 import org.variantsync.diffdetective.datasets.Repository;
@@ -19,11 +21,9 @@ import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParseOpti
 
 public class Main {
 
-    public static String dataSetPath = "";
-
     public static void main(String[] args) throws IOException {
         startAnalysis();
-        // evaluationAnalysis(Path.of("docs","datasets","eugen-bachelor-thesis.md"));
+        evaluationAnalysis(Path.of("docs", "datasets", "eugen-bachelor-thesis.md"));
 
     }
 
@@ -54,24 +54,32 @@ public class Main {
         };
     }
 
+    /**
+     * Verarbeitet die Ergebnisse der Analyse um aus einzelnen
+     * Angaben eine gesamt Übersicht zu bekommen
+     *
+     * @param path Pfad zu der markdown datei, aus der die repositories für die
+     *             Analyse stammen
+     * @throws IOException
+     */
     private static void evaluationAnalysis(Path path) throws IOException {
         int count = 0;
-        int error = 0;
         int[] diffTest = { 0, 0, 0, 0, 0, 0, 0, 0 };
         int[] diffSemEqTest = { 0, 0, 0, 0, };
         int[] treeTest = { 0, 0, 0, 0, 0, 0, 0, 0 };
-        List<String> errorList = new ArrayList<>();
-        String data = Files.readString(path);
-        String[] splitPathData = data.split("\n");
-        for (int i = 2; i < splitPathData.length; i++) {
-            String name = splitPathData[i].split("|")[0].replaceAll("\\s+", "");
+        final List<DatasetDescription> datasets = DefaultDatasets.loadDatasets(path);
+
+        for (DatasetDescription description : datasets) {
             Stream<Path> files = Files
-                    .list(Path.of("results", "thesis_es", name))
+                    .list(Path.of("results", "thesis_es", description.name()))
                     .filter(filename -> filename.getFileName().toString().endsWith(".thesis_es.csv"));
             for (Path tempPath : files.toList()) {
                 String[] splitFileData = Files.readString(tempPath).split("\n");
                 for (int j = 1; j < splitFileData.length; j++) {
                     String[] splitLineData = splitFileData[j].split(";");
+                    for (int i = 0; i < splitLineData.length; i++) {
+                        splitLineData[i] = parseNumberStringToIntWithLengthGreaterOne(splitLineData[i]);
+                    }
                     count = count + 1;
                     diffTest[0] = diffTest[0] + Integer.parseInt(splitLineData[8]);
                     diffTest[1] = diffTest[1] + Integer.parseInt(splitLineData[9]);
@@ -101,55 +109,77 @@ public class Main {
                     treeTest[5] = treeTest[5] + Integer.parseInt(splitLineData[33]);
                     treeTest[6] = treeTest[6] + Integer.parseInt(splitLineData[34]);
                     treeTest[7] = treeTest[7] + Integer.parseInt(splitLineData[35]);
-                    int errorCode = Integer.parseInt(splitLineData[36]);
-                    if (errorCode != 1) {
-                        if (errorCode % 2 == 0) {
-                            errorList.add(splitLineData[37]);
-                            error = error + 1;
-                        }
-                        if (errorCode % 3 == 0) {
-                            errorList.add(splitLineData[38]);
-                            error = error + 1;
-                        }
-                        if (errorCode % 5 == 0) {
-                            errorList.add(splitLineData[39]);
-                            error = error + 1;
-                        }
-                    }
+
                 }
             }
         }
         List<String> result = new ArrayList<>();
-        result.add("Anzahl geprüfter Diffs : " + count);
-        result.add("Anzahl syntaktisch korrekter Diffs mit MultiLine0 und EmptyLine0 : " + diffTest[0]);
-        result.add("Anzahl syntaktisch korrekter Diffs mit MultiLine1 und EmptyLine0 : " + diffTest[1]);
-        result.add("Anzahl syntaktisch korrekter Diffs mit MultiLine0 und EmptyLine1 : " + diffTest[2]);
-        result.add("Anzahl syntaktisch korrekter Diffs mit MultiLine1 und EmptyLine1 : " + diffTest[3]);
-        result.add("Anzahl syntaktisch korrekter Diffs ohne Whitespace mit MultiLine0 und EmptyLine0 : " + diffTest[4]);
-        result.add("Anzahl syntaktisch korrekter Diffs ohne Whitespace mit MultiLine1 und EmptyLine0 : " + diffTest[5]);
-        result.add("Anzahl syntaktisch korrekter Diffs ohne Whitespace mit MultiLine0 und EmptyLine1 : " + diffTest[6]);
-        result.add("Anzahl syntaktisch korrekter Diffs ohne Whitespace mit MultiLine1 und EmptyLine1 : " + diffTest[7]);
-        result.add("Anzahl semantisch korrekter Diffs mit MultiLine0 und EmptyLine0 : " + diffSemEqTest[0]);
-        result.add("Anzahl semantisch korrekter Diffs mit MultiLine1 und EmptyLine0 : " + diffSemEqTest[1]);
-        result.add("Anzahl semantisch korrekter Diffs mit MultiLine0 und EmptyLine1 : " + diffSemEqTest[2]);
-        result.add("Anzahl semantisch korrekter Diffs mit MultiLine1 und EmptyLine1 : " + diffSemEqTest[3]);
-        result.add("Anzahl syntaktisch korrekter Trees mit MultiLine0 und EmptyLine0 : " + treeTest[0]);
-        result.add("Anzahl syntaktisch korrekter Trees mit MultiLine1 und EmptyLine0 : " + treeTest[1]);
-        result.add("Anzahl syntaktisch korrekter Trees mit MultiLine0 und EmptyLine1 : " + treeTest[2]);
-        result.add("Anzahl syntaktisch korrekter Trees mit MultiLine1 und EmptyLine1 : " + treeTest[3]);
-        result.add("Anzahl syntaktisch korrekter Trees ohne Whitespace mit MultiLine0 und EmptyLine0 : " + treeTest[4]);
-        result.add("Anzahl syntaktisch korrekter Trees ohne Whitespace mit MultiLine1 und EmptyLine0 : " + treeTest[5]);
-        result.add("Anzahl syntaktisch korrekter Trees ohne Whitespace mit MultiLine0 und EmptyLine1 : " + treeTest[6]);
-        result.add("Anzahl syntaktisch korrekter Trees ohne Whitespace mit MultiLine1 und EmptyLine1 : " + treeTest[7]);
-        result.add("Anzahl Fehler : " + error);
+        result.add("Anzahl geprüfter Diffs : " + count + "\n");
+        result.add("Anzahl syntaktisch korrekter Diffs mit MultiLine0 und EmptyLine0 : " + diffTest[0] + "\n");
+        result.add("Anzahl syntaktisch korrekter Diffs ohne Whitespace mit MultiLine0 und EmptyLine0 : " + diffTest[4]
+                + "\n");
+        result.add("Anzahl semantisch korrekter Diffs mit MultiLine0 und EmptyLine0 : " + diffSemEqTest[0] + "\n");
+        result.add("Anzahl von Diffs mit MultiLine0 und EmptyLine0, welche keine Korrektheitskriterium erfühlt haben : "
+                + (count - diffSemEqTest[0]) + "\n");
+
+        result.add("Anzahl syntaktisch korrekter Diffs mit MultiLine1 und EmptyLine0 : " + diffTest[1] + "\n");
+        result.add("Anzahl syntaktisch korrekter Diffs ohne Whitespace mit MultiLine1 und EmptyLine0 : " + diffTest[5]
+                + "\n");
+        result.add("Anzahl semantisch korrekter Diffs mit MultiLine1 und EmptyLine0 : " + diffSemEqTest[1] + "\n");
+        result.add("Anzahl von Diffs mit MultiLine1 und EmptyLine0, welche keine Korrektheitskriterium erfühlt haben : "
+                + (count - diffSemEqTest[1]) + "\n");
+
+        result.add("Anzahl syntaktisch korrekter Diffs mit MultiLine0 und EmptyLine1 : " + diffTest[2] + "\n");
+        result.add("Anzahl syntaktisch korrekter Diffs ohne Whitespace mit MultiLine0 und EmptyLine1 : " + diffTest[6]
+                + "\n");
+        result.add("Anzahl semantisch korrekter Diffs mit MultiLine0 und EmptyLine1 : " + diffSemEqTest[2] + "\n");
+        result.add("Anzahl von Diffs mit MultiLine0 und EmptyLine1, welche keine Korrektheitskriterium erfühlt haben : "
+                + (count - diffSemEqTest[2]) + "\n");
+
+        result.add("Anzahl syntaktisch korrekter Diffs mit MultiLine1 und EmptyLine1 : " + diffTest[3] + "\n");
+        result.add("Anzahl syntaktisch korrekter Diffs ohne Whitespace mit MultiLine1 und EmptyLine1 : " + diffTest[7]
+                + "\n");
+        result.add("Anzahl semantisch korrekter Diffs mit MultiLine1 und EmptyLine1 : " + diffSemEqTest[3] + "\n");
+        result.add("Anzahl von Diffs mit MultiLine1 und EmptyLine1, welche keine Korrektheitskriterium erfühlt haben : "
+                + (count - diffSemEqTest[3]) + "\n");
+
+        result.add("-------------------------------------------------------------------------------------------");
+        result.add("Anzahl geprüfter Trees : " + count * 2 + "\n");
+        result.add("Anzahl syntaktisch korrekter Trees mit MultiLine0 und EmptyLine0 : " + treeTest[0] + "\n");
+        result.add("Anzahl syntaktisch korrekter Trees ohne Whitespace mit MultiLine0 und EmptyLine0 : " + treeTest[4]
+                + "\n");
+        result.add("Anzahl von Trees mit MultiLine0 und EmptyLine0, welche keine Korrektheitskriterium erfühlt haben : "
+                + (2 * count - treeTest[4]) + "\n");
+
+        result.add("Anzahl syntaktisch korrekter Trees mit MultiLine1 und EmptyLine0 : " + treeTest[1] + "\n");
+        result.add("Anzahl syntaktisch korrekter Trees ohne Whitespace mit MultiLine1 und EmptyLine0 : " + treeTest[5]
+                + "\n");
+        result.add("Anzahl von Trees mit MultiLine1 und EmptyLine0, welche keine Korrektheitskriterium erfühlt haben : "
+                + (2 * count - treeTest[5]) + "\n");
+
+        result.add("Anzahl syntaktisch korrekter Trees mit MultiLine0 und EmptyLine1 : " + treeTest[2] + "\n");
+        result.add("Anzahl syntaktisch korrekter Trees ohne Whitespace mit MultiLine0 und EmptyLine1 : " + treeTest[6]
+                + "\n");
+        result.add("Anzahl von Trees mit MultiLine0 und EmptyLine1, welche keine Korrektheitskriterium erfühlt haben : "
+                + (2 * count - treeTest[6]) + "\n");
+
+        result.add("Anzahl syntaktisch korrekter Trees mit MultiLine1 und EmptyLine1 : " + treeTest[3] + "\n");
+        result.add("Anzahl syntaktisch korrekter Trees ohne Whitespace mit MultiLine1 und EmptyLine1 : " + treeTest[7]
+                + "\n");
+        result.add("Anzahl von Trees mit MultiLine1 und EmptyLine1, welche keine Korrektheitskriterium erfühlt haben : "
+                + (2 * count - treeTest[7]) + "\n");
 
         Files.write(Path.of("results", "thesis_es", "resultOfAnalysis.txt"), result);
-        int c = 1;
-        for (String line : errorList) {
-            Files.writeString(Path.of("results", "thesis_es", "errors", c + "error.txt"), line);
-            c = c + 1;
-        }
 
     }
 
+    private static String parseNumberStringToIntWithLengthGreaterOne(String string) {
+        string = string.trim();
+        for (char c : string.toCharArray()) {
+            if (Character.isDigit(c)) {
+                return Character.toString(c);
+            }
+        }
+        return "";
+    }
 }

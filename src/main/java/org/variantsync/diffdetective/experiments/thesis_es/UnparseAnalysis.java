@@ -1,6 +1,8 @@
 package org.variantsync.diffdetective.experiments.thesis_es;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.StringReader;
 import org.eclipse.jgit.diff.DiffAlgorithm.SupportedAlgorithm;
 import org.variantsync.diffdetective.analysis.Analysis;
 import org.variantsync.diffdetective.diff.git.PatchDiff;
@@ -42,57 +44,131 @@ public class UnparseAnalysis implements Analysis.Hooks {
     public boolean analyzeVariationDiff(Analysis analysis) throws Exception {
         PatchDiff patch = analysis.getCurrentPatch();
         String textDiff = patch.getDiff();
-        String codeBefore = "";
-        String codeAfter = "";
-        /*
-        if (count < 10) {
-            Path pathTreeBefore = Paths.get("results", "thesis_es", "treeBefore" + count + ".txt");
-            Path pathTreeAfter = Paths.get("results", "thesis_es", "treeAfter" + count + ".txt");
-            Path pathDiff = Paths.get("results", "thesis_es", "diff" + count + ".txt");
-            Files.writeString(pathTreeBefore, codeBefore);
-            Files.writeString(pathTreeAfter, codeAfter);
-            Files.writeString(pathDiff, textDiff);
-            count++;
+        try {
+            BufferedReader in = new BufferedReader(new StringReader(textDiff));
+            String line = "";
+            StringBuilder tempString = new StringBuilder();
+            while ((line = in.readLine()) != null) {
+                tempString.append(line);
+                tempString.append("\n");
+            }
+            textDiff = tempString.toString();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        */
 
-        codeBefore = VariationUnparser.undiff(patch.getDiff(), Time.BEFORE);
-        codeAfter = VariationUnparser.undiff(patch.getDiff(), Time.AFTER);
-        // codeBefore = codeBefore.replaceAll("\\r\\n", "\n");
-        // codeAfter = codeAfter.replaceAll("\\r\\n", "\n");
+        String codeBefore = VariationUnparser.undiff(patch.getDiff(), Time.BEFORE);
+        String codeAfter = VariationUnparser.undiff(patch.getDiff(), Time.AFTER);
+
         boolean[][] diffTestAll = runTestsDiff(textDiff);
         boolean[] treeBeforeTest = runTestsTree(codeBefore);
         boolean[] treeAfterTest = runTestsTree(codeAfter);
         boolean[] dataTests = runDataTest(textDiff, codeBefore, codeAfter);
         int error = 1;
-        String[] errorSave = new String[] { "", "", "" };
+        // Test das es überhaupt funktioniert
         if (!(boolOr(diffTestAll[0]) || boolOr(diffTestAll[1]))) {
             error = error * 2;
-            // errorSave[0] = ;
+            reportErrorToFile(analysis, "textDiff: \n" + textDiff);
         }
         if (!boolOr(treeBeforeTest)) {
             error = error * 3;
-            reportErrorToFile(analysis, codeBefore);
-            // errorSave[1] = codeBefore;
+            reportErrorToFile(analysis, "treeBefore: \n" + codeBefore);
         }
         if (!boolOr(treeAfterTest)) {
             error = error * 5;
-            // errorSave[2] = codeAfter;
+            reportErrorToFile(analysis, "treeAfter: \n" + codeAfter);
         }
-        /*
-        if (!boolOr(dataTests)) {
-            error = error * 7;
+        // Testen der implikationen
+        // für Diff
+        // syntaktische Gleicheheit folgt syntaktische ohne Whitespace Gleichheit
+        // für CollapseMultyLine false und IgnoreEmptyLine false
+        if (diffTestAll[0][0] && !diffTestAll[0][4]) {
+            reportErrorToFile(analysis, "diffTestAll[0][0] && !diffTestAll[0][4] " + textDiff);
         }
-        */
+        // syntaktische Gleicheheit ohne Whitespace folgt semantische Gleichheit
+        // für CollapseMultyLine false und IgnoreEmptyLine false
+        if (diffTestAll[0][4] && !diffTestAll[1][0]) {
+            reportErrorToFile(analysis, "diffTestAll[0][4] && !diffTestAll[1][0] " + textDiff);
+        }
+        // syntaktische Gleicheheit folgt syntaktische ohne Whitespace Gleichheit
+        // für CollapseMultyLine true und IgnoreEmptyLine false
+        if (diffTestAll[0][1] && !diffTestAll[0][5]) {
+            reportErrorToFile(analysis, "diffTestAll[0][1] && !diffTestAll[0][5] " + textDiff);
+        }
+        // syntaktische Gleicheheit ohne Whitespace folgt semantische Gleichheit
+        // für CollapseMultyLine true und IgnoreEmptyLine false
+        if (diffTestAll[0][5] && !diffTestAll[1][1]) {
+            reportErrorToFile(analysis, "diffTestAll[0][5] && !diffTestAll[1][1] " + textDiff);
+        }
+        // syntaktische Gleicheheit folgt syntaktische ohne Whitespace Gleichheit
+        // für CollapseMultyLine false und IgnoreEmptyLine true
+        if (diffTestAll[0][2] && !diffTestAll[0][6]) {
+            reportErrorToFile(analysis, "diffTestAll[0][2] && !diffTestAll[0][6] " + textDiff);
+        }
+        // syntaktische Gleicheheit ohne Whitespace folgt semantische Gleichheit
+        // für CollapseMultyLine false und IgnoreEmptyLine true
+        if (diffTestAll[0][6] && !diffTestAll[1][2]) {
+            reportErrorToFile(analysis, "diffTestAll[0][6] && !diffTestAll[1][2] " + textDiff);
+        }
+        // syntaktische Gleicheheit folgt syntaktische ohne Whitespace Gleichheit
+        // für CollapseMultyLine true und IgnoreEmptyLine true
+        if (diffTestAll[0][3] && !diffTestAll[0][7]) {
+            reportErrorToFile(analysis, "diffTestAll[0][3] && !diffTestAll[0][7] " + textDiff);
+        }
+        // syntaktische Gleicheheit ohne Whitespace folgt semantische Gleichheit
+        // für CollapseMultyLine true und IgnoreEmptyLine true
+        if (diffTestAll[0][7] && !diffTestAll[1][3]) {
+            reportErrorToFile(analysis, "diffTestAll[0][7] && !diffTestAll[1][3] " + textDiff);
+        }
+        // für Trees
+        // syntaktische Gleicheheit folgt syntaktische ohne Whitespace Gleichheit
+        // für CollapseMultyLine false und IgnoreEmptyLine false
+        if (treeBeforeTest[0] && !treeBeforeTest[4]) {
+            reportErrorToFile(analysis, "treeBeforeTest[0] && !treeBeforeTest[4] " + textDiff);
+        }
+        // syntaktische Gleicheheit folgt syntaktische ohne Whitespace Gleichheit
+        // für CollapseMultyLine true und IgnoreEmptyLine false
+        if (treeBeforeTest[1] && !treeBeforeTest[5]) {
+            reportErrorToFile(analysis, "treeBeforeTest[1] && !treeBeforeTest[5] " + textDiff);
+        }
+        // syntaktische Gleicheheit folgt syntaktische ohne Whitespace Gleichheit
+        // für CollapseMultyLine false und IgnoreEmptyLine true
+        if (treeBeforeTest[2] && !treeBeforeTest[6]) {
+            reportErrorToFile(analysis, "treeBeforeTest[2] && !treeBeforeTest[6] " + textDiff);
+        }
+        // syntaktische Gleicheheit folgt syntaktische ohne Whitespace Gleichheit
+        // für CollapseMultyLine true und IgnoreEmptyLine true
+        if (treeBeforeTest[3] && !treeBeforeTest[7]) {
+            reportErrorToFile(analysis, "treeBeforeTest[3] && !treeBeforeTest[7] " + textDiff);
+        }
+        // syntaktische Gleicheheit folgt syntaktische ohne Whitespace Gleichheit
+        // für CollapseMultyLine false und IgnoreEmptyLine false
+        if (treeAfterTest[0] && !treeAfterTest[4]) {
+            reportErrorToFile(analysis, "treeAfterTest[0] && !treeAfterTest[4] " + textDiff);
+        }
+        // syntaktische Gleicheheit folgt syntaktische ohne Whitespace Gleichheit
+        // für CollapseMultyLine true und IgnoreEmptyLine false
+        if (treeAfterTest[1] && !treeAfterTest[5]) {
+            reportErrorToFile(analysis, "treeAfterTest[1] && !treeAfterTest[5] " + textDiff);
+        }
+        // syntaktische Gleicheheit folgt syntaktische ohne Whitespace Gleichheit
+        // für CollapseMultyLine false und IgnoreEmptyLine true
+        if (treeAfterTest[2] && !treeAfterTest[6]) {
+            reportErrorToFile(analysis, "treeAfterTest[2] && !treeAfterTest[6] " + textDiff);
+        }
+        // syntaktische Gleicheheit folgt syntaktische ohne Whitespace Gleichheit
+        // für CollapseMultyLine true und IgnoreEmptyLine true
+        if (treeAfterTest[3] && !treeAfterTest[7]) {
+            reportErrorToFile(analysis, "treeAfterTest[3] && !treeAfterTest[7] " + textDiff);
+        }
 
+        // Speichere ergebniss
         final UnparseEvaluation ue = new UnparseEvaluation(
                 boolToInt(dataTests),
                 boolToInt(diffTestAll[0]),
                 boolToInt(diffTestAll[1]),
                 boolToInt(treeBeforeTest),
-                boolToInt(treeAfterTest),
-                error,
-                errorSave);
+                boolToInt(treeAfterTest));
         csv.append(ue.toCSV()).append(StringUtils.LINEBREAK);
         return Analysis.Hooks.super.analyzeVariationDiff(analysis);
     }
@@ -106,20 +182,9 @@ public class UnparseAnalysis implements Analysis.Hooks {
 
     private void reportErrorToFile(Analysis analysis, String errorMessage) throws IOException {
         IO.write(
-                FileUtils.addExtension(analysis.getOutputFile().resolve("_error" + errorCount), ".txt"),
+                FileUtils.addExtension(analysis.getOutputFile().resolve("error" + errorCount), ".txt"),
                 errorMessage);
         ++errorCount;
-    }
-
-    public static String removeWhitespace1(String string) {
-        string = string.replaceAll("\n(\\s*\n)+", "\n");
-        string = string.replaceAll("\n\\s+", "\n");
-        if (!string.isEmpty()) {
-            if (string.charAt(string.length() - 1) == '\n') {
-                return string.substring(0, string.length() - 1);
-            }
-        }
-        return string;
     }
 
     public static String removeWhitespace(String string) {
@@ -127,13 +192,19 @@ public class UnparseAnalysis implements Analysis.Hooks {
             return "";
         } else {
             StringBuilder result = new StringBuilder();
-            for (String line : string.split("\n")) {
-                if (!line.replaceAll("\\s+", "").isEmpty()) {
-                    result.append(line.trim());
-                    result.append("\n");
+            try {
+                BufferedReader in = new BufferedReader(new StringReader(string));
+                String line = "";
+                while ((line = in.readLine()) != null) {
+                    if (!line.replaceAll("\\s+", "").isEmpty()) {
+                        result.append(line.trim());
+                        result.append("\n");
+                    }
                 }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-            return result.substring(0, result.length() - 1);
+            return result.toString();
         }
     }
 

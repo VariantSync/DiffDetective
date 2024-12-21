@@ -9,9 +9,7 @@ public record UnparseEvaluation(
         int[] diffTest,
         int[] diffSemEqTest,
         int[] treeBeforeTest,
-        int[] treeAfterTest,
-        int error,
-        String[] errorSave) implements CSV {
+        int[] treeAfterTest) implements CSV {
 
     @Override
     public String toCSV(String delimiter) {
@@ -51,11 +49,7 @@ public record UnparseEvaluation(
                 treeAfterTest[4],
                 treeAfterTest[5],
                 treeAfterTest[6],
-                treeAfterTest[7],
-                error,
-                errorSave[0],
-                errorSave[1],
-                errorSave[2]);
+                treeAfterTest[7]);
     }
 
     public static String makeHeader(String delimiter) {
@@ -95,11 +89,7 @@ public record UnparseEvaluation(
                 "treeAfterEqTestMultiL0EmptyL0White",
                 "treeAfterEqTestMultiL1EmptyL0White",
                 "treeAfterEqTestMultiL0EmptyL1White",
-                "treeAfterEqTestMultiL1EmptyL1White",
-                "errorTyp",
-                "errorData1",
-                "errorData2",
-                "errorData3");
+                "treeAfterEqTestMultiL1EmptyL1White");
     }
 
 }
