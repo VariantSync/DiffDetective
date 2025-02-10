@@ -187,7 +187,7 @@ public class UnparseAnalysis implements Analysis.Hooks {
         ++errorCount;
     }
 
-    public static String removeWhitespace(String string) {
+    public static String removeWhitespace(String string, boolean diff) {
         if (string.isEmpty()) {
             return "";
         } else {
@@ -197,7 +197,11 @@ public class UnparseAnalysis implements Analysis.Hooks {
                 String line = "";
                 while ((line = in.readLine()) != null) {
                     if (!line.replaceAll("\\s+", "").isEmpty()) {
-                        result.append(line.trim());
+                        String temp = line.trim();
+                        if (diff && !(temp.charAt(0) == '+' || temp.charAt(0) == '-')) {
+                            temp = " " + temp;
+                        }
+                        result.append(temp);
                         result.append("\n");
                     }
                 }
@@ -242,11 +246,11 @@ public class UnparseAnalysis implements Analysis.Hooks {
         }
     }
 
-    public static boolean equalsText(String text1, String text2, boolean whitespace) {
+    public static boolean equalsText(String text1, String text2, boolean whitespace, boolean diff) {
         if (whitespace) {
             return text1.equals(text2);
         } else {
-            return removeWhitespace(text1).equals(removeWhitespace(text2));
+            return removeWhitespace(text1, diff).equals(removeWhitespace(text2, diff));
         }
     }
 
@@ -254,16 +258,16 @@ public class UnparseAnalysis implements Analysis.Hooks {
         boolean[][] array = new boolean[2][8];
         for (int i = 0; i < 4; i++) {
             String diff = parseUnparseDiff(text, optionsSetter(i));
-            array[0][i] = equalsText(text, diff, true);
-            array[0][i + 4] = equalsText(text, diff, false);
+            array[0][i] = equalsText(text, diff, true, true);
+            array[0][i + 4] = equalsText(text, diff, false, true);
             array[1][i] = (equalsText(VariationUnparser.undiff(text, Time.BEFORE),
-                    VariationUnparser.undiff(diff, Time.BEFORE), true)
+                    VariationUnparser.undiff(diff, Time.BEFORE), true, true)
                     && equalsText(VariationUnparser.undiff(text, Time.AFTER),
-                            VariationUnparser.undiff(diff, Time.AFTER), true))
+                            VariationUnparser.undiff(diff, Time.AFTER), true, true))
                     || (equalsText(VariationUnparser.undiff(text, Time.BEFORE),
-                            VariationUnparser.undiff(diff, Time.BEFORE), false)
+                            VariationUnparser.undiff(diff, Time.BEFORE), false, true)
                             && equalsText(VariationUnparser.undiff(text, Time.AFTER),
-                                    VariationUnparser.undiff(diff, Time.AFTER), false));
+                                    VariationUnparser.undiff(diff, Time.AFTER), false, true));
             array[1][i + 4] = false;
         }
         return array;
@@ -273,8 +277,8 @@ public class UnparseAnalysis implements Analysis.Hooks {
         boolean[] array = new boolean[8];
         for (int i = 0; i < 4; i++) {
             String temp = parseUnparseTree(text, optionsSetter(i));
-            array[i] = equalsText(text, temp, true);
-            array[i + 4] = equalsText(text, temp, false);
+            array[i] = equalsText(text, temp, true, false);
+            array[i + 4] = equalsText(text, temp, false, false);
         }
         return array;
     }
@@ -282,16 +286,17 @@ public class UnparseAnalysis implements Analysis.Hooks {
     public static boolean[] runDataTest(String textDiff, String treeBefore, String treeAfter) throws IOException {
         boolean[] array = new boolean[8];
         array[0] = JGitDiff.textDiff(treeBefore, treeAfter, SupportedAlgorithm.MYERS).equals(textDiff);
-        array[1] = removeWhitespace(JGitDiff.textDiff(treeBefore, treeAfter, SupportedAlgorithm.MYERS))
-                .equals(removeWhitespace(textDiff));
+        array[1] = removeWhitespace(JGitDiff.textDiff(treeBefore, treeAfter, SupportedAlgorithm.MYERS), true)
+                .equals(removeWhitespace(textDiff, true));
         array[2] = JGitDiff.textDiff(treeBefore, treeAfter, SupportedAlgorithm.HISTOGRAM).equals(textDiff);
-        array[3] = removeWhitespace(JGitDiff.textDiff(treeBefore, treeAfter, SupportedAlgorithm.HISTOGRAM))
-                .equals(removeWhitespace(textDiff));
+        array[3] = removeWhitespace(JGitDiff.textDiff(treeBefore, treeAfter, SupportedAlgorithm.HISTOGRAM), true)
+                .equals(removeWhitespace(textDiff, true));
         array[4] = treeBefore.equals(VariationUnparser.undiff(textDiff, Time.BEFORE));
-        array[5] = removeWhitespace(treeBefore)
-                .equals(removeWhitespace(VariationUnparser.undiff(textDiff, Time.BEFORE)));
+        array[5] = removeWhitespace(treeBefore, false)
+                .equals(removeWhitespace(VariationUnparser.undiff(textDiff, Time.BEFORE), false));
         array[6] = treeAfter.equals(VariationUnparser.undiff(textDiff, Time.AFTER));
-        array[7] = removeWhitespace(treeAfter).equals(removeWhitespace(VariationUnparser.undiff(textDiff, Time.AFTER)));
+        array[7] = removeWhitespace(treeAfter, false)
+                .equals(removeWhitespace(VariationUnparser.undiff(textDiff, Time.AFTER), false));
         return array;
     }
 

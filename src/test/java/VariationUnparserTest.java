@@ -64,7 +64,7 @@ public class VariationUnparserTest {
             VariationTree<DiffLinesLabel> tree = VariationTree.fromText(source, VariationTreeSource.Unknown,
                     VariationDiffParseOptions.Default);
             temp = VariationUnparser.variationTreeUnparser(tree);
-            System.out.println(removeWhitespace(source).equals(removeWhitespace(temp)));
+            System.out.println(removeWhitespace(source, false).equals(removeWhitespace(temp, false)));
             // System.out.println(removeWhitespace(source));
             // System.out.println("Ende");
             // System.out.println(removeWhitespace(temp));
@@ -84,11 +84,11 @@ public class VariationUnparserTest {
                     .readString(Path.of("src", "test", "resources", "unparser", "diff", "diff.diff"));
             VariationDiff<DiffLinesLabel> diff = VariationDiff.fromDiff(source, VariationDiffParseOptions.Default);
             temp = VariationUnparser.variationDiffUnparser(diff);
-            System.out.println(removeWhitespace(source).equals(removeWhitespace(temp)));
-            System.out.println(removeWhitespace(VariationUnparser.undiff(source, Time.BEFORE))
-                    .equals(removeWhitespace(VariationUnparser.undiff(temp, Time.BEFORE))));
-            System.out.println(removeWhitespace(VariationUnparser.undiff(source, Time.AFTER))
-                    .equals(removeWhitespace(VariationUnparser.undiff(temp, Time.AFTER))));
+            System.out.println(removeWhitespace(source, true).equals(removeWhitespace(temp, true)));
+            System.out.println(removeWhitespace(VariationUnparser.undiff(source, Time.BEFORE), false)
+                    .equals(removeWhitespace(VariationUnparser.undiff(temp, Time.BEFORE), false)));
+            System.out.println(removeWhitespace(VariationUnparser.undiff(source, Time.AFTER), false)
+                    .equals(removeWhitespace(VariationUnparser.undiff(temp, Time.AFTER), false)));
 
             // System.out.println(removeWhitespace(source));
             // System.out.println("Ende");
@@ -114,11 +114,11 @@ public class VariationUnparserTest {
         String unparse4 = parseUnparseTree(testCasePath, new VariationDiffParseOptions(true, true));
         System.out.println(temp.equals(unparse1) + " " + temp.equals(unparse2) + " " + temp.equals(unparse3) + " "
                 + temp.equals(unparse4));
-        temp = removeWhitespace(temp);
-        unparse1 = removeWhitespace(unparse1);
-        unparse2 = removeWhitespace(unparse2);
-        unparse3 = removeWhitespace(unparse3);
-        unparse4 = removeWhitespace(unparse4);
+        temp = removeWhitespace(temp, false);
+        unparse1 = removeWhitespace(unparse1, false);
+        unparse2 = removeWhitespace(unparse2, false);
+        unparse3 = removeWhitespace(unparse3, false);
+        unparse4 = removeWhitespace(unparse4, false);
         System.out.println(temp.equals(unparse1) + " " + temp.equals(unparse2) + " " + temp.equals(unparse3) + " "
                 + temp.equals(unparse4));
     }
@@ -151,19 +151,19 @@ public class VariationUnparserTest {
         System.out.println(temp1.equals(unparse11) + " " + temp2.equals(unparse12) + " " + temp1.equals(unparse21) + " "
                 + temp2.equals(unparse22) + " " + temp1.equals(unparse31) + " " + temp2.equals(unparse32) + " "
                 + temp1.equals(unparse41) + " " + temp2.equals(unparse42));
-        System.out.println(removeWhitespace(temp1).equals(removeWhitespace(unparse11)) + " "
-                + removeWhitespace(temp2).equals(removeWhitespace(unparse12)) + " "
-                + removeWhitespace(temp1).equals(removeWhitespace(unparse21)) + " "
-                + removeWhitespace(temp2).equals(removeWhitespace(unparse22)) + " "
-                + removeWhitespace(temp1).equals(removeWhitespace(unparse31)) + " "
-                + removeWhitespace(temp2).equals(removeWhitespace(unparse32)) + " "
-                + removeWhitespace(temp1).equals(removeWhitespace(unparse41)) + " "
-                + removeWhitespace(temp2).equals(removeWhitespace(unparse42)));
-        temp = removeWhitespace(temp);
-        unparse1 = removeWhitespace(unparse1);
-        unparse2 = removeWhitespace(unparse2);
-        unparse3 = removeWhitespace(unparse3);
-        unparse4 = removeWhitespace(unparse4);
+        System.out.println(removeWhitespace(temp1, false).equals(removeWhitespace(unparse11, false)) + " "
+                + removeWhitespace(temp2, false).equals(removeWhitespace(unparse12, false)) + " "
+                + removeWhitespace(temp1, false).equals(removeWhitespace(unparse21, false)) + " "
+                + removeWhitespace(temp2, false).equals(removeWhitespace(unparse22, false)) + " "
+                + removeWhitespace(temp1, false).equals(removeWhitespace(unparse31, false)) + " "
+                + removeWhitespace(temp2, false).equals(removeWhitespace(unparse32, false)) + " "
+                + removeWhitespace(temp1, false).equals(removeWhitespace(unparse41, false)) + " "
+                + removeWhitespace(temp2, false).equals(removeWhitespace(unparse42, false)));
+        temp = removeWhitespace(temp, true);
+        unparse1 = removeWhitespace(unparse1, true);
+        unparse2 = removeWhitespace(unparse2, true);
+        unparse3 = removeWhitespace(unparse3, true);
+        unparse4 = removeWhitespace(unparse4, true);
         System.out.println(temp.equals(unparse1) + " " + temp.equals(unparse2) + " " + temp.equals(unparse3) + " "
                 + temp.equals(unparse4));
     }
