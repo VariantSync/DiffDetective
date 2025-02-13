@@ -85,7 +85,7 @@ public class TreeDiffingTest {
     public void createMatchingTestCase(TestCase testCase) throws IOException, DiffParseException {
         VariationTree<DiffLinesLabel> beforeEdit = parseVariationTree(testCase.beforeEdit());
         VariationTree<DiffLinesLabel> afterEdit = parseVariationTree(testCase.afterEdit());
-        assertExpectedVariationDiffs(testCase, GumTreeDiff.diffUsingMatching(beforeEdit, afterEdit));
+        assertExpectedVariationDiffs(testCase, GumTreeDiff.diffUsingMatching(beforeEdit, afterEdit, testCase.matcher()));
     }
 
     private static Stream<TestCase> improveMatchingTestCases() throws IOException {

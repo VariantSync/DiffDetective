@@ -35,10 +35,18 @@ public class GumTreeDiff {
      * @see diffUsingMatching(VariationNode, VariationNode, Matcher)
      */
     public static <L extends Label> VariationDiff<L> diffUsingMatching(VariationTree<L> before, VariationTree<L> after) {
+        return diffUsingMatching(before, after, Matchers.getInstance().getMatcher());
+    }
+
+    /**
+     * Create a {@link VariationDiff} by matching nodes between {@code before} and {@code after}
+     * with {@code matcher}.
+     */
+    public static <L extends Label> VariationDiff<L> diffUsingMatching(VariationTree<L> before, VariationTree<L> after, Matcher matcher) {
         DiffNode<L> root = diffUsingMatching(
             before.root(),
             after.root(),
-            Matchers.getInstance().getMatcher()
+            matcher
         );
 
         return new VariationDiff<>(root, new VariationTreeDiffSource(before.source(), after.source()));
@@ -85,7 +93,10 @@ public class GumTreeDiff {
         var dst = new VariationTreeAdapter<L>(after);
 
         MappingStore matching = matcher.match(src, dst);
-        Assert.assertTrue(matching.has(src, dst));
+
+        // The following algorithm assumes that the root nodes are matched so we ensure that this is
+        // the case here by establishing that mapping if necessary.
+        ensureMapping(matching, src, dst);
 
         removeUnmapped(matching, src);
         for (var child : dst.getChildren()) {
@@ -182,7 +193,10 @@ public class GumTreeDiff {
         MappingStore matching = new MappingStore(src, dst);
         extractMatching(src, dst, matching);
         matcher.match(src, dst, matching);
-        Assert.assertTrue(matching.has(src, dst));
+
+        // The following algorithm assumes that the root nodes are matched so we ensure that this is
+        // the case here by establishing that mapping if necessary.
+        ensureMapping(matching, src, dst);
 
         for (var srcNode : src.preOrder()) {
             var dstNode = matching.getDstForSrc(srcNode);
@@ -298,5 +312,21 @@ public class GumTreeDiff {
                 result.addMapping(matching.get(diffNode), dstNode);
             }
         }
+    }
+
+    /**
+     * Add a mapping between {@code src} and {@code dst}.
+     * In case {@code src} or {@code dst} are mapped to some other nodes, these mappings are
+     * removed.
+     */
+    private static void ensureMapping(MappingStore matching, Tree src, Tree dst) {
+        if (matching.isSrcMapped(src)) {
+            matching.removeMapping(src, matching.getDstForSrc(src));
+        }
+        if (matching.isDstMapped(dst)) {
+            matching.removeMapping(dst, matching.getSrcForDst(dst));
+        }
+
+        matching.addMapping(src, dst);
     }
 }
