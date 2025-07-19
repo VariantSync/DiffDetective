@@ -18,6 +18,7 @@ import org.variantsync.diffdetective.variation.diff.DiffType;
 import org.variantsync.diffdetective.variation.diff.Time;
 import org.variantsync.diffdetective.variation.diff.VariationDiff;
 import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParseOptions;
+import org.variantsync.diffdetective.variation.diff.source.VariationDiffSource;
 import org.variantsync.diffdetective.variation.diff.view.DiffView;
 import org.variantsync.diffdetective.variation.tree.VariationTree;
 import org.variantsync.diffdetective.variation.tree.view.relevance.Configure;
@@ -25,9 +26,12 @@ import org.variantsync.diffdetective.variation.tree.view.relevance.Relevance;
 
 public class PatchingExperiment {
 	
-	private static Relevance calculateFeatureSetToDeselect(VariationTree<DiffLinesLabel> variant1, VariationTree<DiffLinesLabel> variant2, boolean debug) {
+	private static Relevance calculateFeatureSetToDeselect(VariationTree<DiffLinesLabel> variant1version1, VariationTree<DiffLinesLabel> variant1version2, VariationTree<DiffLinesLabel> variant2, boolean debug) {
 		Set<String> featuresTreeV1 = new HashSet<String>();
-        variant1.forAllPreorder(node -> {featuresTreeV1.addAll(node.getFeatureMapping().getUniqueContainedFeatures());});
+        variant1version1.forAllPreorder(node -> {featuresTreeV1.addAll(node.getFeatureMapping().getUniqueContainedFeatures());});
+        if (variant1version2 != null) {
+        	variant1version2.forAllPreorder(node -> {featuresTreeV1.addAll(node.getFeatureMapping().getUniqueContainedFeatures());});
+        }
         Set<String> featuresTreeV2 = new HashSet<String>();
         variant2.forAllPreorder(node -> {featuresTreeV2.addAll(node.getFeatureMapping().getUniqueContainedFeatures());});
         
@@ -69,6 +73,49 @@ public class PatchingExperiment {
         return subtreeRoots;
 	}
 	
+	private static void applyChanges(DiffType type, VariationDiff<DiffLinesLabel> targetVariantDiff, Set<DiffNode<DiffLinesLabel>> subtreeRoots, VariationDiffSource source, boolean debug) {
+		Time time = (type == DiffType.ADD) ? Time.AFTER : Time.BEFORE;
+		
+        for (DiffNode<DiffLinesLabel> root : subtreeRoots) {
+        	if (debug) {
+        		VariationDiff<DiffLinesLabel> subTree = new VariationDiff<DiffLinesLabel>(root.deepCopy(), source);
+            	GameEngine.showAndAwaitAll(Show.diff(subTree));
+        	}
+        	
+        	List<DiffNode<DiffLinesLabel>> targetNodes = new ArrayList<DiffNode<DiffLinesLabel>>();
+        	if (root.isArtifact()) {
+        		targetNodes = targetVariantDiff.computeAllNodesThat(node -> node.getPresenceCondition(Time.AFTER)
+            			.equals(root.getPresenceCondition(time)) && node.isAnnotation());
+        	} else if (root.isAnnotation()) {
+        		targetNodes = targetVariantDiff.computeAllNodesThat(node -> node.getPresenceCondition(Time.AFTER)
+            			.equals(root.getParent(time).getPresenceCondition(time)) && node.isAnnotation());
+        	}
+        	
+        	if (targetNodes.size() != 1) {
+        		System.out.println("too much or too less target nodes found");
+        	} else {
+        		if (type == DiffType.ADD) {
+	        		System.out.println("subtree added");
+	        		targetNodes.get(0).addChild(root.deepCopy(), Time.AFTER);
+	        		System.out.println(targetNodes.get(0).getChildOrder(Time.AFTER));
+        		} else if (type == DiffType.REM) {
+        			DiffNode<DiffLinesLabel> parent = targetNodes.get(0);
+            		List<DiffNode<DiffLinesLabel>> nodesToRem = new ArrayList<DiffNode<DiffLinesLabel>>();
+            		parent.getAllChildrenStream().forEach(node -> { if (node.isSameAs(root, Time.BEFORE)) nodesToRem.add(node);});
+            		if (nodesToRem.size() != 1) {
+            			System.out.println("too much or too less target nodes found");
+            		} else {
+            			System.out.println("subtree removed");
+            			nodesToRem.get(0).diffType = DiffType.REM;
+            			nodesToRem.get(0).drop(Time.AFTER);
+            			System.out.println(targetNodes.get(0).getChildOrder(Time.AFTER));
+            		}
+        		}
+        	}
+        }
+	}
+	
+	
 	private static void patchVariationTrees(VariationTree<DiffLinesLabel> sourceVariantVersion1, VariationTree<DiffLinesLabel> sourceVariantVersion2, VariationTree<DiffLinesLabel> targetVariant) {
 		if (sourceVariantVersion1 == null || sourceVariantVersion2 == null || targetVariant == null) {
 			System.out.println("Parsing error");
@@ -76,81 +123,30 @@ public class PatchingExperiment {
 		}
 		
 		VariationDiff<DiffLinesLabel> diff = VariationDiff.fromTrees(sourceVariantVersion1, sourceVariantVersion2);
-		Relevance rho = calculateFeatureSetToDeselect(sourceVariantVersion1, targetVariant, false);
+		Relevance rho = calculateFeatureSetToDeselect(sourceVariantVersion1, sourceVariantVersion2, targetVariant, false);
         VariationDiff<DiffLinesLabel> optimizedDiff = DiffView.optimized(diff, rho);
-        
-        // add new nodes
+        VariationDiffSource source = optimizedDiff.getSource();
+        VariationDiff<DiffLinesLabel> targetVariantDiff = targetVariant.toCompletelyUnchangedVariationDiff();
+     
+     // add new nodes
         Set<DiffNode<DiffLinesLabel>> addedNodes = new HashSet<DiffNode<DiffLinesLabel>>();
         optimizedDiff.forAll(node -> {if (node.isAdd()) {addedNodes.add(node);}});
-        
-        // find roots of subtrees of added nodes
         Set<DiffNode<DiffLinesLabel>> addedSubtreeRoots = findRootsOfSubtrees(addedNodes, false);
-        
-        VariationDiff<DiffLinesLabel> targetVariantDiff = VariationDiff.fromTrees(targetVariant, targetVariant);
-        for (DiffNode<DiffLinesLabel> root : addedSubtreeRoots) {
-        	VariationDiff<DiffLinesLabel> subTree = new VariationDiff<DiffLinesLabel>(root.deepCopy(), optimizedDiff.getSource());
-        	GameEngine.showAndAwaitAll(Show.diff(subTree));
-        	List<DiffNode<DiffLinesLabel>> targetNodes = new ArrayList<DiffNode<DiffLinesLabel>>();
-        	if (root.isArtifact()) {
-        		targetNodes = targetVariantDiff.computeAllNodesThat(node -> node.getPresenceCondition(Time.AFTER)
-            			.equals(root.getPresenceCondition(Time.AFTER)) && node.isAnnotation());
-        	} else if (root.isAnnotation()) {
-        		targetNodes = targetVariantDiff.computeAllNodesThat(node -> node.getPresenceCondition(Time.AFTER)
-            			.equals(root.getParent(Time.AFTER).getPresenceCondition(Time.AFTER)) && node.isAnnotation());
-        	}
-        	
-        	if (targetNodes.size() != 1) {
-        		System.out.println("too much or too less target nodes found");
-        	} else {
-        		System.out.println("subtree added");
-        		targetNodes.get(0).addChild(root.deepCopy(), Time.AFTER);
-        	}
-        }
-        
-        // remove old nodes
+        applyChanges(DiffType.ADD, targetVariantDiff, addedSubtreeRoots, source, false);
+     // remove old nodes
         Set<DiffNode<DiffLinesLabel>> removedNodes = new HashSet<DiffNode<DiffLinesLabel>>();
         optimizedDiff.forAll(node -> {if (node.isRem()) {removedNodes.add(node);}});
-        
         Set<DiffNode<DiffLinesLabel>> removedSubtreeRoots = findRootsOfSubtrees(removedNodes, false);
-        
-//        VariationDiff<DiffLinesLabel> targetVariantDiff2 = VariationDiff.fromTrees(targetVariant, targetVariant);
-        for (DiffNode<DiffLinesLabel> root : removedSubtreeRoots) {
-        	VariationDiff<DiffLinesLabel> subTree = new VariationDiff<DiffLinesLabel>(root.deepCopy(), optimizedDiff.getSource());
-        	GameEngine.showAndAwaitAll(Show.diff(subTree));
-        	List<DiffNode<DiffLinesLabel>> targetNodes = new ArrayList<DiffNode<DiffLinesLabel>>();
-        	if (root.isArtifact()) {
-        		targetNodes = targetVariantDiff.computeAllNodesThat(node -> node.getPresenceCondition(Time.AFTER)
-            			.equals(root.getPresenceCondition(Time.BEFORE)) && node.isAnnotation());
-        	} else if (root.isAnnotation()) {
-        		targetNodes = targetVariantDiff.computeAllNodesThat(node -> node.getPresenceCondition(Time.AFTER)
-            			.equals(root.getParent(Time.BEFORE).getPresenceCondition(Time.BEFORE)) && node.isAnnotation());
-        	}
-        	if (targetNodes.size() != 1) {
-        		System.out.println("too much or too less target nodes found");
-        	} else {
-        		
-//        		System.out.println(targetNodes.get(0));
-        		DiffNode<DiffLinesLabel> parent = targetNodes.get(0);
-        		List<DiffNode<DiffLinesLabel>> nodesToRem = new ArrayList<DiffNode<DiffLinesLabel>>();
-        		parent.getAllChildrenStream().forEach(node -> { if (node.isSameAs(root, Time.BEFORE)) nodesToRem.add(node);});
-        		if (nodesToRem.size() != 1) {
-        			System.out.println("too much or too less target nodes found");
-        		} else {
-        			System.out.println("subtree removed");
-        			nodesToRem.get(0).diffType = DiffType.REM;
-        			nodesToRem.get(0).drop(Time.AFTER);
-        		}
-        	}
-        }
+        applyChanges(DiffType.REM, targetVariantDiff, removedSubtreeRoots, source, false);
         
         GameEngine.showAndAwaitAll(
       	      Show.tree(sourceVariantVersion1),
       	      Show.tree(sourceVariantVersion2),
       	      Show.tree(targetVariant),
       	      Show.diff(optimizedDiff),
-      	      Show.diff(targetVariantDiff)
+      	      Show.diff(targetVariantDiff),
+      	      Show.tree(targetVariantDiff.project(Time.AFTER))
       	    );
-        
 	}
 	
 	private static VariationTree<DiffLinesLabel> parseVariationTreeFromFile(String file) {
