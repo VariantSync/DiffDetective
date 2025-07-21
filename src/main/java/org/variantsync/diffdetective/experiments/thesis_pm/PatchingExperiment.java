@@ -61,10 +61,11 @@ public class PatchingExperiment {
         return rho;
 	}
 	
-	private static Set<DiffNode<DiffLinesLabel>> findRootsOfSubtrees(Set<DiffNode<DiffLinesLabel>> nodes, boolean debug) {
+	private static Set<DiffNode<DiffLinesLabel>> findRootsOfSubtrees(Set<DiffNode<DiffLinesLabel>> nodes, DiffType type, boolean debug) {
+		Time time = (type == DiffType.ADD) ? Time.AFTER : Time.BEFORE;
 		Set<DiffNode<DiffLinesLabel>> subtreeRoots = new HashSet<DiffNode<DiffLinesLabel>>();
         for (DiffNode<DiffLinesLabel> node : nodes) {
-        	if (!nodes.contains(node.getParent(Time.AFTER))) {
+        	if (!nodes.contains(node.getParent(time))) {
         		subtreeRoots.add(node);
         	}
         }
@@ -73,7 +74,7 @@ public class PatchingExperiment {
         return subtreeRoots;
 	}
 	
-	private static void applyChanges(DiffType type, VariationDiff<DiffLinesLabel> targetVariantDiff, Set<DiffNode<DiffLinesLabel>> subtreeRoots, VariationDiffSource source, boolean debug) {
+	private static void applyChanges(DiffType type, VariationDiff<DiffLinesLabel> targetVariantDiffUnchanged, VariationDiff<DiffLinesLabel> targetVariantDiffPatched, Set<DiffNode<DiffLinesLabel>> subtreeRoots, VariationDiffSource source, boolean debug) {
 		Time time = (type == DiffType.ADD) ? Time.AFTER : Time.BEFORE;
 		
         for (DiffNode<DiffLinesLabel> root : subtreeRoots) {
@@ -84,29 +85,35 @@ public class PatchingExperiment {
         	
         	List<DiffNode<DiffLinesLabel>> targetNodes = new ArrayList<DiffNode<DiffLinesLabel>>();
         	if (root.isArtifact()) {
-        		targetNodes = targetVariantDiff.computeAllNodesThat(node -> node.getPresenceCondition(Time.AFTER)
+        		targetNodes = targetVariantDiffUnchanged.computeAllNodesThat(node -> node.getPresenceCondition(Time.AFTER)
             			.equals(root.getPresenceCondition(time)) && node.isAnnotation());
         	} else if (root.isAnnotation()) {
-        		targetNodes = targetVariantDiff.computeAllNodesThat(node -> node.getPresenceCondition(Time.AFTER)
+        		System.out.println(root.getParent(time).getPresenceCondition(time));
+        		targetNodes = targetVariantDiffUnchanged.computeAllNodesThat(node -> node.getPresenceCondition(Time.AFTER)
             			.equals(root.getParent(time).getPresenceCondition(time)) && node.isAnnotation());
         	}
         	
         	if (targetNodes.size() != 1) {
         		System.out.println("too much or too less target nodes found");
         	} else {
+        		DiffNode<DiffLinesLabel> targetNodeInPatch = targetVariantDiffPatched.getNodeWithID(targetNodes.get(0).getID());
+        		System.out.println(targetNodeInPatch.toString());
         		if (type == DiffType.ADD) {
 	        		System.out.println("subtree added");
-	        		targetNodes.get(0).addChild(root.deepCopy(), Time.AFTER);
-	        		System.out.println(targetNodes.get(0).getChildOrder(Time.AFTER));
+	        		// TODO: check for neighbors and calculate insert position
+	        		targetNodeInPatch.addChild(root.deepCopy(), time);
+	        		System.out.println(targetNodeInPatch.getChildOrder(time));
         		} else if (type == DiffType.REM) {
-        			DiffNode<DiffLinesLabel> parent = targetNodes.get(0);
             		List<DiffNode<DiffLinesLabel>> nodesToRem = new ArrayList<DiffNode<DiffLinesLabel>>();
-            		parent.getAllChildrenStream().forEach(node -> { if (node.isSameAs(root, Time.BEFORE)) nodesToRem.add(node);});
+            		System.out.println("Root: " + root.toString());
+            		System.out.println("Children: " + targetNodeInPatch.getAllChildrenSet());
+            		targetNodeInPatch.getAllChildrenStream().forEach(node -> { if (node.isSameAs(root, time)) nodesToRem.add(node);});
             		if (nodesToRem.size() != 1) {
             			System.out.println("too much or too less target nodes found");
             		} else {
             			System.out.println("subtree removed");
             			nodesToRem.get(0).diffType = DiffType.REM;
+            			// TODO: check for neighbors
             			nodesToRem.get(0).drop(Time.AFTER);
             			System.out.println(targetNodes.get(0).getChildOrder(Time.AFTER));
             		}
@@ -126,26 +133,27 @@ public class PatchingExperiment {
 		Relevance rho = calculateFeatureSetToDeselect(sourceVariantVersion1, sourceVariantVersion2, targetVariant, false);
         VariationDiff<DiffLinesLabel> optimizedDiff = DiffView.optimized(diff, rho);
         VariationDiffSource source = optimizedDiff.getSource();
-        VariationDiff<DiffLinesLabel> targetVariantDiff = targetVariant.toCompletelyUnchangedVariationDiff();
+        VariationDiff<DiffLinesLabel> targetVariantDiffUnchanged = targetVariant.toCompletelyUnchangedVariationDiff();
+        VariationDiff<DiffLinesLabel> targetVariantDiffPatched = targetVariant.toCompletelyUnchangedVariationDiff();
      
      // add new nodes
         Set<DiffNode<DiffLinesLabel>> addedNodes = new HashSet<DiffNode<DiffLinesLabel>>();
         optimizedDiff.forAll(node -> {if (node.isAdd()) {addedNodes.add(node);}});
-        Set<DiffNode<DiffLinesLabel>> addedSubtreeRoots = findRootsOfSubtrees(addedNodes, false);
-        applyChanges(DiffType.ADD, targetVariantDiff, addedSubtreeRoots, source, false);
+        Set<DiffNode<DiffLinesLabel>> addedSubtreeRoots = findRootsOfSubtrees(addedNodes, DiffType.ADD, false);
+        applyChanges(DiffType.ADD, targetVariantDiffUnchanged, targetVariantDiffPatched, addedSubtreeRoots, source, false);
      // remove old nodes
         Set<DiffNode<DiffLinesLabel>> removedNodes = new HashSet<DiffNode<DiffLinesLabel>>();
         optimizedDiff.forAll(node -> {if (node.isRem()) {removedNodes.add(node);}});
-        Set<DiffNode<DiffLinesLabel>> removedSubtreeRoots = findRootsOfSubtrees(removedNodes, false);
-        applyChanges(DiffType.REM, targetVariantDiff, removedSubtreeRoots, source, false);
+        Set<DiffNode<DiffLinesLabel>> removedSubtreeRoots = findRootsOfSubtrees(removedNodes, DiffType.REM, false);
+        applyChanges(DiffType.REM, targetVariantDiffUnchanged, targetVariantDiffPatched, removedSubtreeRoots, source, false);
         
         GameEngine.showAndAwaitAll(
       	      Show.tree(sourceVariantVersion1),
       	      Show.tree(sourceVariantVersion2),
       	      Show.tree(targetVariant),
       	      Show.diff(optimizedDiff),
-      	      Show.diff(targetVariantDiff),
-      	      Show.tree(targetVariantDiff.project(Time.AFTER))
+      	      Show.diff(targetVariantDiffPatched),
+      	      Show.tree(targetVariantDiffPatched.project(Time.AFTER))
       	    );
 	}
 	
@@ -167,7 +175,8 @@ public class PatchingExperiment {
 	}
 	
 	public static void main(String[] args) {
-		patchVariationTrees(parseVariationTreeFromFile("exampleA1.cpp"), parseVariationTreeFromFile("exampleA2.cpp"), parseVariationTreeFromFile("exampleB.cpp"));
+//		patchVariationTrees(parseVariationTreeFromFile("exampleA1Add.cpp"), parseVariationTreeFromFile("exampleA2Add.cpp"), parseVariationTreeFromFile("exampleBAdd.cpp"));
+		patchVariationTrees(parseVariationTreeFromFile("exampleA1Rem.cpp"), parseVariationTreeFromFile("exampleA2Rem.cpp"), parseVariationTreeFromFile("exampleBRem.cpp"));
 	}
 
 }
