@@ -18,11 +18,14 @@ import org.variantsync.diffdetective.variation.diff.DiffType;
 import org.variantsync.diffdetective.variation.diff.Time;
 import org.variantsync.diffdetective.variation.diff.VariationDiff;
 import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParseOptions;
+import org.variantsync.diffdetective.variation.diff.patching.Patching;
 import org.variantsync.diffdetective.variation.diff.source.VariationDiffSource;
 import org.variantsync.diffdetective.variation.diff.view.DiffView;
 import org.variantsync.diffdetective.variation.tree.VariationTree;
 import org.variantsync.diffdetective.variation.tree.view.relevance.Configure;
 import org.variantsync.diffdetective.variation.tree.view.relevance.Relevance;
+
+import com.github.gumtreediff.actions.Diff;
 
 public class PatchingExperiment {
 	
@@ -74,6 +77,102 @@ public class PatchingExperiment {
         return subtreeRoots;
 	}
 	
+	private static boolean checkNeighbors(Time time, DiffNode<DiffLinesLabel> root,
+			DiffNode<DiffLinesLabel> targetNodeInPatch, DiffNode<DiffLinesLabel> node) {
+		
+		DiffNode<DiffLinesLabel> neighborBeforeTarget = null;
+		DiffNode<DiffLinesLabel> neighborAfterTarget = null;
+		DiffNode<DiffLinesLabel> neighborBeforeSource = null;
+		DiffNode<DiffLinesLabel> neighborAfterSource = null;
+		boolean correctBefore = false;
+		boolean correctAfter = false;
+		List<DiffNode<DiffLinesLabel>> orderedChildrenTarget = targetNodeInPatch.getChildOrder(time);
+		if (orderedChildrenTarget.contains(node)) {
+			int indexTarget = orderedChildrenTarget.indexOf(node);
+			if ((indexTarget - 1) >= 0) {
+				neighborBeforeTarget = orderedChildrenTarget.get(indexTarget - 1);
+			}
+			if ((indexTarget + 1) < orderedChildrenTarget.size()) {
+				neighborAfterTarget = orderedChildrenTarget.get(indexTarget + 1);
+			}
+			List<DiffNode<DiffLinesLabel>> orderedChildrenSource = root.getParent(time).getChildOrder(time);
+			int indexSource = orderedChildrenSource.indexOf(root);
+			if ((indexSource - 1) >= 0) {
+				neighborBeforeSource = orderedChildrenSource.get(indexSource - 1);
+			}
+			if ((indexSource + 1) < orderedChildrenTarget.size()) {
+				neighborAfterSource = orderedChildrenSource.get(indexSource + 1);
+			}
+			if ((neighborBeforeSource != null && neighborBeforeTarget == null) || (neighborBeforeSource == null && neighborBeforeTarget != null)) {
+				System.out.println("Different neighbors");
+			} else if (neighborBeforeSource != null && neighborBeforeTarget != null) {
+				if (Patching.isSameAs(neighborBeforeSource, neighborBeforeTarget, time)) {
+					System.out.println("Same neighbor before");
+					correctBefore = true;
+				}
+			} else {
+				System.out.println("No neighbor before");
+				correctBefore = true;
+			}
+			if ((neighborAfterSource != null && neighborAfterTarget == null) || (neighborAfterSource == null && neighborAfterTarget != null)) {
+				System.out.println("Different neighbors");
+			} else if (neighborAfterSource != null && neighborAfterTarget != null) {
+				if (Patching.isSameAs(neighborAfterSource, neighborAfterTarget, time)) {
+					System.out.println("Same neighbor after");
+		    		correctAfter = true;
+				}
+			} else {
+				System.out.println("No neighbor after");
+				correctAfter = true;
+			}
+		}
+		return correctBefore && correctAfter;
+	}
+	
+	private static List<Integer> findInsertPositions(Time time, DiffNode<DiffLinesLabel> root,
+			DiffNode<DiffLinesLabel> targetNodeInPatch) {
+		List<Integer> insertPositions = new ArrayList<Integer>();
+		DiffNode<DiffLinesLabel> neighborBeforeSource = null;
+		DiffNode<DiffLinesLabel> neighborAfterSource = null;
+		List<DiffNode<DiffLinesLabel>> orderedChildrenTarget = targetNodeInPatch.getChildOrder(time);
+		List<DiffNode<DiffLinesLabel>> orderedChildrenSource = root.getParent(time).getChildOrder(time);
+		int indexSource = orderedChildrenSource.indexOf(root);
+		if ((indexSource - 1) >= 0) {
+			neighborBeforeSource = orderedChildrenSource.get(indexSource - 1);
+		}
+		if ((indexSource + 1) < orderedChildrenTarget.size()) {
+			neighborAfterSource = orderedChildrenSource.get(indexSource + 1);
+		}
+		
+		for (int i = 0; i < orderedChildrenTarget.size(); i++) {
+			if (neighborBeforeSource != null && neighborAfterSource != null) {
+				if ((i + 1) < orderedChildrenTarget.size()) {
+					boolean correctBefore = Patching.isSameAs(orderedChildrenTarget.get(i), neighborBeforeSource, time);
+					boolean correctAfter = Patching.isSameAs(orderedChildrenTarget.get(i + 1), neighborAfterSource, time);
+					if (correctBefore && correctAfter) {
+						System.out.println("Found insert position");
+						insertPositions.add(i + 1);
+					} else if (correctBefore || correctAfter){
+						
+					}
+				}
+			} else if (neighborBeforeSource != null) {
+				if (Patching.isSameAs(orderedChildrenTarget.get(i), neighborBeforeSource, time)) {
+					System.out.println("Found insert position");
+					insertPositions.add(i + 1);
+				}
+			} else if (neighborAfterSource != null) {
+				if ((i + 1) < orderedChildrenTarget.size()) {
+					if (Patching.isSameAs(orderedChildrenTarget.get(i + 1), neighborAfterSource, time)) {
+						System.out.println("Found insert position");
+						insertPositions.add(i + 1);
+					}
+				}
+			}
+		}
+		return insertPositions;
+	}
+	
 	private static void applyChanges(DiffType type, VariationDiff<DiffLinesLabel> targetVariantDiffUnchanged, VariationDiff<DiffLinesLabel> targetVariantDiffPatched, Set<DiffNode<DiffLinesLabel>> subtreeRoots, VariationDiffSource source, boolean debug) {
 		Time time = (type == DiffType.ADD) ? Time.AFTER : Time.BEFORE;
 		
@@ -99,29 +198,38 @@ public class PatchingExperiment {
         		DiffNode<DiffLinesLabel> targetNodeInPatch = targetVariantDiffPatched.getNodeWithID(targetNodes.get(0).getID());
         		System.out.println(targetNodeInPatch.toString());
         		if (type == DiffType.ADD) {
-	        		System.out.println("subtree added");
-	        		// TODO: check for neighbors and calculate insert position
-	        		targetNodeInPatch.addChild(root.deepCopy(), time);
-	        		System.out.println(targetNodeInPatch.getChildOrder(time));
+	        		
+	        		List<Integer> insertPositions = findInsertPositions(time, root, targetNodeInPatch);
+	        		if (insertPositions.size() != 1) {
+	        			System.out.println("no matching insert position found");
+	        		} else {
+	        			System.out.println("subtree added");
+		        		targetNodeInPatch.insertChild(root.deepCopy(), insertPositions.get(0), time);
+		        		System.out.println(targetNodeInPatch.getChildOrder(time));
+	        		}
+	        		
         		} else if (type == DiffType.REM) {
             		List<DiffNode<DiffLinesLabel>> nodesToRem = new ArrayList<DiffNode<DiffLinesLabel>>();
             		System.out.println("Root: " + root.toString());
             		System.out.println("Children: " + targetNodeInPatch.getAllChildrenSet());
-            		targetNodeInPatch.getAllChildrenStream().forEach(node -> { if (node.isSameAs(root, time)) nodesToRem.add(node);});
-            		if (nodesToRem.size() != 1) {
+            		targetNodeInPatch.getAllChildrenStream().forEach(node -> { if (Patching.isSameAs(node, root, time)) nodesToRem.add(node);});
+            		System.out.println("Nodes to remove: " + nodesToRem);
+            		
+            		List<DiffNode<DiffLinesLabel>> nodesToRemAfterCheckingNeighbors = nodesToRem.stream().filter((node) -> checkNeighbors(time, root, targetNodeInPatch, node)).toList();
+            		
+            		if (nodesToRemAfterCheckingNeighbors.size() != 1) {
             			System.out.println("too much or too less target nodes found");
             		} else {
             			System.out.println("subtree removed");
-            			nodesToRem.get(0).diffType = DiffType.REM;
-            			// TODO: check for neighbors
-            			nodesToRem.get(0).drop(Time.AFTER);
+            			nodesToRemAfterCheckingNeighbors.get(0).diffType = DiffType.REM;
+            			nodesToRemAfterCheckingNeighbors.get(0).getAllChildrenStream().forEach(node -> node.diffType = DiffType.REM);
+            			nodesToRemAfterCheckingNeighbors.get(0).drop(Time.AFTER);
             			System.out.println(targetNodes.get(0).getChildOrder(Time.AFTER));
             		}
         		}
         	}
         }
-	}
-	
+	}	
 	
 	private static void patchVariationTrees(VariationTree<DiffLinesLabel> sourceVariantVersion1, VariationTree<DiffLinesLabel> sourceVariantVersion2, VariationTree<DiffLinesLabel> targetVariant) {
 		if (sourceVariantVersion1 == null || sourceVariantVersion2 == null || targetVariant == null) {
@@ -175,8 +283,8 @@ public class PatchingExperiment {
 	}
 	
 	public static void main(String[] args) {
-//		patchVariationTrees(parseVariationTreeFromFile("exampleA1Add.cpp"), parseVariationTreeFromFile("exampleA2Add.cpp"), parseVariationTreeFromFile("exampleBAdd.cpp"));
-		patchVariationTrees(parseVariationTreeFromFile("exampleA1Rem.cpp"), parseVariationTreeFromFile("exampleA2Rem.cpp"), parseVariationTreeFromFile("exampleBRem.cpp"));
+		patchVariationTrees(parseVariationTreeFromFile("exampleA1Add.cpp"), parseVariationTreeFromFile("exampleA2Add.cpp"), parseVariationTreeFromFile("exampleBAdd.cpp"));
+//		patchVariationTrees(parseVariationTreeFromFile("exampleA1Rem.cpp"), parseVariationTreeFromFile("exampleA2Rem.cpp"), parseVariationTreeFromFile("exampleBRem.cpp"));
 	}
 
 }
