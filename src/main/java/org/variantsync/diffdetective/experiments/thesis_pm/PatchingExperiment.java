@@ -77,56 +77,56 @@ public class PatchingExperiment {
         return subtreeRoots;
 	}
 	
+	private static DiffNode<DiffLinesLabel> getChildFromListIfIndexInRange(List<DiffNode<DiffLinesLabel>> childrenList, int index) {
+		if (index >= 0 && index < childrenList.size()) {
+			return childrenList.get(index);
+		}
+		return null;
+	}
+	
 	private static boolean checkNeighbors(Time time, DiffNode<DiffLinesLabel> root,
 			DiffNode<DiffLinesLabel> targetNodeInPatch, DiffNode<DiffLinesLabel> node) {
 		
-		DiffNode<DiffLinesLabel> neighborBeforeTarget = null;
-		DiffNode<DiffLinesLabel> neighborAfterTarget = null;
-		DiffNode<DiffLinesLabel> neighborBeforeSource = null;
-		DiffNode<DiffLinesLabel> neighborAfterSource = null;
-		boolean correctBefore = false;
-		boolean correctAfter = false;
 		List<DiffNode<DiffLinesLabel>> orderedChildrenTarget = targetNodeInPatch.getChildOrder(time);
-		if (orderedChildrenTarget.contains(node)) {
-			int indexTarget = orderedChildrenTarget.indexOf(node);
-			if ((indexTarget - 1) >= 0) {
-				neighborBeforeTarget = orderedChildrenTarget.get(indexTarget - 1);
-			}
-			if ((indexTarget + 1) < orderedChildrenTarget.size()) {
-				neighborAfterTarget = orderedChildrenTarget.get(indexTarget + 1);
-			}
-			List<DiffNode<DiffLinesLabel>> orderedChildrenSource = root.getParent(time).getChildOrder(time);
-			int indexSource = orderedChildrenSource.indexOf(root);
-			if ((indexSource - 1) >= 0) {
-				neighborBeforeSource = orderedChildrenSource.get(indexSource - 1);
-			}
-			if ((indexSource + 1) < orderedChildrenTarget.size()) {
-				neighborAfterSource = orderedChildrenSource.get(indexSource + 1);
-			}
-			if ((neighborBeforeSource != null && neighborBeforeTarget == null) || (neighborBeforeSource == null && neighborBeforeTarget != null)) {
-				System.out.println("Different neighbors");
-			} else if (neighborBeforeSource != null && neighborBeforeTarget != null) {
-				if (Patching.isSameAs(neighborBeforeSource, neighborBeforeTarget, time)) {
-					System.out.println("Same neighbor before");
-					correctBefore = true;
-				}
-			} else {
-				System.out.println("No neighbor before");
-				correctBefore = true;
-			}
-			if ((neighborAfterSource != null && neighborAfterTarget == null) || (neighborAfterSource == null && neighborAfterTarget != null)) {
-				System.out.println("Different neighbors");
-			} else if (neighborAfterSource != null && neighborAfterTarget != null) {
-				if (Patching.isSameAs(neighborAfterSource, neighborAfterTarget, time)) {
-					System.out.println("Same neighbor after");
-		    		correctAfter = true;
-				}
-			} else {
-				System.out.println("No neighbor after");
-				correctAfter = true;
+		if (!orderedChildrenTarget.contains(node)) {
+			// TODO: throw exception
+			return false;
+		}
+		int indexTarget = orderedChildrenTarget.indexOf(node);
+		DiffNode<DiffLinesLabel> neighborBeforeTarget = getChildFromListIfIndexInRange(orderedChildrenTarget, indexTarget - 1);
+		DiffNode<DiffLinesLabel> neighborAfterTarget = getChildFromListIfIndexInRange(orderedChildrenTarget, indexTarget + 1);
+		
+		List<DiffNode<DiffLinesLabel>> orderedChildrenSource = root.getParent(time).getChildOrder(time);
+		int indexSource = orderedChildrenSource.indexOf(root);
+		DiffNode<DiffLinesLabel> neighborBeforeSource = getChildFromListIfIndexInRange(orderedChildrenSource, indexSource - 1);
+		DiffNode<DiffLinesLabel> neighborAfterSource = getChildFromListIfIndexInRange(orderedChildrenSource, indexSource + 1);
+		
+		if ((neighborBeforeSource != null && neighborBeforeTarget == null) || (neighborBeforeSource == null && neighborBeforeTarget != null)) {
+			System.out.println("Different neighbors before");
+			return false;
+		}
+		if (neighborBeforeSource != null && neighborBeforeTarget != null) {
+			if (!Patching.isSameAs(neighborBeforeSource, neighborBeforeTarget, time)) {
+				System.out.println("Different neighbor before");
+				return false;
 			}
 		}
-		return correctBefore && correctAfter;
+		// neighborBeforeSource isSameAs neighborBeforeTarget OR both are null (no neighbor before)
+		
+		if ((neighborAfterSource != null && neighborAfterTarget == null) || (neighborAfterSource == null && neighborAfterTarget != null)) {
+			System.out.println("Different neighbors after");
+			return false;
+		} 
+		if (neighborAfterSource != null && neighborAfterTarget != null) {
+			if (!Patching.isSameAs(neighborAfterSource, neighborAfterTarget, time)) {
+				System.out.println("Different neighbors after");
+	    		return false;
+			}
+		} 
+		// neighborAfterSource isSameAs neighborAfterTarget OR both are null (no neighbor after)
+		
+		return true;
+		
 	}
 	
 	private static List<Integer> findInsertPositions(Time time, DiffNode<DiffLinesLabel> root,
@@ -283,8 +283,8 @@ public class PatchingExperiment {
 	}
 	
 	public static void main(String[] args) {
-		patchVariationTrees(parseVariationTreeFromFile("exampleA1Add.cpp"), parseVariationTreeFromFile("exampleA2Add.cpp"), parseVariationTreeFromFile("exampleBAdd.cpp"));
-//		patchVariationTrees(parseVariationTreeFromFile("exampleA1Rem.cpp"), parseVariationTreeFromFile("exampleA2Rem.cpp"), parseVariationTreeFromFile("exampleBRem.cpp"));
+//		patchVariationTrees(parseVariationTreeFromFile("exampleA1Add.cpp"), parseVariationTreeFromFile("exampleA2Add.cpp"), parseVariationTreeFromFile("exampleBAdd.cpp"));
+		patchVariationTrees(parseVariationTreeFromFile("exampleA1Rem.cpp"), parseVariationTreeFromFile("exampleA2Rem.cpp"), parseVariationTreeFromFile("exampleBRem.cpp"));
 	}
 
 }
