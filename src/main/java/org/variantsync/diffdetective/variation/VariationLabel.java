@@ -49,4 +49,9 @@ public class VariationLabel<L extends Label> implements Label, HasNodeType {
     public VariationLabel<L> clone() {
         return new VariationLabel<L>(type, Cast.unchecked(innerLabel.clone()));
     }
+    
+    @Override
+    public String toString() {
+    	return innerLabel.toString();
+    }
 }
