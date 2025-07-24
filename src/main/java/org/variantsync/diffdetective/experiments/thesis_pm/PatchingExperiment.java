@@ -100,7 +100,6 @@ public class PatchingExperiment {
 		List<DiffNode<DiffLinesLabel>> orderedChildrenTarget = targetNodeInPatch.getChildOrder(time);
 		if (!orderedChildrenTarget.contains(node)) {
 			// TODO: throw exception
-			System.out.println("empty");
 			return false;
 		}
 		int indexTarget = orderedChildrenTarget.indexOf(node);
@@ -116,8 +115,16 @@ public class PatchingExperiment {
 		DiffNode<DiffLinesLabel> neighborAfterSource = getChildFromListIfIndexInRange(orderedChildrenSource,
 				indexSource + 1);
 		
-		if (neighborBeforeSource != null && neighborBeforeSource.diffType == DiffType.REM) {
-			neighborBeforeSource = null;
+		int indexSourceBefore = indexSource - 1;
+		while (neighborBeforeSource != null && neighborBeforeSource.diffType == DiffType.REM && indexSourceBefore > 0) {
+			indexSourceBefore--;
+			neighborBeforeSource = getChildFromListIfIndexInRange(orderedChildrenSource, indexSourceBefore - 1);
+		}
+		
+		int indexTargetBefore = indexTarget - 1;
+		while (neighborBeforeTarget != null && neighborBeforeTarget.diffType == DiffType.REM && indexTargetBefore > 0) {
+			indexTargetBefore--;
+			neighborBeforeTarget = getChildFromListIfIndexInRange(orderedChildrenTarget, indexTargetBefore - 1);
 		}
 		
 		if (debug) {
