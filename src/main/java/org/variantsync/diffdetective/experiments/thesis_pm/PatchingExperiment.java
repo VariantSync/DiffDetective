@@ -30,21 +30,24 @@ import org.variantsync.diffdetective.variation.tree.view.relevance.Relevance;
 
 public class PatchingExperiment {
 	
-	private static Relevance calculateIntersectionOfFeatureSets(Set<String> featureSet1, Set<String> featureSet2, boolean debug) {
+	private static Set<String> calculateSetMinusOfFeatureSets(Set<String> featureSet1, Set<String> featureSet2, boolean debug) {
 		Set<String> intersectSet1 = new HashSet<>(featureSet1);
 		intersectSet1.removeAll(featureSet2);
 		Set<String> intersectSet2 = new HashSet<>(featureSet2);
 		intersectSet2.removeAll(featureSet1);
 		intersectSet1.addAll(intersectSet2);
-
 		if (debug) {
 			System.out.println(featureSet1);
 			System.out.println(featureSet2);
 			System.out.println(intersectSet1);
 		}
-
-		Formula[] f = new Formula[intersectSet1.size()];
-		Iterator<String> iterator = intersectSet1.iterator();
+		return intersectSet1;
+	}
+	
+	private static Relevance calculateFormulaForDeselection(Set<String> set, boolean debug) {
+		
+		Formula[] f = new Formula[set.size()];
+		Iterator<String> iterator = set.iterator();
 		for (int i = 0; i < f.length; i++) {
 			f[i] = Formula.not(Formula.var(iterator.next()));
 		}
@@ -56,7 +59,7 @@ public class PatchingExperiment {
 		return new Configure(formula);
 	}
 	
-	private static Relevance calculateFeatureSetToDeselectFromTrees(VariationTree<DiffLinesLabel> variant1version1,
+	private static Set<String> calculateFeatureSetToDeselectFromTrees(VariationTree<DiffLinesLabel> variant1version1,
 			VariationTree<DiffLinesLabel> variant1version2, VariationTree<DiffLinesLabel> variant2, boolean debug) {
 		Set<String> featuresTreeV1 = new HashSet<String>();
 		variant1version1.forAllPreorder(node -> {
@@ -71,12 +74,11 @@ public class PatchingExperiment {
 		variant2.forAllPreorder(node -> {
 			featuresTreeV2.addAll(node.getFeatureMapping().getUniqueContainedFeatures());
 		});
-
 		
-		return calculateIntersectionOfFeatureSets(featuresTreeV1, featuresTreeV2, debug);
+		return calculateSetMinusOfFeatureSets(featuresTreeV1, featuresTreeV2, debug);
 	}
 	
-	private static Relevance calculateFeatureSetToDeselectFromDiff(VariationDiff<DiffLinesLabel> diff, VariationTree<DiffLinesLabel> variant2, boolean debug) {
+	private static Set<String> calculateFeatureSetToDeselectFromDiff(VariationDiff<DiffLinesLabel> diff, VariationTree<DiffLinesLabel> variant2, boolean debug) {
 		Set<String> featuresV1 = new HashSet<String>();
 		diff.forAll(node -> {
 			if (node.getDiffType().existsAtTime(Time.BEFORE)) {
@@ -92,7 +94,7 @@ public class PatchingExperiment {
 			featuresV2.addAll(node.getFeatureMapping().getUniqueContainedFeatures());
 		});
 
-		return calculateIntersectionOfFeatureSets(featuresV1, featuresV2, debug);
+		return calculateSetMinusOfFeatureSets(featuresV1, featuresV2, debug);
 	}
 
 	private static Set<DiffNode<DiffLinesLabel>> findRootsOfSubtrees(Set<DiffNode<DiffLinesLabel>> nodes, DiffType type,
@@ -213,8 +215,19 @@ public class PatchingExperiment {
 		}
 		return -1;
 	}
+	
+	private static boolean isAlignmentProblem(List<DiffNode<DiffLinesLabel>> subList, Set<String> deselectedFeatures, Time time) {
+		boolean isAlignmentProblem = false;
+		for (DiffNode<DiffLinesLabel> node : subList) {
+			Set<String> containedFeatures = node.getPresenceCondition(time).getUniqueContainedFeatures();
+			System.out.println(containedFeatures);
+			isAlignmentProblem = containedFeatures.stream().anyMatch(feature -> deselectedFeatures.contains(feature));
+			System.out.println("is alignment problem: " + isAlignmentProblem);
+		}
+		return isAlignmentProblem;
+	}
 
-	private static int findInsertPosition(DiffNode<DiffLinesLabel> root, DiffNode<DiffLinesLabel> targetNodeInPatch,
+	private static int findInsertPosition(DiffNode<DiffLinesLabel> root, DiffNode<DiffLinesLabel> targetNodeInPatch, Set<String> deselectedFeatures,
 			Time time, boolean debug) throws Exception {
 		if (debug)
 			System.out.println("Root node to insert: " + root.toString());
@@ -260,9 +273,16 @@ public class PatchingExperiment {
 		}
 		if (indexBefore > -1 && indexAfter > -1) {
 			if (indexAfter - indexBefore > 1) {
-				// TODO: Alignment Problem
-				System.out.println("ALIGNMENT PROBLEM. Possible insert positions: from " + (indexBefore + 1) + " to "
-						+ indexAfter);
+				// Alignment Problem ?
+				// TODO: Check if code belongs to features which are only present in target variant 
+				List<DiffNode<DiffLinesLabel>> orderedChildrenTargetSubList = orderedChildrenTarget.subList(indexBefore + 1, indexAfter);
+				System.out.println(orderedChildrenTargetSubList);
+				if (isAlignmentProblem(orderedChildrenTargetSubList, deselectedFeatures, time)) {
+					System.out.println("ALIGNMENT PROBLEM. Possible insert positions: from " + (indexBefore + 1) + " to "
+							+ indexAfter);
+				} else {
+					throw new Exception("Reject");
+				}
 				return -1;
 			}
 			return indexAfter;
@@ -272,13 +292,15 @@ public class PatchingExperiment {
 
 	private static void applyChanges(DiffType type, VariationDiff<DiffLinesLabel> targetVariantDiffUnchanged,
 			VariationDiff<DiffLinesLabel> targetVariantDiffPatched, List<DiffNode<DiffLinesLabel>> subtreeRoots,
-			VariationDiffSource source, boolean debug) throws Exception {
+			VariationDiffSource source, Set<String> deselectedFeatures, boolean debug) throws Exception {
 
 		Time time = (type == DiffType.ADD) ? Time.AFTER : Time.BEFORE;
 
 		for (DiffNode<DiffLinesLabel> root : subtreeRoots) {
 			if (debug) {
-				VariationDiff<DiffLinesLabel> subTree = new VariationDiff<DiffLinesLabel>(root.deepCopy(), source);
+				DiffNode<DiffLinesLabel> newRoot = DiffNode.createRoot(new DiffLinesLabel());
+				newRoot.addChild(root.deepCopy(), time);
+				VariationDiff<DiffLinesLabel> subTree = new VariationDiff<DiffLinesLabel>(newRoot, source);
 				GameEngine.showAndAwaitAll(Show.diff(subTree));
 			}
 
@@ -301,7 +323,7 @@ public class PatchingExperiment {
 				System.out.println(targetNodeInPatch.toString());
 				if (type == DiffType.ADD) {
 
-					int insertPosition = findInsertPosition(root, targetNodeInPatch, time, true);
+					int insertPosition = findInsertPosition(root, targetNodeInPatch, deselectedFeatures, time, true);
 					if (insertPosition < 0) {
 						System.out.println("no matching insert position found");
 					} else {
@@ -356,7 +378,8 @@ public class PatchingExperiment {
 		
 //		Relevance rho = calculateFeatureSetToDeselectFromTrees(sourceVariantVersion1, sourceVariantVersion2, targetVariant,
 //				false);
-		Relevance rho = calculateFeatureSetToDeselectFromDiff(diff, targetVariant, false);
+		Set<String> deselectedFeatures = calculateFeatureSetToDeselectFromDiff(diff, targetVariant, false);
+		Relevance rho = calculateFormulaForDeselection(deselectedFeatures, false);
 		VariationDiff<DiffLinesLabel> optimizedDiff = DiffView.optimized(diff, rho);
 		VariationDiffSource source = optimizedDiff.getSource();
 		VariationDiff<DiffLinesLabel> targetVariantDiffUnchanged = targetVariant.toCompletelyUnchangedVariationDiff();
@@ -374,7 +397,7 @@ public class PatchingExperiment {
 				.compare(n1.getLinesAtTime(Time.AFTER).fromInclusive(), n2.getLinesAtTime(Time.AFTER).fromInclusive()))
 				.collect(Collectors.toList());
 		applyChanges(DiffType.ADD, targetVariantDiffUnchanged, targetVariantDiffPatched, addedSortedSubtreeRoots,
-				source, true);
+				source, deselectedFeatures, true);
 
 		// remove old nodes
 		Set<DiffNode<DiffLinesLabel>> removedNodes = new HashSet<DiffNode<DiffLinesLabel>>();
@@ -389,8 +412,8 @@ public class PatchingExperiment {
 						n2.getLinesAtTime(Time.BEFORE).fromInclusive()))
 				.collect(Collectors.toList());
 		applyChanges(DiffType.REM, targetVariantDiffUnchanged, targetVariantDiffPatched, removedSortedSubtreeRoots,
-				source, true);
-		GameEngine.showAndAwaitAll(Show.diff(diff));
+				source, deselectedFeatures, true);
+		GameEngine.showAndAwaitAll(Show.diff(optimizedDiff));
 //		GameEngine.showAndAwaitAll(Show.tree(sourceVariantVersion1), Show.tree(sourceVariantVersion2),
 //				Show.tree(targetVariant), Show.diff(optimizedDiff), Show.diff(targetVariantDiffPatched),
 //				Show.tree(targetVariantDiffPatched.project(Time.AFTER)));
@@ -423,11 +446,13 @@ public class PatchingExperiment {
 //					parseVariationTreeFromFile("exampleA2Add.cpp"), parseVariationTreeFromFile("exampleBAdd.cpp"));
 //			patchVariationTrees(parseVariationTreeFromFile("exampleA1Rem.cpp"),
 //					parseVariationTreeFromFile("exampleA2Rem.cpp"), parseVariationTreeFromFile("exampleBRem.cpp"));
-			patchVariationTrees(parseVariationDiffFromFiles("exampleA1RemAdd.cpp", "exampleA2RemAdd.cpp"),
-					parseVariationTreeFromFile("exampleBRemAdd.cpp"));
+//			patchVariationTrees(parseVariationDiffFromFiles("exampleA1RemAdd.cpp", "exampleA2RemAdd.cpp"),
+//					parseVariationTreeFromFile("exampleBRemAdd.cpp"));
 //			patchVariationTrees(parseVariationTreeFromFile("exampleA1RemAdd.cpp"),
 //					parseVariationTreeFromFile("exampleA2RemAdd.cpp"),
 //					parseVariationTreeFromFile("exampleBRemAdd.cpp"));
+			patchVariationTrees(parseVariationDiffFromFiles("exampleA1AddAlignmentP.cpp", "exampleA2AddAlignmentP.cpp"),
+					parseVariationTreeFromFile("exampleBAddAlignmentP.cpp"));
 		} catch (Exception e) {
 			System.out.println("Rejected");
 			e.printStackTrace();
