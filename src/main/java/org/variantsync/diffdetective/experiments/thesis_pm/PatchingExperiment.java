@@ -285,19 +285,51 @@ public class PatchingExperiment {
 				System.out.print("No neighbor after\n");
 			}
 		}
-
 		int indexBefore = -2;
 		int indexAfter = -2;
 
 		if (neighborBeforeSource != null) {
 			indexBefore = findPositionOfMatchingNeighborInList(neighborBeforeSource, orderedChildrenTarget, time);
-		}
+		} 
 		if (neighborAfterSource != null) {
 			indexAfter = findPositionOfMatchingNeighborInList(neighborAfterSource, orderedChildrenTarget, time);
 		}
 		if (indexBefore == -2 && indexAfter == -2) {
-			System.out.println("No neighbors before or after the target");
-			return 0;
+			if (orderedChildrenTarget.isEmpty()) {
+				System.out.println("No neighbors before or after the target");
+				return 0;
+			}
+			if (isAlignmentProblem(orderedChildrenTarget, deselectedFeatures, time)) {
+				System.out.println("ALIGNMENT PROBLEM. Possible insert positions: from " + 1 + " to "
+						+ (orderedChildrenTarget.size() - 1));
+				return -1;
+			} else {
+				throw new Exception("Reject");	
+			}
+		}
+		if (indexBefore == -2) {
+			List<DiffNode<DiffLinesLabel>> orderedChildrenTargetSubList = orderedChildrenTarget.subList(0, indexAfter);
+			if (!orderedChildrenTargetSubList.isEmpty()) {
+				if (isAlignmentProblem(orderedChildrenTargetSubList, deselectedFeatures, time)) {
+					System.out.println("ALIGNMENT PROBLEM. Possible insert positions: from " + 1 + " to "
+							+ indexAfter);
+				} else {
+					throw new Exception("Reject");
+				}
+				return -1;
+			}
+		}
+		if (indexAfter == -2) {
+			List<DiffNode<DiffLinesLabel>> orderedChildrenTargetSubList = orderedChildrenTarget.subList(indexBefore + 1, orderedChildrenTarget.size());
+			if (!orderedChildrenTargetSubList.isEmpty()) {
+				if (isAlignmentProblem(orderedChildrenTargetSubList, deselectedFeatures, time)) {
+					System.out.println("ALIGNMENT PROBLEM. Possible insert positions: from " + (indexBefore + 1) + " to "
+							+ (orderedChildrenTarget.size() - 1));
+				} else {
+					throw new Exception("Reject");
+				}
+				return -1;
+			}
 		}
 		if (indexBefore > -1 && indexAfter > -1) {
 			if (indexAfter - indexBefore > 1) {
@@ -311,6 +343,11 @@ public class PatchingExperiment {
 				} else {
 					throw new Exception("Reject");
 				}
+				return -1;
+			} 
+			if (indexAfter - indexBefore < 0) {
+				// TODO: root must be between neighbors
+				System.out.println("Neighbors in wrong order");
 				return -1;
 			}
 			return indexAfter;
@@ -365,7 +402,7 @@ public class PatchingExperiment {
 					System.out.println("Root: " + root.toString());
 					System.out.println("Children: " + targetNodeInPatch.getAllChildrenSet());
 					targetNodeInPatch.getAllChildrenStream().forEach(node -> {
-						if (Patching.isSameAs(node, root, time) && checkNeighbors(root, targetNodeInPatch, node, deselectedFeatures, time, debug))
+						if (Patching.isSameAs(node, root, time) && checkNeighbors(root, targetNodeInPatch, node, deselectedFeatures, time, true))
 							nodesToRem.add(node);
 					});
 					System.out.println("Nodes to remove: " + nodesToRem);
@@ -478,8 +515,10 @@ public class PatchingExperiment {
 //					parseVariationTreeFromFile("exampleBRemAdd.cpp"));
 //			patchVariationTrees(parseVariationDiffFromFiles("exampleA1AddAlignmentP.cpp", "exampleA2AddAlignmentP.cpp"),
 //					parseVariationTreeFromFile("exampleBAddAlignmentP.cpp"));
-			patchVariationTrees(parseVariationDiffFromFiles("exampleA1RemAlignmentP.cpp", "exampleA2RemAlignmentP.cpp"),
-					parseVariationTreeFromFile("exampleBRemAlignmentP.cpp"));
+//			patchVariationTrees(parseVariationDiffFromFiles("exampleA1RemAlignmentP.cpp", "exampleA2RemAlignmentP.cpp"),
+//					parseVariationTreeFromFile("exampleBRemAlignmentP.cpp"));
+			patchVariationTrees(parseVariationDiffFromFiles("exampleA1RemAddAlignmentP.cpp", "exampleA2RemAddAlignmentP.cpp"),
+					parseVariationTreeFromFile("exampleBRemAddAlignmentP.cpp"));
 		} catch (Exception e) {
 			System.out.println("Rejected");
 			e.printStackTrace();
