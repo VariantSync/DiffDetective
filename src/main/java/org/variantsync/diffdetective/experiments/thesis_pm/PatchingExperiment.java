@@ -97,6 +97,16 @@ public class PatchingExperiment {
 		return calculateSetMinusOfFeatureSets(featuresV1, featuresV2, debug);
 	}
 
+	private static boolean checkForZeroVariantDrift(VariationDiff<DiffLinesLabel> diffVariant1, VariationTree<DiffLinesLabel> variant2, Relevance deselectedFeatures) {
+		diffVariant1 = DiffView.optimized(diffVariant1.project(Time.BEFORE).toCompletelyUnchangedVariationDiff(), deselectedFeatures);
+		VariationDiff<DiffLinesLabel> diffVariant2 = DiffView.optimized(variant2.toCompletelyUnchangedVariationDiff(), deselectedFeatures);
+		GameEngine.showAndAwaitAll(Show.diff(diffVariant1), Show.diff(diffVariant2));
+		if (Patching.isSameAs(diffVariant1, diffVariant2)) {
+			return true;
+		}
+		return false;
+	}
+	
 	private static Set<DiffNode<DiffLinesLabel>> findRootsOfSubtrees(Set<DiffNode<DiffLinesLabel>> nodes, DiffType type,
 			boolean debug) {
 		Time time = (type == DiffType.ADD) ? Time.AFTER : Time.BEFORE;
@@ -229,7 +239,7 @@ public class PatchingExperiment {
 			List<DiffNode<DiffLinesLabel>> list, Time time) {
 		ArrayList<Integer> positions = new ArrayList<Integer>();
 		for (DiffNode<DiffLinesLabel> node : list) {
-			if (Patching.isSameAs(neighbor, node, time)) {
+			if (Patching.isSameAs(neighbor, node)) {
 				positions.add(list.indexOf(node));
 			}
 		}
@@ -402,7 +412,7 @@ public class PatchingExperiment {
 					System.out.println("Root: " + root.toString());
 					System.out.println("Children: " + targetNodeInPatch.getAllChildrenSet());
 					targetNodeInPatch.getAllChildrenStream().forEach(node -> {
-						if (Patching.isSameAs(node, root, time) && checkNeighbors(root, targetNodeInPatch, node, deselectedFeatures, time, true))
+						if (Patching.isSameAs(node, root) && checkNeighbors(root, targetNodeInPatch, node, deselectedFeatures, time, true))
 							nodesToRem.add(node);
 					});
 					System.out.println("Nodes to remove: " + nodesToRem);
@@ -442,6 +452,11 @@ public class PatchingExperiment {
 //				false);
 		Set<String> deselectedFeatures = calculateFeatureSetToDeselectFromDiff(diff, targetVariant, false);
 		Relevance rho = calculateFormulaForDeselection(deselectedFeatures, false);
+		
+		if (!checkForZeroVariantDrift(diff, targetVariant, rho)) {
+			throw new Exception("Variants evolved independently: No Zero Variant Drift");
+		}
+		
 		VariationDiff<DiffLinesLabel> optimizedDiff = DiffView.optimized(diff, rho);
 		VariationDiffSource source = optimizedDiff.getSource();
 		VariationDiff<DiffLinesLabel> targetVariantDiffUnchanged = targetVariant.toCompletelyUnchangedVariationDiff();

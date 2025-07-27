@@ -7,13 +7,19 @@ import java.util.Set;
 import org.variantsync.diffdetective.variation.Label;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
 import org.variantsync.diffdetective.variation.diff.Time;
+import org.variantsync.diffdetective.variation.diff.VariationDiff;
 
 public class Patching {
-	public static <L extends Label> boolean isSameAs(DiffNode<L> a, DiffNode<L> b, Time time) {
-    	return isSameAs(a, b, new HashSet<>(), time);
+	
+	public static<L extends Label> boolean isSameAs(VariationDiff<L> diff1, VariationDiff<L> diff2) {
+		return isSameAs(diff1.getRoot(), diff2.getRoot());
+	}
+	
+	public static <L extends Label> boolean isSameAs(DiffNode<L> a, DiffNode<L> b) {
+    	return isSameAs(a, b, new HashSet<>());
     }
     
-    private static <L extends Label> boolean isSameAs(DiffNode<L> a, DiffNode<L> b, Set<DiffNode<L>> visited, Time time) {
+    private static <L extends Label> boolean isSameAs(DiffNode<L> a, DiffNode<L> b, Set<DiffNode<L>> visited) {
         if (!visited.add(a)) {
             return true;
         }
@@ -31,7 +37,7 @@ public class Patching {
         Iterator<DiffNode<L>> aIt = a.getAllChildren().iterator();
         Iterator<DiffNode<L>> bIt = b.getAllChildren().iterator();
         while (aIt.hasNext() && bIt.hasNext()) {
-            if (!isSameAs(aIt.next(), bIt.next(), visited, time)) {
+            if (!isSameAs(aIt.next(), bIt.next(), visited)) {
                 return false;
             }
         }
