@@ -434,18 +434,18 @@ public class PatchingExperiment {
 		}
 	}
 
-	private static void patchVariationTrees(VariationTree<DiffLinesLabel> sourceVariantVersion1,
+	private static VariationTree<DiffLinesLabel> patchVariationTrees(VariationTree<DiffLinesLabel> sourceVariantVersion1,
 			VariationTree<DiffLinesLabel> sourceVariantVersion2, VariationTree<DiffLinesLabel> targetVariant)
 			throws Exception {
 		if (sourceVariantVersion1 == null || sourceVariantVersion2 == null || targetVariant == null) {
 			System.out.println("Parsing error");
-			return;
+			return null;
 		}
 		VariationDiff<DiffLinesLabel> diff = VariationDiff.fromTrees(sourceVariantVersion1, sourceVariantVersion2);
-		patchVariationTrees(diff, targetVariant);
+		return patchVariationTrees(diff, targetVariant);
 	}
 
-	private static void patchVariationTrees(VariationDiff<DiffLinesLabel> diff, VariationTree<DiffLinesLabel> targetVariant)
+	private static VariationTree<DiffLinesLabel> patchVariationTrees(VariationDiff<DiffLinesLabel> diff, VariationTree<DiffLinesLabel> targetVariant)
 			throws Exception {
 		
 //		Relevance rho = calculateFeatureSetToDeselectFromTrees(sourceVariantVersion1, sourceVariantVersion2, targetVariant,
@@ -490,10 +490,12 @@ public class PatchingExperiment {
 				.collect(Collectors.toList());
 		applyChanges(DiffType.REM, targetVariantDiffUnchanged, targetVariantDiffPatched, removedSortedSubtreeRoots,
 				source, deselectedFeatures, true);
+		GameEngine.showAndAwaitAll(Show.diff(diff));
 		GameEngine.showAndAwaitAll(Show.diff(optimizedDiff));
-//		GameEngine.showAndAwaitAll(Show.tree(sourceVariantVersion1), Show.tree(sourceVariantVersion2),
+//		GameEngine.showAndAwaitAll(Show.diff(diff),
 //				Show.tree(targetVariant), Show.diff(optimizedDiff), Show.diff(targetVariantDiffPatched),
 //				Show.tree(targetVariantDiffPatched.project(Time.AFTER)));
+		return targetVariantDiffPatched.project(Time.AFTER);
 	}
 
 	private static VariationDiff<DiffLinesLabel> parseVariationDiffFromFiles(String file1, String file2)
@@ -516,6 +518,10 @@ public class PatchingExperiment {
 		}
 		return null;
 	}
+	
+	private static boolean comparePatchedVariantWithExpectedResult(VariationTree<DiffLinesLabel> patchedVariant, VariationTree<DiffLinesLabel> expectedResult) {
+		return Patching.isSameAs(patchedVariant.toCompletelyUnchangedVariationDiff(), expectedResult.toCompletelyUnchangedVariationDiff());
+	}
 
 	public static void main(String[] args) {
 		try {
@@ -525,15 +531,17 @@ public class PatchingExperiment {
 //					parseVariationTreeFromFile("exampleA2Rem.cpp"), parseVariationTreeFromFile("exampleBRem.cpp"));
 //			patchVariationTrees(parseVariationDiffFromFiles("exampleA1RemAdd.cpp", "exampleA2RemAdd.cpp"),
 //					parseVariationTreeFromFile("exampleBRemAdd.cpp"));
-//			patchVariationTrees(parseVariationTreeFromFile("exampleA1RemAdd.cpp"),
-//					parseVariationTreeFromFile("exampleA2RemAdd.cpp"),
-//					parseVariationTreeFromFile("exampleBRemAdd.cpp"));
+			VariationTree<DiffLinesLabel> patchedVariant = patchVariationTrees(parseVariationTreeFromFile("exampleA1RemAdd.cpp"),
+					parseVariationTreeFromFile("exampleA2RemAdd.cpp"),
+					parseVariationTreeFromFile("exampleBRemAdd.cpp"));
+			VariationTree<DiffLinesLabel> expectedResult = parseVariationTreeFromFile("exampleBRemAddExpected.cpp");
+			System.out.println(comparePatchedVariantWithExpectedResult(patchedVariant, expectedResult));
 //			patchVariationTrees(parseVariationDiffFromFiles("exampleA1AddAlignmentP.cpp", "exampleA2AddAlignmentP.cpp"),
 //					parseVariationTreeFromFile("exampleBAddAlignmentP.cpp"));
 //			patchVariationTrees(parseVariationDiffFromFiles("exampleA1RemAlignmentP.cpp", "exampleA2RemAlignmentP.cpp"),
 //					parseVariationTreeFromFile("exampleBRemAlignmentP.cpp"));
-			patchVariationTrees(parseVariationDiffFromFiles("exampleA1RemAddAlignmentP.cpp", "exampleA2RemAddAlignmentP.cpp"),
-					parseVariationTreeFromFile("exampleBRemAddAlignmentP.cpp"));
+//			patchVariationTrees(parseVariationDiffFromFiles("exampleA1RemAddAlignmentP.cpp", "exampleA2RemAddAlignmentP.cpp"),
+//					parseVariationTreeFromFile("exampleBRemAddAlignmentP.cpp"));
 		} catch (Exception e) {
 			System.out.println("Rejected");
 			e.printStackTrace();
