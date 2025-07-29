@@ -280,8 +280,11 @@ public class PatchingExperiment {
 				indexSource - 1);
 		DiffNode<DiffLinesLabel> neighborAfterSource = getChildFromListIfIndexInRange(orderedChildrenSource,
 				indexSource + 1);
-		if (neighborAfterSource != null && neighborAfterSource.diffType == DiffType.ADD) {
-			neighborAfterSource = null;
+		int currentIndexAfter = indexSource + 1;
+		// ignore neighbors with DiffType ADD because they are added afterwards
+		while (neighborAfterSource != null && neighborAfterSource.diffType == DiffType.ADD) {
+			currentIndexAfter++;
+			neighborAfterSource = getChildFromListIfIndexInRange(orderedChildrenSource, currentIndexAfter);
 		}
 		if (debug) {
 			if (neighborBeforeSource != null) {
