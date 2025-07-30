@@ -383,15 +383,22 @@ public class PatchingExperiment {
 						System.out.println(nodesToRem.toString());
 					} else {
 						System.out.println("subtree removed");
-						nodesToRem.get(0).diffType = DiffType.REM;
-						nodesToRem.get(0).getAllChildrenStream().forEach(node -> node.diffType = DiffType.REM);
-						nodesToRem.get(0).drop(Time.AFTER);
+						removeNode(nodesToRem.get(0));
 						System.out.println(targetNodes.get(0).getChildOrder(Time.AFTER));
 					}
 				}
 				GameEngine.showAndAwaitAll(Show.diff(targetVariantDiffPatched));
 			}
 		}
+	}
+	
+	private static void removeNode(DiffNode<DiffLinesLabel> node) {
+		Set<DiffNode<DiffLinesLabel>> children = node.getAllChildrenSet();
+		if (!children.isEmpty()) {
+			children.forEach(child -> removeNode(child));
+		}
+		node.diffType = DiffType.REM;
+		node.drop(Time.AFTER);
 	}
 
 	private static VariationTree<DiffLinesLabel> patchVariationTrees(
@@ -496,11 +503,19 @@ public class PatchingExperiment {
 //					parseVariationTreeFromFile("exampleA2Rem.cpp"), parseVariationTreeFromFile("exampleBRem.cpp"));
 //			patchVariationTrees(parseVariationDiffFromFiles("exampleA1RemAdd.cpp", "exampleA2RemAdd.cpp"),
 //					parseVariationTreeFromFile("exampleBRemAdd.cpp"));
+			
+//			VariationTree<DiffLinesLabel> patchedVariant = patchVariationTrees(
+//					parseVariationDiffFromFiles("exampleA1RemAdd.cpp", "exampleA2RemAdd.cpp"),
+//					parseVariationTreeFromFile("exampleBRemAdd.cpp"));
+//			VariationTree<DiffLinesLabel> expectedResult = parseVariationTreeFromFile("exampleBRemAddExpected.cpp");
+//			System.out.println(comparePatchedVariantWithExpectedResult(patchedVariant, expectedResult));
+			
 			VariationTree<DiffLinesLabel> patchedVariant = patchVariationTrees(
 					parseVariationDiffFromFiles("exampleA1RemAdd.cpp", "exampleA2RemAdd.cpp"),
-					parseVariationTreeFromFile("exampleBRemAdd.cpp"));
-			VariationTree<DiffLinesLabel> expectedResult = parseVariationTreeFromFile("exampleBRemAddExpected.cpp");
+					parseVariationTreeFromFile("exampleA1RemAdd.cpp"));
+			VariationTree<DiffLinesLabel> expectedResult = parseVariationTreeFromFile("exampleA2RemAdd.cpp");
 			System.out.println(comparePatchedVariantWithExpectedResult(patchedVariant, expectedResult));
+			
 //			patchVariationTrees(parseVariationDiffFromFiles("exampleA1AddAlignmentP.cpp", "exampleA2AddAlignmentP.cpp"),
 //					parseVariationTreeFromFile("exampleBAddAlignmentP.cpp"));
 //			patchVariationTrees(parseVariationDiffFromFiles("exampleA1RemAlignmentP.cpp", "exampleA2RemAlignmentP.cpp"),
