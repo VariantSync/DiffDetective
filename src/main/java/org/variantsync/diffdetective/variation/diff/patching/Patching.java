@@ -47,7 +47,8 @@ public class Patching {
 		}
 
 		if (!(a.getNodeType().equals(b.getNodeType()) &&
-				a.getLabel().equals(b.getLabel()) &&
+				a.getLabel().toString().equals(b.getLabel().toString()) &&
+//				a.getLabel().equals(b.getLabel()) &&
 //                a.getFromLine().atTime(time) == (b.getFromLine().atTime(time)) &&
 //                a.getToLine().atTime(time) == (b.getToLine().atTime(time)) &&
 				(a.getFormula() == null ? b.getFormula() == null : a.getFormula().equals(b.getFormula()))
@@ -76,14 +77,15 @@ public class Patching {
 //                a.getFromLine().atTime(time) == (b.getFromLine().atTime(time)) &&
 //                a.getToLine().atTime(time) == (b.getToLine().atTime(time)) &&
 				(a.getFormula() == null ? b.getFormula() == null : a.getFormula().equals(b.getFormula()))
-				&& a.getLabel().getLines().equals(b.getLabel().getLines()))) {
+				&& a.getLabel().getLines().equals(b.getLabel().getLines())
+				)) {
 			return false;
 		}
 
 		Iterator<DiffNode<L>> aIt = a.getAllChildren().iterator();
 		Iterator<DiffNode<L>> bIt = b.getAllChildren().iterator();
 		while (aIt.hasNext() && bIt.hasNext()) {
-			if (!isSameAs(aIt.next(), bIt.next(), visited)) {
+			if (!isSameAsWithoutLabel(aIt.next(), bIt.next(), visited)) {
 				return false;
 			}
 		}
@@ -220,12 +222,14 @@ public class Patching {
 		}
 
 		if (neighborBeforeTarget != null) {
-			indexSourceMatchingNeighborBefore = findPositionOfMatchingNeighborInList(neighborBeforeTarget,
+			List<Integer> positions = findPositionsOfMatchingNeighborInList(neighborBeforeTarget,
 					orderedChildrenSource, time);
+			indexSourceMatchingNeighborBefore = findNearestPositionToIndex(positions, indexTarget, true);
 		}
 		if (neighborAfterTarget != null) {
-			indexSourceMatchingNeighborAfter = findPositionOfMatchingNeighborInList(neighborAfterTarget,
+			List<Integer> positions = findPositionsOfMatchingNeighborInList(neighborAfterTarget,
 					orderedChildrenSource, time);
+			indexSourceMatchingNeighborAfter = findNearestPositionToIndex(positions, indexTarget, false);
 		}
 		if (indexSourceMatchingNeighborBefore == -2 && indexSourceMatchingNeighborAfter == -2) {
 			if (debug) System.out.println("No neighbors before or after the target");
@@ -249,7 +253,12 @@ public class Patching {
 		return true;
 	}
 
-	private static int findPositionOfMatchingNeighborInList(DiffNode<DiffLinesLabel> neighbor,
+	private static int findNearestPositionToIndex(List<Integer> positions, int indexTarget, boolean isBefore) {
+		if (isBefore) return positions.stream().map(pos -> (indexTarget - pos)).filter(pos -> pos > 0).min(Integer::compare).get();
+		return positions.stream().map(pos -> (pos - indexTarget)).filter(pos -> pos > 0).min(Integer::compare).get();
+	}
+
+	private static ArrayList<Integer> findPositionsOfMatchingNeighborInList(DiffNode<DiffLinesLabel> neighbor,
 			List<DiffNode<DiffLinesLabel>> list, Time time) throws Exception {
 		ArrayList<Integer> positions = new ArrayList<Integer>();
 		for (DiffNode<DiffLinesLabel> node : list) {
@@ -257,14 +266,7 @@ public class Patching {
 				positions.add(list.indexOf(node));
 			}
 		}
-		if (positions.size() == 1) {
-			return positions.get(0);
-		}
-		if (positions.size() > 1) {
-			// TODO: throw exception?
-			throw new Exception("multiple insert positions found: " + positions.size());
-		}
-		return -1;
+		return positions;
 	}
 
 	private static boolean isAlignmentProblem(List<DiffNode<DiffLinesLabel>> subList, Set<String> deselectedFeatures,
@@ -317,10 +319,10 @@ public class Patching {
 		int indexAfter = -2;
 
 		if (neighborBeforeSource != null) {
-			indexBefore = findPositionOfMatchingNeighborInList(neighborBeforeSource, orderedChildrenTarget, time);
+//			indexBefore = findPositionsOfMatchingNeighborInList(neighborBeforeSource, orderedChildrenTarget, time);
 		}
 		if (neighborAfterSource != null) {
-			indexAfter = findPositionOfMatchingNeighborInList(neighborAfterSource, orderedChildrenTarget, time);
+//			indexAfter = findPositionsOfMatchingNeighborInList(neighborAfterSource, orderedChildrenTarget, time);
 		}
 		if (indexBefore == -2 && indexAfter == -2) {
 			if (orderedChildrenTarget.isEmpty()) {
@@ -422,7 +424,7 @@ public class Patching {
 					if (insertPosition < 0) {
 						if (debug) System.out.println("no matching insert position found");
 					} else {
-						targetNodes2.add(targetNode);
+						targetNodes2.add(targetNodeInPatch);
 					}
 
 				} else if (type == DiffType.REM) {

@@ -12,6 +12,8 @@ import java.util.List;
 import org.tinylog.Logger;
 import org.variantsync.diffdetective.analysis.*;
 import org.variantsync.diffdetective.datasets.Repository;
+import org.variantsync.diffdetective.show.Show;
+import org.variantsync.diffdetective.show.engine.GameEngine;
 import org.variantsync.diffdetective.variation.diff.Time;
 import org.variantsync.diffdetective.variation.diff.VariationDiff;
 
@@ -24,6 +26,7 @@ public class PatchingExperiment implements Analysis.Hooks {
 	private static final AnalysisResult.ResultKey<SuccessfullyAppliedPatchesCounter> SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
 			"successfully applied patches");
 	private int commits = 0;
+	private boolean firstDiff = true;
 
 	private static class RejectedPatchesCounter extends SimpleMetadata<Integer, RejectedPatchesCounter> {
 		public RejectedPatchesCounter() {
@@ -65,7 +68,8 @@ public SuccessfullyAppliedPatchesCounter() {
 		VariationTree<DiffLinesLabel> after = diff.project(Time.AFTER).deepCopy();
 
 		try {
-			VariationTree<DiffLinesLabel> patchedVariant = Patching.patchVariationTrees(diff, before, false);
+			VariationTree<DiffLinesLabel> patchedVariant = Patching.patchVariationTrees(diff, before, firstDiff);
+			firstDiff = false;
 
 			if (!Patching.comparePatchedVariantWithExpectedResult(patchedVariant, after)) {
 				analysis.get(INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++;
@@ -102,7 +106,7 @@ public SuccessfullyAppliedPatchesCounter() {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-//		try {
+		try {
 //			patchVariationTrees(parseVariationTreeFromFile("exampleA1Add.cpp"),
 //					parseVariationTreeFromFile("exampleA2Add.cpp"), parseVariationTreeFromFile("exampleBAdd.cpp"));
 //			patchVariationTrees(parseVariationTreeFromFile("exampleA1Rem.cpp"),
@@ -116,12 +120,12 @@ public SuccessfullyAppliedPatchesCounter() {
 //			VariationTree<DiffLinesLabel> expectedResult = parseVariationTreeFromFile("exampleBRemAddExpected.cpp");
 //			System.out.println(comparePatchedVariantWithExpectedResult(patchedVariant, expectedResult));
 
-//			VariationTree<DiffLinesLabel> patchedVariant = Patching.patchVariationTrees(
-//					Patching.parseVariationDiffFromFiles("exampleA1NodesWith2Parents.cpp", "exampleA2NodesWith2Parents.cpp"),
-//					Patching.parseVariationTreeFromFile("exampleA1NodesWith2Parents.cpp"));
-//			VariationTree<DiffLinesLabel> expectedResult = Patching.parseVariationTreeFromFile("exampleA2NodesWith2Parents.cpp");
+			VariationTree<DiffLinesLabel> patchedVariant = Patching.patchVariationTrees(
+					Patching.parseVariationDiffFromFiles("exampleA1NodesWith2Parents.cpp", "exampleA2NodesWith2Parents.cpp"),
+					Patching.parseVariationTreeFromFile("exampleA1NodesWith2Parents.cpp"), false);
+			VariationTree<DiffLinesLabel> expectedResult = Patching.parseVariationTreeFromFile("exampleA2NodesWith2Parents.cpp");
 //			GameEngine.showAndAwaitAll(Show.tree(patchedVariant), Show.tree(expectedResult));
-//			System.out.println(Patching.comparePatchedVariantWithExpectedResult(patchedVariant, expectedResult));
+			System.out.println(Patching.comparePatchedVariantWithExpectedResult(patchedVariant, expectedResult));
 
 //			VariationTree<DiffLinesLabel> patchedVariant = patchVariationTrees(
 //					parseVariationDiffFromFiles("exampleA1RemAdd.cpp", "exampleA2RemAdd.cpp"),
@@ -135,10 +139,10 @@ public SuccessfullyAppliedPatchesCounter() {
 //					parseVariationTreeFromFile("exampleBRemAlignmentP.cpp"));
 //			patchVariationTrees(parseVariationDiffFromFiles("exampleA1RemAddAlignmentP.cpp", "exampleA2RemAddAlignmentP.cpp"),
 //					parseVariationTreeFromFile("exampleBRemAddAlignmentP.cpp"));
-//		} catch (Exception e) {
-//			System.out.println("Rejected");
-//			e.printStackTrace();
-//		}
+		} catch (Exception e) {
+			System.out.println("Rejected");
+			e.printStackTrace();
+		}
 	}
 
 }
