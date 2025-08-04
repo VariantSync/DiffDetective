@@ -271,11 +271,9 @@ public class Patching {
 	private static int findNearestPositionToIndex(List<Integer> positions, int indexTarget, boolean isBefore) {
 		Optional<Integer> pos;
 		if (isBefore) {
-			pos = positions.stream().map(p -> (indexTarget - p)).filter(p -> p > 0)
-					.min(Integer::compare);
+			pos = positions.stream().map(p -> (indexTarget - p)).filter(p -> p > 0).min(Integer::compare);
 		} else {
-			pos = positions.stream().map(p -> (p - indexTarget)).filter(p -> p > 0)
-					.min(Integer::compare);
+			pos = positions.stream().map(p -> (p - indexTarget)).filter(p -> p > 0).min(Integer::compare);
 		}
 		try {
 			return pos.get();
@@ -340,7 +338,7 @@ public class Patching {
 		List<DiffNode<DiffLinesLabel>> neighborAfterSource = getChildrenFromListIfIndexInRange(orderedChildrenSource,
 				indexSource, contextSize, false);
 		int currentIndexAfter = indexSource + 1;
-		//ignore neighbors with DiffType ADD because they are added afterwards
+		// ignore neighbors with DiffType ADD because they are added afterwards
 		neighborAfterSource = neighborAfterSource.stream().filter(n -> n.diffType != DiffType.ADD).toList();
 //		while (neighborAfterSource != null && neighborAfterSource.diffType == DiffType.ADD) {
 //			currentIndexAfter++;
@@ -365,20 +363,38 @@ public class Patching {
 		if (!neighborBeforeSource.isEmpty()) {
 			List<Integer> positions = findPositionsOfMatchingNeighborsInList(neighborBeforeSource,
 					orderedChildrenTarget, time);
-			if (positions.size() == 1)
-				indexBefore = positions.get(0);
-			else
-				throw new Exception(
-						"too many insert positions found: " + positions.size() + " with context size: " + contextSize);
+			if (positions.size() == 1) {
+				indexBefore = positions.get(0) + neighborBeforeSource.size();
+			} else if (positions.size() > 1) {
+				List<Integer> positionsSource = findPositionsOfMatchingNeighborsInList(neighborAfterSource,
+						orderedChildrenSource, time);
+				if (positionsSource.size() == positions.size()) {
+					int arrayIndex = positionsSource.indexOf(indexSource + 1);
+					indexAfter = positions.get(arrayIndex);
+				} else {
+					throw new Exception("target node: " + targetNodeInPatch.toString() + "too many insert positions found: "
+							+ positions.toString() + " with context size: " + contextSize);
+				}
+			}
+				
+			
 		}
 		if (!neighborAfterSource.isEmpty()) {
 			List<Integer> positions = findPositionsOfMatchingNeighborsInList(neighborAfterSource, orderedChildrenTarget,
 					time);
-			if (positions.size() == 1)
+			if (positions.size() == 1) {
 				indexAfter = positions.get(0);
-			else
-				throw new Exception(
-						"too many insert positions found: " + positions.size() + " with context size: " + contextSize);
+			} else if (positions.size() > 1) {
+				List<Integer> positionsSource = findPositionsOfMatchingNeighborsInList(neighborAfterSource,
+						orderedChildrenSource, time);
+				if (positionsSource.size() == positions.size()) {
+					int arrayIndex = positionsSource.indexOf(indexSource + 1);
+					indexAfter = positions.get(arrayIndex);
+				} else {
+				throw new Exception("target node:" + targetNodeInPatch.toString() + "too many insert positions found: "
+						+ positions.toString() + " with context size: " + contextSize);
+				}
+			}
 		}
 		if (indexBefore == -2 && indexAfter == -2) {
 			if (orderedChildrenTarget.isEmpty()) {
@@ -409,14 +425,14 @@ public class Patching {
 			}
 		}
 		if (indexAfter == -2) {
-			List<DiffNode<DiffLinesLabel>> orderedChildrenTargetSubList = orderedChildrenTarget.subList(indexBefore + 1,
+			List<DiffNode<DiffLinesLabel>> orderedChildrenTargetSubList = orderedChildrenTarget.subList(indexBefore,
 					orderedChildrenTarget.size());
 			if (debug)
 				System.out.println(orderedChildrenTargetSubList);
 			if (orderedChildrenTargetSubList.size() > 1) {
 				if (isAlignmentProblem(orderedChildrenTargetSubList, deselectedFeatures, time, debug)) {
 					if (debug)
-						System.out.println("ALIGNMENT PROBLEM. Possible insert positions: from " + (indexBefore + 1)
+						System.out.println("ALIGNMENT PROBLEM. Possible insert positions: from " + indexBefore
 								+ " to " + (orderedChildrenTarget.size() - 1));
 				} else {
 					throw new Exception("Reject");
@@ -425,19 +441,20 @@ public class Patching {
 			}
 		}
 		if (indexBefore > -1 && indexAfter > -1) {
-			if (indexAfter - (indexBefore + 1) > 1) {
+			if (indexAfter - indexBefore > 1) {
 				// Alignment Problem ?
 				// TODO: Check if code belongs to features which are only present in target
 				// variant
 				List<DiffNode<DiffLinesLabel>> orderedChildrenTargetSubList = orderedChildrenTarget
-						.subList(indexBefore + 1, indexAfter);
+						.subList(indexBefore, indexAfter);
 				if (debug)
 					System.out.println(orderedChildrenTargetSubList);
 				if (isAlignmentProblem(orderedChildrenTargetSubList, deselectedFeatures, time, debug)) {
 					if (debug)
-						System.out.println("ALIGNMENT PROBLEM. Possible insert positions: from " + (indexBefore + 1)
+						System.out.println("ALIGNMENT PROBLEM. Possible insert positions: from " + indexBefore
 								+ " to " + indexAfter);
 				} else {
+					System.out.println("after: " + indexAfter + " before: " + indexBefore);
 					throw new Exception("Reject");
 				}
 				return -1;
@@ -450,7 +467,7 @@ public class Patching {
 			}
 			return indexAfter;
 		}
-		return Math.max(indexBefore + 1, indexAfter);
+		return Math.max(indexBefore, indexAfter);
 	}
 
 	private static void applyChanges(DiffType type, VariationDiff<DiffLinesLabel> targetVariantDiffUnchanged,
@@ -527,6 +544,7 @@ public class Patching {
 			}
 
 			if (targetNodes2.size() != 1) {
+				System.out.println(root);
 				throw new Exception("too much or too less targetNodes found: " + targetNodes2.size());
 			} else {
 				DiffNode<DiffLinesLabel> targetNodeInPatch = targetNodes2.get(0);
