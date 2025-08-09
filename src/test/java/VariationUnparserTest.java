@@ -39,18 +39,6 @@ public class VariationUnparserTest {
         return findTestCases(testDirDiff, testCaseSuffixDiff);
     }
 
-    @ParameterizedTest
-    @MethodSource("testsTree")
-    public void testTreeDir(Path basename) throws IOException, DiffParseException {
-        testCaseTree(basename);
-    }
-
-    @ParameterizedTest
-    @MethodSource("testsDiff")
-    public void testDiffDir(Path basename) throws IOException, DiffParseException {
-        testCaseDiff(basename);
-    }
-
     @Test
     public void testTree() throws IOException, DiffParseException {
         String source = Files.readString(Path.of("src", "test", "resources", "unparser", "test8.txt"));
@@ -76,7 +64,9 @@ public class VariationUnparserTest {
                 removeWhitespace(VariationUnparser.undiff(temp, Time.AFTER), false));
     }
 
-    public static void testCaseTree(Path testCasePath) throws IOException, DiffParseException {
+    @ParameterizedTest
+    @MethodSource("testsTree")
+    public void testCaseTree(Path testCasePath) throws IOException, DiffParseException {
         String temp = Files.readString(testCasePath);
         temp = temp.replaceAll("\\r\\n", "\n");
 
@@ -97,7 +87,9 @@ public class VariationUnparserTest {
         assertEquals(temp, unparse4);
     }
 
-    public static void testCaseDiff(Path testCasePath) throws IOException, DiffParseException {
+    @ParameterizedTest
+    @MethodSource("testsDiff")
+    public void testCaseDiff(Path testCasePath) throws IOException, DiffParseException {
         String temp = Files.readString(testCasePath);
         temp = temp.replaceAll("\\r\\n", "\n");
 
