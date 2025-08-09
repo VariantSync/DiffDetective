@@ -41,7 +41,7 @@ public class VariationUnparserTest {
 
     @Test
     public void testTree() throws IOException, DiffParseException {
-        String source = Files.readString(Path.of("src", "test", "resources", "unparser", "test8.txt"));
+        String source = Files.readString(testDirTree.resolve("test8.txt"));
         VariationTree<DiffLinesLabel> tree = VariationTree.fromText(source, VariationTreeSource.Unknown,
                 VariationDiffParseOptions.Default);
         String temp = VariationUnparser.variationTreeUnparser(tree);
@@ -52,7 +52,7 @@ public class VariationUnparserTest {
     @Test
     public void testDiffSemEq() throws IOException, DiffParseException {
         String source = Files
-                .readString(Path.of("src", "test", "resources", "unparser", "diff", "diff.diff"));
+                .readString(testDirTree.resolve("diff").resolve("diff.diff"));
         VariationDiff<DiffLinesLabel> diff = VariationDiff.fromDiff(source, VariationDiffParseOptions.Default);
         String temp = VariationUnparser.variationDiffUnparser(diff);
 
