@@ -2,7 +2,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.stream.Stream;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
@@ -17,45 +16,23 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.variantsync.diffdetective.experiments.thesis_es.UnparseAnalysis.removeWhitespace;
 
 public class VariationUnparserTest {
-    private final static Path treeDir = Constants.RESOURCE_DIR.resolve("unparser");
-    private final static Path testDirDiff = Constants.RESOURCE_DIR.resolve("diffs").resolve("parser");
-    private final static String treeSuffix = ".txt";
-    private final static String diffSuffix = ".diff";
+    private final static Path unparserTestCaseDir = Constants.RESOURCE_DIR.resolve("unparser");
+    private final static Path parserTestCaseDir = Constants.RESOURCE_DIR.resolve("diffs").resolve("parser");
+    private final static String parserTestCaseSuffix = ".diff";
 
-    private static Stream<Path> findTestCases(Path dir, String filenameSuffix) throws IOException {
-        return Files
-                .list(dir)
-                .filter(filename -> filename.getFileName().toString().endsWith(filenameSuffix));
+    public static Stream<Path> treeTestCases() throws IOException {
+        return Files.list(unparserTestCaseDir.resolve("trees"));
     }
 
-    public static Stream<Path> testsTree() throws IOException {
-        return findTestCases(treeDir, treeSuffix);
-    }
-
-    public static Stream<Path> testsDiff() throws IOException {
-        return findTestCases(testDirDiff, diffSuffix);
-    }
-
-    @Test
-    public void testTree() throws IOException, DiffParseException {
-        Path file = treeDir.resolve("test8.txt");
-
-        assertEqualTree(
-            Files.readString(file),
-            parseUnparseTree(file, VariationDiffParseOptions.Default));
-    }
-
-    @Test
-    public void testDiffSemEq() throws IOException, DiffParseException {
-        Path file = treeDir.resolve("diff").resolve("diff.diff");
-
-        assertEqualDiff(
-            Files.readString(file),
-            parseUnparseDiff(file, VariationDiffParseOptions.Default));
+    public static Stream<Path> diffTestCases() throws IOException {
+        return Stream.concat(
+                Files.list(unparserTestCaseDir.resolve("diffs")),
+                Files.list(parserTestCaseDir)
+                    .filter(filename -> filename.getFileName().toString().endsWith(parserTestCaseSuffix)));
     }
 
     @ParameterizedTest
-    @MethodSource("testsTree")
+    @MethodSource("treeTestCases")
     public void testTreeUnparse(Path testCasePath) throws IOException, DiffParseException {
         String unparsed1 = parseUnparseTree(testCasePath, new VariationDiffParseOptions(false, false));
         String unparsed2 = parseUnparseTree(testCasePath, new VariationDiffParseOptions(false, true));
@@ -72,7 +49,7 @@ public class VariationUnparserTest {
     }
 
     @ParameterizedTest
-    @MethodSource("testsDiff")
+    @MethodSource("diffTestCases")
     public void testDiffUnparse(Path testCasePath) throws IOException, DiffParseException {
         String unparsed1 = parseUnparseDiff(testCasePath, new VariationDiffParseOptions(false, false));
         String unparsed2 = parseUnparseDiff(testCasePath, new VariationDiffParseOptions(false, true));
