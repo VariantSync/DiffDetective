@@ -22,7 +22,7 @@ public class VariationUnparserTest {
     private final static String treeSuffix = ".txt";
     private final static String diffSuffix = ".diff";
 
-    protected static Stream<Path> findTestCases(Path dir, String filenameSuffix) throws IOException {
+    private static Stream<Path> findTestCases(Path dir, String filenameSuffix) throws IOException {
         return Files
                 .list(dir)
                 .filter(filename -> filename.getFileName().toString().endsWith(filenameSuffix));
@@ -88,12 +88,12 @@ public class VariationUnparserTest {
         assertEqualDiff(original, unparsed4);
     }
 
-    public static String parseUnparseTree(Path path, VariationDiffParseOptions option) throws IOException, DiffParseException {
+    private static String parseUnparseTree(Path path, VariationDiffParseOptions option) throws IOException, DiffParseException {
         VariationTree<DiffLinesLabel> tree = VariationTree.fromFile(path, option);
         return VariationUnparser.variationTreeUnparser(tree);
     }
 
-    public static String parseUnparseDiff(Path path, VariationDiffParseOptions option) throws IOException, DiffParseException {
+    private static String parseUnparseDiff(Path path, VariationDiffParseOptions option) throws IOException, DiffParseException {
         VariationDiff<DiffLinesLabel> diff = VariationDiff.fromFile(path, option);
         return VariationUnparser.variationDiffUnparser(diff);
     }
