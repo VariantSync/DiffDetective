@@ -3,6 +3,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.stream.Stream;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
@@ -20,49 +21,41 @@ public class VariationUnparserTest {
     private final static Path parserTestCaseDir = Constants.RESOURCE_DIR.resolve("diffs").resolve("parser");
     private final static String parserTestCaseSuffix = ".diff";
 
-    public static Stream<Path> treeTestCases() throws IOException {
-        return Files.list(unparserTestCaseDir.resolve("trees"));
+    public static Stream<Arguments> treeTestCases() throws IOException {
+        return withParseOptions(Files.list(unparserTestCaseDir.resolve("trees")));
     }
 
-    public static Stream<Path> diffTestCases() throws IOException {
-        return Stream.concat(
+    public static Stream<Arguments> diffTestCases() throws IOException {
+        return withParseOptions(Stream.concat(
                 Files.list(unparserTestCaseDir.resolve("diffs")),
                 Files.list(parserTestCaseDir)
-                    .filter(filename -> filename.getFileName().toString().endsWith(parserTestCaseSuffix)));
+                    .filter(filename -> filename.getFileName().toString().endsWith(parserTestCaseSuffix))));
+    }
+
+    private static Stream<Arguments> withParseOptions(Stream<Path> paths) {
+        // Build a Cartesian product of all paths and parse options.
+        return
+            paths.flatMap(path -> Stream.of(
+                Arguments.of(path, new VariationDiffParseOptions(false, false)),
+                Arguments.of(path, new VariationDiffParseOptions(false, true)),
+                Arguments.of(path, new VariationDiffParseOptions(true, false)),
+                Arguments.of(path, new VariationDiffParseOptions(true, true))));
     }
 
     @ParameterizedTest
     @MethodSource("treeTestCases")
-    public void testTreeUnparse(Path testCasePath) throws IOException, DiffParseException {
-        String unparsed1 = parseUnparseTree(testCasePath, new VariationDiffParseOptions(false, false));
-        String unparsed2 = parseUnparseTree(testCasePath, new VariationDiffParseOptions(false, true));
-        String unparsed3 = parseUnparseTree(testCasePath, new VariationDiffParseOptions(true, false));
-        String unparsed4 = parseUnparseTree(testCasePath, new VariationDiffParseOptions(true, true));
-
-        String original = Files.readString(testCasePath);
-        original = original.replaceAll("\\r\\n", "\n");
-
-        assertEqualTree(original, unparsed1);
-        assertEqualTree(original, unparsed2);
-        assertEqualTree(original, unparsed3);
-        assertEqualTree(original, unparsed4);
+    public void testTreeUnparse(Path testCasePath, VariationDiffParseOptions parseOptions) throws IOException, DiffParseException {
+        assertEqualTree(
+            Files.readString(testCasePath).replaceAll("\\r\\n", "\n"),
+            parseUnparseTree(testCasePath, parseOptions));
     }
 
     @ParameterizedTest
     @MethodSource("diffTestCases")
-    public void testDiffUnparse(Path testCasePath) throws IOException, DiffParseException {
-        String unparsed1 = parseUnparseDiff(testCasePath, new VariationDiffParseOptions(false, false));
-        String unparsed2 = parseUnparseDiff(testCasePath, new VariationDiffParseOptions(false, true));
-        String unparsed3 = parseUnparseDiff(testCasePath, new VariationDiffParseOptions(true, false));
-        String unparsed4 = parseUnparseDiff(testCasePath, new VariationDiffParseOptions(true, true));
-
-        String original = Files.readString(testCasePath);
-        original = original.replaceAll("\\r\\n", "\n");
-
-        assertEqualDiff(original, unparsed1);
-        assertEqualDiff(original, unparsed2);
-        assertEqualDiff(original, unparsed3);
-        assertEqualDiff(original, unparsed4);
+    public void testDiffUnparse(Path testCasePath, VariationDiffParseOptions parseOptions) throws IOException, DiffParseException {
+        assertEqualDiff(
+            Files.readString(testCasePath).replaceAll("\\r\\n", "\n"),
+            parseUnparseDiff(testCasePath, parseOptions));
     }
 
     private static String parseUnparseTree(Path path, VariationDiffParseOptions option) throws IOException, DiffParseException {
