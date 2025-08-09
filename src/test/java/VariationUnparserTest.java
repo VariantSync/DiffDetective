@@ -18,105 +18,102 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.variantsync.diffdetective.experiments.thesis_es.UnparseAnalysis.removeWhitespace;
 
 public class VariationUnparserTest {
-    private final static Path testDirTree = Constants.RESOURCE_DIR.resolve("unparser");
-
+    private final static Path treeDir = Constants.RESOURCE_DIR.resolve("unparser");
     private final static Path testDirDiff = Constants.RESOURCE_DIR.resolve("diffs").resolve("parser");
-    private final static String testCaseSuffixTree = ".txt";
+    private final static String treeSuffix = ".txt";
+    private final static String diffSuffix = ".diff";
 
-    private final static String testCaseSuffixDiff = ".diff";
-
-    protected static Stream<Path> findTestCases(Path dir, String testCaseSuffix) throws IOException {
+    protected static Stream<Path> findTestCases(Path dir, String filenameSuffix) throws IOException {
         return Files
                 .list(dir)
-                .filter(filename -> filename.getFileName().toString().endsWith(testCaseSuffix));
+                .filter(filename -> filename.getFileName().toString().endsWith(filenameSuffix));
     }
 
     public static Stream<Path> testsTree() throws IOException {
-        return findTestCases(testDirTree, testCaseSuffixTree);
+        return findTestCases(treeDir, treeSuffix);
     }
 
     public static Stream<Path> testsDiff() throws IOException {
-        return findTestCases(testDirDiff, testCaseSuffixDiff);
+        return findTestCases(testDirDiff, diffSuffix);
     }
 
     @Test
     public void testTree() throws IOException, DiffParseException {
-        String source = Files.readString(testDirTree.resolve("test8.txt"));
-        VariationTree<DiffLinesLabel> tree = VariationTree.fromText(source, VariationTreeSource.Unknown,
-                VariationDiffParseOptions.Default);
-        String temp = VariationUnparser.variationTreeUnparser(tree);
+        String original = Files.readString(treeDir.resolve("test8.txt"));
+        VariationTree<DiffLinesLabel> tree =
+            VariationTree.fromText(original, VariationTreeSource.Unknown, VariationDiffParseOptions.Default);
+        String unparsed = VariationUnparser.variationTreeUnparser(tree);
 
-        assertEquals(removeWhitespace(source, false), removeWhitespace(temp, false));
+        assertEquals(removeWhitespace(original, false), removeWhitespace(unparsed, false));
     }
 
     @Test
     public void testDiffSemEq() throws IOException, DiffParseException {
-        String source = Files
-                .readString(testDirTree.resolve("diff").resolve("diff.diff"));
-        VariationDiff<DiffLinesLabel> diff = VariationDiff.fromDiff(source, VariationDiffParseOptions.Default);
-        String temp = VariationUnparser.variationDiffUnparser(diff);
+        String original = Files.readString(treeDir.resolve("diff").resolve("diff.diff"));
+        VariationDiff<DiffLinesLabel> diff = VariationDiff.fromDiff(original, VariationDiffParseOptions.Default);
+        String unparsed = VariationUnparser.variationDiffUnparser(diff);
 
         assertEquals(
-                removeWhitespace(VariationUnparser.undiff(source, Time.BEFORE), false),
-                removeWhitespace(VariationUnparser.undiff(temp, Time.BEFORE), false));
+                removeWhitespace(VariationUnparser.undiff(original, Time.BEFORE), false),
+                removeWhitespace(VariationUnparser.undiff(unparsed, Time.BEFORE), false));
         assertEquals(
-                removeWhitespace(VariationUnparser.undiff(source, Time.AFTER), false),
-                removeWhitespace(VariationUnparser.undiff(temp, Time.AFTER), false));
+                removeWhitespace(VariationUnparser.undiff(original, Time.AFTER), false),
+                removeWhitespace(VariationUnparser.undiff(unparsed, Time.AFTER), false));
     }
 
     @ParameterizedTest
     @MethodSource("testsTree")
-    public void testCaseTree(Path testCasePath) throws IOException, DiffParseException {
-        String temp = Files.readString(testCasePath);
-        temp = temp.replaceAll("\\r\\n", "\n");
+    public void testTreeUnparse(Path testCasePath) throws IOException, DiffParseException {
+        String original = Files.readString(testCasePath);
+        original = original.replaceAll("\\r\\n", "\n");
 
-        String unparse1 = parseUnparseTree(testCasePath, new VariationDiffParseOptions(false, false));
-        String unparse2 = parseUnparseTree(testCasePath, new VariationDiffParseOptions(false, true));
-        String unparse3 = parseUnparseTree(testCasePath, new VariationDiffParseOptions(true, false));
-        String unparse4 = parseUnparseTree(testCasePath, new VariationDiffParseOptions(true, true));
+        String unparsed1 = parseUnparseTree(testCasePath, new VariationDiffParseOptions(false, false));
+        String unparsed2 = parseUnparseTree(testCasePath, new VariationDiffParseOptions(false, true));
+        String unparsed3 = parseUnparseTree(testCasePath, new VariationDiffParseOptions(true, false));
+        String unparsed4 = parseUnparseTree(testCasePath, new VariationDiffParseOptions(true, true));
 
-        temp = removeWhitespace(temp, false);
-        unparse1 = removeWhitespace(unparse1, false);
-        unparse2 = removeWhitespace(unparse2, false);
-        unparse3 = removeWhitespace(unparse3, false);
-        unparse4 = removeWhitespace(unparse4, false);
+        original = removeWhitespace(original, false);
+        unparsed1 = removeWhitespace(unparsed1, false);
+        unparsed2 = removeWhitespace(unparsed2, false);
+        unparsed3 = removeWhitespace(unparsed3, false);
+        unparsed4 = removeWhitespace(unparsed4, false);
 
-        assertEquals(temp, unparse1);
-        assertEquals(temp, unparse2);
-        assertEquals(temp, unparse3);
-        assertEquals(temp, unparse4);
+        assertEquals(original, unparsed1);
+        assertEquals(original, unparsed2);
+        assertEquals(original, unparsed3);
+        assertEquals(original, unparsed4);
     }
 
     @ParameterizedTest
     @MethodSource("testsDiff")
-    public void testCaseDiff(Path testCasePath) throws IOException, DiffParseException {
-        String temp = Files.readString(testCasePath);
-        temp = temp.replaceAll("\\r\\n", "\n");
+    public void testDiffUnparse(Path testCasePath) throws IOException, DiffParseException {
+        String original = Files.readString(testCasePath);
+        original = original.replaceAll("\\r\\n", "\n");
 
-        String unparse1 = parseUnparseDiff(testCasePath, new VariationDiffParseOptions(false, false));
-        String unparse2 = parseUnparseDiff(testCasePath, new VariationDiffParseOptions(false, true));
-        String unparse3 = parseUnparseDiff(testCasePath, new VariationDiffParseOptions(true, false));
-        String unparse4 = parseUnparseDiff(testCasePath, new VariationDiffParseOptions(true, true));
+        String unparsed1 = parseUnparseDiff(testCasePath, new VariationDiffParseOptions(false, false));
+        String unparsed2 = parseUnparseDiff(testCasePath, new VariationDiffParseOptions(false, true));
+        String unparsed3 = parseUnparseDiff(testCasePath, new VariationDiffParseOptions(true, false));
+        String unparsed4 = parseUnparseDiff(testCasePath, new VariationDiffParseOptions(true, true));
 
-        String temp1 = VariationUnparser.undiff(temp, Time.BEFORE);
-        String temp2 = VariationUnparser.undiff(temp, Time.AFTER);
-        String unparse11 = VariationUnparser.undiff(unparse1, Time.BEFORE);
-        String unparse12 = VariationUnparser.undiff(unparse1, Time.AFTER);
-        String unparse21 = VariationUnparser.undiff(unparse2, Time.BEFORE);
-        String unparse22 = VariationUnparser.undiff(unparse2, Time.AFTER);
-        String unparse31 = VariationUnparser.undiff(unparse3, Time.BEFORE);
-        String unparse32 = VariationUnparser.undiff(unparse3, Time.AFTER);
-        String unparse41 = VariationUnparser.undiff(unparse4, Time.BEFORE);
-        String unparse42 = VariationUnparser.undiff(unparse4, Time.AFTER);
+        String original1 = VariationUnparser.undiff(original, Time.BEFORE);
+        String original2 = VariationUnparser.undiff(original, Time.AFTER);
+        String unparsed11 = VariationUnparser.undiff(unparsed1, Time.BEFORE);
+        String unparsed12 = VariationUnparser.undiff(unparsed1, Time.AFTER);
+        String unparsed21 = VariationUnparser.undiff(unparsed2, Time.BEFORE);
+        String unparsed22 = VariationUnparser.undiff(unparsed2, Time.AFTER);
+        String unparsed31 = VariationUnparser.undiff(unparsed3, Time.BEFORE);
+        String unparsed32 = VariationUnparser.undiff(unparsed3, Time.AFTER);
+        String unparsed41 = VariationUnparser.undiff(unparsed4, Time.BEFORE);
+        String unparsed42 = VariationUnparser.undiff(unparsed4, Time.AFTER);
 
-        assertEquals(removeWhitespace(temp1, false), removeWhitespace(unparse11, false));
-        assertEquals(removeWhitespace(temp2, false), removeWhitespace(unparse12, false));
-        assertEquals(removeWhitespace(temp1, false), removeWhitespace(unparse21, false));
-        assertEquals(removeWhitespace(temp2, false), removeWhitespace(unparse22, false));
-        assertEquals(removeWhitespace(temp1, false), removeWhitespace(unparse31, false));
-        assertEquals(removeWhitespace(temp2, false), removeWhitespace(unparse32, false));
-        assertEquals(removeWhitespace(temp1, false), removeWhitespace(unparse41, false));
-        assertEquals(removeWhitespace(temp2, false), removeWhitespace(unparse42, false));
+        assertEquals(removeWhitespace(original1, false), removeWhitespace(unparsed11, false));
+        assertEquals(removeWhitespace(original2, false), removeWhitespace(unparsed12, false));
+        assertEquals(removeWhitespace(original1, false), removeWhitespace(unparsed21, false));
+        assertEquals(removeWhitespace(original2, false), removeWhitespace(unparsed22, false));
+        assertEquals(removeWhitespace(original1, false), removeWhitespace(unparsed31, false));
+        assertEquals(removeWhitespace(original2, false), removeWhitespace(unparsed32, false));
+        assertEquals(removeWhitespace(original1, false), removeWhitespace(unparsed41, false));
+        assertEquals(removeWhitespace(original2, false), removeWhitespace(unparsed42, false));
     }
 
     public static String parseUnparseTree(Path path, VariationDiffParseOptions option) throws IOException, DiffParseException {
