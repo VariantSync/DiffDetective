@@ -24,15 +24,10 @@ public class VariationUnparserTest {
 
     private final static String testCaseSuffixDiff = ".diff";
 
-    protected static Stream<Path> findTestCases(Path dir, String testCaseSuffix) {
-        try {
-            return Files
-                    .list(dir)
-                    .filter(filename -> filename.getFileName().toString().endsWith(testCaseSuffix));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
+    protected static Stream<Path> findTestCases(Path dir, String testCaseSuffix) throws IOException {
+        return Files
+                .list(dir)
+                .filter(filename -> filename.getFileName().toString().endsWith(testCaseSuffix));
     }
 
     public static Stream<Path> testsTree() throws IOException {
@@ -56,56 +51,38 @@ public class VariationUnparserTest {
     }
 
     @Test
-    public void testTree() {
-        String source = "";
-        String temp = "";
-        try {
-            source = Files.readString(Path.of("src", "test", "resources", "unparser", "test8.txt"));
-            VariationTree<DiffLinesLabel> tree = VariationTree.fromText(source, VariationTreeSource.Unknown,
-                    VariationDiffParseOptions.Default);
-            temp = VariationUnparser.variationTreeUnparser(tree);
-            System.out.println(removeWhitespace(source, false).equals(removeWhitespace(temp, false)));
-            // System.out.println(removeWhitespace(source));
-            // System.out.println("Ende");
-            // System.out.println(removeWhitespace(temp));
-            // System.out.println("Ende");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public void testTree() throws IOException, DiffParseException {
+        String source = Files.readString(Path.of("src", "test", "resources", "unparser", "test8.txt"));
+        VariationTree<DiffLinesLabel> tree = VariationTree.fromText(source, VariationTreeSource.Unknown,
+                VariationDiffParseOptions.Default);
+        String temp = VariationUnparser.variationTreeUnparser(tree);
+        System.out.println(removeWhitespace(source, false).equals(removeWhitespace(temp, false)));
+        // System.out.println(removeWhitespace(source));
+        // System.out.println("Ende");
+        // System.out.println(removeWhitespace(temp));
+        // System.out.println("Ende");
     }
 
     @Test
-    public void testDiffSemEq() {
-        String source = "";
-        String temp = "";
-        try {
+    public void testDiffSemEq() throws IOException, DiffParseException {
+        String source = Files
+                .readString(Path.of("src", "test", "resources", "unparser", "diff", "diff.diff"));
+        VariationDiff<DiffLinesLabel> diff = VariationDiff.fromDiff(source, VariationDiffParseOptions.Default);
+        String temp = VariationUnparser.variationDiffUnparser(diff);
+        System.out.println(removeWhitespace(source, true).equals(removeWhitespace(temp, true)));
+        System.out.println(removeWhitespace(VariationUnparser.undiff(source, Time.BEFORE), false)
+                .equals(removeWhitespace(VariationUnparser.undiff(temp, Time.BEFORE), false)));
+        System.out.println(removeWhitespace(VariationUnparser.undiff(source, Time.AFTER), false)
+                .equals(removeWhitespace(VariationUnparser.undiff(temp, Time.AFTER), false)));
 
-            source = Files
-                    .readString(Path.of("src", "test", "resources", "unparser", "diff", "diff.diff"));
-            VariationDiff<DiffLinesLabel> diff = VariationDiff.fromDiff(source, VariationDiffParseOptions.Default);
-            temp = VariationUnparser.variationDiffUnparser(diff);
-            System.out.println(removeWhitespace(source, true).equals(removeWhitespace(temp, true)));
-            System.out.println(removeWhitespace(VariationUnparser.undiff(source, Time.BEFORE), false)
-                    .equals(removeWhitespace(VariationUnparser.undiff(temp, Time.BEFORE), false)));
-            System.out.println(removeWhitespace(VariationUnparser.undiff(source, Time.AFTER), false)
-                    .equals(removeWhitespace(VariationUnparser.undiff(temp, Time.AFTER), false)));
-
-            // System.out.println(removeWhitespace(source));
-            // System.out.println("Ende");
-            // System.out.println(removeWhitespace(temp));
-            // System.out.println("Ende");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        // System.out.println(removeWhitespace(source));
+        // System.out.println("Ende");
+        // System.out.println(removeWhitespace(temp));
+        // System.out.println("Ende");
     }
 
-    public static void testCaseTree(Path testCasePath) {
-        String temp = "";
-        try {
-            temp = Files.readString(testCasePath);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public static void testCaseTree(Path testCasePath) throws IOException, DiffParseException {
+        String temp = Files.readString(testCasePath);
         System.out.println(testCasePath);
         temp = temp.replaceAll("\\r\\n", "\n");
         String unparse1 = parseUnparseTree(testCasePath, new VariationDiffParseOptions(false, false));
@@ -123,13 +100,8 @@ public class VariationUnparserTest {
                 + temp.equals(unparse4));
     }
 
-    public static void testCaseDiff(Path testCasePath) {
-        String temp = "";
-        try {
-            temp = Files.readString(testCasePath);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public static void testCaseDiff(Path testCasePath) throws IOException, DiffParseException {
+        String temp = Files.readString(testCasePath);
         System.out.println(testCasePath);
         temp = temp.replaceAll("\\r\\n", "\n");
         String unparse1 = parseUnparseDiff(testCasePath, new VariationDiffParseOptions(false, false));
@@ -168,25 +140,13 @@ public class VariationUnparserTest {
                 + temp.equals(unparse4));
     }
 
-    public static String parseUnparseTree(Path path, VariationDiffParseOptions option) {
-        String temp = "b";
-        try {
-            VariationTree<DiffLinesLabel> tree = VariationTree.fromFile(path, option);
-            temp = VariationUnparser.variationTreeUnparser(tree);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return temp;
+    public static String parseUnparseTree(Path path, VariationDiffParseOptions option) throws IOException, DiffParseException {
+        VariationTree<DiffLinesLabel> tree = VariationTree.fromFile(path, option);
+        return VariationUnparser.variationTreeUnparser(tree);
     }
 
-    public static String parseUnparseDiff(Path path, VariationDiffParseOptions option) {
-        String temp = "b";
-        try {
-            VariationDiff<DiffLinesLabel> diff = VariationDiff.fromFile(path, option);
-            temp = VariationUnparser.variationDiffUnparser(diff);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return temp;
+    public static String parseUnparseDiff(Path path, VariationDiffParseOptions option) throws IOException, DiffParseException {
+        VariationDiff<DiffLinesLabel> diff = VariationDiff.fromFile(path, option);
+        return VariationUnparser.variationDiffUnparser(diff);
     }
 }
