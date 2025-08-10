@@ -328,8 +328,8 @@ public class VariationDiffParser {
 
             // Do not create a node for ENDIF, but update the line numbers of the closed if-chain
             // and remove that if-chain from the relevant stacks.
-            diffType.forAllTimesOfExistence(beforeStack, afterStack, stack ->
-                    popIfChain(stack, fromLine, line)
+            diffType.forAllTimesOfExistence(time ->
+                    popIfChain(time, fromLine, line)
             );
         } else if (options.collapseMultipleCodeLines()
                 && annotation.type() == AnnotationType.None
@@ -357,20 +357,22 @@ public class VariationDiffParser {
     }
 
     /**
-     * Pop {@code stack} until an IF node is popped.
+     * Pop the stack until an IF node is popped.
      * If there were ELSEs or ELIFs between an IF and an ENDIF, they were placed on the stack and
      * have to be popped now. The {@link DiffNode#getToLine() end line numbers} are adjusted
      *
-     * @param stack          the stack which should be popped
+     * @param time           which stack to pop the if chain (i.e., {@link beforeStack} or {@link afterStack})
      * @param elseLineNumber the first line of the else which causes this IF to be popped
      * @param line           the line containing the endif
      * @throws DiffParseException if {@code stack} doesn't contain an IF node
      */
     private void popIfChain(
-            Stack<DiffNode<DiffLinesLabel>> stack,
+            Time time,
             DiffLineNumber elseLineNumber,
             LogicalLine line
     ) throws DiffParseException {
+        Stack<DiffNode<DiffLinesLabel>> stack = time.match(beforeStack, afterStack);
+
         DiffLineNumber previousLineNumber = elseLineNumber;
         do {
             DiffNode<DiffLinesLabel> annotation = stack.peek();
@@ -381,19 +383,19 @@ public class VariationDiffParser {
                 for (int i = 0; i < line.getLines().size(); i++) {
                     list.add(line.getLines().get(i).content());
                 }
-                annotation.setEndIf(list, stack == beforeStack ? Time.BEFORE : Time.AFTER);
+                annotation.setEndIf(list, time);
             }
 
             // Set the line number of now closed annotations to the beginning of the
             // following annotation.
             annotation.setToLine(new DiffLineNumber(
                     Math.max(previousLineNumber.inDiff(), annotation.getToLine().inDiff()),
-                    stack == beforeStack
-                            ? previousLineNumber.beforeEdit()
-                            : annotation.getToLine().beforeEdit(),
-                    stack == afterStack
-                            ? previousLineNumber.afterEdit()
-                            : annotation.getToLine().afterEdit()
+                    time.match(
+                        previousLineNumber.beforeEdit(),
+                        annotation.getToLine().beforeEdit()),
+                    time.match(
+                        annotation.getToLine().afterEdit(),
+                        previousLineNumber.afterEdit())
             ));
 
             previousLineNumber = annotation.getFromLine();
