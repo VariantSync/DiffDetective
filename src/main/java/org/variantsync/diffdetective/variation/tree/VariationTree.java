@@ -207,6 +207,12 @@ public record VariationTree<L extends Label>(
         return new VariationTree<>(root.deepCopy(oldToNew), this.source);
     }
 
+    public String unparse() {
+        var result = new StringBuilder();
+        root().unparse(result);
+        return result.toString();
+    }
+
     @Override
     public String toString() {
         return "variation tree from " + source;

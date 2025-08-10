@@ -1,9 +1,6 @@
 package org.variantsync.diffdetective.variation;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Stack;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.eclipse.jgit.diff.DiffAlgorithm.SupportedAlgorithm;
@@ -12,79 +9,31 @@ import org.variantsync.diffdetective.variation.diff.Time;
 import org.variantsync.diffdetective.variation.diff.VariationDiff;
 import org.variantsync.diffdetective.variation.diff.construction.JGitDiff;
 import org.variantsync.diffdetective.variation.tree.VariationTree;
-import org.variantsync.diffdetective.variation.tree.VariationTreeNode;
 
 public class VariationUnparser {
     /**
      * Unparse {@link VariationTree}s into a {@link String}.
      *
      * @param tree that is unparsed
-     * @param linesToLabel a function that converts lists of lines into labels
      * @return the unparsed variation tree
      * @param <L> the type of labels of the tree
      */
-    public static <L extends Label> String unparseTree(VariationTree<L> tree, Function<List<String>, L> linesToLabel) {
-        if (!tree.root().getChildren().isEmpty()) {
-            StringBuilder result = new StringBuilder();
-            Stack<VariationTreeNode<L>> stack = new Stack<>();
-            for (int i = tree.root().getChildren().size() - 1; i >= 0; i--) {
-                stack.push(tree.root().getChildren().get(i));
-            }
-            while (!stack.empty()) {
-                VariationTreeNode<L> node = stack.pop();
-                if (node.isIf()) {
-                    stack.push(new VariationTreeNode<>(NodeType.ARTIFACT, null, null,
-                            linesToLabel.apply(node.getEndIf())));
-                }
-                for (String line : node.getLabel().getLines()) {
-                    result.append(line);
-                    result.append("\n");
-                }
-                for (int i = node.getChildren().size() - 1; i >= 0; i--) {
-                    stack.push(node.getChildren().get(i));
-                }
-            }
-            return result.substring(0, result.length() - 1);
-        } else {
-            return "";
-        }
-    }
-
-    /**
-     * Unparse {@link VariationTree}s into a {@link String}.
-     *
-     * @param tree that is unparsed
-     * @param linesToLabel a function that converts lists of lines into labels
-     * @return the unparsed variation tree
-     */
-    public static String unparseTree(VariationTree<DiffLinesLabel> tree) {
-        return unparseTree(tree, DiffLinesLabel::withInvalidLineNumbers);
+    public static <L extends Label> String unparseTree(VariationTree<L> tree) {
+        return tree.unparse();
     }
 
     /**
      * Unparse {@link VariationDiff}s into a {@link String}.
      *
      * @param diff that is unparsed
-     * @param linesToLabel a function that converts lists of lines into labels
      * @return the unparsed variation diff
      * @param <L> the type of labels of the tree
      * @throws IOException
      */
-    public static <L extends Label> String unparseDiff(VariationDiff<L> diff, Function<List<String>, L> linesToLabel) throws IOException {
-        String tree1 = unparseTree(diff.project(Time.BEFORE), linesToLabel);
-        String tree2 = unparseTree(diff.project(Time.AFTER), linesToLabel);
+    public static <L extends Label> String unparseDiff(VariationDiff<L> diff) throws IOException {
+        String tree1 = unparseTree(diff.project(Time.BEFORE));
+        String tree2 = unparseTree(diff.project(Time.AFTER));
         return JGitDiff.textDiff(tree1, tree2, SupportedAlgorithm.MYERS);
-    }
-
-    /**
-     * Unparse {@link VariationDiff}s into a {@link String}.
-     *
-     * @param diff that is unparsed
-     * @return the unparsed variation diff
-     * @throws IOException
-     */
-    public static String unparseDiff(VariationDiff<DiffLinesLabel> diff) throws IOException {
-        return unparseDiff(diff, DiffLinesLabel::withInvalidLineNumbers);
     }
 
     /**
