@@ -135,6 +135,8 @@ public class DiffNode<L extends Label> implements HasNodeType {
 
     /**
      * Returns the lines in the diff that are represented by this DiffNode as a single text.
+     *
+     * @see getEndIf
      */
     public L getLabel() {
         return label.getInnerLabel();

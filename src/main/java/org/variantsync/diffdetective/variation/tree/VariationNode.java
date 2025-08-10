@@ -72,6 +72,8 @@ public abstract class VariationNode<T extends VariationNode<T, L>, L extends Lab
      * Otherwise it may represent the preprocessor expression which was parsed to obtain
      * {@link #getFormula()}. In either case, this label may be an arbitrary value,
      * selected according to the needs of the user of this class.
+     *
+     * @see getEndIf
      */
     public abstract L getLabel();
 

@@ -13,22 +13,22 @@ import org.variantsync.diffdetective.variation.tree.VariationTreeNode;
 
 public class VariationUnparser {
     /**
-     * Unparse VariationTrees to Text/String
+     * Unparse {@link VariationTree}s into a {@link String}.
      *
-     * @param tree         VariationTree, that be unparsed
-     * @param linesToLabel Function, that return list of String and has a Class T
-     * @return String, the result of unparsing
-     * @param <T> that implements Label
+     * @param tree that is unparsed
+     * @param linesToLabel a function that converts lists of lines into labels
+     * @return the unparsed variation tree
+     * @param <L> the type of labels of the tree
      */
-    public static <T extends Label> String variationTreeUnparser(VariationTree<T> tree, Function<List<String>, T> linesToLabel) {
+    public static <L extends Label> String variationTreeUnparser(VariationTree<L> tree, Function<List<String>, L> linesToLabel) {
         if (!tree.root().getChildren().isEmpty()) {
             StringBuilder result = new StringBuilder();
-            Stack<VariationTreeNode<T>> stack = new Stack<>();
+            Stack<VariationTreeNode<L>> stack = new Stack<>();
             for (int i = tree.root().getChildren().size() - 1; i >= 0; i--) {
                 stack.push(tree.root().getChildren().get(i));
             }
             while (!stack.empty()) {
-                VariationTreeNode<T> node = stack.pop();
+                VariationTreeNode<L> node = stack.pop();
                 if (node.isIf()) {
                     stack.push(new VariationTreeNode<>(NodeType.ARTIFACT, null, null,
                             linesToLabel.apply(node.getEndIf())));
@@ -48,47 +48,55 @@ public class VariationUnparser {
     }
 
     /**
-     * Unparse VariationTrees to Text/String
+     * Unparse {@link VariationTree}s into a {@link String}.
      *
-     * @param tree VariationTree, that be unparsed
-     * @return String, the result of unparsing
+     * @param tree that is unparsed
+     * @param linesToLabel a function that converts lists of lines into labels
+     * @return the unparsed variation tree
      */
     public static String variationTreeUnparser(VariationTree<DiffLinesLabel> tree) {
         return variationTreeUnparser(tree, DiffLinesLabel::withInvalidLineNumbers);
     }
 
     /**
-     * Unparse VariationDiffs to Text/String
+     * Unparse {@link VariationDiff}s into a {@link String}.
      *
-     * @param diff         VariationDiff, that be unparsed
-     * @param linesToLabel Function, that return list of String and has a Class T
-     * @return String, the result of unparsing
-     * @param <T> that implements Label
+     * @param diff that is unparsed
+     * @param linesToLabel a function that converts lists of lines into labels
+     * @return the unparsed variation diff
+     * @param <L> the type of labels of the tree
      * @throws IOException
      */
-    public static <T extends Label> String variationDiffUnparser(VariationDiff<T> diff, Function<List<String>, T> linesToLabel) throws IOException {
+    public static <L extends Label> String variationDiffUnparser(VariationDiff<L> diff, Function<List<String>, L> linesToLabel) throws IOException {
         String tree1 = variationTreeUnparser(diff.project(Time.BEFORE), linesToLabel);
         String tree2 = variationTreeUnparser(diff.project(Time.AFTER), linesToLabel);
         return JGitDiff.textDiff(tree1, tree2, SupportedAlgorithm.MYERS);
     }
 
     /**
-     * Unparse VariationDiffs to Text/String
+     * Unparse {@link VariationDiff}s into a {@link String}.
      *
-     * @param diff VariationDiff, that be unparsed
-     * @return String, the result of unparsing
+     * @param diff that is unparsed
+     * @return the unparsed variation diff
      * @throws IOException
      */
     public static String variationDiffUnparser(VariationDiff<DiffLinesLabel> diff) throws IOException {
         return variationDiffUnparser(diff, DiffLinesLabel::withInvalidLineNumbers);
     }
 
-    public static String undiff(String text, Time time) {
-        if (text.isEmpty()) {
+    /**
+     * Extract the state of the diffed text before or after {@code diff}.
+     *
+     * @param diff the diff from which the state is extracted
+     * @param time that the returned state represents
+     * @return the state before or after the diff
+     */
+    public static String undiff(String diff, Time time) {
+        if (diff.isEmpty()) {
             return "";
         } else {
             StringBuilder result = new StringBuilder();
-            String[] textSplit = text.split("\n");
+            String[] textSplit = diff.split("\n");
             char zeichen;
             if (Time.AFTER == time) {
                 zeichen = '-';

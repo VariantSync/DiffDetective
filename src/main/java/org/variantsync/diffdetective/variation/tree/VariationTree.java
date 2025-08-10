@@ -85,6 +85,7 @@ public record VariationTree<L extends Label>(
      * Parses a {@code VariationTree} from source code with C preprocessor annotations.
      *
      * @param input the source code to be parsed
+     * @param source from where the variation tree was obtained
      * @param parseOptions {@link PatchDiffParseOptions} for the parsing process.
      * @return a new {@code VariationTree} representing {@code input}
      * @throws IOException if {@code input} throws {@code IOException}
@@ -109,6 +110,7 @@ public record VariationTree<L extends Label>(
      * Parses a {@code VariationTree} from source code with C preprocessor annotations.
      *
      * @param input the source code to be parsed
+     * @param source from where the variation tree was obtained
      * @param parseOptions {@link PatchDiffParseOptions} for the parsing process.
      * @return a new {@code VariationTree} representing {@code input}
      * @throws DiffParseException if some preprocessor annotations can't be parsed
