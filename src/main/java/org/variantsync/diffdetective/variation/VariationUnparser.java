@@ -4,7 +4,10 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Stack;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+
 import org.eclipse.jgit.diff.DiffAlgorithm.SupportedAlgorithm;
+import org.variantsync.diffdetective.variation.diff.DiffType;
 import org.variantsync.diffdetective.variation.diff.Time;
 import org.variantsync.diffdetective.variation.diff.VariationDiff;
 import org.variantsync.diffdetective.variation.diff.construction.JGitDiff;
@@ -92,30 +95,15 @@ public class VariationUnparser {
      * @return the state before or after the diff
      */
     public static String undiff(String diff, Time time) {
-        if (diff.isEmpty()) {
-            return "";
-        } else {
-            StringBuilder result = new StringBuilder();
-            String[] textSplit = diff.split("\n");
-            char zeichen;
-            if (Time.AFTER == time) {
-                zeichen = '-';
-            } else {
-                zeichen = '+';
-            }
-            for (String line : textSplit) {
-                if (line.isEmpty()) {
-                    result.append(line);
-                    result.append("\n");
-                } else if (line.charAt(0) != zeichen) {
-                    result.append(line.substring(1));
-                    result.append("\n");
-                }
-            }
-            if (result.isEmpty()) {
-                return "";
-            }
-            return result.toString();
-        }
+        String excludedDiffSymbol = DiffType.thatExistsOnlyAt(time.other()).symbol;
+
+        String result = diff
+            .lines()
+            .filter(line -> !line.startsWith(excludedDiffSymbol))
+            // TODO assumes that all diff symbols are exactly 1 char long
+            .map(line -> line.isEmpty() ? "" : line.substring(1))
+            .collect(Collectors.joining("\n"));
+
+        return result.isEmpty() ? "" : result + "\n";
     }
 }
