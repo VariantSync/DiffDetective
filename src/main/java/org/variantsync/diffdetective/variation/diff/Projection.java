@@ -121,9 +121,4 @@ public class Projection<L extends Label> extends VariationNode<Projection<L>, L>
     public int getID() {
         return getBackingNode().getID();
     }
-
-    @Override
-    public List<String> getEndIf() {
-        return getBackingNode().getEndIf(getTime());
-    }
 };

@@ -1,7 +1,5 @@
 package org.variantsync.diffdetective.variation.diff.parse;
 
-import java.util.ArrayList;
-import java.util.List;
 import org.apache.commons.lang3.function.FailableSupplier;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.ObjectId;
@@ -379,11 +377,15 @@ public class VariationDiffParser {
 
             // Save endif
             if (annotation.isIf()) {
-                List<String> list = new ArrayList<>();
-                for (int i = 0; i < line.getLines().size(); i++) {
-                    list.add(line.getLines().get(i).content());
+                var endIf = line.getLines();
+                var otherEndIf = annotation.getLabel().getDiffTrailingLines();
+
+                // Split the node if two different endif lines are associated to one if node.
+                if (!otherEndIf.isEmpty() && !endIf.equals(otherEndIf)) {
+                    annotation = annotation.split(time);
                 }
-                annotation.setEndIf(list, time);
+
+                annotation.getLabel().setDiffTrailingLines(endIf);
             }
 
             // Set the line number of now closed annotations to the beginning of the

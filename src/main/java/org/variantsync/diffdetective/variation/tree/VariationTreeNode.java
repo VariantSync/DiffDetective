@@ -83,11 +83,6 @@ public class VariationTreeNode<L extends Label> extends VariationNode<VariationT
     private final List<VariationTreeNode<L>> childOrder;
 
     /**
-     * The line with the endif of the corresponding if, if the node is an if node, otherwise null
-     */
-    private List<String> endIf = null;
-
-    /**
      * Creates a new node of a variation tree.
      *
      * The newly created node is not connected to any other nodes.
@@ -229,22 +224,6 @@ public class VariationTreeNode<L extends Label> extends VariationNode<VariationT
         }
 
         childOrder.clear();
-    }
-
-    /**
-     * Returns the line with the endif of the corresponding if, if the node is an if node, otherwise null
-     * @return String, the Line with endif
-     */
-    public List<String> getEndIf() {
-        return endIf;
-    }
-
-    /**
-     * Sets the line with the endif of the corresponding if, if the node is an if node
-     * @param endIf String, the Line with endif
-     */
-    public void setEndIf(List<String> endIf) {
-        this.endIf = endIf;
     }
 
     @Override

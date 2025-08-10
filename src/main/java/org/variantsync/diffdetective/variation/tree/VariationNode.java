@@ -72,8 +72,6 @@ public abstract class VariationNode<T extends VariationNode<T, L>, L extends Lab
      * Otherwise it may represent the preprocessor expression which was parsed to obtain
      * {@link #getFormula()}. In either case, this label may be an arbitrary value,
      * selected according to the needs of the user of this class.
-     *
-     * @see getEndIf
      */
     public abstract L getLabel();
 
@@ -114,12 +112,6 @@ public abstract class VariationNode<T extends VariationNode<T, L>, L extends Lab
      * @see removeChild
      */
     public abstract List<T> getChildren();
-
-    /**
-     * Returns the line with the endif of the corresponding if, if the node is an if node, otherwise null
-     * @return String, the Line with endif
-     */
-    public abstract List<String> getEndIf();
 
     /**
      * Returns {@code true} iff this node has no parent.
@@ -485,9 +477,6 @@ public abstract class VariationNode<T extends VariationNode<T, L>, L extends Lab
             getLineRange(),
             getLabel()
         );
-        if (getEndIf() != null) {
-            newNode.setEndIf(getEndIf());
-        }
         oldToNew.put(this.upCast(), newNode);
 
         for (var child : getChildren()) {
@@ -585,11 +574,9 @@ public abstract class VariationNode<T extends VariationNode<T, L>, L extends Lab
         }
 
         // Add #endif after macro
-        if (getEndIf() != null) {
-            for (final String line : getEndIf()) {
-                output.append(line);
-                output.append(StringUtils.LINEBREAK);
-            }
+        for (final String line : getLabel().getTrailingLines()) {
+            output.append(line);
+            output.append(StringUtils.LINEBREAK);
         }
     }
 
