@@ -216,7 +216,7 @@ public class UnparseAnalysis implements Analysis.Hooks {
         String temp = "b";
         try {
             VariationTree<DiffLinesLabel> tree = VariationTree.fromText(text, VariationTreeSource.Unknown, option);
-            temp = VariationUnparser.variationTreeUnparser(tree);
+            temp = VariationUnparser.unparseTree(tree);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -227,7 +227,7 @@ public class UnparseAnalysis implements Analysis.Hooks {
         String temp = "b";
         try {
             VariationDiff<DiffLinesLabel> diff = VariationDiff.fromDiff(textDiff, option);
-            temp = VariationUnparser.variationDiffUnparser(diff);
+            temp = VariationUnparser.unparseDiff(diff);
         } catch (Exception e) {
             e.printStackTrace();
         }

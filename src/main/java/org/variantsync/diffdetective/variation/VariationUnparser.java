@@ -23,7 +23,7 @@ public class VariationUnparser {
      * @return the unparsed variation tree
      * @param <L> the type of labels of the tree
      */
-    public static <L extends Label> String variationTreeUnparser(VariationTree<L> tree, Function<List<String>, L> linesToLabel) {
+    public static <L extends Label> String unparseTree(VariationTree<L> tree, Function<List<String>, L> linesToLabel) {
         if (!tree.root().getChildren().isEmpty()) {
             StringBuilder result = new StringBuilder();
             Stack<VariationTreeNode<L>> stack = new Stack<>();
@@ -57,8 +57,8 @@ public class VariationUnparser {
      * @param linesToLabel a function that converts lists of lines into labels
      * @return the unparsed variation tree
      */
-    public static String variationTreeUnparser(VariationTree<DiffLinesLabel> tree) {
-        return variationTreeUnparser(tree, DiffLinesLabel::withInvalidLineNumbers);
+    public static String unparseTree(VariationTree<DiffLinesLabel> tree) {
+        return unparseTree(tree, DiffLinesLabel::withInvalidLineNumbers);
     }
 
     /**
@@ -70,9 +70,9 @@ public class VariationUnparser {
      * @param <L> the type of labels of the tree
      * @throws IOException
      */
-    public static <L extends Label> String variationDiffUnparser(VariationDiff<L> diff, Function<List<String>, L> linesToLabel) throws IOException {
-        String tree1 = variationTreeUnparser(diff.project(Time.BEFORE), linesToLabel);
-        String tree2 = variationTreeUnparser(diff.project(Time.AFTER), linesToLabel);
+    public static <L extends Label> String unparseDiff(VariationDiff<L> diff, Function<List<String>, L> linesToLabel) throws IOException {
+        String tree1 = unparseTree(diff.project(Time.BEFORE), linesToLabel);
+        String tree2 = unparseTree(diff.project(Time.AFTER), linesToLabel);
         return JGitDiff.textDiff(tree1, tree2, SupportedAlgorithm.MYERS);
     }
 
@@ -83,8 +83,8 @@ public class VariationUnparser {
      * @return the unparsed variation diff
      * @throws IOException
      */
-    public static String variationDiffUnparser(VariationDiff<DiffLinesLabel> diff) throws IOException {
-        return variationDiffUnparser(diff, DiffLinesLabel::withInvalidLineNumbers);
+    public static String unparseDiff(VariationDiff<DiffLinesLabel> diff) throws IOException {
+        return unparseDiff(diff, DiffLinesLabel::withInvalidLineNumbers);
     }
 
     /**

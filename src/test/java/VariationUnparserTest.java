@@ -60,12 +60,12 @@ public class VariationUnparserTest {
 
     private static String parseUnparseTree(Path path, VariationDiffParseOptions option) throws IOException, DiffParseException {
         VariationTree<DiffLinesLabel> tree = VariationTree.fromFile(path, option);
-        return VariationUnparser.variationTreeUnparser(tree);
+        return VariationUnparser.unparseTree(tree);
     }
 
     private static String parseUnparseDiff(Path path, VariationDiffParseOptions option) throws IOException, DiffParseException {
         VariationDiff<DiffLinesLabel> diff = VariationDiff.fromFile(path, option);
-        return VariationUnparser.variationDiffUnparser(diff);
+        return VariationUnparser.unparseDiff(diff);
     }
 
     private static void assertEqualDiff(String expected, String actual) {
