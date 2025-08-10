@@ -329,7 +329,7 @@ public class VariationDiffParser {
             // Do not create a node for ENDIF, but update the line numbers of the closed if-chain
             // and remove that if-chain from the relevant stacks.
             diffType.forAllTimesOfExistence(beforeStack, afterStack, stack ->
-                    popIfChain(stack, fromLine, line, diffType)
+                    popIfChain(stack, fromLine, line)
             );
         } else if (options.collapseMultipleCodeLines()
                 && annotation.type() == AnnotationType.None
@@ -369,8 +369,7 @@ public class VariationDiffParser {
     private void popIfChain(
             Stack<DiffNode<DiffLinesLabel>> stack,
             DiffLineNumber elseLineNumber,
-            LogicalLine line,
-            DiffType diffType
+            LogicalLine line
     ) throws DiffParseException {
         DiffLineNumber previousLineNumber = elseLineNumber;
         do {
@@ -382,14 +381,7 @@ public class VariationDiffParser {
                 for (int i = 0; i < line.getLines().size(); i++) {
                     list.add(line.getLines().get(i).content());
                 }
-                if (diffType.existsBefore() && diffType.existsAfter()) {
-                    annotation.setEndIf(list, Time.BEFORE);
-                    annotation.setEndIf(list, Time.AFTER);
-                } else if (diffType.existsBefore()) {
-                    annotation.setEndIf(list, Time.BEFORE);
-                } else {
-                    annotation.setEndIf(list, Time.AFTER);
-                }
+                annotation.setEndIf(list, stack == beforeStack ? Time.BEFORE : Time.AFTER);
             }
 
             // Set the line number of now closed annotations to the beginning of the

@@ -1,0 +1,7 @@
+ #ifndef A
+ code
+-#endif
+
+-#ifndef A
+ code
+ #endif // A
