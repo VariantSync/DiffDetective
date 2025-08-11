@@ -288,11 +288,6 @@ public class VariationDiffParser {
             );
         }
 
-        // Cleanup state
-        beforeStack.clear();
-        afterStack.clear();
-        lastArtifact = null;
-
         return new VariationDiff<>(root);
     }
 
