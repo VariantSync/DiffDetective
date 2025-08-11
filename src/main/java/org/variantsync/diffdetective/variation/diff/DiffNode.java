@@ -741,7 +741,7 @@ public class DiffNode<L extends Label> implements HasNodeType {
 
         for (var variationChildNode : variationNode.getChildren()) {
             var diffChildNode = unchanged(convert, variationChildNode);
-            Time.forAll(time -> diffNode.addChild(diffChildNode, time));
+            diffChildNode.getDiffType().forAllTimesOfExistence(time -> diffNode.addChild(diffChildNode, time));
         }
 
         return diffNode;
