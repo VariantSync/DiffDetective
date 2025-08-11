@@ -360,7 +360,6 @@ public class DiffNode<L extends Label> implements HasNodeType {
 
     /**
      * Removes all children from the given node and adds them as children to this node at the respective times.
-     * The order of children is not stable because first all before children are transferred and then all after children.
      * The given node will have no children afterwards.
      * @param other The node whose children should be stolen.
      */
