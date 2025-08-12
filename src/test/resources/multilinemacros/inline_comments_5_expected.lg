@@ -11,14 +11,14 @@ v 1107 NON;ARTIFACT;(old: 14, diff: 16, new: 14);(old: 15, diff: 17, new: 15);;/
 v 1171 NON;ARTIFACT;(old: 15, diff: 17, new: 15);(old: 16, diff: 18, new: 16);;text
 v 128 ADD;IF;(old: -1, diff: 1, new: 1);(old: -1, diff: 6, new: 5);A & C & D;# if A &&  /* inline; comment */ C \; && D //* no continuation
 e 136 16 b;0,-1
-e 403 136 b;0,-1
-e 403 128 a;-1,0
+e 128 16 a;-1,0
 e 531 16 ba;1,1
 e 592 16 ba;2,2
-e 843 592 b;0,-1
-e 771 592 a;-1,0
 e 979 16 ba;3,3
 e 1043 16 ba;4,4
 e 1107 16 ba;5,5
 e 1171 16 ba;6,6
-e 128 16 a;-1,0
+e 403 136 b;0,-1
+e 843 592 b;0,-1
+e 771 592 a;-1,0
+e 403 128 a;-1,0
