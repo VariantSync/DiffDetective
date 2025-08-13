@@ -246,11 +246,8 @@ public class GumTreeDiff {
 
         beforeNode.diffType = NON;
 
-        beforeNode.addChildren(afterNode.removeChildren(AFTER), AFTER);
-
-        var afterParent = afterNode.getParent(AFTER);
-        afterParent.insertChild(beforeNode, afterParent.indexOfChild(afterNode, AFTER), AFTER);
-        afterNode.drop(AFTER);
+        beforeNode.stealChildrenOf(afterNode);
+        afterNode.getParent(AFTER).replaceChild(afterNode, beforeNode, AFTER);
     }
 
     /**
