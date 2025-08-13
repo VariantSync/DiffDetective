@@ -203,7 +203,7 @@ public class GumTreeDiff {
             var beforeNode = Cast.<Tree, VariationDiffAdapter<L>>unchecked(srcNode).getDiffNode();
             if (dstNode == null || !srcNode.getLabel().equals(dstNode.getLabel())) {
                 if (beforeNode.isNon()) {
-                    splitNode(beforeNode);
+                    beforeNode.split(AFTER);
                 }
 
                 Assert.assertTrue(beforeNode.isRem());
@@ -212,10 +212,10 @@ public class GumTreeDiff {
 
                 if (beforeNode != afterNode) {
                     if (beforeNode.isNon()) {
-                        splitNode(beforeNode);
+                        beforeNode.split(AFTER);
                     }
                     if (afterNode.isNon()) {
-                        afterNode = splitNode(afterNode);
+                        afterNode.split(BEFORE);
                     }
 
                     joinNode(beforeNode, afterNode);
@@ -227,37 +227,6 @@ public class GumTreeDiff {
         }
 
         return tree;
-    }
-
-    /**
-     * Removes the implicit matching between the {@code BEFORE} and {@code AFTER} projection of
-     * {@code beforeNode}. This is achieved by copying {@code beforeNode} and reconnecting all
-     * necessary edges such that the new node exists only after and {@code beforeNode} only exists
-     * before the edit.
-     *
-     * This method doesn't change the {@code BEFORE} and {@code AFTER} projection of {@code
-     * beforeNode}.
-     *
-     * @param beforeNode the node to be split
-     * @return a copy of {@code beforeNode} existing only after the edit.
-     */
-    private static <L extends Label> DiffNode<L> splitNode(DiffNode<L> beforeNode) {
-        Assert.assertTrue(beforeNode.isNon());
-
-        DiffNode<L> afterNode = beforeNode.shallowCopy();
-
-        afterNode.diffType = ADD;
-        beforeNode.diffType = REM;
-
-        afterNode.addChildren(beforeNode.removeChildren(AFTER), AFTER);
-        var afterParent = beforeNode.getParent(AFTER);
-        afterParent.insertChild(afterNode, afterParent.indexOfChild(beforeNode, AFTER), AFTER);
-        beforeNode.drop(AFTER);
-
-        beforeNode.assertConsistency();
-        afterNode.assertConsistency();
-
-        return afterNode;
     }
 
     /**
