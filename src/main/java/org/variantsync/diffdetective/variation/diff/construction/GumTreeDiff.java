@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.variantsync.diffdetective.variation.diff.DiffType.ADD;
-import static org.variantsync.diffdetective.variation.diff.DiffType.NON;
 import static org.variantsync.diffdetective.variation.diff.DiffType.REM;
 import static org.variantsync.diffdetective.variation.diff.Time.AFTER;
 import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
@@ -218,7 +217,7 @@ public class GumTreeDiff {
                         afterNode.split(BEFORE);
                     }
 
-                    joinNode(beforeNode, afterNode);
+                    beforeNode.join(afterNode, (beforeLabel, afterLabel) -> beforeLabel);
                 }
 
                 Assert.assertTrue(beforeNode.isNon());
@@ -227,27 +226,6 @@ public class GumTreeDiff {
         }
 
         return tree;
-    }
-
-    /**
-     * Merges {@code afterNode} into {@code beforeNode} such that {@code beforeNode.isNon() ==
-     * true}. Essentially, an implicit matching is inserted between {@code beforeNode} and {@code
-     * afterNode}.
-     *
-     * This method doesn't change the {@code BEFORE} and {@code AFTER} projection of {@code
-     * beforeNode}.
-     *
-     * @param beforeNode the node which is will exist {@code BEFORE} and {@code AFTER} the edit
-     * @param afterNode the node which is discarded
-     */
-    private static <L extends Label> void joinNode(DiffNode<L> beforeNode, DiffNode<L> afterNode) {
-        Assert.assertTrue(beforeNode.isRem());
-        Assert.assertTrue(afterNode.isAdd());
-
-        beforeNode.diffType = NON;
-
-        beforeNode.stealChildrenOf(afterNode);
-        afterNode.getParent(AFTER).replaceChild(afterNode, beforeNode, AFTER);
     }
 
     /**

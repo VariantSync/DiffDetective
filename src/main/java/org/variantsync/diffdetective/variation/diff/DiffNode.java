@@ -14,6 +14,7 @@ import org.variantsync.diffdetective.variation.tree.VariationNode;
 import org.variantsync.functjonal.Cast;
 
 import java.util.*;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -410,6 +411,35 @@ public class DiffNode<L extends Label> implements HasNodeType {
         }
 
         return other;
+    }
+
+    /**
+     * Merges {@code other} into this node.
+     * {@code other} is removed from the graph and this node inherits all of its edges. This
+     * node and {@code other} need to be compatible (exist at different times and have the
+     * same {@link getNodeType node type}).
+     * <p>
+     * Both {@code this} and {@code other} must not be {@link isRoot the root}.
+     *
+     * @param other the node which is removed from the graph
+     * @param joinLabels returns a label that should represent the two passed labels
+     */
+    public void join(DiffNode<L> other, BiFunction<L, L, L> joinLabels) {
+        Time time = switch (diffType) {
+            case ADD -> BEFORE;
+            case REM -> AFTER;
+            case NON -> Assert.fail("Attempt to join a node that already exists at both times.");
+        };
+        Assert.assertEquals(other.diffType, DiffType.thatExistsOnlyAt(time));
+        Assert.assertEquals(getNodeType(), other.getNodeType());
+        Assert.assertFalse(isRoot());
+        Assert.assertFalse(other.isRoot());
+
+        diffType = DiffType.NON;
+        label.setInnerLabel(joinLabels.apply(getLabel(), other.getLabel()));
+
+        this.stealChildrenOf(other);
+        other.getParent(time).replaceChild(other, this, time);
     }
 
     /**

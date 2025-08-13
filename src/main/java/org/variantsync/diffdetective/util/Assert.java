@@ -86,7 +86,7 @@ public class Assert {
     }
 
     /** Throws {@link AssertionError} with {@code errorMessage} as error message. */
-    public static void fail(String errorMessage) {
+    public static <T> T fail(String errorMessage) {
         throw new AssertionError(errorMessage);
     }
 
