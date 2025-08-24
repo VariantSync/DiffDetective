@@ -314,21 +314,28 @@ public class Patching {
 		return compareAncestors(root.getParent(time), targetNodeInPatch, time, debug);
 	}
 
-	private static boolean checkNeighbors2(DiffNode<DiffLinesLabel> root, DiffNode<DiffLinesLabel> targetNodeInPatch,
-			DiffNode<DiffLinesLabel> node, Time time, boolean debug) {
+	private static DiffNode<DiffLinesLabel> checkNeighbors2(DiffNode<DiffLinesLabel> root, DiffNode<DiffLinesLabel> targetNodeInPatch, Time time, boolean debug) throws Exception {
 		List<DiffNode<DiffLinesLabel>> orderedChildrenTarget = targetNodeInPatch.getChildOrder(time);
 		List<DiffNode<DiffLinesLabel>> orderedChildrenSource = root.getParent(time).getChildOrder(time);
-		int indexTarget = orderedChildrenTarget.indexOf(node);
 		int indexSource = orderedChildrenSource.indexOf(root);
-		if (indexSource != indexTarget) {
-			return false;
-		}
-		for (int i = 0; i < orderedChildrenSource.size(); i++) {
-			if (!hasSameLabel(orderedChildrenSource.get(i), orderedChildrenTarget.get(i))) {
-				return false;
+		List<DiffNode<DiffLinesLabel>> candidates = new ArrayList<>();
+		for (DiffNode<DiffLinesLabel> node : orderedChildrenTarget) {
+			int indexTarget = orderedChildrenTarget.indexOf(node);
+			
+			if (indexSource != indexTarget) {
+				continue;
 			}
+			for (int i = 0; i < orderedChildrenSource.size(); i++) {
+				if (!hasSameLabel(orderedChildrenSource.get(i), orderedChildrenTarget.get(i))) {
+					break;
+				}
+			}
+			candidates.add(node);
 		}
-		return true;
+		if (candidates.size() != 1) {
+			throw new Exception("Reject: too many nodes to remove");
+		}
+		return candidates.get(0);
 	}
 
 	private static boolean checkNeighbors(DiffNode<DiffLinesLabel> root, DiffNode<DiffLinesLabel> targetNodeInPatch,
@@ -446,16 +453,10 @@ public class Patching {
 			Time time, boolean debug) throws Exception {
 		List<DiffNode<DiffLinesLabel>> orderedChildrenTarget = targetNodeInPatch.getChildOrder(time);
 		List<DiffNode<DiffLinesLabel>> orderedChildrenSource = root.getParent(time).getChildOrder(time);
-		Set<Integer> ignoreIndexesFromSourceSet = new HashSet<Integer>();
 		int indexSource = orderedChildrenSource.indexOf(root);
-		for (int i = indexSource; i < orderedChildrenSource.size(); i++) {
-			if (orderedChildrenSource.get(i).getDiffType() == DiffType.ADD) {
-				ignoreIndexesFromSourceSet.add(i);
-			}
-		}
 		int indexTarget = 0;
 		for (int i = 0; i < orderedChildrenSource.size(); i++) {
-			if (ignoreIndexesFromSourceSet.contains(i) || indexSource == i) {
+			if (i >= indexSource && orderedChildrenSource.get(i).getDiffType() == DiffType.ADD) {
 				continue;
 			}
 			if (!hasSameLabel(orderedChildrenSource.get(i), orderedChildrenTarget.get(indexTarget))) {
@@ -660,7 +661,9 @@ public class Patching {
 			if (debug)
 				System.out.println(targetNodeInPatch.toString());
 			if (type == DiffType.ADD) {
-
+				if (debug) {
+					GameEngine.showAndAwaitAll(Show.tree(targetVariantDiffPatched.project(Time.AFTER)));
+				}
 				int insertPosition = findInsertPosition2(root, targetNodeInPatch, time, debug);
 				if (insertPosition < 0) {
 					if (debug)
@@ -673,27 +676,27 @@ public class Patching {
 					System.out.println(targetNode.getChildOrder(time));
 
 			} else if (type == DiffType.REM) {
-				List<DiffNode<DiffLinesLabel>> nodesToRem = new ArrayList<DiffNode<DiffLinesLabel>>();
-				List<DiffNode<DiffLinesLabel>> nodesToRem2 = new ArrayList<DiffNode<DiffLinesLabel>>();
-				targetNodeInPatch.getAllChildrenStream().forEach(node -> {
-
-					if (Patching.hasSameLabel(node, root)) {
-						nodesToRem2.add(node);
-					}
-				});
-				nodesToRem = nodesToRem2.stream().filter(node -> checkNeighbors2(root, targetNodeInPatch, node, time, debug)).toList();
+//				List<DiffNode<DiffLinesLabel>> nodesToRem = new ArrayList<DiffNode<DiffLinesLabel>>();
+//				List<DiffNode<DiffLinesLabel>> nodesToRem2 = new ArrayList<DiffNode<DiffLinesLabel>>();
+//				targetNodeInPatch.getAllChildrenStream().forEach(node -> {
+//
+//					if (Patching.hasSameLabel(node, root)) {
+//						nodesToRem2.add(node);
+//					}
+//				});
+				DiffNode<DiffLinesLabel> nodesToRem = checkNeighbors2(root, targetNodeInPatch, time, debug);
 				if (debug)
 					System.out.println("Nodes to remove: " + nodesToRem);
 
-				if (nodesToRem.size() != 1) {
-					if (debug)
-						System.out.println("too much or too less target nodes found");
-					if (debug)
-						System.out.println(nodesToRem.toString());
-				}
+//				if (nodesToRem.size() != 1) {
+//					if (debug)
+//						System.out.println("too much or too less target nodes found");
+//					if (debug)
+//						System.out.println(nodesToRem.toString());
+//				}
 				if (debug)
 					System.out.println("subtree removed");
-				removeNode(nodesToRem.get(0));
+				removeNode(nodesToRem);
 				if (debug)
 					System.out.println(targetNode.getChildOrder(Time.AFTER));
 			}
@@ -757,6 +760,7 @@ public class Patching {
 		VariationDiff<DiffLinesLabel> optimizedDiff = DiffView.optimized(diff, rho);
 		if (debug) {
 			GameEngine.showAndAwaitAll(Show.diff(diff), Show.diff(optimizedDiff));
+			GameEngine.showAndAwaitAll(Show.tree(optimizedDiff.project(Time.AFTER)));
 		}
 //		VariationDiff<DiffLinesLabel> optimizedDiff = diff.deepCopy();
 		VariationDiffSource source = optimizedDiff.getSource();
