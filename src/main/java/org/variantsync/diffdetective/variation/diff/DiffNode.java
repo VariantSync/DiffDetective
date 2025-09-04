@@ -90,11 +90,25 @@ public class DiffNode<L extends Label> implements HasNodeType {
     public DiffNode(DiffType diffType, NodeType nodeType,
                     DiffLineNumber fromLines, DiffLineNumber toLines,
                     Node featureMapping, L label) {
+        this(diffType, fromLines, toLines, featureMapping, new VariationLabel<>(nodeType, label));
+    }
+
+    /**
+     * Creates a DiffNode with the given parameters.
+     * @param diffType The type of change made to this node.
+     * @param fromLines The starting line number of the corresponding text.
+     * @param toLines The ending line number of the corresponding text.
+     * @param featureMapping The formula stored in this node. Should be null for artifact nodes.
+     * @param label The label and type of this node.
+     */
+    public DiffNode(DiffType diffType,
+                    DiffLineNumber fromLines, DiffLineNumber toLines,
+                    Node featureMapping, VariationLabel<L> label) {
         children[BEFORE.ordinal()] = new ArrayList<>();
         children[AFTER.ordinal()] = new ArrayList<>();
 
         this.diffType = diffType;
-        this.label = new VariationLabel<>(nodeType, label);
+        this.label = label;
         this.from = fromLines;
         this.to = toLines;
         this.featureMapping = featureMapping;
@@ -359,11 +373,10 @@ public class DiffNode<L extends Label> implements HasNodeType {
         DiffType otherDiffType = DiffType.thatExistsOnlyAt(time);
         var other = new DiffNode<L>(
             otherDiffType,
-            getNodeType(),
             getFromLine().as(otherDiffType),
             getToLine().as(otherDiffType),
             getFormula(),
-            Cast.unchecked(label.getInnerLabel().clone())
+            Cast.unchecked(label.clone())
         );
 
         this.diffType = otherDiffType.inverse();
@@ -810,11 +823,10 @@ public class DiffNode<L extends Label> implements HasNodeType {
     public DiffNode<L> shallowCopy() {
         return new DiffNode<L>(
             getDiffType(),
-            getNodeType(),
             getFromLine(),
             getToLine(),
             getFormula(),
-            Cast.unchecked(label.getInnerLabel().clone())
+            Cast.unchecked(label.clone())
         );
     }
 
