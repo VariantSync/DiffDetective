@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.variantsync.diffdetective.diff.text.DiffLineNumber;
+import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.util.StringUtils;
 import org.variantsync.diffdetective.variation.diff.VariationDiff; // For Javadoc
 
@@ -18,6 +19,7 @@ import org.variantsync.diffdetective.variation.diff.VariationDiff; // For Javado
  */
 public class DiffLinesLabel implements Label {
     private final List<Line> lines;
+    private List<Line> trailingLines;
 
     public record Line(String content, DiffLineNumber lineNumber) {
         public static Line withInvalidLineNumber(String content) {
@@ -30,7 +32,15 @@ public class DiffLinesLabel implements Label {
     }
 
     public DiffLinesLabel(List<Line> lines) {
+        this(lines, new ArrayList<>());
+    }
+
+    public DiffLinesLabel(List<Line> lines, List<Line> trailingLines) {
+        Assert.assertNotNull(lines);
+        Assert.assertNotNull(trailingLines);
+
         this.lines = lines;
+        this.trailingLines = trailingLines;
     }
 
     public static DiffLinesLabel withInvalidLineNumbers(List<String> lines) {
@@ -53,9 +63,23 @@ public class DiffLinesLabel implements Label {
         return lines;
     }
 
+    public void setDiffTrailingLines(List<Line> newLines) {
+        Assert.assertNotNull(newLines);
+        trailingLines = newLines;
+    }
+
+    public List<Line> getDiffTrailingLines() {
+        return trailingLines;
+    }
+
     @Override
     public List<String> getLines() {
         return getDiffLines().stream().map(Line::content).toList();
+    }
+
+    @Override
+    public List<String> getTrailingLines() {
+        return getDiffTrailingLines().stream().map(Line::content).toList();
     }
 
     @Override
@@ -68,6 +92,15 @@ public class DiffLinesLabel implements Label {
 
     @Override
     public DiffLinesLabel clone() {
-        return new DiffLinesLabel(new ArrayList<>(lines));
+        return new DiffLinesLabel(new ArrayList<>(lines), new ArrayList<>(trailingLines));
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        DiffLinesLabel that = (DiffLinesLabel) o;
+        return lines.equals(that.lines) &&
+            trailingLines.equals(that.trailingLines);
     }
 }

@@ -90,11 +90,25 @@ public class DiffNode<L extends Label> implements HasNodeType {
     public DiffNode(DiffType diffType, NodeType nodeType,
                     DiffLineNumber fromLines, DiffLineNumber toLines,
                     Node featureMapping, L label) {
+        this(diffType, fromLines, toLines, featureMapping, new VariationLabel<>(nodeType, label));
+    }
+
+    /**
+     * Creates a DiffNode with the given parameters.
+     * @param diffType The type of change made to this node.
+     * @param fromLines The starting line number of the corresponding text.
+     * @param toLines The ending line number of the corresponding text.
+     * @param featureMapping The formula stored in this node. Should be null for artifact nodes.
+     * @param label The label and type of this node.
+     */
+    public DiffNode(DiffType diffType,
+                    DiffLineNumber fromLines, DiffLineNumber toLines,
+                    Node featureMapping, VariationLabel<L> label) {
         children[BEFORE.ordinal()] = new ArrayList<>();
         children[AFTER.ordinal()] = new ArrayList<>();
 
         this.diffType = diffType;
-        this.label = new VariationLabel<>(nodeType, label);
+        this.label = label;
         this.from = fromLines;
         this.to = toLines;
         this.featureMapping = featureMapping;
@@ -338,12 +352,71 @@ public class DiffNode<L extends Label> implements HasNodeType {
 
     /**
      * Removes all children from the given node and adds them as children to this node at the respective times.
-     * The order of children is not stable because first all before children are transferred and then all after children.
      * The given node will have no children afterwards.
      * @param other The node whose children should be stolen.
      */
     public void stealChildrenOf(final DiffNode<L> other) {
         Time.forAll(time -> addChildren(other.removeChildren(time), time));
+    }
+
+    /**
+     * Splits an {@link isNon unmodified} node into a removed and an added node.
+     * Only one new node is created. Depending on {@code time}, {@code this} is changed into
+     * {@link DiffType#ADD} for {@link Time#BEFORE} or {@link DiffType#REM} for {@link Time#AFTER}.
+     *
+     * @param time decides which node is created
+     * @return the new node that exists at time {@code time}.
+     */
+    public DiffNode<L> split(Time time) {
+        Assert.assertTrue(isNon());
+
+        DiffType otherDiffType = DiffType.thatExistsOnlyAt(time);
+        var other = new DiffNode<L>(
+            otherDiffType,
+            getFromLine().as(otherDiffType),
+            getToLine().as(otherDiffType),
+            getFormula(),
+            Cast.unchecked(label.clone())
+        );
+
+        this.diffType = otherDiffType.inverse();
+        this.from = this.from.as(this.diffType);
+        this.to = this.to.as(this.diffType);
+
+        other.addChildren(this.removeChildren(time), time);
+        getParent(time).replaceChild(this, other, time);
+
+        // Preserve the projection by changing its `backingNode` to `other`.
+        if (this.projections[time.ordinal()] != null) {
+            other.projections[time.ordinal()] = this.projections[time.ordinal()];
+            this.projections[time.ordinal()] = null;
+            other.projections[time.ordinal()].backingNode = other;
+        }
+
+        return other;
+    }
+
+    /**
+     * Replaces a child of this node with another node.
+     * <p>
+     * If {@code oldChild} is not a child of this node, nothing happens.
+     *
+     * @param oldChild the child that is removed
+     * @param newChild the child that is inserted
+     * @param time at which the child relation is changed
+     */
+    public void replaceChild(DiffNode<L> oldChild, DiffNode<L> newChild, Time time) {
+        Assert.assertNull(newChild.getParent(time));
+        Assert.assertTrue(newChild.getDiffType().existsAtTime(time));
+
+        for (ListIterator<DiffNode<L>> it = children[time.ordinal()].listIterator(); it.hasNext(); ) {
+            if (it.next() == oldChild) {
+                it.set(newChild);
+                newChild.parents[time.ordinal()] = oldChild.parents[time.ordinal()];
+                oldChild.parents[time.ordinal()] = null;
+                break;
+            }
+        }
     }
 
     /**
@@ -719,7 +792,7 @@ public class DiffNode<L extends Label> implements HasNodeType {
 
         for (var variationChildNode : variationNode.getChildren()) {
             var diffChildNode = unchanged(convert, variationChildNode);
-            Time.forAll(time -> diffNode.addChild(diffChildNode, time));
+            diffChildNode.getDiffType().forAllTimesOfExistence(time -> diffNode.addChild(diffChildNode, time));
         }
 
         return diffNode;
@@ -750,7 +823,6 @@ public class DiffNode<L extends Label> implements HasNodeType {
     public DiffNode<L> shallowCopy() {
         return new DiffNode<L>(
             getDiffType(),
-            getNodeType(),
             getFromLine(),
             getToLine(),
             getFormula(),
@@ -787,7 +859,7 @@ public class DiffNode<L extends Label> implements HasNodeType {
                 a.getNodeType().equals(b.getNodeType()) &&
                 a.getFromLine().equals(b.getFromLine()) &&
                 a.getToLine().equals(b.getToLine()) &&
-                (a.getFormula() == null ? b.getFormula() == null : a.getFormula().equals(b.getFormula())) &&
+                Objects.equals(a.getFormula(), b.getFormula()) &&
                 a.getLabel().equals(b.getLabel())
         )) {
             return false;

@@ -16,6 +16,8 @@ import org.variantsync.diffdetective.variation.tree.source.VariationTreeSource;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.StringReader;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -83,6 +85,7 @@ public record VariationTree<L extends Label>(
      * Parses a {@code VariationTree} from source code with C preprocessor annotations.
      *
      * @param input the source code to be parsed
+     * @param source from where the variation tree was obtained
      * @param parseOptions {@link PatchDiffParseOptions} for the parsing process.
      * @return a new {@code VariationTree} representing {@code input}
      * @throws IOException if {@code input} throws {@code IOException}
@@ -101,6 +104,28 @@ public record VariationTree<L extends Label>(
             .toVariationTree();
 
         return new VariationTree<>(tree, source);
+    }
+
+    /**
+     * Parses a {@code VariationTree} from source code with C preprocessor annotations.
+     *
+     * @param input the source code to be parsed
+     * @param source from where the variation tree was obtained
+     * @param parseOptions {@link PatchDiffParseOptions} for the parsing process.
+     * @return a new {@code VariationTree} representing {@code input}
+     * @throws DiffParseException if some preprocessor annotations can't be parsed
+     */
+    public static VariationTree<DiffLinesLabel> fromText(
+            final String input,
+            final VariationTreeSource source,
+            final VariationDiffParseOptions parseOptions
+    ) throws DiffParseException {
+        try {
+            return fromFile(new BufferedReader(new StringReader(input)), source, parseOptions);
+        } catch (IOException e) {
+            // Only thrown on programming errors because StringReader doesn't do IO.
+            throw new UncheckedIOException(e);
+        }
     }
 
     public static <L extends Label> VariationTree<L> fromProjection(final Projection<L> projection, final VariationTreeSource source) {
@@ -180,6 +205,12 @@ public record VariationTree<L extends Label>(
      */
     public VariationTree<L> deepCopy(final Map<VariationTreeNode<L>, VariationTreeNode<L>> oldToNew) {
         return new VariationTree<>(root.deepCopy(oldToNew), this.source);
+    }
+
+    public String unparse() {
+        var result = new StringBuilder();
+        root().unparse(result);
+        return result.toString();
     }
 
     @Override

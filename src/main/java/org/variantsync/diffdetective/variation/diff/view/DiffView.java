@@ -114,9 +114,7 @@ public class DiffView {
             final Map<VariationTreeNode<L>, Projection<L>> invCopyMemory = CollectionUtils.invert(copyMemory, HashMap::new);
             TreeView.treeInline(treeView.root(), v -> inView.test(t, invCopyMemory.get(v)));
 
-            final StringBuilder b = new StringBuilder();
-            treeView.root().printSourceCode(b);
-            projectionViewText[i] = b.toString();
+            projectionViewText[i] = treeView.unparse();
         }
 
         return naive(d, rho, projectionViewText);

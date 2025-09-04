@@ -563,19 +563,19 @@ public abstract class VariationNode<T extends VariationNode<T, L>, L extends Lab
      *
      * <p>This method assumes that all labels of this subtree represent source code lines.
      */
-    public void printSourceCode(final StringBuilder output) {
+    public void unparse(final StringBuilder output) {
         for (final String line : getLabel().getLines()) {
             output.append(line);
             output.append(StringUtils.LINEBREAK);
         }
 
         for (final var child : getChildren()) {
-            child.printSourceCode(output);
+            child.unparse(output);
         }
 
         // Add #endif after macro
-        if (isIf() && !isRoot()) {
-            output.append("#endif");
+        for (final String line : getLabel().getTrailingLines()) {
+            output.append(line);
             output.append(StringUtils.LINEBREAK);
         }
     }

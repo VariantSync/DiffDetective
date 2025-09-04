@@ -1,11 +1,10 @@
 package org.variantsync.diffdetective.variation.diff;
 
 import org.apache.commons.lang3.function.FailableConsumer;
-import org.tinylog.Logger;
+import org.apache.commons.lang3.function.FailableRunnable;
 
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Consumer;
 
 /**
  * Type of change made to an artifact (e.g., a line of text in a text-based diff).
@@ -13,13 +12,13 @@ import java.util.function.Consumer;
  * These values correspond to the domain of the Delta function from our paper.
  */
 public enum DiffType {
-    ADD("+"),
-    REM("-"),
-    NON(" ");
+    ADD('+'),
+    REM('-'),
+    NON(' ');
 
-    public final String symbol;
+    public final char symbol;
 
-    DiffType(String symbol) {
+    DiffType(char symbol) {
         this.symbol = symbol;
     }
 
@@ -70,8 +69,9 @@ public enum DiffType {
      *       exists before and after the edit (DiffType = NON).
      * @param ifExistsBefore Procedure to run if the edited artifact existed before the edit (DiffType != ADD).
      * @param ifExistsAfter Procedure to run if the edited artifact exists after the edit (DiffType != REM).
+     * @throws T iff {@code ifExistsBefore} or {@code ifExistsAfter} throws {@code E}
      */
-    public void forAllTimesOfExistence(final Runnable ifExistsBefore, final Runnable ifExistsAfter) {
+    public <T extends Throwable> void forAllTimesOfExistence(final FailableRunnable<T> ifExistsBefore, final FailableRunnable<T> ifExistsAfter) throws T {
         if (this != DiffType.ADD) {
             ifExistsBefore.run();
         }
@@ -84,8 +84,9 @@ public enum DiffType {
      * Runs the given procedure for any time at which elements with this diff type exist.
      * The consumer will be invoked at least once and at most twice.
      * @param t Procedure to run for each time elements with this diff type exist.
+     * @throws T iff {@code t} throws {@code E}
      */
-    public void forAllTimesOfExistence(final Consumer<Time> t) {
+    public <T extends Throwable> void forAllTimesOfExistence(final FailableConsumer<Time, T> t) throws T {
         forAllTimesOfExistence(
                 () -> t.accept(Time.BEFORE),
                 () -> t.accept(Time.AFTER)
@@ -138,14 +139,19 @@ public enum DiffType {
      * @return The type of edit of <code>line</code> or null if its an invalid diff line.
      */
     public static DiffType ofDiffLine(String line) {
-        if (line.startsWith(ADD.symbol)) {
-            return ADD;
-        } else if (line.startsWith(REM.symbol)) {
-            return REM;
-        } else if (line.startsWith(NON.symbol) || line.isEmpty()) {
+        if (line.isEmpty()) {
             // Diff lines should ideally have at least one character specifying a line's type (i.e., one of the diff
             // type characters: '+', '-', or ' '). However, this is not necessarily the case and unchanged lines may
             // be empty. We thus treat empty lines in a diff as unchanged (i.e., NON),
+            return NON;
+        }
+
+        final char diffSymbol = line.charAt(0);
+        if (diffSymbol == ADD.symbol) {
+            return ADD;
+        } else if (diffSymbol == REM.symbol) {
+            return REM;
+        } else if (diffSymbol == NON.symbol) {
             return NON;
         } else {
             return null;

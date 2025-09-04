@@ -2,6 +2,7 @@ package org.variantsync.diffdetective.variation;
 
 import java.util.List;
 
+import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.variation.tree.HasNodeType;
 import org.variantsync.diffdetective.variation.tree.VariationTree; // For Javadoc
 import org.variantsync.functjonal.Cast;
@@ -23,6 +24,9 @@ public class VariationLabel<L extends Label> implements Label, HasNodeType {
     private L innerLabel;
 
     public VariationLabel(NodeType type, L innerLabel) {
+        Assert.assertNotNull(type);
+        Assert.assertNotNull(innerLabel);
+
         this.type = type;
         this.innerLabel = innerLabel;
     }
@@ -41,6 +45,11 @@ public class VariationLabel<L extends Label> implements Label, HasNodeType {
     }
 
     @Override
+    public List<String> getTrailingLines() {
+        return innerLabel.getTrailingLines();
+    }
+
+    @Override
     public NodeType getNodeType() {
         return type;
     }
@@ -49,9 +58,18 @@ public class VariationLabel<L extends Label> implements Label, HasNodeType {
     public VariationLabel<L> clone() {
         return new VariationLabel<L>(type, Cast.unchecked(innerLabel.clone()));
     }
-    
+
     @Override
     public String toString() {
-    	return innerLabel.toString();
+        return innerLabel.toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        VariationLabel<?> that = (VariationLabel<?>) o;
+        return type.equals(that.type) &&
+            innerLabel.equals(that.innerLabel);
     }
 }

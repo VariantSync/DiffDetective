@@ -198,8 +198,18 @@ public record BadVDiff<L extends Label>(
         record EdgeToConstruct<L extends Label>(
                 VariationTreeNode<L> child,
                 DiffNode<L> parent,
-                Time t
-        ) {}
+                Time t,
+                int index
+        ) {
+            public EdgeToConstruct(
+                VariationTreeNode<L> child,
+                DiffNode<L> parent,
+                Time t,
+                DiffNode<L> originalChild
+            ) {
+                this(child, parent, t, parent.indexOfChild(originalChild, t));
+            }
+        }
 
         final FromGoodNodeTranslation<L> nodeTranslation = new FromGoodNodeTranslation<>();
 
@@ -259,7 +269,7 @@ public record BadVDiff<L extends Label>(
 
                     nodeTranslation.put(diffNode, time, self);
 
-                    edgesToConstruct.add(new EdgeToConstruct<>(self, diffNode.getParent(time), time));
+                    edgesToConstruct.add(new EdgeToConstruct<>(self, diffNode.getParent(time), time, diffNode));
 
                     // further metadata to copy
                     lines.put(self, dRange);
@@ -283,16 +293,17 @@ public record BadVDiff<L extends Label>(
                  */
                 if (pbefore != null) {
                     edgesToConstruct.add(new EdgeToConstruct<>(
-                            self, pbefore, BEFORE
+                            self, pbefore, BEFORE, diffNode
                     ));
                 } else if (pafter != null) {
                     edgesToConstruct.add(new EdgeToConstruct<>(
-                            self, pafter, AFTER
+                            self, pafter, AFTER, diffNode
                     ));
                 }
             }
         });
 
+        edgesToConstruct.sort(Comparator.comparingInt(EdgeToConstruct::index));
         for (final EdgeToConstruct<L> e : edgesToConstruct) {
             nodeTranslation.get(e.parent, e.t).addChild(e.child);
         }
@@ -324,8 +335,18 @@ public record BadVDiff<L extends Label>(
         record EdgeToConstruct<L extends Label>(
                 DiffNode<L> child,
                 VariationTreeNode<L> parent,
-                Time time
-        ) {}
+                Time time,
+                int index
+        ) {
+            public EdgeToConstruct(
+                DiffNode<L> child,
+                VariationTreeNode<L> parent,
+                Time time,
+                VariationTreeNode<L> originalChild
+            ) {
+                this(child, parent, time, parent.indexOfChild(originalChild));
+            }
+        }
 
         final List<EdgeToConstruct<L>>               edgesToConstruct = new ArrayList<>();
         final Map<VariationTreeNode<L>, DiffNode<L>> nodeTranslation  = new HashMap<>();
@@ -351,7 +372,7 @@ public record BadVDiff<L extends Label>(
 
                 nodeTranslation.put(vtnode, vGood);
                 coloring.get(vtnode).forAllTimesOfExistence(
-                        t -> edgesToConstruct.add(new EdgeToConstruct<>(vGood, parent, t))
+                        t -> edgesToConstruct.add(new EdgeToConstruct<>(vGood, parent, t, vtnode))
                 );
             } else {
                 // v was cloned.
@@ -369,14 +390,15 @@ public record BadVDiff<L extends Label>(
                 // invoke the callback for a single time:
                 // BEFORE for REM and AFTER for ADD.
                 vColor.forAllTimesOfExistence(
-                        t -> edgesToConstruct.add(new EdgeToConstruct<>(vGood, parent, t))
+                        t -> edgesToConstruct.add(new EdgeToConstruct<>(vGood, parent, t, vtnode))
                 );
                 badBuddyColor.forAllTimesOfExistence(
-                        t -> edgesToConstruct.add(new EdgeToConstruct<>(vGood, badBuddy.getParent(), t))
+                        t -> edgesToConstruct.add(new EdgeToConstruct<>(vGood, badBuddy.getParent(), t, badBuddy))
                 );
             }
         });
 
+        edgesToConstruct.sort(Comparator.comparingInt(EdgeToConstruct::index));
         for (final EdgeToConstruct<L> e : edgesToConstruct) {
             nodeTranslation.get(e.parent()).addChild(e.child(), e.time());
         }
