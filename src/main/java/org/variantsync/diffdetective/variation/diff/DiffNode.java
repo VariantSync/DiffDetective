@@ -373,9 +373,12 @@ public class DiffNode<L extends Label> implements HasNodeType {
         other.addChildren(this.removeChildren(time), time);
         getParent(time).replaceChild(this, other, time);
 
-        // FIXME? If we allowed access to the backing node,
-        // we could preserve the identity of this projection by moving it to `other`.
-        this.projections[time.ordinal()] = null;
+        // Preserve the projection by changing its `backingNode` to `other`.
+        if (this.projections[time.ordinal()] != null) {
+            other.projections[time.ordinal()] = this.projections[time.ordinal()];
+            this.projections[time.ordinal()] = null;
+            other.projections[time.ordinal()].backingNode = other;
+        }
 
         return other;
     }
