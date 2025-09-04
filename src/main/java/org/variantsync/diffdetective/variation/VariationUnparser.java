@@ -44,12 +44,11 @@ public class VariationUnparser {
      * @return the state before or after the diff
      */
     public static String undiff(String diff, Time time) {
-        String excludedDiffSymbol = DiffType.thatExistsOnlyAt(time.other()).symbol;
+        char excludedDiffSymbol = DiffType.thatExistsOnlyAt(time.other()).symbol;
 
         String result = diff
             .lines()
-            .filter(line -> !line.startsWith(excludedDiffSymbol))
-            // TODO assumes that all diff symbols are exactly 1 char long
+            .filter(line -> line.isEmpty() || line.charAt(0) != excludedDiffSymbol)
             .map(line -> line.isEmpty() ? "" : line.substring(1))
             .collect(Collectors.joining("\n"));
 

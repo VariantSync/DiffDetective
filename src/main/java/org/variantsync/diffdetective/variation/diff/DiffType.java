@@ -12,13 +12,13 @@ import java.util.Set;
  * These values correspond to the domain of the Delta function from our paper.
  */
 public enum DiffType {
-    ADD("+"),
-    REM("-"),
-    NON(" ");
+    ADD('+'),
+    REM('-'),
+    NON(' ');
 
-    public final String symbol;
+    public final char symbol;
 
-    DiffType(String symbol) {
+    DiffType(char symbol) {
         this.symbol = symbol;
     }
 
@@ -139,14 +139,19 @@ public enum DiffType {
      * @return The type of edit of <code>line</code> or null if its an invalid diff line.
      */
     public static DiffType ofDiffLine(String line) {
-        if (line.startsWith(ADD.symbol)) {
-            return ADD;
-        } else if (line.startsWith(REM.symbol)) {
-            return REM;
-        } else if (line.startsWith(NON.symbol) || line.isEmpty()) {
+        if (line.isEmpty()) {
             // Diff lines should ideally have at least one character specifying a line's type (i.e., one of the diff
             // type characters: '+', '-', or ' '). However, this is not necessarily the case and unchanged lines may
             // be empty. We thus treat empty lines in a diff as unchanged (i.e., NON),
+            return NON;
+        }
+
+        final char diffSymbol = line.charAt(0);
+        if (diffSymbol == ADD.symbol) {
+            return ADD;
+        } else if (diffSymbol == REM.symbol) {
+            return REM;
+        } else if (diffSymbol == NON.symbol) {
             return NON;
         } else {
             return null;
