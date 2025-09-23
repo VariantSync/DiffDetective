@@ -207,7 +207,7 @@ public class VariationDiff<L extends Label> {
      * The returned value is a deep copy of the variation tree within this diff
      * at the given time.
      * If you instead wish to only have a view on the tree at the given diff
-     * have a look at {@link DiffNode#projection(Time)} for this trees {@link #getRoot() root}.
+     * have a look at {@link DiffNode#projection(Time)} for this tree's {@link #getRoot() root}.
      * @param t The time for which to project the variation tree.
      */
     public VariationTree<L> project(Time t) {

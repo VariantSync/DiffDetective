@@ -61,7 +61,7 @@ public final class TreeView {
     /**
      * Creates a view on the given variation tree as described by the given relevance predicate.
      * This function is side-effect free.
-     * Thre given variation tree and relevance will not be altered.
+     * The given variation tree and relevance will not be altered.
      * This function corresponds to Equation 4 in our SPLC'23 paper - Views on Edits to Variational Software.
      * @param t The variation tree to generate a view on.
      * @param r A relevance predicate that determines for each node in the
