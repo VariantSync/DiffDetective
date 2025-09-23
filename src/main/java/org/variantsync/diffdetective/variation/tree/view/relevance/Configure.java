@@ -7,6 +7,8 @@ import org.variantsync.diffdetective.util.fide.FixTrueFalse;
 import org.variantsync.diffdetective.util.fide.FixTrueFalse.Formula;
 import org.variantsync.diffdetective.variation.tree.VariationNode;
 
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.function.Consumer;
 
 /**
@@ -34,6 +36,39 @@ public class Configure implements Relevance {
      */
     public Configure(final Node configuration) {
         this(FixTrueFalse.EliminateTrueAndFalse(configuration));
+    }
+
+    /**
+     * Create a configuration from an assignment of variable names to boolean values.
+     * The given assignment may be complete or partial.
+     * Internally, a big conjunction of literals is created:
+     * <pre>
+     *           ⋀ f              ∧          ⋀ ¬ f
+     *   (f, true) ∈ assignment    (f, false) ∈ assignment
+     * </pre>
+     *
+     * As an example, suppose the map contains the following entries:
+     * <pre>
+     *   A ↦ true
+     *   B ↦ false
+     *   C ↦ true
+     * </pre>
+     * then we construct a formula A ∧ (¬ B) ∧ C.
+     */
+    public Configure(final Map<String, Boolean> assignment) {
+        // We use commutativity of ∧ to iterate the map only once instead of twice as shown in the formula above.
+        final Formula[] fixedFeatures = new Formula[assignment.size()];
+        int i = 0;
+        for (Entry<String, Boolean> entry : assignment.entrySet()) {
+            fixedFeatures[i] = Formula.var(entry.getKey());
+            if (!entry.getValue()) {
+                fixedFeatures[i] = Formula.not(fixedFeatures[i]);
+            }
+
+            ++i;
+        }
+
+        this.configuration = Formula.and(fixedFeatures);
     }
 
     @Override
