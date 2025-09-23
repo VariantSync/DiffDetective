@@ -155,55 +155,59 @@ public class Patching {
 
 		return calculateSetMinusOfFeatureSets(featuresTreeV1, featuresTreeV2, debug);
 	}
+	
+	/**
+	 * Adds a feature to the feature map, if it is not contained in the map or the diffType is different from the value in the map.
+	 * If the diffTypes are different, then DiffType NON is written in the map as the value. 
+	 * @param featureMap the map has all features of the variant1 as keys and saves if the feature is only occurring in added lines, and therefore a new feature.
+	 * @param feature the current feature to put in the map
+	 * @param diffType the diffType of the node
+	 */
+	private static void addFeatureToFeatureMap(Map<String, DiffType> featureMap, String feature, DiffType diffType) {
+		if (featureMap.containsKey(feature)) {
+			if (!diffType.equals(featureMap.get(feature))) {
+				featureMap.replace(feature, DiffType.NON);
+			}
+		} else {
+			featureMap.put(feature, diffType);
+		}
+	}
 
 	private static Set<String> calculateFeatureSetToDeselectFromDiff(VariationDiff<DiffLinesLabel> diff,
 			VariationTree<DiffLinesLabel> variant2, boolean debug, boolean patchNewFeatures) {
+		// HashMap of Features which only occur in the revision of Variant1 (new features) -> DiffType is ADD
 		Map<String, DiffType> featuresMapV1 = new HashMap<String, DiffType>();
+		// HashSet of Feature Names of Variant1
 		Set<String> featuresV1 = new HashSet<String>();
+		// Collect all features of the conditional annotation nodes of variant1
 		diff.forAll(node -> {
-			if (debug && node.getDiffType() == DiffType.NON) {
-				System.out.println("NON features:" + node.getFeatureMapping(Time.BEFORE).getUniqueContainedFeatures());
-			}
-			if (node.getDiffType().existsAtTime(Time.BEFORE)) {
+			
+			if (node.isConditionalAnnotation() && node.getDiffType().existsAtTime(Time.BEFORE)) {
 				node.getFeatureMapping(Time.BEFORE).getUniqueContainedFeatures().forEach(feature -> {
-					if (featuresMapV1.containsKey(feature) && node.getDiffType() != featuresMapV1.get(feature)) {
-						featuresMapV1.replace(feature, DiffType.NON);
-					} else {
-						featuresMapV1.put(feature, node.getDiffType());
-					}
+					Patching.addFeatureToFeatureMap(featuresMapV1, feature, node.getDiffType());
 				});
 			}
-			if (node.getDiffType().existsAtTime(Time.AFTER)) {
+			if (node.isConditionalAnnotation() && node.getDiffType().existsAtTime(Time.AFTER)) {
 				node.getFeatureMapping(Time.AFTER).getUniqueContainedFeatures().forEach(feature -> {
-					if (featuresMapV1.containsKey(feature)) {
-						if (!node.getDiffType().equals(featuresMapV1.get(feature))) {
-							if (debug) {
-								System.out.println(feature + ": " + node.getDiffType());
-								System.out.println(feature + ": " + featuresMapV1.get(feature));
-							}
-							featuresMapV1.replace(feature, DiffType.NON);
-						}
-					} else {
-						if (debug) {
-							System.out.println(feature + ": " + node.getDiffType());
-						}
-						featuresMapV1.put(feature, node.getDiffType());
-					}
+					Patching.addFeatureToFeatureMap(featuresMapV1, feature, node.getDiffType());
 				});
 			}
 		});
-
-		featuresMapV1.forEach((feature, diffType) -> {
-			featuresV1.add(feature);
-		});
-
+		featuresV1 = featuresMapV1.keySet();
+		
+		// Collect all features of the conditional annotation nodes of variant2
 		Set<String> featuresV2 = new HashSet<String>();
 		variant2.forAllPreorder(node -> {
-			featuresV2.addAll(node.getFeatureMapping().getUniqueContainedFeatures());
+			if (node.isConditionalAnnotation()) {
+				featuresV2.addAll(node.getFeatureMapping().getUniqueContainedFeatures());
+			}
 		});
-
+		
+		// Calculate the features which are not in both variants
+		Set<String> features = calculateSetMinusOfFeatureSets(featuresV1, featuresV2, debug);
+		
+		// If new features should be patched, then remove new features from the deselected features if they only occur as ADD in the diff
 		if (patchNewFeatures) {
-			Set<String> features = calculateSetMinusOfFeatureSets(featuresV1, featuresV2, debug);
 			featuresMapV1.forEach((feature, diffType) -> {
 				if (diffType == DiffType.ADD) {
 					if (features.contains(feature)) {
@@ -211,16 +215,9 @@ public class Patching {
 					}
 				}
 			});
-
-			if (!features.isEmpty()) {
-				System.out.println(featuresV1);
-				System.out.println(featuresV2);
-				System.out.println(featuresMapV1);
-			}
-			return features;
 		}
 
-		return calculateSetMinusOfFeatureSets(featuresV1, featuresV2, debug);
+		return features;
 	}
 
 	private static boolean checkForZeroVariantDrift(VariationDiff<DiffLinesLabel> diffVariant1,
@@ -747,7 +744,7 @@ public class Patching {
 //				false);
 		Set<String> deselectedFeatures = calculateFeatureSetToDeselectFromDiff(diff, targetVariant, debug,
 				patchNewFeatures);
-		if (!deselectedFeatures.isEmpty()) {
+		if (debug) {
 			System.out.println(deselectedFeatures);
 		}
 		Relevance rho = calculateFormulaForDeselection(deselectedFeatures, debug);
