@@ -68,8 +68,8 @@ public final class TreeView {
      *          tree whether it should be contained in the view or should be excluded.
      * @return A variation tree that represents a view on the given variation tree t.
      */
-    public static VariationTree<?> tree(final VariationTree<?> t, final Relevance r) {
-        final VariationTree<?> copy = t.deepCopy();
+    public static <L extends Label> VariationTree<L> tree(final VariationTree<L> t, final Relevance r) {
+        final VariationTree<L> copy = t.deepCopy();
         treeInline(copy, r);
         return copy;
     }
