@@ -14,6 +14,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.eclipse.jgit.diff.DiffAlgorithm;
+import org.prop4j.Node;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.show.Show;
 import org.variantsync.diffdetective.show.engine.GameEngine;
@@ -155,13 +156,17 @@ public class Patching {
 
 		return calculateSetMinusOfFeatureSets(featuresTreeV1, featuresTreeV2, debug);
 	}
-	
+
 	/**
-	 * Adds a feature to the feature map, if it is not contained in the map or the diffType is different from the value in the map.
-	 * If the diffTypes are different, then DiffType NON is written in the map as the value. 
-	 * @param featureMap the map has all features of the variant1 as keys and saves if the feature is only occurring in added lines, and therefore a new feature.
-	 * @param feature the current feature to put in the map
-	 * @param diffType the diffType of the node
+	 * Adds a feature to the feature map, if it is not contained in the map or the
+	 * diffType is different from the value in the map. If the diffTypes are
+	 * different, then DiffType NON is written in the map as the value.
+	 * 
+	 * @param featureMap the map has all features of the variant1 as keys and saves
+	 *                   if the feature is only occurring in added lines, and
+	 *                   therefore a new feature.
+	 * @param feature    the current feature to put in the map
+	 * @param diffType   the diffType of the node
 	 */
 	private static void addFeatureToFeatureMap(Map<String, DiffType> featureMap, String feature, DiffType diffType) {
 		if (featureMap.containsKey(feature)) {
@@ -175,13 +180,14 @@ public class Patching {
 
 	private static Set<String> calculateFeatureSetToDeselectFromDiff(VariationDiff<DiffLinesLabel> diff,
 			VariationTree<DiffLinesLabel> variant2, boolean debug, boolean patchNewFeatures) {
-		// HashMap of Features which only occur in the revision of Variant1 (new features) -> DiffType is ADD
+		// HashMap of Features which only occur in the revision of Variant1 (new
+		// features) -> DiffType is ADD
 		Map<String, DiffType> featuresMapV1 = new HashMap<String, DiffType>();
 		// HashSet of Feature Names of Variant1
 		Set<String> featuresV1 = new HashSet<String>();
 		// Collect all features of the conditional annotation nodes of variant1
 		diff.forAll(node -> {
-			
+
 			if (node.isConditionalAnnotation() && node.getDiffType().existsAtTime(Time.BEFORE)) {
 				node.getFeatureMapping(Time.BEFORE).getUniqueContainedFeatures().forEach(feature -> {
 					Patching.addFeatureToFeatureMap(featuresMapV1, feature, node.getDiffType());
@@ -194,7 +200,7 @@ public class Patching {
 			}
 		});
 		featuresV1 = featuresMapV1.keySet();
-		
+
 		// Collect all features of the conditional annotation nodes of variant2
 		Set<String> featuresV2 = new HashSet<String>();
 		variant2.forAllPreorder(node -> {
@@ -202,11 +208,12 @@ public class Patching {
 				featuresV2.addAll(node.getFeatureMapping().getUniqueContainedFeatures());
 			}
 		});
-		
+
 		// Calculate the features which are not in both variants
 		Set<String> features = calculateSetMinusOfFeatureSets(featuresV1, featuresV2, debug);
-		
-		// If new features should be patched, then remove new features from the deselected features if they only occur as ADD in the diff
+
+		// If new features should be patched, then remove new features from the
+		// deselected features if they only occur as ADD in the diff
 		if (patchNewFeatures) {
 			featuresMapV1.forEach((feature, diffType) -> {
 				if (diffType == DiffType.ADD) {
@@ -292,7 +299,7 @@ public class Patching {
 			}
 //			if (i > index2 && siblingsNode2.get(index2).getDiffType() == DiffType.REM)
 			if (!hasSameLabel(siblingsNode1.get(i), siblingsNode2.get(index2))) {
-				System.out.println(siblingsNode1.get(i).getLabel().toString());
+//				System.out.println(siblingsNode1.get(i).getLabel().toString());
 				return false;
 			}
 			index2++;
@@ -305,20 +312,22 @@ public class Patching {
 		if (root.getParent(time) == null && targetNodeInPatch == null) {
 			return true;
 		}
-		if((root.getParent(time) != null && targetNodeInPatch == null) || (root.getParent(time) == null && targetNodeInPatch != null)) {
+		if ((root.getParent(time) != null && targetNodeInPatch == null)
+				|| (root.getParent(time) == null && targetNodeInPatch != null)) {
 			return false;
 		}
 		return compareAncestors(root.getParent(time), targetNodeInPatch, time, debug);
 	}
 
-	private static DiffNode<DiffLinesLabel> checkNeighbors2(DiffNode<DiffLinesLabel> root, DiffNode<DiffLinesLabel> targetNodeInPatch, Time time, boolean debug) throws Exception {
+	private static DiffNode<DiffLinesLabel> checkNeighbors2(DiffNode<DiffLinesLabel> root,
+			DiffNode<DiffLinesLabel> targetNodeInPatch, Time time, boolean debug) throws Exception {
 		List<DiffNode<DiffLinesLabel>> orderedChildrenTarget = targetNodeInPatch.getChildOrder(time);
 		List<DiffNode<DiffLinesLabel>> orderedChildrenSource = root.getParent(time).getChildOrder(time);
 		int indexSource = orderedChildrenSource.indexOf(root);
 		List<DiffNode<DiffLinesLabel>> candidates = new ArrayList<>();
 		for (DiffNode<DiffLinesLabel> node : orderedChildrenTarget) {
 			int indexTarget = orderedChildrenTarget.indexOf(node);
-			
+
 			if (indexSource != indexTarget) {
 				continue;
 			}
@@ -632,19 +641,18 @@ public class Patching {
 			}
 
 			List<DiffNode<DiffLinesLabel>> targetNodes = new ArrayList<DiffNode<DiffLinesLabel>>();
-//			if (root.isArtifact()) {
-//				targetNodes = targetVariantDiffUnchanged.computeAllNodesThat(
-//						node -> node.getPresenceCondition(Time.AFTER).equals(root.getPresenceCondition(time))
-//								&& node.isAnnotation());
-//			} else if (root.isAnnotation()) {
-				targetNodes = targetVariantDiffUnchanged
-						.computeAllNodesThat(node -> node.getPresenceCondition(Time.AFTER)
-								.equals(root.getParent(time).getPresenceCondition(time)) && node.isAnnotation());
-//			}
 
+			if (root.getParent(time).getDiffType().existsAtTime(time)) {
+				final Node presenceCondition = root.getParent(time).getPresenceCondition(time);
+				targetNodes = targetVariantDiffUnchanged.computeAllNodesThat(node -> node.getPresenceCondition(Time.AFTER)
+						.equals(presenceCondition) && node.isAnnotation());
+			}
+			
 			List<DiffNode<DiffLinesLabel>> targetNodes2 = new ArrayList<DiffNode<DiffLinesLabel>>();
 			targetNodes2 = targetNodes.stream()
-					.filter(targetNode -> checkNeighborsLabels(root, targetVariantDiffPatched.getNodeWithID(targetNode.getID()), deselectedFeatures, time, debug))
+					.filter(targetNode -> checkNeighborsLabels(root,
+							targetVariantDiffPatched.getNodeWithID(targetNode.getID()), deselectedFeatures, time,
+							debug))
 					.toList();
 			if (targetNodes2.size() != 1) {
 				throw new Exception("too much or too less target nodes after filtering: " + targetNodes2.size() + "/"
@@ -754,12 +762,13 @@ public class Patching {
 //		}
 //		
 //		
-		VariationDiff<DiffLinesLabel> optimizedDiff = DiffView.optimized(diff, rho);
+//		VariationDiff<DiffLinesLabel> optimizedDiff = DiffView.optimized(diff, rho);
+		VariationDiff<DiffLinesLabel> optimizedDiff = diff.deepCopy();
 		if (debug) {
 			GameEngine.showAndAwaitAll(Show.diff(diff), Show.diff(optimizedDiff));
 			GameEngine.showAndAwaitAll(Show.tree(optimizedDiff.project(Time.AFTER)));
 		}
-//		VariationDiff<DiffLinesLabel> optimizedDiff = diff.deepCopy();
+
 		VariationDiffSource source = optimizedDiff.getSource();
 		VariationDiff<DiffLinesLabel> targetVariantDiffUnchanged = targetVariant.deepCopy()
 				.toCompletelyUnchangedVariationDiff();
@@ -769,14 +778,30 @@ public class Patching {
 		Set<DiffNode<DiffLinesLabel>> removedNodes = new HashSet<DiffNode<DiffLinesLabel>>();
 		Set<DiffNode<DiffLinesLabel>> addedNodes = new HashSet<DiffNode<DiffLinesLabel>>();
 
-		// find nodes with DiffType NON but changed parents
+		// resolve nodes with two parents to two nodes, one added, one removed
+		VariationDiff<DiffLinesLabel> diffCopy = optimizedDiff.deepCopy();
 		optimizedDiff.forAll(node -> {
 			if (node.isNon() && node.getParent(Time.BEFORE) != node.getParent(Time.AFTER)) {
-				removedNodes.add(node);
-				addedNodes.add(node);
+				DiffNode<DiffLinesLabel> matchingNode = diffCopy.getNodeWithID(node.getID());
+				DiffNode<DiffLinesLabel> parentAfter = matchingNode.getParent(Time.AFTER);
+				DiffNode<DiffLinesLabel> parentBefore = matchingNode.getParent(Time.BEFORE);
+				int indexAfter = parentAfter.getChildOrder(Time.AFTER).indexOf(matchingNode);
+				int indexBefore = parentBefore.getChildOrder(Time.BEFORE).indexOf(matchingNode);
+				matchingNode.drop(Time.AFTER);
+				matchingNode.drop(Time.BEFORE);
+				DiffNode<DiffLinesLabel> nodeAfter = matchingNode.deepCopy();
+				nodeAfter.diffType = DiffType.ADD;
+				DiffNode<DiffLinesLabel> nodeBefore = matchingNode.deepCopy();
+				nodeBefore.diffType = DiffType.REM;
+				parentAfter.insertChild(nodeAfter, indexAfter, Time.AFTER);
+				parentBefore.insertChild(nodeBefore, indexBefore, Time.BEFORE);
 			}
 		});
-
+		if (debug) {
+			GameEngine.showAndAwaitAll(Show.diff(optimizedDiff), Show.diff(diffCopy));
+		}
+		optimizedDiff = diffCopy;
+		
 		// remove old nodes
 		optimizedDiff.forAll(node -> {
 			if (node.isRem()) {
