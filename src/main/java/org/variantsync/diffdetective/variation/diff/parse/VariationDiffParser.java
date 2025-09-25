@@ -79,6 +79,15 @@ public class VariationDiffParser {
 
 
     /* State */
+    /* Implementation note:
+     * We use stacks to keep track of the path from the current node (the top element in the stack)
+     * to the root (the bottom element in the stack) of the variation diff. This is not strictly
+     * necessary because as soon as a node is pushed onto the stack, the corresponding edge is also
+     * inserted. Hence, we could reconstruct the stack by traversing the current graph using
+     * {@link DiffNode#getParent} and check for the root using {@link DiffNode#isRoot}.
+     * However, for consistency with the papers that explain this algorithm and for ease of
+     * implementation, we keep the stack based implementation.
+     */
 
     /**
      * A stack containing the current path before the edit from the root of the currently parsed
