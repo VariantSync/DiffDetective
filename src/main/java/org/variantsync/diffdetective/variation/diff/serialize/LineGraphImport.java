@@ -22,6 +22,11 @@ import java.util.List;
 
 /**
  * Import VariationDiffs from line graph files.
+ * <p>
+ * This is a very rudimentary implementation of a deserializer that supports a similar format than
+ * {@link LineGraphExport}. Rudimentary means that it only deserializes the structure of a variation
+ * diff. Most other properties, including the label, line numbers and formulas, are not (always)
+ * correctly deserialized. Hence, this is not an inverse of {@link LineGraphExport}.
  *
  * @author Kevin Jedelhauser, Paul Maximilian Bittner
  */
