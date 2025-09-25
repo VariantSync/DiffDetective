@@ -384,7 +384,7 @@ public class VariationDiff<L extends Label> {
      * @return A set of every occuring feature name.
      */
     public Set<String> computeAllFeatureNames() {
-        Set<String> features = new HashSet<>();
+        Set<String> features = new LinkedHashSet<>();
         forAll(node -> {
                 if (node.isConditionalAnnotation()) {
                     features.addAll(node.getFormula().getUniqueContainedFeatures());
