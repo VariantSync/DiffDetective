@@ -165,17 +165,17 @@ public class PatchingExperiment implements Analysis.Hooks {
                 true,
                 false
         );
-		try {
-			AnalysisRunner.run(analysisOptions
-					,
-					(repository, path) -> Analysis.forEachCommit(() -> PatchingExperiment.Create(repository, path, experiment), 500,
-							8));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+//		try {
+//			AnalysisRunner.run(analysisOptions
+//					,
+//					(repository, path) -> Analysis.forEachCommit(() -> PatchingExperiment.Create(repository, path, experiment), 500,
+//							8));
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
 		try {
 //			exampleA2NodesWith2Parents.cpp
-//			Patching.patchVariationTrees(Patching.parseVariationDiffFromFile("file3.diff"), Patching.parseVariationDiffFromFile("file3.diff").project(Time.BEFORE), true, true);
+			Patching.patchVariationTrees(Patching.parseVariationDiffFromFile("file2.diff"), Patching.parseVariationDiffFromFile("file1.diff").project(Time.BEFORE), true, true);
 //			Patching.patchVariationTrees(Patching.parseVariationDiffFromFiles("exampleA1Add.cpp", "exampleA2Add.cpp"), Patching.parseVariationTreeFromFile("exampleBAdd.cpp"), true, true);
 //			Patching.patchVariationTrees(Patching.parseVariationDiffFromFiles("exampleA1Rem.cpp", "exampleA2Rem.cpp"), Patching.parseVariationTreeFromFile("exampleBRem.cpp"), true, true);
 //			Patching.patchVariationTrees(Patching.parseVariationDiffFromFiles("exampleA1RemAdd.cpp", "exampleA2RemAdd.cpp"),

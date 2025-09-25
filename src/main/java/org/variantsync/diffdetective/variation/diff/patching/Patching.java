@@ -14,11 +14,14 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.eclipse.jgit.diff.DiffAlgorithm;
+import org.prop4j.And;
+import org.prop4j.Literal;
 import org.prop4j.Node;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.show.Show;
 import org.variantsync.diffdetective.show.engine.GameEngine;
 import org.variantsync.diffdetective.util.fide.FixTrueFalse.Formula;
+import org.variantsync.diffdetective.util.fide.FormulaUtils;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.Label;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
@@ -123,16 +126,18 @@ public class Patching {
 	}
 
 	private static Relevance calculateFormulaForDeselection(Set<String> set, boolean debug) {
-
-		Formula[] f = new Formula[set.size()];
+		
+		Node[] f = new Node[set.size()];
+//		Formula[] f = new Formula[set.size()];
 		Iterator<String> iterator = set.iterator();
 		for (int i = 0; i < f.length; i++) {
-			f[i] = Formula.not(Formula.var(iterator.next()));
+//			f[i] = Formula.not(Formula.var(iterator.next()));
+			f[i] = new Literal(iterator.next(), false);
 		}
-		Formula formula = Formula.and(f);
+		Node formula = new And(f);
 
 		if (debug) {
-			System.out.println(formula.get().toString());
+			System.out.println(formula);
 		}
 
 		return new Configure(formula);
