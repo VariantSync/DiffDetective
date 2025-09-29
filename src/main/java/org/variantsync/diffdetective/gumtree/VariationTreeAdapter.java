@@ -2,6 +2,7 @@ package org.variantsync.diffdetective.gumtree;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
@@ -24,9 +25,11 @@ import com.github.gumtreediff.tree.TypeSet;
 public class VariationTreeAdapter<L extends Label> extends AbstractTree {
     private String cachedLabel;
     private VariationNode<?, L> backingNode;
+    private LinkedHashMap<String, Object> metadata;
 
     public VariationTreeAdapter(VariationNode<?, L> node) {
         this.backingNode = node;
+        this.metadata = new LinkedHashMap<>();
 
         if (backingNode.isConditionalAnnotation()) {
             cachedLabel = backingNode.getFormula().toString();
@@ -41,7 +44,7 @@ public class VariationTreeAdapter<L extends Label> extends AbstractTree {
         setChildren(children);
     }
 
-    protected VariationTreeAdapter newInstance(VariationNode<?, L> node) {
+    protected VariationTreeAdapter<L> newInstance(VariationNode<?, L> node) {
         return new VariationTreeAdapter<>(node);
     }
 
@@ -65,12 +68,12 @@ public class VariationTreeAdapter<L extends Label> extends AbstractTree {
 
     @Override
     public Iterator<Entry<String, Object>> getMetadata() {
-        throw new UnsupportedOperationException();
+        return metadata.entrySet().iterator();
     }
 
     @Override
-    public Object getMetadata(String arg0) {
-        throw new UnsupportedOperationException();
+    public Object getMetadata(String key) {
+        return metadata.get(key);
     }
 
     /**
@@ -97,8 +100,8 @@ public class VariationTreeAdapter<L extends Label> extends AbstractTree {
     }
 
     @Override
-    public Object setMetadata(String name, Object value) {
-        throw new UnsupportedOperationException();
+    public Object setMetadata(String key, Object value) {
+        return metadata.put(key, value);
     }
 
     @Override
