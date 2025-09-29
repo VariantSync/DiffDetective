@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.variantsync.diffdetective.variation.Label;
 import org.variantsync.diffdetective.variation.tree.VariationNode;
@@ -34,7 +35,11 @@ public class VariationTreeAdapter<L extends Label> extends AbstractTree {
         if (backingNode.isConditionalAnnotation()) {
             cachedLabel = backingNode.getFormula().toString();
         } else {
-            cachedLabel = backingNode.getLabel().getLines().stream().collect(Collectors.joining("\n"));
+            cachedLabel =
+                Stream.concat(
+                    backingNode.getLabel().getLines().stream(),
+                    backingNode.getLabel().getTrailingLines().stream()
+                ).collect(Collectors.joining("\n"));
         }
 
         var children = new ArrayList<Tree>(node.getChildren().size());
