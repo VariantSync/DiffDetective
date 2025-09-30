@@ -11,6 +11,7 @@ import org.variantsync.diffdetective.gumtree.VariationTreeAdapter;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.variation.Label;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
+import org.variantsync.diffdetective.variation.diff.Time;
 import org.variantsync.diffdetective.variation.diff.VariationDiff;
 import org.variantsync.diffdetective.variation.diff.source.VariationTreeDiffSource;
 import org.variantsync.diffdetective.variation.diff.traverse.VariationDiffTraversal;
@@ -22,7 +23,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.variantsync.diffdetective.variation.diff.DiffType.ADD;
-import static org.variantsync.diffdetective.variation.diff.DiffType.REM;
 import static org.variantsync.diffdetective.variation.diff.Time.AFTER;
 import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
 
@@ -124,8 +124,7 @@ public class GumTreeDiff {
             Tree dst = mappings.getDstForSrc(node);
             if (dst == null || !dst.getLabel().equals(node.getLabel())) {
                 var diffNode = Cast.<Tree, VariationDiffAdapter<L>>unchecked(node).getDiffNode();
-                diffNode.diffType = REM;
-                diffNode.drop(AFTER);
+                diffNode.split(AFTER).drop();
             }
         }
     }
@@ -157,7 +156,7 @@ public class GumTreeDiff {
                 new DiffLineNumber(DiffLineNumber.InvalidLineNumber, from, from),
                 new DiffLineNumber(DiffLineNumber.InvalidLineNumber, to, to),
                 variationNode.getFormula(),
-                Cast.unchecked(variationNode.getLabel().clone())
+                Cast.unchecked(variationNode.getLabel().withoutTimeDependentState(BEFORE))
             );
         } else {
             diffNode = Cast.<Tree, VariationDiffAdapter<L>>unchecked(src).getDiffNode();
@@ -168,6 +167,7 @@ public class GumTreeDiff {
 
             diffNode.setFromLine(diffNode.getFromLine().withLineNumberAtTime(afterNode.getVariationNode().getLineRange().fromInclusive(), AFTER));
             diffNode.setToLine(diffNode.getToLine().withLineNumberAtTime(afterNode.getVariationNode().getLineRange().toExclusive(), AFTER));
+            diffNode.setLabel(Cast.unchecked(diffNode.getLabel().withTimeDependentStateFrom(afterNode.getVariationNode().getLabel(), Time.AFTER)));
         }
         parent.addChild(diffNode, AFTER);
 
@@ -220,11 +220,7 @@ public class GumTreeDiff {
                         afterNode.split(BEFORE);
                     }
 
-                    beforeNode.join(afterNode, (beforeLabel, afterLabel) -> {
-                        Assert.assertEquals(beforeLabel.getLines(), afterLabel.getLines());
-                        Assert.assertEquals(beforeLabel.getTrailingLines(), afterLabel.getTrailingLines());
-                        return beforeLabel;
-                    });
+                    beforeNode.join(afterNode);
                 }
 
                 Assert.assertTrue(beforeNode.isNon());

@@ -14,7 +14,6 @@ import org.variantsync.diffdetective.variation.tree.VariationNode;
 import org.variantsync.functjonal.Cast;
 
 import java.util.*;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -393,12 +392,13 @@ public class DiffNode<L extends Label> implements HasNodeType {
             getFromLine().as(otherDiffType),
             getToLine().as(otherDiffType),
             getFormula(),
-            Cast.unchecked(label.clone())
+            Cast.unchecked(label.withoutTimeDependentState(time.other()))
         );
 
         this.diffType = otherDiffType.inverse();
         this.from = this.from.as(this.diffType);
         this.to = this.to.as(this.diffType);
+        this.setLabel(Cast.unchecked(this.getLabel().withoutTimeDependentState(time)));
 
         other.addChildren(this.removeChildren(time), time);
         getParent(time).replaceChild(this, other, time);
@@ -417,14 +417,13 @@ public class DiffNode<L extends Label> implements HasNodeType {
      * Merges {@code other} into this node.
      * {@code other} is removed from the graph and this node inherits all of its edges. This
      * node and {@code other} need to be compatible (exist at different times and have the
-     * same {@link getNodeType node type}).
+     * same {@link getNodeType node type} and compatible {@link getLabel labels}).
      * <p>
      * Both {@code this} and {@code other} must not be {@link isRoot the root}.
      *
      * @param other the node which is removed from the graph
-     * @param joinLabels returns a label that should represent the two passed labels
      */
-    public void join(DiffNode<L> other, BiFunction<L, L, L> joinLabels) {
+    public void join(DiffNode<L> other) {
         Time time = switch (diffType) {
             case ADD -> BEFORE;
             case REM -> AFTER;
@@ -436,7 +435,7 @@ public class DiffNode<L extends Label> implements HasNodeType {
         Assert.assertFalse(other.isRoot());
 
         diffType = DiffType.NON;
-        label.setInnerLabel(joinLabels.apply(getLabel(), other.getLabel()));
+        setLabel(Cast.unchecked(getLabel().withTimeDependentStateFrom(other.getLabel(), time)));
 
         setFromLine(getFromLine().withLineNumberAtTime(other.getFromLine().atTime(AFTER), AFTER));
         setToLine(getToLine().withLineNumberAtTime(other.getToLine().atTime(AFTER), AFTER));
