@@ -165,6 +165,9 @@ public class GumTreeDiff {
                 // Always drop and reinsert it because it could have moved.
                 diffNode.drop(AFTER);
             }
+
+            diffNode.setFromLine(diffNode.getFromLine().withLineNumberAtTime(afterNode.getVariationNode().getLineRange().fromInclusive(), AFTER));
+            diffNode.setToLine(diffNode.getToLine().withLineNumberAtTime(afterNode.getVariationNode().getLineRange().toExclusive(), AFTER));
         }
         parent.addChild(diffNode, AFTER);
 

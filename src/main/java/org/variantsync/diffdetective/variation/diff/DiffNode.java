@@ -438,6 +438,9 @@ public class DiffNode<L extends Label> implements HasNodeType {
         diffType = DiffType.NON;
         label.setInnerLabel(joinLabels.apply(getLabel(), other.getLabel()));
 
+        setFromLine(getFromLine().withLineNumberAtTime(other.getFromLine().atTime(AFTER), AFTER));
+        setToLine(getToLine().withLineNumberAtTime(other.getToLine().atTime(AFTER), AFTER));
+
         this.stealChildrenOf(other);
         other.getParent(time).replaceChild(other, this, time);
     }
