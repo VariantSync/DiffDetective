@@ -36,6 +36,7 @@ import org.variantsync.diffdetective.variation.tree.VariationTree;
 import org.variantsync.diffdetective.variation.tree.view.relevance.Configure;
 import org.variantsync.diffdetective.variation.tree.view.relevance.Relevance;
 
+import com.github.gumtreediff.actions.Diff;
 import com.ibm.icu.impl.CalendarUtil;
 
 public class Patching {
@@ -126,12 +127,10 @@ public class Patching {
 	}
 
 	private static Relevance calculateFormulaForDeselection(Set<String> set, boolean debug) {
-		
+
 		Node[] f = new Node[set.size()];
-//		Formula[] f = new Formula[set.size()];
 		Iterator<String> iterator = set.iterator();
 		for (int i = 0; i < f.length; i++) {
-//			f[i] = Formula.not(Formula.var(iterator.next()));
 			f[i] = new Literal(iterator.next(), false);
 		}
 		Node formula = new And(f);
@@ -638,21 +637,21 @@ public class Patching {
 		Time time = (type == DiffType.ADD) ? Time.AFTER : Time.BEFORE;
 
 		for (DiffNode<DiffLinesLabel> root : subtreeRoots) {
-			if (debug) {
-				DiffNode<DiffLinesLabel> newRoot = DiffNode.createRoot(new DiffLinesLabel());
-				newRoot.addChild(root.deepCopy(), time);
-				VariationDiff<DiffLinesLabel> subTree = new VariationDiff<DiffLinesLabel>(newRoot, source);
-				GameEngine.showAndAwaitAll(Show.diff(subTree));
-			}
+//			if (debug) {
+//				DiffNode<DiffLinesLabel> newRoot = DiffNode.createRoot(new DiffLinesLabel());
+//				newRoot.addChild(root.deepCopy(), time);
+//				VariationDiff<DiffLinesLabel> subTree = new VariationDiff<DiffLinesLabel>(newRoot, source);
+//				GameEngine.showAndAwaitAll(Show.diff(subTree));
+//			}
 
 			List<DiffNode<DiffLinesLabel>> targetNodes = new ArrayList<DiffNode<DiffLinesLabel>>();
 
 			if (root.getParent(time).getDiffType().existsAtTime(time)) {
 				final Node presenceCondition = root.getParent(time).getPresenceCondition(time);
-				targetNodes = targetVariantDiffUnchanged.computeAllNodesThat(node -> node.getPresenceCondition(Time.AFTER)
-						.equals(presenceCondition) && node.isAnnotation());
+				targetNodes = targetVariantDiffUnchanged.computeAllNodesThat(
+						node -> node.getPresenceCondition(Time.AFTER).equals(presenceCondition) && node.isAnnotation());
 			}
-			
+
 			List<DiffNode<DiffLinesLabel>> targetNodes2 = new ArrayList<DiffNode<DiffLinesLabel>>();
 			targetNodes2 = targetNodes.stream()
 					.filter(targetNode -> checkNeighborsLabels(root,
@@ -750,6 +749,76 @@ public class Patching {
 		return patchVariationTrees(diff, targetVariant, debug, patchNewFeatures);
 	}
 
+	public static void changeType(DiffNode<DiffLinesLabel> node, VariationDiff<DiffLinesLabel> modDiff, DiffType type) {
+		if (!node.isLeaf()) {
+			node.getAllChildrenStream().forEach(child -> changeType(child, modDiff, type));
+		}
+		DiffNode<DiffLinesLabel> matchingNode = modDiff.getNodeWithID(node.getID());
+		if (matchingNode == null) {
+			return;
+		}
+		Time time = type == DiffType.ADD ? Time.BEFORE : Time.AFTER; 
+		if (matchingNode.isNon()) {
+			matchingNode.diffType = type;
+			matchingNode.drop(time);
+		} else if (matchingNode.diffType != type) {
+			matchingNode.drop();
+		}
+	}
+
+	public static void resolve(DiffNode<DiffLinesLabel> node, VariationDiff<DiffLinesLabel> modDiff) {
+		if (!node.isLeaf()) {
+			node.getAllChildrenStream().forEach(child -> resolve(child, modDiff));
+		}
+		if (node.isNon() && node.getParent(Time.BEFORE) != node.getParent(Time.AFTER)) {
+//			System.out.println(node.getLabel());
+			DiffNode<DiffLinesLabel> matchingNode = modDiff.getNodeWithID(node.getID());
+			// matchingNode can be null because it is a child from two parents
+			if (matchingNode == null) {
+				return;
+			}
+			DiffNode<DiffLinesLabel> parentAfter = matchingNode.getParent(Time.AFTER);
+			DiffNode<DiffLinesLabel> parentBefore = matchingNode.getParent(Time.BEFORE);
+			int indexAfter = parentAfter.getChildOrder(Time.AFTER).indexOf(matchingNode);
+			int indexBefore = parentBefore.getChildOrder(Time.BEFORE).indexOf(matchingNode);
+			matchingNode.drop();
+			DiffNode<DiffLinesLabel> nodeAfter = matchingNode.deepCopy();
+			nodeAfter.diffType = DiffType.ADD;
+			
+			DiffNode<DiffLinesLabel> newRootAfter = DiffNode.createRoot(new DiffLinesLabel());
+			newRootAfter.addChild(nodeAfter.deepCopy(), Time.AFTER);
+			VariationDiff<DiffLinesLabel> subTreeAfter = new VariationDiff<DiffLinesLabel>(newRootAfter, modDiff.getSource());
+			
+			if (!nodeAfter.isLeaf()) {
+				changeType(nodeAfter, subTreeAfter, DiffType.ADD);
+				// remove all children with difftype REM recursively
+				// set recursively difftype ADD for all children which have currently difftype
+				// NON
+			}
+			
+//			GameEngine.showAndAwaitAll(Show.diff(subTreeAfter));
+			
+			DiffNode<DiffLinesLabel> nodeBefore = matchingNode.deepCopy();
+			nodeBefore.diffType = DiffType.REM;
+			
+			DiffNode<DiffLinesLabel> newRootBefore = DiffNode.createRoot(new DiffLinesLabel());
+			newRootBefore.addChild(nodeBefore.deepCopy(), Time.BEFORE);
+			VariationDiff<DiffLinesLabel> subTreeBefore = new VariationDiff<DiffLinesLabel>(newRootBefore, modDiff.getSource());
+			
+			if (!nodeBefore.isLeaf()) {
+				changeType(nodeBefore, subTreeBefore, DiffType.REM);
+			}
+			
+//			GameEngine.showAndAwaitAll(Show.diff(subTreeBefore));
+			
+			parentAfter.insertChild(subTreeAfter.getRoot().getAllChildren().iterator().next(), indexAfter, Time.AFTER);
+			parentBefore.insertChild(subTreeBefore.getRoot().getAllChildren().iterator().next(), indexBefore, Time.BEFORE);
+
+//			GameEngine.showAndAwaitAll(Show.diff(modDiff));
+
+		}
+	}
+
 	public static VariationDiff<DiffLinesLabel> patchVariationTrees(VariationDiff<DiffLinesLabel> diff,
 			VariationTree<DiffLinesLabel> targetVariant, boolean debug, boolean patchNewFeatures) throws Exception {
 
@@ -768,9 +837,10 @@ public class Patching {
 //		
 //		
 //		VariationDiff<DiffLinesLabel> optimizedDiff = DiffView.optimized(diff, rho);
+		
 		VariationDiff<DiffLinesLabel> optimizedDiff = diff.deepCopy();
 		if (debug) {
-			GameEngine.showAndAwaitAll(Show.diff(diff), Show.diff(optimizedDiff));
+			GameEngine.showAndAwaitAll(Show.diff(optimizedDiff));
 			GameEngine.showAndAwaitAll(Show.tree(optimizedDiff.project(Time.AFTER)));
 		}
 
@@ -785,28 +855,22 @@ public class Patching {
 
 		// resolve nodes with two parents to two nodes, one added, one removed
 		VariationDiff<DiffLinesLabel> diffCopy = optimizedDiff.deepCopy();
+		List<DiffNode<DiffLinesLabel>> nodesToResolve = new ArrayList<>();
+
 		optimizedDiff.forAll(node -> {
 			if (node.isNon() && node.getParent(Time.BEFORE) != node.getParent(Time.AFTER)) {
 				DiffNode<DiffLinesLabel> matchingNode = diffCopy.getNodeWithID(node.getID());
-				DiffNode<DiffLinesLabel> parentAfter = matchingNode.getParent(Time.AFTER);
-				DiffNode<DiffLinesLabel> parentBefore = matchingNode.getParent(Time.BEFORE);
-				int indexAfter = parentAfter.getChildOrder(Time.AFTER).indexOf(matchingNode);
-				int indexBefore = parentBefore.getChildOrder(Time.BEFORE).indexOf(matchingNode);
-				matchingNode.drop(Time.AFTER);
-				matchingNode.drop(Time.BEFORE);
-				DiffNode<DiffLinesLabel> nodeAfter = matchingNode.deepCopy();
-				nodeAfter.diffType = DiffType.ADD;
-				DiffNode<DiffLinesLabel> nodeBefore = matchingNode.deepCopy();
-				nodeBefore.diffType = DiffType.REM;
-				parentAfter.insertChild(nodeAfter, indexAfter, Time.AFTER);
-				parentBefore.insertChild(nodeBefore, indexBefore, Time.BEFORE);
+				nodesToResolve.add(matchingNode);
 			}
 		});
+
+		resolve(optimizedDiff.getRoot(), diffCopy);
+
 		if (debug) {
-			GameEngine.showAndAwaitAll(Show.diff(optimizedDiff), Show.diff(diffCopy));
+			GameEngine.showAndAwaitAll(Show.diff(diffCopy, "resolved"));
 		}
 		optimizedDiff = diffCopy;
-		
+
 		// remove old nodes
 		optimizedDiff.forAll(node -> {
 			if (node.isRem()) {
