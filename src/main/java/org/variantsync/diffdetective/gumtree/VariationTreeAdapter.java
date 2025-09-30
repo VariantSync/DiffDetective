@@ -32,15 +32,11 @@ public class VariationTreeAdapter<L extends Label> extends AbstractTree {
         this.backingNode = node;
         this.metadata = new LinkedHashMap<>();
 
-        if (backingNode.isConditionalAnnotation()) {
-            cachedLabel = backingNode.getFormula().toString();
-        } else {
-            cachedLabel =
-                Stream.concat(
-                    backingNode.getLabel().getLines().stream(),
-                    backingNode.getLabel().getTrailingLines().stream()
-                ).collect(Collectors.joining("\n"));
-        }
+        cachedLabel =
+            Stream.concat(
+                backingNode.getLabel().getLines().stream(),
+                backingNode.getLabel().getTrailingLines().stream()
+            ).collect(Collectors.joining("\n"));
 
         var children = new ArrayList<Tree>(node.getChildren().size());
         for (var child : node.getChildren()) {

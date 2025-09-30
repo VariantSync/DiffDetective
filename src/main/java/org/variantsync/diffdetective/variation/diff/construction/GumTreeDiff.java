@@ -217,7 +217,11 @@ public class GumTreeDiff {
                         afterNode.split(BEFORE);
                     }
 
-                    beforeNode.join(afterNode, (beforeLabel, afterLabel) -> beforeLabel);
+                    beforeNode.join(afterNode, (beforeLabel, afterLabel) -> {
+                        Assert.assertEquals(beforeLabel.getLines(), afterLabel.getLines());
+                        Assert.assertEquals(beforeLabel.getTrailingLines(), afterLabel.getTrailingLines());
+                        return beforeLabel;
+                    });
                 }
 
                 Assert.assertTrue(beforeNode.isNon());
