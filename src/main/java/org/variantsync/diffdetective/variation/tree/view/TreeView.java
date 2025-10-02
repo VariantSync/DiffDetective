@@ -61,15 +61,15 @@ public final class TreeView {
     /**
      * Creates a view on the given variation tree as described by the given relevance predicate.
      * This function is side-effect free.
-     * Thre given variation tree and relevance will not be altered.
+     * The given variation tree and relevance will not be altered.
      * This function corresponds to Equation 4 in our SPLC'23 paper - Views on Edits to Variational Software.
      * @param t The variation tree to generate a view on.
      * @param r A relevance predicate that determines for each node in the
      *          tree whether it should be contained in the view or should be excluded.
      * @return A variation tree that represents a view on the given variation tree t.
      */
-    public static VariationTree<?> tree(final VariationTree<?> t, final Relevance r) {
-        final VariationTree<?> copy = t.deepCopy();
+    public static <L extends Label> VariationTree<L> tree(final VariationTree<L> t, final Relevance r) {
+        final VariationTree<L> copy = t.deepCopy();
         treeInline(copy, r);
         return copy;
     }

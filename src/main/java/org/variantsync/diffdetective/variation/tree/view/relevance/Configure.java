@@ -4,8 +4,11 @@ import org.prop4j.Node;
 import org.prop4j.NodeWriter;
 import org.variantsync.diffdetective.analysis.logic.SAT;
 import org.variantsync.diffdetective.util.fide.FixTrueFalse;
+import org.variantsync.diffdetective.util.fide.FixTrueFalse.Formula;
 import org.variantsync.diffdetective.variation.tree.VariationNode;
 
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.function.Consumer;
 
 /**
@@ -13,14 +16,14 @@ import java.util.function.Consumer;
  * This relevance predicate is the implementation of Equation 5 in our SPLC'23 paper.
  */
 public class Configure implements Relevance {
-    private final FixTrueFalse.Formula configuration;
+    private final Formula configuration;
 
     /**
      * Same as {@link Configure#Configure(Node)} but with a formula that is witnessed to
      * not contain true or false constants not at the root.
      * Workaround for FeatureIDE bug <a href="https://github.com/FeatureIDE/FeatureIDE/issues/1333">FeatureIDE Issue 1333</a>.
      */
-    public Configure(final FixTrueFalse.Formula configuration) {
+    public Configure(final Formula configuration) {
         this.configuration = configuration;
     }
 
@@ -33,6 +36,39 @@ public class Configure implements Relevance {
      */
     public Configure(final Node configuration) {
         this(FixTrueFalse.EliminateTrueAndFalse(configuration));
+    }
+
+    /**
+     * Create a configuration from an assignment of variable names to boolean values.
+     * The given assignment may be complete or partial.
+     * Internally, a big conjunction of literals is created:
+     * <pre>
+     *           ⋀ f              ∧          ⋀ ¬ f
+     *   (f, true) ∈ assignment    (f, false) ∈ assignment
+     * </pre>
+     *
+     * As an example, suppose the map contains the following entries:
+     * <pre>
+     *   A ↦ true
+     *   B ↦ false
+     *   C ↦ true
+     * </pre>
+     * then we construct a formula A ∧ (¬ B) ∧ C.
+     */
+    public Configure(final Map<String, Boolean> assignment) {
+        // We use commutativity of ∧ to iterate the map only once instead of twice as shown in the formula above.
+        final Formula[] fixedFeatures = new Formula[assignment.size()];
+        int i = 0;
+        for (Entry<String, Boolean> entry : assignment.entrySet()) {
+            fixedFeatures[i] = Formula.var(entry.getKey());
+            if (!entry.getValue()) {
+                fixedFeatures[i] = Formula.not(fixedFeatures[i]);
+            }
+
+            ++i;
+        }
+
+        this.configuration = Formula.and(fixedFeatures);
     }
 
     @Override

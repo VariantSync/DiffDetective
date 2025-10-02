@@ -24,6 +24,7 @@ import org.variantsync.diffdetective.variation.diff.source.VariationDiffSource;
 import org.variantsync.diffdetective.variation.diff.traverse.VariationDiffTraversal;
 import org.variantsync.diffdetective.variation.diff.traverse.VariationDiffVisitor;
 import org.variantsync.diffdetective.variation.tree.VariationTree;
+import org.variantsync.diffdetective.util.fide.FixTrueFalse;
 import org.variantsync.functjonal.Cast;
 import org.variantsync.functjonal.Result;
 
@@ -34,6 +35,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -207,7 +209,7 @@ public class VariationDiff<L extends Label> {
      * The returned value is a deep copy of the variation tree within this diff
      * at the given time.
      * If you instead wish to only have a view on the tree at the given diff
-     * have a look at {@link DiffNode#projection(Time)} for this trees {@link #getRoot() root}.
+     * have a look at {@link DiffNode#projection(Time)} for this tree's {@link #getRoot() root}.
      * @param t The time for which to project the variation tree.
      */
     public VariationTree<L> project(Time t) {
@@ -372,6 +374,24 @@ public class VariationDiff<L extends Label> {
             }
         });
         return count.get();
+    }
+
+    /**
+     * Returns all variable names occurring in annotations (i.e., formulas of mapping nodes) in this variation diff.
+     * This method is deterministic: It will return the feature names always in the same order, assuming the variation diff is not changed inbetween.
+     * @return A set of every occuring feature name.
+     */
+    public LinkedHashSet<String> computeAllFeatureNames() {
+        LinkedHashSet<String> features = new LinkedHashSet<>();
+        forAll(node -> {
+                if (node.isConditionalAnnotation()) {
+                    features.addAll(node.getFormula().getUniqueContainedFeatures());
+                }
+            });
+        // Since FeatureIDE falsely reports constants "True" and "False" as feature names, we have to remove them from the resulting set.
+        features.removeIf(FixTrueFalse::isTrueLiteral);
+        features.removeIf(FixTrueFalse::isFalseLiteral);
+        return features;
     }
 
     /**
