@@ -47,7 +47,7 @@ public class Patching {
 	}
 
 	public static <L extends Label> boolean isSameAs(VariationDiff<L> diff1, VariationDiff<L> diff2) {
-		return isSameAsWithoutLabel(diff1.getRoot(), diff2.getRoot());
+		return isSameAs(diff1.getRoot(), diff2.getRoot());
 	}
 
 	public static <L extends Label> boolean isSameAs(DiffNode<L> a, DiffNode<L> b) {
@@ -63,7 +63,7 @@ public class Patching {
 			return true;
 		}
 
-		if (!(a.getNodeType().equals(b.getNodeType()) && a.getLabel().toString().equals(b.getLabel().toString()) &&
+		if (!(a.getNodeType().equals(b.getNodeType()) && hasSameLabel(a, b) &&
 //				a.getLabel().equals(b.getLabel()) &&
 //                a.getFromLine().atTime(time) == (b.getFromLine().atTime(time)) &&
 //                a.getToLine().atTime(time) == (b.getToLine().atTime(time)) &&
@@ -312,7 +312,7 @@ public class Patching {
 	}
 
 	private static boolean checkNeighborsLabels(DiffNode<DiffLinesLabel> root,
-			DiffNode<DiffLinesLabel> targetNodeInPatch, Set<String> deselectedFeatures, Time time, boolean debug) {
+			DiffNode<DiffLinesLabel> targetNodeInPatch, Time time, boolean debug) {
 		if (root.getParent(time) == null && targetNodeInPatch == null) {
 			return true;
 		}
@@ -460,21 +460,32 @@ public class Patching {
 	}
 
 	private static int findInsertPosition2(DiffNode<DiffLinesLabel> root, DiffNode<DiffLinesLabel> targetNodeInPatch,
-			Time time, boolean debug) throws Exception {
+			DiffNode<DiffLinesLabel> targetNodeInPatchView, Time time, boolean debug) throws Exception {
 		List<DiffNode<DiffLinesLabel>> orderedChildrenTarget = targetNodeInPatch.getChildOrder(time);
+		List<DiffNode<DiffLinesLabel>> orderedChildrenTargetView = targetNodeInPatchView.getChildOrder(time);
 		List<DiffNode<DiffLinesLabel>> orderedChildrenSource = root.getParent(time).getChildOrder(time);
 		int indexSource = orderedChildrenSource.indexOf(root);
 		int indexTarget = 0;
+		int insertPosition = indexSource;
 		for (int i = 0; i < orderedChildrenSource.size(); i++) {
-			if (i >= indexSource && orderedChildrenSource.get(i).getDiffType() == DiffType.ADD) {
+			if (i == indexSource) {
+				insertPosition = indexTarget;
+				continue;
+			}
+			if (i > indexSource && orderedChildrenSource.get(i).getDiffType() == DiffType.ADD) {
 				continue;
 			}
 			if (!hasSameLabel(orderedChildrenSource.get(i), orderedChildrenTarget.get(indexTarget))) {
-				throw new Exception("Reject: inserting");
+				if (!hasSameLabel(orderedChildrenSource.get(i), orderedChildrenTargetView.get(indexTarget))) {
+					throw new Exception("Reject: inserting");
+				}
+				while (!hasSameLabel(orderedChildrenSource.get(i), orderedChildrenTarget.get(indexTarget))) {
+					indexTarget++;
+				}
 			}
 			indexTarget++;
 		}
-		return indexSource;
+		return insertPosition;
 	}
 
 	private static int findInsertPosition(DiffNode<DiffLinesLabel> root, DiffNode<DiffLinesLabel> targetNodeInPatch,
@@ -652,28 +663,25 @@ public class Patching {
 						node -> node.getPresenceCondition(Time.AFTER).equals(presenceCondition) && node.isAnnotation());
 			}
 
-			List<DiffNode<DiffLinesLabel>> targetNodes2 = new ArrayList<DiffNode<DiffLinesLabel>>();
-			targetNodes2 = targetNodes.stream()
+			VariationDiff<DiffLinesLabel> targetVariantDiffPatchedView = DiffView.optimized(targetVariantDiffPatched.deepCopy(), calculateFormulaForDeselection(deselectedFeatures, debug));
+			targetNodes = targetNodes.stream()
 					.filter(targetNode -> checkNeighborsLabels(root,
-							targetVariantDiffPatched.getNodeWithID(targetNode.getID()), deselectedFeatures, time,
+							targetVariantDiffPatchedView.getNodeWithID(targetNode.getID()), time,
 							debug))
 					.toList();
-			if (targetNodes2.size() != 1) {
-				throw new Exception("too much or too less target nodes after filtering: " + targetNodes2.size() + "/"
-						+ targetNodes.size());
+			targetNodes = targetNodes.stream().map(targetNode -> targetVariantDiffPatched.getNodeWithID(targetNode.getID())).toList();
+			if (targetNodes.size() != 1) {
+				throw new Exception("too much or too less target nodes after filtering: " + targetNodes.size());
 			}
 
-			DiffNode<DiffLinesLabel> targetNode = targetNodes2.get(0);
-			if (debug)
-				System.out.println("targetNode:" + targetNode.toString());
-			DiffNode<DiffLinesLabel> targetNodeInPatch = targetVariantDiffPatched.getNodeWithID(targetNode.getID());
+			DiffNode<DiffLinesLabel> targetNodeInPatch = targetNodes.get(0);
 			if (debug)
 				System.out.println(targetNodeInPatch.toString());
 			if (type == DiffType.ADD) {
 				if (debug) {
 					GameEngine.showAndAwaitAll(Show.tree(targetVariantDiffPatched.project(Time.AFTER)));
 				}
-				int insertPosition = findInsertPosition2(root, targetNodeInPatch, time, debug);
+				int insertPosition = findInsertPosition2(root, targetNodeInPatch, targetVariantDiffPatchedView.getNodeWithID(targetNodeInPatch.getID()), time, debug);
 				if (insertPosition < 0) {
 					if (debug)
 						System.out.println("no matching insert position found");
@@ -682,7 +690,7 @@ public class Patching {
 					System.out.println("subtree added");
 				targetNodeInPatch.insertChild(root.deepCopy(), insertPosition, time);
 				if (debug)
-					System.out.println(targetNode.getChildOrder(time));
+					System.out.println(targetNodeInPatch.getChildOrder(time));
 
 			} else if (type == DiffType.REM) {
 //				List<DiffNode<DiffLinesLabel>> nodesToRem = new ArrayList<DiffNode<DiffLinesLabel>>();
@@ -707,7 +715,7 @@ public class Patching {
 					System.out.println("subtree removed");
 				removeNode(nodesToRem);
 				if (debug)
-					System.out.println(targetNode.getChildOrder(Time.AFTER));
+					System.out.println(targetNodeInPatch.getChildOrder(Time.AFTER));
 			}
 			if (debug) {
 				VariationDiff<DiffLinesLabel> targetVariantDiffPatchedCopy = targetVariantDiffPatched.deepCopy();
@@ -836,12 +844,10 @@ public class Patching {
 //		}
 //		
 //		
-//		VariationDiff<DiffLinesLabel> optimizedDiff = DiffView.optimized(diff, rho);
-		
-		VariationDiff<DiffLinesLabel> optimizedDiff = diff.deepCopy();
+		VariationDiff<DiffLinesLabel> optimizedDiff = DiffView.optimized(diff, rho);
+
 		if (debug) {
-			GameEngine.showAndAwaitAll(Show.diff(optimizedDiff));
-			GameEngine.showAndAwaitAll(Show.tree(optimizedDiff.project(Time.AFTER)));
+			GameEngine.showAndAwaitAll(Show.diff(optimizedDiff), Show.tree(optimizedDiff.project(Time.AFTER)));
 		}
 
 		VariationDiffSource source = optimizedDiff.getSource();
@@ -897,10 +903,13 @@ public class Patching {
 				.collect(Collectors.toList());
 		applyChanges(DiffType.ADD, targetVariantDiffUnchanged, targetVariantDiffPatched, addedSortedSubtreeRoots,
 				source, deselectedFeatures, debug);
-
-//		GameEngine.showAndAwaitAll(Show.diff(diff),
-//				Show.tree(targetVariant), Show.diff(optimizedDiff), Show.diff(targetVariantDiffPatched),
-//				Show.tree(targetVariantDiffPatched.project(Time.AFTER)));
+		
+		if (debug) {
+			GameEngine.showAndAwaitAll(Show.diff(diff),
+					Show.tree(targetVariant), Show.diff(optimizedDiff), Show.diff(targetVariantDiffPatched),
+					Show.tree(targetVariantDiffPatched.project(Time.AFTER)));	
+		}
+		
 		if (debug) {
 			VariationDiff<DiffLinesLabel> targetVariantDiffPatchedCopy = targetVariantDiffPatched.deepCopy();
 			VariationDiff<DiffLinesLabel> optimizedDiffCopy = optimizedDiff.deepCopy();
