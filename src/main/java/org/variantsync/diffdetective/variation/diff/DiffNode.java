@@ -831,6 +831,20 @@ public class DiffNode<L extends Label> implements HasNodeType {
                 variationNode.getLabel()
         );
     }
+    
+    public static <L extends Label> DiffNode<L> unchangedFlat(DiffNode<L> diffNode) {
+        DiffLineNumber from = diffNode.getFromLine();
+        DiffLineNumber to = diffNode.getFromLine();
+        
+        return new DiffNode<>(
+                DiffType.NON,
+                diffNode.getNodeType(),
+                new DiffLineNumber(from.inDiff(), from.beforeEdit(), from.beforeEdit()),
+                new DiffLineNumber(to.inDiff(), to.beforeEdit(), to.beforeEdit()),
+                diffNode.getFormula(),
+                diffNode.getLabel()
+        );
+    }
 
     /**
      * Transforms a {@code VariationNode} into a {@code DiffNode} by diffing {@code variationNode}
@@ -848,6 +862,20 @@ public class DiffNode<L extends Label> implements HasNodeType {
         var diffNode = convert.apply(variationNode.upCast());
 
         for (var variationChildNode : variationNode.getChildren()) {
+            var diffChildNode = unchanged(convert, variationChildNode);
+            diffChildNode.getDiffType().forAllTimesOfExistence(time -> diffNode.addChild(diffChildNode, time));
+        }
+
+        return diffNode;
+    }
+    
+    public static <L extends Label> DiffNode<L> unchanged(
+            final Function<DiffNode<L>, DiffNode<L>> convert,
+            DiffNode<L> diffNodeToChange) {
+
+        var diffNode = convert.apply(diffNodeToChange);
+
+        for (var variationChildNode : diffNodeToChange.getAllChildren()) {
             var diffChildNode = unchanged(convert, variationChildNode);
             diffChildNode.getDiffType().forAllTimesOfExistence(time -> diffNode.addChild(diffChildNode, time));
         }
@@ -955,6 +983,10 @@ public class DiffNode<L extends Label> implements HasNodeType {
      */
     public static <T extends VariationNode<T, L>, L extends Label> DiffNode<L> unchanged(VariationNode<T, L> variationNode) {
         return unchanged(DiffNode::unchangedFlat, variationNode);
+    }
+    
+    public static <L extends Label> DiffNode<L> unchanged(DiffNode<L> diffNode) {
+        return unchanged(DiffNode::unchangedFlat, diffNode);
     }
 
     /**
