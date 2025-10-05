@@ -29,6 +29,7 @@ import org.variantsync.diffdetective.variation.diff.source.VariationDiffSource;
 import org.variantsync.diffdetective.variation.diff.transform.CutNonEditedSubtrees;
 import org.variantsync.diffdetective.variation.diff.view.DiffView;
 import org.variantsync.diffdetective.variation.tree.VariationTree;
+import org.variantsync.diffdetective.variation.tree.view.TreeView;
 import org.variantsync.diffdetective.variation.tree.view.relevance.Configure;
 import org.variantsync.diffdetective.variation.tree.view.relevance.Relevance;
 
@@ -52,10 +53,8 @@ public class Patching {
 			return true;
 		}
 
-		if (!(a.getNodeType().equals(b.getNodeType()) && hasSameLabel(a, b) &&
-				hasSameLabel(a, b) &&
-				(a.getFormula() == null ? b.getFormula() == null : a.getFormula().equals(b.getFormula()))
-		)) {
+		if (!(a.getNodeType().equals(b.getNodeType()) && hasSameLabel(a, b) && hasSameLabel(a, b)
+				&& (a.getFormula() == null ? b.getFormula() == null : a.getFormula().equals(b.getFormula())))) {
 			return false;
 		}
 
@@ -324,13 +323,12 @@ public class Patching {
 						node -> node.getPresenceCondition(Time.AFTER).equals(presenceCondition) && node.isAnnotation());
 			}
 
-			VariationDiff<DiffLinesLabel> targetVariantDiffPatchedView = DiffView.optimized(targetVariantDiffPatched.deepCopy(), calculateFormulaForDeselection(deselectedFeatures, debug));
+			VariationDiff<DiffLinesLabel> targetVariantDiffPatchedView = DiffView.optimized(
+					targetVariantDiffPatched.deepCopy(), calculateFormulaForDeselection(deselectedFeatures, debug));
+			targetNodes = targetNodes.stream().filter(targetNode -> checkNeighborsLabels(root,
+					targetVariantDiffPatchedView.getNodeWithID(targetNode.getID()), time, debug)).toList();
 			targetNodes = targetNodes.stream()
-					.filter(targetNode -> checkNeighborsLabels(root,
-							targetVariantDiffPatchedView.getNodeWithID(targetNode.getID()), time,
-							debug))
-					.toList();
-			targetNodes = targetNodes.stream().map(targetNode -> targetVariantDiffPatched.getNodeWithID(targetNode.getID())).toList();
+					.map(targetNode -> targetVariantDiffPatched.getNodeWithID(targetNode.getID())).toList();
 			if (targetNodes.size() != 1) {
 				throw new Exception("too much or too less target nodes after filtering: " + targetNodes.size());
 			}
@@ -342,7 +340,8 @@ public class Patching {
 				if (debug) {
 					GameEngine.showAndAwaitAll(Show.tree(targetVariantDiffPatched.project(Time.AFTER)));
 				}
-				int insertPosition = findInsertPosition2(root, targetNodeInPatch, targetVariantDiffPatchedView.getNodeWithID(targetNodeInPatch.getID()), time, debug);
+				int insertPosition = findInsertPosition2(root, targetNodeInPatch,
+						targetVariantDiffPatchedView.getNodeWithID(targetNodeInPatch.getID()), time, debug);
 				if (insertPosition < 0) {
 					if (debug)
 						System.out.println("no matching insert position found");
@@ -392,16 +391,16 @@ public class Patching {
 
 	}
 
-	private static VariationDiff<DiffLinesLabel> patchVariationTrees(
-			VariationTree<DiffLinesLabel> sourceVariantVersion1, VariationTree<DiffLinesLabel> sourceVariantVersion2,
-			VariationTree<DiffLinesLabel> targetVariant, boolean debug, boolean patchNewFeatures) throws Exception {
+	private static VariationDiff<DiffLinesLabel> patch(VariationTree<DiffLinesLabel> sourceVariantVersion1,
+			VariationTree<DiffLinesLabel> sourceVariantVersion2, VariationTree<DiffLinesLabel> targetVariant,
+			boolean debug, boolean patchNewFeatures) throws Exception {
 		if (sourceVariantVersion1 == null || sourceVariantVersion2 == null || targetVariant == null) {
 			if (debug)
 				System.out.println("Parsing error");
 			return null;
 		}
 		VariationDiff<DiffLinesLabel> diff = VariationDiff.fromTrees(sourceVariantVersion1, sourceVariantVersion2);
-		return patchVariationTrees(diff, targetVariant, debug, patchNewFeatures);
+		return patch(diff, targetVariant, debug, patchNewFeatures);
 	}
 
 	public static void changeType(DiffNode<DiffLinesLabel> node, VariationDiff<DiffLinesLabel> modDiff, DiffType type) {
@@ -412,7 +411,7 @@ public class Patching {
 		if (matchingNode == null) {
 			return;
 		}
-		Time time = type == DiffType.ADD ? Time.BEFORE : Time.AFTER; 
+		Time time = type == DiffType.ADD ? Time.BEFORE : Time.AFTER;
 		if (matchingNode.isNon()) {
 			matchingNode.diffType = type;
 			matchingNode.drop(time);
@@ -439,42 +438,45 @@ public class Patching {
 			matchingNode.drop();
 			DiffNode<DiffLinesLabel> nodeAfter = matchingNode.deepCopy();
 			nodeAfter.diffType = DiffType.ADD;
-			
+
 			DiffNode<DiffLinesLabel> newRootAfter = DiffNode.createRoot(new DiffLinesLabel());
 			newRootAfter.addChild(nodeAfter.deepCopy(), Time.AFTER);
-			VariationDiff<DiffLinesLabel> subTreeAfter = new VariationDiff<DiffLinesLabel>(newRootAfter, modDiff.getSource());
-			
+			VariationDiff<DiffLinesLabel> subTreeAfter = new VariationDiff<DiffLinesLabel>(newRootAfter,
+					modDiff.getSource());
+
 			if (!nodeAfter.isLeaf()) {
 				changeType(nodeAfter, subTreeAfter, DiffType.ADD);
 				// remove all children with difftype REM recursively
 				// set recursively difftype ADD for all children which have currently difftype
 				// NON
 			}
-			
+
 //			GameEngine.showAndAwaitAll(Show.diff(subTreeAfter));
-			
+
 			DiffNode<DiffLinesLabel> nodeBefore = matchingNode.deepCopy();
 			nodeBefore.diffType = DiffType.REM;
-			
+
 			DiffNode<DiffLinesLabel> newRootBefore = DiffNode.createRoot(new DiffLinesLabel());
 			newRootBefore.addChild(nodeBefore.deepCopy(), Time.BEFORE);
-			VariationDiff<DiffLinesLabel> subTreeBefore = new VariationDiff<DiffLinesLabel>(newRootBefore, modDiff.getSource());
-			
+			VariationDiff<DiffLinesLabel> subTreeBefore = new VariationDiff<DiffLinesLabel>(newRootBefore,
+					modDiff.getSource());
+
 			if (!nodeBefore.isLeaf()) {
 				changeType(nodeBefore, subTreeBefore, DiffType.REM);
 			}
-			
+
 //			GameEngine.showAndAwaitAll(Show.diff(subTreeBefore));
-			
+
 			parentAfter.insertChild(subTreeAfter.getRoot().getAllChildren().iterator().next(), indexAfter, Time.AFTER);
-			parentBefore.insertChild(subTreeBefore.getRoot().getAllChildren().iterator().next(), indexBefore, Time.BEFORE);
+			parentBefore.insertChild(subTreeBefore.getRoot().getAllChildren().iterator().next(), indexBefore,
+					Time.BEFORE);
 
 //			GameEngine.showAndAwaitAll(Show.diff(modDiff));
 
 		}
 	}
 
-	public static VariationDiff<DiffLinesLabel> patchVariationTrees(VariationDiff<DiffLinesLabel> diff,
+	public static VariationDiff<DiffLinesLabel> patch(VariationDiff<DiffLinesLabel> diff,
 			VariationTree<DiffLinesLabel> targetVariant, boolean debug, boolean patchNewFeatures) throws Exception {
 
 		Set<String> deselectedFeatures = calculateFeatureSetToDeselectFromDiff(diff, targetVariant, debug,
@@ -547,13 +549,12 @@ public class Patching {
 				.collect(Collectors.toList());
 		applyChanges(DiffType.ADD, targetVariantDiffUnchanged, targetVariantDiffPatched, addedSortedSubtreeRoots,
 				source, deselectedFeatures, debug);
-		
+
 		if (debug) {
-			GameEngine.showAndAwaitAll(Show.diff(diff),
-					Show.tree(targetVariant), Show.diff(optimizedDiff), Show.diff(targetVariantDiffPatched),
-					Show.tree(targetVariantDiffPatched.project(Time.AFTER)));	
+			GameEngine.showAndAwaitAll(Show.diff(diff), Show.tree(targetVariant), Show.diff(optimizedDiff),
+					Show.diff(targetVariantDiffPatched), Show.tree(targetVariantDiffPatched.project(Time.AFTER)));
 		}
-		
+
 		if (debug) {
 			VariationDiff<DiffLinesLabel> targetVariantDiffPatchedCopy = targetVariantDiffPatched.deepCopy();
 			VariationDiff<DiffLinesLabel> optimizedDiffCopy = optimizedDiff.deepCopy();
@@ -589,6 +590,34 @@ public class Patching {
 			e.printStackTrace();
 		}
 		return null;
+	}
+
+	public static boolean arePatchedVariantsEquivalent(VariationTree<DiffLinesLabel> sourceVariantAfter,
+			VariationTree<DiffLinesLabel> targetVariantBefore, VariationTree<DiffLinesLabel> targetVariantAfter,
+			Configure configSource, Configure configTarget, Configure configIntersection) {
+		VariationTree<DiffLinesLabel> sourceVariantAfterRedToCrossVarFeatures = TreeView.tree(sourceVariantAfter,
+				configSource);
+		VariationTree<DiffLinesLabel> targetVariantAfterRedToCrossVarFeatures = TreeView.tree(targetVariantAfter,
+				configTarget);
+
+		VariationTree<DiffLinesLabel> targetVariantBeforeRedToVarSpecificFeatures = TreeView.tree(targetVariantBefore,
+				configIntersection);
+		VariationTree<DiffLinesLabel> targetVariantAfterRedToVarSpecificFeatures = TreeView.tree(targetVariantAfter,
+				configIntersection);
+
+		GameEngine.showAndAwaitAll(
+				Show.tree(targetVariantAfterRedToVarSpecificFeatures, "targetVariantAfterRedToVarSpecificFeatures"),
+				Show.tree(targetVariantBeforeRedToVarSpecificFeatures, "targetVariantBeforeRedToVarSpecificFeatures"),
+				Show.tree(targetVariantAfterRedToCrossVarFeatures, "targetVariantAfterRedToCrossVarFeatures"),
+				Show.tree(sourceVariantAfterRedToCrossVarFeatures, "sourceVariantAfterRedToCrossVarFeatures"));
+
+		if (Patching.isSameAs(sourceVariantAfterRedToCrossVarFeatures.toCompletelyUnchangedVariationDiff(),
+				targetVariantAfterRedToCrossVarFeatures.toCompletelyUnchangedVariationDiff())
+				&& Patching.isSameAs(targetVariantBeforeRedToVarSpecificFeatures.toCompletelyUnchangedVariationDiff(),
+						targetVariantAfterRedToVarSpecificFeatures.toCompletelyUnchangedVariationDiff())) {
+			return true;
+		}
+		return false;
 	}
 
 	public static boolean comparePatchedVariantWithExpectedResult(VariationTree<DiffLinesLabel> patchedVariant,
