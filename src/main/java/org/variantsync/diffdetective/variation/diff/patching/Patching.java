@@ -594,22 +594,22 @@ public class Patching {
 
 	public static boolean arePatchedVariantsEquivalent(VariationTree<DiffLinesLabel> sourceVariantAfter,
 			VariationTree<DiffLinesLabel> targetVariantBefore, VariationTree<DiffLinesLabel> targetVariantAfter,
-			Configure configSource, Configure configTarget, Configure configIntersection) {
+			Configure configCrossVariant, Configure configTargetVariantSpecific) {
 		VariationTree<DiffLinesLabel> sourceVariantAfterRedToCrossVarFeatures = TreeView.tree(sourceVariantAfter,
-				configSource);
+				configCrossVariant);
 		VariationTree<DiffLinesLabel> targetVariantAfterRedToCrossVarFeatures = TreeView.tree(targetVariantAfter,
-				configTarget);
+				configCrossVariant);
 
 		VariationTree<DiffLinesLabel> targetVariantBeforeRedToVarSpecificFeatures = TreeView.tree(targetVariantBefore,
-				configIntersection);
+				configTargetVariantSpecific);
 		VariationTree<DiffLinesLabel> targetVariantAfterRedToVarSpecificFeatures = TreeView.tree(targetVariantAfter,
-				configIntersection);
+				configTargetVariantSpecific);
 
-		GameEngine.showAndAwaitAll(
-				Show.tree(targetVariantAfterRedToVarSpecificFeatures, "targetVariantAfterRedToVarSpecificFeatures"),
-				Show.tree(targetVariantBeforeRedToVarSpecificFeatures, "targetVariantBeforeRedToVarSpecificFeatures"),
-				Show.tree(targetVariantAfterRedToCrossVarFeatures, "targetVariantAfterRedToCrossVarFeatures"),
-				Show.tree(sourceVariantAfterRedToCrossVarFeatures, "sourceVariantAfterRedToCrossVarFeatures"));
+//		GameEngine.showAndAwaitAll(
+//				Show.tree(targetVariantAfterRedToVarSpecificFeatures, "targetVariantAfterRedToVarSpecificFeatures"),
+//				Show.tree(targetVariantBeforeRedToVarSpecificFeatures, "targetVariantBeforeRedToVarSpecificFeatures"),
+//				Show.tree(targetVariantAfterRedToCrossVarFeatures, "targetVariantAfterRedToCrossVarFeatures"),
+//				Show.tree(sourceVariantAfterRedToCrossVarFeatures, "sourceVariantAfterRedToCrossVarFeatures"));
 
 		if (Patching.isSameAs(sourceVariantAfterRedToCrossVarFeatures.toCompletelyUnchangedVariationDiff(),
 				targetVariantAfterRedToCrossVarFeatures.toCompletelyUnchangedVariationDiff())
