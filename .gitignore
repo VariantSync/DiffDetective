@@ -131,3 +131,9 @@ docs/javadoc
 .classpath
 .project
 plotting/__pycache__
+
+### Mac ###
+*.DS_Store
+
+### Project specific ###
+results/

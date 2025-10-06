@@ -1,25 +1,28 @@
 package org.variantsync.diffdetective.experiments.uncertainty;
 
-import org.tinylog.Logger;
 import org.variantsync.diffdetective.analysis.Analysis;
 import org.variantsync.diffdetective.editclass.EditClass;
 import org.variantsync.diffdetective.editclass.proposed.ProposedEditClasses;
 import org.variantsync.diffdetective.metadata.EditClassCount;
-import org.variantsync.diffdetective.show.Show;
-import org.variantsync.diffdetective.show.engine.GameEngine;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.diff.Time;
-import org.variantsync.diffdetective.variation.diff.VariationDiff;
 import org.variantsync.diffdetective.variation.diff.transform.NaiveMovedArtifactDetection;
-import org.variantsync.diffdetective.variation.tree.VariationTree;
+
+import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.variantsync.diffdetective.editclass.proposed.ProposedEditClasses.*;
 
 public class DebugAnalysis implements Analysis.Hooks {
 
+    private boolean isInterestingCommit = false;
+    private boolean isInterestingClassification = false;
+    private boolean commitHadInterestingClassification = false;
+    private List<String> interestingFilesList;
+
     @Override
     public void initializeResults(Analysis analysis) {
-        analysis.append(EditClassCount.KEY, new EditClassCount(ProposedEditClasses.Instance));
         Analysis.Hooks.super.initializeResults(analysis);
     }
 
@@ -30,6 +33,12 @@ public class DebugAnalysis implements Analysis.Hooks {
 
     @Override
     public boolean beginCommit(Analysis analysis) throws Exception {
+        String commitMessage = analysis.getCurrentCommit().getFullMessage();
+        if (commitMessage.contains("fix") || commitMessage.contains("problem") || commitMessage.contains("issue") || commitMessage.contains("solve") || commitMessage.contains("bug") || commitMessage.contains("error")) { // TODO complete list of keywords
+            isInterestingCommit = true;
+            interestingFilesList = new ArrayList<>();
+            return true;
+        }
         return Analysis.Hooks.super.beginCommit(analysis);
     }
 
@@ -55,25 +64,21 @@ public class DebugAnalysis implements Analysis.Hooks {
 
     @Override
     public boolean analyzeVariationDiff(Analysis analysis) throws Exception {
-//        Show.diff(analysis.getCurrentVariationDiff(), analysis.getCurrentCommit().getShortMessage());
-//        VariationDiff<DiffLinesLabel> d = analysis.getCurrentVariationDiff();
-//        VariationTree<DiffLinesLabel> b = d.project(Time.BEFORE);
-//        VariationTree<DiffLinesLabel> a = d.project(Time.AFTER);
-//        GameEngine.showAndAwaitAll(Show.diff(d), Show.tree(b), Show.tree(a));
-        NaiveMovedArtifactDetection<DiffLinesLabel> detectTwins = new NaiveMovedArtifactDetection<>(); //TODO Bäume die geändert wurden angucken
+        if(!isInterestingCommit) {
+            return false;
+        }
+        NaiveMovedArtifactDetection<DiffLinesLabel> detectTwins = new NaiveMovedArtifactDetection<>(); //TODO investigate changed trees
         detectTwins.transform(analysis.getCurrentVariationDiff());
         if(analysis.getCurrentVariationDiff().anyMatch(node -> {
             if (node.isArtifact()) {
                 EditClass editClass = ProposedEditClasses.Instance.match(node);
-                if(editClass.equals(Specialization) || editClass.equals(Generalization) || editClass.equals(Reconfiguration)) {
+                if(editClass.equals(Specialization) || editClass.equals(Generalization) || editClass.equals(Reconfiguration)) { // TODO think about classifications
                     return true;
                 }
             }
             return false;
         })) {
-            if (analysis.getCurrentCommit().getFullMessage().contains("fix")) {
-                System.out.println(analysis.getRepository().getRemoteURI() + "/commit/" + analysis.getCurrentCommit().getName());
-            }
+            interestingFilesList.add(analysis.getCurrentPatch().getFileName(Time.BEFORE));
             return true;
         }
         return false;
@@ -87,7 +92,11 @@ public class DebugAnalysis implements Analysis.Hooks {
     @Override
     public void endCommit(Analysis analysis) throws Exception {
         Analysis.Hooks.super.endCommit(analysis);
-//        Logger.info(analysis.getCurrentCommit().getShortMessage());
+        if(isInterestingCommit) {
+            InterestingCommit c = new InterestingCommit(analysis.getRepository().getRemoteURI().toString() + "/commit/" +analysis.getCurrentCommit().getName(), interestingFilesList);
+            analysis.append(c.getKey(), c);
+        }
+        isInterestingCommit = false;
     }
 
     @Override

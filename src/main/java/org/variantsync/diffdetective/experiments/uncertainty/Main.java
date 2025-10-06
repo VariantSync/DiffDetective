@@ -42,14 +42,14 @@ public class Main {
             );
 
     /**
-     * Creates the analysis to perform on the given repository to run our feasibility study.
-     * @param repo The repository to run the feasibility study on.
+     * Creates the analysis to perform on the given repository to run our uncertainty search.
+     * @param repo The repository to run the uncertainty search on.
      * @param repoOutputDir The directory to which output should be written.
      * @return The analysis to run.
      */
     private static Analysis AnalysisFactory(Repository repo, Path repoOutputDir) {
         return new Analysis(
-                "Views Analysis",
+                "Uncertainty Analysis",
                 new ArrayList<>(List.of(
                         new FilterAnalysis( // filters unwanted trees
                                 VariationDiffFilter.notEmpty()
