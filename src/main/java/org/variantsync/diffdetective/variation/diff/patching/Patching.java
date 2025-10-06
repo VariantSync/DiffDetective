@@ -595,6 +595,9 @@ public class Patching {
 	public static boolean arePatchedVariantsEquivalent(VariationTree<DiffLinesLabel> sourceVariantAfter,
 			VariationTree<DiffLinesLabel> targetVariantBefore, VariationTree<DiffLinesLabel> targetVariantAfter,
 			Configure configCrossVariant, Configure configTargetVariantSpecific) {
+		
+
+		
 		VariationTree<DiffLinesLabel> sourceVariantAfterRedToCrossVarFeatures = TreeView.tree(sourceVariantAfter,
 				configCrossVariant);
 		VariationTree<DiffLinesLabel> targetVariantAfterRedToCrossVarFeatures = TreeView.tree(targetVariantAfter,
@@ -604,13 +607,17 @@ public class Patching {
 				configTargetVariantSpecific);
 		VariationTree<DiffLinesLabel> targetVariantAfterRedToVarSpecificFeatures = TreeView.tree(targetVariantAfter,
 				configTargetVariantSpecific);
+// 		remove artifact nodes which are children of the root
+		targetVariantBeforeRedToVarSpecificFeatures = removeArtifactNodesWhichAreChildrenOfRoot(targetVariantBeforeRedToVarSpecificFeatures);
+		targetVariantAfterRedToVarSpecificFeatures = removeArtifactNodesWhichAreChildrenOfRoot(targetVariantAfterRedToVarSpecificFeatures);
+		
 
-//		GameEngine.showAndAwaitAll(
-//				Show.tree(targetVariantAfterRedToVarSpecificFeatures, "targetVariantAfterRedToVarSpecificFeatures"),
-//				Show.tree(targetVariantBeforeRedToVarSpecificFeatures, "targetVariantBeforeRedToVarSpecificFeatures"),
-//				Show.tree(targetVariantAfterRedToCrossVarFeatures, "targetVariantAfterRedToCrossVarFeatures"),
-//				Show.tree(sourceVariantAfterRedToCrossVarFeatures, "sourceVariantAfterRedToCrossVarFeatures"));
-
+		GameEngine.showAndAwaitAll(
+				Show.tree(targetVariantAfterRedToVarSpecificFeatures, "targetVariantAfterRedToVarSpecificFeatures"),
+				Show.tree(targetVariantBeforeRedToVarSpecificFeatures, "targetVariantBeforeRedToVarSpecificFeatures"),
+				Show.tree(targetVariantAfterRedToCrossVarFeatures, "targetVariantAfterRedToCrossVarFeatures"),
+				Show.tree(sourceVariantAfterRedToCrossVarFeatures, "sourceVariantAfterRedToCrossVarFeatures"));
+		
 		if (Patching.isSameAs(sourceVariantAfterRedToCrossVarFeatures.toCompletelyUnchangedVariationDiff(),
 				targetVariantAfterRedToCrossVarFeatures.toCompletelyUnchangedVariationDiff())
 				&& Patching.isSameAs(targetVariantBeforeRedToVarSpecificFeatures.toCompletelyUnchangedVariationDiff(),
@@ -618,6 +625,17 @@ public class Patching {
 			return true;
 		}
 		return false;
+	}
+
+	private static VariationTree<DiffLinesLabel> removeArtifactNodesWhichAreChildrenOfRoot(VariationTree<DiffLinesLabel> targetVariantBefore) {
+		VariationDiff<DiffLinesLabel> targetVariantBeforeDiff = targetVariantBefore.toCompletelyUnchangedVariationDiff();
+		VariationDiff<DiffLinesLabel> targetVariantBeforeDiffCopy = targetVariantBeforeDiff.deepCopy();
+		targetVariantBeforeDiff.forAll(node -> {
+			if (!node.isRoot() && node.getParent(Time.AFTER).isRoot() && node.isArtifact()) {
+				targetVariantBeforeDiffCopy.getNodeWithID(node.getID()).drop();
+			}
+		});
+		return targetVariantBeforeDiffCopy.project(Time.AFTER);
 	}
 
 	public static boolean comparePatchedVariantWithExpectedResult(VariationTree<DiffLinesLabel> patchedVariant,
