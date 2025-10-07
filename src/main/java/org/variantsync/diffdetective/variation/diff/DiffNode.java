@@ -13,7 +13,6 @@ import org.variantsync.diffdetective.variation.tree.HasNodeType;
 import org.variantsync.diffdetective.variation.tree.VariationNode;
 import org.variantsync.functjonal.Cast;
 
-import java.lang.reflect.Array;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -52,31 +51,51 @@ public class DiffNode<L extends Label> implements HasNodeType {
     private Node featureMapping;
 
     /**
-     * The parents {@link DiffNode} before and after the edit.
-     * This array has to be indexed by {@code Time.ordinal()}
-     *
-     * Invariant: Iff {@code getParent(time) != null} then
-     * {@code getParent(time).getChildOrder(time).contains(this)}.
+     * Bundles all the state that may be different before and after an edit.
+     * @see at
      */
-    private DiffNode<L>[] parents = Cast.unchecked(Array.newInstance(DiffNode.class, 2));
+    private static class TimeDependentState<L extends Label> {
+        /**
+         * The parents {@link DiffNode} before and after the edit.
+         * This array has to be indexed by {@code Time.ordinal()}
+         *
+         * Invariant: Iff {@code getParent(time) != null} then
+         * {@code getParent(time).getChildOrder(time).contains(this)}.
+         */
+        public DiffNode<L> parent;
 
-    /**
-     * The children before and after the edit.
-     * This array has to be indexed by {@code Time.ordinal()}
-     *
-     * Invariant: Iff {@code getChildOrder(time).contains(child)} then
-     * {@code child.getParent(time) == this}.
-     */
-    private final List<DiffNode<L>>[] children = Cast.unchecked(Array.newInstance(List.class, 2));
+        /**
+         * The children before and after the edit.
+         * This array has to be indexed by {@code Time.ordinal()}
+         *
+         * Invariant: Iff {@code getChildOrder(time).contains(child)} then
+         * {@code child.getParent(time) == this}.
+         */
+        public List<DiffNode<L>> children;
 
-    /**
-     * Cache for before and after projections.
-     * It stores the projection node at each time so that only one instance of {@link Projection}
-     * per {@link Time} is ever created. This array has to be indexed by {@code Time.ordinal()}
-     *
-     * <p>This field is required to allow identity tests of {@link Projection}s with {@code ==}.
-     */
-    private Projection<L>[] projections = Cast.unchecked(Array.newInstance(Projection.class, 2));
+        /**
+         * Cache for before and after projections.
+         * It stores the projection node at each time so that only one instance of {@link Projection}
+         * per {@link Time} is ever created. This array has to be indexed by {@code Time.ordinal()}
+         *
+         * <p>This field is required to allow identity tests of {@link Projection}s with {@code ==}.
+         */
+        public Projection<L> projection;
+
+        public TimeDependentState() {
+            parent = null;
+            children = null;
+            children = new ArrayList<>();
+            projection = null;
+        }
+    }
+
+    private final TimeDependentState<L> stateBefore = new TimeDependentState<L>();
+    private final TimeDependentState<L> stateAfter = new TimeDependentState<L>();
+
+    private TimeDependentState<L> at(Time time) {
+        return time.match(stateBefore, stateAfter);
+    }
 
     /**
      * Creates a DiffNode with the given parameters.
@@ -104,9 +123,6 @@ public class DiffNode<L extends Label> implements HasNodeType {
     public DiffNode(DiffType diffType,
                     DiffLineNumber fromLines, DiffLineNumber toLines,
                     Node featureMapping, VariationLabel<L> label) {
-        children[BEFORE.ordinal()] = new ArrayList<>();
-        children[AFTER.ordinal()] = new ArrayList<>();
-
         this.diffType = diffType;
         this.label = label;
         this.from = fromLines;
@@ -267,7 +283,7 @@ public class DiffNode<L extends Label> implements HasNodeType {
      * Returns -1 if the given node is not a child of this node.
      */
     public int indexOfChild(final DiffNode<L> child, Time time) {
-        return children[time.ordinal()].indexOf(child);
+        return at(time).children.indexOf(child);
     }
 
     /**
@@ -278,8 +294,8 @@ public class DiffNode<L extends Label> implements HasNodeType {
         Assert.assertFalse(isChild(child, time), () ->
             "Given child " + child + " already has a " + time + " parent (" + child.getParent(time) + ")!");
 
-        children[time.ordinal()].add(index, child);
-        child.parents[time.ordinal()] = this;
+        at(time).children.add(index, child);
+        child.at(time).parent = this;
     }
 
     /**
@@ -291,8 +307,8 @@ public class DiffNode<L extends Label> implements HasNodeType {
         Assert.assertFalse(isChild(child, time), () ->
             "Given child " + child + " already has a " + time + " parent (" + child.getParent(time) + ")!");
 
-        children[time.ordinal()].add(child);
-        child.parents[time.ordinal()] = this;
+        at(time).children.add(child);
+        child.at(time).parent = this;
     }
 
     /**
@@ -315,8 +331,8 @@ public class DiffNode<L extends Label> implements HasNodeType {
     public void removeChild(final DiffNode<L> child, Time time) {
         Assert.assertTrue(isChild(child, time));
 
-        child.parents[time.ordinal()] = null;
-        children[time.ordinal()].remove(child);
+        child.at(time).parent = null;
+        at(time).children.remove(child);
     }
 
     /**
@@ -341,12 +357,12 @@ public class DiffNode<L extends Label> implements HasNodeType {
      * @return All removed children.
      */
     public List<DiffNode<L>> removeChildren(Time time) {
-        for (var child : children[time.ordinal()]) {
-            child.parents[time.ordinal()] = null;
+        for (var child : at(time).children) {
+            child.at(time).parent = null;
         }
 
-        final List<DiffNode<L>> orphans = children[time.ordinal()];
-        children[time.ordinal()] = new ArrayList<>();
+        final List<DiffNode<L>> orphans = at(time).children;
+        at(time).children = new ArrayList<>();
         return orphans;
     }
 
@@ -376,24 +392,56 @@ public class DiffNode<L extends Label> implements HasNodeType {
             getFromLine().as(otherDiffType),
             getToLine().as(otherDiffType),
             getFormula(),
-            Cast.unchecked(label.clone())
+            Cast.unchecked(label.withoutTimeDependentState(time.other()))
         );
 
         this.diffType = otherDiffType.inverse();
         this.from = this.from.as(this.diffType);
         this.to = this.to.as(this.diffType);
+        this.setLabel(Cast.unchecked(this.getLabel().withoutTimeDependentState(time)));
 
         other.addChildren(this.removeChildren(time), time);
         getParent(time).replaceChild(this, other, time);
 
         // Preserve the projection by changing its `backingNode` to `other`.
-        if (this.projections[time.ordinal()] != null) {
-            other.projections[time.ordinal()] = this.projections[time.ordinal()];
-            this.projections[time.ordinal()] = null;
-            other.projections[time.ordinal()].backingNode = other;
+        if (this.at(time).projection != null) {
+            other.at(time).projection = this.at(time).projection;
+            this.at(time).projection = null;
+            other.at(time).projection.backingNode = other;
         }
 
         return other;
+    }
+
+    /**
+     * Merges {@code other} into this node.
+     * {@code other} is removed from the graph and this node inherits all of its edges. This
+     * node and {@code other} need to be compatible (exist at different times and have the
+     * same {@link getNodeType node type} and compatible {@link getLabel labels}).
+     * <p>
+     * Both {@code this} and {@code other} must not be {@link isRoot the root}.
+     *
+     * @param other the node which is removed from the graph
+     */
+    public void join(DiffNode<L> other) {
+        Time time = switch (diffType) {
+            case ADD -> BEFORE;
+            case REM -> AFTER;
+            case NON -> Assert.fail("Attempt to join a node that already exists at both times.");
+        };
+        Assert.assertEquals(other.diffType, DiffType.thatExistsOnlyAt(time));
+        Assert.assertEquals(getNodeType(), other.getNodeType());
+        Assert.assertFalse(isRoot());
+        Assert.assertFalse(other.isRoot());
+
+        diffType = DiffType.NON;
+        setLabel(Cast.unchecked(getLabel().withTimeDependentStateFrom(other.getLabel(), time)));
+
+        setFromLine(getFromLine().withLineNumberAtTime(other.getFromLine().atTime(AFTER), AFTER));
+        setToLine(getToLine().withLineNumberAtTime(other.getToLine().atTime(AFTER), AFTER));
+
+        this.stealChildrenOf(other);
+        other.getParent(time).replaceChild(other, this, time);
     }
 
     /**
@@ -409,11 +457,11 @@ public class DiffNode<L extends Label> implements HasNodeType {
         Assert.assertNull(newChild.getParent(time));
         Assert.assertTrue(newChild.getDiffType().existsAtTime(time));
 
-        for (ListIterator<DiffNode<L>> it = children[time.ordinal()].listIterator(); it.hasNext(); ) {
+        for (ListIterator<DiffNode<L>> it = at(time).children.listIterator(); it.hasNext(); ) {
             if (it.next() == oldChild) {
                 it.set(newChild);
-                newChild.parents[time.ordinal()] = oldChild.parents[time.ordinal()];
-                oldChild.parents[time.ordinal()] = null;
+                newChild.at(time).parent = oldChild.at(time).parent;
+                oldChild.at(time).parent = null;
                 break;
             }
         }
@@ -423,7 +471,7 @@ public class DiffNode<L extends Label> implements HasNodeType {
      * Returns the parent of this node before or after the edit.
      */
     public DiffNode<L> getParent(Time time) {
-        return parents[time.ordinal()];
+        return at(time).parent;
     }
 
     /**
@@ -503,7 +551,7 @@ public class DiffNode<L extends Label> implements HasNodeType {
      * Returns the order of the children at {@code time}.
      */
     public List<DiffNode<L>> getChildOrder(Time time) {
-        return Collections.unmodifiableList(children[time.ordinal()]);
+        return Collections.unmodifiableList(at(time).children);
     }
 
     /**
@@ -513,8 +561,8 @@ public class DiffNode<L extends Label> implements HasNodeType {
      */
     public Stream<DiffNode<L>> getAllChildrenStream() {
         return Stream.concat(
-            children[BEFORE.ordinal()].stream(),
-            children[AFTER.ordinal()].stream().filter(child -> child.getParent(BEFORE) != this)
+            at(BEFORE).children.stream(),
+            at(AFTER).children.stream().filter(child -> child.getParent(BEFORE) != this)
         );
     };
 
@@ -578,7 +626,7 @@ public class DiffNode<L extends Label> implements HasNodeType {
      * Returns true iff this node has no children.
      */
     public boolean isLeaf() {
-        return children[BEFORE.ordinal()].isEmpty() && children[AFTER.ordinal()].isEmpty();
+        return at(BEFORE).children.isEmpty() && at(AFTER).children.isEmpty();
     }
 
     /**
@@ -750,11 +798,11 @@ public class DiffNode<L extends Label> implements HasNodeType {
     public Projection<L> projection(Time time) {
         Assert.assertTrue(getDiffType().existsAtTime(time));
 
-        if (projections[time.ordinal()] == null) {
-            projections[time.ordinal()] = new Projection<>(this, time);
+        if (at(time).projection == null) {
+            at(time).projection = new Projection<>(this, time);
         }
 
-        return projections[time.ordinal()];
+        return at(time).projection;
     }
 
     /**

@@ -111,14 +111,12 @@ public class GitDiffer {
         final CanonicalTreeParser currentTreeParser = new CanonicalTreeParser();
         final CanonicalTreeParser prevTreeParser = new CanonicalTreeParser();
         try (ObjectReader reader = repository.getGitRepo().getRepository().newObjectReader()) {
-            try {
-                currentTreeParser.reset(reader, childCommit.getTree());
-                if (parentCommit != null) {
-                    prevTreeParser.reset(reader, parentCommit.getTree());
-                }
-            } catch (IOException e) {
-                return CommitDiffResult.Failure(DiffError.JGIT_ERROR, e.toString());
+            currentTreeParser.reset(reader, childCommit.getTree());
+            if (parentCommit != null) {
+                prevTreeParser.reset(reader, parentCommit.getTree());
             }
+        } catch (IOException e) {
+            return CommitDiffResult.Failure(DiffError.JGIT_ERROR, e.toString());
         }
 
         final AbstractTreeIterator parentTreeIterator;

@@ -22,6 +22,7 @@ public class VariationDiffAdapter<L extends Label> extends VariationTreeAdapter<
         super(node);
     }
 
+    @Override
     protected VariationTreeAdapter<L> newInstance(VariationNode<?, L> node) {
         return new VariationDiffAdapter<>(Cast.unchecked(node));
     }

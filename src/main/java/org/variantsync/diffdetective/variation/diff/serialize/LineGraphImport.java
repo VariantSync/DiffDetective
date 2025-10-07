@@ -22,6 +22,11 @@ import java.util.List;
 
 /**
  * Import VariationDiffs from line graph files.
+ * <p>
+ * This is a very rudimentary implementation of a deserializer that supports a similar format than
+ * {@link LineGraphExport}. Rudimentary means that it only deserializes the structure of a variation
+ * diff. Most other properties, including the label, line numbers and formulas, are not (always)
+ * correctly deserialized. Hence, this is not an inverse of {@link LineGraphExport}.
  *
  * @author Kevin Jedelhauser, Paul Maximilian Bittner
  */
@@ -133,34 +138,33 @@ public class LineGraphImport {
         }
 
         // Handle trees and graphs differently
-        if (options.graphFormat() == GraphFormat.DIFFGRAPH) {
-            return DiffGraph.fromNodes(diffNodeList, variationDiffSource);
-        } else if (options.graphFormat() == GraphFormat.VARIATION_DIFF) {
-            // If you should interpret the input data as VariationDiffs, always expect a root to be present. Parse all nodes (v) to a list of nodes. Search for the root. Assert that there is exactly one root.
-            DiffNode<DiffLinesLabel> root = null;
-            for (final DiffNode<DiffLinesLabel> v : diffNodeList) {
-                if (v.isRoot()) {
-                    // v is root candidate
-                    if (root != null) {
-                        throw new RuntimeException("Not a VariationDiff: Got more than one root! Got \"" + root + "\" and \"" + v + "\"!");
-                    }
-                    if (v.getNodeType() == NodeType.IF) {
-                        root = v;
-                    } else {
-                        throw new RuntimeException("Not a VariationDiff but a DiffGraph: The node \"" + v + "\" is not labeled as IF but has no parents!");
+        return switch (options.graphFormat()) {
+            case DIFFGRAPH:
+                yield DiffGraph.fromNodes(diffNodeList, variationDiffSource);
+            case VARIATION_DIFF:
+                // If you should interpret the input data as VariationDiffs, always expect a root to be present. Parse all nodes (v) to a list of nodes. Search for the root. Assert that there is exactly one root.
+                DiffNode<DiffLinesLabel> root = null;
+                for (final DiffNode<DiffLinesLabel> v : diffNodeList) {
+                    if (v.isRoot()) {
+                        // v is root candidate
+                        if (root != null) {
+                            throw new RuntimeException("Not a VariationDiff: Got more than one root! Got \"" + root + "\" and \"" + v + "\"!");
+                        }
+                        if (v.getNodeType() == NodeType.IF) {
+                            root = v;
+                        } else {
+                            throw new RuntimeException("Not a VariationDiff but a DiffGraph: The node \"" + v + "\" is not labeled as IF but has no parents!");
+                        }
                     }
                 }
-            }
 
-            if (root == null) {
-                throw new RuntimeException("Not a VariationDiff but a DiffGraph: No root found!");
-            }
+                if (root == null) {
+                    throw new RuntimeException("Not a VariationDiff but a DiffGraph: No root found!");
+                }
 
-//            countRootTypes.merge(root.getNodeType(), 1, Integer::sum);
+    //            countRootTypes.merge(root.getNodeType(), 1, Integer::sum);
 
-            return new VariationDiff<>(root, variationDiffSource);
-        } else {
-            throw new RuntimeException("Unsupported GraphFormat");
-        }
+                yield new VariationDiff<>(root, variationDiffSource);
+        };
     }
 }

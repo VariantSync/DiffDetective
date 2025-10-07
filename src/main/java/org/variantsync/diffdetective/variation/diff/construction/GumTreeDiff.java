@@ -11,6 +11,7 @@ import org.variantsync.diffdetective.gumtree.VariationTreeAdapter;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.variation.Label;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
+import org.variantsync.diffdetective.variation.diff.Time;
 import org.variantsync.diffdetective.variation.diff.VariationDiff;
 import org.variantsync.diffdetective.variation.diff.source.VariationTreeDiffSource;
 import org.variantsync.diffdetective.variation.diff.traverse.VariationDiffTraversal;
@@ -22,8 +23,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.variantsync.diffdetective.variation.diff.DiffType.ADD;
-import static org.variantsync.diffdetective.variation.diff.DiffType.NON;
-import static org.variantsync.diffdetective.variation.diff.DiffType.REM;
 import static org.variantsync.diffdetective.variation.diff.Time.AFTER;
 import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
 
@@ -35,10 +34,18 @@ public class GumTreeDiff {
      * @see diffUsingMatching(VariationNode, VariationNode, Matcher)
      */
     public static <L extends Label> VariationDiff<L> diffUsingMatching(VariationTree<L> before, VariationTree<L> after) {
+        return diffUsingMatching(before, after, Matchers.getInstance().getMatcher());
+    }
+
+    /**
+     * Create a {@link VariationDiff} by matching nodes between {@code before} and {@code after}
+     * with {@code matcher}.
+     */
+    public static <L extends Label> VariationDiff<L> diffUsingMatching(VariationTree<L> before, VariationTree<L> after, Matcher matcher) {
         DiffNode<L> root = diffUsingMatching(
             before.root(),
             after.root(),
-            Matchers.getInstance().getMatcher()
+            matcher
         );
 
         return new VariationDiff<>(root, new VariationTreeDiffSource(before.source(), after.source()));
@@ -85,7 +92,10 @@ public class GumTreeDiff {
         var dst = new VariationTreeAdapter<L>(after);
 
         MappingStore matching = matcher.match(src, dst);
-        Assert.assertTrue(matching.has(src, dst));
+
+        // The following algorithm assumes that the root nodes are matched so we ensure that this is
+        // the case here by establishing that mapping if necessary.
+        ensureMapping(matching, src, dst);
 
         removeUnmapped(matching, src);
         for (var child : dst.getChildren()) {
@@ -114,8 +124,7 @@ public class GumTreeDiff {
             Tree dst = mappings.getDstForSrc(node);
             if (dst == null || !dst.getLabel().equals(node.getLabel())) {
                 var diffNode = Cast.<Tree, VariationDiffAdapter<L>>unchecked(node).getDiffNode();
-                diffNode.diffType = REM;
-                diffNode.drop(AFTER);
+                diffNode.split(AFTER).drop();
             }
         }
     }
@@ -147,7 +156,7 @@ public class GumTreeDiff {
                 new DiffLineNumber(DiffLineNumber.InvalidLineNumber, from, from),
                 new DiffLineNumber(DiffLineNumber.InvalidLineNumber, to, to),
                 variationNode.getFormula(),
-                Cast.unchecked(variationNode.getLabel().clone())
+                Cast.unchecked(variationNode.getLabel().withoutTimeDependentState(BEFORE))
             );
         } else {
             diffNode = Cast.<Tree, VariationDiffAdapter<L>>unchecked(src).getDiffNode();
@@ -155,6 +164,10 @@ public class GumTreeDiff {
                 // Always drop and reinsert it because it could have moved.
                 diffNode.drop(AFTER);
             }
+
+            diffNode.setFromLine(diffNode.getFromLine().withLineNumberAtTime(afterNode.getVariationNode().getLineRange().fromInclusive(), AFTER));
+            diffNode.setToLine(diffNode.getToLine().withLineNumberAtTime(afterNode.getVariationNode().getLineRange().toExclusive(), AFTER));
+            diffNode.setLabel(Cast.unchecked(diffNode.getLabel().withTimeDependentStateFrom(afterNode.getVariationNode().getLabel(), Time.AFTER)));
         }
         parent.addChild(diffNode, AFTER);
 
@@ -182,14 +195,17 @@ public class GumTreeDiff {
         MappingStore matching = new MappingStore(src, dst);
         extractMatching(src, dst, matching);
         matcher.match(src, dst, matching);
-        Assert.assertTrue(matching.has(src, dst));
+
+        // The following algorithm assumes that the root nodes are matched so we ensure that this is
+        // the case here by establishing that mapping if necessary.
+        ensureMapping(matching, src, dst);
 
         for (var srcNode : src.preOrder()) {
             var dstNode = matching.getDstForSrc(srcNode);
             var beforeNode = Cast.<Tree, VariationDiffAdapter<L>>unchecked(srcNode).getDiffNode();
             if (dstNode == null || !srcNode.getLabel().equals(dstNode.getLabel())) {
                 if (beforeNode.isNon()) {
-                    splitNode(beforeNode);
+                    beforeNode.split(AFTER);
                 }
 
                 Assert.assertTrue(beforeNode.isRem());
@@ -198,13 +214,13 @@ public class GumTreeDiff {
 
                 if (beforeNode != afterNode) {
                     if (beforeNode.isNon()) {
-                        splitNode(beforeNode);
+                        beforeNode.split(AFTER);
                     }
                     if (afterNode.isNon()) {
-                        afterNode = splitNode(afterNode);
+                        afterNode.split(BEFORE);
                     }
 
-                    joinNode(beforeNode, afterNode);
+                    beforeNode.join(afterNode);
                 }
 
                 Assert.assertTrue(beforeNode.isNon());
@@ -213,61 +229,6 @@ public class GumTreeDiff {
         }
 
         return tree;
-    }
-
-    /**
-     * Removes the implicit matching between the {@code BEFORE} and {@code AFTER} projection of
-     * {@code beforeNode}. This is achieved by copying {@code beforeNode} and reconnecting all
-     * necessary edges such that the new node exists only after and {@code beforeNode} only exists
-     * before the edit.
-     *
-     * This method doesn't change the {@code BEFORE} and {@code AFTER} projection of {@code
-     * beforeNode}.
-     *
-     * @param beforeNode the node to be split
-     * @return a copy of {@code beforeNode} existing only after the edit.
-     */
-    private static <L extends Label> DiffNode<L> splitNode(DiffNode<L> beforeNode) {
-        Assert.assertTrue(beforeNode.isNon());
-
-        DiffNode<L> afterNode = beforeNode.shallowCopy();
-
-        afterNode.diffType = ADD;
-        beforeNode.diffType = REM;
-
-        afterNode.addChildren(beforeNode.removeChildren(AFTER), AFTER);
-        var afterParent = beforeNode.getParent(AFTER);
-        afterParent.insertChild(afterNode, afterParent.indexOfChild(beforeNode, AFTER), AFTER);
-        beforeNode.drop(AFTER);
-
-        beforeNode.assertConsistency();
-        afterNode.assertConsistency();
-
-        return afterNode;
-    }
-
-    /**
-     * Merges {@code afterNode} into {@code beforeNode} such that {@code beforeNode.isNon() ==
-     * true}. Essentially, an implicit matching is inserted between {@code beforeNode} and {@code
-     * afterNode}.
-     *
-     * This method doesn't change the {@code BEFORE} and {@code AFTER} projection of {@code
-     * beforeNode}.
-     *
-     * @param beforeNode the node which is will exist {@code BEFORE} and {@code AFTER} the edit
-     * @param afterNode the node which is discarded
-     */
-    private static <L extends Label> void joinNode(DiffNode<L> beforeNode, DiffNode<L> afterNode) {
-        Assert.assertTrue(beforeNode.isRem());
-        Assert.assertTrue(afterNode.isAdd());
-
-        beforeNode.diffType = NON;
-
-        beforeNode.addChildren(afterNode.removeChildren(AFTER), AFTER);
-
-        var afterParent = afterNode.getParent(AFTER);
-        afterParent.insertChild(beforeNode, afterParent.indexOfChild(afterNode, AFTER), AFTER);
-        afterNode.drop(AFTER);
     }
 
     /**
@@ -298,5 +259,21 @@ public class GumTreeDiff {
                 result.addMapping(matching.get(diffNode), dstNode);
             }
         }
+    }
+
+    /**
+     * Add a mapping between {@code src} and {@code dst}.
+     * In case {@code src} or {@code dst} are mapped to some other nodes, these mappings are
+     * removed.
+     */
+    private static void ensureMapping(MappingStore matching, Tree src, Tree dst) {
+        if (matching.isSrcMapped(src)) {
+            matching.removeMapping(src, matching.getDstForSrc(src));
+        }
+        if (matching.isDstMapped(dst)) {
+            matching.removeMapping(dst, matching.getSrcForDst(dst));
+        }
+
+        matching.addMapping(src, dst);
     }
 }
