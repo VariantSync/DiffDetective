@@ -2,7 +2,6 @@ package org.variantsync.diffdetective.variation.tree.view.relevance;
 
 import org.prop4j.Node;
 import org.prop4j.NodeWriter;
-import org.variantsync.diffdetective.analysis.logic.SAT;
 import org.variantsync.diffdetective.util.fide.FixTrueFalse;
 import org.variantsync.diffdetective.util.fide.FixTrueFalse.Formula;
 import org.variantsync.diffdetective.variation.tree.VariationNode;
@@ -10,6 +9,7 @@ import org.variantsync.diffdetective.variation.tree.VariationNode;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Consumer;
+import org.variantsync.diffdetective.variation.tree.view.relevance.spec.ConfigureSpec;
 
 /**
  * Relevance predicate that generates (partial) variants from variation trees.
@@ -73,12 +73,8 @@ public class Configure implements Relevance {
 
     @Override
     public boolean test(VariationNode<?, ?> v) {
-        return SAT.isSatisfiable(
-                FixTrueFalse.Formula.and(
-                        configuration,
-                        FixTrueFalse.EliminateTrueAndFalse(v.getPresenceCondition())
-                )
-        );
+        return ConfigureSpec.test(configuration, v);
+    }
     }
 
     @Override
