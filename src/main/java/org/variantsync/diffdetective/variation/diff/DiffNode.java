@@ -924,6 +924,42 @@ public class DiffNode<L extends Label> implements HasNodeType {
         return aIt.hasNext() == bIt.hasNext();
     }
 
+    /**
+     * Returns true if this subtree is exactly equal to {@code other} except for line numbers and other metadata in labels.
+     * This equality is a weaker equality than {@link DiffNode#isSameAs(DiffNode)} (i.e., whenever isSameAs returns true, so does
+     * isSameAsIgnoringLineNumbers).
+     * Labels of DiffNodes are compared via {@link Label#observablyEqual(Label, Label)}.
+     * This check uses equality checks instead of identity.
+     */
+    public boolean isSameAsIgnoringLineNumbers(DiffNode<L> other) {
+        return isSameAsIgnoringLineNumbers(this, other, new HashSet<>());
+    }
+
+    private static <L extends Label> boolean isSameAsIgnoringLineNumbers(DiffNode<L> a, DiffNode<L> b, Set<DiffNode<L>> visited) {
+        if (!visited.add(a)) {
+            return true;
+        }
+
+        if (!(
+                a.getDiffType().equals(b.getDiffType()) &&
+                a.getNodeType().equals(b.getNodeType()) &&
+                Objects.equals(a.getFormula(), b.getFormula()) &&
+                Label.observablyEqual(a.getLabel(), b.getLabel())
+        )) {
+            return false;
+        }
+
+        Iterator<DiffNode<L>> aIt = a.getAllChildren().iterator();
+        Iterator<DiffNode<L>> bIt = b.getAllChildren().iterator();
+        while (aIt.hasNext() && bIt.hasNext()) {
+            if (!isSameAsIgnoringLineNumbers(aIt.next(), bIt.next(), visited)) {
+                return false;
+            }
+        }
+
+        return aIt.hasNext() == bIt.hasNext();
+    }
+
     @Override
     public String toString() {
         String s;
