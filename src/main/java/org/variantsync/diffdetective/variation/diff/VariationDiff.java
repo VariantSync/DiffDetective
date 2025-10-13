@@ -535,8 +535,18 @@ public class VariationDiff<L extends Label> {
         return ConsistencyResult.Success();
     }
 
+    /**
+     * @see DiffNode#isSameAs
+     */
     public boolean isSameAs(VariationDiff<L> b) {
         return getRoot().isSameAs(b.getRoot());
+    }
+
+    /**
+     * @see DiffNode#isSameAsIgnoringLineNumbers
+     */
+    public boolean isSameAsIgnoringLineNumbers(VariationDiff<L> b) {
+        return getRoot().isSameAsIgnoringLineNumbers(b.getRoot());
     }
 
     @Override
