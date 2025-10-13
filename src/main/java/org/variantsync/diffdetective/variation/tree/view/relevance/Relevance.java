@@ -37,6 +37,7 @@ public interface Relevance extends Predicate<VariationNode<?, ?>> {
      * In particular, this function checks each node in the given tree v on relevance.
      * For each node that is deemed relevant by the given relevance predicate rho, that node and all its ancestors are
      * marked as relevant by invoking the given callback markRelevant.
+     * The callback may be invoked multiple times on the same node.
      * This function tests the relevance predicate on all nodes separately and performs no optimizations.
      * @param rho The relevance predicate to test on all nodes.
      * @param v The root node the tree to test for relevance.
