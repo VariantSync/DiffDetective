@@ -33,8 +33,8 @@ import java.util.*;
  *
  * <p>This class contains references to all of its children and its parent so all connected nodes of
  * a variation tree can be reached through each node of the variation tree. Nevertheless, most of
- * the time only node itself or its subtree (the reflexive hull of {@link getChildren}) is meant
- * when when referencing a {@code VariationTreeNode}. Use {@link VariationTree} to unambiguously
+ * the time only the node itself or its subtree (the reflexive hull of {@link getChildren}) is referred to
+ * when referencing a {@code VariationTreeNode}. Use {@link VariationTree} to unambiguously
  * refer to a whole variation tree.
  *
  * <p>If possible, algorithms should be using {@link VariationNode} instead of this concrete
