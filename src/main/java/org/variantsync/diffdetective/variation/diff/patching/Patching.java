@@ -607,8 +607,8 @@ public class Patching {
 		VariationTree<DiffLinesLabel> sourceVariantAfterRedToCrossVarFeatures = TreeView.tree(sourceVariantAfter, configTargetVariant);
 		VariationTree<DiffLinesLabel> targetVariantAfterRedToCrossVarFeatures = TreeView.tree(patchedTargetVariant, configSourceVariant);
 
-		VariationTree<DiffLinesLabel> patchedTargetVariantRedToUnchanged = TreeView.tree(null, new Unchanged(sourceVariantDiff, Time.AFTER));
-		VariationTree<DiffLinesLabel> targetVariantBeforeRedToUnchanged = TreeView.tree(null, new Unchanged(sourceVariantDiff, Time.BEFORE));
+		VariationTree<DiffLinesLabel> patchedTargetVariantRedToUnchanged = TreeView.tree(patchedTargetVariant, new Unchanged(sourceVariantDiff, Time.AFTER));
+		VariationTree<DiffLinesLabel> targetVariantBeforeRedToUnchanged = TreeView.tree(targetVariantBefore, new Unchanged(sourceVariantDiff, Time.BEFORE));
 		
 		if (Patching.isSameAs(sourceVariantAfterRedToCrossVarFeatures.toCompletelyUnchangedVariationDiff(),
 				targetVariantAfterRedToCrossVarFeatures.toCompletelyUnchangedVariationDiff())
