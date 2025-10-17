@@ -9,6 +9,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import org.eclipse.jgit.diff.DiffAlgorithm;
@@ -31,7 +32,12 @@ import org.variantsync.diffdetective.variation.diff.view.DiffView;
 import org.variantsync.diffdetective.variation.tree.VariationTree;
 import org.variantsync.diffdetective.variation.tree.view.TreeView;
 import org.variantsync.diffdetective.variation.tree.view.relevance.Configure;
+import org.variantsync.diffdetective.variation.tree.view.relevance.Inverse;
 import org.variantsync.diffdetective.variation.tree.view.relevance.Relevance;
+import org.variantsync.diffdetective.variation.tree.view.relevance.Trace;
+import org.variantsync.diffdetective.variation.tree.view.relevance.TraceSub;
+import org.variantsync.diffdetective.variation.tree.view.relevance.TraceSup;
+import org.variantsync.diffdetective.variation.tree.view.relevance.Unchanged;
 
 public class Patching {
 	public static <L extends Label> boolean hasSameLabel(DiffNode<L> a, DiffNode<L> b) {
@@ -592,55 +598,54 @@ public class Patching {
 		return null;
 	}
 
-	public static boolean arePatchedVariantsEquivalent(VariationTree<DiffLinesLabel> sourceVariantAfter,
-			VariationTree<DiffLinesLabel> targetVariantBefore, VariationTree<DiffLinesLabel> targetVariantAfter,
-			Configure configCrossVariant, Configure configTargetVariantSpecific) {
+	public static boolean arePatchedVariantsEquivalent(VariationDiff<DiffLinesLabel> sourceVariantDiff,
+			VariationTree<DiffLinesLabel> targetVariantBefore, VariationTree<DiffLinesLabel> patchedTargetVariant,
+			Configure configSourceVariant, Configure configTargetVariant) {
 		
 
-		
-		VariationTree<DiffLinesLabel> sourceVariantAfterRedToCrossVarFeatures = TreeView.tree(sourceVariantAfter,
-				configCrossVariant);
-		VariationTree<DiffLinesLabel> targetVariantAfterRedToCrossVarFeatures = TreeView.tree(targetVariantAfter,
-				configCrossVariant);
+		VariationTree<DiffLinesLabel> sourceVariantAfter = sourceVariantDiff.project(Time.AFTER);
+		VariationTree<DiffLinesLabel> sourceVariantAfterRedToCrossVarFeatures = TreeView.tree(sourceVariantAfter, configTargetVariant);
+		VariationTree<DiffLinesLabel> targetVariantAfterRedToCrossVarFeatures = TreeView.tree(patchedTargetVariant, configSourceVariant);
 
-		VariationTree<DiffLinesLabel> targetVariantBeforeRedToVarSpecificFeatures = TreeView.tree(targetVariantBefore,
-				configTargetVariantSpecific);
-		VariationTree<DiffLinesLabel> targetVariantAfterRedToVarSpecificFeatures = TreeView.tree(targetVariantAfter,
-				configTargetVariantSpecific);
-// 		remove artifact nodes which are children of the root
-		targetVariantBeforeRedToVarSpecificFeatures = removeArtifactNodesWhichAreChildrenOfRoot(targetVariantBeforeRedToVarSpecificFeatures);
-		targetVariantAfterRedToVarSpecificFeatures = removeArtifactNodesWhichAreChildrenOfRoot(targetVariantAfterRedToVarSpecificFeatures);
-		
-
-		GameEngine.showAndAwaitAll(
-				Show.tree(targetVariantAfterRedToVarSpecificFeatures, "targetVariantAfterRedToVarSpecificFeatures"),
-				Show.tree(targetVariantBeforeRedToVarSpecificFeatures, "targetVariantBeforeRedToVarSpecificFeatures"),
-				Show.tree(targetVariantAfterRedToCrossVarFeatures, "targetVariantAfterRedToCrossVarFeatures"),
-				Show.tree(sourceVariantAfterRedToCrossVarFeatures, "sourceVariantAfterRedToCrossVarFeatures"));
+		VariationTree<DiffLinesLabel> patchedTargetVariantRedToUnchanged = TreeView.tree(null, new Unchanged(sourceVariantDiff, Time.AFTER));
+		VariationTree<DiffLinesLabel> targetVariantBeforeRedToUnchanged = TreeView.tree(null, new Unchanged(sourceVariantDiff, Time.BEFORE));
 		
 		if (Patching.isSameAs(sourceVariantAfterRedToCrossVarFeatures.toCompletelyUnchangedVariationDiff(),
 				targetVariantAfterRedToCrossVarFeatures.toCompletelyUnchangedVariationDiff())
-				&& Patching.isSameAs(targetVariantBeforeRedToVarSpecificFeatures.toCompletelyUnchangedVariationDiff(),
-						targetVariantAfterRedToVarSpecificFeatures.toCompletelyUnchangedVariationDiff())) {
+				&& Patching.isSameAs(patchedTargetVariantRedToUnchanged.toCompletelyUnchangedVariationDiff(),
+						targetVariantBeforeRedToUnchanged.toCompletelyUnchangedVariationDiff())) {
 			return true;
 		}
 		return false;
-	}
-
-	private static VariationTree<DiffLinesLabel> removeArtifactNodesWhichAreChildrenOfRoot(VariationTree<DiffLinesLabel> targetVariantBefore) {
-		VariationDiff<DiffLinesLabel> targetVariantBeforeDiff = targetVariantBefore.toCompletelyUnchangedVariationDiff();
-		VariationDiff<DiffLinesLabel> targetVariantBeforeDiffCopy = targetVariantBeforeDiff.deepCopy();
-		targetVariantBeforeDiff.forAll(node -> {
-			if (!node.isRoot() && node.getParent(Time.AFTER).isRoot() && node.isArtifact()) {
-				targetVariantBeforeDiffCopy.getNodeWithID(node.getID()).drop();
-			}
-		});
-		return targetVariantBeforeDiffCopy.project(Time.AFTER);
 	}
 
 	public static boolean comparePatchedVariantWithExpectedResult(VariationTree<DiffLinesLabel> patchedVariant,
 			VariationTree<DiffLinesLabel> expectedResult) {
 		return Patching.isSameAs(patchedVariant.toCompletelyUnchangedVariationDiff(),
 				expectedResult.toCompletelyUnchangedVariationDiff());
+	}
+	
+	public static void testSomething(VariationDiff<DiffLinesLabel> diff, VariationTree<DiffLinesLabel> patchedTree, VariationTree<DiffLinesLabel> targetVariant) {
+		Configure aWithoutb = new Configure(new Literal("defined(FeatureB)", false));
+		
+//		VariationTree<DiffLinesLabel> view1 = TreeView.tree(tree, new Configure(new Literal("defined(FeatureB)", true)));
+//		VariationTree<DiffLinesLabel> view2 = TreeView.tree(tree, new TraceSup(new Literal("defined(FeatureB)", true)));
+//		VariationTree<DiffLinesLabel> view3 = TreeView.tree(tree, config2);
+		Inverse notAWithoutB = new Inverse(aWithoutb);
+		VariationTree<DiffLinesLabel> view_b = TreeView.tree(patchedTree, notAWithoutB);
+		Unchanged notAddedInA = new Unchanged(diff, Time.BEFORE);
+		Unchanged notRemovedInA = new Unchanged(diff, Time.AFTER);
+		VariationTree<DiffLinesLabel> unchangedView = TreeView.tree(patchedTree, notRemovedInA);
+		VariationTree<DiffLinesLabel> view = TreeView.tree(targetVariant, notAddedInA);
+		System.out.println(Patching.isSameAs(unchangedView.toCompletelyUnchangedVariationDiff(), view.toCompletelyUnchangedVariationDiff()));
+		GameEngine.showAndAwaitAll(Show.tree(patchedTree, "B'"), Show.tree(view, "B unchanged = " + notAddedInA), 
+				Show.diff(diff, "p_V"), Show.tree(unchangedView, "B'' unchanged = " + notRemovedInA)
+//				Show.tree(view2, "view2"), Show.tree(view3, "view3"), Show.tree(view, "view")
+				);
+//		VariationTree<DiffLinesLabel> newTree = TreeView.tree(tree, config);
+//		GameEngine.showAndAwaitAll(Show.tree(tree, "tree"), Show.tree(newTree, "newTree"));
+//		VariationTree<DiffLinesLabel> withA = TreeView.tree(tree, new Configure(new Literal("defined(A)", true)));
+//		VariationTree<DiffLinesLabel> withoutA = TreeView.tree(tree, new Configure(new Literal("defined(A)", false)));
+//		GameEngine.showAndAwaitAll(Show.tree(tree), Show.tree(withA, "withA"), Show.tree(withoutA, "withoutA"));
 	}
 }
