@@ -600,7 +600,7 @@ public class Patching {
 
 	public static boolean arePatchedVariantsEquivalent(VariationDiff<DiffLinesLabel> sourceVariantDiff,
 			VariationTree<DiffLinesLabel> targetVariantBefore, VariationTree<DiffLinesLabel> patchedTargetVariant,
-			Configure configSourceVariant, Configure configTargetVariant) {
+			Configure configSourceVariant, Configure configTargetVariant, boolean debug) {
 		
 
 		VariationTree<DiffLinesLabel> sourceVariantAfter = sourceVariantDiff.project(Time.AFTER);
@@ -609,6 +609,12 @@ public class Patching {
 
 		VariationTree<DiffLinesLabel> patchedTargetVariantRedToUnchanged = TreeView.tree(patchedTargetVariant, new Unchanged(sourceVariantDiff, Time.AFTER));
 		VariationTree<DiffLinesLabel> targetVariantBeforeRedToUnchanged = TreeView.tree(targetVariantBefore, new Unchanged(sourceVariantDiff, Time.BEFORE));
+		
+		if (debug) {
+			GameEngine.showAndAwaitAll(Show.diff(sourceVariantDiff, "p_A"), Show.tree(targetVariantBefore, "B"), Show.tree(patchedTargetVariant, "B'"),
+					Show.tree(targetVariantBeforeRedToUnchanged, "unchanged(B)"), Show.tree(patchedTargetVariantRedToUnchanged, "unchanged(B')"),
+					Show.tree(sourceVariantAfterRedToCrossVarFeatures, "view(A, configure(B)=V'"), Show.tree(targetVariantAfterRedToCrossVarFeatures, "view(B', configure(A)"));
+		}
 		
 		if (Patching.isSameAs(sourceVariantAfterRedToCrossVarFeatures.toCompletelyUnchangedVariationDiff(),
 				targetVariantAfterRedToCrossVarFeatures.toCompletelyUnchangedVariationDiff())
@@ -626,26 +632,24 @@ public class Patching {
 	}
 	
 	public static void testSomething(VariationDiff<DiffLinesLabel> diff, VariationTree<DiffLinesLabel> patchedTree, VariationTree<DiffLinesLabel> targetVariant) {
-		Configure aWithoutb = new Configure(new Literal("defined(FeatureB)", false));
+		Map<String, Boolean> featuresSource = new HashMap<>();
+		Map<String, Boolean> featuresTarget = new HashMap<>();
+		featuresSource.put("defined(Feature1)", true);
+		featuresSource.put("defined(Feature2)", true);
+		featuresSource.put("defined(FeatureB)", false);
+		featuresTarget.put("defined(Feature1)", true);
+		featuresTarget.put("defined(Feature2)", true);
+		featuresTarget.put("defined(FeatureB)", true);
+		Configure configSource = new Configure(featuresSource);
+		Configure configTarget = new Configure(featuresTarget);
 		
-//		VariationTree<DiffLinesLabel> view1 = TreeView.tree(tree, new Configure(new Literal("defined(FeatureB)", true)));
-//		VariationTree<DiffLinesLabel> view2 = TreeView.tree(tree, new TraceSup(new Literal("defined(FeatureB)", true)));
-//		VariationTree<DiffLinesLabel> view3 = TreeView.tree(tree, config2);
-		Inverse notAWithoutB = new Inverse(aWithoutb);
-		VariationTree<DiffLinesLabel> view_b = TreeView.tree(patchedTree, notAWithoutB);
-		Unchanged notAddedInA = new Unchanged(diff, Time.BEFORE);
-		Unchanged notRemovedInA = new Unchanged(diff, Time.AFTER);
-		VariationTree<DiffLinesLabel> unchangedView = TreeView.tree(patchedTree, notRemovedInA);
-		VariationTree<DiffLinesLabel> view = TreeView.tree(targetVariant, notAddedInA);
-		System.out.println(Patching.isSameAs(unchangedView.toCompletelyUnchangedVariationDiff(), view.toCompletelyUnchangedVariationDiff()));
-		GameEngine.showAndAwaitAll(Show.tree(patchedTree, "B'"), Show.tree(view, "B unchanged = " + notAddedInA), 
-				Show.diff(diff, "p_V"), Show.tree(unchangedView, "B'' unchanged = " + notRemovedInA)
-//				Show.tree(view2, "view2"), Show.tree(view3, "view3"), Show.tree(view, "view")
-				);
-//		VariationTree<DiffLinesLabel> newTree = TreeView.tree(tree, config);
-//		GameEngine.showAndAwaitAll(Show.tree(tree, "tree"), Show.tree(newTree, "newTree"));
-//		VariationTree<DiffLinesLabel> withA = TreeView.tree(tree, new Configure(new Literal("defined(A)", true)));
-//		VariationTree<DiffLinesLabel> withoutA = TreeView.tree(tree, new Configure(new Literal("defined(A)", false)));
-//		GameEngine.showAndAwaitAll(Show.tree(tree), Show.tree(withA, "withA"), Show.tree(withoutA, "withoutA"));
+		try {
+			VariationTree<DiffLinesLabel> patched = Patching.patch(diff, targetVariant, false, true).project(Time.AFTER);
+			System.out.println(Patching.arePatchedVariantsEquivalent(diff, targetVariant, patched, configSource, configTarget, true));
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 	}
 }
