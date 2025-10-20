@@ -226,6 +226,22 @@ public class VariationTreeNode<L extends Label> extends VariationNode<VariationT
         childOrder.clear();
     }
 
+    /**
+     * Sets the formula that is stored in this node.
+     * The formula should not be not {@code null} for
+     * {@link NodeType#isConditionalAnnotation mapping nodes with annotations} and should be {@code null}
+     * otherwise ({@link NodeType#ARTIFACT}, {@link NodeType#ELSE}).
+     */
+    public void setFormula(Node formula) {
+        if (isConditionalAnnotation()) {
+            Assert.assertNotNull(formula);
+        } else {
+            Assert.assertNull(formula);
+        }
+
+        this.featureMapping = formula;
+    }
+
     @Override
     public Node getFormula() {
         return featureMapping;
