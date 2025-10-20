@@ -282,8 +282,9 @@ public abstract class VariationNode<T extends VariationNode<T, L>, L extends Lab
      * @see removeAllChildren
      */
     public void stealChildrenOf(final T other) {
-        addChildren(other.getChildren());
+        List<T> children = other.getChildren();
         other.removeAllChildren();
+        addChildren(children);
     }
 
     /**
