@@ -367,12 +367,21 @@ public class DiffNode<L extends Label> implements HasNodeType {
     }
 
     /**
-     * Removes all children from the given node and adds them as children to this node at the respective times.
+     * Removes all children from the given node and adds them as children to this node at the given time.
+     * The given node will have no children afterwards at the given time.
+     * @param other The node whose children should be stolen for the given time.
+     */
+    public void stealChildrenOf(Time time, final DiffNode<L> other) {
+        addChildren(other.removeChildren(time), time);
+    }
+
+    /**
+     * Removes all children from the given node and adds them as children to this node (at all times).
      * The given node will have no children afterwards.
      * @param other The node whose children should be stolen.
      */
     public void stealChildrenOf(final DiffNode<L> other) {
-        Time.forAll(time -> addChildren(other.removeChildren(time), time));
+        Time.forAll(time -> stealChildrenOf(time, other));
     }
 
     /**
