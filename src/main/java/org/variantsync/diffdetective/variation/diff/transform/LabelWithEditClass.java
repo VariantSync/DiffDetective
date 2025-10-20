@@ -39,7 +39,7 @@ public class LabelWithEditClass implements VariationDiffTransformer<DiffLinesLab
     }
 
     @Override
-    public List<Class<? extends VariationDiffTransformer<DiffLinesLabel>>> getDependencies() {
+    public List<Class<? extends Transformer<VariationDiff<DiffLinesLabel>>>> getDependencies() {
         return relabelNodes.getDependencies();
     }
 }

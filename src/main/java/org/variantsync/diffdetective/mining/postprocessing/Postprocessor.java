@@ -7,6 +7,7 @@ import org.variantsync.diffdetective.variation.diff.filter.VariationDiffFilter;
 import org.variantsync.diffdetective.variation.diff.filter.ExplainedFilter;
 import org.variantsync.diffdetective.variation.diff.filter.TaggedPredicate;
 import org.variantsync.diffdetective.variation.diff.transform.CutNonEditedSubtrees;
+import org.variantsync.diffdetective.variation.diff.transform.Transformer;
 import org.variantsync.diffdetective.variation.diff.transform.VariationDiffTransformer;
 
 import java.util.List;
@@ -66,7 +67,7 @@ public class Postprocessor<L extends Label> {
     public Result<L> postprocess(final List<VariationDiff<L>> frequentSubgraphs) {
         final List<VariationDiff<L>> processedTrees = frequentSubgraphs.stream()
                 .filter(filters)
-                .peek(tree -> VariationDiffTransformer.apply(transformers, tree))
+                .peek(tree -> Transformer.apply(transformers, tree))
                 .toList();
 
         final Map<String, Integer> filterCounts = new ExplainedFilterSummary(filters).snapshot();

@@ -36,7 +36,7 @@ public class CollapseNestedNonEditedAnnotations implements VariationDiffTransfor
     private final List<Stack<DiffNode<DiffLinesLabel>>> chains = new ArrayList<>();
 
     @Override
-    public List<Class<? extends VariationDiffTransformer<DiffLinesLabel>>> getDependencies() {
+    public List<Class<? extends Transformer<VariationDiff<DiffLinesLabel>>>> getDependencies() {
         return List.of(Cast.unchecked(CutNonEditedSubtrees.class));
     }
 

@@ -3,6 +3,7 @@ package org.variantsync.diffdetective.analysis;
 import java.util.Arrays;
 import java.util.List;
 
+import org.variantsync.diffdetective.variation.diff.transform.Transformer;
 import org.variantsync.diffdetective.variation.diff.transform.VariationDiffTransformer;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
 
@@ -20,7 +21,7 @@ public class PreprocessingAnalysis implements Analysis.Hooks {
 
     @Override
     public boolean analyzeVariationDiff(Analysis analysis) {
-        VariationDiffTransformer.apply(preprocessors, analysis.getCurrentVariationDiff());
+        Transformer.apply(preprocessors, analysis.getCurrentVariationDiff());
         analysis.getCurrentVariationDiff().assertConsistency();
         return true;
     }
