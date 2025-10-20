@@ -419,6 +419,17 @@ public abstract class VariationNode<T extends VariationNode<T, L>, L extends Lab
         }
     }
 
+    /**
+     * Traverses all nodes in this subtree in postorder.
+     */
+    public void forAllPostorder(Consumer<T> action) {
+        for (var child : getChildren()) {
+            child.forAllPostorder(action);
+        }
+
+        action.accept(this.upCast());
+    }
+
     public void forMeAndMyAncestors(final Consumer<T> action) {
         action.accept(this.upCast());
         final T p = getParent();

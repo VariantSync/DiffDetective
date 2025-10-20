@@ -151,12 +151,22 @@ public record VariationTree<L extends Label>(
     }
 
     /**
-     * Invokes the given callback for each node in this Variation Tree in depth-first order.
+     * Invokes the given callback for each node in this Variation Tree in pre-order.
      * @param action callback
      * @return this
      */
     public VariationTree<L> forAllPreorder(final Consumer<VariationTreeNode<L>> action) {
         root.forAllPreorder(action);
+        return this;
+    }
+
+    /**
+     * Invokes the given callback for each node in this Variation Tree in post-order.
+     * @param action callback
+     * @return this
+     */
+    public VariationTree<L> forAllPostorder(final Consumer<VariationTreeNode<L>> action) {
+        root.forAllPostorder(action);
         return this;
     }
 
