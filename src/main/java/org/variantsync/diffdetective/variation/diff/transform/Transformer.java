@@ -58,7 +58,7 @@ public interface Transformer<T> {
      * Applies all given transformers to the given element sequentially.
      * First checks that all dependencies between transformers are met via {@link #checkDependencies(List)}.
      * @param transformers Transformers to apply sequentially.
-     * @param tree Tree to transform inplace.
+     * @param element Tree to transform inplace.
      */
     static <T> void apply(final List<? extends Transformer<T>> transformers, final T element) {
         checkDependencies(transformers);
