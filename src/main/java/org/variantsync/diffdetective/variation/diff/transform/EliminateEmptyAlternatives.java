@@ -14,22 +14,22 @@ import static org.variantsync.diffdetective.util.fide.FormulaUtils.*;
  * This transformer simplifies annotations such that empty alternatives do not appear in choices.
  * This means, that nestings without any siblings such as
  *
- * <pre>
+ * <pre>{@code
  * #if A
  * #elif B
  * #elif C
  * #else
  *   foo
  * #endif
- * </pre>
+ * }</pre>
  *
  * will be simplified to
  *
- * <pre>
+ * <pre>{@code
  * #if !A && !B && !C
  *   foo
  * #endif
- * </pre>
+ * }</pre>
  *
  * Annotations without any children also get eliminated.
  *
