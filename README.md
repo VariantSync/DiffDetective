@@ -80,6 +80,18 @@ Additionally, there is a screencast available on YouTube, guiding you through th
 [![DiffDetective Demonstration](docs/yt_thumbnail.png)](https://www.youtube.com/watch?v=q6ight5EDQY)
 
 
+## Supported Differencing Algorithms
+
+In principle, any generic differencing algorithm (i.e, any algorithm that may operate on text or trees) can be made variability-aware with DiffDetective, as explained in our demo paper (see below). Some algorithms are integrated directly in the DiffDetective library, while others come as additional Maven projects.
+
+### Shipped with DiffDetective
+- Git Diff
+- [GumTree](https://github.com/GumTreeDiff/gumtree), and all algorithms and matching engines supported by the GumTree library
+
+### Extra Modules
+- [TrueDiff](https://gitlab.rlp.net/plmz/truediff): Support for TrueDiff comes as [a separate Maven project](https://github.com/VariantSync/TrueDiffDetective).
+
+
 ## Publications
 
 ### Variability-Aware Differencing with DiffDetective (FSE 2024, ⭐ [Best Demo Paper](https://2024.esec-fse.org/info/awards) ⭐)
