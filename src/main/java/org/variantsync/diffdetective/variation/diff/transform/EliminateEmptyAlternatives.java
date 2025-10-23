@@ -2,11 +2,17 @@
 package org.variantsync.diffdetective.variation.diff.transform;
 
 import org.prop4j.Node;
+import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.Label;
+import org.variantsync.diffdetective.variation.diff.DiffNode;
+import org.variantsync.diffdetective.variation.diff.Time;
 import org.variantsync.diffdetective.variation.tree.VariationTree;
 import org.variantsync.diffdetective.variation.tree.VariationTreeNode;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.variantsync.diffdetective.util.fide.FormulaUtils.*;
 
@@ -37,18 +43,19 @@ import static org.variantsync.diffdetective.util.fide.FormulaUtils.*;
  */
 public class EliminateEmptyAlternatives<L extends Label> implements Transformer<VariationTree<L>> {
     private void elim(VariationTreeNode<L> subtree) {
+	List<VariationTreeNode<L>> nodesToDrop = new ArrayList<>();
         // We simplify only annotations.
         if (!subtree.isAnnotation()) return;
-
+        
         final List<VariationTreeNode<L>> children = subtree.getChildren();
 
         // When there are no children, 'subtree' is an empty annotation that can be eliminated.
         if (children.isEmpty()) {
-            subtree.drop();
+        	nodesToDrop.add(subtree);
         }
         // When there is exactly one child and that child is an 'else' or 'elif' we can simplify that nesting.
         else if (children.size() == 1) {
-            final VariationTreeNode<L> child = children.getFirst();
+            final VariationTreeNode<L> child = children.get(0);
 
             if ((subtree.isIf() || subtree.isElif()) && (child.isElif() || child.isElse())) {
                 // determine new feaure mapping
@@ -59,8 +66,8 @@ public class EliminateEmptyAlternatives<L extends Label> implements Transformer<
                 subtree.setFormula(newFormula);
 
                 // simplify tree
-                child.drop();
-                subtree.stealChildrenOf(child);
+                nodesToDrop.add(child); 
+	        subtree.stealChildrenOf(child);
             }
         }
     }
@@ -68,5 +75,9 @@ public class EliminateEmptyAlternatives<L extends Label> implements Transformer<
     @Override
     public void transform(VariationTree<L> tree) {
         tree.forAllPostorder(this::elim);
+        for (VariationTreeNode<L> node : nodesToDrop) {
+        	node.drop();
+        }
+       
     }
 }
