@@ -32,6 +32,7 @@ import org.variantsync.diffdetective.variation.diff.DiffNode;
 import org.variantsync.diffdetective.variation.diff.Time;
 import org.variantsync.diffdetective.variation.diff.VariationDiff;
 import org.variantsync.diffdetective.variation.diff.patching.Patching;
+import org.variantsync.diffdetective.variation.diff.transform.EliminateEmptyAlternatives;
 import org.variantsync.diffdetective.variation.diff.view.DiffView;
 import org.variantsync.diffdetective.variation.tree.VariationTree;
 import org.variantsync.diffdetective.variation.tree.view.TreeView;
@@ -167,11 +168,23 @@ public class Generator {
 		VariationDiff<L> targetPatch = DiffView.optimized(spl, configureTo2); // ground truth for target patch;
 																				// this is the "perfect" target
 																				// patch
-
-		VariationDiff<L> targetView = DiffView.optimized(targetPatch.deepCopy(), configureTo1);
-		VariationDiff<L> targetPatchModified = targetPatch.deepCopy();
-
-		targetPatch.forAll(node -> {
+		
+		GameEngine.showAndAwaitAll(Show.diff(sourcePatch, "configured to source"), Show.diff(targetPatch, "configured to target"));
+		
+		
+		VariationTree<L> before = targetPatch.project(Time.BEFORE);
+		new EliminateEmptyAlternatives<>().transform((VariationTree<Label>) before);
+		VariationTree<L> after = targetPatch.project(Time.AFTER);
+		new EliminateEmptyAlternatives<>().transform((VariationTree<Label>) after);
+		
+		GameEngine.showAndAwaitAll(Show.tree(before, "elim before"), Show.tree(after, "elim after"));
+		VariationDiff<L> targetView2 = VariationDiff.fromTrees(before, after);
+		VariationDiff<L> targetView = DiffView.optimized(targetView2.deepCopy(), configureTo1);
+		
+		
+		VariationDiff<L> targetPatchModified = targetView2.deepCopy();
+		
+		targetView2.forAll(node -> {
 			if (targetView.getNodeWithID(node.getID()) == null && !node.isNon()) {
 				node = targetPatchModified.getNodeWithID(node.getID());
 				if (node != null) {
@@ -203,10 +216,10 @@ public class Generator {
 		// GameEngine.showAndAwaitAll(Show.diff(spl));
 //		GameEngine.showAndAwaitAll(Show.diff(sourcePatch, "Source Patch " + config1),
 //				Show.diff(targetPatch, "Target Patch " + config2));
-		GameEngine.showAndAwaitAll(Show.tree(sourceVariantBefore, "Source Before " + config1),
-				Show.tree(sourceVariantAfter, "Source After " + config1),
-				Show.tree(targetVariantBefore, "Target Before " + config2),
-				Show.tree(targetVariantAfter, "Target After" + config2));
+//		GameEngine.showAndAwaitAll(Show.tree(sourceVariantBefore, "Source Before " + config1),
+//				Show.tree(sourceVariantAfter, "Source After " + config1),
+//				Show.tree(targetVariantBefore, "Target Before " + config2),
+//				Show.tree(targetVariantAfter, "Target After" + config2));
 
 		// ## 3. To use command-line patchers such as GNU patch and mpatch, we need to
 		// write our variants to disk.
