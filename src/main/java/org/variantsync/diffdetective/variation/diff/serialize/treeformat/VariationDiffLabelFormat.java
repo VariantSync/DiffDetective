@@ -13,7 +13,7 @@ public interface VariationDiffLabelFormat extends LinegraphFormat {
      * Converts a label of line graph into a {@link Source}.
      *
      * @param label A string containing the label of the {@link Source}
-     * @return The {@link Source} descibed by this label.
+     * @return The {@link Source} described by this label.
      */
     Source fromLabel(final String label);
 
