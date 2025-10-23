@@ -2,6 +2,9 @@ package org.variantsync.diffdetective.variation.tree.source;
 
 import java.net.URL;
 import java.nio.file.Path;
+import java.util.List;
+
+import org.variantsync.diffdetective.util.Source;
 
 /**
  * A file at a specific commit in a Git repository.
@@ -19,9 +22,19 @@ public record GitSource(
     URL repository,
     String commitHash,
     Path path
-) implements VariationTreeSource {
+) implements Source {
     @Override
     public String toString() {
         return path.toString() + " at " + commitHash + " of " + repository;
+    }
+
+    @Override
+    public String getSourceExplanation() {
+        return "GitCommit";
+    }
+
+    @Override
+    public List<Object> getSourceArguments() {
+        return List.of(repository, commitHash, path);
     }
 }

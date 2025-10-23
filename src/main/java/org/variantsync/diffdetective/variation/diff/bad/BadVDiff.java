@@ -2,13 +2,13 @@ package org.variantsync.diffdetective.variation.diff.bad;
 
 import org.variantsync.diffdetective.diff.text.DiffLineNumberRange;
 import org.variantsync.diffdetective.util.Assert;
+import org.variantsync.diffdetective.util.CompositeSource;
 import org.variantsync.diffdetective.util.StringUtils;
 import org.variantsync.diffdetective.variation.Label;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
 import org.variantsync.diffdetective.variation.diff.VariationDiff;
 import org.variantsync.diffdetective.variation.diff.DiffType;
 import org.variantsync.diffdetective.variation.diff.Time;
-import org.variantsync.diffdetective.variation.diff.source.VariationDiffSource;
 import org.variantsync.diffdetective.variation.tree.VariationTree;
 import org.variantsync.diffdetective.variation.tree.VariationTreeNode;
 import org.variantsync.functjonal.Cast;
@@ -309,7 +309,7 @@ public record BadVDiff<L extends Label>(
         }
 
         return new BadVDiff<>(
-                new VariationTree<>(root, new BadVDiffFromVariationDiffSource(d.getSource())),
+                new VariationTree<>(root, new CompositeSource("BadVDiff.fromGood", d.getSource())),
                 matching,
                 coloring,
                 lines
@@ -403,12 +403,7 @@ public record BadVDiff<L extends Label>(
             nodeTranslation.get(e.parent()).addChild(e.child(), e.time());
         }
 
-        VariationDiffSource source = VariationDiffSource.Unknown;
-        if (diff.source() instanceof BadVDiffFromVariationDiffSource s) {
-            source = s.initialVariationDiff();
-        }
-
-        return new VariationDiff<>(root, source);
+        return new VariationDiff<>(root, new CompositeSource("BadVDiff.toGood", diff.getSource()));
     }
 
     public BadVDiff<L> deepCopy() {

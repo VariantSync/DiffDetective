@@ -12,19 +12,19 @@ import org.variantsync.diffdetective.diff.result.CommitDiffResult;
 import org.variantsync.diffdetective.diff.result.DiffError;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.util.Assert;
+import org.variantsync.diffdetective.util.FileSource;
+import org.variantsync.diffdetective.util.fide.FixTrueFalse;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.Label;
 import org.variantsync.diffdetective.variation.diff.construction.GumTreeDiff;
 import org.variantsync.diffdetective.variation.diff.construction.JGitDiff;
 import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParseOptions;
 import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParser;
-import org.variantsync.diffdetective.variation.diff.source.PatchFile;
 import org.variantsync.diffdetective.variation.diff.source.PatchString;
-import org.variantsync.diffdetective.variation.diff.source.VariationDiffSource;
 import org.variantsync.diffdetective.variation.diff.traverse.VariationDiffTraversal;
 import org.variantsync.diffdetective.variation.diff.traverse.VariationDiffVisitor;
 import org.variantsync.diffdetective.variation.tree.VariationTree;
-import org.variantsync.diffdetective.util.fide.FixTrueFalse;
+import org.variantsync.diffdetective.util.Source;
 import org.variantsync.functjonal.Cast;
 import org.variantsync.functjonal.Result;
 
@@ -50,23 +50,23 @@ import static org.variantsync.functjonal.Functjonal.when;
 /**
  * Implementation of variation tree diffs from our ESEC/FSE'22 paper.
  * An instance of this class represents a variation tree diff. It stores the root of the graph as a {@link DiffNode}.
- * It optionally holds a {@link VariationDiffSource} that describes how the variation tree diff was obtained.
+ * It optionally holds a {@link Source} that describes how the variation tree diff was obtained.
  * The graph structure is implemented by the {@link DiffNode} class.
  *
  * @param <L> The type of label stored in this tree.
  *
  * @author Paul Bittner, Sören Viegener
  */
-public class VariationDiff<L extends Label> {
+public class VariationDiff<L extends Label> implements Source {
     private final DiffNode<L> root;
-    private VariationDiffSource source;
+    private Source source;
 
     /**
      * Creates a VariationDiff that only consists of the single given root node.
      * @param root The root of this tree.
      */
     public VariationDiff(DiffNode<L> root) {
-        this(root, VariationDiffSource.Unknown);
+        this(root, Source.Unknown);
     }
 
     /**
@@ -75,7 +75,7 @@ public class VariationDiff<L extends Label> {
      * @param root The root of this tree.
      * @param source The data from which the VariationDiff was created.
      */
-    public VariationDiff(DiffNode<L> root, VariationDiffSource source) {
+    public VariationDiff(DiffNode<L> root, Source source) {
         this.root = root;
         this.source = source;
     }
@@ -92,7 +92,7 @@ public class VariationDiff<L extends Label> {
     public static VariationDiff<DiffLinesLabel> fromFile(final Path p, VariationDiffParseOptions parseOptions) throws IOException, DiffParseException {
         try (BufferedReader file = Files.newBufferedReader(p)) {
             final VariationDiff<DiffLinesLabel> tree = VariationDiffParser.createVariationDiff(file, parseOptions);
-            tree.setSource(new PatchFile(p));
+            tree.setSource(new FileSource(p));
             return tree;
         }
     }
@@ -396,18 +396,28 @@ public class VariationDiff<L extends Label> {
 
     /**
      * Sets the source of this VariationDiff.
-     * @see VariationDiffSource
+     * @see Source
      */
-    public void setSource(final VariationDiffSource source) {
+    public void setSource(final Source source) {
         this.source = source;
     }
 
     /**
      * Returns the source of this VariationDiff (i.e., the data this VariationDiff was created from).
-     * @see VariationDiffSource
+     * @see Source
      */
-    public VariationDiffSource getSource() {
+    public Source getSource() {
         return source;
+    }
+
+    @Override
+    public List<Source> getSources() {
+        return List.of(source);
+    }
+
+    @Override
+    public String getSourceExplanation() {
+        return "VariationDiff";
     }
 
     /**

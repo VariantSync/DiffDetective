@@ -5,7 +5,9 @@ import org.eclipse.jgit.diff.DiffAlgorithm;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
+import org.variantsync.diffdetective.util.FileSource;
 import org.variantsync.diffdetective.util.IO;
+import org.variantsync.diffdetective.util.Source;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
 import org.variantsync.diffdetective.variation.diff.VariationDiff;
@@ -18,9 +20,7 @@ import org.variantsync.diffdetective.variation.diff.serialize.TikzExporter;
 import org.variantsync.diffdetective.variation.diff.serialize.edgeformat.ChildOrderEdgeFormat;
 import org.variantsync.diffdetective.variation.diff.serialize.edgeformat.DefaultEdgeLabelFormat;
 import org.variantsync.diffdetective.variation.diff.serialize.nodeformat.FullNodeFormat;
-import org.variantsync.diffdetective.variation.diff.source.VariationDiffSource;
 import org.variantsync.diffdetective.variation.tree.VariationTree;
-import org.variantsync.diffdetective.variation.tree.source.LocalFileSource;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -104,7 +104,7 @@ public class TreeDiffingTest {
             );
 
         DiffNode<DiffLinesLabel> improvedDiffNode = GumTreeDiff.improveMatching(variationDiff.getRoot(), testCase.matcher());
-        VariationDiff<DiffLinesLabel> improvedVariationDiff = new VariationDiff<>(improvedDiffNode, VariationDiffSource.Unknown);
+        VariationDiff<DiffLinesLabel> improvedVariationDiff = new VariationDiff<>(improvedDiffNode, Source.Unknown);
 
         assertExpectedVariationDiffs(testCase, improvedVariationDiff);
     }
@@ -147,7 +147,7 @@ public class TreeDiffingTest {
                             file,
                             VariationDiffParseOptions.Default
                     ).getRoot().projection(BEFORE).toVariationTree(),
-                    new LocalFileSource(filename)
+                    new FileSource(filename)
             );
         }
     }

@@ -2,10 +2,10 @@ package org.variantsync.diffdetective.variation.diff.serialize;
 
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.util.FileUtils;
+import org.variantsync.diffdetective.util.Source;
 import org.variantsync.diffdetective.variation.diff.DiffGraph;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
 import org.variantsync.diffdetective.variation.diff.VariationDiff;
-import org.variantsync.diffdetective.variation.diff.source.VariationDiffSource;
 import org.variantsync.diffdetective.variation.diff.source.LineGraphFileSource;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.NodeType;
@@ -128,9 +128,9 @@ public class LineGraphImport {
      * @return {@link VariationDiff} generated from the given, already parsed parameters.
      */
     private static VariationDiff<DiffLinesLabel> parseVariationDiff(final String lineGraph, final Path inFile, final List<DiffNode<DiffLinesLabel>> diffNodeList, final LineGraphImportOptions<DiffLinesLabel> options) {
-        VariationDiffSource variationDiffSource = options.treeFormat().fromLineGraphLine(lineGraph);
+        Source variationDiffSource = options.treeFormat().fromLineGraphLine(lineGraph);
 
-        if (variationDiffSource == null || VariationDiffSource.Unknown.equals(variationDiffSource)) {
+        if (variationDiffSource == null || Source.Unknown.equals(variationDiffSource)) {
             variationDiffSource = new LineGraphFileSource(
                     lineGraph,
                     inFile

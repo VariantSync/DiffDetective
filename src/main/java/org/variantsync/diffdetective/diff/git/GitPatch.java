@@ -1,17 +1,19 @@
 package org.variantsync.diffdetective.diff.git;
 
+import java.util.List;
+
 import org.eclipse.jgit.diff.DiffEntry;
 import org.variantsync.diffdetective.diff.text.TextBasedDiff;
+import org.variantsync.diffdetective.util.Source;
 import org.variantsync.diffdetective.variation.diff.Time;
 import org.variantsync.diffdetective.variation.diff.VariationDiff; // For Javadoc
-import org.variantsync.diffdetective.variation.diff.source.VariationDiffSource;
 
 /**
  * Interface for patches from a git repository.
  * A git patch is a {@link TextBasedDiff} from which {@link VariationDiff}s can be created.
  *
  */
-public interface GitPatch extends VariationDiffSource, TextBasedDiff {
+public interface GitPatch extends Source, TextBasedDiff {
     /**
      * Minimal default implementation of {@link GitPatch}
      * @param getDiff The diff in text form.
@@ -40,6 +42,16 @@ public interface GitPatch extends VariationDiffSource, TextBasedDiff {
         @Override
         public String toString() {
             return oldFileName + "@ " + getParentCommitHash + " (parent) to " + newFileName + " @ " + getCommitHash + " (child)";
+        }
+
+        @Override
+        public String getSourceExplanation() {
+            return "SimpleGitPatch";
+        }
+
+        @Override
+        public List<Object> getSourceArguments() {
+            return List.of(getChangeType(), oldFileName(), newFileName(), getCommitHash(), getParentCommitHash());
         }
     }
 

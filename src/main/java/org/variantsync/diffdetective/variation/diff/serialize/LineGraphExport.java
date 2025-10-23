@@ -10,12 +10,12 @@ import org.variantsync.diffdetective.analysis.MetadataKeys;
 import org.variantsync.diffdetective.diff.git.CommitDiff;
 import org.variantsync.diffdetective.diff.git.PatchDiff;
 import org.variantsync.diffdetective.metadata.Metadata;
+import org.variantsync.diffdetective.util.Source;
 import org.variantsync.diffdetective.util.StringUtils;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.Label;
 import org.variantsync.diffdetective.variation.diff.Time;
 import org.variantsync.diffdetective.variation.diff.VariationDiff;
-import org.variantsync.diffdetective.variation.diff.source.VariationDiffSource;
 import org.variantsync.functjonal.category.InplaceSemigroup;
 
 /**
@@ -154,12 +154,12 @@ public final class LineGraphExport {
 
     /**
      * Produces the final linegraph file content.
-     * Creates a linegraph header from the given VariationDiffSource using the {@link LineGraphExportOptions#treeFormat()} in the given options.
+     * Creates a linegraph header from the given Source using the {@link LineGraphExportOptions#treeFormat()} in the given options.
      * Then appends the already created file content for nodes and edges.
-     * @param source The {@link VariationDiffSource} that describes where the VariationDiff whose content is written to the file originated from.
+     * @param source The {@link Source} that describes where the VariationDiff whose content is written to the file originated from.
      * @param options {@link LineGraphExportOptions} used to determine the treeFormat for the header.
      */
-    private static String lineGraphHeader(final VariationDiffSource source, final LineGraphExportOptions<?> options) {
+    private static String lineGraphHeader(final Source source, final LineGraphExportOptions<?> options) {
         return options.treeFormat().toLineGraphLine(source) + StringUtils.LINEBREAK;
     }
 
