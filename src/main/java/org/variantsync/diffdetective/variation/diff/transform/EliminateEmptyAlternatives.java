@@ -11,6 +11,7 @@ import org.variantsync.diffdetective.variation.tree.VariationTreeNode;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static org.variantsync.diffdetective.util.fide.FormulaUtils.*;
 
