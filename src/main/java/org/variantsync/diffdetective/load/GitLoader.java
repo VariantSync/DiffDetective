@@ -1,7 +1,6 @@
 package org.variantsync.diffdetective.load;
 
 import net.lingala.zip4j.ZipFile;
-import net.lingala.zip4j.exception.ZipException;
 import org.apache.commons.io.FilenameUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -86,10 +85,9 @@ public class GitLoader {
             return fromDirectory(unzippedRepoName);
         }
 
-        try {
-            ZipFile zipFile = new ZipFile(pathToZip.toFile());
+        try (ZipFile zipFile = new ZipFile(pathToZip.toFile())) {
             zipFile.extractAll(targetDir.toString());
-        } catch (ZipException e) {
+        } catch (IOException e) {
             Logger.warn("Failed to extract git repo from {} to {}", pathToZip, targetDir);
             return null;
         }
