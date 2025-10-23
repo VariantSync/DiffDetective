@@ -1,5 +1,7 @@
 package org.variantsync.diffdetective.variation.tree.view.relevance;
 
+import java.util.List;
+
 import org.variantsync.diffdetective.variation.tree.VariationNode;
 
 /**
@@ -15,12 +17,12 @@ public record Trace(String featureName) implements Relevance {
     }
 
     @Override
-    public String parametersToString() {
-        return featureName();
+    public List<Object> getSourceArguments() {
+        return List.of(featureName());
     }
 
     @Override
-    public String getFunctionName() {
+    public String getSourceExplanation() {
         return "traceall";
     }
 

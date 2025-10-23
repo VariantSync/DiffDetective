@@ -1,5 +1,7 @@
 package org.variantsync.diffdetective.variation.tree.view.relevance;
 
+import java.util.List;
+
 import org.prop4j.Node;
 import org.prop4j.NodeWriter;
 import org.variantsync.diffdetective.analysis.logic.SAT;
@@ -16,12 +18,12 @@ public record TraceSup(Node configuration) implements Relevance {
     }
 
     @Override
-    public String parametersToString() {
-        return configuration.toString(NodeWriter.logicalSymbols);
+    public List<Object> getSourceArguments() {
+        return List.of(configuration.toString(NodeWriter.logicalSymbols));
     }
 
     @Override
-    public String getFunctionName() {
+    public String getSourceExplanation() {
         return "traceyes";
     }
 

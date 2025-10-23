@@ -1,6 +1,9 @@
 package org.variantsync.diffdetective.variation.diff.source;
 
 import java.nio.file.Path;
+import java.util.List;
+
+import org.variantsync.diffdetective.util.Source;
 
 /**
  * A source for VariationDiffs that were parsed from a linegraph file.
@@ -10,5 +13,14 @@ import java.nio.file.Path;
 public record LineGraphFileSource(
         String graphHeader,
         Path file
-) implements VariationDiffSource {
+) implements Source {
+    @Override
+    public String getSourceExplanation() {
+        return "LineGraphFile";
+    }
+
+    @Override
+    public List<Object> getSourceArguments() {
+        return List.of(graphHeader, file);
+    }
 }

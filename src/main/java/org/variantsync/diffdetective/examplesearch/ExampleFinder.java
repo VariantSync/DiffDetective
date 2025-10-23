@@ -11,6 +11,7 @@ import org.variantsync.diffdetective.feature.AnnotationParser;
 import org.variantsync.diffdetective.show.Show;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.util.IO;
+import org.variantsync.diffdetective.util.Source;
 import org.variantsync.diffdetective.util.StringUtils;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.diff.Time;
@@ -24,7 +25,6 @@ import org.variantsync.diffdetective.variation.diff.serialize.GraphFormat;
 import org.variantsync.diffdetective.variation.diff.serialize.edgeformat.DefaultEdgeLabelFormat;
 import org.variantsync.diffdetective.variation.diff.serialize.nodeformat.MappingsDiffNodeFormat;
 import org.variantsync.diffdetective.variation.diff.serialize.treeformat.CommitDiffVariationDiffLabelFormat;
-import org.variantsync.diffdetective.variation.diff.source.VariationDiffSource;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -110,8 +110,8 @@ public class ExampleFinder implements Analysis.Hooks {
             // Not every local diff can be parsed to a VariationDiff because diffs are unaware of the underlying language (i.e., CPP).
             // We want only running examples whose diffs describe entire diff trees for easier understanding.
             if (isGoodExample.test(localTree)) {
-                Assert.assertTrue(variationDiff.getSource() instanceof GitPatch);
-                final GitPatch variationDiffSource = (GitPatch) variationDiff.getSource();
+                GitPatch variationDiffSource = Source.findFirst(variationDiff, GitPatch.class);
+                Assert.assertNotNull(variationDiffSource);
                 localTree.setSource(variationDiffSource.shallowClone());
             } else {
                 return false;
@@ -149,9 +149,9 @@ public class ExampleFinder implements Analysis.Hooks {
     }
 
     private void exportExample(final Analysis analysis, final String tdiff, final VariationDiff<DiffLinesLabel> vdiff, Path outputDir) {
-        Assert.assertTrue(vdiff.getSource() instanceof GitPatch);
         final Repository repo = analysis.getRepository();
-        final GitPatch patch = (GitPatch) vdiff.getSource();
+        final GitPatch patch = Source.findFirst(vdiff, GitPatch.class);
+        Assert.assertNotNull(patch);
         outputDir = outputDir.resolve(Path.of(repo.getRepositoryName() + "_" + patch.getCommitHash()));
         final String filename = patch.getFileName(Time.AFTER);
 
@@ -185,8 +185,8 @@ public class ExampleFinder implements Analysis.Hooks {
     }
 
     static String getDiff(final VariationDiff<?> tree) {
-        final VariationDiffSource source = tree.getSource();
-        Assert.assertTrue(source instanceof TextBasedDiff);
-        return ((TextBasedDiff) source).getDiff();
+        TextBasedDiff textBasedDiff = Source.findFirst(tree, TextBasedDiff.class);
+        Assert.assertNotNull(textBasedDiff);
+        return textBasedDiff.getDiff();
     }
 }
