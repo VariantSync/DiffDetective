@@ -226,7 +226,7 @@ public class UnparseAnalysis implements Analysis.Hooks {
     public static String parseUnparseDiff(String textDiff, VariationDiffParseOptions option) {
         String temp = "b";
         try {
-            VariationDiff<DiffLinesLabel> diff = VariationDiff.fromDiff(textDiff, option);
+            VariationDiff<DiffLinesLabel> diff = VariationDiff.fromDiff(textDiff, Source.Unknown, option);
             temp = VariationUnparser.unparseDiff(diff);
         } catch (Exception e) {
             e.printStackTrace();

@@ -13,10 +13,10 @@ import org.variantsync.diffdetective.variation.tree.view.relevance.Relevance;
  * @param diff The original variation diff on which the variation diff with this source is a view on.
  * @param relevance The relevance predicate that was used to create the view.
  */
-public record ViewSource<L extends Label>(VariationDiff<L> diff, Relevance relevance) implements Source {
+public record ViewSource<L extends Label>(VariationDiff<L> diff, Relevance relevance, String method) implements Source {
     @Override
     public String getSourceExplanation() {
-        return "View";
+        return "view";
     }
 
     @Override

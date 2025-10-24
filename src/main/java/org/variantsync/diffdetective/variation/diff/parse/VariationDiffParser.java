@@ -17,6 +17,7 @@ import org.variantsync.diffdetective.error.UnparseableFormulaException;
 import org.variantsync.diffdetective.feature.Annotation;
 import org.variantsync.diffdetective.feature.AnnotationType;
 import org.variantsync.diffdetective.util.Assert;
+import org.variantsync.diffdetective.util.Source;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.NodeType;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
@@ -117,17 +118,18 @@ public class VariationDiffParser {
 
 
     /**
-     * The same as {@link VariationDiffParser#createVariationDiff(BufferedReader, VariationDiffParseOptions)}
+     * The same as {@link VariationDiffParser#createVariationDiff(BufferedReader, Source, VariationDiffParseOptions)}
      * but with the diff given as a single string with line breaks instead of a {@link BufferedReader}.
      *
      * @throws DiffParseException if {@code fullDiff} couldn't be parsed
      */
     public static VariationDiff<DiffLinesLabel> createVariationDiff(
             final String fullDiff,
+            final Source source,
             final VariationDiffParseOptions parseOptions
     ) throws DiffParseException {
         try {
-            return createVariationDiff(new BufferedReader(new StringReader(fullDiff)), parseOptions);
+            return createVariationDiff(new BufferedReader(new StringReader(fullDiff)), source, parseOptions);
         } catch (IOException e) {
             throw new AssertionError("No actual IO should be performed because only a StringReader is used");
         }
@@ -140,6 +142,7 @@ public class VariationDiffParser {
      * This parsing algorithm is described in detail in Sören Viegener's bachelor's thesis.
      *
      * @param fullDiff The full diff of a patch obtained from a buffered reader.
+     * @param source  the {@link Source} of {@code fullDiff}
      * @param options  {@link VariationDiffParseOptions} for the parsing process.
      * @return A parsed {@link VariationDiff} upon success or an error indicating why parsing failed.
      * @throws IOException        when reading from {@code fullDiff} fails.
@@ -147,11 +150,12 @@ public class VariationDiffParser {
      */
     public static VariationDiff<DiffLinesLabel> createVariationDiff(
             BufferedReader fullDiff,
+            Source source,
             final VariationDiffParseOptions options
     ) throws IOException, DiffParseException {
         return new VariationDiffParser(
                 options
-        ).parse(() -> {
+        ).parse(source, () -> {
             String line = fullDiff.readLine();
             if (line == null) {
                 return null;
@@ -162,10 +166,11 @@ public class VariationDiffParser {
 
     /**
      * Parses a variation tree from a source file.
-     * This method is similar to {@link #createVariationDiff(BufferedReader, VariationDiffParseOptions)}
+     * This method is similar to {@link #createVariationDiff(BufferedReader, Source, VariationDiffParseOptions)}
      * but acts as if all lines where unmodified.
      *
      * @param file    The source code file (not a diff) to be parsed.
+     * @param source the {@link Source} of {@code file}
      * @param options {@link VariationDiffParseOptions} for the parsing process.
      * @return A parsed {@link VariationDiff}.
      * @throws IOException        iff {@code file} throws an {@code IOException}
@@ -173,11 +178,12 @@ public class VariationDiffParser {
      */
     public static VariationDiff<DiffLinesLabel> createVariationTree(
             BufferedReader file,
+            Source source,
             VariationDiffParseOptions options
     ) throws IOException, DiffParseException {
         return new VariationDiffParser(
                 options
-        ).parse(() -> {
+        ).parse(source, () -> {
             String line = file.readLine();
             if (line == null) {
                 return null;
@@ -198,7 +204,7 @@ public class VariationDiffParser {
     /**
      * Initializes the parse state.
      *
-     * @see #createVariationDiff(BufferedReader, VariationDiffParseOptions)
+     * @see #createVariationDiff(BufferedReader, Source, VariationDiffParseOptions)
      */
     private VariationDiffParser(
             VariationDiffParseOptions options
@@ -209,6 +215,7 @@ public class VariationDiffParser {
     /**
      * Parses the line diff {@code fullDiff}.
      *
+     * @param source the {@link Source} of {@code lines}
      * @param lines should supply successive lines of the diff to be parsed, or {@code null} if
      *              there are no more lines to be parsed.
      * @return the parsed {@code VariationDiff}
@@ -217,6 +224,7 @@ public class VariationDiffParser {
      *                            is detected
      */
     private VariationDiff<DiffLinesLabel> parse(
+            Source source,
             FailableSupplier<DiffLine, IOException> lines
     ) throws IOException, DiffParseException {
         DiffNode<DiffLinesLabel> root = DiffNode.createRoot(new DiffLinesLabel());
@@ -297,7 +305,7 @@ public class VariationDiffParser {
             );
         }
 
-        return new VariationDiff<>(root);
+        return new VariationDiff<>(root, source);
     }
 
     /**

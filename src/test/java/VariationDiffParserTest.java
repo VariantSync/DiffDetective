@@ -7,7 +7,6 @@ import org.variantsync.diffdetective.util.IO;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.diff.VariationDiff;
 import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParseOptions;
-import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParser;
 import org.variantsync.diffdetective.variation.diff.serialize.Format;
 import org.variantsync.diffdetective.variation.diff.serialize.LineGraphExporter;
 import org.variantsync.diffdetective.variation.diff.serialize.TikzExporter;
@@ -60,15 +59,13 @@ public class VariationDiffParserTest {
         var expectedPath = testCasePath.getParent().resolve(basename + "_expected.lg");
 
         VariationDiff<DiffLinesLabel> variationDiff;
-        try (var inputFile = Files.newBufferedReader(testCasePath)) {
-            variationDiff = VariationDiffParser.createVariationDiff(
-                inputFile,
-                new VariationDiffParseOptions(
-                        false,
-                        false
-                )
-            );
-        }
+        variationDiff = VariationDiff.fromFile(
+            testCasePath,
+            new VariationDiffParseOptions(
+                    false,
+                    false
+            )
+        );
 
         try (var output = IO.newBufferedOutputStream(actualPath)) {
             new LineGraphExporter<>(new Format<>(new FullNodeFormat(), new ChildOrderEdgeFormat<>()))

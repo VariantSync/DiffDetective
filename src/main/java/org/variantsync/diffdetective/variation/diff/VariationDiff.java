@@ -20,7 +20,6 @@ import org.variantsync.diffdetective.variation.diff.construction.GumTreeDiff;
 import org.variantsync.diffdetective.variation.diff.construction.JGitDiff;
 import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParseOptions;
 import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParser;
-import org.variantsync.diffdetective.variation.diff.source.PatchString;
 import org.variantsync.diffdetective.variation.diff.traverse.VariationDiffTraversal;
 import org.variantsync.diffdetective.variation.diff.traverse.VariationDiffVisitor;
 import org.variantsync.diffdetective.variation.tree.VariationTree;
@@ -91,9 +90,7 @@ public class VariationDiff<L extends Label> implements Source {
      */
     public static VariationDiff<DiffLinesLabel> fromFile(final Path p, VariationDiffParseOptions parseOptions) throws IOException, DiffParseException {
         try (BufferedReader file = Files.newBufferedReader(p)) {
-            final VariationDiff<DiffLinesLabel> tree = VariationDiffParser.createVariationDiff(file, parseOptions);
-            tree.setSource(new FileSource(p));
-            return tree;
+            return VariationDiffParser.createVariationDiff(file, new FileSource(p), parseOptions);
         }
     }
 
@@ -103,13 +100,13 @@ public class VariationDiff<L extends Label> implements Source {
      * So just lines preceded by "+", "-", or " " are expected.
      * @param diff The diff as text. Lines should be separated by a newline character. Each line should be preceded by either "+", "-", or " ".
      * @param parseOptions {@link VariationDiffParseOptions} for the parsing process.
+     * @param source the {@link Source} of {@code diff}
      * @return A result either containing the parsed VariationDiff or an error message in case of failure.
      * @throws DiffParseException if {@code diff} couldn't be parsed
      */
-    public static VariationDiff<DiffLinesLabel> fromDiff(final String diff, final VariationDiffParseOptions parseOptions) throws DiffParseException {
-        final VariationDiff<DiffLinesLabel> d;
+    public static VariationDiff<DiffLinesLabel> fromDiff(final String diff, final Source source, final VariationDiffParseOptions parseOptions) throws DiffParseException {
         try {
-            d = VariationDiffParser.createVariationDiff(diff, parseOptions);
+            return VariationDiffParser.createVariationDiff(diff, source, parseOptions);
         } catch (DiffParseException e) {
             Logger.error("""
                             Could not parse diff:
@@ -119,8 +116,6 @@ public class VariationDiff<L extends Label> implements Source {
                     diff);
             throw e;
         }
-        d.setSource(new PatchString(diff));
-        return d;
     }
 
     /**
@@ -164,7 +159,7 @@ public class VariationDiff<L extends Label> implements Source {
 
     /**
      * Create a VariationDiff from two given text files.
-     * @see #fromLines(String, String, DiffAlgorithm.SupportedAlgorithm, VariationDiffParseOptions)
+     * @see #fromLines(String, String, Source, Source, DiffAlgorithm.SupportedAlgorithm, VariationDiffParseOptions)
      */
     public static VariationDiff<DiffLinesLabel> fromFiles(
             final Path beforeFile,
@@ -176,22 +171,24 @@ public class VariationDiff<L extends Label> implements Source {
         try (BufferedReader b = Files.newBufferedReader(beforeFile);
              BufferedReader a = Files.newBufferedReader(afterFile)
         ) {
-            return fromLines(IOUtils.toString(b), IOUtils.toString(a), algorithm, options);
+            return fromLines(IOUtils.toString(b), IOUtils.toString(a), new FileSource(beforeFile), new FileSource(afterFile), algorithm, options);
         }
     }
 
     /**
      * Creates a variation diff from to line-based text inputs.
      * This method just forwards to:
-     * @see JGitDiff#diff(String, String, DiffAlgorithm.SupportedAlgorithm, VariationDiffParseOptions)
+     * @see JGitDiff#diff(String, String, Source, Source, DiffAlgorithm.SupportedAlgorithm, VariationDiffParseOptions)
      */
     public static VariationDiff<DiffLinesLabel> fromLines(
             String before,
             String after,
+            Source beforeSource,
+            Source afterSource,
             DiffAlgorithm.SupportedAlgorithm algorithm,
             VariationDiffParseOptions options) throws IOException, DiffParseException
     {
-        return JGitDiff.diff(before, after, algorithm, options);
+        return JGitDiff.diff(before, after, beforeSource, afterSource, algorithm, options);
     }
 
     /**

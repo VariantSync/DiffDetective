@@ -1,9 +1,9 @@
 package org.variantsync.diffdetective.variation.tree.source;
 
-import java.net.URL;
 import java.nio.file.Path;
 import java.util.List;
 
+import org.variantsync.diffdetective.datasets.Repository;
 import org.variantsync.diffdetective.util.Source;
 
 /**
@@ -12,14 +12,14 @@ import org.variantsync.diffdetective.util.Source;
  * <p>The parameters of this record should be suitably chosen, so that the following commands can be
  * executed in a shell to obtain the referenced source code:
  * <code>
- *   git clone "$repository" repository
+ *   git clone "${repository.getRemoteURI()}" repository
  *   cd repository
  *   git switch -d "$commitHash"
  *   cat "$path"
  * </code>
  */
 public record GitSource(
-    URL repository,
+    Repository repository,
     String commitHash,
     Path path
 ) implements Source {

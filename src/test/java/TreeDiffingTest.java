@@ -13,7 +13,6 @@ import org.variantsync.diffdetective.variation.diff.DiffNode;
 import org.variantsync.diffdetective.variation.diff.VariationDiff;
 import org.variantsync.diffdetective.variation.diff.construction.GumTreeDiff;
 import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParseOptions;
-import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParser;
 import org.variantsync.diffdetective.variation.diff.serialize.Format;
 import org.variantsync.diffdetective.variation.diff.serialize.LineGraphExporter;
 import org.variantsync.diffdetective.variation.diff.serialize.TikzExporter;
@@ -29,7 +28,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.fail;
-import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
 
 public class TreeDiffingTest {
     private final static Path testDir = Constants.RESOURCE_DIR.resolve("tree-diffing");
@@ -83,8 +81,8 @@ public class TreeDiffingTest {
     @ParameterizedTest
     @MethodSource("createMatchingTestCases")
     public void createMatchingTestCase(TestCase testCase) throws IOException, DiffParseException {
-        VariationTree<DiffLinesLabel> beforeEdit = parseVariationTree(testCase.beforeEdit());
-        VariationTree<DiffLinesLabel> afterEdit = parseVariationTree(testCase.afterEdit());
+        VariationTree<DiffLinesLabel> beforeEdit = VariationTree.fromFile(testCase.beforeEdit());
+        VariationTree<DiffLinesLabel> afterEdit = VariationTree.fromFile(testCase.afterEdit());
         assertExpectedVariationDiffs(testCase, GumTreeDiff.diffUsingMatching(beforeEdit, afterEdit, testCase.matcher()));
     }
 
@@ -137,18 +135,6 @@ public class TreeDiffingTest {
                         testCase.visualisation()
                 ));
             }
-        }
-    }
-
-    private static VariationTree<DiffLinesLabel> parseVariationTree(Path filename) throws IOException, DiffParseException {
-        try (var file = Files.newBufferedReader(filename)) {
-            return new VariationTree<>(
-                    VariationDiffParser.createVariationTree(
-                            file,
-                            VariationDiffParseOptions.Default
-                    ).getRoot().projection(BEFORE).toVariationTree(),
-                    new FileSource(filename)
-            );
         }
     }
 }
