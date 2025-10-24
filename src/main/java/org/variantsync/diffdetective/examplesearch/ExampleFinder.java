@@ -106,14 +106,10 @@ public class ExampleFinder implements Analysis.Hooks {
         // We do not want a variationDiff for the entire file but only for the local change to have a small example.
         final VariationDiff<DiffLinesLabel> localTree;
         try {
-            localTree = VariationDiff.fromDiff(localDiff, new VariationDiffParseOptions(annotationParser, true, true));
+            localTree = VariationDiff.fromDiff(localDiff, Source.findFirst(variationDiff, GitPatch.class), new VariationDiffParseOptions(annotationParser, true, true));
             // Not every local diff can be parsed to a VariationDiff because diffs are unaware of the underlying language (i.e., CPP).
             // We want only running examples whose diffs describe entire diff trees for easier understanding.
-            if (isGoodExample.test(localTree)) {
-                GitPatch variationDiffSource = Source.findFirst(variationDiff, GitPatch.class);
-                Assert.assertNotNull(variationDiffSource);
-                localTree.setSource(variationDiffSource.shallowClone());
-            } else {
+            if (!isGoodExample.test(localTree)) {
                 return false;
             }
         } catch (DiffParseException e) {

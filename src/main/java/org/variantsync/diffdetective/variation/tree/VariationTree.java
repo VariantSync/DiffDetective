@@ -98,14 +98,13 @@ public record VariationTree<L extends Label>(
             final Source source,
             final VariationDiffParseOptions parseOptions
             ) throws IOException, DiffParseException {
-        VariationTreeNode<DiffLinesLabel> tree = VariationDiffParser
-            .createVariationTree(input, parseOptions)
-            .getRoot()
-            // Arbitrarily choose the BEFORE projection as both should be equal.
-            .projection(BEFORE)
-            .toVariationTree();
+        VariationDiff<DiffLinesLabel> diff =
+            VariationDiffParser.createVariationTree(input, source, parseOptions);
 
-        return new VariationTree<>(tree, source);
+        return new VariationTree<>(
+            // Arbitrarily choose the BEFORE projection as both should be equal.
+            diff.getRoot().projection(BEFORE).toVariationTree(),
+            diff.getSource());
     }
 
     /**
