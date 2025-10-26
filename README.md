@@ -10,7 +10,7 @@
 
 DiffDetective is an open-source Java library for variability-aware source code differencing and the **analysis of version histories of software product lines**. This means that DiffDetective can **turn a generic differencer into a variability-aware differencer** by means of a pre- or post-processing. DiffDetective is centered around **formally verified** data structures for variability (variation trees) and variability-aware diffs (variation diffs). These data structures are **generic**, and DiffDetective currently implements **C preprocessor support** to parse respective annotations when used to implement variability. The picture below depicts the process of variability-aware differencing.
 
-<img alt="Variability-Aware Differencing Overview" src="docs/teaser.png" height="500" />
+<img alt="Variability-Aware Differencing Overview" src="docs/variability-aware-differencing.png" height="500" />
 
 Given two states of a C-preprocessor annotated source code file (left), for example before and after a commit, DiffDetective constructs a variability-aware diff (right) that distinguishes changes to source code from changes to variability annotations. DiffDetective can construct such a variation diff either, by first using a generic differencer, and separating the information (center path), or by first parsing both input versions to an abstract representation, a variation tree (center top and bottom), and constructing a variation diff using a tree differencing algorithm in a second step.
 
@@ -78,6 +78,18 @@ You may clone it as a template and example for including the library into your o
 Additionally, there is a screencast available on YouTube, guiding you through the demo's setup and source code:
 
 [![DiffDetective Demonstration](docs/yt_thumbnail.png)](https://www.youtube.com/watch?v=q6ight5EDQY)
+
+
+## Supported Differencing Algorithms
+
+In principle, any generic differencing algorithm (i.e, any algorithm that may operate on text or trees) can be made variability-aware with DiffDetective, as explained in our demo paper (see below). Some algorithms are integrated directly in the DiffDetective library, while others come as additional Maven projects.
+
+### Shipped with DiffDetective
+- Git Diff as implemented by [JGit](https://github.com/eclipse-jgit/jgit)
+- [GumTree](https://github.com/GumTreeDiff/gumtree), and all algorithms and matching engines supported by the GumTree library
+
+### Extra Modules
+- [TrueDiff](https://gitlab.rlp.net/plmz/truediff): Support for TrueDiff comes as [a separate Maven project](https://github.com/VariantSync/TrueDiffDetective).
 
 
 ## Publications
@@ -167,9 +179,10 @@ Edge-typed variation diffs and the replication package are implemented in a fork
 
 DiffDetective was extended and used within bachelor's and master's theses:
 
+- _Unparsing von Datenstrukturen zur Analyse von C-Präprozessor-Variabilität_, Eugen Shulimov, Bachelor's Thesis, 2025, [DOI 10.17619/UNIPB/1-2385](http://doi.org/10.17619/UNIPB/1-2385), (german): Eugen added an unparser for variation trees, essentially inverting the horizontal arrows in our commuting diagram at the top of this README file. The unparser for variation diffs reuses the unparser for variation trees by projecting a variation diff to its two variation trees (before and after the change), unparsing the trees, and then diffing the obtained text files to eventually compute a text-based diff.
 - _Constructing Variation Diffs Using Tree Diffing Algorithms_, Benjamin Moosherr, Bachelor's Thesis, 2023, [DOI 10.18725/OPARU-50108](https://dx.doi.org/10.18725/OPARU-50108): Benjamin added support for tree-differencing and integrated the GumTree differencer ([Github](https://github.com/GumTreeDiff/gumtree), [Paper](https://doi.org/10.1145/2642937.2642982)). In his thesis, Benjamin also reviewed a range of quality metrics for tree-diffs with focus on their applicability for rating variability-aware diffs. The [org.variantsync.diffdetective.experiments.thesis_bm](src/main/java/org/variantsync/diffdetective/experiments/thesis_bm) package implements the corresponding empirical study and may serve as an example on how to use the tree-differencing.
 - _Reverse Engineering Feature-Aware Commits From Software Product-Line Repositories_, Lukas Bormann, Bachelor's Thesis, 2023, [10.18725/OPARU-47892](https://dx.doi.org/10.18725/OPARU-47892): Lukas implemented an algorithm for feature-based commit-untangling, which turns variation diff into a series of smaller diffs, each of which contains an edit to a single feature or feature formula. This work was later refined in our publication _Views on Edits to Variational Software_ illustrated above.
-- _Inspecting the Evolution of Feature Annotations in Configurable Software_, Lukas Güthing, Master's Thesis, 2023: Lukas implemented different edge-types for associating variability annotations within variation diffs. He published his work later at VaMoS 2024 under the title _Explaining Edits to Variability Annotations in Evolving Software Product Lines_, illustrated above.
+- _Inspecting the Evolution of Feature Annotations in Configurable Software_, Lukas Güthing, Master's Thesis, 2023: Lukas implemented different edge-types for associating variability annotations within variation diffs. He published his work later at VaMoS 2024 under the title _Explaining Edits to Variability Annotations in Evolving Software Product Lines_, illustrated above. His work can be found in a [fork][forklg] of DiffDetective.
 - _Empirical Evaluation of Feature Trace Recording on the Edit History of Marlin_, Sören Viegener, Bachelor's Thesis, 2021, [DOI 10.18725/OPARU-38603](http://dx.doi.org/10.18725/OPARU-38603): In his thesis, Sören started the DiffDetective project and implemented the first version of an algorithm, which parses text-based diffs to C-preprocessor files to variation diffs. He also came up with an initial classification of edits, which we wanted to reuse to evaluate [Feature Trace Recording](https://variantsync.github.io/FeatureTraceRecording/), a method for deriving variability annotations from annotated patches.
 
 [documentation]: https://variantsync.github.io/DiffDetective/docs/javadoc
