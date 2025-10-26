@@ -105,8 +105,7 @@ public class Configure implements Relevance {
      * @return true if the given node was marked relevant
      */
     private <TreeNode extends VariationNode<TreeNode, ?>> boolean computeViewNodesOfElifChain(TreeNode v, Consumer<TreeNode> markRelevant) {
-        final NodeType vt = v.getNodeType();
-        Assert.assertTrue(vt == NodeType.IF || vt == NodeType.ELSE || vt == NodeType.ELIF);
+        Assert.assertTrue(v.isAnnotation());
 
         if (test(v)) {
             markRelevant.accept(v);
