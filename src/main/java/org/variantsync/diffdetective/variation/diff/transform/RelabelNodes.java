@@ -10,7 +10,7 @@ import java.util.function.Function;
  * Transformer that changes the label of each node using a relable function.
  * @author Paul Bittner
  */
-public class RelabelNodes<L extends Label> implements VariationDiffTransformer<L> {
+public class RelabelNodes<L extends Label> implements Transformer<VariationDiff<L>> {
     private final Function<DiffNode<L>, L> getLabel;
 
     /**

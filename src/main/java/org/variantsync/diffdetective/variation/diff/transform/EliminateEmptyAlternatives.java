@@ -35,7 +35,7 @@ import static org.variantsync.diffdetective.util.fide.FormulaUtils.*;
  *
  * @author Paul Bittner
  */
-public class EliminateEmptyAlternatives<L extends Label> implements VariationTreeTransformer<L> {
+public class EliminateEmptyAlternatives<L extends Label> implements Transformer<VariationTree<L>> {
     private void elim(VariationTreeNode<L> subtree) {
         // We simplify only annotations.
         if (!subtree.isAnnotation()) return;

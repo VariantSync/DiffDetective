@@ -31,7 +31,7 @@ import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
  *
  * @author Paul Bittner
  */
-public class CollapseNestedNonEditedAnnotations implements VariationDiffTransformer<DiffLinesLabel> {
+public class CollapseNestedNonEditedAnnotations implements Transformer<VariationDiff<DiffLinesLabel>> {
     private final List<Stack<DiffNode<DiffLinesLabel>>> chainCandidates = new ArrayList<>();
     private final List<Stack<DiffNode<DiffLinesLabel>>> chains = new ArrayList<>();
 

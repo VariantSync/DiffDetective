@@ -17,7 +17,7 @@ import org.variantsync.diffdetective.variation.diff.serialize.LineGraphConstants
 import org.variantsync.diffdetective.variation.diff.serialize.edgeformat.DefaultEdgeLabelFormat;
 import org.variantsync.diffdetective.variation.diff.serialize.nodeformat.TypeDiffNodeFormat;
 import org.variantsync.diffdetective.variation.diff.serialize.treeformat.CommitDiffVariationDiffLabelFormat;
-import org.variantsync.diffdetective.variation.diff.transform.VariationDiffTransformer;
+import org.variantsync.diffdetective.variation.diff.transform.Transformer;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -64,8 +64,8 @@ public class TreeTransformersTest {
 
         int i = 1;
         int prevSize = variationDiff.computeSize();
-        final List<VariationDiffTransformer<DiffLinesLabel>> transformers = VariationDiffMiner.Postprocessing(repository);
-        for (final VariationDiffTransformer<DiffLinesLabel> f : transformers) {
+        final List<Transformer<VariationDiff<DiffLinesLabel>>> transformers = VariationDiffMiner.Postprocessing(repository);
+        for (final Transformer<VariationDiff<DiffLinesLabel>> f : transformers) {
             INFO.accept("Applying transformation " + f + ".");
             f.transform(variationDiff);
 
@@ -87,7 +87,7 @@ public class TreeTransformersTest {
     @BeforeEach
     public void init() {
 //        Main.setupLogger(Level.INFO);
-//        VariationDiffTransformer.checkDependencies(transformers);
+       // Transformer.checkDependencies(transformers);
     }
 
     @Test
