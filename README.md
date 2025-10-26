@@ -85,7 +85,7 @@ Additionally, there is a screencast available on YouTube, guiding you through th
 In principle, any generic differencing algorithm (i.e, any algorithm that may operate on text or trees) can be made variability-aware with DiffDetective, as explained in our demo paper (see below). Some algorithms are integrated directly in the DiffDetective library, while others come as additional Maven projects.
 
 ### Shipped with DiffDetective
-- Git Diff
+- Git Diff as implemented by [JGit](https://github.com/eclipse-jgit/jgit)
 - [GumTree](https://github.com/GumTreeDiff/gumtree), and all algorithms and matching engines supported by the GumTree library
 
 ### Extra Modules
