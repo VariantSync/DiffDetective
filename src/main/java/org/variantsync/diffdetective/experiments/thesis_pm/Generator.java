@@ -215,10 +215,10 @@ public class Generator {
 
 		VariationDiff<L> targetView = DiffView.optimized(targetPatchModified.deepCopy(), configureTo1);
 
-		GameEngine.showAndAwaitAll(Show.diff(sourcePatch, "source patch"),
-				Show.diff(targetPatchModified, "target patch elim empty altern and resolved"),
-				Show.diff(targetPatchElimEmptyAlt, "target patch elim empty altern"),
-				Show.diff(targetView, "V' (from target patch)"));
+//		GameEngine.showAndAwaitAll(Show.diff(sourcePatch, "source patch"),
+//				Show.diff(targetPatchModified, "target patch elim empty altern and resolved"),
+//				Show.diff(targetPatchElimEmptyAlt, "target patch elim empty altern"),
+//				Show.diff(targetView, "V' (from target patch)"));
 
 		// revert the changes made in B but not in A
 		new RevertSomeChanges<DiffLinesLabel>(node -> {
@@ -230,7 +230,7 @@ public class Generator {
 
 		targetPatch = targetPatchModified;
 
-		GameEngine.showAndAwaitAll(Show.diff(sourcePatch, "source patch"), Show.diff(targetPatch, "target patch"));
+//		GameEngine.showAndAwaitAll(Show.diff(sourcePatch, "source patch"), Show.diff(targetPatch, "target patch"));
 
 		// FIXME: Maybe we want to distinguish cases where one of the patches (or both)
 		// are empty (i.e., noop / id)?
@@ -361,7 +361,7 @@ public class Generator {
 		// target variants as string if they did not fail.
 		GameEngine[] gameEngineArray = new GameEngine[gameEngine.size()];
 		gameEngineArray = gameEngine.toArray(gameEngineArray);
-		GameEngine.showAndAwaitAll(gameEngineArray);
+//		GameEngine.showAndAwaitAll(gameEngineArray);
 
 		// ## 5. Compare the results of patchers here!
 		System.out.println("mpatch: " + isMpatchCorrect);
@@ -370,7 +370,7 @@ public class Generator {
 		// TODO
 	}
 
-	private static <L extends Label> Result<VariationTree<DiffLinesLabel>, Error> runMPatch(
+	public static <L extends Label> Result<VariationTree<DiffLinesLabel>, Error> runMPatch(
 			final VariationTree<L> targetVariantBefore) throws IOException, DiffParseException {
 		// TODO: configure mpatch
 		// reset target variant
@@ -403,7 +403,7 @@ public class Generator {
 		writeToFile(targetVariantBefore.unparse(), targetVariantBeforePath);
 	}
 
-	private static <L extends Label> Result<VariationTree<DiffLinesLabel>, Error> runGnuPatch(
+	public static <L extends Label> Result<VariationTree<DiffLinesLabel>, Error> runGnuPatch(
 			final VariationTree<L> targetVariantBefore) throws IOException, DiffParseException {
 		// TODO: run mpatch and gnu patch. Here is a sketch for this can be done.
 		// reset target variant
@@ -428,7 +428,7 @@ public class Generator {
 		return Result.Failure(Error.FAILED);
 	}
 
-	private static <L extends Label> Result<VariationTree<DiffLinesLabel>, Error> runPatchTransformer(
+	public static <L extends Label> Result<VariationTree<DiffLinesLabel>, Error> runPatchTransformer(
 			VariationDiff<L> sourcePatch, final VariationTree<L> targetVariantBefore) {
 		VariationTree<DiffLinesLabel> patchTransformerResult = null;
 		try {

@@ -12,6 +12,9 @@ import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.diff.patching.Patching;
 import org.variantsync.diffdetective.variation.diff.transform.CutNonEditedSubtrees;
 import org.variantsync.diffdetective.variation.tree.VariationTree;
+import org.variantsync.functjonal.Result;
+
+import java.util.ArrayList;
 import java.util.List;
 
 import org.tinylog.Logger;
@@ -19,6 +22,8 @@ import org.variantsync.diffdetective.analysis.*;
 import org.variantsync.diffdetective.datasets.PatchDiffParseOptions;
 import org.variantsync.diffdetective.datasets.Repository;
 import org.variantsync.diffdetective.diff.git.PatchDiff;
+import org.variantsync.diffdetective.diff.result.DiffParseException;
+import org.variantsync.diffdetective.experiments.thesis_pm.Generator.Error;
 import org.variantsync.diffdetective.show.Show;
 import org.variantsync.diffdetective.show.engine.GameEngine;
 import org.variantsync.diffdetective.variation.diff.Time;
@@ -27,16 +32,43 @@ import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParseOpti
 
 public class PatchingExperiment implements Analysis.Hooks {
 
-	private static final AnalysisResult.ResultKey<RejectedPatchesCounter> REJECTED_PATCHES_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
-			"rejected patches");
-	private static final AnalysisResult.ResultKey<IncorrectlyAppliedPatchesCounter> INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
-			"incorrectly applied patches");
-	private static final AnalysisResult.ResultKey<SuccessfullyAppliedPatchesCounter> SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
-			"successfully applied patches");
+	private static final AnalysisResult.ResultKey<ErrorPatchesCounter> PT_ERROR_PATCHES_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
+			"PT - error patches");
+	private static final AnalysisResult.ResultKey<RejectedPatchesCounter> PT_REJECTED_PATCHES_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
+			"PT - rejected patches");
+	private static final AnalysisResult.ResultKey<IncorrectlyAppliedPatchesCounter> PT_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
+			"PT - incorrectly applied patches");
+	private static final AnalysisResult.ResultKey<SuccessfullyAppliedPatchesCounter> PT_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
+			"PT - successfully applied patches");
+
+	private static final AnalysisResult.ResultKey<ErrorPatchesCounter> GNU_ERROR_PATCHES_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
+			"GNU - error patches");
+	private static final AnalysisResult.ResultKey<RejectedPatchesCounter> GNU_REJECTED_PATCHES_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
+			"GNU - rejected patches");
+	private static final AnalysisResult.ResultKey<IncorrectlyAppliedPatchesCounter> GNU_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
+			"GNU - incorrectly applied patches");
+	private static final AnalysisResult.ResultKey<SuccessfullyAppliedPatchesCounter> GNU_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
+			"GNU - successfully applied patches");
+
+	private static final AnalysisResult.ResultKey<ErrorPatchesCounter> MPATCH_ERROR_PATCHES_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
+			"MPATCH - error patches");
+	private static final AnalysisResult.ResultKey<RejectedPatchesCounter> MPATCH_REJECTED_PATCHES_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
+			"MPATCH - rejected patches");
+	private static final AnalysisResult.ResultKey<IncorrectlyAppliedPatchesCounter> MPATCH_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
+			"MPATCH - incorrectly applied patches");
+	private static final AnalysisResult.ResultKey<SuccessfullyAppliedPatchesCounter> MPATCH_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
+			"MPATCH - successfully applied patches");
+
 	private static final AnalysisResult.ResultKey<SkippedPatchesCounter> SKIPPED_PATCHES_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
 			"skipped patches");
 	private int commits = 0;
 	private PatchDiff lastPatch;
+
+	private static class ErrorPatchesCounter extends SimpleMetadata<Integer, ErrorPatchesCounter> {
+		public ErrorPatchesCounter() {
+			super(0, "error patches", Integer::sum);
+		}
+	}
 
 	private static class RejectedPatchesCounter extends SimpleMetadata<Integer, RejectedPatchesCounter> {
 		public RejectedPatchesCounter() {
@@ -70,9 +102,19 @@ public class PatchingExperiment implements Analysis.Hooks {
 
 	@Override
 	public void initializeResults(Analysis analysis) {
-		analysis.append(REJECTED_PATCHES_COUNTER_RESULT_KEY, new RejectedPatchesCounter());
-		analysis.append(INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY, new IncorrectlyAppliedPatchesCounter());
-		analysis.append(SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY, new SuccessfullyAppliedPatchesCounter());
+		analysis.append(PT_ERROR_PATCHES_COUNTER_RESULT_KEY, new ErrorPatchesCounter());
+		analysis.append(PT_REJECTED_PATCHES_COUNTER_RESULT_KEY, new RejectedPatchesCounter());
+		analysis.append(PT_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY, new IncorrectlyAppliedPatchesCounter());
+		analysis.append(PT_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY, new SuccessfullyAppliedPatchesCounter());
+		analysis.append(GNU_ERROR_PATCHES_COUNTER_RESULT_KEY, new ErrorPatchesCounter());
+		analysis.append(GNU_REJECTED_PATCHES_COUNTER_RESULT_KEY, new RejectedPatchesCounter());
+		analysis.append(GNU_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY, new IncorrectlyAppliedPatchesCounter());
+		analysis.append(GNU_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY, new SuccessfullyAppliedPatchesCounter());
+		analysis.append(MPATCH_ERROR_PATCHES_COUNTER_RESULT_KEY, new ErrorPatchesCounter());
+		analysis.append(MPATCH_REJECTED_PATCHES_COUNTER_RESULT_KEY, new RejectedPatchesCounter());
+		analysis.append(MPATCH_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY, new IncorrectlyAppliedPatchesCounter());
+		analysis.append(MPATCH_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY,
+				new SuccessfullyAppliedPatchesCounter());
 		analysis.append(SKIPPED_PATCHES_COUNTER_RESULT_KEY, new SkippedPatchesCounter());
 	}
 
@@ -85,43 +127,83 @@ public class PatchingExperiment implements Analysis.Hooks {
 	@Override
 	public boolean analyzeVariationDiff(Analysis analysis) throws Exception {
 		VariationDiff<DiffLinesLabel> diff = analysis.getCurrentVariationDiff();
-		lastPatch = analysis.getCurrentPatch();
-		
-		VariationTree<DiffLinesLabel> before = diff.project(Time.BEFORE).deepCopy();
-		VariationTree<DiffLinesLabel> after = diff.project(Time.AFTER).deepCopy();
-		try {
-			VariationDiff<DiffLinesLabel> patchedVariant = Patching.patch(diff, before, false, true);
+		PatchScenario<DiffLinesLabel> scenario = Generator.generatePatchScenario(diff);
 
-			if (!Patching.comparePatchedVariantWithExpectedResult(patchedVariant.project(Time.AFTER), after)) {
-				analysis.get(INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++;
-				VariationDiff<DiffLinesLabel> diffCopy = diff.deepCopy();
-				VariationDiff<DiffLinesLabel> patchedCopy = patchedVariant.deepCopy();
-				CutNonEditedSubtrees.genericTransform(diffCopy);
-				CutNonEditedSubtrees.genericTransform(patchedCopy);
-				GameEngine.showAndAwaitAll(Show.diff(diffCopy), Show.diff(patchedCopy));
-				
-			} else {
-				analysis.get(SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++;
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			PatchingExperiment.writeToFile(lastPatch, "file6.diff");
-			throw new Exception("break");
-//			analysis.get(REJECTED_PATCHES_COUNTER_RESULT_KEY).value++;
+		// TODO: Run Pia's new patcher here and store the result.
+		Result<VariationTree<DiffLinesLabel>, Error> patchTransformerResult = Generator
+				.runPatchTransformer(scenario.sourcePatch(), scenario.targetVariantBefore());
+
+		patchTransformerResult.match(
+				tree -> Patching.arePatchedVariantsEquivalent((VariationDiff<DiffLinesLabel>) scenario.sourcePatch(),
+						(VariationTree<DiffLinesLabel>) scenario.targetVariantBefore(), tree,
+						scenario.sourceVariantConfig(), scenario.targetVariantConfig(), false)
+								? analysis.get(PT_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++
+								: analysis.get(PT_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++,
+				error -> analysis.get(PT_REJECTED_PATCHES_COUNTER_RESULT_KEY).value++);
+
+		Result<VariationTree<DiffLinesLabel>, Error> gnuPatchResult;
+		try {
+			gnuPatchResult = Generator.runGnuPatch(scenario.targetVariantBefore());
+			gnuPatchResult.match(tree -> Patching.arePatchedVariantsEquivalent(
+					(VariationDiff<DiffLinesLabel>) scenario.sourcePatch(),
+					(VariationTree<DiffLinesLabel>) scenario.targetVariantBefore(), tree,
+					scenario.sourceVariantConfig(), scenario.targetVariantConfig(), false)
+					? analysis.get(GNU_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++
+							: analysis.get(GNU_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++
+							, error -> analysis.get(GNU_REJECTED_PATCHES_COUNTER_RESULT_KEY).value++);
+		} catch (IOException | DiffParseException e) {
+			analysis.get(GNU_ERROR_PATCHES_COUNTER_RESULT_KEY).value++;
 		}
+
+		Result<VariationTree<DiffLinesLabel>, Error> mpatchResult;
+		try {
+			mpatchResult = Generator.runMPatch(scenario.targetVariantBefore());
+			mpatchResult.match(tree -> Patching.arePatchedVariantsEquivalent(
+					(VariationDiff<DiffLinesLabel>) scenario.sourcePatch(),
+					(VariationTree<DiffLinesLabel>) scenario.targetVariantBefore(), tree,
+					scenario.sourceVariantConfig(), scenario.targetVariantConfig(), false)
+					? analysis.get(MPATCH_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++
+							: analysis.get(MPATCH_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++
+					, error -> analysis.get(MPATCH_REJECTED_PATCHES_COUNTER_RESULT_KEY).value++);
+		} catch (IOException | DiffParseException e) {
+			analysis.get(MPATCH_ERROR_PATCHES_COUNTER_RESULT_KEY).value++;			
+		}
+
+//		VariationTree<DiffLinesLabel> before = diff.project(Time.BEFORE).deepCopy();
+//		VariationTree<DiffLinesLabel> after = diff.project(Time.AFTER).deepCopy();
+//		try {
+//			VariationDiff<DiffLinesLabel> patchedVariant = Patching.patch(diff, before, false, true);
+//
+//			if (!Patching.comparePatchedVariantWithExpectedResult(patchedVariant.project(Time.AFTER), after)) {
+//				analysis.get(PT_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++;
+//				VariationDiff<DiffLinesLabel> diffCopy = diff.deepCopy();
+//				VariationDiff<DiffLinesLabel> patchedCopy = patchedVariant.deepCopy();
+//				CutNonEditedSubtrees.genericTransform(diffCopy);
+//				CutNonEditedSubtrees.genericTransform(patchedCopy);
+//				GameEngine.showAndAwaitAll(Show.diff(diffCopy), Show.diff(patchedCopy));
+//
+//			} else {
+//				analysis.get(PT_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++;
+//			}
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//			PatchingExperiment.writeToFile(lastPatch, "file6.diff");
+//			throw new Exception("break");
+////			analysis.get(REJECTED_PATCHES_COUNTER_RESULT_KEY).value++;
+//		}
 		return true;
 	}
-	
+
 	public static void writeToFile(PatchDiff p, String filename) {
 		try {
 			File f = new File(Path.of("data", "examples", filename).toUri());
 			f.createNewFile();
-		    BufferedWriter myWriter = new BufferedWriter(new FileWriter(f));
-		    myWriter.write(p.getDiff());
-		    myWriter.close();  
-	    } catch (IOException i) {
-	    	i.printStackTrace();
-	    }
+			BufferedWriter myWriter = new BufferedWriter(new FileWriter(f));
+			myWriter.write(p.getDiff());
+			myWriter.close();
+		} catch (IOException i) {
+			i.printStackTrace();
+		}
 	}
 
 	@Override
@@ -130,8 +212,7 @@ public class PatchingExperiment implements Analysis.Hooks {
 	}
 
 	public static Analysis Create(Repository repo, Path outputDirectory, PatchingExperiment experiment) {
-		return new Analysis("my analysis", List.of(
-				experiment, new StatisticsAnalysis()
+		return new Analysis("my analysis", List.of(experiment, new StatisticsAnalysis()
 //	           , new EditClassValidation()
 		), repo, outputDirectory);
 	}
@@ -139,35 +220,27 @@ public class PatchingExperiment implements Analysis.Hooks {
 	public static void main(String[] args) {
 		PatchingExperiment experiment = new PatchingExperiment();
 		final AnalysisRunner.Options defaultOptions = AnalysisRunner.Options.DEFAULT(args);
-		final AnalysisRunner.Options analysisOptions = new AnalysisRunner.Options(
-				Path.of("data", "repos"), 
-				Path.of("data", "output"),
-				Path.of("data", "demo-dataset.md"),
-                repo -> new PatchDiffParseOptions(
-                        PatchDiffParseOptions.DiffStoragePolicy.DO_NOT_REMEMBER,
-                        new VariationDiffParseOptions(
-                                true,
-                                false
-                        )
-                ),
-                defaultOptions.getFilterForRepo(),
-                true,
-                false
-        );
-//		try {
-//			AnalysisRunner.run(analysisOptions
-//					,
-//					(repository, path) -> Analysis.forEachCommit(() -> PatchingExperiment.Create(repository, path, experiment), 500,
-//							8));
-//		} catch (Exception e) {
-//			PatchingExperiment.writeToFile(experiment.getLastPatch(), "file7.diff");
-//			e.printStackTrace();
-//		}
+		final AnalysisRunner.Options analysisOptions = new AnalysisRunner.Options(Path.of("data", "repos"),
+				Path.of("data", "output"), Path.of("data", "demo-dataset.md"),
+				repo -> new PatchDiffParseOptions(PatchDiffParseOptions.DiffStoragePolicy.DO_NOT_REMEMBER,
+						new VariationDiffParseOptions(true, false)),
+				defaultOptions.getFilterForRepo(), true, false);
+		try {
+			AnalysisRunner.run(analysisOptions
+					,
+					(repository, path) -> Analysis.forEachCommit(() -> PatchingExperiment.Create(repository, path, experiment), 500,
+							8));
+		} catch (Exception e) {
+			PatchingExperiment.writeToFile(experiment.getLastPatch(), "file7.diff");
+			e.printStackTrace();
+		}
 		try {
 //			VariationDiff diff = Patching.patch(Patching.parseVariationDiffFromFile("test_exampleA.diff"),
 //					Patching.parseVariationTreeFromFile("test_exampleB.cpp"), true, true);
 //			System.out.println(diff.project(Time.AFTER).unparse());
-			Patching.testSomething(Patching.parseVariationDiffFromFile("equivEnrichedVariants.diff"),Patching.parseVariationTreeFromFile("equivEnrichedVariants.cpp"), Patching.parseVariationTreeFromFile("equivEnrichedVariantsBefore.cpp"));
+//			Patching.testSomething(Patching.parseVariationDiffFromFile("equivEnrichedVariants.diff"),
+//					Patching.parseVariationTreeFromFile("equivEnrichedVariants.cpp"),
+//					Patching.parseVariationTreeFromFile("equivEnrichedVariantsBefore.cpp"));
 //			Patching.testSomething(Patching.parseVariationDiffFromFile("example1.diff"), Patching.parseVariationTreeFromFile("example1_B.cpp"));
 //			Patching.patchVariationTrees(Patching.parseVariationDiffFromFile("file5.diff"), Patching.parseVariationDiffFromFile("file5.diff").project(Time.BEFORE), true, true);
 //			Patching.patch(Patching.parseVariationDiffFromFiles("variantAversion1.cpp", "variantAversion2.cpp"), Patching.parseVariationTreeFromFile("variantBversion1.cpp"), true, true);
@@ -189,7 +262,7 @@ public class PatchingExperiment implements Analysis.Hooks {
 //			VariationTree<DiffLinesLabel> expectedResult = Patching
 //					.parseVariationTreeFromFile("exampleA2NodesWith2Parents.cpp");
 //			GameEngine.showAndAwaitAll(Show.tree(patchedVariant.project(Time.AFTER)), Show.tree(expectedResult));
-			
+
 //			System.out.println(Patching.comparePatchedVariantWithExpectedResult(patchedVariant, expectedResult));
 //			VariationDiff<DiffLinesLabel> patchedVariant = Patching.patchVariationTrees(
 //					Patching.parseVariationDiffFromFile("example1.diff"),
