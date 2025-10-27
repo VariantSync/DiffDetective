@@ -3,7 +3,7 @@ int x = 0;
 	x += 100;
 	#ifdef Feature2
 	 	int y = 50;
-		#ifdef Feature5
+		#ifdef FeatureA
 			int z = 100;
 		#endif
 	#endif
@@ -12,6 +12,6 @@ int x = 0;
 #ifdef Feature3
 	x += 300;
 #endif
-#ifdef Feature5
+#ifdef FeatureA
  z *= 100;
 #endif

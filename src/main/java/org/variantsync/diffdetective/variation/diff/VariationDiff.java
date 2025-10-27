@@ -379,22 +379,22 @@ public class VariationDiff<L extends Label> {
     }
 
 
-    /**
-     * Returns all variable names occurring in annotations (i.e., formulas of mapping nodes) in this variation diff.
-     * @return A set of every occuring feature name.
-     */
-    public Set<String> computeAllFeatureNames() {
-        Set<String> features = new LinkedHashSet<>();
-        forAll(node -> {
-                if (node.isConditionalAnnotation()) {
-                    features.addAll(node.getFormula().getUniqueContainedFeatures());
-                }
-            });
-        // Since FeatureIDE falsely reports constants "True" and "False" as feature names, we have to remove them from the resulting set.
-        features.removeIf(FixTrueFalse::isTrueLiteral);
-        features.removeIf(FixTrueFalse::isFalseLiteral);
-        return features;
-    }
+//    /**
+//     * Returns all variable names occurring in annotations (i.e., formulas of mapping nodes) in this variation diff.
+//     * @return A set of every occuring feature name.
+//     */
+//    public Set<String> computeAllFeatureNames() {
+//        Set<String> features = new LinkedHashSet<>();
+//        forAll(node -> {
+//                if (node.isConditionalAnnotation()) {
+//                    features.addAll(node.getFormula().getUniqueContainedFeatures());
+//                }
+//            });
+//        // Since FeatureIDE falsely reports constants "True" and "False" as feature names, we have to remove them from the resulting set.
+//        features.removeIf(FixTrueFalse::isTrueLiteral);
+//        features.removeIf(FixTrueFalse::isFalseLiteral);
+//        return features;
+//    }
 
     /**
      * Returns all variable names occurring in annotations (i.e., formulas of mapping nodes) in this variation diff.

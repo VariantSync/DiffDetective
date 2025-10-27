@@ -31,12 +31,14 @@ public class Main {
         }
 
         for (VariationDiff<DiffLinesLabel> d : diffs) {
-            try {
-				Generator.generatePatchScenario(d);
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+        	for (int i = 0; i < 10; i++) {
+	            try {
+					Generator.generatePatchScenario(d);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+        	}
         }
     }
 }

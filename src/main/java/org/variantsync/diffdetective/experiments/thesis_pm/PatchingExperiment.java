@@ -164,11 +164,13 @@ public class PatchingExperiment implements Analysis.Hooks {
 //			e.printStackTrace();
 //		}
 		try {
-			VariationDiff diff = Patching.patch(Patching.parseVariationDiffFromFile("test_exampleA.diff"),
-					Patching.parseVariationTreeFromFile("test_exampleB.cpp"), true, true);
-			System.out.println(diff.project(Time.AFTER).unparse());
+//			VariationDiff diff = Patching.patch(Patching.parseVariationDiffFromFile("test_exampleA.diff"),
+//					Patching.parseVariationTreeFromFile("test_exampleB.cpp"), true, true);
+//			System.out.println(diff.project(Time.AFTER).unparse());
+			Patching.testSomething(Patching.parseVariationDiffFromFile("equivEnrichedVariants.diff"),Patching.parseVariationTreeFromFile("equivEnrichedVariants.cpp"), Patching.parseVariationTreeFromFile("equivEnrichedVariantsBefore.cpp"));
+//			Patching.testSomething(Patching.parseVariationDiffFromFile("example1.diff"), Patching.parseVariationTreeFromFile("example1_B.cpp"));
 //			Patching.patchVariationTrees(Patching.parseVariationDiffFromFile("file5.diff"), Patching.parseVariationDiffFromFile("file5.diff").project(Time.BEFORE), true, true);
-//			Patching.patchVariationTrees(Patching.parseVariationDiffFromFiles("exampleA1Add.cpp", "exampleA2Add.cpp"), Patching.parseVariationTreeFromFile("exampleBAdd.cpp"), true, true);
+//			Patching.patch(Patching.parseVariationDiffFromFiles("variantAversion1.cpp", "variantAversion2.cpp"), Patching.parseVariationTreeFromFile("variantBversion1.cpp"), true, true);
 //			Patching.patchVariationTrees(Patching.parseVariationDiffFromFiles("exampleA1Rem.cpp", "exampleA2Rem.cpp"), Patching.parseVariationTreeFromFile("exampleBRem.cpp"), true, true);
 //			VariationDiff diff = Patching.patchVariationTrees(Patching.parseVariationDiffFromFiles("exampleA1RemAdd.cpp", "exampleA2RemAdd.cpp"),
 //					Patching.parseVariationTreeFromFile("exampleBRemAdd.cpp"), true, true);

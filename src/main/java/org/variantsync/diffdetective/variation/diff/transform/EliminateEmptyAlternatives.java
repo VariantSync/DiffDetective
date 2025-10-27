@@ -51,7 +51,8 @@ public class EliminateEmptyAlternatives<L extends Label> implements Transformer<
 
         // When there are no children, 'subtree' is an empty annotation that can be eliminated.
         if (children.isEmpty()) {
-        	nodesToDrop.add(subtree);
+        	subtree.drop();
+//        	nodesToDrop.add(subtree);
         }
         // When there is exactly one child and that child is an 'else' or 'elif' we can simplify that nesting.
         else if (children.size() == 1) {
@@ -66,8 +67,8 @@ public class EliminateEmptyAlternatives<L extends Label> implements Transformer<
                 subtree.setFormula(newFormula);
 
                 // simplify tree
-                nodesToDrop.add(child); 
-	        subtree.stealChildrenOf(child);
+                child.drop();
+                subtree.stealChildrenOf(child);
             }
         }
     }
@@ -75,9 +76,7 @@ public class EliminateEmptyAlternatives<L extends Label> implements Transformer<
     @Override
     public void transform(VariationTree<L> tree) {
         tree.forAllPostorder(this::elim);
-        for (VariationTreeNode<L> node : nodesToDrop) {
-        	node.drop();
-        }
+        tree.toCompletelyUnchangedVariationDiff().assertConsistency();
        
     }
 }

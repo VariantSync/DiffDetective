@@ -9,6 +9,6 @@ int x = 0;
 	#endif
     x += 12;
 #endif
-#ifdef Feature5
+#ifdef FeatureA
  z *= 100;
 #endif
