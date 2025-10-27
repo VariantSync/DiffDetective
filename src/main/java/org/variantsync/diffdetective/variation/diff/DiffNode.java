@@ -888,6 +888,40 @@ public class DiffNode<L extends Label> implements HasNodeType {
     }
 
     /**
+     * Turns this node into a node with {@link DiffType} {@link DiffType#NON}.
+     * To retain consistency of the variation diff, this node will also ensure that this
+     * node will have a parent at all times.
+     * To this end, the parent of this node will also be made unchanged if necessary, potentially
+     * making some or all ancestors of this node unchanged recursively.
+     * This method has no effect when this node is already unchanged.
+     */
+    public void makeUnchanged() {
+        if (isNon()) return;
+
+        this.diffType = DiffType.NON;
+
+        final DiffNode<L> bp = at(Time.BEFORE).parent;
+        final DiffNode<L> ap = at(Time.AFTER).parent;
+
+        // If we have a parent before the change and after the change, making this node unchanged is fine.
+        // Otherwise, if at least one parent is null, we have to set the other parent and make our parent unchanged as well.
+        if (bp == null || ap == null) {
+            // There is only one parent, which we store in this field.
+            final DiffNode<L> p = bp == null ? ap : bp;
+            Assert.assertTrue(p != null);
+
+            // If the parent is not unchanged, we have to make it unchanged so that it can be our
+            // parent at all times.
+            if (!p.isNon()) {
+                p.makeUnchanged();
+            }
+
+            // Now make p our parent at all times, not just at a single time.
+            Time.forAll(t -> at(t).parent = p);
+        }
+    }
+
+    /**
      * Transforms a {@code VariationNode} into a {@code DiffNode} by diffing {@code variationNode}
      * to itself. Recursively translates all children.
      *
