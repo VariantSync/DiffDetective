@@ -908,6 +908,9 @@ public class DiffNode<L extends Label> implements HasNodeType {
         if (bp == null || ap == null) {
             // There is only one parent, which we store in this field.
             final DiffNode<L> p = bp == null ? ap : bp;
+            final Time timeOfExistingEdge = bp == null ? AFTER : BEFORE;
+            final Time timeOfNewEdge = timeOfExistingEdge.other();
+
             Assert.assertTrue(p != null);
 
             // If the parent is not unchanged, we have to make it unchanged so that it can be our
@@ -917,7 +920,29 @@ public class DiffNode<L extends Label> implements HasNodeType {
             }
 
             // Now make p our parent at all times, not just at a single time.
-            Time.forAll(t -> at(t).parent = p);
+            // To this end, we essentially have to "patch" this node into our parent scope at timeOfNewEdge.
+            // Technically, this means that we have to add this node to the children list of p at a specific index.
+            // We run into the alignment problem here if there is an insertion (or multiple insertions) right next to a deleted node we make unchanged or vice versa.
+            // Hence, the index at which to patch our node is not unique.
+            // There are multiple heuristics or strategies we could use to determine the index:
+            // - constant index: always use index 0 for example
+            // - line numbers: use the index right before the node with a higher line number at timeOfNewEdge
+            //                 This solution requires knowledge on line numbers which are not always present (e.g., in diffs generated in code).
+            // - context-based patching: Try to locate the node where its neighbors at timeOfNewEdge are most similar to the neighbors at timeOfExistingEdge
+            //                           This requires some knowledge on the labels to match contexts.
+            // We lightweight context-based patching here by trying to insert the node directly right of its closest unchanged left neighbor.
+            int patchIndex = 0; // the index at which to insert this node at timeOfNewEdge
+            final List<DiffNode<L>> siblingsAndMe = p.getChildOrder(timeOfExistingEdge);
+            // We start walking from our closest left neighbor towards the leftmost sibling (at index 0) and try to find the first unchanged sibling.
+            for (int i = p.indexOfChild(this, timeOfExistingEdge) - 1; i >= 0; i--) {
+                final DiffNode<L> candidate = siblingsAndMe.get(i);
+                if (candidate.isNon()) { // i.e., exists at timeOfNewEdge as well
+                    // Insert ourselves as the new right neighbor of the candidate node
+                    patchIndex = p.indexOfChild(candidate, timeOfNewEdge) + 1;
+                    break;
+                }
+            }
+            p.insertChild(this, patchIndex, timeOfNewEdge);
         }
     }
 
