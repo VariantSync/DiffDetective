@@ -195,16 +195,16 @@ public class Generator {
 																				// patch
 		// Eliminate empty alternatives in source and target patch
 		VariationTree<L> sourceBefore = sourcePatchRaw.project(Time.BEFORE);
-		new EliminateEmptyAlternatives<>().transform((VariationTree<Label>) sourceBefore);
+		new EliminateEmptyAlternatives().transform((VariationTree<DiffLinesLabel>) sourceBefore);
 		VariationTree<L> sourceAfter = sourcePatchRaw.project(Time.AFTER);
-		new EliminateEmptyAlternatives<>().transform((VariationTree<Label>) sourceAfter);
+		new EliminateEmptyAlternatives().transform((VariationTree<DiffLinesLabel>) sourceAfter);
 		VariationDiff<L> sourcePatchElimEmptyAlt = VariationDiff.fromTrees(sourceBefore, sourceAfter);
 		final VariationDiff<L> sourcePatch = sourcePatchElimEmptyAlt;
 
 		VariationTree<L> before = targetPatch.project(Time.BEFORE);
-		new EliminateEmptyAlternatives<>().transform((VariationTree<Label>) before);
+		new EliminateEmptyAlternatives().transform((VariationTree<DiffLinesLabel>) before);
 		VariationTree<L> after = targetPatch.project(Time.AFTER);
-		new EliminateEmptyAlternatives<>().transform((VariationTree<Label>) after);
+		new EliminateEmptyAlternatives().transform((VariationTree<DiffLinesLabel>) after);
 		VariationDiff<L> targetPatchElimEmptyAlt = VariationDiff.fromTrees(before, after);
 
 		VariationDiff<L> targetPatchModified = targetPatchElimEmptyAlt.deepCopy();
@@ -214,7 +214,10 @@ public class Generator {
 				(VariationDiff<DiffLinesLabel>) targetPatchModified);
 
 		VariationDiff<L> targetView = DiffView.optimized(targetPatchModified.deepCopy(), configureTo1);
-
+		
+		GameEngine.showAndAwaitAll(Show.diff(targetPatchModified));
+		logDiff("modified target patch (before)", targetPatchModified.project(Time.BEFORE).unparse());
+		
 //		GameEngine.showAndAwaitAll(Show.diff(sourcePatch, "source patch"),
 //				Show.diff(targetPatchModified, "target patch elim empty altern and resolved"),
 //				Show.diff(targetPatchElimEmptyAlt, "target patch elim empty altern"),
@@ -294,7 +297,7 @@ public class Generator {
 
 //			System.out.println(list);
 		} catch (ShellException e) {
-//        	System.out.println(e);
+        	System.out.println(e);
 		}
 
 		return new PatchScenario<L>(sourcePatch, targetVariantBefore, targetPatch, targetVariantAfter, configureTo1, configureTo2);
@@ -307,6 +310,7 @@ public class Generator {
 		boolean isGnuPatchCorrect = false;
 		boolean isPatchTransformerCorrect = false;
 		List<GameEngine> gameEngine = new ArrayList<>();
+		gameEngine.add(Show.tree(scenario.targetVariantBefore(), "target variant before"));
 		gameEngine.add(Show.diff(scenario.patchGroundTruth(), "targetPatch"));
 		gameEngine.add(Show.tree(scenario.patchedVariantGroundTruth(), "ground truth"));
 
@@ -361,7 +365,7 @@ public class Generator {
 		// target variants as string if they did not fail.
 		GameEngine[] gameEngineArray = new GameEngine[gameEngine.size()];
 		gameEngineArray = gameEngine.toArray(gameEngineArray);
-//		GameEngine.showAndAwaitAll(gameEngineArray);
+		GameEngine.showAndAwaitAll(gameEngineArray);
 
 		// ## 5. Compare the results of patchers here!
 		System.out.println("mpatch: " + isMpatchCorrect);
@@ -432,6 +436,7 @@ public class Generator {
 			VariationDiff<L> sourcePatch, final VariationTree<L> targetVariantBefore) {
 		VariationTree<DiffLinesLabel> patchTransformerResult = null;
 		try {
+			GameEngine.showAndAwaitAll(Show.tree(targetVariantBefore));
 			VariationDiff<DiffLinesLabel> diff = Patching.patch((VariationDiff<DiffLinesLabel>) sourcePatch,
 					(VariationTree<DiffLinesLabel>) targetVariantBefore, false, true);
 			patchTransformerResult = diff.project(Time.AFTER);
