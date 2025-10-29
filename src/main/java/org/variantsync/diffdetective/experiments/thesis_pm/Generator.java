@@ -470,7 +470,7 @@ public class Generator {
 		// target variants as string if they did not fail.
 		GameEngine[] gameEngineArray = new GameEngine[gameEngine.size()];
 		gameEngineArray = gameEngine.toArray(gameEngineArray);
-//		GameEngine.showAndAwaitAll(gameEngineArray);
+		GameEngine.showAndAwaitAll(gameEngineArray);
 
 		// ## 5. Compare the results of patchers here!
 		System.out.println("mpatch: " + isMpatchCorrect);

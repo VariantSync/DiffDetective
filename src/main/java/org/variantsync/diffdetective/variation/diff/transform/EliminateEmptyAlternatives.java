@@ -1,5 +1,6 @@
 package org.variantsync.diffdetective.variation.diff.transform;
 
+
 import org.prop4j.Node;
 import org.prop4j.NodeWriter;
 import org.variantsync.diffdetective.util.Assert;
@@ -11,7 +12,6 @@ import org.variantsync.diffdetective.variation.tree.VariationTreeNode;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import static org.variantsync.diffdetective.util.fide.FormulaUtils.*;
 
