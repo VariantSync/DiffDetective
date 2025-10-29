@@ -32,31 +32,31 @@ import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParseOpti
 
 public class PatchingExperiment implements Analysis.Hooks {
 
-	private static final AnalysisResult.ResultKey<ErrorPatchesCounter> PT_ERROR_PATCHES_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
+	private static final AnalysisResult.ResultKey<PTErrorPatchesCounter> PT_ERROR_PATCHES_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
 			"PT - error patches");
-	private static final AnalysisResult.ResultKey<RejectedPatchesCounter> PT_REJECTED_PATCHES_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
+	private static final AnalysisResult.ResultKey<PTRejectedPatchesCounter> PT_REJECTED_PATCHES_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
 			"PT - rejected patches");
-	private static final AnalysisResult.ResultKey<IncorrectlyAppliedPatchesCounter> PT_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
+	private static final AnalysisResult.ResultKey<PTIncorrectlyAppliedPatchesCounter> PT_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
 			"PT - incorrectly applied patches");
-	private static final AnalysisResult.ResultKey<SuccessfullyAppliedPatchesCounter> PT_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
+	private static final AnalysisResult.ResultKey<PTSuccessfullyAppliedPatchesCounter> PT_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
 			"PT - successfully applied patches");
 
-	private static final AnalysisResult.ResultKey<ErrorPatchesCounter> GNU_ERROR_PATCHES_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
+	private static final AnalysisResult.ResultKey<GNUErrorPatchesCounter> GNU_ERROR_PATCHES_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
 			"GNU - error patches");
-	private static final AnalysisResult.ResultKey<RejectedPatchesCounter> GNU_REJECTED_PATCHES_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
+	private static final AnalysisResult.ResultKey<GNURejectedPatchesCounter> GNU_REJECTED_PATCHES_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
 			"GNU - rejected patches");
-	private static final AnalysisResult.ResultKey<IncorrectlyAppliedPatchesCounter> GNU_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
+	private static final AnalysisResult.ResultKey<GNUIncorrectlyAppliedPatchesCounter> GNU_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
 			"GNU - incorrectly applied patches");
-	private static final AnalysisResult.ResultKey<SuccessfullyAppliedPatchesCounter> GNU_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
+	private static final AnalysisResult.ResultKey<GNUSuccessfullyAppliedPatchesCounter> GNU_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
 			"GNU - successfully applied patches");
 
-	private static final AnalysisResult.ResultKey<ErrorPatchesCounter> MPATCH_ERROR_PATCHES_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
+	private static final AnalysisResult.ResultKey<MPATCHErrorPatchesCounter> MPATCH_ERROR_PATCHES_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
 			"MPATCH - error patches");
-	private static final AnalysisResult.ResultKey<RejectedPatchesCounter> MPATCH_REJECTED_PATCHES_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
+	private static final AnalysisResult.ResultKey<MPATCHRejectedPatchesCounter> MPATCH_REJECTED_PATCHES_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
 			"MPATCH - rejected patches");
-	private static final AnalysisResult.ResultKey<IncorrectlyAppliedPatchesCounter> MPATCH_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
+	private static final AnalysisResult.ResultKey<MPATCHIncorrectlyAppliedPatchesCounter> MPATCH_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
 			"MPATCH - incorrectly applied patches");
-	private static final AnalysisResult.ResultKey<SuccessfullyAppliedPatchesCounter> MPATCH_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
+	private static final AnalysisResult.ResultKey<MPATCHSuccessfullyAppliedPatchesCounter> MPATCH_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
 			"MPATCH - successfully applied patches");
 
 	private static final AnalysisResult.ResultKey<SkippedPatchesCounter> SKIPPED_PATCHES_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
@@ -64,29 +64,81 @@ public class PatchingExperiment implements Analysis.Hooks {
 	private int commits = 0;
 	private PatchDiff lastPatch;
 
-	private static class ErrorPatchesCounter extends SimpleMetadata<Integer, ErrorPatchesCounter> {
-		public ErrorPatchesCounter() {
-			super(0, "error patches", Integer::sum);
+	private static class PTErrorPatchesCounter extends SimpleMetadata<Integer, PTErrorPatchesCounter> {
+		public PTErrorPatchesCounter() {
+			super(0, "PT - error patches", Integer::sum);
 		}
 	}
 
-	private static class RejectedPatchesCounter extends SimpleMetadata<Integer, RejectedPatchesCounter> {
-		public RejectedPatchesCounter() {
-			super(0, "rejected patches", Integer::sum);
+	private static class PTRejectedPatchesCounter extends SimpleMetadata<Integer, PTRejectedPatchesCounter> {
+		public PTRejectedPatchesCounter() {
+			super(0, "PT - rejected patches", Integer::sum);
 		}
 	}
 
-	private static class IncorrectlyAppliedPatchesCounter
-			extends SimpleMetadata<Integer, IncorrectlyAppliedPatchesCounter> {
-		public IncorrectlyAppliedPatchesCounter() {
-			super(0, "incorrectly applied patches", Integer::sum);
+	private static class PTIncorrectlyAppliedPatchesCounter
+			extends SimpleMetadata<Integer, PTIncorrectlyAppliedPatchesCounter> {
+		public PTIncorrectlyAppliedPatchesCounter() {
+			super(0, "PT - incorrectly applied patches", Integer::sum);
 		}
 	}
 
-	private static class SuccessfullyAppliedPatchesCounter
-			extends SimpleMetadata<Integer, SuccessfullyAppliedPatchesCounter> {
-		public SuccessfullyAppliedPatchesCounter() {
-			super(0, "successfully applied patches", Integer::sum);
+	private static class PTSuccessfullyAppliedPatchesCounter
+			extends SimpleMetadata<Integer, PTSuccessfullyAppliedPatchesCounter> {
+		public PTSuccessfullyAppliedPatchesCounter() {
+			super(0, "PT - successfully applied patches", Integer::sum);
+		}
+	}
+	
+	private static class GNUErrorPatchesCounter extends SimpleMetadata<Integer, GNUErrorPatchesCounter> {
+		public GNUErrorPatchesCounter() {
+			super(0, "GNU - error patches", Integer::sum);
+		}
+	}
+
+	private static class GNURejectedPatchesCounter extends SimpleMetadata<Integer, GNURejectedPatchesCounter> {
+		public GNURejectedPatchesCounter() {
+			super(0, "GNU - rejected patches", Integer::sum);
+		}
+	}
+
+	private static class GNUIncorrectlyAppliedPatchesCounter
+			extends SimpleMetadata<Integer, GNUIncorrectlyAppliedPatchesCounter> {
+		public GNUIncorrectlyAppliedPatchesCounter() {
+			super(0, "GNU - incorrectly applied patches", Integer::sum);
+		}
+	}
+
+	private static class GNUSuccessfullyAppliedPatchesCounter
+			extends SimpleMetadata<Integer, GNUSuccessfullyAppliedPatchesCounter> {
+		public GNUSuccessfullyAppliedPatchesCounter() {
+			super(0, "GNU - successfully applied patches", Integer::sum);
+		}
+	}
+	
+	private static class MPATCHErrorPatchesCounter extends SimpleMetadata<Integer, MPATCHErrorPatchesCounter> {
+		public MPATCHErrorPatchesCounter() {
+			super(0, "MPATCH - error patches", Integer::sum);
+		}
+	}
+
+	private static class MPATCHRejectedPatchesCounter extends SimpleMetadata<Integer, MPATCHRejectedPatchesCounter> {
+		public MPATCHRejectedPatchesCounter() {
+			super(0, "MPATCH - rejected patches", Integer::sum);
+		}
+	}
+
+	private static class MPATCHIncorrectlyAppliedPatchesCounter
+			extends SimpleMetadata<Integer, MPATCHIncorrectlyAppliedPatchesCounter> {
+		public MPATCHIncorrectlyAppliedPatchesCounter() {
+			super(0, "MPATCH - incorrectly applied patches", Integer::sum);
+		}
+	}
+
+	private static class MPATCHSuccessfullyAppliedPatchesCounter
+			extends SimpleMetadata<Integer, MPATCHSuccessfullyAppliedPatchesCounter> {
+		public MPATCHSuccessfullyAppliedPatchesCounter() {
+			super(0, "MPATCH - successfully applied patches", Integer::sum);
 		}
 	}
 
@@ -102,19 +154,19 @@ public class PatchingExperiment implements Analysis.Hooks {
 
 	@Override
 	public void initializeResults(Analysis analysis) {
-		analysis.append(PT_ERROR_PATCHES_COUNTER_RESULT_KEY, new ErrorPatchesCounter());
-		analysis.append(PT_REJECTED_PATCHES_COUNTER_RESULT_KEY, new RejectedPatchesCounter());
-		analysis.append(PT_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY, new IncorrectlyAppliedPatchesCounter());
-		analysis.append(PT_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY, new SuccessfullyAppliedPatchesCounter());
-		analysis.append(GNU_ERROR_PATCHES_COUNTER_RESULT_KEY, new ErrorPatchesCounter());
-		analysis.append(GNU_REJECTED_PATCHES_COUNTER_RESULT_KEY, new RejectedPatchesCounter());
-		analysis.append(GNU_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY, new IncorrectlyAppliedPatchesCounter());
-		analysis.append(GNU_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY, new SuccessfullyAppliedPatchesCounter());
-		analysis.append(MPATCH_ERROR_PATCHES_COUNTER_RESULT_KEY, new ErrorPatchesCounter());
-		analysis.append(MPATCH_REJECTED_PATCHES_COUNTER_RESULT_KEY, new RejectedPatchesCounter());
-		analysis.append(MPATCH_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY, new IncorrectlyAppliedPatchesCounter());
+		analysis.append(PT_ERROR_PATCHES_COUNTER_RESULT_KEY, new PTErrorPatchesCounter());
+		analysis.append(PT_REJECTED_PATCHES_COUNTER_RESULT_KEY, new PTRejectedPatchesCounter());
+		analysis.append(PT_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY, new PTIncorrectlyAppliedPatchesCounter());
+		analysis.append(PT_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY, new PTSuccessfullyAppliedPatchesCounter());
+		analysis.append(GNU_ERROR_PATCHES_COUNTER_RESULT_KEY, new GNUErrorPatchesCounter());
+		analysis.append(GNU_REJECTED_PATCHES_COUNTER_RESULT_KEY, new GNURejectedPatchesCounter());
+		analysis.append(GNU_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY, new GNUIncorrectlyAppliedPatchesCounter());
+		analysis.append(GNU_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY, new GNUSuccessfullyAppliedPatchesCounter());
+		analysis.append(MPATCH_ERROR_PATCHES_COUNTER_RESULT_KEY, new MPATCHErrorPatchesCounter());
+		analysis.append(MPATCH_REJECTED_PATCHES_COUNTER_RESULT_KEY, new MPATCHRejectedPatchesCounter());
+		analysis.append(MPATCH_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY, new MPATCHIncorrectlyAppliedPatchesCounter());
 		analysis.append(MPATCH_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY,
-				new SuccessfullyAppliedPatchesCounter());
+				new MPATCHSuccessfullyAppliedPatchesCounter());
 		analysis.append(SKIPPED_PATCHES_COUNTER_RESULT_KEY, new SkippedPatchesCounter());
 	}
 
@@ -228,8 +280,8 @@ public class PatchingExperiment implements Analysis.Hooks {
 		try {
 			AnalysisRunner.run(analysisOptions
 					,
-					(repository, path) -> Analysis.forEachCommit(() -> PatchingExperiment.Create(repository, path, experiment), 500,
-							8));
+					(repository, path) -> Analysis.forEachCommit(() -> PatchingExperiment.Create(repository, path, experiment), 10,
+							1));
 		} catch (Exception e) {
 			PatchingExperiment.writeToFile(experiment.getLastPatch(), "file7.diff");
 			e.printStackTrace();
