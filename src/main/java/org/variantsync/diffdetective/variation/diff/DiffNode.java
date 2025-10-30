@@ -733,6 +733,7 @@ public class DiffNode<L extends Label> implements HasNodeType {
      * Checks that the VariationDiff is in a valid state.
      * In particular, this method checks that all edges are well-formed (e.g., edges can be inconsistent because edges are double-linked).
      * This method also checks that a node with exactly one parent was edited, and that a node with exactly two parents was not edited.
+     * To check all children recursively, use {@link VariationDiff#assertConsistency}.
      * @see Assert#assertTrue
      * @throws AssertionError when an inconsistency is detected.
      */
