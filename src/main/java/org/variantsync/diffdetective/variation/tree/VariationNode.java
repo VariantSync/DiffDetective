@@ -549,6 +549,12 @@ public abstract class VariationNode<T extends VariationNode<T, L>, L extends Lab
                 "The root has to have the feature mapping 'true'");
         }
 
+        // check that there is at most one ELIF/ELSE
+        Assert.assertTrue(
+            getChildren().stream().filter(c -> c.isElif() || c.isElse()).count() <= 1,
+            "There is more than one ELIF/ELSE node."
+        );
+
         // check consistency of children lists and edges
         for (var child : getChildren()) {
             Assert.assertTrue(
