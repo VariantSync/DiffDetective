@@ -772,6 +772,10 @@ public class DiffNode<L extends Label> implements HasNodeType {
         if (pb != null && pa == null) {
             Assert.assertTrue(isRem());
         }
+        // the root was not edited
+        if (pb == null && pa == null) {
+            Assert.assertTrue(isNon());
+        }
         // a node with exactly two parents was not edited
         if (pb != null && pa != null) {
             Assert.assertTrue(isNon());
