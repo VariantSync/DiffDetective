@@ -5,6 +5,7 @@ import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.Label;
+import org.variantsync.diffdetective.variation.NodeType; // For Javadoc
 import org.variantsync.diffdetective.variation.diff.DiffNode;
 import org.variantsync.diffdetective.variation.diff.VariationDiff;
 import org.variantsync.diffdetective.variation.diff.Projection;
@@ -211,6 +212,17 @@ public record VariationTree<L extends Label>(
         var result = new StringBuilder();
         root().unparse(result);
         return result.toString();
+    }
+
+    /**
+     * Checks whether this {@link VariationTree} is consistent.
+     * Throws an error if this {@link VariationTree} is inconsistent (e.g., if there are multiple
+     * {@link NodeType#ELSE} nodes). Has no side-effects otherwise.
+     *
+     * @see VariationNode#assertConsistency
+     */
+    public void assertConsistency() {
+        forAllPreorder(VariationTreeNode::assertConsistency);
     }
 
     @Override

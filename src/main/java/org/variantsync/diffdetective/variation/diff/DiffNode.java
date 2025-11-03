@@ -733,10 +733,14 @@ public class DiffNode<L extends Label> implements HasNodeType {
      * Checks that the VariationDiff is in a valid state.
      * In particular, this method checks that all edges are well-formed (e.g., edges can be inconsistent because edges are double-linked).
      * This method also checks that a node with exactly one parent was edited, and that a node with exactly two parents was not edited.
+     * To check all children recursively, use {@link VariationDiff#assertConsistency}.
      * @see Assert#assertTrue
      * @throws AssertionError when an inconsistency is detected.
      */
     public void assertConsistency() {
+        // check that the projections are valid (i.e., node type specific consistency checks)
+        diffType.forAllTimesOfExistence(time -> this.projection(time).assertConsistency());
+
         // check consistency of children lists and edges
         for (final DiffNode<L> c : getAllChildren()) {
             Assert.assertTrue(isChild(c), () -> "Child " + c + " of " + this + " is neither a before nor an after child!");
@@ -760,6 +764,10 @@ public class DiffNode<L extends Label> implements HasNodeType {
         if (pb != null && pa == null) {
             Assert.assertTrue(isRem());
         }
+        // the root was not edited
+        if (pb == null && pa == null) {
+            Assert.assertTrue(isNon());
+        }
         // a node with exactly two parents was not edited
         if (pb != null && pa != null) {
             Assert.assertTrue(isNon());
@@ -769,22 +777,6 @@ public class DiffNode<L extends Label> implements HasNodeType {
             if (pb == pa) {
                 Assert.assertTrue(pb.isNon());
             }
-        }
-
-        // Else and Elif nodes have an If or Elif as parent.
-        if (this.isElse() || this.isElif()) {
-            Time.forAll(time -> {
-                if (getParent(time) != null) {
-                    Assert.assertTrue(getParent(time).isIf() || getParent(time).isElif(), time + " parent " + getParent(time) + " of " + this + " is neither IF nor ELIF!");
-                }
-            });
-        }
-
-        // Only if and elif nodes have a formula
-        if (this.isIf() || this.isElif()) {
-            Assert.assertTrue(this.getFormula() != null, "If or elif without feature mapping!");
-        } else {
-            Assert.assertTrue(this.getFormula() == null, "Node with type " + getNodeType() + " has a non null feature mapping");
         }
     }
 
