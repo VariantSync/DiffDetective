@@ -10,7 +10,7 @@
 
 DiffDetective is an open-source Java library for variability-aware source code differencing and the **analysis of version histories of software product lines**. This means that DiffDetective can **turn a generic differencer into a variability-aware differencer** by means of a pre- or post-processing. DiffDetective is centered around **formally verified** data structures for variability (variation trees) and variability-aware diffs (variation diffs). These data structures are **generic**, and DiffDetective currently implements **C preprocessor support** to parse respective annotations when used to implement variability. The picture below depicts the process of variability-aware differencing.
 
-<img alt="Variability-Aware Differencing Overview" src="docs/variability-aware-differencing.png" height="500" />
+<img alt="Variability-Aware Differencing Overview" src="src/main/java/org/variantsync/diffdetective/variation/diff/doc-files/variability-aware-differencing.png" height="500" />
 
 Given two states of a C-preprocessor annotated source code file (left), for example before and after a commit, DiffDetective constructs a variability-aware diff (right) that distinguishes changes to source code from changes to variability annotations. DiffDetective can construct such a variation diff either, by first using a generic differencer, and separating the information (center path), or by first parsing both input versions to an abstract representation, a variation tree (center top and bottom), and constructing a variation diff using a tree differencing algorithm in a second step.
 
