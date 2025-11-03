@@ -25,7 +25,6 @@ public class Unchanged implements Relevance {
 			if (time == Time.AFTER ? !diffNode.isRem() : !diffNode.isAdd()) {
 				
 				String key = getIdentifierForNode(diffNode);
-				System.out.println(key);
 				if (!lookUpMap.containsKey(key)) {
 					lookUpMap.put(key, new ArrayList<DiffNode<DiffLinesLabel>>());
 				}
