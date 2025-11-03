@@ -21,6 +21,7 @@ import org.variantsync.diffdetective.show.Show;
 import org.variantsync.diffdetective.show.engine.GameEngine;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.Label;
+import org.variantsync.diffdetective.variation.VariationLabel;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
 import org.variantsync.diffdetective.variation.diff.DiffType;
 import org.variantsync.diffdetective.variation.diff.Time;
@@ -40,9 +41,9 @@ import org.variantsync.diffdetective.variation.tree.view.relevance.TraceSup;
 import org.variantsync.diffdetective.variation.tree.view.relevance.Unchanged;
 
 public class Patching {
-	public static <L extends Label> boolean hasSameLabel(DiffNode<L> a, DiffNode<L> b) {
-		String labelA = a.getLabel().toString().replaceAll(" ", "");
-		String labelB = b.getLabel().toString().replaceAll(" ", "");
+	public static <L extends Label> boolean hasSameLabel(L a, L b) {
+		String labelA = a.toString().replaceAll(" ", "");
+		String labelB = b.toString().replaceAll(" ", "");
 		return labelA.equals(labelB);
 	}
 
@@ -59,7 +60,7 @@ public class Patching {
 			return true;
 		}
 
-		if (!(a.getNodeType().equals(b.getNodeType()) && hasSameLabel(a, b) && hasSameLabel(a, b)
+		if (!(a.getNodeType().equals(b.getNodeType()) && hasSameLabel(a.getLabel(), b.getLabel())
 				&& (a.getFormula() == null ? b.getFormula() == null : a.getFormula().equals(b.getFormula())))) {
 			return false;
 		}
@@ -232,7 +233,7 @@ public class Patching {
 				continue;
 			}
 //			if (i > index2 && siblingsNode2.get(index2).getDiffType() == DiffType.REM)
-			if (!hasSameLabel(siblingsNode1.get(i), siblingsNode2.get(index2))) {
+			if (!hasSameLabel(siblingsNode1.get(i).getLabel(), siblingsNode2.get(index2).getLabel())) {
 //				System.out.println(siblingsNode1.get(i).getLabel().toString());
 				return false;
 			}
@@ -266,7 +267,7 @@ public class Patching {
 				continue;
 			}
 			for (int i = 0; i < orderedChildrenSource.size(); i++) {
-				if (!hasSameLabel(orderedChildrenSource.get(i), orderedChildrenTarget.get(i))) {
+				if (!hasSameLabel(orderedChildrenSource.get(i).getLabel(), orderedChildrenTarget.get(i).getLabel())) {
 					break;
 				}
 			}
@@ -294,11 +295,14 @@ public class Patching {
 			if (i > indexSource && orderedChildrenSource.get(i).getDiffType() == DiffType.ADD) {
 				continue;
 			}
-			if (!hasSameLabel(orderedChildrenSource.get(i), orderedChildrenTarget.get(indexTarget))) {
-				if (!hasSameLabel(orderedChildrenSource.get(i), orderedChildrenTargetView.get(indexTarget))) {
+			if (!hasSameLabel(orderedChildrenSource.get(i).getLabel(),
+					orderedChildrenTarget.get(indexTarget).getLabel())) {
+				if (!hasSameLabel(orderedChildrenSource.get(i).getLabel(),
+						orderedChildrenTargetView.get(indexTarget).getLabel())) {
 					throw new Exception("Reject: inserting");
 				}
-				while (!hasSameLabel(orderedChildrenSource.get(i), orderedChildrenTarget.get(indexTarget))) {
+				while (!hasSameLabel(orderedChildrenSource.get(i).getLabel(),
+						orderedChildrenTarget.get(indexTarget).getLabel())) {
 					indexTarget++;
 				}
 			}
@@ -497,6 +501,7 @@ public class Patching {
 //		}
 
 		VariationDiff<DiffLinesLabel> optimizedDiff = DiffView.optimized(diff, rho);
+//		GameEngine.showAndAwaitAll(Show.diff(optimizedDiff));
 
 		if (debug) {
 			GameEngine.showAndAwaitAll(Show.diff(optimizedDiff), Show.tree(optimizedDiff.project(Time.AFTER)));
@@ -598,24 +603,17 @@ public class Patching {
 		return null;
 	}
 
-	public static boolean arePatchedVariantsEquivalent(VariationDiff<DiffLinesLabel> sourceVariantDiff,
-			VariationTree<DiffLinesLabel> targetVariantBefore, VariationTree<DiffLinesLabel> patchedTargetVariant,
-			Configure configSourceVariant, Configure configTargetVariant, boolean debug) {
-		
+	public static boolean arePatchedVariantsEquivalent(VariationTree<DiffLinesLabel> patchedTargetVariant,
+			VariationTree<DiffLinesLabel> sourceVariantAfterRedToCrossVarFeatures,
+			VariationTree<DiffLinesLabel> targetVariantBeforeRedToUnchanged, Configure configSourceVariant,
+			Unchanged unchangedAfter) {
 
-		VariationTree<DiffLinesLabel> sourceVariantAfter = sourceVariantDiff.project(Time.AFTER);
-		VariationTree<DiffLinesLabel> sourceVariantAfterRedToCrossVarFeatures = TreeView.tree(sourceVariantAfter, configTargetVariant);
-		VariationTree<DiffLinesLabel> targetVariantAfterRedToCrossVarFeatures = TreeView.tree(patchedTargetVariant, configSourceVariant);
+		VariationTree<DiffLinesLabel> targetVariantAfterRedToCrossVarFeatures = TreeView.tree(patchedTargetVariant,
+				configSourceVariant);
 
-		VariationTree<DiffLinesLabel> patchedTargetVariantRedToUnchanged = TreeView.tree(patchedTargetVariant, new Unchanged(sourceVariantDiff, Time.AFTER));
-		VariationTree<DiffLinesLabel> targetVariantBeforeRedToUnchanged = TreeView.tree(targetVariantBefore, new Unchanged(sourceVariantDiff, Time.BEFORE));
-		
-		if (debug) {
-			GameEngine.showAndAwaitAll(Show.diff(sourceVariantDiff, "p_A"), Show.tree(targetVariantBefore, "B"), Show.tree(patchedTargetVariant, "B'"),
-					Show.tree(targetVariantBeforeRedToUnchanged, "unchanged(B)"), Show.tree(patchedTargetVariantRedToUnchanged, "unchanged(B')"),
-					Show.tree(sourceVariantAfterRedToCrossVarFeatures, "view(A, configure(B)=V'"), Show.tree(targetVariantAfterRedToCrossVarFeatures, "view(B', configure(A)"));
-		}
-		
+		VariationTree<DiffLinesLabel> patchedTargetVariantRedToUnchanged = TreeView.tree(patchedTargetVariant,
+				unchangedAfter);
+
 		if (Patching.isSameAs(sourceVariantAfterRedToCrossVarFeatures.toCompletelyUnchangedVariationDiff(),
 				targetVariantAfterRedToCrossVarFeatures.toCompletelyUnchangedVariationDiff())
 				&& Patching.isSameAs(patchedTargetVariantRedToUnchanged.toCompletelyUnchangedVariationDiff(),
@@ -630,26 +628,5 @@ public class Patching {
 		return Patching.isSameAs(patchedVariant.toCompletelyUnchangedVariationDiff(),
 				expectedResult.toCompletelyUnchangedVariationDiff());
 	}
-	
-	public static void testSomething(VariationDiff<DiffLinesLabel> diff, VariationTree<DiffLinesLabel> patchedTree, VariationTree<DiffLinesLabel> targetVariant) {
-		Map<String, Boolean> featuresSource = new HashMap<>();
-		Map<String, Boolean> featuresTarget = new HashMap<>();
-		featuresSource.put("defined(Feature1)", true);
-		featuresSource.put("defined(Feature2)", true);
-		featuresSource.put("defined(FeatureB)", false);
-		featuresTarget.put("defined(Feature1)", true);
-		featuresTarget.put("defined(Feature2)", true);
-		featuresTarget.put("defined(FeatureB)", true);
-		Configure configSource = new Configure(featuresSource);
-		Configure configTarget = new Configure(featuresTarget);
-		
-		try {
-			VariationTree<DiffLinesLabel> patched = Patching.patch(diff, targetVariant, false, true).project(Time.AFTER);
-			System.out.println(Patching.arePatchedVariantsEquivalent(diff, targetVariant, patched, configSource, configTarget, true));
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-	}
+
 }

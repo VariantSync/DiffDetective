@@ -15,6 +15,7 @@ import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
 
+import org.eclipse.jgit.diff.DiffAlgorithm;
 import org.tinylog.Logger;
 import org.variantsync.diffdetective.diff.git.PatchDiff;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
@@ -32,6 +33,7 @@ import org.variantsync.diffdetective.variation.Label;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
 import org.variantsync.diffdetective.variation.diff.Time;
 import org.variantsync.diffdetective.variation.diff.VariationDiff;
+import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParseOptions;
 import org.variantsync.diffdetective.variation.diff.patching.Patching;
 import org.variantsync.diffdetective.variation.diff.transform.EliminateEmptyAlternatives;
 import org.variantsync.diffdetective.variation.diff.transform.RevertSomeChanges;
@@ -148,13 +150,12 @@ public class Generator {
 		}
 	}
 
-	public static <L extends Label> PatchScenario<L> generatePatchScenario(VariationDiff<L> spl)
-			throws Exception {
+	public static <L extends Label> PatchScenario<L> generatePatchScenario(VariationDiff<L> spl) throws Exception {
 		// ## 1. Sample two variants.
 		// Since we have no feature model, we create a naive problem space model:
 		// We just collect all features without constraints.
 		final Set<String> featureModel = spl.computeAllFeatureNames();
-		Logger.info("Extracted feature names: {}", featureModel);
+//		Logger.info("Extracted feature names: {}", featureModel);
 
 		// To sample variants, we just pick a random subset of features to set to true,
 		// set the rest to false
@@ -198,14 +199,27 @@ public class Generator {
 		new EliminateEmptyAlternatives().transform((VariationTree<DiffLinesLabel>) sourceBefore);
 		VariationTree<L> sourceAfter = sourcePatchRaw.project(Time.AFTER);
 		new EliminateEmptyAlternatives().transform((VariationTree<DiffLinesLabel>) sourceAfter);
-		VariationDiff<L> sourcePatchElimEmptyAlt = VariationDiff.fromTrees(sourceBefore, sourceAfter);
+		VariationDiff<L> sourcePatchElimEmptyAlt;
+		try {
+			sourcePatchElimEmptyAlt = (VariationDiff<L>) VariationDiff.fromLines(sourceBefore.unparse(),
+					sourceAfter.unparse(), DiffAlgorithm.SupportedAlgorithm.MYERS, VariationDiffParseOptions.Default);
+		} catch (DiffParseException e) {
+			return null;
+		}
+
 		final VariationDiff<L> sourcePatch = sourcePatchElimEmptyAlt;
 
 		VariationTree<L> before = targetPatch.project(Time.BEFORE);
 		new EliminateEmptyAlternatives().transform((VariationTree<DiffLinesLabel>) before);
 		VariationTree<L> after = targetPatch.project(Time.AFTER);
 		new EliminateEmptyAlternatives().transform((VariationTree<DiffLinesLabel>) after);
-		VariationDiff<L> targetPatchElimEmptyAlt = VariationDiff.fromTrees(before, after);
+		VariationDiff<L> targetPatchElimEmptyAlt;
+		try {
+			targetPatchElimEmptyAlt = (VariationDiff<L>) VariationDiff.fromLines(before.unparse(), after.unparse(),
+					DiffAlgorithm.SupportedAlgorithm.MYERS, VariationDiffParseOptions.Default);
+		} catch (DiffParseException e) {
+			return null;
+		}
 
 		VariationDiff<L> targetPatchModified = targetPatchElimEmptyAlt.deepCopy();
 
@@ -214,10 +228,10 @@ public class Generator {
 				(VariationDiff<DiffLinesLabel>) targetPatchModified);
 
 		VariationDiff<L> targetView = DiffView.optimized(targetPatchModified.deepCopy(), configureTo1);
-		
-		GameEngine.showAndAwaitAll(Show.diff(targetPatchModified));
-		logDiff("modified target patch (before)", targetPatchModified.project(Time.BEFORE).unparse());
-		
+
+//		GameEngine.showAndAwaitAll(Show.diff(targetPatchModified));
+//		logDiff("modified target patch (before)", targetPatchModified.project(Time.BEFORE).unparse());
+
 //		GameEngine.showAndAwaitAll(Show.diff(sourcePatch, "source patch"),
 //				Show.diff(targetPatchModified, "target patch elim empty altern and resolved"),
 //				Show.diff(targetPatchElimEmptyAlt, "target patch elim empty altern"),
@@ -261,10 +275,10 @@ public class Generator {
 		final String targetVariantCodeAfter = targetVariantAfter.unparse(); // ground truth for fast comparisons (beware
 																			// of differences in line breaks and
 																			// whitespaces!)
-		logDiff("Source Before:", sourceVariantCodeBefore);
-		logDiff("Source After:", sourceVariantCodeAfter);
-		logDiff("Target Before:", targetVariantCodeBefore);
-		logDiff("Target After:", targetVariantCodeAfter);
+//		logDiff("Source Before:", sourceVariantCodeBefore);
+//		logDiff("Source After:", sourceVariantCodeAfter);
+//		logDiff("Target Before:", targetVariantCodeBefore);
+//		logDiff("Target After:", targetVariantCodeAfter);
 
 		File f = new File(Path.of(directory).toUri());
 		deleteDirectory(f);
@@ -288,6 +302,14 @@ public class Generator {
 		writeToFile(targetVariantCodeBefore, targetVariantBeforePath);
 //        writeToFile(targetVariantCodeAfter, targetVariantAfterPath);
 
+		runGnuDiff(patchPath);
+
+		return new PatchScenario<L>(sourcePatch, targetVariantBefore, targetPatch, targetVariantAfter, configureTo1,
+				configureTo2);
+
+	}
+
+	private static void runGnuDiff(Path patchPath) {
 		try {
 			Path pathToVersion1Dir = Path.of(version1);
 			Path pathToVersion2Dir = Path.of(version2);
@@ -297,11 +319,8 @@ public class Generator {
 
 //			System.out.println(list);
 		} catch (ShellException e) {
-        	System.out.println(e);
+			System.out.println(e);
 		}
-
-		return new PatchScenario<L>(sourcePatch, targetVariantBefore, targetPatch, targetVariantAfter, configureTo1, configureTo2);
-
 	}
 
 	public static <L extends Label> void runPatchers(PatchScenario<L> scenario) {
@@ -310,31 +329,29 @@ public class Generator {
 		boolean isGnuPatchCorrect = false;
 		boolean isPatchTransformerCorrect = false;
 		List<GameEngine> gameEngine = new ArrayList<>();
-		gameEngine.add(Show.tree(scenario.targetVariantBefore(), "target variant before"));
-		gameEngine.add(Show.diff(scenario.patchGroundTruth(), "targetPatch"));
-		gameEngine.add(Show.tree(scenario.patchedVariantGroundTruth(), "ground truth"));
+		gameEngine.add(Show.tree(scenario.targetVariantBefore, "target variant before"));
+		gameEngine.add(Show.diff(scenario.patchGroundTruth, "targetPatch"));
+		gameEngine.add(Show.tree(scenario.patchedVariantGroundTruth, "ground truth"));
 
 		// TODO: Run Pia's new patcher here and store the result.
-		Result<VariationTree<DiffLinesLabel>, Error> patchTransformerResult = runPatchTransformer(scenario.sourcePatch(),
-				scenario.targetVariantBefore());
+		Result<VariationTree<DiffLinesLabel>, Error> patchTransformerResult = runPatchTransformer(scenario.sourcePatch,
+				scenario.targetVariantBefore);
 		if (patchTransformerResult.isSuccess()) {
 			gameEngine.add(Show.tree(patchTransformerResult.getSuccess(), "patch transformer result"));
 		}
-		isPatchTransformerCorrect = patchTransformerResult.match(
-				tree -> Patching.arePatchedVariantsEquivalent((VariationDiff<DiffLinesLabel>) scenario.sourcePatch(),
-						(VariationTree<DiffLinesLabel>) scenario.targetVariantBefore(), tree, scenario.sourceVariantConfig(), scenario.targetVariantConfig(), false),
-				error -> false);
+		isPatchTransformerCorrect = patchTransformerResult.match(tree -> Patching.arePatchedVariantsEquivalent(tree,
+				scenario.sourceVariantAfterRedToCrossVarFeatures, scenario.targetVariantBeforeRedToUnchanged,
+				scenario.targetVariantConfig, scenario.unchangedAfter), error -> false);
 
 		Result<VariationTree<DiffLinesLabel>, Error> gnuPatchResult;
 		try {
-			gnuPatchResult = runGnuPatch(scenario.targetVariantBefore());
+			gnuPatchResult = runGnuPatch(scenario.targetVariantBefore);
 			if (gnuPatchResult.isSuccess()) {
 				gameEngine.add(Show.tree(gnuPatchResult.getSuccess(), "gnu patch result"));
 			}
-			isGnuPatchCorrect = gnuPatchResult
-					.match(tree -> Patching.arePatchedVariantsEquivalent((VariationDiff<DiffLinesLabel>) scenario.sourcePatch(),
-							(VariationTree<DiffLinesLabel>) scenario.targetVariantBefore(), tree, scenario.sourceVariantConfig(), scenario.targetVariantConfig(),
-							false), error -> false);
+			isGnuPatchCorrect = gnuPatchResult.match(tree -> Patching.arePatchedVariantsEquivalent(tree,
+					scenario.sourceVariantAfterRedToCrossVarFeatures, scenario.targetVariantBeforeRedToUnchanged,
+					scenario.targetVariantConfig, scenario.unchangedAfter), error -> false);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -345,14 +362,13 @@ public class Generator {
 
 		Result<VariationTree<DiffLinesLabel>, Error> mpatchResult;
 		try {
-			mpatchResult = runMPatch(scenario.targetVariantBefore());
+			mpatchResult = runMPatch(scenario.targetVariantBefore);
 			if (mpatchResult.isSuccess()) {
 				gameEngine.add(Show.tree(mpatchResult.getSuccess(), "mpatch result"));
 			}
-			isMpatchCorrect = mpatchResult
-					.match(tree -> Patching.arePatchedVariantsEquivalent((VariationDiff<DiffLinesLabel>) scenario.sourcePatch(),
-							(VariationTree<DiffLinesLabel>) scenario.targetVariantBefore(), tree, scenario.sourceVariantConfig(), scenario.targetVariantConfig(),
-							false), error -> false);
+			isMpatchCorrect = mpatchResult.match(tree -> Patching.arePatchedVariantsEquivalent(tree,
+					scenario.sourceVariantAfterRedToCrossVarFeatures, scenario.targetVariantBeforeRedToUnchanged,
+					scenario.targetVariantConfig, scenario.unchangedAfter), error -> false);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -365,7 +381,7 @@ public class Generator {
 		// target variants as string if they did not fail.
 		GameEngine[] gameEngineArray = new GameEngine[gameEngine.size()];
 		gameEngineArray = gameEngine.toArray(gameEngineArray);
-		GameEngine.showAndAwaitAll(gameEngineArray);
+//		GameEngine.showAndAwaitAll(gameEngineArray);
 
 		// ## 5. Compare the results of patchers here!
 		System.out.println("mpatch: " + isMpatchCorrect);
@@ -436,7 +452,7 @@ public class Generator {
 			VariationDiff<L> sourcePatch, final VariationTree<L> targetVariantBefore) {
 		VariationTree<DiffLinesLabel> patchTransformerResult = null;
 		try {
-			GameEngine.showAndAwaitAll(Show.tree(targetVariantBefore));
+//			GameEngine.showAndAwaitAll(Show.tree(targetVariantBefore));
 			VariationDiff<DiffLinesLabel> diff = Patching.patch((VariationDiff<DiffLinesLabel>) sourcePatch,
 					(VariationTree<DiffLinesLabel>) targetVariantBefore, false, true);
 			patchTransformerResult = diff.project(Time.AFTER);

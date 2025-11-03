@@ -89,7 +89,7 @@ public class PatchingExperiment implements Analysis.Hooks {
 			super(0, "PT - successfully applied patches", Integer::sum);
 		}
 	}
-	
+
 	private static class GNUErrorPatchesCounter extends SimpleMetadata<Integer, GNUErrorPatchesCounter> {
 		public GNUErrorPatchesCounter() {
 			super(0, "GNU - error patches", Integer::sum);
@@ -115,7 +115,7 @@ public class PatchingExperiment implements Analysis.Hooks {
 			super(0, "GNU - successfully applied patches", Integer::sum);
 		}
 	}
-	
+
 	private static class MPATCHErrorPatchesCounter extends SimpleMetadata<Integer, MPATCHErrorPatchesCounter> {
 		public MPATCHErrorPatchesCounter() {
 			super(0, "MPATCH - error patches", Integer::sum);
@@ -161,10 +161,12 @@ public class PatchingExperiment implements Analysis.Hooks {
 		analysis.append(GNU_ERROR_PATCHES_COUNTER_RESULT_KEY, new GNUErrorPatchesCounter());
 		analysis.append(GNU_REJECTED_PATCHES_COUNTER_RESULT_KEY, new GNURejectedPatchesCounter());
 		analysis.append(GNU_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY, new GNUIncorrectlyAppliedPatchesCounter());
-		analysis.append(GNU_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY, new GNUSuccessfullyAppliedPatchesCounter());
+		analysis.append(GNU_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY,
+				new GNUSuccessfullyAppliedPatchesCounter());
 		analysis.append(MPATCH_ERROR_PATCHES_COUNTER_RESULT_KEY, new MPATCHErrorPatchesCounter());
 		analysis.append(MPATCH_REJECTED_PATCHES_COUNTER_RESULT_KEY, new MPATCHRejectedPatchesCounter());
-		analysis.append(MPATCH_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY, new MPATCHIncorrectlyAppliedPatchesCounter());
+		analysis.append(MPATCH_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY,
+				new MPATCHIncorrectlyAppliedPatchesCounter());
 		analysis.append(MPATCH_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY,
 				new MPATCHSuccessfullyAppliedPatchesCounter());
 		analysis.append(SKIPPED_PATCHES_COUNTER_RESULT_KEY, new SkippedPatchesCounter());
@@ -181,44 +183,52 @@ public class PatchingExperiment implements Analysis.Hooks {
 		VariationDiff<DiffLinesLabel> diff = analysis.getCurrentVariationDiff();
 		PatchScenario<DiffLinesLabel> scenario = Generator.generatePatchScenario(diff);
 
+		if (scenario == null) {
+			// something went wrong when generating the patching scenario
+			return true;
+		}
+
 		// TODO: Run Pia's new patcher here and store the result.
 		Result<VariationTree<DiffLinesLabel>, Error> patchTransformerResult = Generator
-				.runPatchTransformer(scenario.sourcePatch(), scenario.targetVariantBefore());
+				.runPatchTransformer(scenario.sourcePatch, scenario.targetVariantBefore);
 
 		patchTransformerResult.match(
-				tree -> Patching.arePatchedVariantsEquivalent((VariationDiff<DiffLinesLabel>) scenario.sourcePatch(),
-						(VariationTree<DiffLinesLabel>) scenario.targetVariantBefore(), tree,
-						scenario.sourceVariantConfig(), scenario.targetVariantConfig(), false)
+				tree -> Patching.arePatchedVariantsEquivalent(
+						tree, scenario.sourceVariantAfterRedToCrossVarFeatures,
+						scenario.targetVariantBeforeRedToUnchanged, scenario.targetVariantConfig,
+						scenario.unchangedAfter)
 								? analysis.get(PT_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++
 								: analysis.get(PT_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++,
 				error -> analysis.get(PT_REJECTED_PATCHES_COUNTER_RESULT_KEY).value++);
 
 		Result<VariationTree<DiffLinesLabel>, Error> gnuPatchResult;
 		try {
-			gnuPatchResult = Generator.runGnuPatch(scenario.targetVariantBefore());
-			gnuPatchResult.match(tree -> Patching.arePatchedVariantsEquivalent(
-					(VariationDiff<DiffLinesLabel>) scenario.sourcePatch(),
-					(VariationTree<DiffLinesLabel>) scenario.targetVariantBefore(), tree,
-					scenario.sourceVariantConfig(), scenario.targetVariantConfig(), false)
-					? analysis.get(GNU_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++
-							: analysis.get(GNU_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++
-							, error -> analysis.get(GNU_REJECTED_PATCHES_COUNTER_RESULT_KEY).value++);
+			gnuPatchResult = Generator.runGnuPatch(scenario.targetVariantBefore);
+			gnuPatchResult.match(
+					tree -> Patching.arePatchedVariantsEquivalent(
+							tree, scenario.sourceVariantAfterRedToCrossVarFeatures,
+							scenario.targetVariantBeforeRedToUnchanged, scenario.targetVariantConfig,
+							scenario.unchangedAfter)
+									? analysis.get(GNU_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++
+									: analysis.get(GNU_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++,
+					error -> analysis.get(GNU_REJECTED_PATCHES_COUNTER_RESULT_KEY).value++);
 		} catch (IOException | DiffParseException e) {
 			analysis.get(GNU_ERROR_PATCHES_COUNTER_RESULT_KEY).value++;
 		}
 
 		Result<VariationTree<DiffLinesLabel>, Error> mpatchResult;
 		try {
-			mpatchResult = Generator.runMPatch(scenario.targetVariantBefore());
-			mpatchResult.match(tree -> Patching.arePatchedVariantsEquivalent(
-					(VariationDiff<DiffLinesLabel>) scenario.sourcePatch(),
-					(VariationTree<DiffLinesLabel>) scenario.targetVariantBefore(), tree,
-					scenario.sourceVariantConfig(), scenario.targetVariantConfig(), false)
-					? analysis.get(MPATCH_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++
-							: analysis.get(MPATCH_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++
-					, error -> analysis.get(MPATCH_REJECTED_PATCHES_COUNTER_RESULT_KEY).value++);
+			mpatchResult = Generator.runMPatch(scenario.targetVariantBefore);
+			mpatchResult.match(
+					tree -> Patching.arePatchedVariantsEquivalent(
+							tree, scenario.sourceVariantAfterRedToCrossVarFeatures,
+							scenario.targetVariantBeforeRedToUnchanged, scenario.targetVariantConfig,
+							scenario.unchangedAfter)
+									? analysis.get(MPATCH_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++
+									: analysis.get(MPATCH_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++,
+					error -> analysis.get(MPATCH_REJECTED_PATCHES_COUNTER_RESULT_KEY).value++);
 		} catch (IOException | DiffParseException e) {
-			analysis.get(MPATCH_ERROR_PATCHES_COUNTER_RESULT_KEY).value++;			
+			analysis.get(MPATCH_ERROR_PATCHES_COUNTER_RESULT_KEY).value++;
 		}
 
 //		VariationTree<DiffLinesLabel> before = diff.project(Time.BEFORE).deepCopy();
@@ -278,10 +288,8 @@ public class PatchingExperiment implements Analysis.Hooks {
 						new VariationDiffParseOptions(true, false)),
 				defaultOptions.getFilterForRepo(), true, false);
 		try {
-			AnalysisRunner.run(analysisOptions
-					,
-					(repository, path) -> Analysis.forEachCommit(() -> PatchingExperiment.Create(repository, path, experiment), 10,
-							1));
+			AnalysisRunner.run(analysisOptions, (repository, path) -> Analysis
+					.forEachCommit(() -> PatchingExperiment.Create(repository, path, experiment), 2, 1));
 		} catch (Exception e) {
 			PatchingExperiment.writeToFile(experiment.getLastPatch(), "file7.diff");
 			e.printStackTrace();
