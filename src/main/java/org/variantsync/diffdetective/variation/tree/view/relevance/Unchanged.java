@@ -5,26 +5,69 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 
-import org.variantsync.diffdetective.editclass.proposed.ProposedEditClasses;
-import org.variantsync.diffdetective.util.Assert;
+import org.prop4j.Node;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
-import org.variantsync.diffdetective.variation.Label;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
 import org.variantsync.diffdetective.variation.diff.Time;
 import org.variantsync.diffdetective.variation.diff.VariationDiff;
 import org.variantsync.diffdetective.variation.tree.VariationNode;
 
-import com.github.gumtreediff.actions.Diff;
+public class Unchanged implements Relevance {
+	private final VariationDiff<DiffLinesLabel> diff;
+	private final Time time;
+	private Map<String, List<DiffNode<DiffLinesLabel>>> lookUpMap = new HashMap<>();
+	
+	public Unchanged(VariationDiff<DiffLinesLabel> diff, Time time)  {
+		this.diff = diff;
+		this.time = time;
+		diff.forAll(diffNode -> {
+			if (time == Time.AFTER ? !diffNode.isRem() : !diffNode.isAdd()) {
+				
+				String key = getIdentifierForNode(diffNode);
+				System.out.println(key);
+				if (!lookUpMap.containsKey(key)) {
+					lookUpMap.put(key, new ArrayList<DiffNode<DiffLinesLabel>>());
+				}
+				lookUpMap.get(key).add(diffNode);
+			}
+		});
+	}
 
-public record Unchanged(VariationDiff<DiffLinesLabel> diff, Time time) implements Relevance {
+	private String getIdentifierForNode(DiffNode<DiffLinesLabel> diffNode) {
+		String key = diffNode.getNodeType().name();
+		Node formula = diffNode.getFormula();
+		if (formula != null) {
+			key += formula.toString();
+		}
+		for (String s : diffNode.getLabel().getLines()) {
+			key += s;
+		}
+		for (String s : diffNode.getLabel().getTrailingLines()) {
+			key += s;
+		}
+		return key;
+	}
+	
+	private String getIdentifierForNode(VariationNode<?, ?> node) {
+		String key = node.getNodeType().name();
+		Node formula = node.getFormula();
+		if (formula != null) {
+			key += formula.toString();
+		}
+		for (String s : node.getLabel().getLines()) {
+			key += s;
+		}
+		for (String s : node.getLabel().getTrailingLines()) {
+			key += s;
+		}
+		return key;
+	}
 
 	@Override
 	public boolean test(VariationNode<?, ?> t) {
-		List<DiffNode<DiffLinesLabel>> tInDiffMatches = diff.computeAllNodesThat(diffNode -> isSameNode(t, diffNode)
-				&& (time == Time.AFTER ? !diffNode.isRem() : !diffNode.isAdd()));
-		if (tInDiffMatches.isEmpty()) {
+		List<DiffNode<DiffLinesLabel>> tInDiffMatches = lookUpMap.get(getIdentifierForNode(t));
+		if (tInDiffMatches == null) {
 			return true;
 		}
 		DiffNode<DiffLinesLabel> tInDiff = tInDiffMatches.get(0);
@@ -43,18 +86,11 @@ public record Unchanged(VariationDiff<DiffLinesLabel> diff, Time time) implement
 
 	@Override
 	public String getFunctionName() {
-		// TODO Auto-generated method stub
 		return "unchanged";
 	}
 
 	@Override
 	public String parametersToString() {
-		// TODO Auto-generated method stub
 		return diff.toString();
-	}
-
-	public static boolean isSameNode(VariationNode<?, ?> a, DiffNode<?> b) {
-		return a.getNodeType().equals(b.getNodeType()) && Objects.equals(a.getFormula(), b.getFormula())
-				&& Label.observablyEqual(a.getLabel(), b.getLabel());
 	}
 }
