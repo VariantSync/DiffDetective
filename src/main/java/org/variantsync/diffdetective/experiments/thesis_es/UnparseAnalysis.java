@@ -9,6 +9,7 @@ import org.variantsync.diffdetective.diff.git.PatchDiff;
 import org.variantsync.diffdetective.util.CSV;
 import org.variantsync.diffdetective.util.FileUtils;
 import org.variantsync.diffdetective.util.IO;
+import org.variantsync.diffdetective.util.Source;
 import org.variantsync.diffdetective.util.StringUtils;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.VariationUnparser;
@@ -17,7 +18,6 @@ import org.variantsync.diffdetective.variation.diff.VariationDiff;
 import org.variantsync.diffdetective.variation.diff.construction.JGitDiff;
 import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParseOptions;
 import org.variantsync.diffdetective.variation.tree.VariationTree;
-import org.variantsync.diffdetective.variation.tree.source.VariationTreeSource;
 
 public class UnparseAnalysis implements Analysis.Hooks {
 
@@ -215,7 +215,7 @@ public class UnparseAnalysis implements Analysis.Hooks {
     public static String parseUnparseTree(String text, VariationDiffParseOptions option) {
         String temp = "b";
         try {
-            VariationTree<DiffLinesLabel> tree = VariationTree.fromText(text, VariationTreeSource.Unknown, option);
+            VariationTree<DiffLinesLabel> tree = VariationTree.fromText(text, Source.Unknown, option);
             temp = VariationUnparser.unparseTree(tree);
         } catch (Exception e) {
             e.printStackTrace();
@@ -226,7 +226,7 @@ public class UnparseAnalysis implements Analysis.Hooks {
     public static String parseUnparseDiff(String textDiff, VariationDiffParseOptions option) {
         String temp = "b";
         try {
-            VariationDiff<DiffLinesLabel> diff = VariationDiff.fromDiff(textDiff, option);
+            VariationDiff<DiffLinesLabel> diff = VariationDiff.fromDiff(textDiff, Source.Unknown, option);
             temp = VariationUnparser.unparseDiff(diff);
         } catch (Exception e) {
             e.printStackTrace();

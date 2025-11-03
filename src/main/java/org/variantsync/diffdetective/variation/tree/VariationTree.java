@@ -3,17 +3,17 @@ package org.variantsync.diffdetective.variation.tree;
 import org.variantsync.diffdetective.datasets.PatchDiffParseOptions;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.util.Assert;
+import org.variantsync.diffdetective.util.CompositeSource;
+import org.variantsync.diffdetective.util.FileSource;
+import org.variantsync.diffdetective.util.Source;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.Label;
 import org.variantsync.diffdetective.variation.NodeType; // For Javadoc
 import org.variantsync.diffdetective.variation.diff.DiffNode;
-import org.variantsync.diffdetective.variation.diff.VariationDiff;
 import org.variantsync.diffdetective.variation.diff.Projection;
+import org.variantsync.diffdetective.variation.diff.VariationDiff;
 import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParseOptions;
 import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParser;
-import org.variantsync.diffdetective.variation.diff.source.FromVariationTreeSource;
-import org.variantsync.diffdetective.variation.tree.source.LocalFileSource;
-import org.variantsync.diffdetective.variation.tree.source.VariationTreeSource;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -22,6 +22,7 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
@@ -42,15 +43,15 @@ import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
  */
 public record VariationTree<L extends Label>(
     VariationTreeNode<L> root,
-    VariationTreeSource source
-) {
+    Source source
+) implements Source {
     /** Creates a {@code VariationTree} with the given root and an unknown source. */
     public VariationTree(VariationTreeNode<L> root) {
-        this(root, VariationTreeSource.Unknown);
+        this(root, Source.Unknown);
     }
 
     /** Creates a {@code VariationTree} with the given root and source. */
-    public VariationTree(VariationTreeNode<L> root, VariationTreeSource source) {
+    public VariationTree(VariationTreeNode<L> root, Source source) {
         this.root = root;
         this.source = source;
 
@@ -66,7 +67,7 @@ public record VariationTree<L extends Label>(
     }
 
     /**
-     * Same as {@link #fromFile(BufferedReader, VariationTreeSource, VariationDiffParseOptions)}
+     * Same as {@link #fromFile(BufferedReader, Source, VariationDiffParseOptions)}
      * but registers {@code path} as source.
      */
     public static VariationTree<DiffLinesLabel> fromFile(
@@ -76,8 +77,8 @@ public record VariationTree<L extends Label>(
         try (BufferedReader file = Files.newBufferedReader(path)) {
             return fromFile(
                 file,
-                new LocalFileSource(path),
-                    parseOptions
+                new FileSource(path),
+                parseOptions
             );
         }
     }
@@ -94,17 +95,16 @@ public record VariationTree<L extends Label>(
      */
     public static VariationTree<DiffLinesLabel> fromFile(
             final BufferedReader input,
-            final VariationTreeSource source,
+            final Source source,
             final VariationDiffParseOptions parseOptions
             ) throws IOException, DiffParseException {
-        VariationTreeNode<DiffLinesLabel> tree = VariationDiffParser
-            .createVariationTree(input, parseOptions)
-            .getRoot()
-            // Arbitrarily choose the BEFORE projection as both should be equal.
-            .projection(BEFORE)
-            .toVariationTree();
+        VariationDiff<DiffLinesLabel> diff =
+            VariationDiffParser.createVariationTree(input, source, parseOptions);
 
-        return new VariationTree<>(tree, source);
+        return new VariationTree<>(
+            // Arbitrarily choose the BEFORE projection as both should be equal.
+            diff.getRoot().projection(BEFORE).toVariationTree(),
+            diff.getSource());
     }
 
     /**
@@ -118,7 +118,7 @@ public record VariationTree<L extends Label>(
      */
     public static VariationTree<DiffLinesLabel> fromText(
             final String input,
-            final VariationTreeSource source,
+            final Source source,
             final VariationDiffParseOptions parseOptions
     ) throws DiffParseException {
         try {
@@ -129,11 +129,11 @@ public record VariationTree<L extends Label>(
         }
     }
 
-    public static <L extends Label> VariationTree<L> fromProjection(final Projection<L> projection, final VariationTreeSource source) {
+    public static <L extends Label> VariationTree<L> fromProjection(final Projection<L> projection, final Source source) {
         return fromVariationNode(projection, source);
     }
 
-    public static <T extends VariationNode<T, L>, L extends Label> VariationTree<L> fromVariationNode(final VariationNode<T, L> node, final VariationTreeSource source) {
+    public static <T extends VariationNode<T, L>, L extends Label> VariationTree<L> fromVariationNode(final VariationNode<T, L> node, final Source source) {
         return new VariationTree<>(
                 node.toVariationTree(),
                 source
@@ -143,7 +143,7 @@ public record VariationTree<L extends Label>(
     public VariationDiff<L> toVariationDiff(final Function<VariationTreeNode<L>, DiffNode<L>> nodeConverter) {
         return new VariationDiff<>(
                 DiffNode.unchanged(nodeConverter, root()),
-                new FromVariationTreeSource(source())
+                new CompositeSource("VariationTree.toVariationDiff", source())
         );
     }
 
@@ -223,6 +223,20 @@ public record VariationTree<L extends Label>(
      */
     public void assertConsistency() {
         forAllPreorder(VariationTreeNode::assertConsistency);
+    }
+
+    public Source getSource() {
+        return source();
+    }
+
+    @Override
+    public List<Source> getSources() {
+        return List.of(source);
+    }
+
+    @Override
+    public String getSourceExplanation() {
+        return "VariationTree";
     }
 
     @Override

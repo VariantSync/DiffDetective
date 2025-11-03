@@ -3,10 +3,10 @@ package org.variantsync.diffdetective.variation.diff.serialize.treeformat;
 import org.apache.commons.io.FilenameUtils;
 import org.variantsync.diffdetective.diff.git.CommitDiff;
 import org.variantsync.diffdetective.diff.git.PatchDiff;
+import org.variantsync.diffdetective.util.Source;
 import org.variantsync.diffdetective.variation.diff.Time;
 import org.variantsync.diffdetective.variation.diff.serialize.LineGraphConstants;
 import org.variantsync.diffdetective.variation.diff.source.CommitDiffVariationDiffSource;
-import org.variantsync.diffdetective.variation.diff.source.VariationDiffSource;
 
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
@@ -19,7 +19,7 @@ import java.nio.file.Paths;
  */
 public class CommitDiffVariationDiffLabelFormat implements VariationDiffLabelFormat {
     @Override
-    public VariationDiffSource fromLabel(final String label) {
+    public Source fromLabel(final String label) {
         String[] commit = label.split(LineGraphConstants.TREE_NAME_SEPARATOR_REGEX);
         try {
             Path filePath = Paths.get(commit[0]);
@@ -31,15 +31,19 @@ public class CommitDiffVariationDiffLabelFormat implements VariationDiffLabelFor
     }
 
     @Override
-    public String toLabel(final VariationDiffSource variationDiffSource) {
-        if (variationDiffSource instanceof CommitDiffVariationDiffSource commitDiffVariationDiffSource) {
+    public String toLabel(final Source variationDiffSource) {
+        CommitDiffVariationDiffSource commitDiffVariationDiffSource = Source.findFirst(variationDiffSource, CommitDiffVariationDiffSource.class);
+        if (commitDiffVariationDiffSource != null) {
             // write for instances of CommitDiffVariationDiffSources
             return FilenameUtils.separatorsToUnix(commitDiffVariationDiffSource.getFileName().toString()) + LineGraphConstants.TREE_NAME_SEPARATOR + commitDiffVariationDiffSource.getCommitHash();
-        } else if (variationDiffSource instanceof PatchDiff patchDiff) {
+        }
+
+        PatchDiff patchDiff = Source.findFirst(variationDiffSource, PatchDiff.class);
+        if (patchDiff != null) {
             // write for instances of PatchDiffs
             return FilenameUtils.separatorsToUnix(patchDiff.getFileName(Time.AFTER)) + LineGraphConstants.TREE_NAME_SEPARATOR + patchDiff.getCommitDiff().getCommitHash();
-        } else {
-            throw new UnsupportedOperationException("There is no implementation for this VariationDiffSource type: " + variationDiffSource);
         }
+
+        throw new UnsupportedOperationException("There is no implementation for this Source type: " + variationDiffSource);
     }
 }

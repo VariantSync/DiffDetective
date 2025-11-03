@@ -9,11 +9,11 @@ import org.variantsync.diffdetective.diff.text.DiffLineNumber;
 import org.variantsync.diffdetective.gumtree.VariationDiffAdapter;
 import org.variantsync.diffdetective.gumtree.VariationTreeAdapter;
 import org.variantsync.diffdetective.util.Assert;
+import org.variantsync.diffdetective.util.CompositeSource;
 import org.variantsync.diffdetective.variation.Label;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
 import org.variantsync.diffdetective.variation.diff.Time;
 import org.variantsync.diffdetective.variation.diff.VariationDiff;
-import org.variantsync.diffdetective.variation.diff.source.VariationTreeDiffSource;
 import org.variantsync.diffdetective.variation.diff.traverse.VariationDiffTraversal;
 import org.variantsync.diffdetective.variation.tree.VariationNode;
 import org.variantsync.diffdetective.variation.tree.VariationTree;
@@ -48,7 +48,7 @@ public class GumTreeDiff {
             matcher
         );
 
-        return new VariationDiff<>(root, new VariationTreeDiffSource(before.source(), after.source()));
+        return new VariationDiff<>(root, new CompositeSource("diffUsingMatching", before.source(), after.source()));
     }
 
     /**

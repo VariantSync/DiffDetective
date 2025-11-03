@@ -21,9 +21,11 @@ import org.variantsync.diffdetective.util.StringUtils;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.diff.VariationDiff;
 import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParser;
+import org.variantsync.diffdetective.variation.tree.source.GitSource;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -252,6 +254,7 @@ public class GitDiffer {
 
                     final VariationDiff<DiffLinesLabel> variationDiff = VariationDiffParser.createVariationDiff(
                             fullDiff,
+                            new GitSource(repository, childCommit.getId().name(), Path.of(filename)),
                             repository.getParseOptions().variationDiffParseOptions()
                     );
 
