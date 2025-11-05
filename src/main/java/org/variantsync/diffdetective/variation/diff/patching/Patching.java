@@ -283,9 +283,10 @@ public class Patching {
 			if (!hasSameLabel(sourceNode.getLabel(), targetList.get(indexTarget).getLabel())) {
 				return false;
 			}
+			indexTarget++;
 		}
 		
-		return indexTarget == targetList.size() - 1;
+		return indexTarget == targetList.size();
 	}
 
 	private static boolean isPresentUnderConfiguration(DiffNode<DiffLinesLabel> diffNode, Configure config) {
@@ -312,7 +313,7 @@ public class Patching {
 			}
 		}
 		if (candidates.size() != 1) {
-			throw new Exception("Reject: too many nodes to remove");
+			throw new Exception("Reject: too many nodes to remove: " + candidates.size());
 		}
 		return candidates.get(0);
 	}
