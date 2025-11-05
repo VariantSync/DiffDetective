@@ -16,6 +16,7 @@ import org.eclipse.jgit.diff.DiffAlgorithm;
 import org.prop4j.And;
 import org.prop4j.Literal;
 import org.prop4j.Node;
+import org.variantsync.diffdetective.analysis.logic.SAT;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.show.Show;
 import org.variantsync.diffdetective.show.engine.GameEngine;
@@ -253,24 +254,42 @@ public class Patching {
 		}
 		return compareAncestors(root.getParent(time), targetNodeInPatch, time, debug);
 	}
+	
+	private static boolean isSameList(List<DiffNode<DiffLinesLabel>> sourceList, List<DiffNode<DiffLinesLabel>> targetList, Configure configSource) {
+		int indexTarget = 0;
+		for (DiffNode<DiffLinesLabel> sourceNode : sourceList) {
+			while (!isPresentUnderConfiguration(targetList.get(indexTarget), configSource)) {
+				indexTarget++;
+				if (indexTarget >= targetList.size()) {
+					return false;
+				}
+			}
+			if (!hasSameLabel(sourceNode.getLabel(), targetList.get(indexTarget).getLabel())) {
+				return false;
+			}
+		}
+		
+		return indexTarget == targetList.size() - 1;
+	}
+
+	private static boolean isPresentUnderConfiguration(DiffNode<DiffLinesLabel> diffNode, Configure config) {
+		Node pc = diffNode.getPresenceCondition(Time.BEFORE);
+		return SAT.isSatisfiable(new And(pc, config));
+	}
 
 	private static DiffNode<DiffLinesLabel> checkNeighbors2(DiffNode<DiffLinesLabel> root,
-			DiffNode<DiffLinesLabel> targetNodeInPatch, Time time, boolean debug) throws Exception {
+			DiffNode<DiffLinesLabel> targetNodeInPatch, Configure configSource, Time time, boolean debug) throws Exception {
 		List<DiffNode<DiffLinesLabel>> orderedChildrenTarget = targetNodeInPatch.getChildOrder(time);
 		List<DiffNode<DiffLinesLabel>> orderedChildrenSource = root.getParent(time).getChildOrder(time);
 		int indexSource = orderedChildrenSource.indexOf(root);
 		List<DiffNode<DiffLinesLabel>> candidates = new ArrayList<>();
 		for (DiffNode<DiffLinesLabel> node : orderedChildrenTarget) {
 			int indexTarget = orderedChildrenTarget.indexOf(node);
-
-			if (indexSource != indexTarget) {
-				continue;
-			}
-			for (int i = 0; i < orderedChildrenSource.size(); i++) {
-				if (!hasSameLabel(orderedChildrenSource.get(i).getLabel(), orderedChildrenTarget.get(i).getLabel())) {
-					break;
-				}
-			}
+			List<DiffNode<DiffLinesLabel>> neighborsBeforeSource = orderedChildrenSource.subList(0, indexSource);
+			List<DiffNode<DiffLinesLabel>> neighborsAfterSource = orderedChildrenSource.subList(indexSource + 1, orderedChildrenSource.size());
+			List<DiffNode<DiffLinesLabel>> neighborsBeforeTarget = orderedChildrenTarget.subList(0, indexTarget);
+			List<DiffNode<DiffLinesLabel>> neighborsAfterTarget = orderedChildrenTarget.subList(indexTarget + 1, orderedChildrenTarget.size());
+			if (isSameList(neighborsBeforeSource, neighborsBeforeTarget, configSource) && isSameList(neighborsAfterSource, neighborsAfterTarget, configSource))
 			candidates.add(node);
 		}
 		if (candidates.size() != 1) {
@@ -361,7 +380,7 @@ public class Patching {
 					System.out.println(targetNodeInPatch.getChildOrder(time));
 
 			} else if (type == DiffType.REM) {
-				DiffNode<DiffLinesLabel> nodesToRem = checkNeighbors2(root, targetNodeInPatch, time, debug);
+				DiffNode<DiffLinesLabel> nodesToRem = checkNeighbors2(root, targetNodeInPatch, configSource, time, debug);
 				if (debug)
 					System.out.println("Nodes to remove: " + nodesToRem);
 
