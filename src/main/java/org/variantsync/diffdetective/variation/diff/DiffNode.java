@@ -367,12 +367,21 @@ public class DiffNode<L extends Label> implements HasNodeType {
     }
 
     /**
-     * Removes all children from the given node and adds them as children to this node at the respective times.
+     * Removes all children from the given node and adds them as children to this node at the given time.
+     * The given node will have no children afterwards at the given time.
+     * @param other The node whose children should be stolen for the given time.
+     */
+    public void stealChildrenOf(Time time, final DiffNode<L> other) {
+        addChildren(other.removeChildren(time), time);
+    }
+
+    /**
+     * Removes all children from the given node and adds them as children to this node (at all times).
      * The given node will have no children afterwards.
      * @param other The node whose children should be stolen.
      */
     public void stealChildrenOf(final DiffNode<L> other) {
-        Time.forAll(time -> addChildren(other.removeChildren(time), time));
+        Time.forAll(time -> stealChildrenOf(time, other));
     }
 
     /**
@@ -871,6 +880,65 @@ public class DiffNode<L extends Label> implements HasNodeType {
     }
 
     /**
+     * Turns this node into a node with {@link DiffType} {@link DiffType#NON}.
+     * To retain consistency of the variation diff, this node will also ensure that this
+     * node will have a parent at all times.
+     * To this end, the parent of this node will also be made unchanged if necessary, potentially
+     * making some or all ancestors of this node unchanged recursively.
+     * This method has no effect when this node is already unchanged.
+     */
+    public void makeUnchanged() {
+        if (isNon()) return;
+
+        this.diffType = DiffType.NON;
+
+        final DiffNode<L> bp = at(Time.BEFORE).parent;
+        final DiffNode<L> ap = at(Time.AFTER).parent;
+
+        // If we have a parent before the change and after the change, making this node unchanged is fine.
+        // Otherwise, if at least one parent is null, we have to set the other parent and make our parent unchanged as well.
+        if (bp == null || ap == null) {
+            // There is only one parent, which we store in this field.
+            final DiffNode<L> p = bp == null ? ap : bp;
+            final Time timeOfExistingEdge = bp == null ? AFTER : BEFORE;
+            final Time timeOfNewEdge = timeOfExistingEdge.other();
+
+            Assert.assertTrue(p != null);
+
+            // If the parent is not unchanged, we have to make it unchanged so that it can be our
+            // parent at all times.
+            if (!p.isNon()) {
+                p.makeUnchanged();
+            }
+
+            // Now make p our parent at all times, not just at a single time.
+            // To this end, we essentially have to "patch" this node into our parent scope at timeOfNewEdge.
+            // Technically, this means that we have to add this node to the children list of p at a specific index.
+            // We run into the alignment problem here if there is an insertion (or multiple insertions) right next to a deleted node we make unchanged or vice versa.
+            // Hence, the index at which to patch our node is not unique.
+            // There are multiple heuristics or strategies we could use to determine the index:
+            // - constant index: always use index 0 for example
+            // - line numbers: use the index right before the node with a higher line number at timeOfNewEdge
+            //                 This solution requires knowledge on line numbers which are not always present (e.g., in diffs generated in code).
+            // - context-based patching: Try to locate the node where its neighbors at timeOfNewEdge are most similar to the neighbors at timeOfExistingEdge
+            //                           This requires some knowledge on the labels to match contexts.
+            // We lightweight context-based patching here by trying to insert the node directly right of its closest unchanged left neighbor.
+            int patchIndex = 0; // the index at which to insert this node at timeOfNewEdge
+            final List<DiffNode<L>> siblingsAndMe = p.getChildOrder(timeOfExistingEdge);
+            // We start walking from our closest left neighbor towards the leftmost sibling (at index 0) and try to find the first unchanged sibling.
+            for (int i = p.indexOfChild(this, timeOfExistingEdge) - 1; i >= 0; i--) {
+                final DiffNode<L> candidate = siblingsAndMe.get(i);
+                if (candidate.isNon()) { // i.e., exists at timeOfNewEdge as well
+                    // Insert ourselves as the new right neighbor of the candidate node
+                    patchIndex = p.indexOfChild(candidate, timeOfNewEdge) + 1;
+                    break;
+                }
+            }
+            p.insertChild(this, patchIndex, timeOfNewEdge);
+        }
+    }
+
+    /**
      * Transforms a {@code VariationNode} into a {@code DiffNode} by diffing {@code variationNode}
      * to itself. Recursively translates all children.
      *
@@ -909,6 +977,42 @@ public class DiffNode<L extends Label> implements HasNodeType {
         Iterator<DiffNode<L>> bIt = b.getAllChildren().iterator();
         while (aIt.hasNext() && bIt.hasNext()) {
             if (!isSameAs(aIt.next(), bIt.next(), visited)) {
+                return false;
+            }
+        }
+
+        return aIt.hasNext() == bIt.hasNext();
+    }
+
+    /**
+     * Returns true if this subtree is exactly equal to {@code other} except for line numbers and other metadata in labels.
+     * This equality is a weaker equality than {@link DiffNode#isSameAs(DiffNode)} (i.e., whenever isSameAs returns true, so does
+     * isSameAsIgnoringLineNumbers).
+     * Labels of DiffNodes are compared via {@link Label#observablyEqual(Label, Label)}.
+     * This check uses equality checks instead of identity.
+     */
+    public boolean isSameAsIgnoringLineNumbers(DiffNode<L> other) {
+        return isSameAsIgnoringLineNumbers(this, other, new HashSet<>());
+    }
+
+    private static <L extends Label> boolean isSameAsIgnoringLineNumbers(DiffNode<L> a, DiffNode<L> b, Set<DiffNode<L>> visited) {
+        if (!visited.add(a)) {
+            return true;
+        }
+
+        if (!(
+                a.getDiffType().equals(b.getDiffType()) &&
+                a.getNodeType().equals(b.getNodeType()) &&
+                Objects.equals(a.getFormula(), b.getFormula()) &&
+                Label.observablyEqual(a.getLabel(), b.getLabel())
+        )) {
+            return false;
+        }
+
+        Iterator<DiffNode<L>> aIt = a.getAllChildren().iterator();
+        Iterator<DiffNode<L>> bIt = b.getAllChildren().iterator();
+        while (aIt.hasNext() && bIt.hasNext()) {
+            if (!isSameAsIgnoringLineNumbers(aIt.next(), bIt.next(), visited)) {
                 return false;
             }
         }

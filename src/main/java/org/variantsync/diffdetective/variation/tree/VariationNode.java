@@ -282,8 +282,9 @@ public abstract class VariationNode<T extends VariationNode<T, L>, L extends Lab
      * @see removeAllChildren
      */
     public void stealChildrenOf(final T other) {
-        addChildren(other.getChildren());
+        List<T> children = new ArrayList<>(other.getChildren());
         other.removeAllChildren();
+        addChildren(children);
     }
 
     /**
@@ -417,6 +418,17 @@ public abstract class VariationNode<T extends VariationNode<T, L>, L extends Lab
         for (var child : getChildren()) {
             child.forAllPreorder(action);
         }
+    }
+
+    /**
+     * Traverses all nodes in this subtree in postorder.
+     */
+    public void forAllPostorder(Consumer<T> action) {
+        for (var child : getChildren()) {
+            child.forAllPostorder(action);
+        }
+
+        action.accept(this.upCast());
     }
 
     public void forMeAndMyAncestors(final Consumer<T> action) {

@@ -48,7 +48,8 @@ public class VariationDiffApp<L extends Label> extends App {
             new LabelOnlyDiffNodeFormat<>(),
             new EditClassesDiffNodeFormat<>(),
             new LineNumberFormat<>(),
-            new FormulasAndLineNumbersNodeFormat<>()
+            new FormulasAndLineNumbersNodeFormat<>(),
+            new IndexFormat<>()
         );
     }
 

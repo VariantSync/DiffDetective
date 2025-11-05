@@ -48,4 +48,18 @@ public interface Label {
      * Creates a deep copy of this label.
      */
     Label clone();
+
+    /**
+     * Tests whether two labels are observably equal.
+     * Observably equal means that the two labels
+     * cannot be distinguished by using methods from this interface.
+     * The given labels might indeed be of different classes or might
+     * be considered unequal regarding {@link Object#equals(Object)}.
+     */
+    static boolean observablyEqual(Label a, Label b) {
+        if (a == null) return false;
+        if (a == b) return true;
+        return a.getLines().equals(b.getLines())
+            && a.getTrailingLines().equals(b.getTrailingLines());
+    }
 }

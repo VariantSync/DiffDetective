@@ -7,7 +7,7 @@ import org.variantsync.diffdetective.variation.diff.VariationDiff;
  * Transformer that relabels the root of a VariationDiff.
  * @author Paul Bittner
  */
-public class RelabelRoot<L extends Label> implements VariationDiffTransformer<L> {
+public class RelabelRoot<L extends Label> implements Transformer<VariationDiff<L>> {
     private final L newLabel;
 
     /**
