@@ -189,14 +189,14 @@ public class PatchingExperiment implements Analysis.Hooks {
 		}
 
 		// TODO: Run Pia's new patcher here and store the result.
-		Result<VariationTree<DiffLinesLabel>, Error> patchTransformerResult = Generator
-				.runPatchTransformer(scenario.sourcePatch, scenario.targetVariantBefore);
+		Result<VariationTree<DiffLinesLabel>, Error> patchTransformerResult = Generator.runPatchTransformer(
+				scenario.sourcePatch, scenario.targetVariantBefore, scenario.sourceVariantConfig,
+				scenario.targetVariantConfig);
 
 		patchTransformerResult.match(
-				tree -> Patching.arePatchedVariantsEquivalent(
-						tree, scenario.sourceVariantAfterRedToCrossVarFeatures,
-						scenario.targetVariantBeforeRedToUnchanged, scenario.targetVariantConfig,
-						scenario.unchangedAfter)
+				tree -> tree != null && Patching.arePatchedVariantsEquivalent(tree,
+						scenario.sourceVariantAfterRedToCrossVarFeatures, scenario.targetVariantBeforeRedToUnchanged,
+						scenario.sourceVariantConfig, scenario.unchangedAfter)
 								? analysis.get(PT_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++
 								: analysis.get(PT_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++,
 				error -> analysis.get(PT_REJECTED_PATCHES_COUNTER_RESULT_KEY).value++);
@@ -204,30 +204,26 @@ public class PatchingExperiment implements Analysis.Hooks {
 		Result<VariationTree<DiffLinesLabel>, Error> gnuPatchResult;
 		try {
 			gnuPatchResult = Generator.runGnuPatch(scenario.targetVariantBefore);
-			gnuPatchResult.match(
-					tree -> Patching.arePatchedVariantsEquivalent(
-							tree, scenario.sourceVariantAfterRedToCrossVarFeatures,
-							scenario.targetVariantBeforeRedToUnchanged, scenario.targetVariantConfig,
-							scenario.unchangedAfter)
-									? analysis.get(GNU_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++
-									: analysis.get(GNU_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++,
+			gnuPatchResult.match(tree -> tree != null && Patching.arePatchedVariantsEquivalent(tree,
+					scenario.sourceVariantAfterRedToCrossVarFeatures, scenario.targetVariantBeforeRedToUnchanged,
+					scenario.sourceVariantConfig, scenario.unchangedAfter)
+							? analysis.get(GNU_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++
+							: analysis.get(GNU_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++,
 					error -> analysis.get(GNU_REJECTED_PATCHES_COUNTER_RESULT_KEY).value++);
-		} catch (IOException | DiffParseException e) {
+		} catch (IOException e) {
 			analysis.get(GNU_ERROR_PATCHES_COUNTER_RESULT_KEY).value++;
 		}
 
 		Result<VariationTree<DiffLinesLabel>, Error> mpatchResult;
 		try {
 			mpatchResult = Generator.runMPatch(scenario.targetVariantBefore);
-			mpatchResult.match(
-					tree -> Patching.arePatchedVariantsEquivalent(
-							tree, scenario.sourceVariantAfterRedToCrossVarFeatures,
-							scenario.targetVariantBeforeRedToUnchanged, scenario.targetVariantConfig,
-							scenario.unchangedAfter)
-									? analysis.get(MPATCH_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++
-									: analysis.get(MPATCH_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++,
+			mpatchResult.match(tree -> tree != null && Patching.arePatchedVariantsEquivalent(tree,
+					scenario.sourceVariantAfterRedToCrossVarFeatures, scenario.targetVariantBeforeRedToUnchanged,
+					scenario.sourceVariantConfig, scenario.unchangedAfter)
+							? analysis.get(MPATCH_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++
+							: analysis.get(MPATCH_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++,
 					error -> analysis.get(MPATCH_REJECTED_PATCHES_COUNTER_RESULT_KEY).value++);
-		} catch (IOException | DiffParseException e) {
+		} catch (IOException e) {
 			analysis.get(MPATCH_ERROR_PATCHES_COUNTER_RESULT_KEY).value++;
 		}
 
@@ -289,10 +285,10 @@ public class PatchingExperiment implements Analysis.Hooks {
 				defaultOptions.getFilterForRepo(), true, false);
 		try {
 			AnalysisRunner.run(analysisOptions, (repository, path) -> Analysis
-					.forEachCommit(() -> PatchingExperiment.Create(repository, path, experiment), 2, 1));
+					.forEachCommit(() -> PatchingExperiment.Create(repository, path, experiment), 4, 4));
 		} catch (Exception e) {
-			PatchingExperiment.writeToFile(experiment.getLastPatch(), "file7.diff");
-			e.printStackTrace();
+//			PatchingExperiment.writeToFile(experiment.getLastPatch(), "file7.diff");
+//			e.printStackTrace();
 		}
 		try {
 //			VariationDiff diff = Patching.patch(Patching.parseVariationDiffFromFile("test_exampleA.diff"),

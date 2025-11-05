@@ -282,7 +282,6 @@ public class Patching {
 	private static int findInsertPosition2(DiffNode<DiffLinesLabel> root, DiffNode<DiffLinesLabel> targetNodeInPatch,
 			DiffNode<DiffLinesLabel> targetNodeInPatchView, Time time, boolean debug) throws Exception {
 		List<DiffNode<DiffLinesLabel>> orderedChildrenTarget = targetNodeInPatch.getChildOrder(time);
-		List<DiffNode<DiffLinesLabel>> orderedChildrenTargetView = targetNodeInPatchView.getChildOrder(time);
 		List<DiffNode<DiffLinesLabel>> orderedChildrenSource = root.getParent(time).getChildOrder(time);
 		int indexSource = orderedChildrenSource.indexOf(root);
 		int indexTarget = 0;
@@ -297,13 +296,12 @@ public class Patching {
 			}
 			if (!hasSameLabel(orderedChildrenSource.get(i).getLabel(),
 					orderedChildrenTarget.get(indexTarget).getLabel())) {
-				if (!hasSameLabel(orderedChildrenSource.get(i).getLabel(),
-						orderedChildrenTargetView.get(indexTarget).getLabel())) {
-					throw new Exception("Reject: inserting");
-				}
 				while (!hasSameLabel(orderedChildrenSource.get(i).getLabel(),
 						orderedChildrenTarget.get(indexTarget).getLabel())) {
 					indexTarget++;
+					if (indexTarget >= orderedChildrenTarget.size()) {
+						throw new Exception("could not find insert position");
+					}
 				}
 			}
 			indexTarget++;
@@ -313,7 +311,7 @@ public class Patching {
 
 	private static void applyChanges(DiffType type, VariationDiff<DiffLinesLabel> targetVariantDiffUnchanged,
 			VariationDiff<DiffLinesLabel> targetVariantDiffPatched, List<DiffNode<DiffLinesLabel>> subtreeRoots,
-			VariationDiffSource source, Set<String> deselectedFeatures, boolean debug) throws Exception {
+			VariationDiffSource source, Configure configSource, boolean debug) throws Exception {
 
 		Time time = (type == DiffType.ADD) ? Time.AFTER : Time.BEFORE;
 
@@ -334,7 +332,7 @@ public class Patching {
 			}
 
 			VariationDiff<DiffLinesLabel> targetVariantDiffPatchedView = DiffView.optimized(
-					targetVariantDiffPatched.deepCopy(), calculateFormulaForDeselection(deselectedFeatures, debug));
+					targetVariantDiffPatched.deepCopy(), configSource);
 			targetNodes = targetNodes.stream().filter(targetNode -> checkNeighborsLabels(root,
 					targetVariantDiffPatchedView.getNodeWithID(targetNode.getID()), time, debug)).toList();
 			targetNodes = targetNodes.stream()
@@ -401,17 +399,17 @@ public class Patching {
 
 	}
 
-	private static VariationDiff<DiffLinesLabel> patch(VariationTree<DiffLinesLabel> sourceVariantVersion1,
-			VariationTree<DiffLinesLabel> sourceVariantVersion2, VariationTree<DiffLinesLabel> targetVariant,
-			boolean debug, boolean patchNewFeatures) throws Exception {
-		if (sourceVariantVersion1 == null || sourceVariantVersion2 == null || targetVariant == null) {
-			if (debug)
-				System.out.println("Parsing error");
-			return null;
-		}
-		VariationDiff<DiffLinesLabel> diff = VariationDiff.fromTrees(sourceVariantVersion1, sourceVariantVersion2);
-		return patch(diff, targetVariant, debug, patchNewFeatures);
-	}
+//	private static VariationDiff<DiffLinesLabel> patch(VariationTree<DiffLinesLabel> sourceVariantVersion1,
+//			VariationTree<DiffLinesLabel> sourceVariantVersion2, VariationTree<DiffLinesLabel> targetVariant,
+//			boolean debug, boolean patchNewFeatures) throws Exception {
+//		if (sourceVariantVersion1 == null || sourceVariantVersion2 == null || targetVariant == null) {
+//			if (debug)
+//				System.out.println("Parsing error");
+//			return null;
+//		}
+//		VariationDiff<DiffLinesLabel> diff = VariationDiff.fromTrees(sourceVariantVersion1, sourceVariantVersion2);
+//		return patch(diff, targetVariant, debug, patchNewFeatures);
+//	}
 
 	public static void changeType(DiffNode<DiffLinesLabel> node, VariationDiff<DiffLinesLabel> modDiff, DiffType type) {
 		if (!node.isLeaf()) {
@@ -486,21 +484,14 @@ public class Patching {
 		}
 	}
 
-	public static VariationDiff<DiffLinesLabel> patch(VariationDiff<DiffLinesLabel> diff,
-			VariationTree<DiffLinesLabel> targetVariant, boolean debug, boolean patchNewFeatures) throws Exception {
-
-		Set<String> deselectedFeatures = calculateFeatureSetToDeselectFromDiff(diff, targetVariant, debug,
-				patchNewFeatures);
-		if (debug) {
-			System.out.println(deselectedFeatures);
-		}
-		Relevance rho = calculateFormulaForDeselection(deselectedFeatures, debug);
+	public static VariationDiff<DiffLinesLabel> patch(VariationDiff<DiffLinesLabel> sourcePatch,
+			VariationTree<DiffLinesLabel> targetVariant, Configure configSource, Configure configTarget, boolean debug, boolean patchNewFeatures) throws Exception {
 
 //		if (!checkForZeroVariantDrift(diff, targetVariant, rho, debug)) {
 //			throw new Exception("Variants evolved independently: No Zero Variant Drift");
 //		}
 
-		VariationDiff<DiffLinesLabel> optimizedDiff = DiffView.optimized(diff, rho);
+		VariationDiff<DiffLinesLabel> optimizedDiff = DiffView.optimized(sourcePatch, configTarget);
 //		GameEngine.showAndAwaitAll(Show.diff(optimizedDiff));
 
 		if (debug) {
@@ -546,7 +537,7 @@ public class Patching {
 						n2.getLinesAtTime(Time.BEFORE).fromInclusive()))
 				.collect(Collectors.toList());
 		applyChanges(DiffType.REM, targetVariantDiffUnchanged, targetVariantDiffPatched, removedSortedSubtreeRoots,
-				source, deselectedFeatures, debug);
+				source, configSource, debug);
 
 		// add new nodes
 		optimizedDiff.forAll(node -> {
@@ -559,10 +550,10 @@ public class Patching {
 				.compare(n1.getLinesAtTime(Time.AFTER).fromInclusive(), n2.getLinesAtTime(Time.AFTER).fromInclusive()))
 				.collect(Collectors.toList());
 		applyChanges(DiffType.ADD, targetVariantDiffUnchanged, targetVariantDiffPatched, addedSortedSubtreeRoots,
-				source, deselectedFeatures, debug);
+				source, configSource, debug);
 
 		if (debug) {
-			GameEngine.showAndAwaitAll(Show.diff(diff), Show.tree(targetVariant), Show.diff(optimizedDiff),
+			GameEngine.showAndAwaitAll(Show.diff(sourcePatch), Show.tree(targetVariant), Show.diff(optimizedDiff),
 					Show.diff(targetVariantDiffPatched), Show.tree(targetVariantDiffPatched.project(Time.AFTER)));
 		}
 
@@ -607,13 +598,19 @@ public class Patching {
 			VariationTree<DiffLinesLabel> sourceVariantAfterRedToCrossVarFeatures,
 			VariationTree<DiffLinesLabel> targetVariantBeforeRedToUnchanged, Configure configSourceVariant,
 			Unchanged unchangedAfter) {
-
+		
 		VariationTree<DiffLinesLabel> targetVariantAfterRedToCrossVarFeatures = TreeView.tree(patchedTargetVariant,
 				configSourceVariant);
-
+		
 		VariationTree<DiffLinesLabel> patchedTargetVariantRedToUnchanged = TreeView.tree(patchedTargetVariant,
 				unchangedAfter);
-
+		
+//		GameEngine.showAndAwaitAll(Show.tree(patchedTargetVariant, "patched target variant"), 
+//				Show.tree(patchedTargetVariantRedToUnchanged, "patched target variant red. to unchanged"),
+//				Show.tree(sourceVariantAfterRedToCrossVarFeatures, "patched source variant red. to cross variant features"),
+//				Show.tree(targetVariantAfterRedToCrossVarFeatures, "patched target variant red. to cross variant features"),
+//				Show.tree(targetVariantBeforeRedToUnchanged, "target variant before red. to unchanged"));
+		
 		if (Patching.isSameAs(sourceVariantAfterRedToCrossVarFeatures.toCompletelyUnchangedVariationDiff(),
 				targetVariantAfterRedToCrossVarFeatures.toCompletelyUnchangedVariationDiff())
 				&& Patching.isSameAs(patchedTargetVariantRedToUnchanged.toCompletelyUnchangedVariationDiff(),

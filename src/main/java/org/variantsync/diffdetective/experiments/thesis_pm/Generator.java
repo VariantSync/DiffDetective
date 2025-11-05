@@ -166,11 +166,9 @@ public class Generator {
 		// Hypothesis: the lower the probability value (i.e., the more deselected
 		// features), the harder the patching challenge.
 
-		mutateByWeightedCoinFlip(randomPartition(featureModel, 0.6), 0.5);
-		randomPartition(featureModel, 0.6);
-		mutateByWeightedCoinFlip(randomPartition(featureModel, 0.6), 0.5);
 		final Map<String, Boolean> config1 = randomPartition(featureModel, 0.6);
 		final Map<String, Boolean> config2 = mutateByWeightedCoinFlip(config1, 0.5);
+		
 		// FIXME: We should probably ensure that config1 != config2.
 		Logger.info("Configuration 1: {}", config1);
 		Logger.info("Configuration 2: {}", config2);
@@ -335,13 +333,13 @@ public class Generator {
 
 		// TODO: Run Pia's new patcher here and store the result.
 		Result<VariationTree<DiffLinesLabel>, Error> patchTransformerResult = runPatchTransformer(scenario.sourcePatch,
-				scenario.targetVariantBefore);
+				scenario.targetVariantBefore, scenario.sourceVariantConfig, scenario.targetVariantConfig);
 		if (patchTransformerResult.isSuccess()) {
 			gameEngine.add(Show.tree(patchTransformerResult.getSuccess(), "patch transformer result"));
 		}
 		isPatchTransformerCorrect = patchTransformerResult.match(tree -> Patching.arePatchedVariantsEquivalent(tree,
 				scenario.sourceVariantAfterRedToCrossVarFeatures, scenario.targetVariantBeforeRedToUnchanged,
-				scenario.targetVariantConfig, scenario.unchangedAfter), error -> false);
+				scenario.sourceVariantConfig, scenario.unchangedAfter), error -> false);
 
 		Result<VariationTree<DiffLinesLabel>, Error> gnuPatchResult;
 		try {
@@ -351,14 +349,11 @@ public class Generator {
 			}
 			isGnuPatchCorrect = gnuPatchResult.match(tree -> Patching.arePatchedVariantsEquivalent(tree,
 					scenario.sourceVariantAfterRedToCrossVarFeatures, scenario.targetVariantBeforeRedToUnchanged,
-					scenario.targetVariantConfig, scenario.unchangedAfter), error -> false);
+					scenario.sourceVariantConfig, scenario.unchangedAfter), error -> false);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (DiffParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		} 
 
 		Result<VariationTree<DiffLinesLabel>, Error> mpatchResult;
 		try {
@@ -368,20 +363,17 @@ public class Generator {
 			}
 			isMpatchCorrect = mpatchResult.match(tree -> Patching.arePatchedVariantsEquivalent(tree,
 					scenario.sourceVariantAfterRedToCrossVarFeatures, scenario.targetVariantBeforeRedToUnchanged,
-					scenario.targetVariantConfig, scenario.unchangedAfter), error -> false);
+					scenario.sourceVariantConfig, scenario.unchangedAfter), error -> false);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (DiffParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		} 
 
 		// TODO: Read the results of the patchers. The patchers should produce the
 		// target variants as string if they did not fail.
 		GameEngine[] gameEngineArray = new GameEngine[gameEngine.size()];
 		gameEngineArray = gameEngine.toArray(gameEngineArray);
-//		GameEngine.showAndAwaitAll(gameEngineArray);
+		GameEngine.showAndAwaitAll(gameEngineArray);
 
 		// ## 5. Compare the results of patchers here!
 		System.out.println("mpatch: " + isMpatchCorrect);
@@ -391,7 +383,7 @@ public class Generator {
 	}
 
 	public static <L extends Label> Result<VariationTree<DiffLinesLabel>, Error> runMPatch(
-			final VariationTree<L> targetVariantBefore) throws IOException, DiffParseException {
+			final VariationTree<L> targetVariantBefore) throws IOException {
 		// TODO: configure mpatch
 		// reset target variant
 		resetTargetVariantBefore(targetVariantBefore);
@@ -411,9 +403,13 @@ public class Generator {
 			return Result.Failure(Error.ERROR);
 		}
 		if (command.isPatchingSuccessful()) {
-			VariationTree<DiffLinesLabel> mpatchResult = VariationTree
-					.fromFile(Path.of(directory, targetVariant, code));
-			return Result.Success(mpatchResult);
+			try {
+				VariationTree<DiffLinesLabel> mpatchResult = VariationTree
+						.fromFile(Path.of(directory, targetVariant, code));
+				return Result.Success(mpatchResult);
+			} catch (DiffParseException e) {
+				return Result.Success(null);
+			}
 		}
 		return Result.Failure(Error.FAILED);
 	}
@@ -424,7 +420,7 @@ public class Generator {
 	}
 
 	public static <L extends Label> Result<VariationTree<DiffLinesLabel>, Error> runGnuPatch(
-			final VariationTree<L> targetVariantBefore) throws IOException, DiffParseException {
+			final VariationTree<L> targetVariantBefore) throws IOException {
 		// TODO: run mpatch and gnu patch. Here is a sketch for this can be done.
 		// reset target variant
 		resetTargetVariantBefore(targetVariantBefore);
@@ -441,20 +437,25 @@ public class Generator {
 			return Result.Failure(Error.ERROR);
 		}
 		if (command.isPatchingSuccessful()) {
-			VariationTree<DiffLinesLabel> gnuPatchResult = VariationTree
-					.fromFile(Path.of(directory, targetVariant, code));
-			return Result.Success(gnuPatchResult);
+			try {
+				VariationTree<DiffLinesLabel> gnuPatchResult = VariationTree
+						.fromFile(Path.of(directory, targetVariant, code));
+				return Result.Success(gnuPatchResult);	
+			} catch (DiffParseException e) {
+				return Result.Success(null);
+			}
+			
 		}
 		return Result.Failure(Error.FAILED);
 	}
 
 	public static <L extends Label> Result<VariationTree<DiffLinesLabel>, Error> runPatchTransformer(
-			VariationDiff<L> sourcePatch, final VariationTree<L> targetVariantBefore) {
+			VariationDiff<L> sourcePatch, final VariationTree<L> targetVariantBefore, Configure sourceVariantConfig, Configure targetVariantConfig) {
 		VariationTree<DiffLinesLabel> patchTransformerResult = null;
 		try {
 //			GameEngine.showAndAwaitAll(Show.tree(targetVariantBefore));
 			VariationDiff<DiffLinesLabel> diff = Patching.patch((VariationDiff<DiffLinesLabel>) sourcePatch,
-					(VariationTree<DiffLinesLabel>) targetVariantBefore, false, true);
+					(VariationTree<DiffLinesLabel>) targetVariantBefore, sourceVariantConfig, targetVariantConfig, false, true);
 			patchTransformerResult = diff.project(Time.AFTER);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
