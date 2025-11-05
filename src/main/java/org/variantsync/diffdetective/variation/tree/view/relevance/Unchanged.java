@@ -45,6 +45,10 @@ public class Unchanged implements Relevance {
 		for (String s : diffNode.getLabel().getTrailingLines()) {
 			key += s;
 		}
+		Node pc = diffNode.getPresenceCondition(this.time);
+		if (pc != null) {
+			key += pc;
+		}
 		return key;
 	}
 	
@@ -59,6 +63,10 @@ public class Unchanged implements Relevance {
 		}
 		for (String s : node.getLabel().getTrailingLines()) {
 			key += s;
+		}
+		Node pc = node.getPresenceCondition();
+		if (pc != null) {
+			key += pc;
 		}
 		return key;
 	}
