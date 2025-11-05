@@ -257,6 +257,22 @@ public class Patching {
 	
 	private static boolean isSameList(List<DiffNode<DiffLinesLabel>> sourceList, List<DiffNode<DiffLinesLabel>> targetList, Configure configSource) {
 		int indexTarget = 0;
+		// source must be equal or smaller than target list, because it is the view on the source patch (cross variant features)
+		if (sourceList.size() > targetList.size()) {
+			return false;
+		}
+		if (sourceList.size() == 0) {
+			if (targetList.size() == 0) {
+				return true;
+			}
+			// check that all nodes in target list are not present in source
+			for (DiffNode<DiffLinesLabel> targetNode: targetList) {
+				if (isPresentUnderConfiguration(targetNode, configSource)) {
+					return false;
+				}
+			}
+			return true;
+		}
 		for (DiffNode<DiffLinesLabel> sourceNode : sourceList) {
 			while (!isPresentUnderConfiguration(targetList.get(indexTarget), configSource)) {
 				indexTarget++;
@@ -273,8 +289,7 @@ public class Patching {
 	}
 
 	private static boolean isPresentUnderConfiguration(DiffNode<DiffLinesLabel> diffNode, Configure config) {
-		Node pc = diffNode.getPresenceCondition(Time.BEFORE);
-		return SAT.isSatisfiable(new And(pc, config));
+		return config.test(diffNode.projection(Time.BEFORE));
 	}
 
 	private static DiffNode<DiffLinesLabel> checkNeighbors2(DiffNode<DiffLinesLabel> root,
@@ -284,13 +299,17 @@ public class Patching {
 		int indexSource = orderedChildrenSource.indexOf(root);
 		List<DiffNode<DiffLinesLabel>> candidates = new ArrayList<>();
 		for (DiffNode<DiffLinesLabel> node : orderedChildrenTarget) {
+			if (!hasSameLabel(node.getLabel(), root.getLabel())) {
+				continue;
+			}
 			int indexTarget = orderedChildrenTarget.indexOf(node);
 			List<DiffNode<DiffLinesLabel>> neighborsBeforeSource = orderedChildrenSource.subList(0, indexSource);
 			List<DiffNode<DiffLinesLabel>> neighborsAfterSource = orderedChildrenSource.subList(indexSource + 1, orderedChildrenSource.size());
 			List<DiffNode<DiffLinesLabel>> neighborsBeforeTarget = orderedChildrenTarget.subList(0, indexTarget);
 			List<DiffNode<DiffLinesLabel>> neighborsAfterTarget = orderedChildrenTarget.subList(indexTarget + 1, orderedChildrenTarget.size());
-			if (isSameList(neighborsBeforeSource, neighborsBeforeTarget, configSource) && isSameList(neighborsAfterSource, neighborsAfterTarget, configSource))
-			candidates.add(node);
+			if (isSameList(neighborsBeforeSource, neighborsBeforeTarget, configSource) && isSameList(neighborsAfterSource, neighborsAfterTarget, configSource)) {
+				candidates.add(node);	
+			}
 		}
 		if (candidates.size() != 1) {
 			throw new Exception("Reject: too many nodes to remove");
