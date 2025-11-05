@@ -140,12 +140,12 @@ public class Configure implements Relevance {
     }
 
     @Override
-    public String parametersToString() {
-        return configuration.get().toString(NodeWriter.logicalSymbols);
+    public List<Object> getSourceArguments() {
+        return List.of(configuration.get().toString(NodeWriter.logicalSymbols));
     }
 
     @Override
-    public String getFunctionName() {
+    public String getSourceExplanation() {
         return "configure";
     }
 

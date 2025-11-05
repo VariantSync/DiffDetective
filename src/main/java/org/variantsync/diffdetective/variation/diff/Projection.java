@@ -130,4 +130,9 @@ public class Projection<L extends Label> extends VariationNode<Projection<L>, L>
     public int getID() {
         return getBackingNode().getID();
     }
+
+    @Override
+    public String toString() {
+        return String.format("Projection(%s, %s)", time, getBackingNode());
+    }
 };

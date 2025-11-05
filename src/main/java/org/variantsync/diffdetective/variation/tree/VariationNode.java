@@ -499,26 +499,28 @@ public abstract class VariationNode<T extends VariationNode<T, L>, L extends Lab
     }
 
     /**
-    * Checks that this node satisfies some easy to check invariants.
-    * In particular, this method checks that
-    * <ul>
-    * <li>if-chains are nested correctly,
-    * <li>the root is an {@link NodeType#IF} with the feature mapping {@code "true"},
-    * <li>the feature mapping is {@code null} iff {@code isConditionalAnnotation} is {@code false}
-    * and
-    * <li>all edges are well-formed (e.g., edges can be inconsistent because edges are
-    * double-linked).
-    * </ul>
-    *
-    * <p>Some invariants are not checked. These include
-    * <ul>
-    * <li>There should be no cycles and
-    * <li>{@link getID} should be unique in the whole variation tree.
-    * </ul>
-    *
-    * @see Assert#assertTrue
-    * @throws AssertionError when an inconsistency is detected.
-    */
+     * Checks that this node satisfies some easy to check invariants.
+     * In particular, this method checks that
+     * <ul>
+     * <li>if-chains are nested correctly,
+     * <li>the root is an {@link NodeType#IF} with the feature mapping {@code "true"},
+     * <li>the feature mapping is {@code null} iff {@code isConditionalAnnotation} is {@code false}
+     * and
+     * <li>all edges are well-formed (e.g., edges can be inconsistent because edges are
+     * double-linked).
+     * </ul>
+     *
+     * <p>Some invariants are not checked. These include
+     * <ul>
+     * <li>There should be no cycles,
+     * <li>{@link getID} should be unique in the whole variation tree, and
+     * <li>children are not checked recursively.
+     * </ul>
+     * Use {@link VariationTree#assertConsistency} to check all children recursively.
+     *
+     * @see Assert#assertTrue
+     * @throws AssertionError when an inconsistency is detected.
+     */
     public void assertConsistency() {
         // ELSE and ELIF nodes have an IF or ELIF as parent.
         if (isElse() || isElif()) {
@@ -548,6 +550,12 @@ public abstract class VariationNode<T extends VariationNode<T, L>, L extends Lab
                 getFormula().equals(FixTrueFalse.True),
                 "The root has to have the feature mapping 'true'");
         }
+
+        // check that there is at most one ELIF/ELSE
+        Assert.assertTrue(
+            getChildren().stream().filter(c -> c.isElif() || c.isElse()).count() <= 1,
+            "There is more than one ELIF/ELSE node."
+        );
 
         // check consistency of children lists and edges
         for (var child : getChildren()) {
