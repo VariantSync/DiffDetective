@@ -1,10 +1,9 @@
-
 package org.variantsync.diffdetective.variation.diff.transform;
-
 
 import org.prop4j.Node;
 import org.prop4j.NodeWriter;
 import org.variantsync.diffdetective.util.Assert;
+import org.variantsync.diffdetective.util.StringUtils;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import static org.variantsync.diffdetective.variation.DiffLinesLabel.Line;
 import org.variantsync.diffdetective.variation.tree.VariationTree;
@@ -41,27 +40,37 @@ import static org.variantsync.diffdetective.util.fide.FormulaUtils.*;
  * @author Paul Bittner
  */
 public class EliminateEmptyAlternatives implements Transformer<VariationTree<DiffLinesLabel>> {
-    private static List<VariationTreeNode<DiffLinesLabel>> nodesToDrop = new ArrayList<>();
-	public static String leadingWhitespace(String s) {
-        if (s == null || s.isEmpty()) {
-            return "";
-        }
-        int i = 0;
-        for (; i < s.length() && Character.isWhitespace(s.charAt(i)); i++) {}
-        return s.substring(0, i);
-    }
-
+	private static List<VariationTreeNode> nodesToDrop;
+    /**
+     * Creates a copy of the given label but where the formula is set to the given formula.
+     * This method also updates the text in the DiffLinesLabel accordingly so that the text is
+     * consistent with the formula.
+     * This method assumes that the label has at least one line of text, otherwise the given label
+     * could not have a formula.
+     */
     private static DiffLinesLabel updatedLabel(DiffLinesLabel l, Node formula) {
         final List<Line> lines = l.getDiffLines();
         Assert.assertFalse(lines.isEmpty());
 
-        // Assumptions: There are only more than one line when the label represents a multiline macro.
-        // We are interested only in the indentation of the CPP macro, so only need the first line.
+        // Assumption:
+        // The only case in which there is more than one line of text is, when we parsed a multiline macro.
+        //
+        // We hence may safely ignore any subsequent lines from our existing label because these correspond
+        // only to lines of a multiline macro, which we ought to replace anyway.
         final Line head = lines.get(0);
         Assert.assertTrue(head.content().contains("if"));
+        final String indent = StringUtils.getLeadingWhitespace(head.content());
 
-        final String newText = leadingWhitespace(head.content()) + "#if " + formula.toString(NodeWriter.javaSymbols);
-        return new DiffLinesLabel(List.of(new Line(newText, head.lineNumber())), l.getDiffTrailingLines());
+        final String newText = indent + "#if " + formula.toString(NodeWriter.javaSymbols);
+
+        // We might have replaced multiple lines by a single line here.
+        // In this case, some line numbers got lost and any variation tree using this updated label somewhere might not
+        // have consecutive line numbering anymore. We could consider inserting empty lines to retain
+        // consecutive line numbers but that might be a more artifical change than inconsecutive line numbers.
+        return new DiffLinesLabel(
+            List.of(new Line(newText, head.lineNumber())),
+            l.getDiffTrailingLines()
+        );
     }
 
     private static void elim(VariationTreeNode<DiffLinesLabel> subtree) {
@@ -98,8 +107,10 @@ public class EliminateEmptyAlternatives implements Transformer<VariationTree<Dif
 
     @Override
     public void transform(VariationTree<DiffLinesLabel> tree) {
+    	nodesToDrop = new ArrayList<>();
         tree.forAllPostorder(EliminateEmptyAlternatives::elim);
-        nodesToDrop.forEach(node -> node.drop());
-        nodesToDrop.clear();
+        for (VariationTreeNode<DiffLinesLabel> node : nodesToDrop) {
+        	node.drop();
+        }
     }
 }
