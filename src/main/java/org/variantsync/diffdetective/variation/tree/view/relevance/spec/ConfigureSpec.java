@@ -1,5 +1,7 @@
 package org.variantsync.diffdetective.variation.tree.view.relevance.spec;
 
+import java.util.List;
+
 import org.prop4j.Node;
 import org.prop4j.NodeWriter;
 import org.variantsync.diffdetective.analysis.logic.SAT;
@@ -41,13 +43,13 @@ public record ConfigureSpec(Formula config) implements Relevance {
     }
 
     @Override
-    public String getFunctionName() {
-        return "configure_spec";
+    public List<Object> getSourceArguments() {
+        return List.of(config.get().toString(NodeWriter.logicalSymbols));
     }
 
     @Override
-    public String parametersToString() {
-        return config.get().toString(NodeWriter.logicalSymbols);
+    public String getSourceExplanation() {
+        return "configure_spec";
     }
 
     @Override
