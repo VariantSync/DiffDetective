@@ -34,18 +34,16 @@ import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
 /**
  * Representation of a concrete variation tree with source information.
  *
- * @param root the root of the variation tree
- * @param source from which source code the variation tree was obtained
  * @param <L> The type of label stored in this tree.
  *
  * @see VariationTreeNode
  * @author Benjamin Moosherr
  */
-public record VariationTree<L extends Label>(
-    VariationTreeNode<L> root,
-    Source source
-) implements Source {
-    /** Creates a {@code VariationTree} with the given root and an unknown source. */
+public class VariationTree<L extends Label> implements Source {
+    private final VariationTreeNode<L> root;
+    private final Source source;
+
+    /** Creates a {@code VariationTree} with the given root and an {@link Source#Unknown unknown} source. */
     public VariationTree(VariationTreeNode<L> root) {
         this(root, Source.Unknown);
     }
@@ -143,7 +141,7 @@ public record VariationTree<L extends Label>(
     public VariationDiff<L> toVariationDiff(final Function<VariationTreeNode<L>, DiffNode<L>> nodeConverter) {
         return new VariationDiff<>(
                 DiffNode.unchanged(nodeConverter, root()),
-                new CompositeSource("VariationTree.toVariationDiff", source())
+                new CompositeSource("VariationTree.toVariationDiff", source)
         );
     }
 
@@ -235,8 +233,16 @@ public record VariationTree<L extends Label>(
         forAllPreorder(VariationTreeNode::assertConsistency);
     }
 
+    public VariationTreeNode<L> root() {
+        return root;
+    }
+
+    /**
+     * Returns the source of this VariationTree (i.e., the data this VariationTree was created from).
+     * @see Source
+     */
     public Source getSource() {
-        return source();
+        return source;
     }
 
     @Override
