@@ -206,6 +206,28 @@ public interface Source {
     }
 
     /**
+     * The same as {@link #fullExplanation(Source)} but with a different formatting.
+     * Where fullExplanation renders this tree of sources as using newlines and indentation,
+     * functionExplanation renders this tree as one large, nested function call of the form:
+     * {@link #getSourceExplanation()}({@link #getSourceArguments() args}..., {@link #getSources() nested sources}...).
+     */
+    default String functionExplanation() {
+        String result = getSourceExplanation() + "(";
+
+        final List<String> args = new ArrayList<>();
+        for (Object arg : getSourceArguments()) {
+            args.add(arg.toString());
+        }
+        for (Source child : getSources()) {
+            args.add(child.functionExplanation());
+        }
+
+        result += args.stream().collect(Collectors.joining(", "));
+
+        return result + ")";
+    }
+
+    /**
      * Uses a depth first traversal of the {@link Source} {@link getSources hierarchy} to find and
      * return all instances of {@code clazz}.
      * This method is intended to provide access to the data contained in the source hierarchy. For
