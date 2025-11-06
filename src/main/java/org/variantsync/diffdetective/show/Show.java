@@ -6,7 +6,6 @@ import org.variantsync.diffdetective.diff.text.DiffLineNumber;
 import org.variantsync.diffdetective.show.engine.GameEngine;
 import org.variantsync.diffdetective.show.engine.geom.Vec2;
 import org.variantsync.diffdetective.show.variation.VariationDiffApp;
-import org.variantsync.diffdetective.util.Source;
 import org.variantsync.diffdetective.variation.Label;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
 import org.variantsync.diffdetective.variation.diff.VariationDiff;
@@ -31,7 +30,7 @@ public class Show {
     }
 
     public static GameEngine diff(final VariationDiff<?> d) {
-        return diff(d, Source.shortExplanation(d));
+        return diff(d, d.getSource().functionExplanation());
     }
 
     public static <L extends Label> GameEngine tree(final VariationTree<L> t, final String title, List<DiffNodeLabelFormat<L>> availableFormats) {
@@ -48,7 +47,7 @@ public class Show {
     }
 
     public static GameEngine tree(final VariationTree<?> t) {
-        return tree(t, Source.shortExplanation(t));
+        return tree(t, t.getSource().functionExplanation());
     }
 
     public static <L extends Label> GameEngine baddiff(final BadVDiff<L> badVDiff, final String title, List<DiffNodeLabelFormat<L>> availableFormats) {
@@ -81,6 +80,6 @@ public class Show {
     }
 
     public static GameEngine baddiff(final BadVDiff<?> badVDiff) {
-        return baddiff(badVDiff, Source.shortExplanation(badVDiff.diff()));
+        return baddiff(badVDiff, badVDiff.functionExplanation());
     }
 }
