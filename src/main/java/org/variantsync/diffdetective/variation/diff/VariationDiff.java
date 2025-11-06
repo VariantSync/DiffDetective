@@ -558,7 +558,7 @@ public class VariationDiff<L extends Label> implements Source {
 
     @Override
     public String toString() {
-        return "VariationDiff of " + source;
+        return functionExplanation();
     }
 
     public VariationDiff<L> deepCopy() {

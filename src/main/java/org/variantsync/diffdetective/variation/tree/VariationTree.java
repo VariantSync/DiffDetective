@@ -265,6 +265,6 @@ public class VariationTree<L extends Label> implements Source {
 
     @Override
     public String toString() {
-        return "variation tree from " + source;
+        return functionExplanation();
     }
 }
