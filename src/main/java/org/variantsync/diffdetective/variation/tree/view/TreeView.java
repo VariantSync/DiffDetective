@@ -5,6 +5,7 @@ import org.variantsync.diffdetective.variation.tree.VariationNode;
 import org.variantsync.diffdetective.variation.tree.VariationTree;
 import org.variantsync.diffdetective.variation.tree.VariationTreeNode;
 import org.variantsync.diffdetective.variation.tree.view.relevance.Relevance;
+import org.variantsync.diffdetective.variation.diff.view.ViewSource;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -54,22 +55,23 @@ public final class TreeView {
      */
     public static <L extends Label> void treeInline(final VariationTree<L> t, final Relevance r) {
         final Set<VariationTreeNode<L>> interestingNodes = new HashSet<>();
-        r.computeViewNodes(t.root(), interestingNodes::add);
-        treeInline(t.root(), interestingNodes::contains);
+        r.computeViewNodes(t.getRoot(), interestingNodes::add);
+        treeInline(t.getRoot(), interestingNodes::contains);
+        t.setSource(new ViewSource(t.getSource(), r, "view_tree"));
     }
 
     /**
      * Creates a view on the given variation tree as described by the given relevance predicate.
      * This function is side-effect free.
-     * Thre given variation tree and relevance will not be altered.
+     * The given variation tree and relevance will not be altered.
      * This function corresponds to Equation 4 in our SPLC'23 paper - Views on Edits to Variational Software.
      * @param t The variation tree to generate a view on.
      * @param r A relevance predicate that determines for each node in the
      *          tree whether it should be contained in the view or should be excluded.
      * @return A variation tree that represents a view on the given variation tree t.
      */
-    public static VariationTree<?> tree(final VariationTree<?> t, final Relevance r) {
-        final VariationTree<?> copy = t.deepCopy();
+    public static <L extends Label> VariationTree<L> tree(final VariationTree<L> t, final Relevance r) {
+        final VariationTree<L> copy = t.deepCopy();
         treeInline(copy, r);
         return copy;
     }

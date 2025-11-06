@@ -48,4 +48,17 @@ public class StringUtils {
     public static String clamp(int maxlen, String s) {
         return s.substring(0, Math.min(s.length(), maxlen));
     }
+
+    /**
+     * @return the longest prefix of the given string that contains only of whitespace
+     */
+    public static String getLeadingWhitespace(String s) {
+        if (s == null) return null;
+        if (s.isEmpty()) return "";
+        int i = 0;
+        while (i < s.length() && Character.isWhitespace(s.charAt(i))) {
+            ++i;
+        }
+        return s.substring(0, i);
+    }
 }

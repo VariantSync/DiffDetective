@@ -7,10 +7,10 @@ v 1355 REM;ARTIFACT;(old: 18, diff: 20, new: -1);(old: 19, diff: 21, new: -1);; 
 v 1283 ADD;ARTIFACT;(old: -1, diff: 19, new: 18);(old: -1, diff: 20, new: 19);;   baz();
 v 128 ADD;IF;(old: -1, diff: 1, new: 1);(old: -1, diff: 11, new: 10);A & C & D;# if A && \;/* inline;comment;with multiple;lines;*/ \;  C \; && D
 e 136 16 b;0,-1
-e 723 136 b;0,-1
-e 723 128 a;-1,0
+e 128 16 a;-1,0
 e 851 16 ba;1,1
 e 912 16 ba;2,2
+e 723 136 b;0,-1
 e 1355 912 b;0,-1
 e 1283 912 a;-1,0
-e 128 16 a;-1,0
+e 723 128 a;-1,0

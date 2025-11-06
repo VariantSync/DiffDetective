@@ -282,8 +282,9 @@ public abstract class VariationNode<T extends VariationNode<T, L>, L extends Lab
      * @see removeAllChildren
      */
     public void stealChildrenOf(final T other) {
-        addChildren(other.getChildren());
+        List<T> children = new ArrayList<>(other.getChildren());
         other.removeAllChildren();
+        addChildren(children);
     }
 
     /**
@@ -419,6 +420,17 @@ public abstract class VariationNode<T extends VariationNode<T, L>, L extends Lab
         }
     }
 
+    /**
+     * Traverses all nodes in this subtree in postorder.
+     */
+    public void forAllPostorder(Consumer<T> action) {
+        for (var child : getChildren()) {
+            child.forAllPostorder(action);
+        }
+
+        action.accept(this.upCast());
+    }
+
     public void forMeAndMyAncestors(final Consumer<T> action) {
         action.accept(this.upCast());
         final T p = getParent();
@@ -487,26 +499,28 @@ public abstract class VariationNode<T extends VariationNode<T, L>, L extends Lab
     }
 
     /**
-    * Checks that this node satisfies some easy to check invariants.
-    * In particular, this method checks that
-    * <ul>
-    * <li>if-chains are nested correctly,
-    * <li>the root is an {@link NodeType#IF} with the feature mapping {@code "true"},
-    * <li>the feature mapping is {@code null} iff {@code isConditionalAnnotation} is {@code false}
-    * and
-    * <li>all edges are well-formed (e.g., edges can be inconsistent because edges are
-    * double-linked).
-    * </ul>
-    *
-    * <p>Some invariants are not checked. These include
-    * <ul>
-    * <li>There should be no cycles and
-    * <li>{@link getID} should be unique in the whole variation tree.
-    * </ul>
-    *
-    * @see Assert#assertTrue
-    * @throws AssertionError when an inconsistency is detected.
-    */
+     * Checks that this node satisfies some easy to check invariants.
+     * In particular, this method checks that
+     * <ul>
+     * <li>if-chains are nested correctly,
+     * <li>the root is an {@link NodeType#IF} with the feature mapping {@code "true"},
+     * <li>the feature mapping is {@code null} iff {@code isConditionalAnnotation} is {@code false}
+     * and
+     * <li>all edges are well-formed (e.g., edges can be inconsistent because edges are
+     * double-linked).
+     * </ul>
+     *
+     * <p>Some invariants are not checked. These include
+     * <ul>
+     * <li>There should be no cycles,
+     * <li>{@link getID} should be unique in the whole variation tree, and
+     * <li>children are not checked recursively.
+     * </ul>
+     * Use {@link VariationTree#assertConsistency} to check all children recursively.
+     *
+     * @see Assert#assertTrue
+     * @throws AssertionError when an inconsistency is detected.
+     */
     public void assertConsistency() {
         // ELSE and ELIF nodes have an IF or ELIF as parent.
         if (isElse() || isElif()) {
@@ -537,6 +551,12 @@ public abstract class VariationNode<T extends VariationNode<T, L>, L extends Lab
                 "The root has to have the feature mapping 'true'");
         }
 
+        // check that there is at most one ELIF/ELSE
+        Assert.assertTrue(
+            getChildren().stream().filter(c -> c.isElif() || c.isElse()).count() <= 1,
+            "There is more than one ELIF/ELSE node."
+        );
+
         // check consistency of children lists and edges
         for (var child : getChildren()) {
             Assert.assertTrue(
@@ -563,19 +583,19 @@ public abstract class VariationNode<T extends VariationNode<T, L>, L extends Lab
      *
      * <p>This method assumes that all labels of this subtree represent source code lines.
      */
-    public void printSourceCode(final StringBuilder output) {
+    public void unparse(final StringBuilder output) {
         for (final String line : getLabel().getLines()) {
             output.append(line);
             output.append(StringUtils.LINEBREAK);
         }
 
         for (final var child : getChildren()) {
-            child.printSourceCode(output);
+            child.unparse(output);
         }
 
         // Add #endif after macro
-        if (isIf() && !isRoot()) {
-            output.append("#endif");
+        for (final String line : getLabel().getTrailingLines()) {
+            output.append(line);
             output.append(StringUtils.LINEBREAK);
         }
     }

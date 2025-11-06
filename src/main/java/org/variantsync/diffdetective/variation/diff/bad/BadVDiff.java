@@ -2,13 +2,14 @@ package org.variantsync.diffdetective.variation.diff.bad;
 
 import org.variantsync.diffdetective.diff.text.DiffLineNumberRange;
 import org.variantsync.diffdetective.util.Assert;
+import org.variantsync.diffdetective.util.CompositeSource;
+import org.variantsync.diffdetective.util.Source;
 import org.variantsync.diffdetective.util.StringUtils;
 import org.variantsync.diffdetective.variation.Label;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
 import org.variantsync.diffdetective.variation.diff.VariationDiff;
 import org.variantsync.diffdetective.variation.diff.DiffType;
 import org.variantsync.diffdetective.variation.diff.Time;
-import org.variantsync.diffdetective.variation.diff.source.VariationDiffSource;
 import org.variantsync.diffdetective.variation.tree.VariationTree;
 import org.variantsync.diffdetective.variation.tree.VariationTreeNode;
 import org.variantsync.functjonal.Cast;
@@ -68,7 +69,7 @@ public record BadVDiff<L extends Label>(
         Map<VariationTreeNode<L>, VariationTreeNode<L>> matching,
         Map<VariationTreeNode<L>, DiffType> coloring,
         Map<VariationTreeNode<L>, DiffLineNumberRange> lines
-)
+) implements Source
 {
     /**
      * Memoization of the VariationTreeNodes a DiffNode was
@@ -198,8 +199,18 @@ public record BadVDiff<L extends Label>(
         record EdgeToConstruct<L extends Label>(
                 VariationTreeNode<L> child,
                 DiffNode<L> parent,
-                Time t
-        ) {}
+                Time t,
+                int index
+        ) {
+            public EdgeToConstruct(
+                VariationTreeNode<L> child,
+                DiffNode<L> parent,
+                Time t,
+                DiffNode<L> originalChild
+            ) {
+                this(child, parent, t, parent.indexOfChild(originalChild, t));
+            }
+        }
 
         final FromGoodNodeTranslation<L> nodeTranslation = new FromGoodNodeTranslation<>();
 
@@ -259,7 +270,7 @@ public record BadVDiff<L extends Label>(
 
                     nodeTranslation.put(diffNode, time, self);
 
-                    edgesToConstruct.add(new EdgeToConstruct<>(self, diffNode.getParent(time), time));
+                    edgesToConstruct.add(new EdgeToConstruct<>(self, diffNode.getParent(time), time, diffNode));
 
                     // further metadata to copy
                     lines.put(self, dRange);
@@ -283,22 +294,23 @@ public record BadVDiff<L extends Label>(
                  */
                 if (pbefore != null) {
                     edgesToConstruct.add(new EdgeToConstruct<>(
-                            self, pbefore, BEFORE
+                            self, pbefore, BEFORE, diffNode
                     ));
                 } else if (pafter != null) {
                     edgesToConstruct.add(new EdgeToConstruct<>(
-                            self, pafter, AFTER
+                            self, pafter, AFTER, diffNode
                     ));
                 }
             }
         });
 
+        edgesToConstruct.sort(Comparator.comparingInt(EdgeToConstruct::index));
         for (final EdgeToConstruct<L> e : edgesToConstruct) {
             nodeTranslation.get(e.parent, e.t).addChild(e.child);
         }
 
         return new BadVDiff<>(
-                new VariationTree<>(root, new BadVDiffFromVariationDiffSource(d.getSource())),
+                new VariationTree<>(root, new CompositeSource("BadVDiff.fromGood", d.getSource())),
                 matching,
                 coloring,
                 lines
@@ -324,14 +336,24 @@ public record BadVDiff<L extends Label>(
         record EdgeToConstruct<L extends Label>(
                 DiffNode<L> child,
                 VariationTreeNode<L> parent,
-                Time time
-        ) {}
+                Time time,
+                int index
+        ) {
+            public EdgeToConstruct(
+                DiffNode<L> child,
+                VariationTreeNode<L> parent,
+                Time time,
+                VariationTreeNode<L> originalChild
+            ) {
+                this(child, parent, time, parent.indexOfChild(originalChild));
+            }
+        }
 
         final List<EdgeToConstruct<L>>               edgesToConstruct = new ArrayList<>();
         final Map<VariationTreeNode<L>, DiffNode<L>> nodeTranslation  = new HashMap<>();
 
-        final DiffNode<L> root = toGood(diff.root());
-        nodeTranslation.put(diff.root(), root);
+        final DiffNode<L> root = toGood(diff.getRoot());
+        nodeTranslation.put(diff.getRoot(), root);
 
         diff.forAllPreorder(vtnode -> {
             // If a node was already translated (because it was merged), it does not have to be translated anymore.
@@ -351,7 +373,7 @@ public record BadVDiff<L extends Label>(
 
                 nodeTranslation.put(vtnode, vGood);
                 coloring.get(vtnode).forAllTimesOfExistence(
-                        t -> edgesToConstruct.add(new EdgeToConstruct<>(vGood, parent, t))
+                        t -> edgesToConstruct.add(new EdgeToConstruct<>(vGood, parent, t, vtnode))
                 );
             } else {
                 // v was cloned.
@@ -369,24 +391,20 @@ public record BadVDiff<L extends Label>(
                 // invoke the callback for a single time:
                 // BEFORE for REM and AFTER for ADD.
                 vColor.forAllTimesOfExistence(
-                        t -> edgesToConstruct.add(new EdgeToConstruct<>(vGood, parent, t))
+                        t -> edgesToConstruct.add(new EdgeToConstruct<>(vGood, parent, t, vtnode))
                 );
                 badBuddyColor.forAllTimesOfExistence(
-                        t -> edgesToConstruct.add(new EdgeToConstruct<>(vGood, badBuddy.getParent(), t))
+                        t -> edgesToConstruct.add(new EdgeToConstruct<>(vGood, badBuddy.getParent(), t, badBuddy))
                 );
             }
         });
 
+        edgesToConstruct.sort(Comparator.comparingInt(EdgeToConstruct::index));
         for (final EdgeToConstruct<L> e : edgesToConstruct) {
             nodeTranslation.get(e.parent()).addChild(e.child(), e.time());
         }
 
-        VariationDiffSource source = VariationDiffSource.Unknown;
-        if (diff.source() instanceof BadVDiffFromVariationDiffSource s) {
-            source = s.initialVariationDiff();
-        }
-
-        return new VariationDiff<>(root, source);
+        return new VariationDiff<>(root, new CompositeSource("BadVDiff.toGood", diff.getSource()));
     }
 
     public BadVDiff<L> deepCopy() {
@@ -434,7 +452,17 @@ public record BadVDiff<L extends Label>(
 
     public String prettyPrint() {
         final StringBuilder b = new StringBuilder();
-        prettyPrint("", b, diff.root());
+        prettyPrint("", b, diff.getRoot());
         return b.toString();
+    }
+
+    @Override
+    public String getSourceExplanation() {
+        return "BadVDiff";
+    }
+
+    @Override
+    public List<Source> getSources() {
+        return List.of(diff);
     }
 }

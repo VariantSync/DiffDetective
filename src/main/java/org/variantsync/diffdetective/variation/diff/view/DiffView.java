@@ -6,6 +6,7 @@ import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.experiments.views.Main;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.util.CollectionUtils;
+import org.variantsync.diffdetective.util.Source;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.Label;
 import org.variantsync.diffdetective.variation.diff.*;
@@ -72,12 +73,19 @@ public class DiffView {
     private static <L extends Label> VariationDiff<DiffLinesLabel> naive(final VariationDiff<L> d, final Relevance rho, final String[] projectionViewText) throws IOException, DiffParseException {
         final VariationDiff<DiffLinesLabel> view;
         try {
-            view = JGitDiff.diff(projectionViewText[0], projectionViewText[1], DiffAlgorithm.SupportedAlgorithm.MYERS, Main.VARIATION_DIFF_PARSE_OPTIONS);
+            view = JGitDiff.diff(
+                projectionViewText[0],
+                projectionViewText[1],
+                Source.Unknown, // overridden below
+                Source.Unknown, // overridden below
+                DiffAlgorithm.SupportedAlgorithm.MYERS,
+                Main.VARIATION_DIFF_PARSE_OPTIONS
+            );
         } catch (DiffParseException e) {
             Logger.error("Could not parse diff obtained with query {} at {}", d.getSource(), rho);
             throw e;
         }
-        view.setSource(new ViewSource<>(d, rho));
+        view.setSource(new ViewSource(d, rho, "naive"));
 
         return view;
     }
@@ -112,11 +120,9 @@ public class DiffView {
 
             // TODO: Avoid inversion by building the map in the correct way in the first place.
             final Map<VariationTreeNode<L>, Projection<L>> invCopyMemory = CollectionUtils.invert(copyMemory, HashMap::new);
-            TreeView.treeInline(treeView.root(), v -> inView.test(t, invCopyMemory.get(v)));
+            TreeView.treeInline(treeView.getRoot(), v -> inView.test(t, invCopyMemory.get(v)));
 
-            final StringBuilder b = new StringBuilder();
-            treeView.root().printSourceCode(b);
-            projectionViewText[i] = b.toString();
+            projectionViewText[i] = treeView.unparse();
         }
 
         return naive(d, rho, projectionViewText);
@@ -155,6 +161,7 @@ public class DiffView {
 
         // unify
         final VariationDiff<L> goodDiff = badDiff.toGood();
+        goodDiff.setSource(new ViewSource(d, rho, "badgood"));
         goodDiff.assertConsistency();
         return goodDiff;
     }
@@ -263,7 +270,7 @@ public class DiffView {
 
         // Step 4: Build return value
         Assert.assertNotNull(rootCopy[0]);
-        return new VariationDiff<>(rootCopy[0], new ViewSource<>(d, rho));
+        return new VariationDiff<>(rootCopy[0], new ViewSource(d, rho, "optimized"));
     }
 
     /**

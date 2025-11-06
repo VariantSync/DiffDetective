@@ -15,7 +15,7 @@ import org.variantsync.diffdetective.variation.diff.serialize.StyledEdge;
  *
  * This index is encoded into decimal and delimited by a semicolon from the previous value.
  *
- * This format is mainly useful to equivalence of two {@link VariationDiff}s, for example in tests.
+ * This format is mainly useful to verify the equivalence of two {@link VariationDiff}s, for example in tests.
  *
  * @author Benjamin Moosherr
  */

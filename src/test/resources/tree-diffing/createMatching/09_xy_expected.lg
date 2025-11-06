@@ -1,0 +1,33 @@
+v 80 NON;IF;(old: -1, diff: 0, new: -1);(old: -1, diff: 0, new: -1);True
+v 136 REM;IF;(old: 1, diff: 1, new: -1);(old: 10, diff: 1, new: -1);defined(A);#ifdef A
+v 203 REM;ARTIFACT;(old: 2, diff: 2, new: -1);(old: 3, diff: 2, new: -1);;Line 1
+v 267 REM;ARTIFACT;(old: 3, diff: 3, new: -1);(old: 4, diff: 3, new: -1);;Line 2
+v 331 REM;ARTIFACT;(old: 4, diff: 4, new: -1);(old: 5, diff: 4, new: -1);;Line 3
+v 392 REM;IF;(old: 5, diff: 5, new: -1);(old: 9, diff: 5, new: -1);defined(B);#ifdef B
+v 459 REM;ARTIFACT;(old: 6, diff: 6, new: -1);(old: 7, diff: 6, new: -1);;Line 4
+v 523 REM;ARTIFACT;(old: 7, diff: 7, new: -1);(old: 8, diff: 7, new: -1);;Line 5
+v 587 REM;ARTIFACT;(old: 8, diff: 8, new: -1);(old: 9, diff: 8, new: -1);;Line 6
+v 640 ADD;IF;(old: -1, diff: 9, new: 1);(old: -1, diff: 9, new: 10);defined(B);#ifdef B
+v 704 ADD;IF;(old: -1, diff: 10, new: 2);(old: -1, diff: 10, new: 9);defined(A);#ifdef A
+v 771 ADD;ARTIFACT;(old: -1, diff: 11, new: 3);(old: -1, diff: 11, new: 4);;Line 1
+v 835 ADD;ARTIFACT;(old: -1, diff: 12, new: 4);(old: -1, diff: 12, new: 5);;Line 2
+v 899 ADD;ARTIFACT;(old: -1, diff: 13, new: 5);(old: -1, diff: 13, new: 6);;Line 3
+v 963 ADD;ARTIFACT;(old: -1, diff: 14, new: 6);(old: -1, diff: 14, new: 7);;Line 4
+v 1027 ADD;ARTIFACT;(old: -1, diff: 15, new: 7);(old: -1, diff: 15, new: 8);;Line 5
+v 1091 ADD;ARTIFACT;(old: -1, diff: 16, new: 8);(old: -1, diff: 16, new: 9);;Line 6
+e 136 80 b;0,-1
+e 640 80 a;-1,0
+e 203 136 b;0,-1
+e 267 136 b;1,-1
+e 331 136 b;2,-1
+e 392 136 b;3,-1
+e 459 392 b;0,-1
+e 523 392 b;1,-1
+e 587 392 b;2,-1
+e 704 640 a;-1,0
+e 771 704 a;-1,0
+e 835 704 a;-1,1
+e 899 704 a;-1,2
+e 963 704 a;-1,3
+e 1027 704 a;-1,4
+e 1091 704 a;-1,5

@@ -3,22 +3,26 @@ package org.variantsync.diffdetective.variation.tree;
 import org.variantsync.diffdetective.datasets.PatchDiffParseOptions;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.util.Assert;
+import org.variantsync.diffdetective.util.CompositeSource;
+import org.variantsync.diffdetective.util.FileSource;
+import org.variantsync.diffdetective.util.Source;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.Label;
+import org.variantsync.diffdetective.variation.NodeType; // For Javadoc
 import org.variantsync.diffdetective.variation.diff.DiffNode;
-import org.variantsync.diffdetective.variation.diff.VariationDiff;
 import org.variantsync.diffdetective.variation.diff.Projection;
+import org.variantsync.diffdetective.variation.diff.VariationDiff;
 import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParseOptions;
 import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParser;
-import org.variantsync.diffdetective.variation.diff.source.FromVariationTreeSource;
-import org.variantsync.diffdetective.variation.tree.source.LocalFileSource;
-import org.variantsync.diffdetective.variation.tree.source.VariationTreeSource;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.StringReader;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
@@ -30,24 +34,22 @@ import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
 /**
  * Representation of a concrete variation tree with source information.
  *
- * @param root the root of the variation tree
- * @param source from which source code the variation tree was obtained
  * @param <L> The type of label stored in this tree.
  *
  * @see VariationTreeNode
  * @author Benjamin Moosherr
  */
-public record VariationTree<L extends Label>(
-    VariationTreeNode<L> root,
-    VariationTreeSource source
-) {
-    /** Creates a {@code VariationTree} with the given root and an unknown source. */
+public class VariationTree<L extends Label> implements Source {
+    private final VariationTreeNode<L> root;
+    private Source source;
+
+    /** Creates a {@code VariationTree} with the given root and an {@link Source#Unknown unknown} source. */
     public VariationTree(VariationTreeNode<L> root) {
-        this(root, VariationTreeSource.Unknown);
+        this(root, Source.Unknown);
     }
 
     /** Creates a {@code VariationTree} with the given root and source. */
-    public VariationTree(VariationTreeNode<L> root, VariationTreeSource source) {
+    public VariationTree(VariationTreeNode<L> root, Source source) {
         this.root = root;
         this.source = source;
 
@@ -63,7 +65,7 @@ public record VariationTree<L extends Label>(
     }
 
     /**
-     * Same as {@link #fromFile(BufferedReader, VariationTreeSource, VariationDiffParseOptions)}
+     * Same as {@link #fromFile(BufferedReader, Source, VariationDiffParseOptions)}
      * but registers {@code path} as source.
      */
     public static VariationTree<DiffLinesLabel> fromFile(
@@ -73,8 +75,8 @@ public record VariationTree<L extends Label>(
         try (BufferedReader file = Files.newBufferedReader(path)) {
             return fromFile(
                 file,
-                new LocalFileSource(path),
-                    parseOptions
+                new FileSource(path),
+                parseOptions
             );
         }
     }
@@ -83,6 +85,7 @@ public record VariationTree<L extends Label>(
      * Parses a {@code VariationTree} from source code with C preprocessor annotations.
      *
      * @param input the source code to be parsed
+     * @param source from where the variation tree was obtained
      * @param parseOptions {@link PatchDiffParseOptions} for the parsing process.
      * @return a new {@code VariationTree} representing {@code input}
      * @throws IOException if {@code input} throws {@code IOException}
@@ -90,24 +93,45 @@ public record VariationTree<L extends Label>(
      */
     public static VariationTree<DiffLinesLabel> fromFile(
             final BufferedReader input,
-            final VariationTreeSource source,
+            final Source source,
             final VariationDiffParseOptions parseOptions
             ) throws IOException, DiffParseException {
-        VariationTreeNode<DiffLinesLabel> tree = VariationDiffParser
-            .createVariationTree(input, parseOptions)
-            .getRoot()
-            // Arbitrarily choose the BEFORE projection as both should be equal.
-            .projection(BEFORE)
-            .toVariationTree();
+        VariationDiff<DiffLinesLabel> diff =
+            VariationDiffParser.createVariationTree(input, source, parseOptions);
 
-        return new VariationTree<>(tree, source);
+        return new VariationTree<>(
+            // Arbitrarily choose the BEFORE projection as both should be equal.
+            diff.getRoot().projection(BEFORE).toVariationTree(),
+            diff.getSource());
     }
 
-    public static <L extends Label> VariationTree<L> fromProjection(final Projection<L> projection, final VariationTreeSource source) {
+    /**
+     * Parses a {@code VariationTree} from source code with C preprocessor annotations.
+     *
+     * @param input the source code to be parsed
+     * @param source from where the variation tree was obtained
+     * @param parseOptions {@link PatchDiffParseOptions} for the parsing process.
+     * @return a new {@code VariationTree} representing {@code input}
+     * @throws DiffParseException if some preprocessor annotations can't be parsed
+     */
+    public static VariationTree<DiffLinesLabel> fromText(
+            final String input,
+            final Source source,
+            final VariationDiffParseOptions parseOptions
+    ) throws DiffParseException {
+        try {
+            return fromFile(new BufferedReader(new StringReader(input)), source, parseOptions);
+        } catch (IOException e) {
+            // Only thrown on programming errors because StringReader doesn't do IO.
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    public static <L extends Label> VariationTree<L> fromProjection(final Projection<L> projection, final Source source) {
         return fromVariationNode(projection, source);
     }
 
-    public static <T extends VariationNode<T, L>, L extends Label> VariationTree<L> fromVariationNode(final VariationNode<T, L> node, final VariationTreeSource source) {
+    public static <T extends VariationNode<T, L>, L extends Label> VariationTree<L> fromVariationNode(final VariationNode<T, L> node, final Source source) {
         return new VariationTree<>(
                 node.toVariationTree(),
                 source
@@ -116,8 +140,8 @@ public record VariationTree<L extends Label>(
 
     public VariationDiff<L> toVariationDiff(final Function<VariationTreeNode<L>, DiffNode<L>> nodeConverter) {
         return new VariationDiff<>(
-                DiffNode.unchanged(nodeConverter, root()),
-                new FromVariationTreeSource(source())
+                DiffNode.unchanged(nodeConverter, root),
+                new CompositeSource("VariationTree.toVariationDiff", source)
         );
     }
 
@@ -126,12 +150,22 @@ public record VariationTree<L extends Label>(
     }
 
     /**
-     * Invokes the given callback for each node in this Variation Tree in depth-first order.
+     * Invokes the given callback for each node in this Variation Tree in pre-order.
      * @param action callback
      * @return this
      */
     public VariationTree<L> forAllPreorder(final Consumer<VariationTreeNode<L>> action) {
         root.forAllPreorder(action);
+        return this;
+    }
+
+    /**
+     * Invokes the given callback for each node in this Variation Tree in post-order.
+     * @param action callback
+     * @return this
+     */
+    public VariationTree<L> forAllPostorder(final Consumer<VariationTreeNode<L>> action) {
+        root.forAllPostorder(action);
         return this;
     }
 
@@ -142,7 +176,7 @@ public record VariationTree<L extends Label>(
      * @return True iff the given condition returns true for at least one node in this tree.
      */
     public boolean anyMatch(final Predicate<VariationTreeNode<L>> condition) {
-        return root().anyMatch(condition);
+        return root.anyMatch(condition);
     }
 
     /**
@@ -182,8 +216,55 @@ public record VariationTree<L extends Label>(
         return new VariationTree<>(root.deepCopy(oldToNew), this.source);
     }
 
+    public String unparse() {
+        var result = new StringBuilder();
+        root.unparse(result);
+        return result.toString();
+    }
+
+    /**
+     * Checks whether this {@link VariationTree} is consistent.
+     * Throws an error if this {@link VariationTree} is inconsistent (e.g., if there are multiple
+     * {@link NodeType#ELSE} nodes). Has no side-effects otherwise.
+     *
+     * @see VariationNode#assertConsistency
+     */
+    public void assertConsistency() {
+        forAllPreorder(VariationTreeNode::assertConsistency);
+    }
+
+    public VariationTreeNode<L> getRoot() {
+        return root;
+    }
+
+    /**
+     * Sets the source of this VariationTree.
+     * @see Source
+     */
+    public void setSource(final Source source) {
+        this.source = source;
+    }
+
+    /**
+     * Returns the source of this VariationTree (i.e., the data this VariationTree was created from).
+     * @see Source
+     */
+    public Source getSource() {
+        return source;
+    }
+
+    @Override
+    public List<Source> getSources() {
+        return List.of(source);
+    }
+
+    @Override
+    public String getSourceExplanation() {
+        return "VariationTree";
+    }
+
     @Override
     public String toString() {
-        return "variation tree from " + source;
+        return functionExplanation();
     }
 }

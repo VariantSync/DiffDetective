@@ -21,7 +21,16 @@ import org.variantsync.functjonal.list.FilteredMappedListView;
  * @see DiffNode#projection
  */
 public class Projection<L extends Label> extends VariationNode<Projection<L>, L> {
-    private DiffNode<L> backingNode;
+    /**
+     * The {@link DiffNode} which is projected at {@link time}.
+     * Invariant: {@code backingNode.projection(time) == this}
+     * <p>
+     * Note that this field is package private because {@link DiffNode} needs to change it,
+     * for example in {@link DiffNode#split},
+     * to preserve the identity of this instance and prevent it from becoming invalid.
+     * Only {@link DiffNode} is intended to have access to this field.
+     */
+    DiffNode<L> backingNode;
     private Time time;
 
     /**
@@ -120,5 +129,10 @@ public class Projection<L extends Label> extends VariationNode<Projection<L>, L>
     @Override
     public int getID() {
         return getBackingNode().getID();
+    }
+
+    @Override
+    public String toString() {
+        return String.format("Projection(%s, %s)", time, getBackingNode());
     }
 };

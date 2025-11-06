@@ -7,6 +7,7 @@ import org.variantsync.diffdetective.error.UnparseableFormulaException;
 import org.variantsync.diffdetective.feature.Annotation;
 import org.variantsync.diffdetective.feature.AnnotationType;
 import org.variantsync.diffdetective.feature.jpp.JPPAnnotationParser;
+import org.variantsync.diffdetective.util.FileSource;
 import org.variantsync.diffdetective.util.IO;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.diff.VariationDiff;
@@ -132,6 +133,7 @@ public class JPPParserTest {
         try (var inputFile = Files.newBufferedReader(testCase.input)) {
             variationDiff = VariationDiffParser.createVariationDiff(
                     inputFile,
+                    new FileSource(testCase.input),
                     new VariationDiffParseOptions(
                             false,
                             false

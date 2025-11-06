@@ -17,6 +17,7 @@ import org.variantsync.diffdetective.error.UnparseableFormulaException;
 import org.variantsync.diffdetective.feature.Annotation;
 import org.variantsync.diffdetective.feature.AnnotationType;
 import org.variantsync.diffdetective.util.Assert;
+import org.variantsync.diffdetective.util.Source;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.NodeType;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
@@ -79,6 +80,15 @@ public class VariationDiffParser {
 
 
     /* State */
+    /* Implementation note:
+     * We use stacks to keep track of the path from the current node (the top element in the stack)
+     * to the root (the bottom element in the stack) of the variation diff. This is not strictly
+     * necessary because as soon as a node is pushed onto the stack, the corresponding edge is also
+     * inserted. Hence, we could reconstruct the stack by traversing the current graph using
+     * {@link DiffNode#getParent} and check for the root using {@link DiffNode#isRoot}.
+     * However, for consistency with the papers that explain this algorithm and for ease of
+     * implementation, we keep the stack based implementation.
+     */
 
     /**
      * A stack containing the current path before the edit from the root of the currently parsed
@@ -108,17 +118,18 @@ public class VariationDiffParser {
 
 
     /**
-     * The same as {@link VariationDiffParser#createVariationDiff(BufferedReader, VariationDiffParseOptions)}
+     * The same as {@link VariationDiffParser#createVariationDiff(BufferedReader, Source, VariationDiffParseOptions)}
      * but with the diff given as a single string with line breaks instead of a {@link BufferedReader}.
      *
      * @throws DiffParseException if {@code fullDiff} couldn't be parsed
      */
     public static VariationDiff<DiffLinesLabel> createVariationDiff(
             final String fullDiff,
+            final Source source,
             final VariationDiffParseOptions parseOptions
     ) throws DiffParseException {
         try {
-            return createVariationDiff(new BufferedReader(new StringReader(fullDiff)), parseOptions);
+            return createVariationDiff(new BufferedReader(new StringReader(fullDiff)), source, parseOptions);
         } catch (IOException e) {
             throw new AssertionError("No actual IO should be performed because only a StringReader is used");
         }
@@ -131,6 +142,7 @@ public class VariationDiffParser {
      * This parsing algorithm is described in detail in Sören Viegener's bachelor's thesis.
      *
      * @param fullDiff The full diff of a patch obtained from a buffered reader.
+     * @param source  the {@link Source} of {@code fullDiff}
      * @param options  {@link VariationDiffParseOptions} for the parsing process.
      * @return A parsed {@link VariationDiff} upon success or an error indicating why parsing failed.
      * @throws IOException        when reading from {@code fullDiff} fails.
@@ -138,11 +150,12 @@ public class VariationDiffParser {
      */
     public static VariationDiff<DiffLinesLabel> createVariationDiff(
             BufferedReader fullDiff,
+            Source source,
             final VariationDiffParseOptions options
     ) throws IOException, DiffParseException {
         return new VariationDiffParser(
                 options
-        ).parse(() -> {
+        ).parse(source, () -> {
             String line = fullDiff.readLine();
             if (line == null) {
                 return null;
@@ -153,10 +166,11 @@ public class VariationDiffParser {
 
     /**
      * Parses a variation tree from a source file.
-     * This method is similar to {@link #createVariationDiff(BufferedReader, VariationDiffParseOptions)}
+     * This method is similar to {@link #createVariationDiff(BufferedReader, Source, VariationDiffParseOptions)}
      * but acts as if all lines where unmodified.
      *
      * @param file    The source code file (not a diff) to be parsed.
+     * @param source the {@link Source} of {@code file}
      * @param options {@link VariationDiffParseOptions} for the parsing process.
      * @return A parsed {@link VariationDiff}.
      * @throws IOException        iff {@code file} throws an {@code IOException}
@@ -164,11 +178,12 @@ public class VariationDiffParser {
      */
     public static VariationDiff<DiffLinesLabel> createVariationTree(
             BufferedReader file,
+            Source source,
             VariationDiffParseOptions options
     ) throws IOException, DiffParseException {
         return new VariationDiffParser(
                 options
-        ).parse(() -> {
+        ).parse(source, () -> {
             String line = file.readLine();
             if (line == null) {
                 return null;
@@ -189,7 +204,7 @@ public class VariationDiffParser {
     /**
      * Initializes the parse state.
      *
-     * @see #createVariationDiff(BufferedReader, VariationDiffParseOptions)
+     * @see #createVariationDiff(BufferedReader, Source, VariationDiffParseOptions)
      */
     private VariationDiffParser(
             VariationDiffParseOptions options
@@ -200,6 +215,7 @@ public class VariationDiffParser {
     /**
      * Parses the line diff {@code fullDiff}.
      *
+     * @param source the {@link Source} of {@code lines}
      * @param lines should supply successive lines of the diff to be parsed, or {@code null} if
      *              there are no more lines to be parsed.
      * @return the parsed {@code VariationDiff}
@@ -208,6 +224,7 @@ public class VariationDiffParser {
      *                            is detected
      */
     private VariationDiff<DiffLinesLabel> parse(
+            Source source,
             FailableSupplier<DiffLine, IOException> lines
     ) throws IOException, DiffParseException {
         DiffNode<DiffLinesLabel> root = DiffNode.createRoot(new DiffLinesLabel());
@@ -288,12 +305,7 @@ public class VariationDiffParser {
             );
         }
 
-        // Cleanup state
-        beforeStack.clear();
-        afterStack.clear();
-        lastArtifact = null;
-
-        return new VariationDiff<>(root);
+        return new VariationDiff<>(root, source);
     }
 
     /**
@@ -326,8 +338,8 @@ public class VariationDiffParser {
 
             // Do not create a node for ENDIF, but update the line numbers of the closed if-chain
             // and remove that if-chain from the relevant stacks.
-            diffType.forAllTimesOfExistence(beforeStack, afterStack, stack ->
-                    popIfChain(stack, fromLine)
+            diffType.forAllTimesOfExistence(time ->
+                    popIfChain(time, fromLine, line)
             );
         } else if (options.collapseMultipleCodeLines()
                 && annotation.type() == AnnotationType.None
@@ -355,32 +367,49 @@ public class VariationDiffParser {
     }
 
     /**
-     * Pop {@code stack} until an IF node is popped.
+     * Pop the stack until an IF node is popped.
      * If there were ELSEs or ELIFs between an IF and an ENDIF, they were placed on the stack and
      * have to be popped now. The {@link DiffNode#getToLine() end line numbers} are adjusted
      *
-     * @param stack          the stack which should be popped
+     * @param time           which stack to pop the if chain (i.e., {@link beforeStack} or {@link afterStack})
      * @param elseLineNumber the first line of the else which causes this IF to be popped
+     * @param line           the line containing the endif
      * @throws DiffParseException if {@code stack} doesn't contain an IF node
      */
     private void popIfChain(
-            Stack<DiffNode<DiffLinesLabel>> stack,
-            DiffLineNumber elseLineNumber
+            Time time,
+            DiffLineNumber elseLineNumber,
+            LogicalLine line
     ) throws DiffParseException {
+        Stack<DiffNode<DiffLinesLabel>> stack = time.match(beforeStack, afterStack);
+
         DiffLineNumber previousLineNumber = elseLineNumber;
         do {
             DiffNode<DiffLinesLabel> annotation = stack.peek();
+
+            // Save endif
+            if (annotation.isIf()) {
+                var endIf = line.getLines();
+                var otherEndIf = annotation.getLabel().getDiffTrailingLines();
+
+                // Split the node if two different endif lines are associated to one if node.
+                if (!otherEndIf.isEmpty() && !endIf.equals(otherEndIf)) {
+                    annotation = annotation.split(time);
+                }
+
+                annotation.getLabel().setDiffTrailingLines(endIf);
+            }
 
             // Set the line number of now closed annotations to the beginning of the
             // following annotation.
             annotation.setToLine(new DiffLineNumber(
                     Math.max(previousLineNumber.inDiff(), annotation.getToLine().inDiff()),
-                    stack == beforeStack
-                            ? previousLineNumber.beforeEdit()
-                            : annotation.getToLine().beforeEdit(),
-                    stack == afterStack
-                            ? previousLineNumber.afterEdit()
-                            : annotation.getToLine().afterEdit()
+                    time.match(
+                        previousLineNumber.beforeEdit(),
+                        annotation.getToLine().beforeEdit()),
+                    time.match(
+                        annotation.getToLine().afterEdit(),
+                        previousLineNumber.afterEdit())
             ));
 
             previousLineNumber = annotation.getFromLine();

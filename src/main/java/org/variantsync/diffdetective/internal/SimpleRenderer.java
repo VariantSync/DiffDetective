@@ -18,7 +18,7 @@ import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParser;
 import org.variantsync.diffdetective.variation.diff.render.RenderOptions;
 import org.variantsync.diffdetective.variation.diff.render.VariationDiffRenderer;
 import org.variantsync.diffdetective.variation.diff.serialize.nodeformat.MappingsDiffNodeFormat;
-import org.variantsync.diffdetective.variation.diff.transform.VariationDiffTransformer;
+import org.variantsync.diffdetective.variation.diff.transform.Transformer;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -162,10 +162,10 @@ public class SimpleRenderer {
             final Repository repository = Repository.fromDirectory(repoPath, repoName);
             repository.setParseOptions(repository.getParseOptions().withDiffStoragePolicy(PatchDiffParseOptions.DiffStoragePolicy.REMEMBER_STRIPPED_DIFF));
 
-            final List<VariationDiffTransformer<DiffLinesLabel>> transform = VariationDiffMiner.Postprocessing(repository);
+            final List<Transformer<VariationDiff<DiffLinesLabel>>> transform = VariationDiffMiner.Postprocessing(repository);
             final PatchDiff patch = VariationDiffParser.parsePatch(repository, file, commit);
             Assert.assertNotNull(patch != null);
-            VariationDiffTransformer.apply(transform, patch.getVariationDiff());
+            Transformer.apply(transform, patch.getVariationDiff());
             renderer.render(patch, Path.of("render", repoName), RENDER_OPTIONS_TO_USE);
         }
 

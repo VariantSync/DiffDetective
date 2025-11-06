@@ -13,7 +13,7 @@ import java.util.function.Predicate;
  * For example, it might remove an IF but keep its ELSE branches which is illegal.
  */
 @Deprecated
-public record FeatureExpressionFilter<L extends Label>(Predicate<DiffNode<L>> isFeatureAnnotation) implements VariationDiffTransformer<L> {
+public record FeatureExpressionFilter<L extends Label>(Predicate<DiffNode<L>> isFeatureAnnotation) implements Transformer<VariationDiff<L>> {
     @Override
     public void transform(VariationDiff<L> variationDiff) {
         final List<DiffNode<L>> illegalNodes = new ArrayList<>();

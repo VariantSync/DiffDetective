@@ -1,5 +1,6 @@
 package org.variantsync.diffdetective.variation.tree.view.relevance;
 
+import org.variantsync.diffdetective.util.Source;
 import org.variantsync.diffdetective.variation.tree.VariationNode;
 
 import java.util.function.Consumer;
@@ -13,17 +14,7 @@ import java.util.function.Predicate;
  * Moreover, this interface provides methods to access a predicates metadata for debugging
  * and (de-)serialization.
  */
-public interface Relevance extends Predicate<VariationNode<?, ?>> {
-    /**
-     * @return The name of this relevance predicate's type.
-     */
-    String getFunctionName();
-
-    /**
-     * @return The parameters set for this particular relevance predicate, as a comma-separated string (without braces).
-     */
-    String parametersToString();
-
+public interface Relevance extends Predicate<VariationNode<?, ?>>, Source {
     /**
      * Delegates to {@link Relevance#computeViewNodesCheckAll(Relevance, VariationNode, Consumer)} with this relevance
      * as the first parameter.
@@ -37,6 +28,7 @@ public interface Relevance extends Predicate<VariationNode<?, ?>> {
      * In particular, this function checks each node in the given tree v on relevance.
      * For each node that is deemed relevant by the given relevance predicate rho, that node and all its ancestors are
      * marked as relevant by invoking the given callback markRelevant.
+     * The callback may be invoked multiple times on the same node.
      * This function tests the relevance predicate on all nodes separately and performs no optimizations.
      * @param rho The relevance predicate to test on all nodes.
      * @param v The root node the tree to test for relevance.
@@ -57,9 +49,9 @@ public interface Relevance extends Predicate<VariationNode<?, ?>> {
      * Default implementation for {@link Object#toString()} that can be reused by implementing classes.
      * The produced string will look like a function call.
      * @param relevance The relevance predicate to turn into a string.
-     * @return {@link Relevance#getFunctionName()} + "(" + {@link Relevance#parametersToString()} + ")"
+     * @return {@link #getSourceArguments()} + "(" + {@link #getSourceExplanation()} + ")"
      */
     static String toString(Relevance relevance) {
-        return relevance.getFunctionName() + "(" + relevance.parametersToString() + ")";
+        return relevance.shallowExplanation();
     }
 }

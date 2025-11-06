@@ -7,10 +7,10 @@ v 1163 REM;ARTIFACT;(old: 15, diff: 17, new: -1);(old: 16, diff: 18, new: -1);; 
 v 1091 ADD;ARTIFACT;(old: -1, diff: 16, new: 15);(old: -1, diff: 17, new: 16);;   baz();
 v 128 ADD;IF;(old: -1, diff: 1, new: 1);(old: -1, diff: 9, new: 8);A & B & C & E & D;# if A && /* multiple inline;comments */ B && /* that */ C && /*;are distributed;*/ \;  E \; && D
 e 136 16 b;0,-1
-e 595 136 b;0,-1
-e 595 128 a;-1,0
+e 128 16 a;-1,0
 e 723 16 ba;1,1
 e 784 16 ba;2,2
+e 595 136 b;0,-1
 e 1163 784 b;0,-1
 e 1091 784 a;-1,0
-e 128 16 a;-1,0
+e 595 128 a;-1,0

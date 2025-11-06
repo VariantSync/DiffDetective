@@ -13,6 +13,7 @@ import org.variantsync.diffdetective.mining.formats.DirectedEdgeLabelFormat;
 import org.variantsync.diffdetective.mining.formats.MiningNodeFormat;
 import org.variantsync.diffdetective.mining.formats.ReleaseMiningDiffNodeFormat;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
+import org.variantsync.diffdetective.variation.diff.VariationDiff;
 import org.variantsync.diffdetective.variation.diff.filter.VariationDiffFilter;
 import org.variantsync.diffdetective.variation.diff.serialize.GraphFormat;
 import org.variantsync.diffdetective.variation.diff.serialize.LineGraphExportOptions;
@@ -20,7 +21,7 @@ import org.variantsync.diffdetective.variation.diff.serialize.edgeformat.EdgeLab
 import org.variantsync.diffdetective.variation.diff.serialize.treeformat.CommitDiffVariationDiffLabelFormat;
 import org.variantsync.diffdetective.variation.diff.transform.CollapseNestedNonEditedAnnotations;
 import org.variantsync.diffdetective.variation.diff.transform.CutNonEditedSubtrees;
-import org.variantsync.diffdetective.variation.diff.transform.VariationDiffTransformer;
+import org.variantsync.diffdetective.variation.diff.transform.Transformer;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -38,8 +39,8 @@ public class VariationDiffMiner {
 //    public static final int PRINT_LARGEST_SUBJECTS = 3;
     public static final boolean DEBUG_TEST = false;
 
-    public static List<VariationDiffTransformer<DiffLinesLabel>> Postprocessing(final Repository repository) {
-        final List<VariationDiffTransformer<DiffLinesLabel>> processing = new ArrayList<>();
+    public static List<Transformer<VariationDiff<DiffLinesLabel>>> Postprocessing(final Repository repository) {
+        final List<Transformer<VariationDiff<DiffLinesLabel>>> processing = new ArrayList<>();
         processing.add(new CutNonEditedSubtrees<>());
         processing.add(new CollapseNestedNonEditedAnnotations());
         return processing;
