@@ -85,7 +85,7 @@ public class DiffView {
             Logger.error("Could not parse diff obtained with query {} at {}", d.getSource(), rho);
             throw e;
         }
-        view.setSource(new ViewSource<>(d, rho, "naive"));
+        view.setSource(new ViewSource(d, rho, "naive"));
 
         return view;
     }
@@ -161,7 +161,7 @@ public class DiffView {
 
         // unify
         final VariationDiff<L> goodDiff = badDiff.toGood();
-        goodDiff.setSource(new ViewSource<>(d, rho, "badgood"));
+        goodDiff.setSource(new ViewSource(d, rho, "badgood"));
         goodDiff.assertConsistency();
         return goodDiff;
     }
@@ -270,7 +270,7 @@ public class DiffView {
 
         // Step 4: Build return value
         Assert.assertNotNull(rootCopy[0]);
-        return new VariationDiff<>(rootCopy[0], new ViewSource<>(d, rho, "optimized"));
+        return new VariationDiff<>(rootCopy[0], new ViewSource(d, rho, "optimized"));
     }
 
     /**
