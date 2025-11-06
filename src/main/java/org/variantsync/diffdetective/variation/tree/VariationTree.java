@@ -41,7 +41,7 @@ import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
  */
 public class VariationTree<L extends Label> implements Source {
     private final VariationTreeNode<L> root;
-    private final Source source;
+    private Source source;
 
     /** Creates a {@code VariationTree} with the given root and an {@link Source#Unknown unknown} source. */
     public VariationTree(VariationTreeNode<L> root) {
@@ -235,6 +235,14 @@ public class VariationTree<L extends Label> implements Source {
 
     public VariationTreeNode<L> root() {
         return root;
+    }
+
+    /**
+     * Sets the source of this VariationTree.
+     * @see Source
+     */
+    public void setSource(final Source source) {
+        this.source = source;
     }
 
     /**
