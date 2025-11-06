@@ -5,6 +5,7 @@ import org.variantsync.diffdetective.variation.tree.VariationNode;
 import org.variantsync.diffdetective.variation.tree.VariationTree;
 import org.variantsync.diffdetective.variation.tree.VariationTreeNode;
 import org.variantsync.diffdetective.variation.tree.view.relevance.Relevance;
+import org.variantsync.diffdetective.variation.diff.view.ViewSource;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -56,6 +57,7 @@ public final class TreeView {
         final Set<VariationTreeNode<L>> interestingNodes = new HashSet<>();
         r.computeViewNodes(t.root(), interestingNodes::add);
         treeInline(t.root(), interestingNodes::contains);
+        t.setSource(new ViewSource(t.getSource(), r, "view_tree"));
     }
 
     /**
