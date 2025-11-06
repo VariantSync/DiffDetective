@@ -352,8 +352,8 @@ public record BadVDiff<L extends Label>(
         final List<EdgeToConstruct<L>>               edgesToConstruct = new ArrayList<>();
         final Map<VariationTreeNode<L>, DiffNode<L>> nodeTranslation  = new HashMap<>();
 
-        final DiffNode<L> root = toGood(diff.root());
-        nodeTranslation.put(diff.root(), root);
+        final DiffNode<L> root = toGood(diff.getRoot());
+        nodeTranslation.put(diff.getRoot(), root);
 
         diff.forAllPreorder(vtnode -> {
             // If a node was already translated (because it was merged), it does not have to be translated anymore.
@@ -452,7 +452,7 @@ public record BadVDiff<L extends Label>(
 
     public String prettyPrint() {
         final StringBuilder b = new StringBuilder();
-        prettyPrint("", b, diff.root());
+        prettyPrint("", b, diff.getRoot());
         return b.toString();
     }
 

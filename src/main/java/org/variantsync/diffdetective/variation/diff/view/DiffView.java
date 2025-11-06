@@ -120,7 +120,7 @@ public class DiffView {
 
             // TODO: Avoid inversion by building the map in the correct way in the first place.
             final Map<VariationTreeNode<L>, Projection<L>> invCopyMemory = CollectionUtils.invert(copyMemory, HashMap::new);
-            TreeView.treeInline(treeView.root(), v -> inView.test(t, invCopyMemory.get(v)));
+            TreeView.treeInline(treeView.getRoot(), v -> inView.test(t, invCopyMemory.get(v)));
 
             projectionViewText[i] = treeView.unparse();
         }
