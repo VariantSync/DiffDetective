@@ -3,6 +3,7 @@ package org.variantsync.diffdetective.variation.diff.bad;
 import org.variantsync.diffdetective.diff.text.DiffLineNumberRange;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.util.CompositeSource;
+import org.variantsync.diffdetective.util.Source;
 import org.variantsync.diffdetective.util.StringUtils;
 import org.variantsync.diffdetective.variation.Label;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
@@ -68,7 +69,7 @@ public record BadVDiff<L extends Label>(
         Map<VariationTreeNode<L>, VariationTreeNode<L>> matching,
         Map<VariationTreeNode<L>, DiffType> coloring,
         Map<VariationTreeNode<L>, DiffLineNumberRange> lines
-)
+) implements Source
 {
     /**
      * Memoization of the VariationTreeNodes a DiffNode was
@@ -453,5 +454,15 @@ public record BadVDiff<L extends Label>(
         final StringBuilder b = new StringBuilder();
         prettyPrint("", b, diff.root());
         return b.toString();
+    }
+
+    @Override
+    public String getSourceExplanation() {
+        return "BadVDiff";
+    }
+
+    @Override
+    public List<Source> getSources() {
+        return List.of(diff);
     }
 }
