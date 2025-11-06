@@ -140,7 +140,7 @@ public class VariationTree<L extends Label> implements Source {
 
     public VariationDiff<L> toVariationDiff(final Function<VariationTreeNode<L>, DiffNode<L>> nodeConverter) {
         return new VariationDiff<>(
-                DiffNode.unchanged(nodeConverter, root()),
+                DiffNode.unchanged(nodeConverter, root),
                 new CompositeSource("VariationTree.toVariationDiff", source)
         );
     }
@@ -176,7 +176,7 @@ public class VariationTree<L extends Label> implements Source {
      * @return True iff the given condition returns true for at least one node in this tree.
      */
     public boolean anyMatch(final Predicate<VariationTreeNode<L>> condition) {
-        return root().anyMatch(condition);
+        return root.anyMatch(condition);
     }
 
     /**
@@ -218,7 +218,7 @@ public class VariationTree<L extends Label> implements Source {
 
     public String unparse() {
         var result = new StringBuilder();
-        root().unparse(result);
+        root.unparse(result);
         return result.toString();
     }
 
@@ -233,7 +233,7 @@ public class VariationTree<L extends Label> implements Source {
         forAllPreorder(VariationTreeNode::assertConsistency);
     }
 
-    public VariationTreeNode<L> root() {
+    public VariationTreeNode<L> getRoot() {
         return root;
     }
 

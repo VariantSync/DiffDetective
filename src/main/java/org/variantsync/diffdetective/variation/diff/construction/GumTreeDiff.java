@@ -43,8 +43,8 @@ public class GumTreeDiff {
      */
     public static <L extends Label> VariationDiff<L> diffUsingMatching(VariationTree<L> before, VariationTree<L> after, Matcher matcher) {
         DiffNode<L> root = diffUsingMatching(
-            before.root(),
-            after.root(),
+            before.getRoot(),
+            after.getRoot(),
             matcher
         );
 

@@ -55,8 +55,8 @@ public final class TreeView {
      */
     public static <L extends Label> void treeInline(final VariationTree<L> t, final Relevance r) {
         final Set<VariationTreeNode<L>> interestingNodes = new HashSet<>();
-        r.computeViewNodes(t.root(), interestingNodes::add);
-        treeInline(t.root(), interestingNodes::contains);
+        r.computeViewNodes(t.getRoot(), interestingNodes::add);
+        treeInline(t.getRoot(), interestingNodes::contains);
         t.setSource(new ViewSource(t.getSource(), r, "view_tree"));
     }
 
