@@ -48,7 +48,7 @@ public class GumTreeDiff {
             matcher
         );
 
-        return new VariationDiff<>(root, new CompositeSource("diffUsingMatching", before.source(), after.source()));
+        return new VariationDiff<>(root, new CompositeSource("diffUsingMatching", before, after));
     }
 
     /**
