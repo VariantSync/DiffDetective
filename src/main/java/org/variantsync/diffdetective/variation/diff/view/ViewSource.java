@@ -26,4 +26,9 @@ public record ViewSource(Source target, Relevance relevance, String method) impl
     public List<Object> getSourceArguments() {
         return List.of();
     }
+
+    @Override
+    public String toString() {
+        return functionExplanation();
+    }
 }
