@@ -19,11 +19,11 @@ public record ViewSource(Source target, Relevance relevance, String method) impl
 
     @Override
     public List<Source> getSources() {
-        return List.of(target);
+        return List.of(relevance, target);
     }
 
     @Override
     public List<Object> getSourceArguments() {
-        return List.of(relevance);
+        return List.of();
     }
 }
