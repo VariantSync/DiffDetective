@@ -58,9 +58,33 @@ public class PatchingExperiment implements Analysis.Hooks {
 			"MPATCH - incorrectly applied patches");
 	private static final AnalysisResult.ResultKey<MPATCHSuccessfullyAppliedPatchesCounter> MPATCH_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
 			"MPATCH - successfully applied patches");
+	
+	private static final AnalysisResult.ResultKey<GNUViewErrorPatchesCounter> GNUVIEW_ERROR_PATCHES_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
+			"GNU View - error patches");
+	private static final AnalysisResult.ResultKey<GNUViewRejectedPatchesCounter> GNUVIEW_REJECTED_PATCHES_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
+			"GNU View - rejected patches");
+	private static final AnalysisResult.ResultKey<GNUViewIncorrectlyAppliedPatchesCounter> GNUVIEW_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
+			"GNU View - incorrectly applied patches");
+	private static final AnalysisResult.ResultKey<GNUViewSuccessfullyAppliedPatchesCounter> GNUVIEW_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
+			"GNU View - successfully applied patches");
+
+	private static final AnalysisResult.ResultKey<MPATCHViewErrorPatchesCounter> MPATCHVIEW_ERROR_PATCHES_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
+			"MPATCH View - error patches");
+	private static final AnalysisResult.ResultKey<MPATCHViewRejectedPatchesCounter> MPATCHVIEW_REJECTED_PATCHES_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
+			"MPATCH View - rejected patches");
+	private static final AnalysisResult.ResultKey<MPATCHViewIncorrectlyAppliedPatchesCounter> MPATCHVIEW_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
+			"MPATCH View - incorrectly applied patches");
+	private static final AnalysisResult.ResultKey<MPATCHViewSuccessfullyAppliedPatchesCounter> MPATCHVIEW_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
+			"MPATCH View - successfully applied patches");
 
 	private static final AnalysisResult.ResultKey<SkippedPatchesCounter> SKIPPED_PATCHES_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
 			"skipped patches");
+	
+	private static final String PATCH = "patch.txt";
+	private static final String PATCH_VIEW = "patch2.txt";
+	private static final String CODE = "code.txt";
+	private static final String CODE_VIEW = "code2.txt";
+	
 	private int commits = 0;
 	private PatchDiff lastPatch;
 
@@ -141,6 +165,58 @@ public class PatchingExperiment implements Analysis.Hooks {
 			super(0, "MPATCH - successfully applied patches", Integer::sum);
 		}
 	}
+	
+	private static class GNUViewErrorPatchesCounter extends SimpleMetadata<Integer, GNUViewErrorPatchesCounter> {
+		public GNUViewErrorPatchesCounter() {
+			super(0, "GNU (View) - error patches", Integer::sum);
+		}
+	}
+
+	private static class GNUViewRejectedPatchesCounter extends SimpleMetadata<Integer, GNUViewRejectedPatchesCounter> {
+		public GNUViewRejectedPatchesCounter() {
+			super(0, "GNU (View) - rejected patches", Integer::sum);
+		}
+	}
+
+	private static class GNUViewIncorrectlyAppliedPatchesCounter
+			extends SimpleMetadata<Integer, GNUViewIncorrectlyAppliedPatchesCounter> {
+		public GNUViewIncorrectlyAppliedPatchesCounter() {
+			super(0, "GNU (View) - incorrectly applied patches", Integer::sum);
+		}
+	}
+
+	private static class GNUViewSuccessfullyAppliedPatchesCounter
+			extends SimpleMetadata<Integer, GNUViewSuccessfullyAppliedPatchesCounter> {
+		public GNUViewSuccessfullyAppliedPatchesCounter() {
+			super(0, "GNU (View) - successfully applied patches", Integer::sum);
+		}
+	}
+
+	private static class MPATCHViewErrorPatchesCounter extends SimpleMetadata<Integer, MPATCHViewErrorPatchesCounter> {
+		public MPATCHViewErrorPatchesCounter() {
+			super(0, "MPATCH (View) - error patches", Integer::sum);
+		}
+	}
+
+	private static class MPATCHViewRejectedPatchesCounter extends SimpleMetadata<Integer, MPATCHViewRejectedPatchesCounter> {
+		public MPATCHViewRejectedPatchesCounter() {
+			super(0, "MPATCH (View) - rejected patches", Integer::sum);
+		}
+	}
+
+	private static class MPATCHViewIncorrectlyAppliedPatchesCounter
+			extends SimpleMetadata<Integer, MPATCHViewIncorrectlyAppliedPatchesCounter> {
+		public MPATCHViewIncorrectlyAppliedPatchesCounter() {
+			super(0, "MPATCH (View) - incorrectly applied patches", Integer::sum);
+		}
+	}
+
+	private static class MPATCHViewSuccessfullyAppliedPatchesCounter
+			extends SimpleMetadata<Integer, MPATCHViewSuccessfullyAppliedPatchesCounter> {
+		public MPATCHViewSuccessfullyAppliedPatchesCounter() {
+			super(0, "MPATCH (View) - successfully applied patches", Integer::sum);
+		}
+	}
 
 	private static class SkippedPatchesCounter extends SimpleMetadata<Integer, SkippedPatchesCounter> {
 		public SkippedPatchesCounter() {
@@ -169,6 +245,17 @@ public class PatchingExperiment implements Analysis.Hooks {
 				new MPATCHIncorrectlyAppliedPatchesCounter());
 		analysis.append(MPATCH_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY,
 				new MPATCHSuccessfullyAppliedPatchesCounter());
+		analysis.append(GNUVIEW_ERROR_PATCHES_COUNTER_RESULT_KEY, new GNUViewErrorPatchesCounter());
+		analysis.append(GNUVIEW_REJECTED_PATCHES_COUNTER_RESULT_KEY, new GNUViewRejectedPatchesCounter());
+		analysis.append(GNUVIEW_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY, new GNUViewIncorrectlyAppliedPatchesCounter());
+		analysis.append(GNUVIEW_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY,
+				new GNUViewSuccessfullyAppliedPatchesCounter());
+		analysis.append(MPATCHVIEW_ERROR_PATCHES_COUNTER_RESULT_KEY, new MPATCHViewErrorPatchesCounter());
+		analysis.append(MPATCHVIEW_REJECTED_PATCHES_COUNTER_RESULT_KEY, new MPATCHViewRejectedPatchesCounter());
+		analysis.append(MPATCHVIEW_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY,
+				new MPATCHViewIncorrectlyAppliedPatchesCounter());
+		analysis.append(MPATCHVIEW_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY,
+				new MPATCHViewSuccessfullyAppliedPatchesCounter());
 		analysis.append(SKIPPED_PATCHES_COUNTER_RESULT_KEY, new SkippedPatchesCounter());
 	}
 
@@ -203,7 +290,7 @@ public class PatchingExperiment implements Analysis.Hooks {
 
 		Result<VariationTree<DiffLinesLabel>, Error> gnuPatchResult;
 		try {
-			gnuPatchResult = Generator.runGnuPatch(scenario.targetVariantBefore);
+			gnuPatchResult = Generator.runGnuPatch(scenario.targetVariantBefore, PATCH, CODE);
 			gnuPatchResult.match(tree -> tree != null && Patching.arePatchedVariantsEquivalent(tree,
 					scenario.sourceVariantAfterRedToCrossVarFeatures, scenario.targetVariantBeforeRedToUnchanged,
 					scenario.sourceVariantConfig, scenario.unchangedAfter)
@@ -213,10 +300,23 @@ public class PatchingExperiment implements Analysis.Hooks {
 		} catch (IOException e) {
 			analysis.get(GNU_ERROR_PATCHES_COUNTER_RESULT_KEY).value++;
 		}
+		
+		Result<VariationTree<DiffLinesLabel>, Error> gnuPatchResultView;
+		try {
+			gnuPatchResultView = Generator.runGnuPatch(scenario.targetVariantBefore, PATCH_VIEW, CODE_VIEW);
+			gnuPatchResultView.match(tree -> tree != null && Patching.arePatchedVariantsEquivalent(tree,
+					scenario.sourceVariantAfterRedToCrossVarFeatures, scenario.targetVariantBeforeRedToUnchanged,
+					scenario.sourceVariantConfig, scenario.unchangedAfter)
+							? analysis.get(GNUVIEW_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++
+							: analysis.get(GNUVIEW_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++,
+					error -> analysis.get(GNUVIEW_REJECTED_PATCHES_COUNTER_RESULT_KEY).value++);
+		} catch (IOException e) {
+			analysis.get(GNUVIEW_ERROR_PATCHES_COUNTER_RESULT_KEY).value++;
+		}
 
 		Result<VariationTree<DiffLinesLabel>, Error> mpatchResult;
 		try {
-			mpatchResult = Generator.runMPatch(scenario.targetVariantBefore);
+			mpatchResult = Generator.runMPatch(scenario.targetVariantBefore, PATCH, CODE);
 			mpatchResult.match(tree -> tree != null && Patching.arePatchedVariantsEquivalent(tree,
 					scenario.sourceVariantAfterRedToCrossVarFeatures, scenario.targetVariantBeforeRedToUnchanged,
 					scenario.sourceVariantConfig, scenario.unchangedAfter)
@@ -225,6 +325,19 @@ public class PatchingExperiment implements Analysis.Hooks {
 					error -> analysis.get(MPATCH_REJECTED_PATCHES_COUNTER_RESULT_KEY).value++);
 		} catch (IOException e) {
 			analysis.get(MPATCH_ERROR_PATCHES_COUNTER_RESULT_KEY).value++;
+		}
+		
+		Result<VariationTree<DiffLinesLabel>, Error> mpatchResultView;
+		try {
+			mpatchResultView = Generator.runMPatch(scenario.targetVariantBefore, PATCH_VIEW, CODE_VIEW);
+			mpatchResultView.match(tree -> tree != null && Patching.arePatchedVariantsEquivalent(tree,
+					scenario.sourceVariantAfterRedToCrossVarFeatures, scenario.targetVariantBeforeRedToUnchanged,
+					scenario.sourceVariantConfig, scenario.unchangedAfter)
+							? analysis.get(MPATCHVIEW_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++
+							: analysis.get(MPATCHVIEW_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++,
+					error -> analysis.get(MPATCHVIEW_REJECTED_PATCHES_COUNTER_RESULT_KEY).value++);
+		} catch (IOException e) {
+			analysis.get(MPATCHVIEW_ERROR_PATCHES_COUNTER_RESULT_KEY).value++;
 		}
 
 //		VariationTree<DiffLinesLabel> before = diff.project(Time.BEFORE).deepCopy();
@@ -285,7 +398,7 @@ public class PatchingExperiment implements Analysis.Hooks {
 				defaultOptions.getFilterForRepo(), true, false);
 		try {
 			AnalysisRunner.run(analysisOptions, (repository, path) -> Analysis
-					.forEachCommit(() -> PatchingExperiment.Create(repository, path, experiment), 4, 4));
+					.forEachCommit(() -> PatchingExperiment.Create(repository, path, experiment), 5, 4));
 		} catch (Exception e) {
 //			PatchingExperiment.writeToFile(experiment.getLastPatch(), "file7.diff");
 //			e.printStackTrace();

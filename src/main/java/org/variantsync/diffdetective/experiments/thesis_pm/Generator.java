@@ -55,6 +55,8 @@ public class Generator {
 	final private static String targetVariant = "targetVariant";
 	final private static String code = "code.txt";
 	final private static String patch = "patch.txt";
+	final private static String code2 = "code2.txt";
+	final private static String patch2 = "patch2.txt";
 	final private static ShellExecutor shellSourceVariantDir = new ShellExecutor(Logger::info, Logger::error,
 			Path.of(directory, sourceVariant));
 	final private static ShellExecutor shellTargetVariantDir = new ShellExecutor(Logger::info, Logger::error,
@@ -168,7 +170,7 @@ public class Generator {
 
 		final Map<String, Boolean> config1 = randomPartition(featureModel, 0.6);
 		final Map<String, Boolean> config2 = mutateByWeightedCoinFlip(config1, 0.5);
-		
+
 		// FIXME: We should probably ensure that config1 != config2.
 		Logger.info("Configuration 1: {}", config1);
 		Logger.info("Configuration 2: {}", config2);
@@ -267,17 +269,50 @@ public class Generator {
 
 		// ## 3. To use command-line patchers such as GNU patch and mpatch, we need to
 		// write our variants to disk.
+		deleteFilesAndCreateNewDirectories();
+		Path patchPath = writeVariantsToFileSystem(sourceVariantBefore, sourceVariantAfter, targetVariantBefore, code,
+				patch);
+//        writeToFile(targetVariantCodeAfter, targetVariantAfterPath);
+
+		runGnuDiff(patchPath);
+
+		final VariationDiff<L> sourceVariantCrossVariantView = DiffView.optimized(sourcePatch, configureTo2);
+		final VariationTree<L> sourceVariantCrossVariantViewBefore = sourceVariantCrossVariantView.project(Time.BEFORE);
+		final VariationTree<L> sourceVariantCrossVariantViewAfter = sourceVariantCrossVariantView.project(Time.AFTER);
+		
+		Path patchPath2 = writeVariantsToFileSystem(sourceVariantCrossVariantViewBefore,
+				sourceVariantCrossVariantViewAfter, targetVariantBefore, code2, patch2);
+		runGnuDiff(patchPath2);
+		
+		return new PatchScenario<L>(sourcePatch, targetVariantBefore, targetPatch, targetVariantAfter, configureTo1,
+				configureTo2);
+	}
+
+	private static <L extends Label> Path writeVariantsToFileSystem(final VariationTree<L> sourceVariantBefore,
+			final VariationTree<L> sourceVariantAfter, final VariationTree<L> targetVariantBefore, final String code,
+			final String patch) throws Exception {
 		final String sourceVariantCodeBefore = sourceVariantBefore.unparse();
 		final String sourceVariantCodeAfter = sourceVariantAfter.unparse();
-		final String targetVariantCodeBefore = targetVariantBefore.unparse();
-		final String targetVariantCodeAfter = targetVariantAfter.unparse(); // ground truth for fast comparisons (beware
-																			// of differences in line breaks and
-																			// whitespaces!)
+		final String targetVariantCodeBefore = targetVariantBefore.unparse(); // ground truth for fast comparisons
+																				// (beware
+																				// of differences in line breaks and
+																				// whitespaces!)
 //		logDiff("Source Before:", sourceVariantCodeBefore);
 //		logDiff("Source After:", sourceVariantCodeAfter);
 //		logDiff("Target Before:", targetVariantCodeBefore);
 //		logDiff("Target After:", targetVariantCodeAfter);
 
+		Path sourceVariantBeforePath = Path.of(directory, sourceVariant, version1, code);
+		Path sourceVariantAfterPath = Path.of(directory, sourceVariant, version2, code);
+		Path targetVariantBeforePath = Path.of(directory, targetVariant, code);
+		Path patchPath = Path.of(directory, targetVariant, patch);
+		writeToFile(sourceVariantCodeBefore, sourceVariantBeforePath);
+		writeToFile(sourceVariantCodeAfter, sourceVariantAfterPath);
+		writeToFile(targetVariantCodeBefore, targetVariantBeforePath);
+		return patchPath;
+	}
+
+	private static void deleteFilesAndCreateNewDirectories() throws Exception {
 		File f = new File(Path.of(directory).toUri());
 		deleteDirectory(f);
 		f.delete();
@@ -290,21 +325,6 @@ public class Generator {
 				|| !(new File(Path.of(directory, sourceVariant, version2).toUri())).mkdir()) {
 			throw new Exception("Failed to create directories");
 		}
-
-		Path sourceVariantBeforePath = Path.of(directory, sourceVariant, version1, code);
-		Path sourceVariantAfterPath = Path.of(directory, sourceVariant, version2, code);
-		Path targetVariantBeforePath = Path.of(directory, targetVariant, code);
-		Path patchPath = Path.of(directory, targetVariant, patch);
-		writeToFile(sourceVariantCodeBefore, sourceVariantBeforePath);
-		writeToFile(sourceVariantCodeAfter, sourceVariantAfterPath);
-		writeToFile(targetVariantCodeBefore, targetVariantBeforePath);
-//        writeToFile(targetVariantCodeAfter, targetVariantAfterPath);
-
-		runGnuDiff(patchPath);
-
-		return new PatchScenario<L>(sourcePatch, targetVariantBefore, targetPatch, targetVariantAfter, configureTo1,
-				configureTo2);
-
 	}
 
 	private static void runGnuDiff(Path patchPath) {
@@ -324,9 +344,12 @@ public class Generator {
 	public static <L extends Label> void runPatchers(PatchScenario<L> scenario) {
 		// ## 4. Run the patchers!
 		boolean isMpatchCorrect = false;
+		boolean isMpatchCorrect2 = false;
 		boolean isGnuPatchCorrect = false;
+		boolean isGnuPatchCorrect2 = false;
 		boolean isPatchTransformerCorrect = false;
 		List<GameEngine> gameEngine = new ArrayList<>();
+		gameEngine.add(Show.diff(scenario.sourcePatch, "source patch"));
 		gameEngine.add(Show.tree(scenario.targetVariantBefore, "target variant before"));
 		gameEngine.add(Show.diff(scenario.patchGroundTruth, "targetPatch"));
 		gameEngine.add(Show.tree(scenario.patchedVariantGroundTruth, "ground truth"));
@@ -343,7 +366,7 @@ public class Generator {
 
 		Result<VariationTree<DiffLinesLabel>, Error> gnuPatchResult;
 		try {
-			gnuPatchResult = runGnuPatch(scenario.targetVariantBefore);
+			gnuPatchResult = runGnuPatch(scenario.targetVariantBefore, patch, code);
 			if (gnuPatchResult.isSuccess()) {
 				gameEngine.add(Show.tree(gnuPatchResult.getSuccess(), "gnu patch result"));
 			}
@@ -353,11 +376,25 @@ public class Generator {
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} 
+		}
+		
+		Result<VariationTree<DiffLinesLabel>, Error> gnuPatchResult2;
+		try {
+			gnuPatchResult2 = runGnuPatch(scenario.targetVariantBefore, patch2, code2);
+			if (gnuPatchResult2.isSuccess()) {
+				gameEngine.add(Show.tree(gnuPatchResult2.getSuccess(), "gnu patch result"));
+			}
+			isGnuPatchCorrect2 = gnuPatchResult2.match(tree -> Patching.arePatchedVariantsEquivalent(tree,
+					scenario.sourceVariantAfterRedToCrossVarFeatures, scenario.targetVariantBeforeRedToUnchanged,
+					scenario.sourceVariantConfig, scenario.unchangedAfter), error -> false);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 		Result<VariationTree<DiffLinesLabel>, Error> mpatchResult;
 		try {
-			mpatchResult = runMPatch(scenario.targetVariantBefore);
+			mpatchResult = runMPatch(scenario.targetVariantBefore, patch, code);
 			if (mpatchResult.isSuccess()) {
 				gameEngine.add(Show.tree(mpatchResult.getSuccess(), "mpatch result"));
 			}
@@ -367,29 +404,45 @@ public class Generator {
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} 
+		}
+		
+		Result<VariationTree<DiffLinesLabel>, Error> mpatchResult2;
+		try {
+			mpatchResult2 = runMPatch(scenario.targetVariantBefore, patch2, code2);
+			if (mpatchResult2.isSuccess()) {
+				gameEngine.add(Show.tree(mpatchResult2.getSuccess(), "mpatch result"));
+			}
+			isMpatchCorrect2 = mpatchResult2.match(tree -> Patching.arePatchedVariantsEquivalent(tree,
+					scenario.sourceVariantAfterRedToCrossVarFeatures, scenario.targetVariantBeforeRedToUnchanged,
+					scenario.sourceVariantConfig, scenario.unchangedAfter), error -> false);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 		// TODO: Read the results of the patchers. The patchers should produce the
 		// target variants as string if they did not fail.
 		GameEngine[] gameEngineArray = new GameEngine[gameEngine.size()];
 		gameEngineArray = gameEngine.toArray(gameEngineArray);
-		GameEngine.showAndAwaitAll(gameEngineArray);
+//		GameEngine.showAndAwaitAll(gameEngineArray);
 
 		// ## 5. Compare the results of patchers here!
 		System.out.println("mpatch: " + isMpatchCorrect);
+		System.out.println("mpatch2: " + isMpatchCorrect2);
 		System.out.println("GNU patch: " + isGnuPatchCorrect);
+		System.out.println("GNU patch2: " + isGnuPatchCorrect2);
 		System.out.println("patch transformer " + isPatchTransformerCorrect);
 		// TODO
 	}
 
 	public static <L extends Label> Result<VariationTree<DiffLinesLabel>, Error> runMPatch(
-			final VariationTree<L> targetVariantBefore) throws IOException {
+			final VariationTree<L> targetVariantBefore, String patch, String code) throws IOException {
 		// TODO: configure mpatch
 		// reset target variant
-		resetTargetVariantBefore(targetVariantBefore);
+		resetTargetVariantBefore(targetVariantBefore, code);
 		Path mpatchPath = Path.of("..", "..", "..", "mpatch", "target", "debug", "mpatch");
 		MPatchCommand command = new MPatchCommand(mpatchPath.toString(), "--strip", "1", "--sourcedir",
-				Path.of("..", sourceVariant, version1).toString(), "--patchfile", patch);
+				Path.of("..", targetVariant, version1).toString(), "--patchfile", patch);
 		try {
 			shellTargetVariantDir.execute(command);
 		} catch (ShellException e) {
@@ -414,16 +467,16 @@ public class Generator {
 		return Result.Failure(Error.FAILED);
 	}
 
-	private static <L extends Label> void resetTargetVariantBefore(final VariationTree<L> targetVariantBefore) {
+	private static <L extends Label> void resetTargetVariantBefore(final VariationTree<L> targetVariantBefore, String code) {
 		Path targetVariantBeforePath = Path.of(directory, targetVariant, code);
 		writeToFile(targetVariantBefore.unparse(), targetVariantBeforePath);
 	}
 
 	public static <L extends Label> Result<VariationTree<DiffLinesLabel>, Error> runGnuPatch(
-			final VariationTree<L> targetVariantBefore) throws IOException {
+			final VariationTree<L> targetVariantBefore, String patch, String code) throws IOException {
 		// TODO: run mpatch and gnu patch. Here is a sketch for this can be done.
 		// reset target variant
-		resetTargetVariantBefore(targetVariantBefore);
+		resetTargetVariantBefore(targetVariantBefore, code);
 		Path pathToTargetVariantCode = Path.of("..", targetVariant, code);
 		Path pathToSourceVariantPatch = Path.of("..", targetVariant, patch);
 		GnuPatchCommand command = new GnuPatchCommand("patch", pathToTargetVariantCode.toString(),
@@ -440,22 +493,24 @@ public class Generator {
 			try {
 				VariationTree<DiffLinesLabel> gnuPatchResult = VariationTree
 						.fromFile(Path.of(directory, targetVariant, code));
-				return Result.Success(gnuPatchResult);	
+				return Result.Success(gnuPatchResult);
 			} catch (DiffParseException e) {
 				return Result.Success(null);
 			}
-			
+
 		}
 		return Result.Failure(Error.FAILED);
 	}
 
 	public static <L extends Label> Result<VariationTree<DiffLinesLabel>, Error> runPatchTransformer(
-			VariationDiff<L> sourcePatch, final VariationTree<L> targetVariantBefore, Configure sourceVariantConfig, Configure targetVariantConfig) {
+			VariationDiff<L> sourcePatch, final VariationTree<L> targetVariantBefore, Configure sourceVariantConfig,
+			Configure targetVariantConfig) {
 		VariationTree<DiffLinesLabel> patchTransformerResult = null;
 		try {
 //			GameEngine.showAndAwaitAll(Show.tree(targetVariantBefore));
 			VariationDiff<DiffLinesLabel> diff = Patching.patch((VariationDiff<DiffLinesLabel>) sourcePatch,
-					(VariationTree<DiffLinesLabel>) targetVariantBefore, sourceVariantConfig, targetVariantConfig, false, true);
+					(VariationTree<DiffLinesLabel>) targetVariantBefore, sourceVariantConfig, targetVariantConfig,
+					false, true);
 			patchTransformerResult = diff.project(Time.AFTER);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
