@@ -12,10 +12,13 @@ import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.diff.patching.Patching;
 import org.variantsync.diffdetective.variation.diff.transform.CutNonEditedSubtrees;
 import org.variantsync.diffdetective.variation.tree.VariationTree;
+import org.variantsync.functjonal.Pair;
 import org.variantsync.functjonal.Result;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.tinylog.Logger;
 import org.variantsync.diffdetective.analysis.*;
@@ -87,6 +90,7 @@ public class PatchingExperiment implements Analysis.Hooks {
 
 	private int commits = 0;
 	private static int incorrectPatchesPT = 0;
+	private static Map<Integer, Pair<VariationDiff<DiffLinesLabel>, VariationTree<DiffLinesLabel>>> failedPatches = new HashMap<>();
 
 	private static class PTErrorPatchesCounter extends SimpleMetadata<Integer, PTErrorPatchesCounter> {
 		public PTErrorPatchesCounter() {
@@ -285,8 +289,7 @@ public class PatchingExperiment implements Analysis.Hooks {
 				analysis.get(PT_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++;
 			} else {
 				PatchingExperiment.incorrectPatchesPT++;
-				PatchingExperiment.writeToFile(analysis.getCurrentPatch(),
-						"patch" + PatchingExperiment.incorrectPatchesPT + ".diff");
+				PatchingExperiment.failedPatches.put(PatchingExperiment.incorrectPatchesPT, new Pair<VariationDiff<DiffLinesLabel>, VariationTree<DiffLinesLabel>>(scenario.sourcePatch, scenario.targetVariantBefore));
 				analysis.get(PT_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++;
 			}
 		}, error -> analysis.get(PT_REJECTED_PATCHES_COUNTER_RESULT_KEY).value++);
@@ -368,12 +371,12 @@ public class PatchingExperiment implements Analysis.Hooks {
 		return true;
 	}
 
-	public static void writeToFile(PatchDiff p, String filename) {
+	public static void writeToFile(String s, String filename) {
 		try {
 			File f = new File(Path.of("data", "examples", filename).toUri());
 			f.createNewFile();
 			BufferedWriter myWriter = new BufferedWriter(new FileWriter(f));
-			myWriter.write(p.getDiff());
+			myWriter.write(s);
 			myWriter.close();
 		} catch (IOException i) {
 			i.printStackTrace();
@@ -405,6 +408,14 @@ public class PatchingExperiment implements Analysis.Hooks {
 		} catch (Exception e) {
 //			PatchingExperiment.writeToFile(experiment.getLastPatch(), "file7.diff");
 //			e.printStackTrace();
+		}
+		for (Integer key : PatchingExperiment.failedPatches.keySet()) {
+			Pair<VariationDiff<DiffLinesLabel>, VariationTree<DiffLinesLabel>> entry = PatchingExperiment.failedPatches.get(key);
+			VariationDiff<DiffLinesLabel> diff = entry.first();
+			VariationTree<DiffLinesLabel> tree = entry.second();
+			PatchingExperiment.writeToFile(diff.project(Time.BEFORE).unparse(), "failed" + key + "A1");
+			PatchingExperiment.writeToFile(diff.project(Time.AFTER).unparse(), "failed" + key + "A2");
+			PatchingExperiment.writeToFile(tree.unparse(), "failed" + key + "B");
 		}
 		try {
 //			VariationDiff diff = Patching.patch(Patching.parseVariationDiffFromFile("test_exampleA.diff"),
