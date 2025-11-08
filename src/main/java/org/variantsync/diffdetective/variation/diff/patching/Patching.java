@@ -32,6 +32,7 @@ import org.variantsync.diffdetective.variation.diff.source.VariationDiffSource;
 import org.variantsync.diffdetective.variation.diff.transform.CutNonEditedSubtrees;
 import org.variantsync.diffdetective.variation.diff.view.DiffView;
 import org.variantsync.diffdetective.variation.tree.VariationTree;
+import org.variantsync.diffdetective.variation.tree.VariationTreeNode;
 import org.variantsync.diffdetective.variation.tree.view.TreeView;
 import org.variantsync.diffdetective.variation.tree.view.relevance.Configure;
 import org.variantsync.diffdetective.variation.tree.view.relevance.Inverse;
@@ -409,7 +410,14 @@ public class Patching {
 
 				if (debug)
 					System.out.println("subtree removed");
-				removeNode(nodesToRem);
+				DiffNode<DiffLinesLabel> newRoot = DiffNode.createRoot(new DiffLinesLabel());
+				newRoot.addChild(root.deepCopy(), time);
+				VariationDiff<DiffLinesLabel> subTree = new VariationDiff<DiffLinesLabel>(newRoot, source);
+				DiffNode<DiffLinesLabel> newRoot2 = DiffNode.createRoot(new DiffLinesLabel());
+				newRoot2.addChild(nodesToRem.deepCopy(), time);
+				VariationDiff<DiffLinesLabel> subTreeB = new VariationDiff<DiffLinesLabel>(newRoot2, targetVariantDiffPatchedView.getSource());
+				removeNode(subTreeB.project(time), targetVariantDiffPatched, subTree);
+				
 				if (debug)
 					System.out.println(targetNodeInPatch.getChildOrder(Time.AFTER));
 			}
@@ -420,25 +428,103 @@ public class Patching {
 			}
 		}
 	}
+	
+	private static boolean areAllChildrenPlannedToRemove(List<VariationTreeNode<DiffLinesLabel>> children, List<Integer> idsToRemove) {
+		for (VariationTreeNode<DiffLinesLabel> child: children) {
+			if (!idsToRemove.contains(child.getID())) {
+				return false;
+			}
+		}
+		return true;
+	}
 
-	private static void removeNode(DiffNode<DiffLinesLabel> node) throws Exception {
-		Set<DiffNode<DiffLinesLabel>> children = node.getAllChildrenSet();
-		if (!children.isEmpty()) {
-			children.forEach(child -> {
-				try {
-					removeNode(child);
-				} catch (Exception e) {
-					e.printStackTrace();
+	private static void removeNode(VariationTree<DiffLinesLabel> node, VariationDiff<DiffLinesLabel> diffToRemoveFrom, VariationDiff<DiffLinesLabel> subtree) throws Exception {
+		List<Integer> idsToRemove = new ArrayList<>();
+		// Nodes with these labels and pc should be removed
+		List<String> labelAndPC = new ArrayList<>();
+		subtree.forAll(n -> {
+			String identifier = calcIdentifier(n);
+			labelAndPC.add(identifier);
+		});
+		
+		node.forAllPostorder(n -> {
+			String identifier = calcIdentifier(n);
+			// this node should be removed, but it can only be removed if it does not have any other children
+			if (labelAndPC.contains(identifier)) {
+				// n is leaf or all children should be removed
+				if (n.isLeaf() || areAllChildrenPlannedToRemove(n.getChildren(), idsToRemove)) {
+					idsToRemove.add(n.getID());
 				}
-			});
+			}
+		});
+		System.out.println(idsToRemove);
+		for (Integer id: idsToRemove) {
+			DiffNode<DiffLinesLabel> n = diffToRemoveFrom.getNodeWithID(id);
+//			n.diffType = DiffType.REM;
+			if (n.getParent(Time.AFTER) != null) {
+				n.drop(Time.AFTER);
+			}
 		}
-		node.diffType = DiffType.REM;
-		if (node.getParent(Time.AFTER) != null) {
-			node.drop(Time.AFTER);
-		} else {
-			throw new Exception("Reject: parent node is null when dropping");
-		}
+		GameEngine.showAndAwaitAll(Show.diff(subtree), Show.tree(node));
+//		Set<DiffNode<DiffLinesLabel>> children = node.getAllChildrenSet();
+//		if (!children.isEmpty()) {
+//			children.forEach(child -> {
+//				try {
+//					removeNode(child);
+//				} catch (Exception e) {
+//					e.printStackTrace();
+//				}
+//			});
+//		}
+//		node.diffType = DiffType.REM;
+//		if (node.getParent(Time.AFTER) != null) {
+//			node.drop(Time.AFTER);
+//		} else {
+//			throw new Exception("Reject: parent node is null when dropping");
+//		}
 
+	}
+
+	private static String calcIdentifier(VariationTreeNode<DiffLinesLabel> n) {
+		String identifier = "";
+		List<String> l = n.getLabel().getLines();
+		if (l != null) {
+			for (String line : l) {
+				identifier += line;
+			}
+		}
+		List<String> tl = n.getLabel().getTrailingLines();
+		if (tl != null) {
+			for (String line : tl) {
+				identifier += line;
+			}
+		}
+		Node pc = n.getPresenceCondition();
+		if (pc != null) {
+			identifier += pc.toString();
+		}
+		return identifier;
+	}
+	
+	private static String calcIdentifier(DiffNode<DiffLinesLabel> n) {
+		String identifier = "";
+		List<String> l = n.getLabel().getLines();
+		if (l != null) {
+			for (String line : l) {
+				identifier += line;
+			}
+		}
+		List<String> tl = n.getLabel().getTrailingLines();
+		if (tl != null) {
+			for (String line : tl) {
+				identifier += line;
+			}
+		}
+		Node pc = n.getPresenceCondition(Time.BEFORE);
+		if (pc != null) {
+			identifier += pc.toString();
+		}
+		return identifier;
 	}
 
 //	private static VariationDiff<DiffLinesLabel> patch(VariationTree<DiffLinesLabel> sourceVariantVersion1,
