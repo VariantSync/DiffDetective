@@ -274,6 +274,9 @@ public class Patching {
 			return true;
 		}
 		for (DiffNode<DiffLinesLabel> sourceNode : sourceList) {
+			if (indexTarget >= targetList.size()) {
+				return false;
+			}
 			while (!isPresentUnderConfiguration(targetList.get(indexTarget), configSource)) {
 				indexTarget++;
 				if (indexTarget >= targetList.size()) {
