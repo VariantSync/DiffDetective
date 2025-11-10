@@ -5,17 +5,16 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import org.variantsync.diffdetective.AnalysisRunner;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.diff.patching.Patching;
-import org.variantsync.diffdetective.variation.diff.transform.CutNonEditedSubtrees;
 import org.variantsync.diffdetective.variation.tree.VariationTree;
+import org.variantsync.diffdetective.variation.tree.view.TreeView;
+import org.variantsync.diffdetective.variation.tree.view.relevance.Unchanged;
 import org.variantsync.functjonal.Pair;
 import org.variantsync.functjonal.Result;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,11 +23,7 @@ import org.tinylog.Logger;
 import org.variantsync.diffdetective.analysis.*;
 import org.variantsync.diffdetective.datasets.PatchDiffParseOptions;
 import org.variantsync.diffdetective.datasets.Repository;
-import org.variantsync.diffdetective.diff.git.PatchDiff;
-import org.variantsync.diffdetective.diff.result.DiffParseException;
 import org.variantsync.diffdetective.experiments.thesis_pm.Generator.Error;
-import org.variantsync.diffdetective.show.Show;
-import org.variantsync.diffdetective.show.engine.GameEngine;
 import org.variantsync.diffdetective.variation.diff.Time;
 import org.variantsync.diffdetective.variation.diff.VariationDiff;
 import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParseOptions;
@@ -90,7 +85,7 @@ public class PatchingExperiment implements Analysis.Hooks {
 
 	private int commits = 0;
 	private static int incorrectPatchesPT = 0;
-	private static Map<Integer, Pair<VariationDiff<DiffLinesLabel>, VariationTree<DiffLinesLabel>>> failedPatches = new HashMap<>();
+	private static Map<Integer, Pair<PatchScenario<DiffLinesLabel>, VariationTree<DiffLinesLabel>>> failedPatches = new HashMap<>();
 
 	private static class PTErrorPatchesCounter extends SimpleMetadata<Integer, PTErrorPatchesCounter> {
 		public PTErrorPatchesCounter() {
@@ -289,7 +284,8 @@ public class PatchingExperiment implements Analysis.Hooks {
 				analysis.get(PT_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++;
 			} else {
 				PatchingExperiment.incorrectPatchesPT++;
-				PatchingExperiment.failedPatches.put(PatchingExperiment.incorrectPatchesPT, new Pair<VariationDiff<DiffLinesLabel>, VariationTree<DiffLinesLabel>>(scenario.sourcePatch, scenario.targetVariantBefore));
+				PatchingExperiment.failedPatches.put(PatchingExperiment.incorrectPatchesPT,
+						new Pair<PatchScenario<DiffLinesLabel>, VariationTree<DiffLinesLabel>>(scenario, tree));
 				analysis.get(PT_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++;
 			}
 		}, error -> analysis.get(PT_REJECTED_PATCHES_COUNTER_RESULT_KEY).value++);
@@ -345,29 +341,6 @@ public class PatchingExperiment implements Analysis.Hooks {
 		} catch (IOException e) {
 			analysis.get(MPATCHVIEW_ERROR_PATCHES_COUNTER_RESULT_KEY).value++;
 		}
-
-//		VariationTree<DiffLinesLabel> before = diff.project(Time.BEFORE).deepCopy();
-//		VariationTree<DiffLinesLabel> after = diff.project(Time.AFTER).deepCopy();
-//		try {
-//			VariationDiff<DiffLinesLabel> patchedVariant = Patching.patch(diff, before, false, true);
-//
-//			if (!Patching.comparePatchedVariantWithExpectedResult(patchedVariant.project(Time.AFTER), after)) {
-//				analysis.get(PT_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++;
-//				VariationDiff<DiffLinesLabel> diffCopy = diff.deepCopy();
-//				VariationDiff<DiffLinesLabel> patchedCopy = patchedVariant.deepCopy();
-//				CutNonEditedSubtrees.genericTransform(diffCopy);
-//				CutNonEditedSubtrees.genericTransform(patchedCopy);
-//				GameEngine.showAndAwaitAll(Show.diff(diffCopy), Show.diff(patchedCopy));
-//
-//			} else {
-//				analysis.get(PT_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++;
-//			}
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			PatchingExperiment.writeToFile(lastPatch, "file6.diff");
-//			throw new Exception("break");
-////			analysis.get(REJECTED_PATCHES_COUNTER_RESULT_KEY).value++;
-//		}
 		return true;
 	}
 
@@ -385,6 +358,27 @@ public class PatchingExperiment implements Analysis.Hooks {
 
 	@Override
 	public void endBatch(Analysis analysis) throws Exception {
+		for (Integer key : PatchingExperiment.failedPatches.keySet()) {
+			Pair<PatchScenario<DiffLinesLabel>, VariationTree<DiffLinesLabel>> pair = PatchingExperiment.failedPatches.get(key);
+			PatchScenario<DiffLinesLabel> scenario = pair.first();
+			VariationDiff<DiffLinesLabel> diff = scenario.sourcePatch;
+			VariationTree<DiffLinesLabel> tree = scenario.targetVariantBefore;
+			VariationTree<DiffLinesLabel> patchedTree = pair.second();
+			PatchingExperiment.writeToFile(diff.project(Time.BEFORE).unparse(), "failed" + key + "A1");
+			PatchingExperiment.writeToFile(diff.project(Time.AFTER).unparse(), "failed" + key + "A2");
+			PatchingExperiment.writeToFile(diff.project(Time.AFTER).unparse(), "failed" + key + "A2_red");
+			PatchingExperiment.writeToFile(tree.unparse(), "failed" + key + "B1");
+			PatchingExperiment.writeToFile(scenario.targetVariantBeforeRedToUnchanged.unparse(), "failed" + key + "B1_unch");
+			PatchingExperiment.writeToFile(patchedTree.unparse(), "failed" + key + "B2");
+			VariationTree<DiffLinesLabel> red = TreeView.tree(patchedTree, scenario.sourceVariantConfig); 
+			VariationTree<DiffLinesLabel> unch = TreeView.tree(patchedTree, scenario.unchangedAfter);
+			PatchingExperiment.writeToFile(red.unparse(), "failed" + key + "B2_red");
+			PatchingExperiment.writeToFile(unch.unparse(), "failed" + key + "B2_unch");
+			PatchingExperiment.writeToFile(scenario.sourceVariantConfig.toString(), "failed" + key + "ConfigA");
+			PatchingExperiment.writeToFile(scenario.targetVariantConfig.toString(), "failed" + key + "ConfigB");
+			PatchingExperiment.writeToFile(CODE_VIEW, CODE);
+		}
+		PatchingExperiment.failedPatches.clear();
 		Logger.info("Batch done: {} commits analyzed", commits);
 	}
 
@@ -404,68 +398,22 @@ public class PatchingExperiment implements Analysis.Hooks {
 				defaultOptions.getFilterForRepo(), true, false);
 		try {
 			AnalysisRunner.run(analysisOptions, (repository, path) -> Analysis
-					.forEachCommit(() -> PatchingExperiment.Create(repository, path, experiment), 1000, 4));
+					.forEachCommit(() -> PatchingExperiment.Create(repository, path, experiment), 20, 4));
 		} catch (Exception e) {
-//			PatchingExperiment.writeToFile(experiment.getLastPatch(), "file7.diff");
-//			e.printStackTrace();
-		}
-		for (Integer key : PatchingExperiment.failedPatches.keySet()) {
-			Pair<VariationDiff<DiffLinesLabel>, VariationTree<DiffLinesLabel>> entry = PatchingExperiment.failedPatches.get(key);
-			VariationDiff<DiffLinesLabel> diff = entry.first();
-			VariationTree<DiffLinesLabel> tree = entry.second();
-			PatchingExperiment.writeToFile(diff.project(Time.BEFORE).unparse(), "failed" + key + "A1");
-			PatchingExperiment.writeToFile(diff.project(Time.AFTER).unparse(), "failed" + key + "A2");
-			PatchingExperiment.writeToFile(tree.unparse(), "failed" + key + "B");
-		}
-		try {
-//			VariationDiff diff = Patching.patch(Patching.parseVariationDiffFromFile("test_exampleA.diff"),
-//					Patching.parseVariationTreeFromFile("test_exampleB.cpp"), true, true);
-//			System.out.println(diff.project(Time.AFTER).unparse());
-//			Patching.testSomething(Patching.parseVariationDiffFromFile("equivEnrichedVariants.diff"),
-//					Patching.parseVariationTreeFromFile("equivEnrichedVariants.cpp"),
-//					Patching.parseVariationTreeFromFile("equivEnrichedVariantsBefore.cpp"));
-//			Patching.testSomething(Patching.parseVariationDiffFromFile("example1.diff"), Patching.parseVariationTreeFromFile("example1_B.cpp"));
-//			Patching.patchVariationTrees(Patching.parseVariationDiffFromFile("file5.diff"), Patching.parseVariationDiffFromFile("file5.diff").project(Time.BEFORE), true, true);
-//			Patching.patch(Patching.parseVariationDiffFromFiles("variantAversion1.cpp", "variantAversion2.cpp"), Patching.parseVariationTreeFromFile("variantBversion1.cpp"), true, true);
-//			Patching.patchVariationTrees(Patching.parseVariationDiffFromFiles("exampleA1Rem.cpp", "exampleA2Rem.cpp"), Patching.parseVariationTreeFromFile("exampleBRem.cpp"), true, true);
-//			VariationDiff diff = Patching.patchVariationTrees(Patching.parseVariationDiffFromFiles("exampleA1RemAdd.cpp", "exampleA2RemAdd.cpp"),
-//					Patching.parseVariationTreeFromFile("exampleBRemAdd.cpp"), true, true);
-//			Patching.patchVariationTrees(Patching.parseVariationDiffFromFile("exampleCompareAncestors.diff"), Patching.parseVariationTreeFromFile("exampleCompareAncestorsB.cpp"), true, false);
-//			VariationTree<DiffLinesLabel> patchedVariant = patchVariationTrees(
-//					parseVariationDiffFromFiles("exampleA1RemAdd.cpp", "exampleA2RemAdd.cpp"),
-//					parseVariationTreeFromFile("exampleBRemAdd.cpp"));
-//			VariationTree<DiffLinesLabel> expectedResult = parseVariationTreeFromFile("exampleBRemAddExpected.cpp");
-//			System.out.println(comparePatchedVariantWithExpectedResult(patchedVariant, expectedResult));
-//			GameEngine.showAndAwaitAll(Show.diff(Patching.parseVariationDiffFromFile("presentationExample.diff")));
-//			
-//			VariationDiff<DiffLinesLabel> patchedVariant = Patching.patchVariationTrees(
-//					Patching.parseVariationDiffFromFiles("exampleA1NodesWith2Parents.cpp",
-//							"exampleA2NodesWith2Parents.cpp"),
-//					Patching.parseVariationTreeFromFile("exampleA1NodesWith2Parents.cpp"), true, true);
-//			VariationTree<DiffLinesLabel> expectedResult = Patching
-//					.parseVariationTreeFromFile("exampleA2NodesWith2Parents.cpp");
-//			GameEngine.showAndAwaitAll(Show.tree(patchedVariant.project(Time.AFTER)), Show.tree(expectedResult));
-
-//			System.out.println(Patching.comparePatchedVariantWithExpectedResult(patchedVariant, expectedResult));
-//			VariationDiff<DiffLinesLabel> patchedVariant = Patching.patchVariationTrees(
-//					Patching.parseVariationDiffFromFile("example1.diff"),
-//					Patching.parseVariationTreeFromFile("example2_B.cpp"), true, true);
-//			VariationDiff<DiffLinesLabel> diff = Patching.parseVariationDiffFromFile("motivating_exA_view.diff");
-//			VariationTree<DiffLinesLabel> tree = Patching.parseVariationTreeFromFile("motivating_exB.cpp");
-//			GameEngine.showAndAwaitAll( Show.tree(diff.project(Time.BEFORE)));
-//			VariationTree<DiffLinesLabel> expectedResult = parseVariationTreeFromFile("exampleA2RemAdd.cpp");
-//			System.out.println(comparePatchedVariantWithExpectedResult(patchedVariant, expectedResult));
-
-//			patchVariationTrees(parseVariationDiffFromFiles("exampleA1AddAlignmentP.cpp", "exampleA2AddAlignmentP.cpp"),
-//					parseVariationTreeFromFile("exampleBAddAlignmentP.cpp"));
-//			patchVariationTrees(parseVariationDiffFromFiles("exampleA1RemAlignmentP.cpp", "exampleA2RemAlignmentP.cpp"),
-//					parseVariationTreeFromFile("exampleBRemAlignmentP.cpp"));
-//			patchVariationTrees(parseVariationDiffFromFiles("exampleA1RemAddAlignmentP.cpp", "exampleA2RemAddAlignmentP.cpp"),
-//					parseVariationTreeFromFile("exampleBRemAddAlignmentP.cpp"));
-		} catch (Exception e) {
-			System.out.println("Rejected");
 			e.printStackTrace();
 		}
+//		try {
+//			Configure configSource = new Configure(Map.of("ENABLE_SHA3SUM", false));
+//			Configure configTarget = new Configure(Map.of("ENABLE_SHA3SUM", false));
+//			VariationDiff<DiffLinesLabel> sourcePatch = Patching.parseVariationDiffFromFile("failed1A.diff");
+//			VariationDiff<DiffLinesLabel> patched = Patching.patch(sourcePatch, Patching.parseVariationTreeFromFile("failed1B"), configSource, configTarget, false, true);
+//			Unchanged unchangedBefore = new Unchanged(sourcePatch, Time.BEFORE);
+//			Unchanged unchangedAfter = new Unchanged(sourcePatch, Time.AFTER);
+//			System.out.println(Patching.arePatchedVariantsEquivalent(patched.project(Time.AFTER), sourcePatch.project(Time.AFTER), TreeView.tree(Patching.parseVariationTreeFromFile("failed1B"), unchangedBefore), configSource, unchangedAfter));
+//		} catch (Exception e) {
+//			System.out.println("Rejected");
+//			e.printStackTrace();
+//		}
 	}
 
 }
