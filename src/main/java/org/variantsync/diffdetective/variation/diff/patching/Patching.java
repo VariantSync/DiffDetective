@@ -18,6 +18,7 @@ import org.prop4j.Literal;
 import org.prop4j.Node;
 import org.variantsync.diffdetective.analysis.logic.SAT;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
+import org.variantsync.diffdetective.experiments.thesis_pm.Generator;
 import org.variantsync.diffdetective.show.Show;
 import org.variantsync.diffdetective.show.engine.GameEngine;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
@@ -27,6 +28,7 @@ import org.variantsync.diffdetective.variation.diff.DiffNode;
 import org.variantsync.diffdetective.variation.diff.DiffType;
 import org.variantsync.diffdetective.variation.diff.Time;
 import org.variantsync.diffdetective.variation.diff.VariationDiff;
+import org.variantsync.diffdetective.variation.diff.construction.JGitDiff;
 import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParseOptions;
 import org.variantsync.diffdetective.variation.diff.source.VariationDiffSource;
 import org.variantsync.diffdetective.variation.diff.transform.CutNonEditedSubtrees;
@@ -236,7 +238,6 @@ public class Patching {
 			}
 //			if (i > index2 && siblingsNode2.get(index2).getDiffType() == DiffType.REM)
 			if (!hasSameLabel(siblingsNode1.get(i).getLabel(), siblingsNode2.get(index2).getLabel())) {
-//				System.out.println(siblingsNode1.get(i).getLabel().toString());
 				return false;
 			}
 			index2++;
@@ -255,10 +256,12 @@ public class Patching {
 		}
 		return compareAncestors(root.getParent(time), targetNodeInPatch, time, debug);
 	}
-	
-	private static boolean isSameList(List<DiffNode<DiffLinesLabel>> sourceList, List<DiffNode<DiffLinesLabel>> targetList, Configure configSource) {
+
+	private static boolean isSameList(List<DiffNode<DiffLinesLabel>> sourceList,
+			List<DiffNode<DiffLinesLabel>> targetList, Configure configSource) {
 		int indexTarget = 0;
-		// source must be equal or smaller than target list, because it is the view on the source patch (cross variant features)
+		// source must be equal or smaller than target list, because it is the view on
+		// the source patch (cross variant features)
 		if (sourceList.size() > targetList.size()) {
 			return false;
 		}
@@ -267,7 +270,7 @@ public class Patching {
 				return true;
 			}
 			// check that all nodes in target list are not present in source
-			for (DiffNode<DiffLinesLabel> targetNode: targetList) {
+			for (DiffNode<DiffLinesLabel> targetNode : targetList) {
 				if (isPresentUnderConfiguration(targetNode, configSource)) {
 					return false;
 				}
@@ -284,12 +287,13 @@ public class Patching {
 					return false;
 				}
 			}
-			if (!hasSameLabel(sourceNode.getLabel(), targetList.get(indexTarget).getLabel())) {
+			DiffNode<DiffLinesLabel> targetNode = targetList.get(indexTarget);
+			if (!hasSameLabel(sourceNode.getLabel(), targetNode.getLabel())) {
 				return false;
 			}
 			indexTarget++;
 		}
-		
+
 		return indexTarget == targetList.size();
 	}
 
@@ -298,7 +302,8 @@ public class Patching {
 	}
 
 	private static DiffNode<DiffLinesLabel> checkNeighbors2(DiffNode<DiffLinesLabel> root,
-			DiffNode<DiffLinesLabel> targetNodeInPatch, Configure configSource, Time time, boolean debug) throws Exception {
+			DiffNode<DiffLinesLabel> targetNodeInPatch, Configure configSource, Time time, boolean debug)
+			throws Exception {
 		List<DiffNode<DiffLinesLabel>> orderedChildrenTarget = targetNodeInPatch.getChildOrder(time);
 		List<DiffNode<DiffLinesLabel>> orderedChildrenSource = root.getParent(time).getChildOrder(time);
 		int indexSource = orderedChildrenSource.indexOf(root);
@@ -308,12 +313,16 @@ public class Patching {
 				continue;
 			}
 			int indexTarget = orderedChildrenTarget.indexOf(node);
+			// there are nodes in the source patch which a
 			List<DiffNode<DiffLinesLabel>> neighborsBeforeSource = orderedChildrenSource.subList(0, indexSource);
-			List<DiffNode<DiffLinesLabel>> neighborsAfterSource = orderedChildrenSource.subList(indexSource + 1, orderedChildrenSource.size());
+			List<DiffNode<DiffLinesLabel>> neighborsAfterSource = orderedChildrenSource.subList(indexSource + 1,
+					orderedChildrenSource.size());
 			List<DiffNode<DiffLinesLabel>> neighborsBeforeTarget = orderedChildrenTarget.subList(0, indexTarget);
-			List<DiffNode<DiffLinesLabel>> neighborsAfterTarget = orderedChildrenTarget.subList(indexTarget + 1, orderedChildrenTarget.size());
-			if (isSameList(neighborsBeforeSource, neighborsBeforeTarget, configSource) && isSameList(neighborsAfterSource, neighborsAfterTarget, configSource)) {
-				candidates.add(node);	
+			List<DiffNode<DiffLinesLabel>> neighborsAfterTarget = orderedChildrenTarget.subList(indexTarget + 1,
+					orderedChildrenTarget.size());
+			if (isSameList(neighborsBeforeSource, neighborsBeforeTarget, configSource)
+					&& isSameList(neighborsAfterSource, neighborsAfterTarget, configSource)) {
+				candidates.add(node);
 			}
 		}
 		if (candidates.size() != 1) {
@@ -359,12 +368,12 @@ public class Patching {
 		Time time = (type == DiffType.ADD) ? Time.AFTER : Time.BEFORE;
 
 		for (DiffNode<DiffLinesLabel> root : subtreeRoots) {
-//			if (debug) {
-//				DiffNode<DiffLinesLabel> newRoot = DiffNode.createRoot(new DiffLinesLabel());
-//				newRoot.addChild(root.deepCopy(), time);
-//				VariationDiff<DiffLinesLabel> subTree = new VariationDiff<DiffLinesLabel>(newRoot, source);
-//				GameEngine.showAndAwaitAll(Show.diff(subTree));
-//			}
+			if (debug) {
+				DiffNode<DiffLinesLabel> newRoot = DiffNode.createRoot(new DiffLinesLabel());
+				newRoot.addChild(root.deepCopy(), time);
+				VariationDiff<DiffLinesLabel> subTree = new VariationDiff<DiffLinesLabel>(newRoot, source);
+				GameEngine.showAndAwaitAll(Show.diff(subTree));
+			}
 
 			List<DiffNode<DiffLinesLabel>> targetNodes = new ArrayList<DiffNode<DiffLinesLabel>>();
 
@@ -374,8 +383,8 @@ public class Patching {
 						node -> node.getPresenceCondition(Time.AFTER).equals(presenceCondition) && node.isAnnotation());
 			}
 
-			VariationDiff<DiffLinesLabel> targetVariantDiffPatchedView = DiffView.optimized(
-					targetVariantDiffPatched.deepCopy(), configSource);
+			VariationDiff<DiffLinesLabel> targetVariantDiffPatchedView = DiffView
+					.optimized(targetVariantDiffPatched.deepCopy(), configSource);
 			targetNodes = targetNodes.stream().filter(targetNode -> checkNeighborsLabels(root,
 					targetVariantDiffPatchedView.getNodeWithID(targetNode.getID()), time, debug)).toList();
 			targetNodes = targetNodes.stream()
@@ -404,7 +413,8 @@ public class Patching {
 					System.out.println(targetNodeInPatch.getChildOrder(time));
 
 			} else if (type == DiffType.REM) {
-				DiffNode<DiffLinesLabel> nodesToRem = checkNeighbors2(root, targetNodeInPatch, configSource, time, debug);
+				DiffNode<DiffLinesLabel> nodesToRem = checkNeighbors2(root, targetNodeInPatch, configSource, time,
+						debug);
 				if (debug)
 					System.out.println("Nodes to remove: " + nodesToRem);
 
@@ -415,9 +425,10 @@ public class Patching {
 				VariationDiff<DiffLinesLabel> subTree = new VariationDiff<DiffLinesLabel>(newRoot, source);
 				DiffNode<DiffLinesLabel> newRoot2 = DiffNode.createRoot(new DiffLinesLabel());
 				newRoot2.addChild(nodesToRem.deepCopy(), time);
-				VariationDiff<DiffLinesLabel> subTreeB = new VariationDiff<DiffLinesLabel>(newRoot2, targetVariantDiffPatchedView.getSource());
+				VariationDiff<DiffLinesLabel> subTreeB = new VariationDiff<DiffLinesLabel>(newRoot2,
+						targetVariantDiffPatchedView.getSource());
 				removeNode(subTreeB.project(time), targetVariantDiffPatched, subTree);
-				
+
 				if (debug)
 					System.out.println(targetNodeInPatch.getChildOrder(Time.AFTER));
 			}
@@ -428,9 +439,10 @@ public class Patching {
 			}
 		}
 	}
-	
-	private static boolean areAllChildrenPlannedToRemove(List<VariationTreeNode<DiffLinesLabel>> children, List<Integer> idsToRemove) {
-		for (VariationTreeNode<DiffLinesLabel> child: children) {
+
+	private static boolean areAllChildrenPlannedToRemove(List<VariationTreeNode<DiffLinesLabel>> children,
+			List<Integer> idsToRemove) {
+		for (VariationTreeNode<DiffLinesLabel> child : children) {
 			if (!idsToRemove.contains(child.getID())) {
 				return false;
 			}
@@ -438,18 +450,22 @@ public class Patching {
 		return true;
 	}
 
-	private static void removeNode(VariationTree<DiffLinesLabel> node, VariationDiff<DiffLinesLabel> diffToRemoveFrom, VariationDiff<DiffLinesLabel> subtree) throws Exception {
+	private static void removeNode(VariationTree<DiffLinesLabel> node, VariationDiff<DiffLinesLabel> diffToRemoveFrom,
+			VariationDiff<DiffLinesLabel> subtree) throws Exception {
 		List<Integer> idsToRemove = new ArrayList<>();
 		// Nodes with these labels and pc should be removed
 		List<String> labelAndPC = new ArrayList<>();
 		subtree.forAll(n -> {
-			String identifier = calcIdentifier(n);
-			labelAndPC.add(identifier);
+			if (!n.isRoot()) {
+				String identifier = calcIdentifier(n);
+				labelAndPC.add(identifier);
+			}
 		});
-		
+
 		node.forAllPostorder(n -> {
 			String identifier = calcIdentifier(n);
-			// this node should be removed, but it can only be removed if it does not have any other children
+			// this node should be removed, but it can only be removed if it does not have
+			// any other children
 			if (labelAndPC.contains(identifier)) {
 				// n is leaf or all children should be removed
 				if (n.isLeaf() || areAllChildrenPlannedToRemove(n.getChildren(), idsToRemove)) {
@@ -457,32 +473,13 @@ public class Patching {
 				}
 			}
 		});
-		System.out.println(idsToRemove);
-		for (Integer id: idsToRemove) {
+		for (Integer id : idsToRemove) {
 			DiffNode<DiffLinesLabel> n = diffToRemoveFrom.getNodeWithID(id);
 //			n.diffType = DiffType.REM;
 			if (n.getParent(Time.AFTER) != null) {
 				n.drop(Time.AFTER);
 			}
 		}
-		GameEngine.showAndAwaitAll(Show.diff(subtree), Show.tree(node));
-//		Set<DiffNode<DiffLinesLabel>> children = node.getAllChildrenSet();
-//		if (!children.isEmpty()) {
-//			children.forEach(child -> {
-//				try {
-//					removeNode(child);
-//				} catch (Exception e) {
-//					e.printStackTrace();
-//				}
-//			});
-//		}
-//		node.diffType = DiffType.REM;
-//		if (node.getParent(Time.AFTER) != null) {
-//			node.drop(Time.AFTER);
-//		} else {
-//			throw new Exception("Reject: parent node is null when dropping");
-//		}
-
 	}
 
 	private static String calcIdentifier(VariationTreeNode<DiffLinesLabel> n) {
@@ -505,7 +502,7 @@ public class Patching {
 		}
 		return identifier;
 	}
-	
+
 	private static String calcIdentifier(DiffNode<DiffLinesLabel> n) {
 		String identifier = "";
 		List<String> l = n.getLabel().getLines();
@@ -613,7 +610,8 @@ public class Patching {
 	}
 
 	public static VariationDiff<DiffLinesLabel> patch(VariationDiff<DiffLinesLabel> sourcePatch,
-			VariationTree<DiffLinesLabel> targetVariant, Configure configSource, Configure configTarget, boolean debug, boolean patchNewFeatures) throws Exception {
+			VariationTree<DiffLinesLabel> targetVariant, Configure configSource, Configure configTarget, boolean debug,
+			boolean patchNewFeatures) throws Exception {
 
 //		if (!checkForZeroVariantDrift(diff, targetVariant, rho, debug)) {
 //			throw new Exception("Variants evolved independently: No Zero Variant Drift");
@@ -722,27 +720,35 @@ public class Patching {
 		return null;
 	}
 
+	private static boolean compareIgnoreEmptyLines(String s1, String s2) {
+		List<String> lines1 = s1.lines().filter(line -> !line.trim().isEmpty()).collect(Collectors.toList());
+		List<String> lines2 = s2.lines().filter(line -> !line.trim().isEmpty()).collect(Collectors.toList());
+		return lines1.equals(lines2);
+	}
+
 	public static boolean arePatchedVariantsEquivalent(VariationTree<DiffLinesLabel> patchedTargetVariant,
 			VariationTree<DiffLinesLabel> sourceVariantAfterRedToCrossVarFeatures,
 			VariationTree<DiffLinesLabel> targetVariantBeforeRedToUnchanged, Configure configSourceVariant,
 			Unchanged unchangedAfter) {
-		
+
 		VariationTree<DiffLinesLabel> targetVariantAfterRedToCrossVarFeatures = TreeView.tree(patchedTargetVariant,
 				configSourceVariant);
-		
+
 		VariationTree<DiffLinesLabel> patchedTargetVariantRedToUnchanged = TreeView.tree(patchedTargetVariant,
 				unchangedAfter);
-		
-//		GameEngine.showAndAwaitAll(Show.tree(patchedTargetVariant, "patched target variant"), 
+
+//		GameEngine.showAndAwaitAll(Show.tree(patchedTargetVariant, "patched target variant"),
 //				Show.tree(patchedTargetVariantRedToUnchanged, "patched target variant red. to unchanged"),
-//				Show.tree(sourceVariantAfterRedToCrossVarFeatures, "patched source variant red. to cross variant features"),
-//				Show.tree(targetVariantAfterRedToCrossVarFeatures, "patched target variant red. to cross variant features"),
+//				Show.tree(sourceVariantAfterRedToCrossVarFeatures,
+//						"patched source variant red. to cross variant features"),
+//				Show.tree(targetVariantAfterRedToCrossVarFeatures,
+//						"patched target variant red. to cross variant features"),
 //				Show.tree(targetVariantBeforeRedToUnchanged, "target variant before red. to unchanged"));
-		
+
 		if (Patching.isSameAs(sourceVariantAfterRedToCrossVarFeatures.toCompletelyUnchangedVariationDiff(),
 				targetVariantAfterRedToCrossVarFeatures.toCompletelyUnchangedVariationDiff())
-				&& Patching.isSameAs(patchedTargetVariantRedToUnchanged.toCompletelyUnchangedVariationDiff(),
-						targetVariantBeforeRedToUnchanged.toCompletelyUnchangedVariationDiff())) {
+				&& Patching.compareIgnoreEmptyLines(
+						patchedTargetVariantRedToUnchanged.unparse(), targetVariantBeforeRedToUnchanged.unparse())) {
 			return true;
 		}
 		return false;
