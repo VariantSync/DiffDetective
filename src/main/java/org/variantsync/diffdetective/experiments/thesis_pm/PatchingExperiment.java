@@ -79,9 +79,7 @@ public class PatchingExperiment implements Analysis.Hooks {
 			"skipped patches");
 
 	private static final String PATCH = "patch.txt";
-	private static final String PATCH_VIEW = "patch2.txt";
 	private static final String CODE = "code.txt";
-	private static final String CODE_VIEW = "code2.txt";
 
 	private int commits = 0;
 	private static int incorrectPatchesPT = 0;
@@ -302,20 +300,7 @@ public class PatchingExperiment implements Analysis.Hooks {
 		} catch (IOException e) {
 			analysis.get(GNU_ERROR_PATCHES_COUNTER_RESULT_KEY).value++;
 		}
-
-		Result<VariationTree<DiffLinesLabel>, Error> gnuPatchResultView;
-		try {
-			gnuPatchResultView = Generator.runGnuPatch(scenario.targetVariantBefore, PATCH_VIEW, CODE_VIEW);
-			gnuPatchResultView.match(tree -> tree != null && Patching.arePatchedVariantsEquivalent(tree,
-					scenario.sourceVariantAfterRedToCrossVarFeatures, scenario.targetVariantBeforeRedToUnchanged,
-					scenario.sourceVariantConfig, scenario.unchangedAfter)
-							? analysis.get(GNUVIEW_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++
-							: analysis.get(GNUVIEW_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++,
-					error -> analysis.get(GNUVIEW_REJECTED_PATCHES_COUNTER_RESULT_KEY).value++);
-		} catch (IOException e) {
-			analysis.get(GNUVIEW_ERROR_PATCHES_COUNTER_RESULT_KEY).value++;
-		}
-
+		
 		Result<VariationTree<DiffLinesLabel>, Error> mpatchResult;
 		try {
 			mpatchResult = Generator.runMPatch(scenario.targetVariantBefore, PATCH, CODE);
@@ -328,10 +313,25 @@ public class PatchingExperiment implements Analysis.Hooks {
 		} catch (IOException e) {
 			analysis.get(MPATCH_ERROR_PATCHES_COUNTER_RESULT_KEY).value++;
 		}
+		
+		Generator.generateViewVariants(scenario.sourcePatch, scenario.targetVariantBefore, scenario.targetVariantConfig);
+
+		Result<VariationTree<DiffLinesLabel>, Error> gnuPatchResultView;
+		try {
+			gnuPatchResultView = Generator.runGnuPatch(scenario.targetVariantBefore, PATCH, CODE);
+			gnuPatchResultView.match(tree -> tree != null && Patching.arePatchedVariantsEquivalent(tree,
+					scenario.sourceVariantAfterRedToCrossVarFeatures, scenario.targetVariantBeforeRedToUnchanged,
+					scenario.sourceVariantConfig, scenario.unchangedAfter)
+							? analysis.get(GNUVIEW_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++
+							: analysis.get(GNUVIEW_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++,
+					error -> analysis.get(GNUVIEW_REJECTED_PATCHES_COUNTER_RESULT_KEY).value++);
+		} catch (IOException e) {
+			analysis.get(GNUVIEW_ERROR_PATCHES_COUNTER_RESULT_KEY).value++;
+		}
 
 		Result<VariationTree<DiffLinesLabel>, Error> mpatchResultView;
 		try {
-			mpatchResultView = Generator.runMPatch(scenario.targetVariantBefore, PATCH_VIEW, CODE_VIEW);
+			mpatchResultView = Generator.runMPatch(scenario.targetVariantBefore, PATCH, CODE);
 			mpatchResultView.match(tree -> tree != null && Patching.arePatchedVariantsEquivalent(tree,
 					scenario.sourceVariantAfterRedToCrossVarFeatures, scenario.targetVariantBeforeRedToUnchanged,
 					scenario.sourceVariantConfig, scenario.unchangedAfter)
@@ -359,24 +359,24 @@ public class PatchingExperiment implements Analysis.Hooks {
 	@Override
 	public void endBatch(Analysis analysis) throws Exception {
 		for (Integer key : PatchingExperiment.failedPatches.keySet()) {
-			Pair<PatchScenario<DiffLinesLabel>, VariationTree<DiffLinesLabel>> pair = PatchingExperiment.failedPatches.get(key);
-			PatchScenario<DiffLinesLabel> scenario = pair.first();
-			VariationDiff<DiffLinesLabel> diff = scenario.sourcePatch;
-			VariationTree<DiffLinesLabel> tree = scenario.targetVariantBefore;
-			VariationTree<DiffLinesLabel> patchedTree = pair.second();
-			PatchingExperiment.writeToFile(diff.project(Time.BEFORE).unparse(), "failed" + key + "A1");
-			PatchingExperiment.writeToFile(diff.project(Time.AFTER).unparse(), "failed" + key + "A2");
-			PatchingExperiment.writeToFile(diff.project(Time.AFTER).unparse(), "failed" + key + "A2_red");
-			PatchingExperiment.writeToFile(tree.unparse(), "failed" + key + "B1");
-			PatchingExperiment.writeToFile(scenario.targetVariantBeforeRedToUnchanged.unparse(), "failed" + key + "B1_unch");
-			PatchingExperiment.writeToFile(patchedTree.unparse(), "failed" + key + "B2");
-			VariationTree<DiffLinesLabel> red = TreeView.tree(patchedTree, scenario.sourceVariantConfig); 
-			VariationTree<DiffLinesLabel> unch = TreeView.tree(patchedTree, scenario.unchangedAfter);
-			PatchingExperiment.writeToFile(red.unparse(), "failed" + key + "B2_red");
-			PatchingExperiment.writeToFile(unch.unparse(), "failed" + key + "B2_unch");
-			PatchingExperiment.writeToFile(scenario.sourceVariantConfig.toString(), "failed" + key + "ConfigA");
-			PatchingExperiment.writeToFile(scenario.targetVariantConfig.toString(), "failed" + key + "ConfigB");
-			PatchingExperiment.writeToFile(CODE_VIEW, CODE);
+//			Pair<PatchScenario<DiffLinesLabel>, VariationTree<DiffLinesLabel>> pair = PatchingExperiment.failedPatches.get(key);
+//			PatchScenario<DiffLinesLabel> scenario = pair.first();
+//			VariationDiff<DiffLinesLabel> diff = scenario.sourcePatch;
+//			VariationTree<DiffLinesLabel> tree = scenario.targetVariantBefore;
+//			VariationTree<DiffLinesLabel> patchedTree = pair.second();
+//			PatchingExperiment.writeToFile(diff.project(Time.BEFORE).unparse(), "failed" + key + "A1");
+//			PatchingExperiment.writeToFile(diff.project(Time.AFTER).unparse(), "failed" + key + "A2");
+//			PatchingExperiment.writeToFile(scenario.sourceVariantAfterRedToCrossVarFeatures.unparse(), "failed" + key + "A2_red");
+//			PatchingExperiment.writeToFile(tree.unparse(), "failed" + key + "B1");
+//			PatchingExperiment.writeToFile(scenario.targetVariantBeforeRedToUnchanged.unparse(), "failed" + key + "B1_unch");
+//			PatchingExperiment.writeToFile(patchedTree.unparse(), "failed" + key + "B2");
+//			VariationTree<DiffLinesLabel> red = TreeView.tree(patchedTree, scenario.sourceVariantConfig); 
+//			VariationTree<DiffLinesLabel> unch = TreeView.tree(patchedTree, scenario.unchangedAfter);
+//			PatchingExperiment.writeToFile(red.unparse(), "failed" + key + "B2_red");
+//			PatchingExperiment.writeToFile(unch.unparse(), "failed" + key + "B2_unch");
+//			PatchingExperiment.writeToFile(scenario.sourceVariantConfig.toString(), "failed" + key + "ConfigA");
+//			PatchingExperiment.writeToFile(scenario.targetVariantConfig.toString(), "failed" + key + "ConfigB");
+//			PatchingExperiment.writeToFile(CODE_VIEW, CODE);
 		}
 		PatchingExperiment.failedPatches.clear();
 		Logger.info("Batch done: {} commits analyzed", commits);
@@ -398,7 +398,7 @@ public class PatchingExperiment implements Analysis.Hooks {
 				defaultOptions.getFilterForRepo(), true, false);
 		try {
 			AnalysisRunner.run(analysisOptions, (repository, path) -> Analysis
-					.forEachCommit(() -> PatchingExperiment.Create(repository, path, experiment), 20, 4));
+					.forEachCommit(() -> PatchingExperiment.Create(repository, path, experiment), 50, 4));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
