@@ -52,7 +52,7 @@ public class Main {
 //                Show.tree(pruned.project(Time.BEFORE), "pruned before"),
 //                Show.tree(pruned.project(Time.AFTER), "pruned after")
 //            );
-    	
+//    	
         final Path testDir = Path.of("data", "examples", "test");
         List<Path> inputDiffs = Files.list(testDir).toList();
         List<VariationDiff<DiffLinesLabel>> diffs = new ArrayList<>(inputDiffs.size());
@@ -66,10 +66,25 @@ public class Main {
               diffs.add(VariationDiff.fromFile(p, VariationDiffParseOptions.Default));
             }
         }
-
+        
         for (VariationDiff<DiffLinesLabel> d : diffs) {
+        	try {
+				Generator.generatePatchScenario(d);
+				Generator.generatePatchScenario(d);
+	    		Generator.generatePatchScenario(d);
+	    		Generator.generatePatchScenario(d);
+	    		Generator.generatePatchScenario(d);
+				Generator.generatePatchScenario(d);
+	    		Generator.generatePatchScenario(d);
+	    		Generator.generatePatchScenario(d);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+    		
         	for (int i = 0; i < 10; i++) {
 	            try {
+					
 					PatchScenario<DiffLinesLabel> scenario = Generator.generatePatchScenario(d);
 					Generator.runPatchers(scenario);
 				} catch (Exception e) {
