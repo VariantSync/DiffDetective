@@ -1,7 +1,5 @@
 package org.variantsync.diffdetective.experiments.thesis_pm;
 
-import org.variantsync.diffdetective.show.Show;
-import org.variantsync.diffdetective.show.engine.GameEngine;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.Label;
 import org.variantsync.diffdetective.variation.diff.Time;
@@ -34,9 +32,8 @@ public class PatchScenario<L extends Label> {
 		this.targetVariantConfig = targetVariantConfig;
 		this.sourceVariantAfterRedToCrossVarFeatures = (VariationTree<DiffLinesLabel>) TreeView.tree(sourcePatch.project(Time.AFTER), this.targetVariantConfig);
 		VariationDiff<DiffLinesLabel> sourcePatchConfiguredToCrossVarFeatures = (VariationDiff<DiffLinesLabel>) DiffView.optimized(sourcePatch, targetVariantConfig);
-		this.unchangedAfter = new Unchanged((VariationDiff<DiffLinesLabel>) sourcePatchConfiguredToCrossVarFeatures, Time.AFTER);		
-		Unchanged unchangedBefore = new Unchanged((VariationDiff<DiffLinesLabel>) sourcePatchConfiguredToCrossVarFeatures, Time.BEFORE);
+		this.unchangedAfter = new Unchanged((VariationDiff<DiffLinesLabel>) sourcePatchConfiguredToCrossVarFeatures, Time.AFTER, this.sourceVariantConfig);		
+		Unchanged unchangedBefore = new Unchanged((VariationDiff<DiffLinesLabel>) sourcePatchConfiguredToCrossVarFeatures, Time.BEFORE, this.sourceVariantConfig);
 		this.targetVariantBeforeRedToUnchanged = (VariationTree<DiffLinesLabel>) TreeView.tree(this.targetVariantBefore, unchangedBefore);
-		GameEngine.showAndAwaitAll(Show.diff(sourcePatch), Show.diff(sourcePatchConfiguredToCrossVarFeatures), Show.tree(targetVariantBeforeRedToUnchanged));
 	}
 }
