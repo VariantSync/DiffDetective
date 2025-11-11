@@ -7,10 +7,13 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.prop4j.Node;
+import org.variantsync.diffdetective.show.Show;
+import org.variantsync.diffdetective.show.engine.GameEngine;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
 import org.variantsync.diffdetective.variation.diff.Time;
 import org.variantsync.diffdetective.variation.diff.VariationDiff;
+import org.variantsync.diffdetective.variation.diff.patching.Patching;
 import org.variantsync.diffdetective.variation.tree.VariationNode;
 
 public class Unchanged implements Relevance {
@@ -23,15 +26,17 @@ public class Unchanged implements Relevance {
 		this.diff = diff;
 		this.time = time;
 		this.configSource = configSource;
-		diff.forAll(diffNode -> {
-			if (time == Time.AFTER ? !diffNode.isRem() : !diffNode.isAdd()) {
-
+		VariationDiff<DiffLinesLabel> diffCopy = diff.deepCopy();
+		Patching.resolve((DiffNode<DiffLinesLabel>) diff.getRoot(),
+				(VariationDiff<DiffLinesLabel>) diffCopy);
+		diffCopy.forAll(diffNode -> {
+//			if (time == Time.AFTER ? !diffNode.isRem() : !diffNode.isAdd()) {
 				String key = getIdentifierForNode(diffNode);
 				if (!lookUpMap.containsKey(key)) {
 					lookUpMap.put(key, new ArrayList<DiffNode<DiffLinesLabel>>());
 				}
 				lookUpMap.get(key).add(diffNode);
-			}
+//			}
 		});
 	}
 
@@ -47,7 +52,7 @@ public class Unchanged implements Relevance {
 		for (String s : diffNode.getLabel().getTrailingLines()) {
 			key += s;
 		}
-		Node pc = diffNode.getPresenceCondition(this.time);
+		Node pc = diffNode.isRem() ? diffNode.getPresenceCondition(Time.BEFORE) : diffNode.getPresenceCondition(Time.AFTER);
 		if (pc != null) {
 			key += pc;
 		}
@@ -142,7 +147,8 @@ public class Unchanged implements Relevance {
 		if (!configSource.test(t)) {
 			return true;
 		}
-		List<DiffNode<DiffLinesLabel>> tInDiffMatches = lookUpMap.get(getIdentifierForNode(t));
+		String identifier = getIdentifierForNode(t);
+		List<DiffNode<DiffLinesLabel>> tInDiffMatches = lookUpMap.get(identifier);
 		if (tInDiffMatches == null) {
 			return true;
 		}
