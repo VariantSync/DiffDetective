@@ -19,13 +19,11 @@ import org.variantsync.diffdetective.variation.tree.VariationNode;
 public class Unchanged implements Relevance {
 	private final VariationDiff<DiffLinesLabel> diff;
 	private final Time time;
-	private final Configure configSource;
 	private Map<String, List<DiffNode<DiffLinesLabel>>> lookUpMap = new HashMap<>();
 
-	public Unchanged(VariationDiff<DiffLinesLabel> diff, Time time, Configure configSource) {
+	public Unchanged(VariationDiff<DiffLinesLabel> diff, Time time) {
 		this.diff = diff;
 		this.time = time;
-		this.configSource = configSource;
 		VariationDiff<DiffLinesLabel> diffCopy = diff.deepCopy();
 		Patching.resolve((DiffNode<DiffLinesLabel>) diff.getRoot(),
 				(VariationDiff<DiffLinesLabel>) diffCopy);
@@ -58,26 +56,26 @@ public class Unchanged implements Relevance {
 		}
 
 		// add label of both siblings to identifier if existing
-		DiffNode<DiffLinesLabel> parent = diffNode.getParent(time);
-		if (parent != null) {
-
-			List<DiffNode<DiffLinesLabel>> siblings = parent.getChildOrder(time);
-			int indexDiffNode = siblings.indexOf(diffNode);
-
-			if (indexDiffNode - 1 >= 0) {
-				List<String> beforeSibling = siblings.get(indexDiffNode - 1).getLabel().getLines();
-				for (String s : beforeSibling) {
-					key += s;
-				}
-			}
-			if (indexDiffNode + 1 < siblings.size()) {
-				List<String> afterSibling = siblings.get(indexDiffNode + 1).getLabel().getLines();
-				for (String s : afterSibling) {
-					key += s;
-				}
-			}
-
-		}
+//		DiffNode<DiffLinesLabel> parent = diffNode.getParent(time);
+//		if (parent != null) {
+//
+//			List<DiffNode<DiffLinesLabel>> siblings = parent.getChildOrder(time);
+//			int indexDiffNode = siblings.indexOf(diffNode);
+//
+//			if (indexDiffNode - 1 >= 0) {
+//				List<String> beforeSibling = siblings.get(indexDiffNode - 1).getLabel().getLines();
+//				for (String s : beforeSibling) {
+//					key += s;
+//				}
+//			}
+//			if (indexDiffNode + 1 < siblings.size()) {
+//				List<String> afterSibling = siblings.get(indexDiffNode + 1).getLabel().getLines();
+//				for (String s : afterSibling) {
+//					key += s;
+//				}
+//			}
+//
+//		}
 		return key;
 	}
 
@@ -99,54 +97,51 @@ public class Unchanged implements Relevance {
 		}
 
 		// add label of both siblings to identifier if existing
-		VariationNode<?, ?> parent = node.getParent();
-		if (parent != null) {
-			List<?> siblings = node.getParent().getChildren();
-			int indexNode = siblings.indexOf(node);
-
-			int indexBefore = indexNode - 1;
-			VariationNode<?, ?> beforeSibling = null;
-			if (indexBefore >= 0) {
-				beforeSibling = (VariationNode<?, ?>) siblings.get(indexBefore);
-				while (!configSource.test(beforeSibling)) {
-					indexBefore--;
-					if (indexBefore < 0) {
-						break;
-					}
-					beforeSibling = (VariationNode<?, ?>) siblings.get(indexBefore);
-				}
-				if (beforeSibling != null) {
-					for (String s : beforeSibling.getLabel().getLines()) {
-						key += s;
-					}
-				}
-			}
-			int indexAfter = indexNode + 1;
-			VariationNode<?, ?> afterSibling = null;
-			if (indexAfter < siblings.size()) {
-				afterSibling = (VariationNode<?, ?>) siblings.get(indexAfter);
-				while (!configSource.test(afterSibling)) {
-					indexAfter++;
-					if (indexAfter >= siblings.size()) {
-						break;
-					}
-					afterSibling = (VariationNode<?, ?>) siblings.get(indexAfter);
-				}
-				if (afterSibling != null) {
-					for (String s : afterSibling.getLabel().getLines()) {
-						key += s;
-					}
-				}
-			}
-		}
+//		VariationNode<?, ?> parent = node.getParent();
+//		if (parent != null) {
+//			List<?> siblings = node.getParent().getChildren();
+//			int indexNode = siblings.indexOf(node);
+//
+//			int indexBefore = indexNode - 1;
+//			VariationNode<?, ?> beforeSibling = null;
+//			if (indexBefore >= 0) {
+//				beforeSibling = (VariationNode<?, ?>) siblings.get(indexBefore);
+//				while (!configSource.test(beforeSibling)) {
+//					indexBefore--;
+//					if (indexBefore < 0) {
+//						break;
+//					}
+//					beforeSibling = (VariationNode<?, ?>) siblings.get(indexBefore);
+//				}
+//				if (beforeSibling != null) {
+//					for (String s : beforeSibling.getLabel().getLines()) {
+//						key += s;
+//					}
+//				}
+//			}
+//			int indexAfter = indexNode + 1;
+//			VariationNode<?, ?> afterSibling = null;
+//			if (indexAfter < siblings.size()) {
+//				afterSibling = (VariationNode<?, ?>) siblings.get(indexAfter);
+//				while (!configSource.test(afterSibling)) {
+//					indexAfter++;
+//					if (indexAfter >= siblings.size()) {
+//						break;
+//					}
+//					afterSibling = (VariationNode<?, ?>) siblings.get(indexAfter);
+//				}
+//				if (afterSibling != null) {
+//					for (String s : afterSibling.getLabel().getLines()) {
+//						key += s;
+//					}
+//				}
+//			}
+//		}
 		return key;
 	}
 
 	@Override
 	public boolean test(VariationNode<?, ?> t) {
-		if (!configSource.test(t)) {
-			return true;
-		}
 		String identifier = getIdentifierForNode(t);
 		List<DiffNode<DiffLinesLabel>> tInDiffMatches = lookUpMap.get(identifier);
 		if (tInDiffMatches == null) {

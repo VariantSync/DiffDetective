@@ -8,6 +8,7 @@ import org.variantsync.diffdetective.variation.diff.view.DiffView;
 import org.variantsync.diffdetective.variation.tree.VariationTree;
 import org.variantsync.diffdetective.variation.tree.view.TreeView;
 import org.variantsync.diffdetective.variation.tree.view.relevance.Configure;
+import org.variantsync.diffdetective.variation.tree.view.relevance.ConfigureWithFullConfig;
 import org.variantsync.diffdetective.variation.tree.view.relevance.Unchanged;
 
 public class PatchScenario<L extends Label> {
@@ -15,15 +16,15 @@ public class PatchScenario<L extends Label> {
 	public VariationTree<L> targetVariantBefore;
 	public VariationDiff<L> patchGroundTruth;
 	public VariationTree<L> patchedVariantGroundTruth;
-	public Configure sourceVariantConfig;
-	public Configure targetVariantConfig;
+	public ConfigureWithFullConfig sourceVariantConfig;
+	public ConfigureWithFullConfig targetVariantConfig;
 	public VariationTree<DiffLinesLabel> sourceVariantAfterRedToCrossVarFeatures;
 	public Unchanged unchangedAfter;
 	public VariationTree<DiffLinesLabel> targetVariantBeforeRedToUnchanged;
 	
 	public PatchScenario(VariationDiff<L> sourcePatch,
 			VariationTree<L> targetVariantBefore, VariationDiff<L> patchGroundTruth,
-			VariationTree<L> patchedVariantGroundTruth, Configure sourceVariantConfig, Configure targetVariantConfig) {
+			VariationTree<L> patchedVariantGroundTruth, ConfigureWithFullConfig sourceVariantConfig, ConfigureWithFullConfig targetVariantConfig) {
 		this.sourcePatch = sourcePatch;
 		this.targetVariantBefore = targetVariantBefore;
 		this.patchGroundTruth = patchGroundTruth;
@@ -32,8 +33,8 @@ public class PatchScenario<L extends Label> {
 		this.targetVariantConfig = targetVariantConfig;
 		this.sourceVariantAfterRedToCrossVarFeatures = (VariationTree<DiffLinesLabel>) TreeView.tree(sourcePatch.project(Time.AFTER), this.targetVariantConfig);
 		VariationDiff<DiffLinesLabel> sourcePatchConfiguredToCrossVarFeatures = (VariationDiff<DiffLinesLabel>) DiffView.optimized(sourcePatch, targetVariantConfig);
-		this.unchangedAfter = new Unchanged((VariationDiff<DiffLinesLabel>) sourcePatchConfiguredToCrossVarFeatures, Time.AFTER, this.sourceVariantConfig);		
-		Unchanged unchangedBefore = new Unchanged((VariationDiff<DiffLinesLabel>) sourcePatchConfiguredToCrossVarFeatures, Time.BEFORE, this.sourceVariantConfig);
+		this.unchangedAfter = new Unchanged((VariationDiff<DiffLinesLabel>) sourcePatchConfiguredToCrossVarFeatures, Time.AFTER);		
+		Unchanged unchangedBefore = new Unchanged((VariationDiff<DiffLinesLabel>) sourcePatchConfiguredToCrossVarFeatures, Time.BEFORE);
 		this.targetVariantBeforeRedToUnchanged = (VariationTree<DiffLinesLabel>) TreeView.tree(this.targetVariantBefore, unchangedBefore);
 	}
 }

@@ -37,6 +37,7 @@ import org.variantsync.diffdetective.variation.tree.VariationTree;
 import org.variantsync.diffdetective.variation.tree.VariationTreeNode;
 import org.variantsync.diffdetective.variation.tree.view.TreeView;
 import org.variantsync.diffdetective.variation.tree.view.relevance.Configure;
+import org.variantsync.diffdetective.variation.tree.view.relevance.ConfigureWithFullConfig;
 import org.variantsync.diffdetective.variation.tree.view.relevance.Relevance;
 import org.variantsync.diffdetective.variation.tree.view.relevance.Trace;
 import org.variantsync.diffdetective.variation.tree.view.relevance.TraceSup;
@@ -256,7 +257,7 @@ public class Patching {
 	}
 
 	private static boolean isSameList(List<DiffNode<DiffLinesLabel>> sourceList,
-			List<DiffNode<DiffLinesLabel>> targetList, Configure configSource) {
+			List<DiffNode<DiffLinesLabel>> targetList, ConfigureWithFullConfig configSource) {
 		int indexTarget = 0;
 		// source must be equal or smaller than target list, because it is the view on
 		// the source patch (cross variant features)
@@ -295,12 +296,12 @@ public class Patching {
 		return indexTarget == targetList.size();
 	}
 
-	private static boolean isPresentUnderConfiguration(DiffNode<DiffLinesLabel> diffNode, Configure config) {
+	private static boolean isPresentUnderConfiguration(DiffNode<DiffLinesLabel> diffNode, ConfigureWithFullConfig config) {
 		return config.test(diffNode.projection(Time.BEFORE));
 	}
 
 	private static DiffNode<DiffLinesLabel> checkNeighbors2(DiffNode<DiffLinesLabel> root,
-			DiffNode<DiffLinesLabel> targetNodeInPatch, Configure configSource, Time time, boolean debug)
+			DiffNode<DiffLinesLabel> targetNodeInPatch, ConfigureWithFullConfig configSource, Time time, boolean debug)
 			throws Exception {
 		List<DiffNode<DiffLinesLabel>> orderedChildrenTarget = targetNodeInPatch.getChildOrder(time);
 		List<DiffNode<DiffLinesLabel>> orderedChildrenSource = root.getParent(time).getChildOrder(time);
@@ -361,7 +362,7 @@ public class Patching {
 
 	private static void applyChanges(DiffType type, VariationDiff<DiffLinesLabel> targetVariantDiffUnchanged,
 			VariationDiff<DiffLinesLabel> targetVariantDiffPatched, List<DiffNode<DiffLinesLabel>> subtreeRoots,
-			VariationDiffSource source, Configure configSource, boolean debug) throws Exception {
+			VariationDiffSource source, ConfigureWithFullConfig configSource, boolean debug) throws Exception {
 
 		Time time = (type == DiffType.ADD) ? Time.AFTER : Time.BEFORE;
 
@@ -608,7 +609,7 @@ public class Patching {
 	}
 
 	public static VariationDiff<DiffLinesLabel> patch(VariationDiff<DiffLinesLabel> sourcePatch,
-			VariationTree<DiffLinesLabel> targetVariant, Configure configSource, Configure configTarget, boolean debug,
+			VariationTree<DiffLinesLabel> targetVariant, ConfigureWithFullConfig configSource, ConfigureWithFullConfig configTarget, boolean debug,
 			boolean patchNewFeatures) throws Exception {
 
 //		if (!checkForZeroVariantDrift(diff, targetVariant, rho, debug)) {
@@ -726,7 +727,7 @@ public class Patching {
 
 	public static boolean arePatchedVariantsEquivalent(VariationTree<DiffLinesLabel> patchedTargetVariant,
 			VariationTree<DiffLinesLabel> sourceVariantAfterRedToCrossVarFeatures,
-			VariationTree<DiffLinesLabel> targetVariantBeforeRedToUnchanged, Configure configSourceVariant,
+			VariationTree<DiffLinesLabel> targetVariantBeforeRedToUnchanged, ConfigureWithFullConfig configSourceVariant,
 			Unchanged unchangedAfter) {
 
 		VariationTree<DiffLinesLabel> targetVariantAfterRedToCrossVarFeatures = TreeView.tree(patchedTargetVariant,

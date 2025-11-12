@@ -41,6 +41,7 @@ import org.variantsync.diffdetective.variation.diff.view.DiffView;
 import org.variantsync.diffdetective.variation.tree.VariationTree;
 import org.variantsync.diffdetective.variation.tree.view.TreeView;
 import org.variantsync.diffdetective.variation.tree.view.relevance.Configure;
+import org.variantsync.diffdetective.variation.tree.view.relevance.ConfigureWithFullConfig;
 import org.variantsync.functjonal.Pair;
 import org.variantsync.functjonal.Result;
 
@@ -154,7 +155,7 @@ public class Generator {
 		// ## 1. Sample two variants.
 		// Since we have no feature model, we create a naive problem space model:
 		// We just collect all features without constraints.
-		final Set<String> featureModel = spl.computeAllFeatureNames();
+		final Set<Object> featureModel = spl.computeAllFeatureNames();
 //		Logger.info("Extracted feature names: {}", featureModel);
 
 		// To sample variants, we just pick a random subset of features to set to true,
@@ -166,8 +167,8 @@ public class Generator {
 		// Hypothesis: the lower the probability value (i.e., the more deselected
 		// features), the harder the patching challenge.
 
-		final Map<String, Boolean> config1 = randomPartition(featureModel, 0.6);
-		final Map<String, Boolean> config2 = mutateByWeightedCoinFlip(config1, 0.5);
+		final Map<Object, Boolean> config1 = randomPartition(featureModel, 0.6);
+		final Map<Object, Boolean> config2 = mutateByWeightedCoinFlip(config1, 0.5);
 
 		// FIXME: We should probably ensure that config1 != config2.
 //		Logger.info("Configuration 1: {}", config1);
@@ -182,8 +183,8 @@ public class Generator {
 
 		// To configure our variation trees and diffs, we need to convert our
 		// configurations to relevance predicates.
-		final Configure configureTo1 = new Configure(config1);
-		final Configure configureTo2 = new Configure(config2);
+		final ConfigureWithFullConfig configureTo1 = new ConfigureWithFullConfig(config1);
+		final ConfigureWithFullConfig configureTo2 = new ConfigureWithFullConfig(config2);
 
 		// ## 2. We need two variants and two versions of each variant.
 
@@ -280,7 +281,7 @@ public class Generator {
 				configureTo2);
 	}
 	
-	public static <L extends Label> boolean generateViewVariants(VariationDiff<L> sourcePatch, VariationTree<L> targetVariantBefore, Configure configureTo2, String commitHash) {
+	public static <L extends Label> boolean generateViewVariants(VariationDiff<L> sourcePatch, VariationTree<L> targetVariantBefore, ConfigureWithFullConfig configureTo2, String commitHash) {
 		try {
 			deleteFilesAndCreateNewDirectories(commitHash);
 		} catch (Exception e) {
@@ -527,8 +528,8 @@ public class Generator {
 	}
 
 	public static <L extends Label> Result<VariationTree<DiffLinesLabel>, Error> runPatchTransformer(
-			VariationDiff<L> sourcePatch, final VariationTree<L> targetVariantBefore, Configure sourceVariantConfig,
-			Configure targetVariantConfig) {
+			VariationDiff<L> sourcePatch, final VariationTree<L> targetVariantBefore, ConfigureWithFullConfig sourceVariantConfig,
+			ConfigureWithFullConfig targetVariantConfig) {
 		VariationTree<DiffLinesLabel> patchTransformerResult = null;
 		try {
 //			GameEngine.showAndAwaitAll(Show.tree(targetVariantBefore));
