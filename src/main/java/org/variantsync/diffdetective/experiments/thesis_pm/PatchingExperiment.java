@@ -265,7 +265,11 @@ public class PatchingExperiment implements Analysis.Hooks {
 	@Override
 	public boolean analyzeVariationDiff(Analysis analysis) throws Exception {
 		VariationDiff<DiffLinesLabel> diff = analysis.getCurrentVariationDiff();
+		if (diff.computeSize() > 1000) {
+			return false;
+		}
 		String commitHash = analysis.getCurrentCommit().getName();
+		Logger.info(commitHash);
 		PatchScenario<DiffLinesLabel> scenario = Generator.generatePatchScenario(diff, commitHash);
 
 		if (scenario == null) {
@@ -320,33 +324,35 @@ public class PatchingExperiment implements Analysis.Hooks {
 			analysis.get(MPATCH_ERROR_PATCHES_COUNTER_RESULT_KEY).value++;
 		}
 		
-		Generator.generateViewVariants(scenario.sourcePatch, scenario.targetVariantBefore, scenario.targetVariantConfig, commitHash);
+		if (Generator.generateViewVariants(scenario.sourcePatch, scenario.targetVariantBefore, scenario.targetVariantConfig, commitHash)) {
+			Result<VariationTree<DiffLinesLabel>, Error> gnuPatchResultView;
+			try {
+				gnuPatchResultView = Generator.runGnuPatch(scenario.targetVariantBefore, PATCH, CODE, commitHash);
+				gnuPatchResultView.match(tree -> tree != null && Patching.arePatchedVariantsEquivalent(tree,
+						scenario.sourceVariantAfterRedToCrossVarFeatures, scenario.targetVariantBeforeRedToUnchanged,
+						scenario.sourceVariantConfig, scenario.unchangedAfter)
+								? analysis.get(GNUVIEW_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++
+								: analysis.get(GNUVIEW_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++,
+						error -> analysis.get(GNUVIEW_REJECTED_PATCHES_COUNTER_RESULT_KEY).value++);
+			} catch (IOException e) {
+				analysis.get(GNUVIEW_ERROR_PATCHES_COUNTER_RESULT_KEY).value++;
+			}
 
-		Result<VariationTree<DiffLinesLabel>, Error> gnuPatchResultView;
-		try {
-			gnuPatchResultView = Generator.runGnuPatch(scenario.targetVariantBefore, PATCH, CODE, commitHash);
-			gnuPatchResultView.match(tree -> tree != null && Patching.arePatchedVariantsEquivalent(tree,
-					scenario.sourceVariantAfterRedToCrossVarFeatures, scenario.targetVariantBeforeRedToUnchanged,
-					scenario.sourceVariantConfig, scenario.unchangedAfter)
-							? analysis.get(GNUVIEW_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++
-							: analysis.get(GNUVIEW_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++,
-					error -> analysis.get(GNUVIEW_REJECTED_PATCHES_COUNTER_RESULT_KEY).value++);
-		} catch (IOException e) {
-			analysis.get(GNUVIEW_ERROR_PATCHES_COUNTER_RESULT_KEY).value++;
+			Result<VariationTree<DiffLinesLabel>, Error> mpatchResultView;
+			try {
+				mpatchResultView = Generator.runMPatch(scenario.targetVariantBefore, PATCH, CODE, commitHash);
+				mpatchResultView.match(tree -> tree != null && Patching.arePatchedVariantsEquivalent(tree,
+						scenario.sourceVariantAfterRedToCrossVarFeatures, scenario.targetVariantBeforeRedToUnchanged,
+						scenario.sourceVariantConfig, scenario.unchangedAfter)
+								? analysis.get(MPATCHVIEW_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++
+								: analysis.get(MPATCHVIEW_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++,
+						error -> analysis.get(MPATCHVIEW_REJECTED_PATCHES_COUNTER_RESULT_KEY).value++);
+			} catch (IOException e) {
+				analysis.get(MPATCHVIEW_ERROR_PATCHES_COUNTER_RESULT_KEY).value++;
+			}
+			
 		}
 
-		Result<VariationTree<DiffLinesLabel>, Error> mpatchResultView;
-		try {
-			mpatchResultView = Generator.runMPatch(scenario.targetVariantBefore, PATCH, CODE, commitHash);
-			mpatchResultView.match(tree -> tree != null && Patching.arePatchedVariantsEquivalent(tree,
-					scenario.sourceVariantAfterRedToCrossVarFeatures, scenario.targetVariantBeforeRedToUnchanged,
-					scenario.sourceVariantConfig, scenario.unchangedAfter)
-							? analysis.get(MPATCHVIEW_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++
-							: analysis.get(MPATCHVIEW_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++,
-					error -> analysis.get(MPATCHVIEW_REJECTED_PATCHES_COUNTER_RESULT_KEY).value++);
-		} catch (IOException e) {
-			analysis.get(MPATCHVIEW_ERROR_PATCHES_COUNTER_RESULT_KEY).value++;
-		}
 		return true;
 	}
 
@@ -373,6 +379,7 @@ public class PatchingExperiment implements Analysis.Hooks {
 			writeScenarioToFilesystem("rejected", key, PatchingExperiment.rejectedPatches.get(key), null);
 		}
 		PatchingExperiment.failedPatches.clear();
+		PatchingExperiment.rejectedPatches.clear();
 		Logger.info("Batch done: {} commits analyzed", commits);
 	}
 
@@ -412,7 +419,7 @@ public class PatchingExperiment implements Analysis.Hooks {
 				defaultOptions.getFilterForRepo(), true, false);
 		try {
 			AnalysisRunner.run(analysisOptions, (repository, path) -> Analysis
-					.forEachCommit(() -> PatchingExperiment.Create(repository, path, experiment), 20, 1));
+					.forEachCommit(() -> PatchingExperiment.Create(repository, path, experiment), 5, 1));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
