@@ -34,7 +34,6 @@ public class MPatchCommand extends ShellCommand {
      */
     @Override
     public List<String> interpretResult(int resultCode, List<String> output) throws ShellException {
-    	System.out.println(resultCode);
     	// patching was successful ???
         if (resultCode == 0) {
         	patchingSuccessful = true;
