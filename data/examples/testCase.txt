@@ -1,0 +1,8 @@
+#ifndef LIBBB_H
+#define LIBBB_H 1
+#if 1 /*def __GLIBC__*/
+#define GETOPT_RESET() (optind = 0)
+#else /* BSD style */
+#define GETOPT_RESET() (optind = 1)
+#endif
+#endif
