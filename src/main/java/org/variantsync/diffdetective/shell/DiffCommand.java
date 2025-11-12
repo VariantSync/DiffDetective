@@ -34,7 +34,6 @@ public class DiffCommand extends ShellCommand {
      */
     @Override
     public List<String> interpretResult(int resultCode, List<String> output) throws ShellException {
-    	System.out.println(resultCode);
     	// inputs are the same
         if (resultCode == 0) {
         	filesDifferent = false;
