@@ -37,10 +37,8 @@ import org.variantsync.diffdetective.variation.tree.VariationTree;
 import org.variantsync.diffdetective.variation.tree.VariationTreeNode;
 import org.variantsync.diffdetective.variation.tree.view.TreeView;
 import org.variantsync.diffdetective.variation.tree.view.relevance.Configure;
-import org.variantsync.diffdetective.variation.tree.view.relevance.Inverse;
 import org.variantsync.diffdetective.variation.tree.view.relevance.Relevance;
 import org.variantsync.diffdetective.variation.tree.view.relevance.Trace;
-import org.variantsync.diffdetective.variation.tree.view.relevance.TraceSub;
 import org.variantsync.diffdetective.variation.tree.view.relevance.TraceSup;
 import org.variantsync.diffdetective.variation.tree.view.relevance.Unchanged;
 
