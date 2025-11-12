@@ -42,6 +42,7 @@ import org.variantsync.diffdetective.variation.tree.view.relevance.Relevance;
 import org.variantsync.diffdetective.variation.tree.view.relevance.Trace;
 import org.variantsync.diffdetective.variation.tree.view.relevance.TraceSup;
 import org.variantsync.diffdetective.variation.tree.view.relevance.Unchanged;
+import org.variantsync.functjonal.Pair;
 
 public class Patching {
 	public static <L extends Label> boolean hasSameLabel(L a, L b) {
@@ -725,7 +726,8 @@ public class Patching {
 		return lines1.equals(lines2);
 	}
 
-	public static boolean arePatchedVariantsEquivalent(VariationTree<DiffLinesLabel> patchedTargetVariant,
+	public static Pair<Boolean, Boolean> arePatchedVariantsEquivalent(
+			VariationTree<DiffLinesLabel> patchedTargetVariant,
 			VariationTree<DiffLinesLabel> sourceVariantAfterRedToCrossVarFeatures,
 			VariationTree<DiffLinesLabel> targetVariantBeforeRedToUnchanged, ConfigureWithFullConfig configSourceVariant,
 			Unchanged unchangedAfter) {
@@ -744,13 +746,12 @@ public class Patching {
 //						"patched target variant red. to cross variant features"),
 //				Show.tree(targetVariantBeforeRedToUnchanged, "target variant before red. to unchanged"));
 
-		if (Patching.isSameAs(sourceVariantAfterRedToCrossVarFeatures.toCompletelyUnchangedVariationDiff(),
-				targetVariantAfterRedToCrossVarFeatures.toCompletelyUnchangedVariationDiff())
-				&& Patching.compareIgnoreEmptyLines(
-						patchedTargetVariantRedToUnchanged.unparse(), targetVariantBeforeRedToUnchanged.unparse())) {
-			return true;
-		}
-		return false;
+		return new Pair<Boolean, Boolean>(
+				Patching.compareIgnoreEmptyLines(sourceVariantAfterRedToCrossVarFeatures.unparse(),
+						targetVariantAfterRedToCrossVarFeatures.unparse()),
+				Patching.compareIgnoreEmptyLines(patchedTargetVariantRedToUnchanged.unparse(),
+						targetVariantBeforeRedToUnchanged.unparse()));
+
 	}
 
 	public static boolean comparePatchedVariantWithExpectedResult(VariationTree<DiffLinesLabel> patchedVariant,
