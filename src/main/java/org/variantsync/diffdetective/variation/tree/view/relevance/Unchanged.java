@@ -156,7 +156,8 @@ public class Unchanged implements Relevance {
 		if (tInDiffMatches.size() > 1) {
 			Map<DiffNode<DiffLinesLabel>, Integer> map = new HashMap<>();
 			for (DiffNode<DiffLinesLabel> diffNode : tInDiffMatches) {
-				Integer lineNumberDiffNode = diffNode.getLinesAtTime(time).fromInclusive();
+				Time time1 = diffNode.isRem() ? Time.BEFORE : Time.AFTER;
+				Integer lineNumberDiffNode = diffNode.getLinesAtTime(time1).fromInclusive();
 				map.put(diffNode, Math.abs(t.getLineRange().fromInclusive() - lineNumberDiffNode));
 			}
 			List<Entry<DiffNode<DiffLinesLabel>, Integer>> list = new ArrayList<>(map.entrySet());
