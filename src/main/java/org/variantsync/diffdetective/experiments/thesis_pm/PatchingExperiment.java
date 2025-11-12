@@ -36,6 +36,10 @@ public class PatchingExperiment implements Analysis.Hooks {
 			"PT - rejected patches");
 	private static final AnalysisResult.ResultKey<PTIncorrectlyAppliedPatchesCounter> PT_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
 			"PT - incorrectly applied patches");
+	private static final AnalysisResult.ResultKey<PTIncorrectlyAppliedPatchesUnchCounter> PT_INCORRECTLY_APPLIED_PATCHES_UNCH_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
+			"PT - incorrectly applied patches (unchanged failed)");
+	private static final AnalysisResult.ResultKey<PTIncorrectlyAppliedPatchesConfCounter> PT_INCORRECTLY_APPLIED_PATCHES_CONF_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
+			"PT - incorrectly applied patches (configure failed)");
 	private static final AnalysisResult.ResultKey<PTSuccessfullyAppliedPatchesCounter> PT_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
 			"PT - successfully applied patches");
 
@@ -45,6 +49,10 @@ public class PatchingExperiment implements Analysis.Hooks {
 			"GNU - rejected patches");
 	private static final AnalysisResult.ResultKey<GNUIncorrectlyAppliedPatchesCounter> GNU_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
 			"GNU - incorrectly applied patches");
+	private static final AnalysisResult.ResultKey<GNUIncorrectlyAppliedPatchesUnchCounter> GNU_INCORRECTLY_APPLIED_PATCHES_UNCH_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
+			"GNU - incorrectly applied patches (unchanged failed)");
+	private static final AnalysisResult.ResultKey<GNUIncorrectlyAppliedPatchesConfCounter> GNU_INCORRECTLY_APPLIED_PATCHES_CONF_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
+			"GNU - incorrectly applied patches (configure failed)");
 	private static final AnalysisResult.ResultKey<GNUSuccessfullyAppliedPatchesCounter> GNU_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
 			"GNU - successfully applied patches");
 
@@ -54,6 +62,10 @@ public class PatchingExperiment implements Analysis.Hooks {
 			"MPATCH - rejected patches");
 	private static final AnalysisResult.ResultKey<MPATCHIncorrectlyAppliedPatchesCounter> MPATCH_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
 			"MPATCH - incorrectly applied patches");
+	private static final AnalysisResult.ResultKey<MPATCHIncorrectlyAppliedPatchesUnchCounter> MPATCH_INCORRECTLY_APPLIED_PATCHES_UNCH_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
+			"MPATCH - incorrectly applied patches (unchanged failed)");
+	private static final AnalysisResult.ResultKey<MPATCHIncorrectlyAppliedPatchesConfCounter> MPATCH_INCORRECTLY_APPLIED_PATCHES_CONF_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
+			"MPATCH - incorrectly applied patches (configure failed)");
 	private static final AnalysisResult.ResultKey<MPATCHSuccessfullyAppliedPatchesCounter> MPATCH_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
 			"MPATCH - successfully applied patches");
 
@@ -63,6 +75,10 @@ public class PatchingExperiment implements Analysis.Hooks {
 			"GNU View - rejected patches");
 	private static final AnalysisResult.ResultKey<GNUViewIncorrectlyAppliedPatchesCounter> GNUVIEW_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
 			"GNU View - incorrectly applied patches");
+	private static final AnalysisResult.ResultKey<GNUViewIncorrectlyAppliedPatchesUnchCounter> GNUVIEW_INCORRECTLY_APPLIED_PATCHES_UNCH_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
+			"GNU View - incorrectly applied patches (unchanged failed)");
+	private static final AnalysisResult.ResultKey<GNUViewIncorrectlyAppliedPatchesConfCounter> GNUVIEW_INCORRECTLY_APPLIED_PATCHES_CONF_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
+			"GNU View - incorrectly applied patches (configure failed)");
 	private static final AnalysisResult.ResultKey<GNUViewSuccessfullyAppliedPatchesCounter> GNUVIEW_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
 			"GNU View - successfully applied patches");
 
@@ -72,6 +88,10 @@ public class PatchingExperiment implements Analysis.Hooks {
 			"MPATCH View - rejected patches");
 	private static final AnalysisResult.ResultKey<MPATCHViewIncorrectlyAppliedPatchesCounter> MPATCHVIEW_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
 			"MPATCH View - incorrectly applied patches");
+	private static final AnalysisResult.ResultKey<MPATCHViewIncorrectlyAppliedPatchesUnchCounter> MPATCHVIEW_INCORRECTLY_APPLIED_PATCHES_UNCH_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
+			"MPATCH View - incorrectly applied patches (unchanged failed)");
+	private static final AnalysisResult.ResultKey<MPATCHViewIncorrectlyAppliedPatchesConfCounter> MPATCHVIEW_INCORRECTLY_APPLIED_PATCHES_CONF_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
+			"MPATCH View - incorrectly applied patches (configure failed)");
 	private static final AnalysisResult.ResultKey<MPATCHViewSuccessfullyAppliedPatchesCounter> MPATCHVIEW_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
 			"MPATCH View - successfully applied patches");
 
@@ -106,6 +126,20 @@ public class PatchingExperiment implements Analysis.Hooks {
 		}
 	}
 
+	private static class PTIncorrectlyAppliedPatchesUnchCounter
+			extends SimpleMetadata<Integer, PTIncorrectlyAppliedPatchesUnchCounter> {
+		public PTIncorrectlyAppliedPatchesUnchCounter() {
+			super(0, "PT - incorrectly applied patches (unchanged failed)", Integer::sum);
+		}
+	}
+
+	private static class PTIncorrectlyAppliedPatchesConfCounter
+			extends SimpleMetadata<Integer, PTIncorrectlyAppliedPatchesConfCounter> {
+		public PTIncorrectlyAppliedPatchesConfCounter() {
+			super(0, "PT - incorrectly applied patches (configure failed)", Integer::sum);
+		}
+	}
+
 	private static class PTSuccessfullyAppliedPatchesCounter
 			extends SimpleMetadata<Integer, PTSuccessfullyAppliedPatchesCounter> {
 		public PTSuccessfullyAppliedPatchesCounter() {
@@ -129,6 +163,20 @@ public class PatchingExperiment implements Analysis.Hooks {
 			extends SimpleMetadata<Integer, GNUIncorrectlyAppliedPatchesCounter> {
 		public GNUIncorrectlyAppliedPatchesCounter() {
 			super(0, "GNU - incorrectly applied patches", Integer::sum);
+		}
+	}
+
+	private static class GNUIncorrectlyAppliedPatchesUnchCounter
+			extends SimpleMetadata<Integer, GNUIncorrectlyAppliedPatchesUnchCounter> {
+		public GNUIncorrectlyAppliedPatchesUnchCounter() {
+			super(0, "GNU - incorrectly applied patches (unchanged failed)", Integer::sum);
+		}
+	}
+
+	private static class GNUIncorrectlyAppliedPatchesConfCounter
+			extends SimpleMetadata<Integer, GNUIncorrectlyAppliedPatchesConfCounter> {
+		public GNUIncorrectlyAppliedPatchesConfCounter() {
+			super(0, "GNU - incorrectly applied patches (configure failed)", Integer::sum);
 		}
 	}
 
@@ -158,6 +206,20 @@ public class PatchingExperiment implements Analysis.Hooks {
 		}
 	}
 
+	private static class MPATCHIncorrectlyAppliedPatchesUnchCounter
+			extends SimpleMetadata<Integer, MPATCHIncorrectlyAppliedPatchesUnchCounter> {
+		public MPATCHIncorrectlyAppliedPatchesUnchCounter() {
+			super(0, "MPATCH - incorrectly applied patches (unchanged failed)", Integer::sum);
+		}
+	}
+
+	private static class MPATCHIncorrectlyAppliedPatchesConfCounter
+			extends SimpleMetadata<Integer, MPATCHIncorrectlyAppliedPatchesConfCounter> {
+		public MPATCHIncorrectlyAppliedPatchesConfCounter() {
+			super(0, "MPATCH - incorrectly applied patches (configure failed)", Integer::sum);
+		}
+	}
+
 	private static class MPATCHSuccessfullyAppliedPatchesCounter
 			extends SimpleMetadata<Integer, MPATCHSuccessfullyAppliedPatchesCounter> {
 		public MPATCHSuccessfullyAppliedPatchesCounter() {
@@ -181,6 +243,20 @@ public class PatchingExperiment implements Analysis.Hooks {
 			extends SimpleMetadata<Integer, GNUViewIncorrectlyAppliedPatchesCounter> {
 		public GNUViewIncorrectlyAppliedPatchesCounter() {
 			super(0, "GNU (View) - incorrectly applied patches", Integer::sum);
+		}
+	}
+
+	private static class GNUViewIncorrectlyAppliedPatchesUnchCounter
+			extends SimpleMetadata<Integer, GNUViewIncorrectlyAppliedPatchesUnchCounter> {
+		public GNUViewIncorrectlyAppliedPatchesUnchCounter() {
+			super(0, "GNU View - incorrectly applied patches (unchanged failed)", Integer::sum);
+		}
+	}
+
+	private static class GNUViewIncorrectlyAppliedPatchesConfCounter
+			extends SimpleMetadata<Integer, GNUViewIncorrectlyAppliedPatchesConfCounter> {
+		public GNUViewIncorrectlyAppliedPatchesConfCounter() {
+			super(0, "GNU View - incorrectly applied patches (configure failed)", Integer::sum);
 		}
 	}
 
@@ -211,6 +287,20 @@ public class PatchingExperiment implements Analysis.Hooks {
 		}
 	}
 
+	private static class MPATCHViewIncorrectlyAppliedPatchesUnchCounter
+			extends SimpleMetadata<Integer, MPATCHViewIncorrectlyAppliedPatchesUnchCounter> {
+		public MPATCHViewIncorrectlyAppliedPatchesUnchCounter() {
+			super(0, "MPATCH View - incorrectly applied patches (unchanged failed)", Integer::sum);
+		}
+	}
+
+	private static class MPATCHViewIncorrectlyAppliedPatchesConfCounter
+			extends SimpleMetadata<Integer, MPATCHViewIncorrectlyAppliedPatchesConfCounter> {
+		public MPATCHViewIncorrectlyAppliedPatchesConfCounter() {
+			super(0, "MPATCH View - incorrectly applied patches (configure failed)", Integer::sum);
+		}
+	}
+
 	private static class MPATCHViewSuccessfullyAppliedPatchesCounter
 			extends SimpleMetadata<Integer, MPATCHViewSuccessfullyAppliedPatchesCounter> {
 		public MPATCHViewSuccessfullyAppliedPatchesCounter() {
@@ -229,28 +319,38 @@ public class PatchingExperiment implements Analysis.Hooks {
 		analysis.append(PT_ERROR_PATCHES_COUNTER_RESULT_KEY, new PTErrorPatchesCounter());
 		analysis.append(PT_REJECTED_PATCHES_COUNTER_RESULT_KEY, new PTRejectedPatchesCounter());
 		analysis.append(PT_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY, new PTIncorrectlyAppliedPatchesCounter());
+		analysis.append(PT_INCORRECTLY_APPLIED_PATCHES_CONF_COUNTER_RESULT_KEY, new PTIncorrectlyAppliedPatchesConfCounter());
+		analysis.append(PT_INCORRECTLY_APPLIED_PATCHES_UNCH_COUNTER_RESULT_KEY, new PTIncorrectlyAppliedPatchesUnchCounter());
 		analysis.append(PT_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY, new PTSuccessfullyAppliedPatchesCounter());
 		analysis.append(GNU_ERROR_PATCHES_COUNTER_RESULT_KEY, new GNUErrorPatchesCounter());
 		analysis.append(GNU_REJECTED_PATCHES_COUNTER_RESULT_KEY, new GNURejectedPatchesCounter());
 		analysis.append(GNU_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY, new GNUIncorrectlyAppliedPatchesCounter());
+		analysis.append(GNU_INCORRECTLY_APPLIED_PATCHES_CONF_COUNTER_RESULT_KEY, new GNUIncorrectlyAppliedPatchesConfCounter());
+		analysis.append(GNU_INCORRECTLY_APPLIED_PATCHES_UNCH_COUNTER_RESULT_KEY, new GNUIncorrectlyAppliedPatchesUnchCounter());
 		analysis.append(GNU_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY,
 				new GNUSuccessfullyAppliedPatchesCounter());
 		analysis.append(MPATCH_ERROR_PATCHES_COUNTER_RESULT_KEY, new MPATCHErrorPatchesCounter());
 		analysis.append(MPATCH_REJECTED_PATCHES_COUNTER_RESULT_KEY, new MPATCHRejectedPatchesCounter());
 		analysis.append(MPATCH_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY,
 				new MPATCHIncorrectlyAppliedPatchesCounter());
+		analysis.append(MPATCH_INCORRECTLY_APPLIED_PATCHES_CONF_COUNTER_RESULT_KEY, new MPATCHIncorrectlyAppliedPatchesConfCounter());
+		analysis.append(MPATCH_INCORRECTLY_APPLIED_PATCHES_UNCH_COUNTER_RESULT_KEY, new MPATCHIncorrectlyAppliedPatchesUnchCounter());
 		analysis.append(MPATCH_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY,
 				new MPATCHSuccessfullyAppliedPatchesCounter());
 		analysis.append(GNUVIEW_ERROR_PATCHES_COUNTER_RESULT_KEY, new GNUViewErrorPatchesCounter());
 		analysis.append(GNUVIEW_REJECTED_PATCHES_COUNTER_RESULT_KEY, new GNUViewRejectedPatchesCounter());
 		analysis.append(GNUVIEW_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY,
 				new GNUViewIncorrectlyAppliedPatchesCounter());
+		analysis.append(GNUVIEW_INCORRECTLY_APPLIED_PATCHES_CONF_COUNTER_RESULT_KEY, new GNUViewIncorrectlyAppliedPatchesConfCounter());
+		analysis.append(GNUVIEW_INCORRECTLY_APPLIED_PATCHES_UNCH_COUNTER_RESULT_KEY, new GNUViewIncorrectlyAppliedPatchesUnchCounter());
 		analysis.append(GNUVIEW_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY,
 				new GNUViewSuccessfullyAppliedPatchesCounter());
 		analysis.append(MPATCHVIEW_ERROR_PATCHES_COUNTER_RESULT_KEY, new MPATCHViewErrorPatchesCounter());
 		analysis.append(MPATCHVIEW_REJECTED_PATCHES_COUNTER_RESULT_KEY, new MPATCHViewRejectedPatchesCounter());
 		analysis.append(MPATCHVIEW_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY,
 				new MPATCHViewIncorrectlyAppliedPatchesCounter());
+		analysis.append(MPATCHVIEW_INCORRECTLY_APPLIED_PATCHES_CONF_COUNTER_RESULT_KEY, new MPATCHViewIncorrectlyAppliedPatchesConfCounter());
+		analysis.append(MPATCHVIEW_INCORRECTLY_APPLIED_PATCHES_UNCH_COUNTER_RESULT_KEY, new MPATCHViewIncorrectlyAppliedPatchesUnchCounter());
 		analysis.append(MPATCHVIEW_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY,
 				new MPATCHViewSuccessfullyAppliedPatchesCounter());
 		analysis.append(SKIPPED_PATCHES_COUNTER_RESULT_KEY, new SkippedPatchesCounter());
@@ -265,11 +365,11 @@ public class PatchingExperiment implements Analysis.Hooks {
 	@Override
 	public boolean analyzeVariationDiff(Analysis analysis) throws Exception {
 		VariationDiff<DiffLinesLabel> diff = analysis.getCurrentVariationDiff();
-		if (diff.computeSize() > 1000) {
+		if (diff.computeSize() > 10000) {
 			return false;
 		}
 		String commitHash = analysis.getCurrentCommit().getName();
-		Logger.info(commitHash);
+//		Logger.info(commitHash);
 		PatchScenario<DiffLinesLabel> scenario = Generator.generatePatchScenario(diff, commitHash);
 
 		if (scenario == null) {
@@ -283,10 +383,21 @@ public class PatchingExperiment implements Analysis.Hooks {
 				scenario.targetVariantConfig);
 
 		patchTransformerResult.match(tree -> {
-			if (tree != null && Patching.arePatchedVariantsEquivalent(tree,
-					scenario.sourceVariantAfterRedToCrossVarFeatures, scenario.targetVariantBeforeRedToUnchanged,
-					scenario.sourceVariantConfig, scenario.unchangedAfter)) {
-				analysis.get(PT_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++;
+			if (tree != null) {
+				Pair<Boolean, Boolean> equiv = Patching.arePatchedVariantsEquivalent(tree,
+						scenario.sourceVariantAfterRedToCrossVarFeatures, scenario.targetVariantBeforeRedToUnchanged,
+						scenario.sourceVariantConfig, scenario.unchangedAfter);
+				if (!equiv.first()) {
+					analysis.get(PT_INCORRECTLY_APPLIED_PATCHES_CONF_COUNTER_RESULT_KEY).value++;
+					analysis.get(PT_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++;
+				}
+				if (!equiv.second()) {
+					analysis.get(PT_INCORRECTLY_APPLIED_PATCHES_UNCH_COUNTER_RESULT_KEY).value++;
+					analysis.get(PT_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++;
+				}
+				if (equiv.first() && equiv.second()) {
+					analysis.get(PT_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++;
+				}
 			} else {
 				PatchingExperiment.incorrectPatchesPT++;
 				PatchingExperiment.failedPatches.put(PatchingExperiment.incorrectPatchesPT,
@@ -296,44 +407,85 @@ public class PatchingExperiment implements Analysis.Hooks {
 		}, error -> {
 			PatchingExperiment.rejectedPatchesPT++;
 			PatchingExperiment.rejectedPatches.put(PatchingExperiment.rejectedPatchesPT, scenario);
-			analysis.get(PT_REJECTED_PATCHES_COUNTER_RESULT_KEY).value++;});
+			analysis.get(PT_REJECTED_PATCHES_COUNTER_RESULT_KEY).value++;
+		});
 
 		Result<VariationTree<DiffLinesLabel>, Error> gnuPatchResult;
 		try {
 			gnuPatchResult = Generator.runGnuPatch(scenario.targetVariantBefore, PATCH, CODE, commitHash);
-			gnuPatchResult.match(tree -> tree != null && Patching.arePatchedVariantsEquivalent(tree,
-					scenario.sourceVariantAfterRedToCrossVarFeatures, scenario.targetVariantBeforeRedToUnchanged,
-					scenario.sourceVariantConfig, scenario.unchangedAfter)
-							? analysis.get(GNU_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++
-							: analysis.get(GNU_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++,
-					error -> analysis.get(GNU_REJECTED_PATCHES_COUNTER_RESULT_KEY).value++);
+			gnuPatchResult.match(tree -> {
+				if (tree != null) {
+					Pair<Boolean, Boolean> equiv = Patching.arePatchedVariantsEquivalent(tree,
+							scenario.sourceVariantAfterRedToCrossVarFeatures,
+							scenario.targetVariantBeforeRedToUnchanged, scenario.sourceVariantConfig,
+							scenario.unchangedAfter);
+					if (!equiv.first()) {
+						analysis.get(GNU_INCORRECTLY_APPLIED_PATCHES_CONF_COUNTER_RESULT_KEY).value++;
+						analysis.get(GNU_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++;
+					}
+					if (!equiv.second()) {
+						analysis.get(GNU_INCORRECTLY_APPLIED_PATCHES_UNCH_COUNTER_RESULT_KEY).value++;
+						analysis.get(GNU_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++;
+					}
+					if (equiv.first() && equiv.second()) {
+						analysis.get(GNU_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++;
+					}
+				}
+			}, error -> analysis.get(GNU_REJECTED_PATCHES_COUNTER_RESULT_KEY).value++);
 		} catch (IOException e) {
 			analysis.get(GNU_ERROR_PATCHES_COUNTER_RESULT_KEY).value++;
 		}
-		
+
 		Result<VariationTree<DiffLinesLabel>, Error> mpatchResult;
 		try {
 			mpatchResult = Generator.runMPatch(scenario.targetVariantBefore, PATCH, CODE, commitHash);
-			mpatchResult.match(tree -> tree != null && Patching.arePatchedVariantsEquivalent(tree,
-					scenario.sourceVariantAfterRedToCrossVarFeatures, scenario.targetVariantBeforeRedToUnchanged,
-					scenario.sourceVariantConfig, scenario.unchangedAfter)
-							? analysis.get(MPATCH_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++
-							: analysis.get(MPATCH_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++,
-					error -> analysis.get(MPATCH_REJECTED_PATCHES_COUNTER_RESULT_KEY).value++);
+			mpatchResult.match(tree -> {
+				if (tree != null) {
+					Pair<Boolean, Boolean> equiv = Patching.arePatchedVariantsEquivalent(tree,
+							scenario.sourceVariantAfterRedToCrossVarFeatures,
+							scenario.targetVariantBeforeRedToUnchanged, scenario.sourceVariantConfig,
+							scenario.unchangedAfter);
+					if (!equiv.first()) {
+						analysis.get(MPATCH_INCORRECTLY_APPLIED_PATCHES_CONF_COUNTER_RESULT_KEY).value++;
+						analysis.get(MPATCH_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++;
+					}
+					if (!equiv.second()) {
+						analysis.get(MPATCH_INCORRECTLY_APPLIED_PATCHES_UNCH_COUNTER_RESULT_KEY).value++;
+						analysis.get(MPATCH_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++;
+					}
+					if (equiv.first() && equiv.second()) {
+						analysis.get(MPATCH_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++;
+					}
+				}
+			}, error -> analysis.get(MPATCH_REJECTED_PATCHES_COUNTER_RESULT_KEY).value++);
 		} catch (IOException e) {
 			analysis.get(MPATCH_ERROR_PATCHES_COUNTER_RESULT_KEY).value++;
 		}
-		
-		if (Generator.generateViewVariants(scenario.sourcePatch, scenario.targetVariantBefore, scenario.targetVariantConfig, commitHash)) {
+
+		if (Generator.generateViewVariants(scenario.sourcePatch, scenario.targetVariantBefore,
+				scenario.targetVariantConfig, commitHash)) {
 			Result<VariationTree<DiffLinesLabel>, Error> gnuPatchResultView;
 			try {
 				gnuPatchResultView = Generator.runGnuPatch(scenario.targetVariantBefore, PATCH, CODE, commitHash);
-				gnuPatchResultView.match(tree -> tree != null && Patching.arePatchedVariantsEquivalent(tree,
-						scenario.sourceVariantAfterRedToCrossVarFeatures, scenario.targetVariantBeforeRedToUnchanged,
-						scenario.sourceVariantConfig, scenario.unchangedAfter)
-								? analysis.get(GNUVIEW_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++
-								: analysis.get(GNUVIEW_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++,
-						error -> analysis.get(GNUVIEW_REJECTED_PATCHES_COUNTER_RESULT_KEY).value++);
+				gnuPatchResultView.match(tree -> {
+					if (tree != null) {
+						Pair<Boolean, Boolean> equiv = Patching.arePatchedVariantsEquivalent(tree,
+								scenario.sourceVariantAfterRedToCrossVarFeatures,
+								scenario.targetVariantBeforeRedToUnchanged, scenario.sourceVariantConfig,
+								scenario.unchangedAfter);
+						if (!equiv.first()) {
+							analysis.get(GNUVIEW_INCORRECTLY_APPLIED_PATCHES_CONF_COUNTER_RESULT_KEY).value++;
+							analysis.get(GNUVIEW_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++;
+						}
+						if (!equiv.second()) {
+							analysis.get(GNUVIEW_INCORRECTLY_APPLIED_PATCHES_UNCH_COUNTER_RESULT_KEY).value++;
+							analysis.get(GNUVIEW_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++;
+						}
+						if (equiv.first() && equiv.second()) {
+							analysis.get(GNUVIEW_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++;
+						}
+					}
+				}, error -> analysis.get(GNUVIEW_REJECTED_PATCHES_COUNTER_RESULT_KEY).value++);
 			} catch (IOException e) {
 				analysis.get(GNUVIEW_ERROR_PATCHES_COUNTER_RESULT_KEY).value++;
 			}
@@ -341,16 +493,29 @@ public class PatchingExperiment implements Analysis.Hooks {
 			Result<VariationTree<DiffLinesLabel>, Error> mpatchResultView;
 			try {
 				mpatchResultView = Generator.runMPatch(scenario.targetVariantBefore, PATCH, CODE, commitHash);
-				mpatchResultView.match(tree -> tree != null && Patching.arePatchedVariantsEquivalent(tree,
-						scenario.sourceVariantAfterRedToCrossVarFeatures, scenario.targetVariantBeforeRedToUnchanged,
-						scenario.sourceVariantConfig, scenario.unchangedAfter)
-								? analysis.get(MPATCHVIEW_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++
-								: analysis.get(MPATCHVIEW_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++,
-						error -> analysis.get(MPATCHVIEW_REJECTED_PATCHES_COUNTER_RESULT_KEY).value++);
+				mpatchResultView.match(tree -> {
+					if (tree != null) {
+						Pair<Boolean, Boolean> equiv = Patching.arePatchedVariantsEquivalent(tree,
+								scenario.sourceVariantAfterRedToCrossVarFeatures,
+								scenario.targetVariantBeforeRedToUnchanged, scenario.sourceVariantConfig,
+								scenario.unchangedAfter);
+						if (!equiv.first()) {
+							analysis.get(MPATCHVIEW_INCORRECTLY_APPLIED_PATCHES_CONF_COUNTER_RESULT_KEY).value++;
+							analysis.get(MPATCHVIEW_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++;
+						}
+						if (!equiv.second()) {
+							analysis.get(MPATCHVIEW_INCORRECTLY_APPLIED_PATCHES_UNCH_COUNTER_RESULT_KEY).value++;
+							analysis.get(MPATCHVIEW_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++;
+						}
+						if (equiv.first() && equiv.second()) {
+							analysis.get(MPATCH_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++;
+						}
+					}
+				}, error -> analysis.get(MPATCHVIEW_REJECTED_PATCHES_COUNTER_RESULT_KEY).value++);
 			} catch (IOException e) {
 				analysis.get(MPATCHVIEW_ERROR_PATCHES_COUNTER_RESULT_KEY).value++;
 			}
-			
+
 		}
 
 		return true;
@@ -370,34 +535,37 @@ public class PatchingExperiment implements Analysis.Hooks {
 
 	@Override
 	public void endBatch(Analysis analysis) throws Exception {
-		for (Integer key : PatchingExperiment.failedPatches.keySet()) {
-			Pair<PatchScenario<DiffLinesLabel>, VariationTree<DiffLinesLabel>> pair = PatchingExperiment.failedPatches.get(key);
-			PatchScenario<DiffLinesLabel> scenario = pair.first();
-			writeScenarioToFilesystem("failed", key, scenario, pair.second());
-		}
-		for (Integer key: PatchingExperiment.rejectedPatches.keySet()) {
-			writeScenarioToFilesystem("rejected", key, PatchingExperiment.rejectedPatches.get(key), null);
-		}
-		PatchingExperiment.failedPatches.clear();
-		PatchingExperiment.rejectedPatches.clear();
-		Logger.info("Batch done: {} commits analyzed", commits);
+//		for (Integer key : PatchingExperiment.failedPatches.keySet()) {
+//			Pair<PatchScenario<DiffLinesLabel>, VariationTree<DiffLinesLabel>> pair = PatchingExperiment.failedPatches.get(key);
+//			PatchScenario<DiffLinesLabel> scenario = pair.first();
+//			writeScenarioToFilesystem("failed", key, scenario, pair.second());
+//		}
+//		for (Integer key: PatchingExperiment.rejectedPatches.keySet()) {
+//			writeScenarioToFilesystem("rejected", key, PatchingExperiment.rejectedPatches.get(key), null);
+//		}
+//		PatchingExperiment.failedPatches.clear();
+//		PatchingExperiment.rejectedPatches.clear();
+//		Logger.info("Batch done: {} commits analyzed", commits);
 	}
 
-	private void writeScenarioToFilesystem(String filePrefix, Integer key, PatchScenario<DiffLinesLabel> scenario, VariationTree<DiffLinesLabel> patchedVariant) {
+	private void writeScenarioToFilesystem(String filePrefix, Integer key, PatchScenario<DiffLinesLabel> scenario,
+			VariationTree<DiffLinesLabel> patchedVariant) {
 		VariationDiff<DiffLinesLabel> diff = scenario.sourcePatch;
 		VariationTree<DiffLinesLabel> tree = scenario.targetVariantBefore;
 		PatchingExperiment.writeToFile(diff.project(Time.BEFORE).unparse(), filePrefix + key + "A1");
 		PatchingExperiment.writeToFile(diff.project(Time.AFTER).unparse(), filePrefix + key + "A2");
-		PatchingExperiment.writeToFile(scenario.sourceVariantAfterRedToCrossVarFeatures.unparse(), filePrefix + key + "A2_red");
+		PatchingExperiment.writeToFile(scenario.sourceVariantAfterRedToCrossVarFeatures.unparse(),
+				filePrefix + key + "A2_red");
 		PatchingExperiment.writeToFile(tree.unparse(), filePrefix + key + "B1");
-		PatchingExperiment.writeToFile(scenario.targetVariantBeforeRedToUnchanged.unparse(), filePrefix + key + "B1_unch");
+		PatchingExperiment.writeToFile(scenario.targetVariantBeforeRedToUnchanged.unparse(),
+				filePrefix + key + "B1_unch");
 		if (patchedVariant != null) {
 			PatchingExperiment.writeToFile(patchedVariant.unparse(), filePrefix + key + "B2");
-			VariationTree<DiffLinesLabel> red = TreeView.tree(patchedVariant, scenario.sourceVariantConfig); 
+			VariationTree<DiffLinesLabel> red = TreeView.tree(patchedVariant, scenario.sourceVariantConfig);
 			VariationTree<DiffLinesLabel> unch = TreeView.tree(patchedVariant, scenario.unchangedAfter);
 			PatchingExperiment.writeToFile(red.unparse(), filePrefix + key + "B2_red");
 			PatchingExperiment.writeToFile(unch.unparse(), filePrefix + key + "B2_unch");
-			
+
 		}
 		PatchingExperiment.writeToFile(scenario.sourceVariantConfig.toString(), filePrefix + key + "ConfigA");
 		PatchingExperiment.writeToFile(scenario.targetVariantConfig.toString(), filePrefix + key + "ConfigB");
@@ -414,12 +582,12 @@ public class PatchingExperiment implements Analysis.Hooks {
 		final AnalysisRunner.Options defaultOptions = AnalysisRunner.Options.DEFAULT(args);
 		final AnalysisRunner.Options analysisOptions = new AnalysisRunner.Options(Path.of("data", "repos"),
 				Path.of("data", "output"), Path.of("data", "demo-dataset.md"),
-				repo -> new PatchDiffParseOptions(PatchDiffParseOptions.DiffStoragePolicy.REMEMBER_FULL_DIFF,
+				repo -> new PatchDiffParseOptions(PatchDiffParseOptions.DiffStoragePolicy.DO_NOT_REMEMBER,
 						new VariationDiffParseOptions(false, false)),
 				defaultOptions.getFilterForRepo(), true, false);
 		try {
 			AnalysisRunner.run(analysisOptions, (repository, path) -> Analysis
-					.forEachCommit(() -> PatchingExperiment.Create(repository, path, experiment), 5, 1));
+					.forEachCommit(() -> PatchingExperiment.Create(repository, path, experiment), 250, 8));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
