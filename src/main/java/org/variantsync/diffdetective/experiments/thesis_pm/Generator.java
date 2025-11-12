@@ -170,8 +170,8 @@ public class Generator {
 		final Map<String, Boolean> config2 = mutateByWeightedCoinFlip(config1, 0.5);
 
 		// FIXME: We should probably ensure that config1 != config2.
-		Logger.info("Configuration 1: {}", config1);
-		Logger.info("Configuration 2: {}", config2);
+//		Logger.info("Configuration 1: {}", config1);
+//		Logger.info("Configuration 2: {}", config2);
 		// TODO: We could also distinguish the two major scenarios from these
 		// configurations:
 		// There are features in source that are not in target and vice versa? (assumes
@@ -272,13 +272,15 @@ public class Generator {
 				patch, commitHash);
 //        writeToFile(targetVariantCodeAfter, targetVariantAfterPath);
 
-		runGnuDiff(patchPath, commitHash);
+		if (!runGnuDiff(patchPath, commitHash)) {
+			return null;
+		}
 		
 		return new PatchScenario<L>(sourcePatch, targetVariantBefore, targetPatch, targetVariantAfter, configureTo1,
 				configureTo2);
 	}
 	
-	public static <L extends Label> void generateViewVariants(VariationDiff<L> sourcePatch, VariationTree<L> targetVariantBefore, Configure configureTo2, String commitHash) {
+	public static <L extends Label> boolean generateViewVariants(VariationDiff<L> sourcePatch, VariationTree<L> targetVariantBefore, Configure configureTo2, String commitHash) {
 		try {
 			deleteFilesAndCreateNewDirectories(commitHash);
 		} catch (Exception e) {
@@ -293,12 +295,12 @@ public class Generator {
 		try {
 			patchPath2 = writeVariantsToFileSystem(sourceVariantCrossVariantViewBefore,
 					sourceVariantCrossVariantViewAfter, targetVariantBefore, code, patch, commitHash);
-			runGnuDiff(patchPath2, commitHash);
+			return runGnuDiff(patchPath2, commitHash);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+		return false;
 	}
 
 	private static <L extends Label> Path writeVariantsToFileSystem(final VariationTree<L> sourceVariantBefore,
@@ -341,19 +343,22 @@ public class Generator {
 		}
 	}
 
-	private static void runGnuDiff(Path patchPath, String commitHash) {
+	private static boolean runGnuDiff(Path patchPath, String commitHash) {
 		try {
 			Path pathToVersion1Dir = Path.of(version1);
 			Path pathToVersion2Dir = Path.of(version2);
 			ShellExecutor shell = new ShellExecutor(Logger::info, Logger::error, Path.of(directory + commitHash, sourceVariant));
-			writeToFile(shell.execute(
-					new DiffCommand("diff", "-Naur", pathToVersion1Dir.toString(), pathToVersion2Dir.toString())),
-					patchPath);
-
+			DiffCommand command = new DiffCommand("diff", "-Naur", pathToVersion1Dir.toString(), pathToVersion2Dir.toString());
+			List<String> output = shell.execute(command);
+			if (command.areFilesDifferent()) {
+				writeToFile(output, patchPath);
+			}
+			return command.areFilesDifferent();
 //			System.out.println(list);
 		} catch (ShellException e) {
 			System.out.println(e);
 		}
+		return false;
 	}
 
 	public static <L extends Label> void runPatchers(PatchScenario<L> scenario, String commitHash) {
@@ -476,7 +481,7 @@ public class Generator {
 		if (command.isPatchingSuccessful()) {
 			try {
 				VariationTree<DiffLinesLabel> mpatchResult = VariationTree
-						.fromFile(Path.of(directory, targetVariant, code));
+						.fromFile(Path.of(directory + commitHash, targetVariant, code));
 				return Result.Success(mpatchResult);
 			} catch (DiffParseException e) {
 				return Result.Success(null);
@@ -511,7 +516,7 @@ public class Generator {
 		if (command.isPatchingSuccessful()) {
 			try {
 				VariationTree<DiffLinesLabel> gnuPatchResult = VariationTree
-						.fromFile(Path.of(directory, targetVariant, code));
+						.fromFile(Path.of(directory + commitHash, targetVariant, code));
 				return Result.Success(gnuPatchResult);
 			} catch (DiffParseException e) {
 				return Result.Success(null);
