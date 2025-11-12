@@ -150,7 +150,7 @@ public class Generator {
 		}
 	}
 
-	public static <L extends Label> PatchScenario<L> generatePatchScenario(VariationDiff<L> spl) throws Exception {
+	public static <L extends Label> PatchScenario<L> generatePatchScenario(VariationDiff<L> spl, String commitHash) throws Exception {
 		// ## 1. Sample two variants.
 		// Since we have no feature model, we create a naive problem space model:
 		// We just collect all features without constraints.
@@ -267,9 +267,9 @@ public class Generator {
 
 		// ## 3. To use command-line patchers such as GNU patch and mpatch, we need to
 		// write our variants to disk.
-		deleteFilesAndCreateNewDirectories();
+		deleteFilesAndCreateNewDirectories(commitHash);
 		Path patchPath = writeVariantsToFileSystem(sourceVariantBefore, sourceVariantAfter, targetVariantBefore, code,
-				patch);
+				patch, commitHash);
 //        writeToFile(targetVariantCodeAfter, targetVariantAfterPath);
 
 		runGnuDiff(patchPath);
@@ -278,9 +278,9 @@ public class Generator {
 				configureTo2);
 	}
 	
-	public static <L extends Label> void generateViewVariants(VariationDiff<L> sourcePatch, VariationTree<L> targetVariantBefore, Configure configureTo2) {
+	public static <L extends Label> void generateViewVariants(VariationDiff<L> sourcePatch, VariationTree<L> targetVariantBefore, Configure configureTo2, String commitHash) {
 		try {
-			deleteFilesAndCreateNewDirectories();
+			deleteFilesAndCreateNewDirectories(commitHash);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -292,7 +292,7 @@ public class Generator {
 		Path patchPath2;
 		try {
 			patchPath2 = writeVariantsToFileSystem(sourceVariantCrossVariantViewBefore,
-					sourceVariantCrossVariantViewAfter, targetVariantBefore, code, patch);
+					sourceVariantCrossVariantViewAfter, targetVariantBefore, code, patch, commitHash);
 			runGnuDiff(patchPath2);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -303,7 +303,7 @@ public class Generator {
 
 	private static <L extends Label> Path writeVariantsToFileSystem(final VariationTree<L> sourceVariantBefore,
 			final VariationTree<L> sourceVariantAfter, final VariationTree<L> targetVariantBefore, final String code,
-			final String patch) throws Exception {
+			final String patch, String commitHash) throws Exception {
 		final String sourceVariantCodeBefore = sourceVariantBefore.unparse();
 		final String sourceVariantCodeAfter = sourceVariantAfter.unparse();
 		final String targetVariantCodeBefore = targetVariantBefore.unparse(); // ground truth for fast comparisons
@@ -314,28 +314,29 @@ public class Generator {
 //		logDiff("Source After:", sourceVariantCodeAfter);
 //		logDiff("Target Before:", targetVariantCodeBefore);
 //		logDiff("Target After:", targetVariantCodeAfter);
-
-		Path sourceVariantBeforePath = Path.of(directory, sourceVariant, version1, code);
-		Path sourceVariantAfterPath = Path.of(directory, sourceVariant, version2, code);
-		Path targetVariantBeforePath = Path.of(directory, targetVariant, code);
-		Path patchPath = Path.of(directory, targetVariant, patch);
+		String newDir = directory + commitHash;
+		Path sourceVariantBeforePath = Path.of(newDir, sourceVariant, version1, code);
+		Path sourceVariantAfterPath = Path.of(newDir, sourceVariant, version2, code);
+		Path targetVariantBeforePath = Path.of(newDir, targetVariant, code);
+		Path patchPath = Path.of(newDir, targetVariant, patch);
 		writeToFile(sourceVariantCodeBefore, sourceVariantBeforePath);
 		writeToFile(sourceVariantCodeAfter, sourceVariantAfterPath);
 		writeToFile(targetVariantCodeBefore, targetVariantBeforePath);
 		return patchPath;
 	}
 
-	private static void deleteFilesAndCreateNewDirectories() throws Exception {
-		File f = new File(Path.of(directory).toUri());
+	private static void deleteFilesAndCreateNewDirectories(String commitHash) throws Exception {
+		String newDir = directory + commitHash;
+		File f = new File(Path.of(newDir).toUri());
 		deleteDirectory(f);
 		f.delete();
 
-		if (!(new File(Path.of(directory, targetVariant).toUri())).mkdirs()
-				|| !(new File(Path.of(directory, sourceVariant).toUri())).mkdir()) {
+		if (!(new File(Path.of(newDir, targetVariant).toUri())).mkdirs()
+				|| !(new File(Path.of(newDir, sourceVariant).toUri())).mkdir()) {
 			throw new Exception("Failed to create directories");
 		}
-		if (!(new File(Path.of(directory, sourceVariant, version1).toUri())).mkdirs()
-				|| !(new File(Path.of(directory, sourceVariant, version2).toUri())).mkdir()) {
+		if (!(new File(Path.of(newDir, sourceVariant, version1).toUri())).mkdirs()
+				|| !(new File(Path.of(newDir, sourceVariant, version2).toUri())).mkdir()) {
 			throw new Exception("Failed to create directories");
 		}
 	}
@@ -405,7 +406,7 @@ public class Generator {
 			e.printStackTrace();
 		}
 		
-		generateViewVariants(scenario.sourcePatch, scenario.targetVariantBefore, scenario.targetVariantConfig);
+		generateViewVariants(scenario.sourcePatch, scenario.targetVariantBefore, scenario.targetVariantConfig, "");
 		
 		Result<VariationTree<DiffLinesLabel>, Error> mpatchResult2;
 		try {

@@ -263,7 +263,8 @@ public class PatchingExperiment implements Analysis.Hooks {
 	@Override
 	public boolean analyzeVariationDiff(Analysis analysis) throws Exception {
 		VariationDiff<DiffLinesLabel> diff = analysis.getCurrentVariationDiff();
-		PatchScenario<DiffLinesLabel> scenario = Generator.generatePatchScenario(diff);
+		String commitHash = analysis.getCurrentCommit().getName();
+		PatchScenario<DiffLinesLabel> scenario = Generator.generatePatchScenario(diff, commitHash);
 
 		if (scenario == null) {
 			// something went wrong when generating the patching scenario
@@ -314,7 +315,7 @@ public class PatchingExperiment implements Analysis.Hooks {
 			analysis.get(MPATCH_ERROR_PATCHES_COUNTER_RESULT_KEY).value++;
 		}
 		
-		Generator.generateViewVariants(scenario.sourcePatch, scenario.targetVariantBefore, scenario.targetVariantConfig);
+		Generator.generateViewVariants(scenario.sourcePatch, scenario.targetVariantBefore, scenario.targetVariantConfig, commitHash);
 
 		Result<VariationTree<DiffLinesLabel>, Error> gnuPatchResultView;
 		try {
@@ -359,24 +360,23 @@ public class PatchingExperiment implements Analysis.Hooks {
 	@Override
 	public void endBatch(Analysis analysis) throws Exception {
 		for (Integer key : PatchingExperiment.failedPatches.keySet()) {
-//			Pair<PatchScenario<DiffLinesLabel>, VariationTree<DiffLinesLabel>> pair = PatchingExperiment.failedPatches.get(key);
-//			PatchScenario<DiffLinesLabel> scenario = pair.first();
-//			VariationDiff<DiffLinesLabel> diff = scenario.sourcePatch;
-//			VariationTree<DiffLinesLabel> tree = scenario.targetVariantBefore;
-//			VariationTree<DiffLinesLabel> patchedTree = pair.second();
-//			PatchingExperiment.writeToFile(diff.project(Time.BEFORE).unparse(), "failed" + key + "A1");
-//			PatchingExperiment.writeToFile(diff.project(Time.AFTER).unparse(), "failed" + key + "A2");
-//			PatchingExperiment.writeToFile(scenario.sourceVariantAfterRedToCrossVarFeatures.unparse(), "failed" + key + "A2_red");
-//			PatchingExperiment.writeToFile(tree.unparse(), "failed" + key + "B1");
-//			PatchingExperiment.writeToFile(scenario.targetVariantBeforeRedToUnchanged.unparse(), "failed" + key + "B1_unch");
-//			PatchingExperiment.writeToFile(patchedTree.unparse(), "failed" + key + "B2");
-//			VariationTree<DiffLinesLabel> red = TreeView.tree(patchedTree, scenario.sourceVariantConfig); 
-//			VariationTree<DiffLinesLabel> unch = TreeView.tree(patchedTree, scenario.unchangedAfter);
-//			PatchingExperiment.writeToFile(red.unparse(), "failed" + key + "B2_red");
-//			PatchingExperiment.writeToFile(unch.unparse(), "failed" + key + "B2_unch");
-//			PatchingExperiment.writeToFile(scenario.sourceVariantConfig.toString(), "failed" + key + "ConfigA");
-//			PatchingExperiment.writeToFile(scenario.targetVariantConfig.toString(), "failed" + key + "ConfigB");
-//			PatchingExperiment.writeToFile(CODE_VIEW, CODE);
+			Pair<PatchScenario<DiffLinesLabel>, VariationTree<DiffLinesLabel>> pair = PatchingExperiment.failedPatches.get(key);
+			PatchScenario<DiffLinesLabel> scenario = pair.first();
+			VariationDiff<DiffLinesLabel> diff = scenario.sourcePatch;
+			VariationTree<DiffLinesLabel> tree = scenario.targetVariantBefore;
+			VariationTree<DiffLinesLabel> patchedTree = pair.second();
+			PatchingExperiment.writeToFile(diff.project(Time.BEFORE).unparse(), "failed" + key + "A1");
+			PatchingExperiment.writeToFile(diff.project(Time.AFTER).unparse(), "failed" + key + "A2");
+			PatchingExperiment.writeToFile(scenario.sourceVariantAfterRedToCrossVarFeatures.unparse(), "failed" + key + "A2_red");
+			PatchingExperiment.writeToFile(tree.unparse(), "failed" + key + "B1");
+			PatchingExperiment.writeToFile(scenario.targetVariantBeforeRedToUnchanged.unparse(), "failed" + key + "B1_unch");
+			PatchingExperiment.writeToFile(patchedTree.unparse(), "failed" + key + "B2");
+			VariationTree<DiffLinesLabel> red = TreeView.tree(patchedTree, scenario.sourceVariantConfig); 
+			VariationTree<DiffLinesLabel> unch = TreeView.tree(patchedTree, scenario.unchangedAfter);
+			PatchingExperiment.writeToFile(red.unparse(), "failed" + key + "B2_red");
+			PatchingExperiment.writeToFile(unch.unparse(), "failed" + key + "B2_unch");
+			PatchingExperiment.writeToFile(scenario.sourceVariantConfig.toString(), "failed" + key + "ConfigA");
+			PatchingExperiment.writeToFile(scenario.targetVariantConfig.toString(), "failed" + key + "ConfigB");
 		}
 		PatchingExperiment.failedPatches.clear();
 		Logger.info("Batch done: {} commits analyzed", commits);
@@ -394,11 +394,11 @@ public class PatchingExperiment implements Analysis.Hooks {
 		final AnalysisRunner.Options analysisOptions = new AnalysisRunner.Options(Path.of("data", "repos"),
 				Path.of("data", "output"), Path.of("data", "demo-dataset.md"),
 				repo -> new PatchDiffParseOptions(PatchDiffParseOptions.DiffStoragePolicy.REMEMBER_FULL_DIFF,
-						new VariationDiffParseOptions(true, false)),
+						new VariationDiffParseOptions(false, false)),
 				defaultOptions.getFilterForRepo(), true, false);
 		try {
 			AnalysisRunner.run(analysisOptions, (repository, path) -> Analysis
-					.forEachCommit(() -> PatchingExperiment.Create(repository, path, experiment), 50, 4));
+					.forEachCommit(() -> PatchingExperiment.Create(repository, path, experiment), 50, 1));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

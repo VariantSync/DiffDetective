@@ -69,14 +69,14 @@ public class Main {
         
         for (VariationDiff<DiffLinesLabel> d : diffs) {
         	try {
-				Generator.generatePatchScenario(d);
-				Generator.generatePatchScenario(d);
-	    		Generator.generatePatchScenario(d);
-	    		Generator.generatePatchScenario(d);
-	    		Generator.generatePatchScenario(d);
-				Generator.generatePatchScenario(d);
-	    		Generator.generatePatchScenario(d);
-	    		Generator.generatePatchScenario(d);
+				Generator.generatePatchScenario(d, "");
+				Generator.generatePatchScenario(d, "");
+	    		Generator.generatePatchScenario(d, "");
+	    		Generator.generatePatchScenario(d, "");
+	    		Generator.generatePatchScenario(d, "");
+				Generator.generatePatchScenario(d, "");
+	    		Generator.generatePatchScenario(d, "");
+	    		Generator.generatePatchScenario(d, "");
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -85,7 +85,7 @@ public class Main {
         	for (int i = 0; i < 10; i++) {
 	            try {
 					
-					PatchScenario<DiffLinesLabel> scenario = Generator.generatePatchScenario(d);
+					PatchScenario<DiffLinesLabel> scenario = Generator.generatePatchScenario(d, "");
 					Generator.runPatchers(scenario);
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
