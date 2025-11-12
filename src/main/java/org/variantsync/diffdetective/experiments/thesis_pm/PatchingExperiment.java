@@ -291,7 +291,7 @@ public class PatchingExperiment implements Analysis.Hooks {
 
 		Result<VariationTree<DiffLinesLabel>, Error> gnuPatchResult;
 		try {
-			gnuPatchResult = Generator.runGnuPatch(scenario.targetVariantBefore, PATCH, CODE);
+			gnuPatchResult = Generator.runGnuPatch(scenario.targetVariantBefore, PATCH, CODE, commitHash);
 			gnuPatchResult.match(tree -> tree != null && Patching.arePatchedVariantsEquivalent(tree,
 					scenario.sourceVariantAfterRedToCrossVarFeatures, scenario.targetVariantBeforeRedToUnchanged,
 					scenario.sourceVariantConfig, scenario.unchangedAfter)
@@ -304,7 +304,7 @@ public class PatchingExperiment implements Analysis.Hooks {
 		
 		Result<VariationTree<DiffLinesLabel>, Error> mpatchResult;
 		try {
-			mpatchResult = Generator.runMPatch(scenario.targetVariantBefore, PATCH, CODE);
+			mpatchResult = Generator.runMPatch(scenario.targetVariantBefore, PATCH, CODE, commitHash);
 			mpatchResult.match(tree -> tree != null && Patching.arePatchedVariantsEquivalent(tree,
 					scenario.sourceVariantAfterRedToCrossVarFeatures, scenario.targetVariantBeforeRedToUnchanged,
 					scenario.sourceVariantConfig, scenario.unchangedAfter)
@@ -319,7 +319,7 @@ public class PatchingExperiment implements Analysis.Hooks {
 
 		Result<VariationTree<DiffLinesLabel>, Error> gnuPatchResultView;
 		try {
-			gnuPatchResultView = Generator.runGnuPatch(scenario.targetVariantBefore, PATCH, CODE);
+			gnuPatchResultView = Generator.runGnuPatch(scenario.targetVariantBefore, PATCH, CODE, commitHash);
 			gnuPatchResultView.match(tree -> tree != null && Patching.arePatchedVariantsEquivalent(tree,
 					scenario.sourceVariantAfterRedToCrossVarFeatures, scenario.targetVariantBeforeRedToUnchanged,
 					scenario.sourceVariantConfig, scenario.unchangedAfter)
@@ -332,7 +332,7 @@ public class PatchingExperiment implements Analysis.Hooks {
 
 		Result<VariationTree<DiffLinesLabel>, Error> mpatchResultView;
 		try {
-			mpatchResultView = Generator.runMPatch(scenario.targetVariantBefore, PATCH, CODE);
+			mpatchResultView = Generator.runMPatch(scenario.targetVariantBefore, PATCH, CODE, commitHash);
 			mpatchResultView.match(tree -> tree != null && Patching.arePatchedVariantsEquivalent(tree,
 					scenario.sourceVariantAfterRedToCrossVarFeatures, scenario.targetVariantBeforeRedToUnchanged,
 					scenario.sourceVariantConfig, scenario.unchangedAfter)

@@ -55,10 +55,10 @@ public class Generator {
 	final private static String targetVariant = "targetVariant";
 	final private static String code = "code.txt";
 	final private static String patch = "patch.txt";
-	final private static ShellExecutor shellSourceVariantDir = new ShellExecutor(Logger::info, Logger::error,
-			Path.of(directory, sourceVariant));
-	final private static ShellExecutor shellTargetVariantDir = new ShellExecutor(Logger::info, Logger::error,
-			Path.of(directory, targetVariant));
+//	final private static ShellExecutor shellSourceVariantDir = new ShellExecutor(Logger::info, Logger::error,
+//			Path.of(directory, sourceVariant));
+//	final private static ShellExecutor shellTargetVariantDir = new ShellExecutor(Logger::info, Logger::error,
+//			Path.of(directory, targetVariant));
 
 	enum Error {
 		FAILED, ERROR
@@ -272,7 +272,7 @@ public class Generator {
 				patch, commitHash);
 //        writeToFile(targetVariantCodeAfter, targetVariantAfterPath);
 
-		runGnuDiff(patchPath);
+		runGnuDiff(patchPath, commitHash);
 		
 		return new PatchScenario<L>(sourcePatch, targetVariantBefore, targetPatch, targetVariantAfter, configureTo1,
 				configureTo2);
@@ -293,7 +293,7 @@ public class Generator {
 		try {
 			patchPath2 = writeVariantsToFileSystem(sourceVariantCrossVariantViewBefore,
 					sourceVariantCrossVariantViewAfter, targetVariantBefore, code, patch, commitHash);
-			runGnuDiff(patchPath2);
+			runGnuDiff(patchPath2, commitHash);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -341,11 +341,12 @@ public class Generator {
 		}
 	}
 
-	private static void runGnuDiff(Path patchPath) {
+	private static void runGnuDiff(Path patchPath, String commitHash) {
 		try {
 			Path pathToVersion1Dir = Path.of(version1);
 			Path pathToVersion2Dir = Path.of(version2);
-			writeToFile(shellSourceVariantDir.execute(
+			ShellExecutor shell = new ShellExecutor(Logger::info, Logger::error, Path.of(directory + commitHash, sourceVariant));
+			writeToFile(shell.execute(
 					new DiffCommand("diff", "-Naur", pathToVersion1Dir.toString(), pathToVersion2Dir.toString())),
 					patchPath);
 
@@ -355,7 +356,7 @@ public class Generator {
 		}
 	}
 
-	public static <L extends Label> void runPatchers(PatchScenario<L> scenario) {
+	public static <L extends Label> void runPatchers(PatchScenario<L> scenario, String commitHash) {
 		// ## 4. Run the patchers!
 		boolean isMpatchCorrect = false;
 		boolean isMpatchCorrect2 = false;
@@ -380,7 +381,7 @@ public class Generator {
 
 		Result<VariationTree<DiffLinesLabel>, Error> gnuPatchResult;
 		try {
-			gnuPatchResult = runGnuPatch(scenario.targetVariantBefore, patch, code);
+			gnuPatchResult = runGnuPatch(scenario.targetVariantBefore, patch, code, commitHash);
 			if (gnuPatchResult.isSuccess()) {
 				gameEngine.add(Show.tree(gnuPatchResult.getSuccess(), "gnu patch result"));
 			}
@@ -394,7 +395,7 @@ public class Generator {
 
 		Result<VariationTree<DiffLinesLabel>, Error> mpatchResult;
 		try {
-			mpatchResult = runMPatch(scenario.targetVariantBefore, patch, code);
+			mpatchResult = runMPatch(scenario.targetVariantBefore, patch, code, commitHash);
 			if (mpatchResult.isSuccess()) {
 				gameEngine.add(Show.tree(mpatchResult.getSuccess(), "mpatch result"));
 			}
@@ -410,7 +411,7 @@ public class Generator {
 		
 		Result<VariationTree<DiffLinesLabel>, Error> mpatchResult2;
 		try {
-			mpatchResult2 = runMPatch(scenario.targetVariantBefore, patch, code);
+			mpatchResult2 = runMPatch(scenario.targetVariantBefore, patch, code, commitHash);
 			if (mpatchResult2.isSuccess()) {
 				gameEngine.add(Show.tree(mpatchResult2.getSuccess(), "mpatch result"));
 			}
@@ -424,7 +425,7 @@ public class Generator {
 		
 		Result<VariationTree<DiffLinesLabel>, Error> gnuPatchResult2;
 		try {
-			gnuPatchResult2 = runGnuPatch(scenario.targetVariantBefore, patch, code);
+			gnuPatchResult2 = runGnuPatch(scenario.targetVariantBefore, patch, code, commitHash);
 			if (gnuPatchResult2.isSuccess()) {
 				gameEngine.add(Show.tree(gnuPatchResult2.getSuccess(), "gnu patch result"));
 			}
@@ -452,15 +453,16 @@ public class Generator {
 	}
 
 	public static <L extends Label> Result<VariationTree<DiffLinesLabel>, Error> runMPatch(
-			final VariationTree<L> targetVariantBefore, String patch, String code) throws IOException {
+			final VariationTree<L> targetVariantBefore, String patch, String code, String commitHash) throws IOException {
 		// TODO: configure mpatch
 		// reset target variant
-		resetTargetVariantBefore(targetVariantBefore, code);
-		Path mpatchPath = Path.of("..", "..", "..", "mpatch", "target", "debug", "mpatch");
+		resetTargetVariantBefore(targetVariantBefore, code, commitHash);
+		Path mpatchPath = Path.of("..", "..", "..", "mpatch", "target", "release", "mpatch");
+		ShellExecutor shell = new ShellExecutor(Logger::info, Logger::error, Path.of(directory + commitHash, targetVariant));
 		MPatchCommand command = new MPatchCommand(mpatchPath.toString(), "--strip", "1", "--sourcedir",
 				Path.of("..", sourceVariant, version1).toString(), "--patchfile", patch);
 		try {
-			shellTargetVariantDir.execute(command);
+			shell.execute(command);
 		} catch (ShellException e) {
 			// FIXME: When a shell exception occurs, we know that patching failed.
 			// Either there is a bug or the patcher was not successful!
@@ -483,23 +485,24 @@ public class Generator {
 		return Result.Failure(Error.FAILED);
 	}
 
-	private static <L extends Label> void resetTargetVariantBefore(final VariationTree<L> targetVariantBefore, String code) {
-		Path targetVariantBeforePath = Path.of(directory, targetVariant, code);
+	private static <L extends Label> void resetTargetVariantBefore(final VariationTree<L> targetVariantBefore, String code, String commitHash) {
+		Path targetVariantBeforePath = Path.of(directory + commitHash, targetVariant, code);
 		writeToFile(targetVariantBefore.unparse(), targetVariantBeforePath);
 	}
 
 	public static <L extends Label> Result<VariationTree<DiffLinesLabel>, Error> runGnuPatch(
-			final VariationTree<L> targetVariantBefore, String patch, String code) throws IOException {
+			final VariationTree<L> targetVariantBefore, String patch, String code, String commitHash) throws IOException {
 		// TODO: run mpatch and gnu patch. Here is a sketch for this can be done.
 		// reset target variant
-		resetTargetVariantBefore(targetVariantBefore, code);
+		resetTargetVariantBefore(targetVariantBefore, code, commitHash);
 		Path pathToTargetVariantCode = Path.of("..", targetVariant, code);
 		Path pathToSourceVariantPatch = Path.of("..", targetVariant, patch);
+		ShellExecutor shell = new ShellExecutor(Logger::info, Logger::error, Path.of(directory + commitHash, sourceVariant));
 		GnuPatchCommand command = new GnuPatchCommand("patch", pathToTargetVariantCode.toString(),
 				pathToSourceVariantPatch.toString());
 		try {
 			// TODO: configure GNU patch
-			shellSourceVariantDir.execute(command);
+			shell.execute(command);
 			// reset target variant
 		} catch (ShellException e) {
 			Logger.error(e);

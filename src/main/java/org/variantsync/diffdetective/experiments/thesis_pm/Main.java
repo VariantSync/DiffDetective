@@ -86,7 +86,7 @@ public class Main {
 	            try {
 					
 					PatchScenario<DiffLinesLabel> scenario = Generator.generatePatchScenario(d, "");
-					Generator.runPatchers(scenario);
+					Generator.runPatchers(scenario, "");
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
