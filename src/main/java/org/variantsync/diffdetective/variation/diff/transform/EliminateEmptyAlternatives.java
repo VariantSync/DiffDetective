@@ -61,7 +61,11 @@ public class EliminateEmptyAlternatives implements Transformer<VariationTree<Dif
         Assert.assertTrue(head.content().contains("if"));
         final String indent = StringUtils.getLeadingWhitespace(head.content());
 
-        final String newText = indent + "#if " + formula.toString(NodeWriter.javaSymbols);
+        final NodeWriter nw = new NodeWriter(formula);
+		nw.setSymbols(NodeWriter.javaSymbols);
+		nw.setEnquoteWhitespace(true);
+		nw.setEnforceBrackets(true);
+		final String newText = indent + "#if " + nw.nodeToString();
 
         // We might have replaced multiple lines by a single line here.
         // In this case, some line numbers got lost and any variation tree using this updated label somewhere might not
