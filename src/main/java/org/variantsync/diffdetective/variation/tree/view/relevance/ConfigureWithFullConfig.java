@@ -1,10 +1,13 @@
 package org.variantsync.diffdetective.variation.tree.view.relevance;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
+import org.prop4j.Node;
 import org.variantsync.diffdetective.util.Assert;
+import org.variantsync.diffdetective.util.fide.FixTrueFalse;
 import org.variantsync.diffdetective.variation.NodeType;
 import org.variantsync.diffdetective.variation.tree.VariationNode;
 
@@ -17,11 +20,22 @@ public class ConfigureWithFullConfig implements Relevance {
 
     public ConfigureWithFullConfig(final Map<Object, Boolean> assignment) {
         this.assignment = assignment;
+        //FIXME: Fix FixTrueFalse TrueNames and FalseNames
+        this.assignment.put("0", false);
+        this.assignment.put("1", true);
+        this.assignment.put("False", false);
+        this.assignment.put("True", true);
     }
 
     @Override
     public boolean test(VariationNode<?, ?> v) {
-    	return v.getPresenceCondition().getValue(this.assignment);        
+    	// Since FeatureIDE falsely reports constants "True" and "False" as feature names, we have to remove them from the resulting set.
+    	try {
+    		return v.getPresenceCondition().getValue(this.assignment);
+    	} catch (Exception e) {
+    		System.out.println(this.assignment);
+    		throw e;
+    	}
     }
 
     private <TreeNode extends VariationNode<TreeNode, ?>> void computeViewNodes(List<TreeNode> vs, Consumer<TreeNode> markRelevant) {
