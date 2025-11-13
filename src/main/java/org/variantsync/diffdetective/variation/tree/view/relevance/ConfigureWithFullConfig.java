@@ -25,6 +25,11 @@ public class ConfigureWithFullConfig implements Relevance {
         this.assignment.put("1", true);
         this.assignment.put("False", false);
         this.assignment.put("True", true);
+        Map<Object, Boolean> map = new HashMap<>();
+        for (Map.Entry<Object, Boolean> entry : assignment.entrySet()) {
+        	map.put("!" + String.valueOf(entry.getKey()), !entry.getValue());
+        }
+        this.assignment.putAll(map);
     }
 
     @Override
