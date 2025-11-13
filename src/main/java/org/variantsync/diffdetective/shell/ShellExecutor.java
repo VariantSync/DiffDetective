@@ -100,7 +100,7 @@ public class ShellExecutor {
         List<String> output = new LinkedList<>();
         Consumer<String> shareOutput = s -> {
             output.add(s);
-            outputReader.accept(s);
+//            outputReader.accept(s);
         };
         try {
             process = builder.start();
