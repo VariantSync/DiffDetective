@@ -24,6 +24,8 @@ import org.variantsync.diffdetective.analysis.*;
 import org.variantsync.diffdetective.datasets.PatchDiffParseOptions;
 import org.variantsync.diffdetective.datasets.Repository;
 import org.variantsync.diffdetective.experiments.thesis_pm.Generator.Error;
+import org.variantsync.diffdetective.show.Show;
+import org.variantsync.diffdetective.show.engine.GameEngine;
 import org.variantsync.diffdetective.variation.diff.Time;
 import org.variantsync.diffdetective.variation.diff.VariationDiff;
 import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParseOptions;
@@ -586,12 +588,13 @@ public class PatchingExperiment implements Analysis.Hooks {
 						new VariationDiffParseOptions(false, false)),
 				defaultOptions.getFilterForRepo(), true, false);
 		try {
-			AnalysisRunner.run(analysisOptions, (repository, path) -> Analysis
-					.forEachCommit(() -> PatchingExperiment.Create(repository, path, experiment), 250, 8));
+//			AnalysisRunner.run(analysisOptions, (repository, path) -> Analysis
+//					.forEachCommit(() -> PatchingExperiment.Create(repository, path, experiment), 250, 1));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-//		try {
+		try {
+			GameEngine.showAndAwaitAll(Show.tree(Patching.parseVariationTreeFromFile("testCase.txt")));
 //			Configure configSource = new Configure(Map.of("ENABLE_SHA3SUM", false));
 //			Configure configTarget = new Configure(Map.of("ENABLE_SHA3SUM", false));
 //			VariationDiff<DiffLinesLabel> sourcePatch = Patching.parseVariationDiffFromFile("failed1A.diff");
@@ -599,10 +602,10 @@ public class PatchingExperiment implements Analysis.Hooks {
 //			Unchanged unchangedBefore = new Unchanged(sourcePatch, Time.BEFORE);
 //			Unchanged unchangedAfter = new Unchanged(sourcePatch, Time.AFTER);
 //			System.out.println(Patching.arePatchedVariantsEquivalent(patched.project(Time.AFTER), sourcePatch.project(Time.AFTER), TreeView.tree(Patching.parseVariationTreeFromFile("failed1B"), unchangedBefore), configSource, unchangedAfter));
-//		} catch (Exception e) {
+		} catch (Exception e) {
 //			System.out.println("Rejected");
 //			e.printStackTrace();
-//		}
+		}
 	}
 
 }
