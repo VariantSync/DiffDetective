@@ -367,11 +367,9 @@ public class PatchingExperiment implements Analysis.Hooks {
 	@Override
 	public boolean analyzeVariationDiff(Analysis analysis) throws Exception {
 		VariationDiff<DiffLinesLabel> diff = analysis.getCurrentVariationDiff();
-		if (diff.computeSize() > 10000) {
-			return false;
-		}
 		String commitHash = analysis.getCurrentCommit().getName();
 //		Logger.info(commitHash);
+	
 		PatchScenario<DiffLinesLabel> scenario = Generator.generatePatchScenario(diff, commitHash);
 
 		if (scenario == null) {
@@ -588,8 +586,8 @@ public class PatchingExperiment implements Analysis.Hooks {
 						new VariationDiffParseOptions(false, false)),
 				defaultOptions.getFilterForRepo(), true, false);
 		try {
-//			AnalysisRunner.run(analysisOptions, (repository, path) -> Analysis
-//					.forEachCommit(() -> PatchingExperiment.Create(repository, path, experiment), 250, 1));
+			AnalysisRunner.run(analysisOptions, (repository, path) -> Analysis
+					.forEachCommit(() -> PatchingExperiment.Create(repository, path, experiment), 20, 8));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

@@ -487,7 +487,7 @@ public class Generator {
 		// TODO: configure mpatch
 		// reset target variant
 		resetTargetVariantBefore(targetVariantBefore, code, commitHash);
-		Path mpatchPath = Path.of("..", "..", "..", "mpatch", "target", "release", "mpatch");
+		Path mpatchPath = Path.of("..", "..", "..", "mpatch", "target", "debug", "mpatch");
 		ShellExecutor shell = new ShellExecutor(Logger::info, Logger::error,
 				Path.of(directory + commitHash, targetVariant));
 		MPatchCommand command = new MPatchCommand(mpatchPath.toString(), "--strip", "1", "--sourcedir",
