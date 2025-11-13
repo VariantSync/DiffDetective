@@ -293,8 +293,13 @@ public class Patching {
 			}
 			indexTarget++;
 		}
-
-		return indexTarget == targetList.size();
+		while (indexTarget != targetList.size()) {
+			if (isPresentUnderConfiguration(targetList.get(indexTarget), configSource)) {
+				return false;
+			}
+			indexTarget++;
+		}
+		return true;
 	}
 
 	private static boolean isPresentUnderConfiguration(DiffNode<DiffLinesLabel> diffNode, ConfigureWithFullConfig config) {

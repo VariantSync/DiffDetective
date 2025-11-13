@@ -9,8 +9,10 @@ import java.nio.file.Path;
 import org.variantsync.diffdetective.AnalysisRunner;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.diff.patching.Patching;
+import org.variantsync.diffdetective.variation.diff.transform.CutNonEditedSubtrees;
 import org.variantsync.diffdetective.variation.tree.VariationTree;
 import org.variantsync.diffdetective.variation.tree.view.TreeView;
+import org.variantsync.diffdetective.variation.tree.view.relevance.ConfigureWithFullConfig;
 import org.variantsync.diffdetective.variation.tree.view.relevance.Unchanged;
 import org.variantsync.functjonal.Pair;
 import org.variantsync.functjonal.Result;
@@ -374,7 +376,7 @@ public class PatchingExperiment implements Analysis.Hooks {
 
 		if (scenario == null) {
 			// something went wrong when generating the patching scenario
-			return true;
+			return false;
 		}
 
 		// TODO: Run Pia's new patcher here and store the result.
@@ -587,22 +589,25 @@ public class PatchingExperiment implements Analysis.Hooks {
 				defaultOptions.getFilterForRepo(), true, false);
 		try {
 			AnalysisRunner.run(analysisOptions, (repository, path) -> Analysis
-					.forEachCommit(() -> PatchingExperiment.Create(repository, path, experiment), 20, 8));
+					.forEachCommit(() -> PatchingExperiment.Create(repository, path, experiment), 50, 8));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		try {
-			GameEngine.showAndAwaitAll(Show.tree(Patching.parseVariationTreeFromFile("testCase.txt")));
-//			Configure configSource = new Configure(Map.of("ENABLE_SHA3SUM", false));
-//			Configure configTarget = new Configure(Map.of("ENABLE_SHA3SUM", false));
-//			VariationDiff<DiffLinesLabel> sourcePatch = Patching.parseVariationDiffFromFile("failed1A.diff");
-//			VariationDiff<DiffLinesLabel> patched = Patching.patch(sourcePatch, Patching.parseVariationTreeFromFile("failed1B"), configSource, configTarget, false, true);
-//			Unchanged unchangedBefore = new Unchanged(sourcePatch, Time.BEFORE);
-//			Unchanged unchangedAfter = new Unchanged(sourcePatch, Time.AFTER);
-//			System.out.println(Patching.arePatchedVariantsEquivalent(patched.project(Time.AFTER), sourcePatch.project(Time.AFTER), TreeView.tree(Patching.parseVariationTreeFromFile("failed1B"), unchangedBefore), configSource, unchangedAfter));
+//			GameEngine.showAndAwaitAll(Show.tree(Patching.parseVariationTreeFromFile("testCase.txt")));
+//			Map<Object, Boolean> config1 = new HashMap<>();
+//			config1.put("ENABLE_SHA3SUM", true);
+//			Map<Object, Boolean> config2 = new HashMap<>();
+//			config2.put("ENABLE_SHA3SUM", false);
+//			ConfigureWithFullConfig configSource = new ConfigureWithFullConfig(config1);
+//			ConfigureWithFullConfig configTarget = new ConfigureWithFullConfig(config2);
+//			VariationDiff<DiffLinesLabel> sourcePatch = Patching.parseVariationDiffFromFiles("rejected1A1", "rejected1A2");
+//			CutNonEditedSubtrees.genericTransform(sourcePatch);
+//			GameEngine.showAndAwaitAll(Show.diff(sourcePatch));
+//			VariationDiff<DiffLinesLabel> patched = Patching.patch(sourcePatch, Patching.parseVariationTreeFromFile("rejected1B1"), configSource, configTarget, false, true);
 		} catch (Exception e) {
 //			System.out.println("Rejected");
-//			e.printStackTrace();
+			e.printStackTrace();
 		}
 	}
 

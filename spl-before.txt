@@ -1,2638 +1,2895 @@
 /* vi: set sw=4 ts=4: */
 /*
- * Busybox main internal header file
+ * httpd implementation for busybox
  *
- * Based in part on code from sash, Copyright (c) 1999 by David I. Bell
- * Permission has been granted to redistribute this code under GPL.
+ * Copyright (C) 2002,2003 Glenn Engel <glenne@engel.org>
+ * Copyright (C) 2003-2006 Vladimir Oleynik <dzo@simtreas.ru>
  *
- * Licensed under GPLv2, see file LICENSE in this source tree.
+ * Licensed under GPLv2 or later, see file LICENSE in this source tree.
+ *
+ *****************************************************************************
+ *
+ * Typical usage:
+ * For non root user:
+ *      httpd -p 8080 -h $HOME/public_html
+ * For daemon start from rc script with uid=0:
+ *      httpd -u www
+ * which is equivalent to (assuming user www has uid 80):
+ *      httpd -p 80 -u 80 -h $PWD -c /etc/httpd.conf -r "Web Server Authentication"
+ *
+ * When an url starts with "/cgi-bin/" it is assumed to be a cgi script.
+ * The server changes directory to the location of the script and executes it
+ * after setting QUERY_STRING and other environment variables.
+ *
+ * If directory URL is given, no index.html is found and CGI support is enabled,
+ * cgi-bin/index.cgi will be run. Directory to list is ../$QUERY_STRING.
+ * See httpd_indexcgi.c for an example GCI code.
+ *
+ * Doc:
+ * "CGI Environment Variables": http://hoohoo.ncsa.uiuc.edu/cgi/env.html
+ *
+ * The applet can also be invoked as an url arg decoder and html text encoder
+ * as follows:
+ *      foo=`httpd -d $foo`             # decode "Hello%20World" as "Hello World"
+ *      bar=`httpd -e "<Hello World>"`  # encode as "&#60Hello&#32World&#62"
+ * Note that url encoding for arguments is not the same as html encoding for
+ * presentation.  -d decodes an url-encoded argument while -e encodes in html
+ * for page display.
+ *
+ * httpd.conf has the following format:
+ *
+ * H:/serverroot     # define the server root. It will override -h
+ * A:172.20.         # Allow address from 172.20.0.0/16
+ * A:10.0.0.0/25     # Allow any address from 10.0.0.0-10.0.0.127
+ * A:10.0.0.0/255.255.255.128  # Allow any address that previous set
+ * A:127.0.0.1       # Allow local loopback connections
+ * D:*               # Deny from other IP connections
+ * E404:/path/e404.html # /path/e404.html is the 404 (not found) error page
+ * I:index.html      # Show index.html when a directory is requested
+ *
+ * P:/url:[http://]hostname[:port]/new/path
+ *                   # When /urlXXXXXX is requested, reverse proxy
+ *                   # it to http://hostname[:port]/new/pathXXXXXX
+ *
+ * /cgi-bin:foo:bar  # Require user foo, pwd bar on urls starting with /cgi-bin/
+ * /adm:admin:setup  # Require user admin, pwd setup on urls starting with /adm/
+ * /adm:toor:PaSsWd  # or user toor, pwd PaSsWd on urls starting with /adm/
+ * /adm:root:*       # or user root, pwd from /etc/passwd on urls starting with /adm/
+ * /wiki:*:*         # or any user from /etc/passwd with according pwd on urls starting with /wiki/
+ * .au:audio/basic   # additional mime type for audio.au files
+ * *.php:/path/php   # run xxx.php through an interpreter
+ *
+ * A/D may be as a/d or allow/deny - only first char matters.
+ * Deny/Allow IP logic:
+ *  - Default is to allow all (Allow all (A:*) is a no-op).
+ *  - Deny rules take precedence over allow rules.
+ *  - "Deny all" rule (D:*) is applied last.
+ *
+ * Example:
+ *   1. Allow only specified addresses
+ *     A:172.20          # Allow any address that begins with 172.20.
+ *     A:10.10.          # Allow any address that begins with 10.10.
+ *     A:127.0.0.1       # Allow local loopback connections
+ *     D:*               # Deny from other IP connections
+ *
+ *   2. Only deny specified addresses
+ *     D:1.2.3.        # deny from 1.2.3.0 - 1.2.3.255
+ *     D:2.3.4.        # deny from 2.3.4.0 - 2.3.4.255
+ *     A:*             # (optional line added for clarity)
+ *
+ * If a sub directory contains config file, it is parsed and merged with
+ * any existing settings as if it was appended to the original configuration.
+ *
+ * subdir paths are relative to the containing subdir and thus cannot
+ * affect the parent rules.
+ *
+ * Note that since the sub dir is parsed in the forked thread servicing the
+ * subdir http request, any merge is discarded when the process exits.  As a
+ * result, the subdir settings only have a lifetime of a single request.
+ *
+ * Custom error pages can contain an absolute path or be relative to
+ * 'home_httpd'. Error pages are to be static files (no CGI or script). Error
+ * page can only be defined in the root configuration file and are not taken
+ * into account in local (directories) config files.
+ *
+ * If -c is not set, an attempt will be made to open the default
+ * root configuration file.  If -c is set and the file is not found, the
+ * server exits with an error.
  */
-#ifndef LIBBB_H
-#define LIBBB_H 1
+//config:config HTTPD
+//config:	bool "httpd (32 kb)"
+//config:	default y
+//config:	help
+//config:	HTTP server.
+//config:
+//config:config FEATURE_HTTPD_PORT_DEFAULT
+//config:	int "Default port"
+//config:	default 80
+//config:	range 1 65535
+//config:	depends on HTTPD
+//config:
+//config:config FEATURE_HTTPD_RANGES
+//config:	bool "Support 'Ranges:' header"
+//config:	default y
+//config:	depends on HTTPD
+//config:	help
+//config:	Makes httpd emit "Accept-Ranges: bytes" header and understand
+//config:	"Range: bytes=NNN-[MMM]" header. Allows for resuming interrupted
+//config:	downloads, seeking in multimedia players etc.
+//config:
+//config:config FEATURE_HTTPD_SETUID
+//config:	bool "Enable -u <user> option"
+//config:	default y
+//config:	depends on HTTPD
+//config:	help
+//config:	This option allows the server to run as a specific user
+//config:	rather than defaulting to the user that starts the server.
+//config:	Use of this option requires special privileges to change to a
+//config:	different user.
+//config:
+//config:config FEATURE_HTTPD_BASIC_AUTH
+//config:	bool "Enable HTTP authentication"
+//config:	default y
+//config:	depends on HTTPD
+//config:	help
+//config:	Utilizes password settings from /etc/httpd.conf for basic
+//config:	authentication on a per url basis.
+//config:	Example for httpd.conf file:
+//config:	/adm:toor:PaSsWd
+//config:
+//config:config FEATURE_HTTPD_AUTH_MD5
+//config:	bool "Support MD5-encrypted passwords in HTTP authentication"
+//config:	default y
+//config:	depends on FEATURE_HTTPD_BASIC_AUTH
+//config:	help
+//config:	Enables encrypted passwords, and wildcard user/passwords
+//config:	in httpd.conf file.
+//config:	User '*' means 'any system user name is ok',
+//config:	password of '*' means 'use system password for this user'
+//config:	Examples:
+//config:	/adm:toor:$1$P/eKnWXS$aI1aPGxT.dJD5SzqAKWrF0
+//config:	/adm:root:*
+//config:	/wiki:*:*
+//config:
+//config:config FEATURE_HTTPD_CGI
+//config:	bool "Support Common Gateway Interface (CGI)"
+//config:	default y
+//config:	depends on HTTPD
+//config:	help
+//config:	This option allows scripts and executables to be invoked
+//config:	when specific URLs are requested.
+//config:
+//config:config FEATURE_HTTPD_CONFIG_WITH_SCRIPT_INTERPR
+//config:	bool "Support running scripts through an interpreter"
+//config:	default y
+//config:	depends on FEATURE_HTTPD_CGI
+//config:	help
+//config:	This option enables support for running scripts through an
+//config:	interpreter. Turn this on if you want PHP scripts to work
+//config:	properly. You need to supply an additional line in your
+//config:	httpd.conf file:
+//config:	*.php:/path/to/your/php
+//config:
+//config:config FEATURE_HTTPD_SET_REMOTE_PORT_TO_ENV
+//config:	bool "Set REMOTE_PORT environment variable for CGI"
+//config:	default y
+//config:	depends on FEATURE_HTTPD_CGI
+//config:	help
+//config:	Use of this option can assist scripts in generating
+//config:	references that contain a unique port number.
+//config:
+//config:config FEATURE_HTTPD_ENCODE_URL_STR
+//config:	bool "Enable -e option (useful for CGIs written as shell scripts)"
+//config:	default y
+//config:	depends on HTTPD
+//config:	help
+//config:	This option allows html encoding of arbitrary strings for display
+//config:	by the browser. Output goes to stdout.
+//config:	For example, httpd -e "<Hello World>" produces
+//config:	"&#60Hello&#32World&#62".
+//config:
+//config:config FEATURE_HTTPD_ERROR_PAGES
+//config:	bool "Support custom error pages"
+//config:	default y
+//config:	depends on HTTPD
+//config:	help
+//config:	This option allows you to define custom error pages in
+//config:	the configuration file instead of the default HTTP status
+//config:	error pages. For instance, if you add the line:
+//config:		E404:/path/e404.html
+//config:	in the config file, the server will respond the specified
+//config:	'/path/e404.html' file instead of the terse '404 NOT FOUND'
+//config:	message.
+//config:
+//config:config FEATURE_HTTPD_PROXY
+//config:	bool "Support reverse proxy"
+//config:	default y
+//config:	depends on HTTPD
+//config:	help
+//config:	This option allows you to define URLs that will be forwarded
+//config:	to another HTTP server. To setup add the following line to the
+//config:	configuration file
+//config:		P:/url/:http://hostname[:port]/new/path/
+//config:	Then a request to /url/myfile will be forwarded to
+//config:	http://hostname[:port]/new/path/myfile.
+//config:
+//config:config FEATURE_HTTPD_GZIP
+//config:	bool "Support GZIP content encoding"
+//config:	default y
+//config:	depends on HTTPD
+//config:	help
+//config:	Makes httpd send files using GZIP content encoding if the
+//config:	client supports it and a pre-compressed <file>.gz exists.
+//config:
+//config:config FEATURE_HTTPD_ETAG
+//config:	bool "Support caching via ETag header"
+//config:	default y
+//config:	depends on HTTPD
+//config:	help
+//config:	If server responds with ETag then next time client (browser)
+//config:	resend it via If-None-Match header.
+//config:	Then httpd will check if file wasn't modified and if not,
+//config:	return 304 Not Modified status code.
+//config:	The ETag value is constructed from last modification date
+//config:	in unix epoch, and size: "hex(last_mod)-hex(file_size)".
+//config:	It's not completely reliable as hash functions but fair enough.
+//config:
+//config:config FEATURE_HTTPD_LAST_MODIFIED
+//config:	bool "Add Last-Modified header to response"
+//config:	default y
+//config:	depends on HTTPD
+//config:	help
+//config:	The Last-Modified header is used for cache validation.
+//config:	The client sends last seen mtime to server in If-Modified-Since.
+//config:	Both headers MUST be an RFC 1123 formatted, which is hard to parse.
+//config:	Use ETag header instead.
+//config:
+//config:config FEATURE_HTTPD_DATE
+//config:	bool "Add Date header to response"
+//config:	default y
+//config:	depends on HTTPD
+//config:	help
+//config:	RFC2616 says that server MUST add Date header to response.
+//config:	But it is almost useless and can be omitted.
+//config:
+//config:config FEATURE_HTTPD_ACL_IP
+//config:	bool "ACL IP"
+//config:	default y
+//config:	depends on HTTPD
+//config:	help
+//config:	Support IP deny/allow rules
 
-#include "platform.h"
+//applet:IF_HTTPD(APPLET(httpd, BB_DIR_USR_SBIN, BB_SUID_DROP))
 
-#include <ctype.h>
-#include <dirent.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <inttypes.h>
-#include <netdb.h>
-#include <setjmp.h>
-#include <signal.h>
-#include <paths.h>
-#if defined __UCLIBC__ /* TODO: and glibc? */
-/* use inlined versions of these: */
-# define sigfillset(s)    __sigfillset(s)
-# define sigemptyset(s)   __sigemptyset(s)
-# define sigisemptyset(s) __sigisemptyset(s)
+//kbuild:lib-$(CONFIG_HTTPD) += httpd.o
+
+//usage:#define httpd_trivial_usage
+//usage:       "[-ifv[v]]"
+//usage:       " [-c CONFFILE]"
+//usage:       " [-p [IP:]PORT]"
+//usage:	IF_FEATURE_HTTPD_SETUID(" [-u USER[:GRP]]")
+//usage:	IF_FEATURE_HTTPD_BASIC_AUTH(" [-r REALM]")
+//usage:       " [-h HOME]\n"
+//usage:       "or httpd -d/-e" IF_FEATURE_HTTPD_AUTH_MD5("/-m") " STRING"
+//usage:#define httpd_full_usage "\n\n"
+//usage:       "Listen for incoming HTTP requests\n"
+//usage:     "\n	-i		Inetd mode"
+//usage:     "\n	-f		Run in foreground"
+//usage:     "\n	-v[v]		Verbose"
+//usage:     "\n	-p [IP:]PORT	Bind to IP:PORT (default *:"STR(CONFIG_FEATURE_HTTPD_PORT_DEFAULT)")"
+//usage:	IF_FEATURE_HTTPD_SETUID(
+//usage:     "\n	-u USER[:GRP]	Set uid/gid after binding to port")
+//usage:	IF_FEATURE_HTTPD_BASIC_AUTH(
+//usage:     "\n	-r REALM	Authentication Realm for Basic Authentication")
+//usage:     "\n	-h HOME		Home directory (default .)"
+//usage:     "\n	-c FILE		Configuration file (default {/etc,HOME}/httpd.conf)"
+//usage:	IF_FEATURE_HTTPD_AUTH_MD5(
+//usage:     "\n	-m STRING	MD5 crypt STRING")
+//usage:     "\n	-e STRING	HTML encode STRING"
+//usage:     "\n	-d STRING	URL decode STRING"
+
+/* TODO: use TCP_CORK, parse_config() */
+
+#include "libbb.h"
+#include "common_bufsiz.h"
+#if ENABLE_PAM
+/* PAM may include <locale.h>. We may need to undefine bbox's stub define: */
+# undef setlocale
+/* For some obscure reason, PAM is not in pam/xxx, but in security/xxx.
+ * Apparently they like to confuse people. */
+# include <security/pam_appl.h>
+# include <security/pam_misc.h>
 #endif
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdarg.h>
-#include <stddef.h>
-#include <string.h>
-/* There are two incompatible basename's, let's not use them! */
-/* See the dirname/basename man page for details */
-#include <libgen.h> /* dirname,basename */
-#undef basename
-#define basename dont_use_basename
-#include <poll.h>
-#include <sys/ioctl.h>
-#include <sys/mman.h>
-#include <sys/resource.h>
-#include <sys/socket.h>
-#include <sys/stat.h>
-#include <sys/time.h>
-#include <sys/types.h>
-#if !defined(major) || defined(__GLIBC__)
-# include <sys/sysmacros.h>
+#if ENABLE_FEATURE_USE_SENDFILE
+# include <sys/sendfile.h>
 #endif
-#include <sys/wait.h>
-#include <termios.h>
-#include <time.h>
-#include <sys/param.h>
-#include <pwd.h>
-#include <grp.h>
-#if ENABLE_FEATURE_SHADOWPASSWDS
-# if !ENABLE_USE_BB_SHADOW
-/* If using busybox's shadow implementation, do not include the shadow.h
- * header as the toolchain may not provide it at all.
- */
-#  include <shadow.h>
-# endif
+
+/* see sys/netinet6/in6.h */
+#if defined(__FreeBSD__)
+# define s6_addr32 __u6_addr.__u6_addr32
 #endif
-#if defined(ANDROID) || defined(__ANDROID__)
-# define endpwent() ((void)0)
-# define endgrent() ((void)0)
-#endif
-#ifdef HAVE_MNTENT_H
-# include <mntent.h>
-#endif
-#ifdef HAVE_SYS_STATFS_H
-# include <sys/statfs.h>
-#endif
-/* Don't do this here:
- * #include <sys/sysinfo.h>
- * Some linux/ includes pull in conflicting definition
- * of struct sysinfo (only in some toolchanins), which breaks build.
- * Include sys/sysinfo.h only in those files which need it.
- */
-#if ENABLE_SELINUX
-# include <selinux/selinux.h>
-# include <selinux/context.h>
-#endif
-#if ENABLE_FEATURE_UTMP
-# if defined __UCLIBC__ && ( \
-    (UCLIBC_VERSION >= KERNEL_VERSION(0, 9, 32) \
-     && UCLIBC_VERSION < KERNEL_VERSION(0, 9, 34) \
-     && defined __UCLIBC_HAS_UTMPX__ \
-    ) || ( \
-	 UCLIBC_VERSION >= KERNEL_VERSION(0, 9, 34) \
-	) \
-  )
-#  include <utmpx.h>
-# elif defined __UCLIBC__
-#  include <utmp.h>
-#  define utmpx utmp
-#  define setutxent setutent
-#  define endutxent endutent
-#  define getutxent getutent
-#  define getutxid getutid
-#  define getutxline getutline
-#  define pututxline pututline
-#  define utmpxname utmpname
-#  define updwtmpx updwtmp
-#  define _PATH_UTMPX _PATH_UTMP
-# else
-#  if !defined(__FreeBSD__)
-#   include <utmp.h>
-#  else
-#   define _PATH_UTMPX "/var/run/utx.active"
-#  endif
-#  include <utmpx.h>
-#  if defined _PATH_UTMP && !defined _PATH_UTMPX
-#   define _PATH_UTMPX _PATH_UTMP
-#  endif
-# endif
-#endif
-#if ENABLE_LOCALE_SUPPORT
-# include <locale.h>
+
+#define DEBUG 0
+
+#if DEBUG
+# define dbg(...) fprintf(stderr, __VA_ARGS__)
 #else
-# define setlocale(x,y) ((void)0)
+# define dbg(...) ((void)0)
 #endif
-#ifdef DMALLOC
-# include <dmalloc.h>
+
+#define IOBUF_SIZE 8192
+#define MAX_HTTP_HEADERS_SIZE (32*1024)
+
+#define HEADER_READ_TIMEOUT 60
+
+#define STR1(s) #s
+#define STR(s) STR1(s)
+
+static const char DEFAULT_PATH_HTTPD_CONF[] ALIGN1 = "/etc";
+static const char HTTPD_CONF[] ALIGN1 = "httpd.conf";
+static const char HTTP_200[] ALIGN1 = "HTTP/1.1 200 OK\r\n";
+static const char index_html[] ALIGN1 = "index.html";
+
+typedef struct has_next_ptr {
+	struct has_next_ptr *next;
+} has_next_ptr;
+
+/* Must have "next" as a first member */
+typedef struct Htaccess {
+	struct Htaccess *next;
+	char *after_colon;
+	char before_colon[1];  /* really bigger, must be last */
+} Htaccess;
+
+#if ENABLE_FEATURE_HTTPD_ACL_IP
+/* Must have "next" as a first member */
+typedef struct Htaccess_IP {
+	struct Htaccess_IP *next;
+	unsigned ip;
+	unsigned mask;
+	int allow_deny;
+} Htaccess_IP;
 #endif
-/* Just in case libc doesn't define some of these... */
-#ifndef _PATH_PASSWD
-#define _PATH_PASSWD  "/etc/passwd"
+
+/* Must have "next" as a first member */
+typedef struct Htaccess_Proxy {
+	struct Htaccess_Proxy *next;
+	char *url_from;
+	char *host_port;
+	char *url_to;
+} Htaccess_Proxy;
+
+enum {
+	HTTP_OK = 200,
+	HTTP_PARTIAL_CONTENT = 206,
+	HTTP_MOVED_TEMPORARILY = 302,
+	HTTP_NOT_MODIFIED = 304,
+	HTTP_BAD_REQUEST = 400,       /* malformed syntax */
+	HTTP_UNAUTHORIZED = 401, /* authentication needed, respond with auth hdr */
+	HTTP_NOT_FOUND = 404,
+	HTTP_FORBIDDEN = 403,
+	HTTP_REQUEST_TIMEOUT = 408,
+	HTTP_NOT_IMPLEMENTED = 501,   /* used for unrecognized requests */
+	HTTP_INTERNAL_SERVER_ERROR = 500,
+	HTTP_ENTITY_TOO_LARGE = 413,
+	HTTP_CONTINUE = 100,
+#if 0   /* future use */
+	HTTP_SWITCHING_PROTOCOLS = 101,
+	HTTP_CREATED = 201,
+	HTTP_ACCEPTED = 202,
+	HTTP_NON_AUTHORITATIVE_INFO = 203,
+	HTTP_NO_CONTENT = 204,
+	HTTP_MULTIPLE_CHOICES = 300,
+	HTTP_MOVED_PERMANENTLY = 301,
+	HTTP_PAYMENT_REQUIRED = 402,
+	HTTP_BAD_GATEWAY = 502,
+	HTTP_SERVICE_UNAVAILABLE = 503, /* overload, maintenance */
 #endif
-#ifndef _PATH_GROUP
-#define _PATH_GROUP   "/etc/group"
+};
+
+static const uint16_t http_response_type[] ALIGN2 = {
+	HTTP_OK,
+#if ENABLE_FEATURE_HTTPD_RANGES
+	HTTP_PARTIAL_CONTENT,
 #endif
-#ifndef _PATH_SHADOW
-#define _PATH_SHADOW  "/etc/shadow"
+	HTTP_MOVED_TEMPORARILY,
+#if ENABLE_FEATURE_HTTPD_ETAG
+	HTTP_NOT_MODIFIED,
 #endif
-#ifndef _PATH_GSHADOW
-#define _PATH_GSHADOW "/etc/gshadow"
+	HTTP_REQUEST_TIMEOUT,
+	HTTP_NOT_IMPLEMENTED,
+#if ENABLE_FEATURE_HTTPD_BASIC_AUTH
+	HTTP_UNAUTHORIZED,
 #endif
-#if defined __FreeBSD__ || defined __OpenBSD__
-# include <netinet/in.h>
-# include <arpa/inet.h>
-#elif defined __APPLE__
-# include <netinet/in.h>
+	HTTP_NOT_FOUND,
+	HTTP_BAD_REQUEST,
+	HTTP_FORBIDDEN,
+	HTTP_INTERNAL_SERVER_ERROR,
+	HTTP_ENTITY_TOO_LARGE,
+#if 0   /* not implemented */
+	HTTP_CREATED,
+	HTTP_ACCEPTED,
+	HTTP_NO_CONTENT,
+	HTTP_MULTIPLE_CHOICES,
+	HTTP_MOVED_PERMANENTLY,
+	HTTP_BAD_GATEWAY,
+	HTTP_SERVICE_UNAVAILABLE,
+#endif
+};
+
+static const struct {
+	const char *name;
+	const char *info;
+} http_response[ARRAY_SIZE(http_response_type)] = {
+	{ "OK", NULL },
+#if ENABLE_FEATURE_HTTPD_RANGES
+	{ "Partial Content", NULL },
+#endif
+	{ "Found", NULL },
+#if ENABLE_FEATURE_HTTPD_ETAG
+	{ "Not Modified" },
+#endif
+	{ "Request Timeout", "No request appeared within 60 seconds" },
+	{ "Not Implemented", "The requested method is not recognized" },
+#if ENABLE_FEATURE_HTTPD_BASIC_AUTH
+	{ "Unauthorized", "" },
+#endif
+	{ "Not Found", "The requested URL was not found" },
+	{ "Bad Request", "Unsupported method" },
+	{ "Forbidden", ""  },
+	{ "Internal Server Error", "Internal Server Error" },
+	{ "Entity Too Large", "Entity Too Large" },
+#if 0   /* not implemented */
+	{ "Created" },
+	{ "Accepted" },
+	{ "No Content" },
+	{ "Multiple Choices" },
+	{ "Moved Permanently" },
+	{ "Bad Gateway", "" },
+	{ "Service Unavailable", "" },
+#endif
+};
+
+struct globals {
+	int verbose;            /* must be int (used by getopt32) */
+	smallint flg_deny_all;
+#if ENABLE_FEATURE_HTTPD_GZIP
+	/* client can handle gzip / we are going to send gzip */
+	smallint content_gzip;
+#endif
+	time_t last_mod;
+#if ENABLE_FEATURE_HTTPD_ETAG
+	char *if_none_match;
+#endif
+	char *rmt_ip_str;       /* for $REMOTE_ADDR and $REMOTE_PORT */
+	const char *bind_addr_or_port;
+
+	char *g_query;
+	const char *opt_c_configFile;
+	const char *home_httpd;
+	const char *index_page;
+
+	const char *found_mime_type;
+	const char *found_moved_temporarily;
+#if ENABLE_FEATURE_HTTPD_ACL_IP
+	Htaccess_IP *ip_a_d;    /* config allow/deny lines */
+#endif
+
+	IF_FEATURE_HTTPD_BASIC_AUTH(const char *g_realm;)
+	IF_FEATURE_HTTPD_BASIC_AUTH(char *remoteuser;)
+
+	off_t file_size;        /* -1 - unknown */
+#if ENABLE_FEATURE_HTTPD_RANGES
+	off_t range_start;
+	off_t range_end;
+	off_t range_len;
+#endif
+
+#if ENABLE_FEATURE_HTTPD_BASIC_AUTH
+	Htaccess *g_auth;       /* config user:password lines */
+#endif
+	Htaccess *mime_a;       /* config mime types */
+#if ENABLE_FEATURE_HTTPD_CONFIG_WITH_SCRIPT_INTERPR
+	Htaccess *script_i;     /* config script interpreters */
+#endif
+	char *iobuf;            /* [IOBUF_SIZE] */
+#define        hdr_buf bb_common_bufsiz1
+#define sizeof_hdr_buf COMMON_BUFSIZE
+	char *hdr_ptr;
+	int hdr_cnt;
+#if ENABLE_FEATURE_HTTPD_ETAG
+	char etag[sizeof("'%llx-%llx'") + 2 * sizeof(long long)*3];
+#endif
+#if ENABLE_FEATURE_HTTPD_ERROR_PAGES
+	const char *http_error_page[ARRAY_SIZE(http_response_type)];
+#endif
+#if ENABLE_FEATURE_HTTPD_PROXY
+	Htaccess_Proxy *proxy;
+#endif
+};
+#define G (*ptr_to_globals)
+#define verbose           (G.verbose          )
+#define flg_deny_all      (G.flg_deny_all     )
+#if ENABLE_FEATURE_HTTPD_GZIP
+# define content_gzip     (G.content_gzip     )
 #else
-# include <arpa/inet.h>
-//This breaks on bionic:
-//# if !defined(__socklen_t_defined) && !defined(_SOCKLEN_T_DECLARED)
-///* We #define socklen_t *after* includes, otherwise we get
-// * typedef redefinition errors from system headers
-// * (in case "is it defined already" detection above failed)
-// */
-//#  define socklen_t bb_socklen_t
-//   typedef unsigned socklen_t;
-//# endif
-//if this is still needed, add a fix along the lines of
-//  ifdef SPECIFIC_BROKEN_LIBC_CHECK / typedef socklen_t / endif
-//in platform.h instead!
+# define content_gzip     0
 #endif
-#ifndef HAVE_CLEARENV
-# define clearenv() do { if (environ) environ[0] = NULL; } while (0)
+#define bind_addr_or_port (G.bind_addr_or_port)
+#define g_query           (G.g_query          )
+#define opt_c_configFile  (G.opt_c_configFile )
+#define home_httpd        (G.home_httpd       )
+#define index_page        (G.index_page       )
+#define found_mime_type   (G.found_mime_type  )
+#define found_moved_temporarily (G.found_moved_temporarily)
+#define last_mod          (G.last_mod         )
+#define g_realm           (G.g_realm          )
+#define remoteuser        (G.remoteuser       )
+#define file_size         (G.file_size        )
+#if ENABLE_FEATURE_HTTPD_RANGES
+#define range_start       (G.range_start      )
+#define range_end         (G.range_end        )
+#define range_len         (G.range_len        )
+#else
+enum {
+	range_start = -1,
+	range_end = MAXINT(off_t) - 1,
+	range_len = MAXINT(off_t),
+};
 #endif
-#ifndef HAVE_FDATASYNC
-# define fdatasync fsync
+#define rmt_ip_str        (G.rmt_ip_str       )
+#define g_auth            (G.g_auth           )
+#define mime_a            (G.mime_a           )
+#define script_i          (G.script_i         )
+#define iobuf             (G.iobuf            )
+#define hdr_ptr           (G.hdr_ptr          )
+#define hdr_cnt           (G.hdr_cnt          )
+#define http_error_page   (G.http_error_page  )
+#define proxy             (G.proxy            )
+#define INIT_G() do { \
+	setup_common_bufsiz(); \
+	SET_PTR_TO_GLOBALS(xzalloc(sizeof(G))); \
+	IF_FEATURE_HTTPD_BASIC_AUTH(g_realm = "Web Server Authentication";) \
+	IF_FEATURE_HTTPD_RANGES(range_start = -1;) \
+	bind_addr_or_port = STR(CONFIG_FEATURE_HTTPD_PORT_DEFAULT); \
+	index_page = index_html; \
+	file_size = -1; \
+} while (0)
+
+
+#define STRNCASECMP(a, str) strncasecmp((a), (str), sizeof(str)-1)
+
+/* Prototypes */
+enum {
+	SEND_HEADERS     = (1 << 0),
+	SEND_BODY        = (1 << 1),
+};
+static void send_file_and_exit(const char *url, int what) NORETURN;
+
+static void free_llist(has_next_ptr **pptr)
+{
+	has_next_ptr *cur = *pptr;
+	while (cur) {
+		has_next_ptr *t = cur;
+		cur = cur->next;
+		free(t);
+	}
+	*pptr = NULL;
+}
+
+static ALWAYS_INLINE void free_Htaccess_list(Htaccess **pptr)
+{
+	free_llist((has_next_ptr**)pptr);
+}
+
+#if ENABLE_FEATURE_HTTPD_ACL_IP
+static ALWAYS_INLINE void free_Htaccess_IP_list(Htaccess_IP **pptr)
+{
+	free_llist((has_next_ptr**)pptr);
+}
 #endif
-#ifndef HAVE_XTABS
-# define XTABS TAB3
+
+#if ENABLE_FEATURE_HTTPD_ACL_IP
+/* Returns presumed mask width in bits or < 0 on error.
+ * Updates strp, stores IP at provided pointer */
+static int scan_ip(const char **strp, unsigned *ipp, unsigned char endc)
+{
+	const char *p = *strp;
+	int auto_mask = 8;
+	unsigned ip = 0;
+	int j;
+
+	if (*p == '/')
+		return -auto_mask;
+
+	for (j = 0; j < 4; j++) {
+		unsigned octet;
+
+		if ((*p < '0' || *p > '9') && *p != '/' && *p)
+			return -auto_mask;
+		octet = 0;
+		while (*p >= '0' && *p <= '9') {
+			octet *= 10;
+			octet += *p - '0';
+			if (octet > 255)
+				return -auto_mask;
+			p++;
+		}
+		if (*p == '.')
+			p++;
+		if (*p != '/' && *p)
+			auto_mask += 8;
+		ip = (ip << 8) | octet;
+	}
+	if (*p) {
+		if (*p != endc)
+			return -auto_mask;
+		p++;
+		if (*p == '\0')
+			return -auto_mask;
+	}
+	*ipp = ip;
+	*strp = p;
+	return auto_mask;
+}
+
+/* Returns 0 on success. Stores IP and mask at provided pointers */
+static int scan_ip_mask(const char *str, unsigned *ipp, unsigned *maskp)
+{
+	int i;
+	unsigned mask;
+	char *p;
+
+	i = scan_ip(&str, ipp, '/');
+	if (i < 0)
+		return i;
+
+	if (*str) {
+		/* there is /xxx after dotted-IP address */
+		i = bb_strtou(str, &p, 10);
+		if (*p == '.') {
+			/* 'xxx' itself is dotted-IP mask, parse it */
+			/* (return 0 (success) only if it has N.N.N.N form) */
+			return scan_ip(&str, maskp, '\0') - 32;
+		}
+		if (*p)
+			return -1;
+	}
+
+	if (i > 32)
+		return -1;
+
+	if (sizeof(unsigned) == 4 && i == 32) {
+		/* mask >>= 32 below may not work */
+		mask = 0;
+	} else {
+		mask = 0xffffffff;
+		mask >>= i;
+	}
+	/* i == 0 -> *maskp = 0x00000000
+	 * i == 1 -> *maskp = 0x80000000
+	 * i == 4 -> *maskp = 0xf0000000
+	 * i == 31 -> *maskp = 0xfffffffe
+	 * i == 32 -> *maskp = 0xffffffff */
+	*maskp = (uint32_t)(~mask);
+	return 0;
+}
 #endif
+
 /*
- * Use '%m' to append error string on platforms that support it,
- * '%s' and strerror() on those that don't.
- */
-#ifdef HAVE_PRINTF_PERCENTM
-# define STRERROR_FMT    "%m"
-# define STRERROR_ERRNO  /*nothing*/
-#else
-# define STRERROR_FMT    "%s"
-# define STRERROR_ERRNO  ,strerror(errno)
-#endif
-
-
-/* Some libc's forget to declare these, do it ourself */
-
-extern char **environ;
-/* klogctl is in libc's klog.h, but we cheat and not #include that */
-int klogctl(int type, char *b, int len);
-#ifndef PATH_MAX
-# define PATH_MAX 256
-#endif
-#ifndef BUFSIZ
-# define BUFSIZ 4096
-#endif
-
-#if __GNUC_PREREQ(5,0)
-/* Since musl is apparently unable to get it right and would use
- * a function call to a single-instruction function of "bswap %eax",
- * reroute to gcc builtins:
- */
-# undef  bswap_16
-# undef  bswap_32
-# undef  bswap_64
-# define bswap_16(x) __builtin_bswap16(x)
-# define bswap_32(x) __builtin_bswap32(x)
-# define bswap_64(x) __builtin_bswap64(x)
-# if BB_LITTLE_ENDIAN
-#   undef ntohs
-#   undef htons
-#   undef ntohl
-#   undef htonl
-#   define ntohs(x) __builtin_bswap16(x)
-#   define htons(x) __builtin_bswap16(x)
-#   define ntohl(x) __builtin_bswap32(x)
-#   define htonl(x) __builtin_bswap32(x)
-# endif
-#endif
-
-/* Busybox does not use threads, we can speed up stdio. */
-#ifdef HAVE_UNLOCKED_STDIO
-# undef  getc
-# define getc(stream)   getc_unlocked(stream)
-# undef  getchar
-# define getchar()      getchar_unlocked()
-# undef  putc
-# define putc(c,stream) putc_unlocked(c,stream)
-# undef  putchar
-# define putchar(c)     putchar_unlocked(c)
-# undef  fgetc
-# define fgetc(stream)  getc_unlocked(stream)
-# undef  fputc
-# define fputc(c,stream) putc_unlocked(c,stream)
-#endif
-/* Above functions are required by POSIX.1-2008, below ones are extensions */
-#ifdef HAVE_UNLOCKED_LINE_OPS
-# undef  fgets
-# define fgets(s,n,stream) fgets_unlocked(s,n,stream)
-# undef  fputs
-# define fputs(s,stream) fputs_unlocked(s,stream)
-/* musl <= 1.1.15 does not support fflush_unlocked(NULL) */
-//# undef  fflush
-//# define fflush(stream) fflush_unlocked(stream)
-# undef  feof
-# define feof(stream)   feof_unlocked(stream)
-# undef  ferror
-# define ferror(stream) ferror_unlocked(stream)
-# undef  fileno
-# define fileno(stream) fileno_unlocked(stream)
-#endif
-
-
-/* Make all declarations hidden (-fvisibility flag only affects definitions) */
-/* (don't include system headers after this until corresponding pop!) */
-PUSH_AND_SET_FUNCTION_VISIBILITY_TO_HIDDEN
-
-
-#if ENABLE_USE_BB_PWD_GRP
-# include "pwd_.h"
-# include "grp_.h"
-#endif
-#if ENABLE_FEATURE_SHADOWPASSWDS
-# if ENABLE_USE_BB_SHADOW
-#  include "shadow_.h"
-# endif
-#endif
-
-/* Tested to work correctly with all int types (IIRC :]) */
-#define MAXINT(T) (T)( \
-	((T)-1) > 0 \
-	? (T)-1 \
-	: (T)~((T)1 << (sizeof(T)*8-1)) \
-	)
-
-#define MININT(T) (T)( \
-	((T)-1) > 0 \
-	? (T)0 \
-	: ((T)1 << (sizeof(T)*8-1)) \
-	)
-
-/* Large file support */
-/* Note that CONFIG_LFS=y forces bbox to be built with all common ops
- * (stat, lseek etc) mapped to "largefile" variants by libc.
- * Practically it means that open() automatically has O_LARGEFILE added
- * and all filesize/file_offset parameters and struct members are "large"
- * (in today's world - signed 64bit). For full support of large files,
- * we need a few helper #defines (below) and careful use of off_t
- * instead of int/ssize_t. No lseek64(), O_LARGEFILE etc necessary */
-#if ENABLE_LFS
-/* CONFIG_LFS is on */
-# if ULONG_MAX > 0xffffffff
-/* "long" is long enough on this system */
-typedef unsigned long uoff_t;
-#  define XATOOFF(a) xatoul_range((a), 0, LONG_MAX)
-/* usage: sz = BB_STRTOOFF(s, NULL, 10); if (errno || sz < 0) die(); */
-#  define BB_STRTOOFF bb_strtoul
-#  define STRTOOFF strtoul
-/* usage: printf("size: %"OFF_FMT"d (%"OFF_FMT"x)\n", sz, sz); */
-#  define OFF_FMT "l"
-# else
-/* "long" is too short, need "long long" */
-typedef unsigned long long uoff_t;
-#  define XATOOFF(a) xatoull_range((a), 0, LLONG_MAX)
-#  define BB_STRTOOFF bb_strtoull
-#  define STRTOOFF strtoull
-#  define OFF_FMT "ll"
-# endif
-#else
-/* CONFIG_LFS is off */
-/* sizeof(off_t) == sizeof(long).
- * May or may not be == sizeof(int). If it is, use xatoi_positive()
- * and bb_strtou() instead of xatoul_range() and bb_strtoul().
- * Even if sizeof(off_t) == sizeof(int), off_t is typedef'ed to long anyway.
- * gcc will throw warnings on printf("%d", off_t)... Have to use %ld etc.
- */
-# if UINT_MAX == ULONG_MAX
-typedef unsigned long uoff_t;
-#  define XATOOFF(a) xatoi_positive(a)
-#  define BB_STRTOOFF bb_strtou
-#  define STRTOOFF strtol
-#  define OFF_FMT "l"
-# else
-typedef unsigned long uoff_t;
-#  define XATOOFF(a) xatoul_range((a), 0, LONG_MAX)
-#  define BB_STRTOOFF bb_strtoul
-#  define STRTOOFF strtol
-#  define OFF_FMT "l"
-# endif
-#endif
-/* scary. better ideas? (but do *test* them first!) */
-#define OFF_T_MAX  ((off_t)~((off_t)1 << (sizeof(off_t)*8-1)))
-/* Users report bionic to use 32-bit off_t even if LARGEFILE support is requested.
- * On musl, !ENABLE_LFS on 32-bit arches thinks that off_t is 32-bit.
- * We misdetected that. Don't let it build:
- */
-struct BUG_off_t_size_is_misdetected {
-	char BUG_off_t_size_is_misdetected[sizeof(off_t) == sizeof(uoff_t) ? 1 : -1];
-};
-
-/* Some useful definitions */
-#undef FALSE
-#define FALSE   ((int) 0)
-#undef TRUE
-#define TRUE    ((int) 1)
-#undef SKIP
-#define SKIP	((int) 2)
-
-/* Macros for min/max.  */
-#ifndef MIN
-#define MIN(a,b) (((a)<(b))?(a):(b))
-#endif
-
-#ifndef MAX
-#define MAX(a,b) (((a)>(b))?(a):(b))
-#endif
-
-/* buffer allocation schemes */
-#if ENABLE_FEATURE_BUFFERS_GO_ON_STACK
-#define RESERVE_CONFIG_BUFFER(buffer,len)  char buffer[len]
-#define RESERVE_CONFIG_UBUFFER(buffer,len) unsigned char buffer[len]
-#define RELEASE_CONFIG_BUFFER(buffer)      ((void)0)
-#else
-#if ENABLE_FEATURE_BUFFERS_GO_IN_BSS
-#define RESERVE_CONFIG_BUFFER(buffer,len)  static          char buffer[len]
-#define RESERVE_CONFIG_UBUFFER(buffer,len) static unsigned char buffer[len]
-#define RELEASE_CONFIG_BUFFER(buffer)      ((void)0)
-#else
-#define RESERVE_CONFIG_BUFFER(buffer,len)  char *buffer = xmalloc(len)
-#define RESERVE_CONFIG_UBUFFER(buffer,len) unsigned char *buffer = xmalloc(len)
-#define RELEASE_CONFIG_BUFFER(buffer)      free(buffer)
-#endif
-#endif
-
-/* We use a trick to have more optimized code (fewer pointer reloads
- * and reduced binary size by a few kilobytes) like:
- *  ash.c:   extern struct globals *const ash_ptr_to_globals;
- *  ash_ptr_hack.c: struct globals *ash_ptr_to_globals;
- * This way, compiler in ash.c knows the pointer can not change.
+ * Parse configuration file into in-memory linked list.
  *
- * However, this may break on weird arches or toolchains. In this case,
- * set "-DBB_GLOBAL_CONST=''" in CONFIG_EXTRA_CFLAGS to disable
- * this optimization.
+ * Any previous IP rules are discarded.
+ * If the flag argument is not SUBDIR_PARSE then all /path and mime rules
+ * are also discarded.  That is, previous settings are retained if flag is
+ * SUBDIR_PARSE.
+ * Error pages are only parsed on the main config file.
+ *
+ * path   Path where to look for httpd.conf (without filename).
+ * flag   Type of the parse request.
  */
-#ifndef BB_GLOBAL_CONST
-# define BB_GLOBAL_CONST const
-#endif
-
-#if defined(errno)
-/* If errno is a define, assume it's "define errno (*__errno_location())"
- * and we will cache it's result in this variable */
-extern int *BB_GLOBAL_CONST bb_errno;
-# undef errno
-# define errno (*bb_errno)
-# define bb_cached_errno_ptr 1
-#endif
-
-#if !(ULONG_MAX > 0xffffffff)
-/* Only 32-bit CPUs need this, 64-bit ones use inlined version */
-uint64_t bb_bswap_64(uint64_t x) FAST_FUNC;
-#endif
-
-unsigned long FAST_FUNC isqrt(unsigned long long N);
-
-unsigned long long monotonic_ns(void) FAST_FUNC;
-unsigned long long monotonic_us(void) FAST_FUNC;
-unsigned long long monotonic_ms(void) FAST_FUNC;
-unsigned monotonic_sec(void) FAST_FUNC;
-
-extern void chomp(char *s) FAST_FUNC;
-extern char *trim(char *s) FAST_FUNC;
-extern char *skip_whitespace(const char *) FAST_FUNC;
-extern char *skip_non_whitespace(const char *) FAST_FUNC;
-extern char *skip_dev_pfx(const char *tty_name) FAST_FUNC;
-
-extern char *strrstr(const char *haystack, const char *needle) FAST_FUNC;
-
-/* dmalloc will redefine these to it's own implementation. It is safe
- * to have the prototypes here unconditionally.  */
-void *malloc_or_warn(size_t size) FAST_FUNC RETURNS_MALLOC;
-void *xmalloc(size_t size) FAST_FUNC RETURNS_MALLOC;
-void *xzalloc(size_t size) FAST_FUNC RETURNS_MALLOC;
-void *xrealloc(void *old, size_t size) FAST_FUNC;
-/* After v = xrealloc_vector(v, SHIFT, idx) it's ok to use
- * at least v[idx] and v[idx+1], for all idx values.
- * SHIFT specifies how many new elements are added (1:2, 2:4, ..., 8:256...)
- * when all elements are used up. New elements are zeroed out.
- * xrealloc_vector(v, SHIFT, idx) *MUST* be called with consecutive IDXs -
- * skipping an index is a bad bug - it may miss a realloc!
- */
-#define xrealloc_vector(vector, shift, idx) \
-	xrealloc_vector_helper((vector), (sizeof((vector)[0]) << 8) + (shift), (idx))
-void* xrealloc_vector_helper(void *vector, unsigned sizeof_and_shift, int idx) FAST_FUNC;
-char *xstrdup(const char *s) FAST_FUNC RETURNS_MALLOC;
-char *xstrndup(const char *s, size_t n) FAST_FUNC RETURNS_MALLOC;
-void *xmemdup(const void *s, size_t n) FAST_FUNC RETURNS_MALLOC;
-void *mmap_read(int fd, size_t size) FAST_FUNC;
-void *mmap_anon(size_t size) FAST_FUNC;
-void *xmmap_anon(size_t size) FAST_FUNC;
-
-#if defined(__x86_64__) || defined(i386)
-# define BB_ARCH_FIXED_PAGESIZE 4096
-#elif defined(__arm__) /* only 32bit, 64bit ARM has variable page size */
-# define BB_ARCH_FIXED_PAGESIZE 4096
-#else /* if defined(ARCH) */
-/* add you favorite arch today! */
-//From Linux kernel inspection:
-//xtenza,s390[x],riscv,nios2,csky,sparc32: fixed 4k pages
-//sparc64,alpha,openrisc: fixed 8k pages
-#endif
-
-#if defined BB_ARCH_FIXED_PAGESIZE
-# define IF_VARIABLE_ARCH_PAGESIZE(...) /*nothing*/
-# define bb_getpagesize()     BB_ARCH_FIXED_PAGESIZE
-# define INIT_PAGESIZE(var)   ((void)0)
-# define cached_pagesize(var) BB_ARCH_FIXED_PAGESIZE
-#else
-# define IF_VARIABLE_ARCH_PAGESIZE(...) __VA_ARGS__
-# define bb_getpagesize()     getpagesize()
-# define INIT_PAGESIZE(var)   ((var) = getpagesize())
-# define cached_pagesize(var) (var)
-#endif
-
-/* Generate ls-style "mode string" like "-rwsr-xr-x" or "drwxrwxrwt" */
-extern char *bb_mode_string(char buf[11], mode_t mode) FAST_FUNC;
-extern int is_directory(const char *name, int followLinks) FAST_FUNC;
-enum {	/* cp.c, mv.c, install.c depend on these values. CAREFUL when changing them! */
-	FILEUTILS_PRESERVE_STATUS = 1 << 0, /* -p */
-	FILEUTILS_DEREFERENCE     = 1 << 1, /* !-d */
-	FILEUTILS_RECUR           = 1 << 2, /* -R */
-	FILEUTILS_FORCE           = 1 << 3, /* -f */
-	FILEUTILS_INTERACTIVE     = 1 << 4, /* -i */
-	FILEUTILS_NO_OVERWRITE    = 1 << 5, /* -n */
-	FILEUTILS_MAKE_HARDLINK   = 1 << 6, /* -l */
-	FILEUTILS_MAKE_SOFTLINK   = 1 << 7, /* -s */
-	FILEUTILS_DEREF_SOFTLINK  = 1 << 8, /* -L */
-	FILEUTILS_DEREFERENCE_L0  = 1 << 9, /* -H */
-	/* -a = -pdR (mapped in cp.c) */
-	/* -r = -dR  (mapped in cp.c) */
-	/* -P = -d   (mapped in cp.c) */
-	FILEUTILS_VERBOSE         = (1 << 13) * ENABLE_FEATURE_VERBOSE,	/* -v */
-	FILEUTILS_UPDATE          = 1 << 14, /* -u */
-	FILEUTILS_NO_TARGET_DIR	  = 1 << 15, /* -T */
-	FILEUTILS_TARGET_DIR	  = 1 << 16, /* -t DIR */
-#if ENABLE_SELINUX
-	FILEUTILS_PRESERVE_SECURITY_CONTEXT = 1 << 17, /* -c */
-#endif
-#define FILEUTILS_CP_OPTSTR "pdRfinlsLHarPvuTt:" IF_SELINUX("c")
-/* How many bits in FILEUTILS_CP_OPTSTR? */
-	FILEUTILS_CP_OPTBITS      = 18 - !ENABLE_SELINUX,
-
-	FILEUTILS_RMDEST          = 1 << (19 - !ENABLE_SELINUX), /* cp --remove-destination */
-	/* bit 18 skipped for "cp --parents" */
-	FILEUTILS_REFLINK         = 1 << (20 - !ENABLE_SELINUX), /* cp --reflink=auto */
-	FILEUTILS_REFLINK_ALWAYS  = 1 << (21 - !ENABLE_SELINUX), /* cp --reflink[=always] */
-	/*
-	 * Hole. cp may have some bits set here,
-	 * they should not affect remove_file()/copy_file()
-	 */
-#if ENABLE_SELINUX
-	FILEUTILS_SET_SECURITY_CONTEXT = 1 << 30,
-#endif
-	FILEUTILS_IGNORE_CHMOD_ERR = 1 << 31,
-};
-
-extern int remove_file(const char *path, int flags) FAST_FUNC;
-/* NB: without FILEUTILS_RECUR in flags, it will basically "cat"
- * the source, not copy (unless "source" is a directory).
- * This makes "cp /dev/null file" and "install /dev/null file" (!!!)
- * work coreutils-compatibly. */
-extern int copy_file(const char *source, const char *dest, int flags) FAST_FUNC;
-
+/* flag param: */
 enum {
-	ACTION_RECURSE        = (1 << 0),
-	ACTION_FOLLOWLINKS    = (1 << 1),
-	ACTION_FOLLOWLINKS_L0 = (1 << 2),
-	ACTION_DEPTHFIRST     = (1 << 3),
-	ACTION_QUIET          = (1 << 4),
-	ACTION_DANGLING_OK    = (1 << 5),
+	FIRST_PARSE    = 0, /* path will be "/etc" */
+	SIGNALED_PARSE = 1, /* path will be "/etc" */
+	SUBDIR_PARSE   = 2, /* path will be derived from URL */
 };
-typedef uint8_t recurse_flags_t;
-typedef struct recursive_state {
-	unsigned flags;
-	unsigned depth;
-	void *userData;
-	int FAST_FUNC (*fileAction)(struct recursive_state *state, const char *fileName, struct stat* statbuf);
-	int FAST_FUNC  (*dirAction)(struct recursive_state *state, const char *fileName, struct stat* statbuf);
-} recursive_state_t;
-int recursive_action(const char *fileName, unsigned flags,
-	int FAST_FUNC (*fileAction)(struct recursive_state *state, const char *fileName, struct stat* statbuf),
-	int FAST_FUNC  (*dirAction)(struct recursive_state *state, const char *fileName, struct stat* statbuf),
-	void *userData
-) FAST_FUNC;
+static int parse_conf(const char *path, int flag)
+{
+	/* internally used extra flag state */
+	enum { TRY_CURDIR_PARSE = 3 };
 
-/* Simpler version: call a function on each dirent in a directory */
-int iterate_on_dir(const char *dir_name,
-		int FAST_FUNC (*func)(const char *, struct dirent *, void *),
-		void *private) FAST_FUNC;
+	FILE *f;
+	const char *filename;
+	char buf[160];
 
-extern int device_open(const char *device, int mode) FAST_FUNC;
-enum { GETPTY_BUFSIZE = 16 }; /* more than enough for "/dev/ttyXXX" */
-extern int xgetpty(char *line) FAST_FUNC;
-extern int get_console_fd_or_die(void) FAST_FUNC;
-extern void console_make_active(int fd, const int vt_num) FAST_FUNC;
-extern char *find_block_device(const char *path) FAST_FUNC;
-/* bb_copyfd_XX print read/write errors and return -1 if they occur */
-extern off_t bb_copyfd_eof(int fd1, int fd2) FAST_FUNC;
-extern off_t bb_copyfd_size(int fd1, int fd2, off_t size) FAST_FUNC;
-extern void bb_copyfd_exact_size(int fd1, int fd2, off_t size) FAST_FUNC;
-/* "short" copy can be detected by return value < size */
-/* this helper yells "short read!" if param is not -1 */
-extern void complain_copyfd_and_die(off_t sz) NORETURN FAST_FUNC;
+	/* discard old rules */
+#if ENABLE_FEATURE_HTTPD_ACL_IP
+	free_Htaccess_IP_list(&G.ip_a_d);
+#endif
+	flg_deny_all = 0;
+	/* retain previous auth and mime config only for subdir parse */
+	if (flag != SUBDIR_PARSE) {
+		free_Htaccess_list(&mime_a);
+#if ENABLE_FEATURE_HTTPD_BASIC_AUTH
+		free_Htaccess_list(&g_auth);
+#endif
+#if ENABLE_FEATURE_HTTPD_CONFIG_WITH_SCRIPT_INTERPR
+		free_Htaccess_list(&script_i);
+#endif
+	}
 
-extern char bb_process_escape_sequence(const char **ptr) FAST_FUNC;
-char* strcpy_and_process_escape_sequences(char *dst, const char *src) FAST_FUNC;
-/* xxxx_strip version can modify its parameter:
- * "/"        -> "/"
- * "abc"      -> "abc"
- * "abc/def"  -> "def"
- * "abc/def/" -> "def" !!
- */
-char *bb_get_last_path_component_strip(char *path) FAST_FUNC;
-/* "abc/def/" -> "" and it never modifies 'path' */
-char *bb_get_last_path_component_nostrip(const char *path) FAST_FUNC;
-/* Simpler version: does not special case "/" string */
-const char *bb_basename(const char *name) FAST_FUNC;
-/* NB: can violate const-ness (similarly to strchr) */
-char *last_char_is(const char *s, int c) FAST_FUNC;
-const char* endofname(const char *name) FAST_FUNC;
-char *is_prefixed_with(const char *string, const char *key) FAST_FUNC;
-char *is_suffixed_with(const char *string, const char *key) FAST_FUNC;
+	filename = opt_c_configFile;
+	if (flag == SUBDIR_PARSE || filename == NULL) {
+		filename = alloca(strlen(path) + sizeof(HTTPD_CONF) + 2);
+		sprintf((char *)filename, "%s/%s", path, HTTPD_CONF);
+	}
 
-int ndelay_on(int fd) FAST_FUNC;
-int ndelay_off(int fd) FAST_FUNC;
-void close_on_exec_on(int fd) FAST_FUNC;
-void xdup2(int, int) FAST_FUNC;
-void xmove_fd(int, int) FAST_FUNC;
+	while ((f = fopen_for_read(filename)) == NULL) {
+		if (flag >= SUBDIR_PARSE) { /* SUBDIR or TRY_CURDIR */
+			/* config file not found, no changes to config */
+			return -1;
+		}
+		if (flag == FIRST_PARSE) {
+			/* -c CONFFILE given, but CONFFILE doesn't exist? */
+			if (opt_c_configFile)
+				bb_simple_perror_msg_and_die(opt_c_configFile);
+			/* else: no -c, thus we looked at /etc/httpd.conf,
+			 * and it's not there. try ./httpd.conf: */
+		}
+		flag = TRY_CURDIR_PARSE;
+		filename = HTTPD_CONF;
+	}
 
-
-DIR *xopendir(const char *path) FAST_FUNC;
-DIR *warn_opendir(const char *path) FAST_FUNC;
-
-char *xmalloc_realpath(const char *path) FAST_FUNC RETURNS_MALLOC;
-char *xmalloc_realpath_coreutils(char *path) FAST_FUNC RETURNS_MALLOC;
-char *xmalloc_readlink(const char *path) FAST_FUNC RETURNS_MALLOC;
-char *xmalloc_readlink_or_warn(const char *path) FAST_FUNC RETURNS_MALLOC;
-/* !RETURNS_MALLOC: it's a realloc-like function */
-char *xrealloc_getcwd_or_warn(char *cwd) FAST_FUNC;
-
-char *xmalloc_follow_symlinks(const char *path) FAST_FUNC RETURNS_MALLOC;
-
-
-enum {
-	/* bb_signals(BB_FATAL_SIGS, handler) catches all signals which
-	 * otherwise would kill us, except for those resulting from bugs:
-	 * SIGSEGV, SIGILL, SIGFPE.
-	 * Other fatal signals not included (TODO?):
-	 * SIGBUS   Bus error (bad memory access)
-	 * SIGPOLL  Pollable event. Synonym of SIGIO
-	 * SIGPROF  Profiling timer expired
-	 * SIGSYS   Bad argument to routine
-	 * SIGTRAP  Trace/breakpoint trap
+#if ENABLE_FEATURE_HTTPD_BASIC_AUTH
+	/* in "/file:user:pass" lines, we prepend path in subdirs */
+	if (flag != SUBDIR_PARSE)
+		path = "";
+#endif
+	/* The lines can be:
 	 *
-	 * The only known arch with some of these sigs not fitting
-	 * into 32 bits is parisc (SIGXCPU=33, SIGXFSZ=34, SIGSTKFLT=36).
-	 * Dance around with long long to guard against that...
+	 * I:default_index_file
+	 * H:http_home
+	 * [AD]:IP[/mask]   # allow/deny, * for wildcard
+	 * Ennn:error.html  # error page for status nnn
+	 * P:/url:[http://]hostname[:port]/new/path # reverse proxy
+	 * .ext:mime/type   # mime type
+	 * *.php:/path/php  # run xxx.php through an interpreter
+	 * /file:user:pass  # username and password
 	 */
-	BB_FATAL_SIGS = (int)(0
-		+ (1LL << SIGHUP)
-		+ (1LL << SIGINT)
-		+ (1LL << SIGTERM)
-		+ (1LL << SIGPIPE)   // Write to pipe with no readers
-		+ (1LL << SIGQUIT)   // Quit from keyboard
-		+ (1LL << SIGABRT)   // Abort signal from abort(3)
-		+ (1LL << SIGALRM)   // Timer signal from alarm(2)
-		+ (1LL << SIGVTALRM) // Virtual alarm clock
-		+ (1LL << SIGXCPU)   // CPU time limit exceeded
-		+ (1LL << SIGXFSZ)   // File size limit exceeded
-		+ (1LL << SIGUSR1)   // Yes kids, these are also fatal!
-		+ (1LL << SIGUSR2)
-		+ 0),
-};
-void bb_signals(int sigs, void (*f)(int)) FAST_FUNC;
-/* Unlike signal() and bb_signals, sets handler with sigaction()
- * and in a way that while signal handler is run, no other signals
- * will be blocked; syscalls will not be restarted: */
-void bb_signals_norestart(int sigs, void (*f)(int)) FAST_FUNC;
-/* syscalls like read() will be interrupted with EINTR: */
-void signal_no_SA_RESTART_empty_mask(int sig, void (*handler)(int)) FAST_FUNC;
-/* syscalls like read() won't be interrupted (though select/poll will be): */
-void signal_SA_RESTART_empty_mask(int sig, void (*handler)(int)) FAST_FUNC;
-void wait_for_any_sig(void) FAST_FUNC;
-void kill_myself_with_sig(int sig) NORETURN FAST_FUNC;
-void sig_block(int sig) FAST_FUNC;
-void sig_unblock(int sig) FAST_FUNC;
-/* Will do sigaction(signum, act, NULL): */
-int sigaction_set(int sig, const struct sigaction *act) FAST_FUNC;
-/* SIG_BLOCK/SIG_UNBLOCK all signals: */
-int sigprocmask_allsigs(int how) FAST_FUNC;
-/* Return old set in the same set: */
-int sigprocmask2(int how, sigset_t *set) FAST_FUNC;
-/* Standard handler which just records signo */
-extern smallint bb_got_signal;
-void record_signo(int signo); /* not FAST_FUNC! */
+	while (fgets(buf, sizeof(buf), f) != NULL) {
+		unsigned strlen_buf;
+		unsigned char ch;
+		char *after_colon;
 
+		{ /* remove all whitespace, and # comments */
+			char *p, *p0;
 
-void xsetgid(gid_t gid) FAST_FUNC;
-void xsetuid(uid_t uid) FAST_FUNC;
-void xsetegid(gid_t egid) FAST_FUNC;
-void xseteuid(uid_t euid) FAST_FUNC;
-int chdir_or_warn(const char *path) FAST_FUNC;
-void xchdir(const char *path) FAST_FUNC;
-void xfchdir(int fd) FAST_FUNC;
-void xchroot(const char *path) FAST_FUNC;
-void xsetenv(const char *key, const char *value) FAST_FUNC;
-void bb_unsetenv(const char *key) FAST_FUNC;
-void bb_unsetenv_and_free(char *key) FAST_FUNC;
-void xunlink(const char *pathname) FAST_FUNC;
-void xstat(const char *pathname, struct stat *buf) FAST_FUNC;
-void xfstat(int fd, struct stat *buf, const char *errmsg) FAST_FUNC;
-int open3_or_warn(const char *pathname, int flags, int mode) FAST_FUNC;
-int open_or_warn(const char *pathname, int flags) FAST_FUNC;
-int xopen3(const char *pathname, int flags, int mode) FAST_FUNC;
-int xopen(const char *pathname, int flags) FAST_FUNC;
-int xopen_nonblocking(const char *pathname) FAST_FUNC;
-int xopen_as_uid_gid(const char *pathname, int flags, uid_t u, gid_t g) FAST_FUNC;
-int open_or_warn_stdin(const char *pathname) FAST_FUNC;
-int xopen_stdin(const char *pathname) FAST_FUNC;
-void xrename(const char *oldpath, const char *newpath) FAST_FUNC;
-int rename_or_warn(const char *oldpath, const char *newpath) FAST_FUNC;
-off_t xlseek(int fd, off_t offset, int whence) FAST_FUNC;
-int xmkstemp(char *template) FAST_FUNC;
-off_t fdlength(int fd) FAST_FUNC;
+			p0 = buf;
+			/* skip non-whitespace beginning. Often the whole line
+			 * is non-whitespace. We want this case to work fast,
+			 * without needless copying, therefore we don't merge
+			 * this operation into next while loop. */
+			while ((ch = *p0) != '\0' && ch != '\n' && ch != '#'
+			 && ch != ' ' && ch != '\t'
+			) {
+				p0++;
+			}
+			p = p0;
+			/* if we enter this loop, we have some whitespace.
+			 * discard it */
+			while (ch != '\0' && ch != '\n' && ch != '#') {
+				if (ch != ' ' && ch != '\t') {
+					*p++ = ch;
+				}
+				ch = *++p0;
+			}
+			*p = '\0';
+			strlen_buf = p - buf;
+			if (strlen_buf == 0)
+				continue; /* empty line */
+		}
 
-uoff_t FAST_FUNC get_volume_size_in_bytes(int fd,
-		const char *override,
-		unsigned override_units,
-		int extend);
+		after_colon = strchr(buf, ':');
+		/* strange line? */
+		if (after_colon == NULL || *++after_colon == '\0')
+			goto config_error;
 
-void xpipe(int *filedes) FAST_FUNC;
-/* In this form code with pipes is much more readable */
-struct fd_pair { int rd; int wr; };
-#define piped_pair(pair)  pipe(&((pair).rd))
-#define xpiped_pair(pair) xpipe(&((pair).rd))
+		ch = (buf[0] & ~0x20); /* toupper if it's a letter */
 
-/* Useful for having small structure members/global variables */
-typedef int8_t socktype_t;
-typedef int8_t family_t;
-struct BUG_too_small {
-	char BUG_socktype_t_too_small[(0
-			| SOCK_STREAM
-			| SOCK_DGRAM
-			| SOCK_RDM
-			| SOCK_SEQPACKET
-			| SOCK_RAW
-			) <= 127 ? 1 : -1];
-	char BUG_family_t_too_small[(0
-			| AF_UNSPEC
-			| AF_INET
-			| AF_INET6
-			| AF_UNIX
-#ifdef AF_PACKET
-			| AF_PACKET
+		if (ch == 'I') {
+			if (index_page != index_html)
+				free((char*)index_page);
+			index_page = xstrdup(after_colon);
+			continue;
+		}
+
+		/* do not allow jumping around using H in subdir's configs */
+		if (flag == FIRST_PARSE && ch == 'H') {
+			home_httpd = xstrdup(after_colon);
+			xchdir(home_httpd);
+			continue;
+		}
+
+#if ENABLE_FEATURE_HTTPD_ACL_IP
+		if (ch == 'A' || ch == 'D') {
+			Htaccess_IP *pip;
+
+			if (*after_colon == '*') {
+				if (ch == 'D') {
+					/* memorize "deny all" */
+					flg_deny_all = 1;
+				}
+				/* skip assumed "A:*", it is a default anyway */
+				continue;
+			}
+			/* store "allow/deny IP/mask" line */
+			pip = xzalloc(sizeof(*pip));
+			if (scan_ip_mask(after_colon, &pip->ip, &pip->mask)) {
+				/* IP{/mask} syntax error detected, protect all */
+				ch = 'D';
+				pip->mask = 0;
+			}
+			pip->allow_deny = ch;
+			if (ch == 'D') {
+				/* Deny:from_IP - prepend */
+				pip->next = G.ip_a_d;
+				G.ip_a_d = pip;
+			} else {
+				/* A:from_IP - append (thus all D's precedes A's) */
+				Htaccess_IP *prev_IP = G.ip_a_d;
+				if (prev_IP == NULL) {
+					G.ip_a_d = pip;
+				} else {
+					while (prev_IP->next)
+						prev_IP = prev_IP->next;
+					prev_IP->next = pip;
+				}
+			}
+			continue;
+		}
 #endif
-#ifdef AF_NETLINK
-			| AF_NETLINK
+
+#if ENABLE_FEATURE_HTTPD_ERROR_PAGES
+		if (flag == FIRST_PARSE && ch == 'E') {
+			unsigned i;
+			int status = atoi(buf + 1); /* error status code */
+
+			if (status < HTTP_CONTINUE) {
+				goto config_error;
+			}
+			/* then error page; find matching status */
+			for (i = 0; i < ARRAY_SIZE(http_response_type); i++) {
+				if (http_response_type[i] == status) {
+					/* We chdir to home_httpd, thus no need to
+					 * concat_path_file(home_httpd, after_colon)
+					 * here */
+					http_error_page[i] = xstrdup(after_colon);
+					break;
+				}
+			}
+			continue;
+		}
 #endif
-			/* | AF_DECnet */
-			/* | AF_IPX */
-			) <= 127 ? 1 : -1];
-};
 
+#if ENABLE_FEATURE_HTTPD_PROXY
+		if (flag == FIRST_PARSE && ch == 'P') {
+			/* P:/url:[http://]hostname[:port]/new/path */
+			char *url_from, *host_port, *url_to;
+			Htaccess_Proxy *proxy_entry;
 
-int parse_datestr(const char *date_str, struct tm *ptm) FAST_FUNC;
-time_t validate_tm_time(const char *date_str, struct tm *ptm) FAST_FUNC;
-char *strftime_HHMMSS(char *buf, unsigned len, time_t *tp) FAST_FUNC;
-char *strftime_YYYYMMDDHHMMSS(char *buf, unsigned len, time_t *tp) FAST_FUNC;
-void xgettimeofday(struct timeval *tv) FAST_FUNC;
-void xsettimeofday(const struct timeval *tv) FAST_FUNC;
-
-
-int xsocket(int domain, int type, int protocol) FAST_FUNC;
-void xbind(int sockfd, struct sockaddr *my_addr, socklen_t addrlen) FAST_FUNC;
-void xlisten(int s, int backlog) FAST_FUNC;
-void xconnect(int s, const struct sockaddr *s_addr, socklen_t addrlen) FAST_FUNC;
-ssize_t xsendto(int s, const void *buf, size_t len, const struct sockaddr *to,
-				socklen_t tolen) FAST_FUNC;
-
-int setsockopt_int(int fd, int level, int optname, int optval) FAST_FUNC;
-int setsockopt_1(int fd, int level, int optname) FAST_FUNC;
-int setsockopt_SOL_SOCKET_int(int fd, int optname, int optval) FAST_FUNC;
-int setsockopt_SOL_SOCKET_1(int fd, int optname) FAST_FUNC;
-/* SO_REUSEADDR allows a server to rebind to an address that is already
- * "in use" by old connections to e.g. previous server instance which is
- * killed or crashed. Without it bind will fail until all such connections
- * time out. Linux does not allow multiple live binds on same ip:port
- * regardless of SO_REUSEADDR (unlike some other flavors of Unix).
- * Turn it on before you call bind(). */
-void setsockopt_reuseaddr(int fd) FAST_FUNC; /* On Linux this never fails. */
-int setsockopt_keepalive(int fd) FAST_FUNC;
-int setsockopt_broadcast(int fd) FAST_FUNC;
-int setsockopt_bindtodevice(int fd, const char *iface) FAST_FUNC;
-int bb_getsockname(int sockfd, void *addr, socklen_t addrlen) FAST_FUNC;
-/* NB: returns port in host byte order */
-unsigned bb_lookup_port(const char *port, const char *protocol, unsigned default_port) FAST_FUNC;
-#if ENABLE_FEATURE_ETC_SERVICES
-# define bb_lookup_std_port(portstr, protocol, portnum) bb_lookup_port(portstr, protocol, portnum)
-#else
-# define bb_lookup_std_port(portstr, protocol, portnum) (portnum)
+			url_from = after_colon;
+			host_port = strchr(after_colon, ':');
+			if (host_port == NULL) {
+				goto config_error;
+			}
+			*host_port++ = '\0';
+			if (is_prefixed_with(host_port, "http://"))
+				host_port += 7;
+			if (*host_port == '\0') {
+				goto config_error;
+			}
+			url_to = strchr(host_port, '/');
+			if (url_to == NULL) {
+				goto config_error;
+			}
+			*url_to = '\0';
+			proxy_entry = xzalloc(sizeof(*proxy_entry));
+			proxy_entry->url_from = xstrdup(url_from);
+			proxy_entry->host_port = xstrdup(host_port);
+			*url_to = '/';
+			proxy_entry->url_to = xstrdup(url_to);
+			proxy_entry->next = proxy;
+			proxy = proxy_entry;
+			continue;
+		}
 #endif
-typedef struct len_and_sockaddr {
-	socklen_t len;
-	union {
-		struct sockaddr sa;
-		struct sockaddr_in sin;
-#if ENABLE_FEATURE_IPV6
-		struct sockaddr_in6 sin6;
+		/* the rest of directives are non-alphabetic,
+		 * must avoid using "toupper'ed" ch */
+		ch = buf[0];
+
+		if (ch == '.' /* ".ext:mime/type" */
+#if ENABLE_FEATURE_HTTPD_CONFIG_WITH_SCRIPT_INTERPR
+		 || (ch == '*' && buf[1] == '.') /* "*.php:/path/php" */
 #endif
-	} u;
-} len_and_sockaddr;
-enum {
-	LSA_LEN_SIZE = offsetof(len_and_sockaddr, u),
-	LSA_SIZEOF_SA = sizeof(
-		union {
-			struct sockaddr sa;
-			struct sockaddr_in sin;
-#if ENABLE_FEATURE_IPV6
-			struct sockaddr_in6 sin6;
+		) {
+			char *p;
+			Htaccess *cur;
+
+			cur = xzalloc(sizeof(*cur) /* includes space for NUL */ + strlen_buf);
+			strcpy(cur->before_colon, buf);
+			p = cur->before_colon + (after_colon - buf);
+			p[-1] = '\0';
+			cur->after_colon = p;
+			if (ch == '.') {
+				/* .mime line: prepend to mime_a list */
+				cur->next = mime_a;
+				mime_a = cur;
+			}
+#if ENABLE_FEATURE_HTTPD_CONFIG_WITH_SCRIPT_INTERPR
+			else {
+				/* script interpreter line: prepend to script_i list */
+				cur->next = script_i;
+				script_i = cur;
+			}
+#endif
+			continue;
+		}
+
+#if ENABLE_FEATURE_HTTPD_BASIC_AUTH
+		if (ch == '/') { /* "/file:user:pass" */
+			char *p;
+			Htaccess *cur;
+			unsigned file_len;
+
+			/* note: path is "" unless we are in SUBDIR parse,
+			 * otherwise it does NOT start with "/" */
+			cur = xzalloc(sizeof(*cur) /* includes space for NUL */
+				+ 1 + strlen(path)
+				+ strlen_buf
+				);
+			/* form "/path/file" */
+			sprintf(cur->before_colon, "/%s%.*s",
+				path,
+				(int) (after_colon - buf - 1), /* includes "/", but not ":" */
+				buf);
+			/* canonicalize it */
+			p = bb_simplify_abs_path_inplace(cur->before_colon);
+			file_len = p - cur->before_colon;
+			/* add "user:pass" after NUL */
+			strcpy(++p, after_colon);
+			cur->after_colon = p;
+
+			/* insert cur into g_auth */
+			/* g_auth is sorted by decreased filename length */
+			{
+				Htaccess *auth, **authp;
+
+				authp = &g_auth;
+				while ((auth = *authp) != NULL) {
+					if (file_len >= strlen(auth->before_colon)) {
+						/* insert cur before auth */
+						cur->next = auth;
+						break;
+					}
+					authp = &auth->next;
+				}
+				*authp = cur;
+			}
+			continue;
+		}
+#endif /* BASIC_AUTH */
+
+		/* the line is not recognized */
+ config_error:
+		bb_error_msg("config error '%s' in '%s'", buf, filename);
+	} /* while (fgets) */
+
+	fclose(f);
+	return 0;
+}
+
+#if ENABLE_FEATURE_HTTPD_ENCODE_URL_STR
+/*
+ * Given a string, html-encode special characters.
+ * This is used for the -e command line option to provide an easy way
+ * for scripts to encode result data without confusing browsers.  The
+ * returned string pointer is memory allocated by malloc().
+ *
+ * Returns a pointer to the encoded string (malloced).
+ */
+static char *encodeString(const char *string)
+{
+	/* take the simple route and encode everything */
+	/* could possibly scan once to get length.     */
+	int len = strlen(string);
+	char *out = xmalloc(len * 6 + 1);
+	char *p = out;
+	char ch;
+
+	while ((ch = *string++) != '\0') {
+		/* very simple check for what to encode */
+		if (isalnum(ch))
+			*p++ = ch;
+		else
+			p += sprintf(p, "&#%u;", (unsigned char) ch);
+	}
+	*p = '\0';
+	return out;
+}
+#endif
+
+#if ENABLE_FEATURE_HTTPD_BASIC_AUTH
+/*
+ * Decode a base64 data stream as per rfc1521.
+ * Note that the rfc states that non base64 chars are to be ignored.
+ * Since the decode always results in a shorter size than the input,
+ * it is OK to pass the input arg as an output arg.
+ * Parameter: a pointer to a base64 encoded string.
+ * Decoded data is stored in-place.
+ */
+static void decodeBase64(char *data)
+{
+	decode_base64(data, NULL)[0] = '\0';
+}
+#endif
+
+/*
+ * Create a listen server socket on the designated port.
+ */
+static int openServer(void)
+{
+	unsigned n = bb_strtou(bind_addr_or_port, NULL, 10);
+	if (!errno && n && n <= 0xffff)
+		n = create_and_bind_stream_or_die(NULL, n);
+	else
+		n = create_and_bind_stream_or_die(bind_addr_or_port, 80);
+	xlisten(n, 9);
+	return n;
+}
+
+/*
+ * Log the connection closure and exit.
+ */
+static void log_and_exit(void) NORETURN;
+static void log_and_exit(void)
+{
+	/* Paranoia. IE said to be buggy. It may send some extra data
+	 * or be confused by us just exiting without SHUT_WR. Oh well. */
+	shutdown(1, SHUT_WR);
+	/* Why??
+	(this also messes up stdin when user runs httpd -i from terminal)
+	ndelay_on(0);
+	while (read(STDIN_FILENO, iobuf, IOBUF_SIZE) > 0)
+		continue;
+	*/
+
+	if (verbose > 2)
+		bb_simple_error_msg("closed");
+	_exit(xfunc_error_retval);
+}
+
+/*
+ * Create and send HTTP response headers.
+ * The arguments are combined and sent as one write operation.  Note that
+ * IE will puke big-time if the headers are not sent in one packet and the
+ * second packet is delayed for any reason.
+ * responseNum - the result code to send.
+ */
+static void send_headers(unsigned responseNum)
+{
+#if ENABLE_FEATURE_HTTPD_DATE || ENABLE_FEATURE_HTTPD_LAST_MODIFIED
+	static const char RFC1123FMT[] ALIGN1 = "%a, %d %b %Y %H:%M:%S GMT";
+	/* Fixed size 29-byte string. Example: Sun, 06 Nov 1994 08:49:37 GMT */
+	char date_str[40]; /* using a bit larger buffer to paranoia reasons */
+	struct tm tm;
+#endif
+	const char *responseString = "";
+	const char *infoString = NULL;
+#if ENABLE_FEATURE_HTTPD_ERROR_PAGES
+	const char *error_page = NULL;
+#endif
+	unsigned len;
+	unsigned i;
+
+	for (i = 0; i < ARRAY_SIZE(http_response_type); i++) {
+		if (http_response_type[i] == responseNum) {
+			responseString = http_response[i].name;
+			infoString = http_response[i].info;
+#if ENABLE_FEATURE_HTTPD_ERROR_PAGES
+			error_page = http_error_page[i];
+#endif
+			break;
+		}
+	}
+
+	if (verbose)
+		bb_error_msg("response:%u", responseNum);
+
+	/* We use sprintf, not snprintf (it's less code).
+	 * iobuf[] is several kbytes long and all headers we generate
+	 * always fit into those kbytes.
+	 */
+
+	{
+#if ENABLE_FEATURE_HTTPD_DATE
+		time_t timer = time(NULL);
+		strftime(date_str, sizeof(date_str), RFC1123FMT, gmtime_r(&timer, &tm));
+		/* ^^^ using gmtime_r() instead of gmtime() to not use static data */
+#endif
+		len = sprintf(iobuf,
+			"HTTP/1.1 %u %s\r\n"
+#if ENABLE_FEATURE_HTTPD_DATE
+			"Date: %s\r\n"
+#endif
+			"Connection: close\r\n",
+			responseNum, responseString
+#if ENABLE_FEATURE_HTTPD_DATE
+			,date_str
+#endif
+		);
+	}
+
+	if (responseNum != HTTP_OK || found_mime_type) {
+		len += sprintf(iobuf + len,
+				"Content-type: %s\r\n",
+				/* if it's error message, then it's HTML */
+				(responseNum != HTTP_OK ? "text/html" : found_mime_type)
+		);
+	}
+
+#if ENABLE_FEATURE_HTTPD_BASIC_AUTH
+	if (responseNum == HTTP_UNAUTHORIZED) {
+		len += sprintf(iobuf + len,
+				"WWW-Authenticate: Basic realm=\"%.999s\"\r\n",
+				g_realm /* %.999s protects from overflowing iobuf[] */
+		);
+	}
+#endif
+	if (responseNum == HTTP_MOVED_TEMPORARILY) {
+		/* Responding to "GET /dir" with
+		 * "HTTP/1.1 302 Found" "Location: /dir/"
+		 * - IOW, asking them to repeat with a slash.
+		 * Here, overflow IS possible, can't use sprintf:
+		 * mkdir test
+		 * python -c 'print("get /test?" + ("x" * 8192))' | busybox httpd -i -h .
+		 */
+		len += snprintf(iobuf + len, IOBUF_SIZE-3 - len,
+				"Location: %s/%s%s\r\n",
+				found_moved_temporarily,
+				(g_query ? "?" : ""),
+				(g_query ? g_query : "")
+		);
+		if (len > IOBUF_SIZE-3)
+			len = IOBUF_SIZE-3;
+	}
+
+#if ENABLE_FEATURE_HTTPD_ERROR_PAGES
+	if (error_page && access(error_page, R_OK) == 0) {
+		iobuf[len++] = '\r';
+		iobuf[len++] = '\n';
+		if (DEBUG) {
+			iobuf[len] = '\0';
+			fprintf(stderr, "headers: '%s'\n", iobuf);
+		}
+		full_write(STDOUT_FILENO, iobuf, len);
+		dbg("writing error page: '%s'\n", error_page);
+		return send_file_and_exit(error_page, SEND_BODY);
+	}
+#endif
+
+	if (file_size != -1) {    /* file */
+#if ENABLE_FEATURE_HTTPD_LAST_MODIFIED
+		strftime(date_str, sizeof(date_str), RFC1123FMT, gmtime_r(&last_mod, &tm));
+#endif
+#if ENABLE_FEATURE_HTTPD_RANGES
+		if (responseNum == HTTP_PARTIAL_CONTENT) {
+			len += sprintf(iobuf + len,
+				"Content-Range: bytes %"OFF_FMT"u-%"OFF_FMT"u/%"OFF_FMT"u\r\n",
+					range_start,
+					range_end,
+					file_size
+			);
+			file_size = range_end - range_start + 1;
+		}
+#endif
+
+//RFC 2616 4.4 Message Length
+// The transfer-length of a message is the length of the message-body as
+// it appears in the message; that is, after any transfer-codings have
+// been applied. When a message-body is included with a message, the
+// transfer-length of that body is determined by one of the following
+// (in order of precedence):
+// 1.Any response message which "MUST NOT" include a message-body (such
+//   as the 1xx, 204, and 304 responses and any response to a HEAD
+//   request) is always terminated by the first empty line after the
+//   header fields, regardless of the entity-header fields present in
+//   the message.
+// 2.If a Transfer-Encoding header field (section 14.41) is present and
+//   has any value other than "identity", then the transfer-length is
+//   defined by use of the "chunked" transfer-coding (section 3.6),
+//   unless the message is terminated by closing the connection.
+// 3.If a Content-Length header field (section 14.13) is present, its
+//   decimal value in OCTETs represents both the entity-length and the
+//   transfer-length. The Content-Length header field MUST NOT be sent
+//   if these two lengths are different (i.e., if a Transfer-Encoding
+//   header field is present). If a message is received with both a
+//   Transfer-Encoding header field and a Content-Length header field,
+//   the latter MUST be ignored.
+// 4.If the message uses the media type "multipart/byteranges" ...
+// 5.By the server closing the connection.
+//
+// (NB: standards do not define "Transfer-Length:" _header_,
+// transfer-length above is just a concept).
+
+		len += sprintf(iobuf + len,
+#if ENABLE_FEATURE_HTTPD_RANGES
+			"Accept-Ranges: bytes\r\n"
+#endif
+#if ENABLE_FEATURE_HTTPD_LAST_MODIFIED
+			"Last-Modified: %s\r\n"
+#endif
+#if ENABLE_FEATURE_HTTPD_ETAG
+			"ETag: %s\r\n"
+#endif
+
+	/* Because of 4.4 (5), we can forgo sending of "Content-Length"
+	 * since we close connection afterwards, but it helps clients
+	 * to e.g. estimate download times, show progress bars etc.
+	 * Theoretically we should not send it if page is compressed,
+	 * but de-facto standard is to send it (see comment below).
+	 */
+			"Content-Length: %"OFF_FMT"u\r\n",
+#if ENABLE_FEATURE_HTTPD_LAST_MODIFIED
+				date_str,
+#endif
+#if ENABLE_FEATURE_HTTPD_ETAG
+				G.etag,
+#endif
+				file_size
+		);
+	}
+
+	/* This should be "Transfer-Encoding", not "Content-Encoding":
+	 * "data is compressed for transfer", not "data is an archive".
+	 * But many clients were not handling "Transfer-Encoding" correctly
+	 * (they were not uncompressing gzipped pages, tried to show
+	 * raw compressed data), and servers worked around it by using
+	 * "Content-Encoding" instead... and this become de-facto standard.
+	 * https://bugzilla.mozilla.org/show_bug.cgi?id=68517
+	 * https://bugs.chromium.org/p/chromium/issues/detail?id=94730
+	 */
+	if (content_gzip)
+		len += sprintf(iobuf + len, "Content-Encoding: gzip\r\n");
+
+	iobuf[len++] = '\r';
+	iobuf[len++] = '\n';
+	if (infoString) {
+		len += sprintf(iobuf + len,
+				"<HTML><HEAD><TITLE>%u %s</TITLE></HEAD>\n"
+				"<BODY><H1>%u %s</H1>\n"
+				"%s\n"
+				"</BODY></HTML>\n",
+				responseNum, responseString,
+				responseNum, responseString,
+				infoString
+		);
+	}
+	if (DEBUG) {
+		iobuf[len] = '\0';
+		fprintf(stderr, "headers: '%s'\n", iobuf);
+	}
+	if (full_write(STDOUT_FILENO, iobuf, len) != len) {
+		if (verbose > 1)
+			bb_simple_perror_msg("error");
+		log_and_exit();
+	}
+}
+
+static void send_headers_and_exit(int responseNum) NORETURN;
+static void send_headers_and_exit(int responseNum)
+{
+	IF_FEATURE_HTTPD_GZIP(content_gzip = 0;)
+	send_headers(responseNum);
+	log_and_exit();
+}
+
+/*
+ * Read from the socket until '\n' or EOF.
+ * '\r' chars are removed.
+ * '\n' is replaced with NUL.
+ * Return number of characters read or 0 if nothing is read
+ * ('\r' and '\n' are not counted).
+ * Data is returned in iobuf.
+ */
+static unsigned get_line(void)
+{
+	unsigned count;
+	char c;
+
+	count = 0;
+	while (1) {
+		if (hdr_cnt <= 0) {
+			alarm(HEADER_READ_TIMEOUT);
+			hdr_cnt = safe_read(STDIN_FILENO, hdr_buf, sizeof_hdr_buf);
+			if (hdr_cnt <= 0)
+				goto ret;
+			hdr_ptr = hdr_buf;
+		}
+		hdr_cnt--;
+		c = *hdr_ptr++;
+		if (c == '\r')
+			continue;
+		if (c == '\n')
+			break;
+		iobuf[count] = c;
+		if (count < (IOBUF_SIZE - 1))      /* check overflow */
+			count++;
+	}
+ ret:
+	iobuf[count] = '\0';
+	return count;
+}
+
+#if ENABLE_FEATURE_HTTPD_CGI || ENABLE_FEATURE_HTTPD_PROXY
+
+/* gcc 4.2.1 fares better with NOINLINE */
+static NOINLINE void cgi_io_loop_and_exit(int fromCgi_rd, int toCgi_wr, int post_len) NORETURN;
+static NOINLINE void cgi_io_loop_and_exit(int fromCgi_rd, int toCgi_wr, int post_len)
+{
+	enum { FROM_CGI = 1, TO_CGI = 2 }; /* indexes in pfd[] */
+	struct pollfd pfd[3];
+	int out_cnt; /* we buffer a bit of initial CGI output */
+	int count;
+
+	/* iobuf is used for CGI -> network data,
+	 * hdr_buf is for network -> CGI data (POSTDATA) */
+
+	/* If CGI dies, we still want to correctly finish reading its output
+	 * and send it to the peer. So please no SIGPIPEs! */
+	signal(SIGPIPE, SIG_IGN);
+
+	// We inconsistently handle a case when more POSTDATA from network
+	// is coming than we expected. We may give *some part* of that
+	// extra data to CGI.
+
+	//if (hdr_cnt > post_len) {
+	//	/* We got more POSTDATA from network than we expected */
+	//	hdr_cnt = post_len;
+	//}
+	post_len -= hdr_cnt;
+	/* post_len - number of POST bytes not yet read from network */
+
+	/* NB: breaking out of this loop jumps to log_and_exit() */
+	out_cnt = 0;
+	pfd[FROM_CGI].fd = fromCgi_rd;
+	pfd[FROM_CGI].events = POLLIN;
+	pfd[TO_CGI].fd = toCgi_wr;
+	while (1) {
+		/* Note: even pfd[0].events == 0 won't prevent
+		 * revents == POLLHUP|POLLERR reports from closed stdin.
+		 * Setting fd to -1 works: */
+		pfd[0].fd = -1;
+		pfd[0].events = POLLIN;
+		pfd[0].revents = 0; /* probably not needed, paranoia */
+
+		/* We always poll this fd, thus kernel always sets revents: */
+		/*pfd[FROM_CGI].events = POLLIN; - moved out of loop */
+		/*pfd[FROM_CGI].revents = 0; - not needed */
+
+		/* gcc-4.8.0 still doesnt fill two shorts with one insn :( */
+		/* http://gcc.gnu.org/bugzilla/show_bug.cgi?id=47059 */
+		/* hopefully one day it will... */
+		pfd[TO_CGI].events = POLLOUT;
+		pfd[TO_CGI].revents = 0; /* needed! */
+
+		if (toCgi_wr && hdr_cnt <= 0) {
+			if (post_len > 0) {
+				/* Expect more POST data from network */
+				pfd[0].fd = 0;
+			} else {
+				/* post_len <= 0 && hdr_cnt <= 0:
+				 * no more POST data to CGI,
+				 * let CGI see EOF on CGI's stdin */
+				if (toCgi_wr != fromCgi_rd)
+					close(toCgi_wr);
+				toCgi_wr = 0;
+			}
+		}
+
+		/* Now wait on the set of sockets */
+		count = safe_poll(pfd, hdr_cnt > 0 ? TO_CGI+1 : FROM_CGI+1, -1);
+		if (count <= 0) {
+#if 0
+			if (safe_waitpid(pid, &status, WNOHANG) <= 0) {
+				/* Weird. CGI didn't exit and no fd's
+				 * are ready, yet poll returned?! */
+				continue;
+			}
+			if (DEBUG && WIFEXITED(status))
+				bb_error_msg("CGI exited, status=%u", WEXITSTATUS(status));
+			if (DEBUG && WIFSIGNALED(status))
+				bb_error_msg("CGI killed, signal=%u", WTERMSIG(status));
+#endif
+			break;
+		}
+
+		if (pfd[TO_CGI].revents) {
+			/* hdr_cnt > 0 here due to the way poll() called */
+			/* Have data from peer and can write to CGI */
+			count = safe_write(toCgi_wr, hdr_ptr, hdr_cnt);
+			/* Doesn't happen, we dont use nonblocking IO here
+			 *if (count < 0 && errno == EAGAIN) {
+			 *	...
+			 *} else */
+			if (count > 0) {
+				hdr_ptr += count;
+				hdr_cnt -= count;
+			} else {
+				/* EOF/broken pipe to CGI, stop piping POST data */
+				hdr_cnt = post_len = 0;
+			}
+		}
+
+		if (pfd[0].revents) {
+			/* post_len > 0 && hdr_cnt == 0 here */
+			/* We expect data, prev data portion is eaten by CGI
+			 * and there *is* data to read from the peer
+			 * (POSTDATA) */
+			//count = post_len > (int)sizeof_hdr_buf ? (int)sizeof_hdr_buf : post_len;
+			//count = safe_read(STDIN_FILENO, hdr_buf, count);
+			count = safe_read(STDIN_FILENO, hdr_buf, sizeof_hdr_buf);
+			if (count > 0) {
+				hdr_cnt = count;
+				hdr_ptr = hdr_buf;
+				post_len -= count;
+			} else {
+				/* no more POST data can be read */
+				post_len = 0;
+			}
+		}
+
+		if (pfd[FROM_CGI].revents) {
+			/* There is something to read from CGI */
+			char *rbuf = iobuf;
+
+			/* Are we still buffering CGI output? */
+			if (out_cnt >= 0) {
+				/* HTTP_200[] has single "\r\n" at the end.
+				 * According to http://hoohoo.ncsa.uiuc.edu/cgi/out.html,
+				 * CGI scripts MUST send their own header terminated by
+				 * empty line, then data. That's why we have only one
+				 * <cr><lf> pair here. We will output "200 OK" line
+				 * if needed, but CGI still has to provide blank line
+				 * between header and body */
+
+				/* Must use safe_read, not full_read, because
+				 * CGI may output a few first bytes and then wait
+				 * for POSTDATA without closing stdout.
+				 * With full_read we may wait here forever. */
+				count = safe_read(fromCgi_rd, rbuf + out_cnt, IOBUF_SIZE - 8);
+				if (count <= 0) {
+					/* eof (or error) and there was no "HTTP",
+					 * send "HTTP/1.1 200 OK\r\n", then send received data */
+					if (out_cnt) {
+						full_write(STDOUT_FILENO, HTTP_200, sizeof(HTTP_200)-1);
+						full_write(STDOUT_FILENO, rbuf, out_cnt);
+					}
+					break; /* CGI stdout is closed, exiting */
+				}
+				out_cnt += count;
+				count = 0;
+				/* "Status" header format is: "Status: 302 Redirected\r\n" */
+				if (out_cnt >= 8 && memcmp(rbuf, "Status: ", 8) == 0) {
+					/* send "HTTP/1.1 " */
+					if (full_write(STDOUT_FILENO, HTTP_200, 9) != 9)
+						break;
+					/* skip "Status: " (including space, sending "HTTP/1.1  NNN" is wrong) */
+					rbuf += 8;
+					count = out_cnt - 8;
+					out_cnt = -1; /* buffering off */
+				} else if (out_cnt >= 4) {
+					/* Did CGI add "HTTP"? */
+					if (memcmp(rbuf, HTTP_200, 4) != 0) {
+						/* there is no "HTTP", do it ourself */
+						if (full_write(STDOUT_FILENO, HTTP_200, sizeof(HTTP_200)-1) != sizeof(HTTP_200)-1)
+							break;
+					}
+					/* Commented out:
+					if (!strstr(rbuf, "ontent-")) {
+						full_write(s, "Content-type: text/plain\r\n\r\n", 28);
+					}
+					 * Counter-example of valid CGI without Content-type:
+					 * echo -en "HTTP/1.1 302 Found\r\n"
+					 * echo -en "Location: http://www.busybox.net\r\n"
+					 * echo -en "\r\n"
+					 */
+					count = out_cnt;
+					out_cnt = -1; /* buffering off */
+				}
+			} else {
+				count = safe_read(fromCgi_rd, rbuf, IOBUF_SIZE);
+				if (count <= 0)
+					break;  /* eof (or error) */
+			}
+			if (full_write(STDOUT_FILENO, rbuf, count) != count)
+				break;
+			dbg("cgi read %d bytes: '%.*s'\n", count, count, rbuf);
+		} /* if (pfd[FROM_CGI].revents) */
+	} /* while (1) */
+	log_and_exit();
+}
+#endif
+
+#if ENABLE_FEATURE_HTTPD_CGI
+
+static void setenv1(const char *name, const char *value)
+{
+	setenv(name, value ? value : "", 1);
+}
+
+/*
+ * Spawn CGI script, forward CGI's stdin/out <=> network
+ *
+ * Environment variables are set up and the script is invoked with pipes
+ * for stdin/stdout.  If a POST is being done the script is fed the POST
+ * data in addition to setting the QUERY_STRING variable (for GETs or POSTs).
+ *
+ * Parameters:
+ * const char *url              The requested URL (with leading /).
+ * const char *orig_uri         The original URI before rewriting (if any)
+ * int post_len                 Length of the POST body.
+ */
+static void send_cgi_and_exit(
+		const char *url,
+		const char *orig_uri,
+		const char *request,
+		int post_len) NORETURN;
+static void send_cgi_and_exit(
+		const char *url,
+		const char *orig_uri,
+		const char *request,
+		int post_len)
+{
+	struct fd_pair fromCgi;  /* CGI -> httpd pipe */
+	struct fd_pair toCgi;    /* httpd -> CGI pipe */
+	char *script, *last_slash;
+	int pid;
+
+	/* Make a copy. NB: caller guarantees:
+	 * url[0] == '/', url[1] != '/' */
+	url = xstrdup(url);
+
+	/*
+	 * We are mucking with environment _first_ and then vfork/exec,
+	 * this allows us to use vfork safely. Parent doesn't care about
+	 * these environment changes anyway.
+	 */
+
+	/* Check for [dirs/]script.cgi/PATH_INFO */
+	last_slash = script = (char*)url;
+	while ((script = strchr(script + 1, '/')) != NULL) {
+		int dir;
+		*script = '\0';
+		dir = is_directory(url + 1, /*followlinks:*/ 1);
+		*script = '/';
+		if (!dir) {
+			/* not directory, found script.cgi/PATH_INFO */
+			break;
+		}
+		/* is directory, find next '/' */
+		last_slash = script;
+	}
+	setenv1("PATH_INFO", script);   /* set to /PATH_INFO or "" */
+	setenv1("REQUEST_METHOD", request);
+	if (g_query) {
+		putenv(xasprintf("%s=%s?%s", "REQUEST_URI", orig_uri, g_query));
+	} else {
+		setenv1("REQUEST_URI", orig_uri);
+	}
+	if (script != NULL)
+		*script = '\0';         /* cut off /PATH_INFO */
+
+	/* SCRIPT_FILENAME is required by PHP in CGI mode */
+	if (home_httpd[0] == '/') {
+		char *fullpath = concat_path_file(home_httpd, url);
+		setenv1("SCRIPT_FILENAME", fullpath);
+	}
+	/* set SCRIPT_NAME as full path: /cgi-bin/dirs/script.cgi */
+	setenv1("SCRIPT_NAME", url);
+	/* http://hoohoo.ncsa.uiuc.edu/cgi/env.html:
+	 * QUERY_STRING: The information which follows the ? in the URL
+	 * which referenced this script. This is the query information.
+	 * It should not be decoded in any fashion. This variable
+	 * should always be set when there is query information,
+	 * regardless of command line decoding. */
+	/* (Older versions of bbox seem to do some decoding) */
+	setenv1("QUERY_STRING", g_query);
+	putenv((char*)"SERVER_SOFTWARE=busybox httpd/"BB_VER);
+	putenv((char*)"SERVER_PROTOCOL=HTTP/1.1");
+	putenv((char*)"GATEWAY_INTERFACE=CGI/1.1");
+	/* Having _separate_ variables for IP and port defeats
+	 * the purpose of having socket abstraction. Which "port"
+	 * are you using on Unix domain socket?
+	 * IOW - REMOTE_PEER="1.2.3.4:56" makes much more sense.
+	 * Oh well... */
+	{
+		char *p = rmt_ip_str ? rmt_ip_str : (char*)"";
+		char *cp = strrchr(p, ':');
+		if (ENABLE_FEATURE_IPV6 && cp && strchr(cp, ']'))
+			cp = NULL;
+		if (cp) *cp = '\0'; /* delete :PORT */
+		setenv1("REMOTE_ADDR", p);
+		if (cp) {
+			*cp = ':';
+#if ENABLE_FEATURE_HTTPD_SET_REMOTE_PORT_TO_ENV
+			setenv1("REMOTE_PORT", cp + 1);
 #endif
 		}
-	)
-};
-/* Create stream socket, and allocate suitable lsa.
- * (lsa of correct size and lsa->sa.sa_family (AF_INET/AF_INET6))
- * af == AF_UNSPEC will result in trying to create IPv6 socket,
- * and if kernel doesn't support it, fall back to IPv4.
- * This is useful if you plan to bind to resulting local lsa.
- */
-int xsocket_type(len_and_sockaddr **lsap, int af, int sock_type) FAST_FUNC;
-int xsocket_stream(len_and_sockaddr **lsap) FAST_FUNC;
-/* Create server socket bound to bindaddr:port. bindaddr can be NULL,
- * numeric IP ("N.N.N.N") or numeric IPv6 address,
- * and can have ":PORT" suffix (for IPv6 use "[X:X:...:X]:PORT").
- * Only if there is no suffix, port argument is used */
-/* NB: these set SO_REUSEADDR before bind */
-int create_and_bind_stream_or_die(const char *bindaddr, int port) FAST_FUNC;
-int create_and_bind_dgram_or_die(const char *bindaddr, int port) FAST_FUNC;
-int create_and_bind_to_netlink(int proto, int grp, unsigned rcvbuf) FAST_FUNC;
-/* Create client TCP socket connected to peer:port. Peer cannot be NULL.
- * Peer can be numeric IP ("N.N.N.N"), numeric IPv6 address or hostname,
- * and can have ":PORT" suffix (for IPv6 use "[X:X:...:X]:PORT").
- * If there is no suffix, port argument is used */
-int create_and_connect_stream_or_die(const char *peer, int port) FAST_FUNC;
-/* Connect to peer identified by lsa */
-int xconnect_stream(const len_and_sockaddr *lsa) FAST_FUNC;
-/* Get local address of bound or accepted socket */
-len_and_sockaddr *get_sock_lsa(int fd) FAST_FUNC RETURNS_MALLOC;
-/* Get remote address of connected or accepted socket */
-len_and_sockaddr *get_peer_lsa(int fd) FAST_FUNC RETURNS_MALLOC;
-/* Return malloc'ed len_and_sockaddr with socket address of host:port
- * Currently will return IPv4 or IPv6 sockaddrs only
- * (depending on host), but in theory nothing prevents e.g.
- * UNIX socket address being returned, IPX sockaddr etc...
- * On error does bb_error_msg and returns NULL */
-len_and_sockaddr* host2sockaddr(const char *host, int port) FAST_FUNC RETURNS_MALLOC;
-/* Version which dies on error */
-len_and_sockaddr* xhost2sockaddr(const char *host, int port) FAST_FUNC RETURNS_MALLOC;
-len_and_sockaddr* xdotted2sockaddr(const char *host, int port) FAST_FUNC RETURNS_MALLOC;
-/* Same, useful if you want to force family (e.g. IPv6) */
-#if !ENABLE_FEATURE_IPV6
-#define host_and_af2sockaddr(host, port, af) host2sockaddr((host), (port))
-#define xhost_and_af2sockaddr(host, port, af) xhost2sockaddr((host), (port))
-#else
-len_and_sockaddr* host_and_af2sockaddr(const char *host, int port, sa_family_t af) FAST_FUNC RETURNS_MALLOC;
-len_and_sockaddr* xhost_and_af2sockaddr(const char *host, int port, sa_family_t af) FAST_FUNC RETURNS_MALLOC;
+	}
+	if (post_len)
+		putenv(xasprintf("CONTENT_LENGTH=%u", post_len));
+#if ENABLE_FEATURE_HTTPD_BASIC_AUTH
+	if (remoteuser) {
+		setenv1("REMOTE_USER", remoteuser);
+		putenv((char*)"AUTH_TYPE=Basic");
+	}
 #endif
-/* Assign sin[6]_port member if the socket is an AF_INET[6] one,
- * otherwise no-op. Useful for ftp.
- * NB: does NOT do htons() internally, just direct assignment. */
-void set_nport(struct sockaddr *sa, unsigned port) FAST_FUNC;
-/* Retrieve sin[6]_port or return -1 for non-INET[6] lsa's */
-int get_nport(const struct sockaddr *sa) FAST_FUNC;
-/* Reverse DNS. Returns NULL on failure. */
-char* xmalloc_sockaddr2host(const struct sockaddr *sa) FAST_FUNC RETURNS_MALLOC;
-/* This one doesn't append :PORTNUM */
-char* xmalloc_sockaddr2host_noport(const struct sockaddr *sa) FAST_FUNC RETURNS_MALLOC;
-/* This one also doesn't fall back to dotted IP (returns NULL) */
-char* xmalloc_sockaddr2hostonly_noport(const struct sockaddr *sa) FAST_FUNC RETURNS_MALLOC;
-/* inet_[ap]ton on steroids */
-char* xmalloc_sockaddr2dotted(const struct sockaddr *sa) FAST_FUNC RETURNS_MALLOC;
-char* xmalloc_sockaddr2dotted_noport(const struct sockaddr *sa) FAST_FUNC RETURNS_MALLOC;
-// "old" (ipv4 only) API
-// users: traceroute.c hostname.c - use _list_ of all IPs
-struct hostent *xgethostbyname(const char *name) FAST_FUNC;
-// Also mount.c and inetd.c are using gethostbyname(),
-// + inet_common.c has additional IPv4-only stuff
+	/* setenv1("SERVER_NAME", safe_gethostname()); - don't do this,
+	 * just run "env SERVER_NAME=xyz httpd ..." instead */
 
+	xpiped_pair(fromCgi);
+	xpiped_pair(toCgi);
 
-struct tls_aes {
-	uint32_t key[60];
-	unsigned rounds;
-};
-#define TLS_MAX_MAC_SIZE 32
-#define TLS_MAX_KEY_SIZE 32
-#define TLS_MAX_IV_SIZE   4
-struct tls_handshake_data; /* opaque */
-typedef struct tls_state {
-	unsigned flags;
+	pid = vfork();
+	if (pid < 0) {
+		/* TODO: log perror? */
+		log_and_exit();
+	}
 
-	int ofd;
-	int ifd;
+	if (pid == 0) {
+		/* Child process */
+		char *argv[3];
 
-	unsigned min_encrypted_len_on_read;
-	uint16_t cipher_id;
-	unsigned MAC_size;
-	unsigned key_size;
-	unsigned IV_size;
+		xfunc_error_retval = 242;
 
-	uint8_t *outbuf;
-	int     outbuf_size;
+		/* NB: close _first_, then move fds! */
+		close(toCgi.wr);
+		close(fromCgi.rd);
+		xmove_fd(toCgi.rd, 0);  /* replace stdin with the pipe */
+		xmove_fd(fromCgi.wr, 1);  /* replace stdout with the pipe */
+		/* User seeing stderr output can be a security problem.
+		 * If CGI really wants that, it can always do dup itself. */
+		/* dup2(1, 2); */
 
-	int     inbuf_size;
-	int     ofs_to_buffered;
-	int     buffered_size;
-	uint8_t *inbuf;
+		/* Chdiring to script's dir */
+		script = last_slash;
+		if (script != url) { /* paranoia */
+			*script = '\0';
+			if (chdir(url + 1) != 0) {
+				bb_perror_msg("can't change directory to '%s'", url + 1);
+				goto error_execing_cgi;
+			}
+			// not needed: *script = '/';
+		}
+		script++;
 
-	struct tls_handshake_data *hsd;
+		/* set argv[0] to name without path */
+		argv[0] = script;
+		argv[1] = NULL;
 
-	// RFC 5246
-	// sequence number
-	//   Each connection state contains a sequence number, which is
-	//   maintained separately for read and write states.  The sequence
-	//   number MUST be set to zero whenever a connection state is made the
-	//   active state.  Sequence numbers are of type uint64 and may not
-	//   exceed 2^64-1.
-	/*uint64_t read_seq64_be;*/
-	uint64_t write_seq64_be;
+#if ENABLE_FEATURE_HTTPD_CONFIG_WITH_SCRIPT_INTERPR
+		{
+			char *suffix = strrchr(script, '.');
 
-	/*uint8_t *server_write_MAC_key;*/
-	uint8_t *client_write_key;
-	uint8_t *server_write_key;
-	uint8_t *client_write_IV;
-	uint8_t *server_write_IV;
-	uint8_t client_write_MAC_key[TLS_MAX_MAC_SIZE];
-	uint8_t server_write_MAC_k__[TLS_MAX_MAC_SIZE];
-	uint8_t client_write_k__[TLS_MAX_KEY_SIZE];
-	uint8_t server_write_k__[TLS_MAX_KEY_SIZE];
-	uint8_t client_write_I_[TLS_MAX_IV_SIZE];
-	uint8_t server_write_I_[TLS_MAX_IV_SIZE];
+			if (suffix) {
+				Htaccess *cur;
+				for (cur = script_i; cur; cur = cur->next) {
+					if (strcmp(cur->before_colon + 1, suffix) == 0) {
+						/* found interpreter name */
+						argv[0] = cur->after_colon;
+						argv[1] = script;
+						argv[2] = NULL;
+						break;
+					}
+				}
+			}
+		}
+#endif
+		/* restore default signal dispositions for CGI process */
+		bb_signals(0
+			| (1 << SIGCHLD)
+			| (1 << SIGPIPE)
+			| (1 << SIGHUP)
+			, SIG_DFL);
 
-	struct tls_aes aes_encrypt;
-	struct tls_aes aes_decrypt;
-	uint8_t H[16]; //used by AES_GCM
-} tls_state_t;
+		/* _NOT_ execvp. We do not search PATH. argv[0] is a filename
+		 * without any dir components and will only match a file
+		 * in the current directory */
+		execv(argv[0], argv);
+		if (verbose)
+			bb_perror_msg("can't execute '%s'", argv[0]);
+ error_execing_cgi:
+		/* send to stdout
+		 * (we are CGI here, our stdout is pumped to the net) */
+		send_headers_and_exit(HTTP_NOT_FOUND);
+	} /* end child */
 
-static inline tls_state_t *new_tls_state(void)
-{
-	tls_state_t *tls = xzalloc(sizeof(*tls));
-	return tls;
+	/* Parent process */
+
+	/* Restore variables possibly changed by child */
+	xfunc_error_retval = 0;
+
+	/* Pump data */
+	close(fromCgi.wr);
+	close(toCgi.rd);
+	cgi_io_loop_and_exit(fromCgi.rd, toCgi.wr, post_len);
 }
-void tls_handshake(tls_state_t *tls, const char *sni) FAST_FUNC;
-#define TLSLOOP_EXIT_ON_LOCAL_EOF (1 << 0)
-void tls_run_copy_loop(tls_state_t *tls, unsigned flags) FAST_FUNC;
 
-
-void socket_want_pktinfo(int fd) FAST_FUNC;
-ssize_t send_to_from(int fd, void *buf, size_t len, int flags,
-		const struct sockaddr *to,
-		const struct sockaddr *from,
-		socklen_t tolen) FAST_FUNC;
-ssize_t recv_from_to(int fd, void *buf, size_t len, int flags,
-		struct sockaddr *from,
-		struct sockaddr *to,
-		socklen_t sa_size) FAST_FUNC;
-
-uint16_t inet_cksum(const void *addr, int len) FAST_FUNC;
-int parse_pasv_epsv(char *buf) FAST_FUNC;
-
-/* 0 if argv[0] is NULL: */
-unsigned string_array_len(char **argv) FAST_FUNC;
-void overlapping_strcpy(char *dst, const char *src) FAST_FUNC;
-char *safe_strncpy(char *dst, const char *src, size_t size) FAST_FUNC;
-char *strncpy_IFNAMSIZ(char *dst, const char *src) FAST_FUNC;
-unsigned count_strstr(const char *str, const char *sub) FAST_FUNC;
-char *xmalloc_substitute_string(const char *src, int count, const char *sub, const char *repl) FAST_FUNC;
-/* Guaranteed to NOT be a macro (smallest code). Saves nearly 2k on uclibc.
- * But potentially slow, don't use in one-billion-times loops */
-int bb_putchar(int ch) FAST_FUNC;
-/* Note: does not use stdio, writes to fd 2 directly */
-int bb_putchar_stderr(char ch) FAST_FUNC;
-int fputs_stdout(const char *s) FAST_FUNC;
-char *xasprintf(const char *format, ...) __attribute__ ((format(printf, 1, 2))) FAST_FUNC RETURNS_MALLOC;
-char *auto_string(char *str) FAST_FUNC;
-// gcc-4.1.1 still isn't good enough at optimizing it
-// (+200 bytes compared to macro)
-//static ALWAYS_INLINE
-//int LONE_DASH(const char *s) { return s[0] == '-' && !s[1]; }
-//static ALWAYS_INLINE
-//int NOT_LONE_DASH(const char *s) { return s[0] != '-' || s[1]; }
-#define LONE_DASH(s)     ((s)[0] == '-' && !(s)[1])
-#define NOT_LONE_DASH(s) ((s)[0] != '-' || (s)[1])
-#define LONE_CHAR(s,c)     ((s)[0] == (c) && !(s)[1])
-#define NOT_LONE_CHAR(s,c) ((s)[0] != (c) || (s)[1])
-#define DOT_OR_DOTDOT(s) ((s)[0] == '.' && (!(s)[1] || ((s)[1] == '.' && !(s)[2])))
-
-typedef struct uni_stat_t {
-	unsigned byte_count;
-	unsigned unicode_count;
-	unsigned unicode_width;
-} uni_stat_t;
-/* Returns a string with unprintable chars replaced by '?' or
- * SUBST_WCHAR. This function is unicode-aware. */
-const char* FAST_FUNC printable_string(const char *str);
-const char* FAST_FUNC printable_string2(uni_stat_t *stats, const char *str);
-/* Prints unprintable char ch as ^C or M-c to file
- * (M-c is used only if ch is ORed with PRINTABLE_META),
- * else it is printed as-is (except for ch = 0x9b) */
-enum { PRINTABLE_META = 0x100 };
-void fputc_printable(int ch, FILE *file) FAST_FUNC;
-/* Return a string that is the printable representation of character ch.
- * Buffer must hold at least four characters. */
-enum {
-	VISIBLE_ENDLINE   = 1 << 0,
-	VISIBLE_SHOW_TABS = 1 << 1,
-};
-void visible(unsigned ch, char *buf, int flags) FAST_FUNC;
-
-extern ssize_t safe_read(int fd, void *buf, size_t count) FAST_FUNC;
-extern ssize_t nonblock_immune_read(int fd, void *buf, size_t count) FAST_FUNC;
-// NB: will return short read on error, not -1,
-// if some data was read before error occurred
-extern ssize_t full_read(int fd, void *buf, size_t count) FAST_FUNC;
-extern void xread(int fd, void *buf, size_t count) FAST_FUNC;
-extern unsigned char xread_char(int fd) FAST_FUNC;
-extern ssize_t read_close(int fd, void *buf, size_t maxsz) FAST_FUNC;
-extern ssize_t open_read_close(const char *filename, void *buf, size_t maxsz) FAST_FUNC;
-// Reads one line a-la fgets (but doesn't save terminating '\n').
-// Reads byte-by-byte. Useful when it is important to not read ahead.
-// Bytes are appended to pfx (which must be malloced, or NULL).
-extern char *xmalloc_reads(int fd, size_t *maxsz_p) FAST_FUNC;
-/* Reads block up to *maxsz_p (default: INT_MAX - 4095) */
-extern void *xmalloc_read(int fd, size_t *maxsz_p) FAST_FUNC RETURNS_MALLOC;
-extern void *xmalloc_read_with_initial_buf(int fd, size_t *maxsz_p, char *buf, size_t total) FAST_FUNC;
-/* Returns NULL if file can't be opened (default max size: INT_MAX - 4095) */
-extern void *xmalloc_open_read_close(const char *filename, size_t *maxsz_p) FAST_FUNC RETURNS_MALLOC;
-/* Never returns NULL */
-extern void *xmalloc_xopen_read_close(const char *filename, size_t *maxsz_p) FAST_FUNC RETURNS_MALLOC;
-
-#if defined(ARG_MAX) && (ARG_MAX >= 60*1024 || !defined(_SC_ARG_MAX))
-/* Use _constant_ maximum if: defined && (big enough || no variable one exists) */
-# define bb_arg_max() ((unsigned)ARG_MAX)
-#elif defined(_SC_ARG_MAX)
-/* Else use variable one (a bit more expensive) */
-unsigned bb_arg_max(void) FAST_FUNC;
-#else
-/* If all else fails */
-# define bb_arg_max() ((unsigned)(32 * 1024))
-#endif
-unsigned bb_clk_tck(void) FAST_FUNC;
-
-#define SEAMLESS_COMPRESSION (0 \
- || ENABLE_FEATURE_SEAMLESS_XZ \
- || ENABLE_FEATURE_SEAMLESS_LZMA \
- || ENABLE_FEATURE_SEAMLESS_BZ2 \
- || ENABLE_FEATURE_SEAMLESS_GZ \
- || ENABLE_FEATURE_SEAMLESS_Z)
-
-#if SEAMLESS_COMPRESSION
-/* Autodetects gzip/bzip2 formats. fd may be in the middle of the file! */
-int setup_unzip_on_fd(int fd, int fail_if_not_compressed) FAST_FUNC;
-/* Autodetects .gz etc */
-extern int open_zipped(const char *fname, int fail_if_not_compressed) FAST_FUNC;
-extern void *xmalloc_open_zipped_read_close(const char *fname, size_t *maxsz_p) FAST_FUNC RETURNS_MALLOC;
-#else
-# define setup_unzip_on_fd(...) (0)
-# define open_zipped(fname, fail_if_not_compressed)  open((fname), O_RDONLY);
-# define xmalloc_open_zipped_read_close(fname, maxsz_p) xmalloc_open_read_close((fname), (maxsz_p))
-#endif
-/* lzma has no signature, need a little helper. NB: exist only for ENABLE_FEATURE_SEAMLESS_LZMA=y */
-void setup_lzma_on_fd(int fd) FAST_FUNC;
-
-extern ssize_t safe_write(int fd, const void *buf, size_t count) FAST_FUNC;
-// NB: will return short write on error, not -1,
-// if some data was written before error occurred
-extern ssize_t full_write(int fd, const void *buf, size_t count) FAST_FUNC;
-extern void xwrite(int fd, const void *buf, size_t count) FAST_FUNC;
-extern void xwrite_str(int fd, const char *str) FAST_FUNC;
-extern ssize_t full_write1_str(const char *str) FAST_FUNC;
-extern ssize_t full_write2_str(const char *str) FAST_FUNC;
-extern void xopen_xwrite_close(const char* file, const char *str) FAST_FUNC;
-
-/* Close fd, but check for failures (some types of write errors) */
-extern void xclose(int fd) FAST_FUNC;
-
-/* Reads and prints to stdout till eof, then closes FILE. Exits on error: */
-extern void xprint_and_close_file(FILE *file) FAST_FUNC;
-
-/* Reads a line from a text file, up to a newline or NUL byte, inclusive.
- * Returns malloc'ed char*. If end is NULL '\n' isn't considered
- * end of line. If end isn't NULL, length of the chunk is stored in it.
- * Returns NULL if EOF/error.
- */
-extern char *bb_get_chunk_from_file(FILE *file, size_t *end) FAST_FUNC;
-/* Reads up to (and including) TERMINATING_STRING: */
-extern char *xmalloc_fgets_str(FILE *file, const char *terminating_string) FAST_FUNC RETURNS_MALLOC;
-/* Same, with limited max size, and returns the length (excluding NUL): */
-extern char *xmalloc_fgets_str_len(FILE *file, const char *terminating_string, size_t *maxsz_p) FAST_FUNC RETURNS_MALLOC;
-/* Chops off TERMINATING_STRING from the end: */
-extern char *xmalloc_fgetline_str(FILE *file, const char *terminating_string) FAST_FUNC RETURNS_MALLOC;
-/* Reads up to (and including) "\n" or NUL byte: */
-extern char *xmalloc_fgets(FILE *file) FAST_FUNC RETURNS_MALLOC;
-/* Chops off '\n' from the end, unlike fgets: */
-extern char *xmalloc_fgetline(FILE *file) FAST_FUNC RETURNS_MALLOC;
-/* Same, but doesn't try to conserve space (may have some slack after the end) */
-/* extern char *xmalloc_fgetline_fast(FILE *file) FAST_FUNC RETURNS_MALLOC; */
-
-void die_if_ferror(FILE *file, const char *msg) FAST_FUNC;
-void die_if_ferror_stdout(void) FAST_FUNC;
-int fflush_all(void) FAST_FUNC;
-void fflush_stdout_and_exit(int retval) NORETURN FAST_FUNC;
-void fflush_stdout_and_exit_SUCCESS(void) NORETURN FAST_FUNC;
-int fclose_if_not_stdin(FILE *file) FAST_FUNC;
-FILE* xfopen(const char *filename, const char *mode) FAST_FUNC;
-/* Prints warning to stderr and returns NULL on failure: */
-FILE* fopen_or_warn(const char *filename, const char *mode) FAST_FUNC;
-/* "Opens" stdin if filename is special, else just opens file: */
-FILE* xfopen_stdin(const char *filename) FAST_FUNC;
-FILE* fopen_or_warn_stdin(const char *filename) FAST_FUNC;
-FILE* fopen_for_read(const char *path) FAST_FUNC;
-FILE* xfopen_for_read(const char *path) FAST_FUNC;
-FILE* fopen_for_write(const char *path) FAST_FUNC;
-FILE* xfopen_for_write(const char *path) FAST_FUNC;
-FILE* xfdopen_for_read(int fd) FAST_FUNC;
-FILE* xfdopen_for_write(int fd) FAST_FUNC;
-
-int bb_pstrcmp(const void *a, const void *b) /* not FAST_FUNC! */;
-void qsort_string_vector(char **sv, unsigned count) FAST_FUNC;
-
-/* Wrapper which restarts poll on EINTR or ENOMEM.
- * On other errors complains [perror("poll")] and returns.
- * Warning! May take (much) longer than timeout_ms to return!
- * If this is a problem, use bare poll and open-code EINTR/ENOMEM handling */
-int safe_poll(struct pollfd *ufds, nfds_t nfds, int timeout_ms) FAST_FUNC;
-
-char *safe_gethostname(void) FAST_FUNC;
-
-/* Convert each alpha char in str to lower-case */
-char* str_tolower(char *str) FAST_FUNC;
-
-char *utoa(unsigned n) FAST_FUNC;
-char *itoa(int n) FAST_FUNC;
-/* Returns a pointer past the formatted number, does NOT null-terminate */
-char *utoa_to_buf(unsigned n, char *buf, unsigned buflen) FAST_FUNC;
-char *itoa_to_buf(int n, char *buf, unsigned buflen) FAST_FUNC;
-/* Intelligent formatters of bignums */
-char *smart_ulltoa4(unsigned long long ul, char buf[4], const char *scale) FAST_FUNC;
-char *smart_ulltoa5(unsigned long long ul, char buf[5], const char *scale) FAST_FUNC;
-/* If block_size == 0, display size without fractional part,
- * else display (size * block_size) with one decimal digit.
- * If display_unit == 0, show value no bigger than 1024 with suffix (K,M,G...),
- * else divide by display_unit and do not use suffix.
- * Returns "auto pointer" */
-#define HUMAN_READABLE_MAX_WIDTH      7  /* "1024.0G" */
-#define HUMAN_READABLE_MAX_WIDTH_STR "7"
-const char *make_human_readable_str(unsigned long long size,
-		unsigned long block_size, unsigned long display_unit) FAST_FUNC;
-/* Put a string of hex bytes ("1b2e66fe"...), return advanced pointer */
-char *bin2hex(char *dst, const char *src, int count) FAST_FUNC;
-/* Reverse */
-char* hex2bin(char *dst, const char *src, int count) FAST_FUNC;
-
-/* Generate a UUID */
-void generate_uuid(uint8_t *buf) FAST_FUNC;
-
-/* Last element is marked by mult == 0 */
-struct suffix_mult {
-	char suffix[4];
-	uint32_t mult;
-};
-#define ALIGN_SUFFIX ALIGN4
-extern const struct suffix_mult bkm_suffixes[];
-#define km_suffixes (bkm_suffixes + 1)
-extern const struct suffix_mult cwbkMG_suffixes[];
-#define kMG_suffixes (cwbkMG_suffixes + 3)
-extern const struct suffix_mult kmg_i_suffixes[];
-
-#include "xatonum.h"
-/* Specialized: */
-
-/* Using xatoi() instead of naive atoi() is not always convenient -
- * in many places people want *non-negative* values, but store them
- * in signed int. Therefore we need this one:
- * dies if input is not in [0, INT_MAX] range. Also will reject '-0' etc.
- * It should really be named xatoi_nonnegative (since it allows 0),
- * but that would be too long.
- */
-int xatoi_positive(const char *numstr) FAST_FUNC;
-
-/* Useful for reading port numbers */
-uint16_t xatou16(const char *numstr) FAST_FUNC;
-
-#if ENABLE_FLOAT_DURATION
-typedef double duration_t;
-void sleep_for_duration(duration_t duration) FAST_FUNC;
-#define DURATION_FMT "f"
-#else
-typedef unsigned duration_t;
-#define sleep_for_duration(duration) sleep(duration)
-#define DURATION_FMT "u"
-#endif
-duration_t parse_duration_str(char *str) FAST_FUNC;
-
-/* These parse entries in /etc/passwd and /etc/group.  This is desirable
- * for BusyBox since we want to avoid using the glibc NSS stuff, which
- * increases target size and is often not needed on embedded systems.  */
-long xuname2uid(const char *name) FAST_FUNC;
-long xgroup2gid(const char *name) FAST_FUNC;
-/* wrapper: allows string to contain numeric uid or gid */
-unsigned long get_ug_id(const char *s, long FAST_FUNC (*xname2id)(const char *)) FAST_FUNC;
-struct bb_uidgid_t {
-	uid_t uid;
-	gid_t gid;
-};
-/* always sets uid and gid; returns 0 on failure */
-int get_uidgid(struct bb_uidgid_t*, const char*) FAST_FUNC;
-/* always sets uid and gid; exits on failure */
-void xget_uidgid(struct bb_uidgid_t*, const char*) FAST_FUNC;
-/* chown-like handling of "user[:[group]" */
-void parse_chown_usergroup_or_die(struct bb_uidgid_t *u, char *user_group) FAST_FUNC;
-struct passwd* xgetpwnam(const char *name) FAST_FUNC;
-struct group* xgetgrnam(const char *name) FAST_FUNC;
-struct passwd* xgetpwuid(uid_t uid) FAST_FUNC;
-struct group* xgetgrgid(gid_t gid) FAST_FUNC;
-char* xuid2uname(uid_t uid) FAST_FUNC;
-char* xgid2group(gid_t gid) FAST_FUNC;
-char* uid2uname(uid_t uid) FAST_FUNC;
-char* gid2group(gid_t gid) FAST_FUNC;
-char* uid2uname_utoa(uid_t uid) FAST_FUNC;
-char* gid2group_utoa(gid_t gid) FAST_FUNC;
-/* versions which cache results (useful for ps, ls etc) */
-const char* get_cached_username(uid_t uid) FAST_FUNC;
-const char* get_cached_groupname(gid_t gid) FAST_FUNC;
-void clear_username_cache(void) FAST_FUNC;
-/* internally usernames are saved in fixed-sized char[] buffers */
-enum { USERNAME_MAX_SIZE = 32 - sizeof(uid_t) };
-#if ENABLE_FEATURE_CHECK_NAMES
-void die_if_bad_username(const char* name) FAST_FUNC;
-#else
-#define die_if_bad_username(name) ((void)(name))
-#endif
-/*
- * Returns (-1) terminated malloced result of getgroups().
- * Reallocs group_array (useful for repeated calls).
- * ngroups is an initial size of array. It is rounded up to 32 for realloc.
- * ngroups is updated on return.
- * ngroups can be NULL: bb_getgroups(NULL, NULL) is valid usage.
- * Dies on errors (on Linux, only xrealloc can cause this, not internal getgroups call).
- */
-gid_t *bb_getgroups(int *ngroups, gid_t *group_array) FAST_FUNC;
-
-#if ENABLE_FEATURE_UTMP
-void FAST_FUNC write_new_utmp(pid_t pid, int new_type, const char *tty_name, const char *username, const char *hostname);
-void FAST_FUNC update_utmp(pid_t pid, int new_type, const char *tty_name, const char *username, const char *hostname);
-void FAST_FUNC update_utmp_DEAD_PROCESS(pid_t pid);
-#else
-# define write_new_utmp(pid, new_type, tty_name, username, hostname) ((void)0)
-# define update_utmp(pid, new_type, tty_name, username, hostname) ((void)0)
-# define update_utmp_DEAD_PROCESS(pid) ((void)0)
-#endif
-
-
-int file_is_executable(const char *name) FAST_FUNC;
-char *find_executable(const char *filename, char **PATHp) FAST_FUNC;
-int executable_exists(const char *filename) FAST_FUNC;
-
-/* BB_EXECxx always execs (it's not doing NOFORK/NOEXEC stuff),
- * but it may exec busybox and call applet instead of searching PATH.
- */
-#if ENABLE_FEATURE_PREFER_APPLETS
-int BB_EXECVP(const char *file, char *const argv[]) FAST_FUNC;
-#define BB_EXECLP(prog,cmd,...) \
-	do { \
-		if (find_applet_by_name(prog) >= 0) \
-			execlp(bb_busybox_exec_path, cmd, __VA_ARGS__); \
-		execlp(prog, cmd, __VA_ARGS__); \
-	} while (0)
-#else
-#define BB_EXECVP(prog,cmd)     execvp(prog,cmd)
-#define BB_EXECLP(prog,cmd,...) execlp(prog,cmd,__VA_ARGS__)
-#endif
-void BB_EXECVP_or_die(char **argv) NORETURN FAST_FUNC;
-
-/* xvfork() can't be a _function_, return after vfork in child mangles stack
- * in the parent. It must be a macro. */
-#define xvfork() \
-({ \
-	pid_t bb__xvfork_pid = vfork(); \
-	if (bb__xvfork_pid < 0) \
-		bb_simple_perror_msg_and_die("vfork"); \
-	bb__xvfork_pid; \
-})
-#if BB_MMU
-pid_t xfork(void) FAST_FUNC;
-#endif
-void xvfork_parent_waits_and_exits(void) FAST_FUNC;
-
-/* NOMMU friendy fork+exec: */
-pid_t spawn(char **argv) FAST_FUNC;
-pid_t xspawn(char **argv) FAST_FUNC;
-
-pid_t safe_waitpid(pid_t pid, int *wstat, int options) FAST_FUNC;
-pid_t wait_any_nohang(int *wstat) FAST_FUNC;
-/* wait4pid: unlike waitpid, waits ONLY for one process.
- * Returns sig + 0x180 if child is killed by signal.
- * It's safe to pass negative 'pids' from failed [v]fork -
- * wait4pid will return -1 (and will not clobber [v]fork's errno).
- * IOW: rc = wait4pid(spawn(argv));
- *      if (rc < 0) bb_perror_msg("%s", argv[0]);
- *      if (rc > 0) bb_error_msg("exit code: %d", rc & 0xff);
- */
-int wait4pid(pid_t pid) FAST_FUNC;
-int wait_for_exitstatus(pid_t pid) FAST_FUNC;
-/************************************************************************/
-/* spawn_and_wait/run_nofork_applet/run_applet_no_and_exit need to work */
-/* carefully together to reinit some global state while not disturbing  */
-/* other. Be careful if you change them. Consult docs/nofork_noexec.txt */
-/************************************************************************/
-/* Same as wait4pid(spawn(argv)), but with NOFORK/NOEXEC if configured: */
-int spawn_and_wait(char **argv) FAST_FUNC;
-/* Does NOT check that applet is NOFORK, just blindly runs it */
-int run_nofork_applet(int applet_no, char **argv) FAST_FUNC;
-void run_noexec_applet_and_exit(int a, const char *name, char **argv) NORETURN FAST_FUNC;
-#ifndef BUILD_INDIVIDUAL
-int find_applet_by_name(const char *name) FAST_FUNC;
-void run_applet_no_and_exit(int a, const char *name, char **argv) NORETURN FAST_FUNC;
-#endif
-void show_usage_if_dash_dash_help(int applet_no, char **argv) FAST_FUNC;
-#if defined(__linux__)
-int re_execed_comm(void) FAST_FUNC;
-void set_task_comm(const char *comm) FAST_FUNC;
-#else
-# define re_execed_comm() 0
-# define set_task_comm(name) ((void)0)
-#endif
-void exit_SUCCESS(void) NORETURN FAST_FUNC;
-void _exit_SUCCESS(void) NORETURN FAST_FUNC;
-
-/* Helpers for daemonization.
- *
- * bb_daemonize(flags) = daemonize, does not compile on NOMMU
- *
- * bb_daemonize_or_rexec(flags, argv) = daemonizes on MMU (and ignores argv),
- *      rexec's itself on NOMMU with argv passed as command line.
- * Thus bb_daemonize_or_rexec may cause your <applet>_main() to be re-executed
- * from the start. (It will detect it and not reexec again second time).
- * You have to audit carefully that you don't do something twice as a result
- * (opening files/sockets, parsing config files etc...)!
- *
- * Both of the above will redirect fd 0,1,2 to /dev/null and drop ctty
- * (will do setsid()).
- *
- * fork_or_rexec(argv) = bare-bones fork on MMU,
- *      "vfork + re-exec ourself" on NOMMU. No fd redirection, no setsid().
- *      On MMU ignores argv.
- *
- * Helper for network daemons in foreground mode:
- *
- * bb_sanitize_stdio() = make sure that fd 0,1,2 are opened by opening them
- * to /dev/null if they are not.
- */
-enum {
-	DAEMON_CHDIR_ROOT      = 1 << 0,
-	DAEMON_DEVNULL_STDIO   = 1 << 1,
-	DAEMON_CLOSE_EXTRA_FDS = 1 << 2,
-	DAEMON_ONLY_SANITIZE   = 1 << 3, /* internal use */
-	//DAEMON_DOUBLE_FORK     = 1 << 4, /* double fork to avoid controlling tty */
-};
-#if BB_MMU
-  enum { re_execed = 0 };
-# define fork_or_rexec(argv)                xfork()
-# define bb_daemonize_or_rexec(flags, argv) bb_daemonize_or_rexec(flags)
-# define bb_daemonize(flags)                bb_daemonize_or_rexec(flags, bogus)
-#else
-  extern bool re_execed;
-  /* Note: re_exec() and fork_or_rexec() do argv[0][0] |= 0x80 on NOMMU!
-   * _Parent_ needs to undo it if it doesn't want to have argv[0] mangled.
-   */
-  void re_exec(char **argv) NORETURN FAST_FUNC;
-  pid_t fork_or_rexec(char **argv) FAST_FUNC;
-  int  BUG_fork_is_unavailable_on_nommu(void) FAST_FUNC;
-  int  BUG_daemon_is_unavailable_on_nommu(void) FAST_FUNC;
-  void BUG_bb_daemonize_is_unavailable_on_nommu(void) FAST_FUNC;
-# define fork()          BUG_fork_is_unavailable_on_nommu()
-# define xfork()         BUG_fork_is_unavailable_on_nommu()
-# define daemon(a,b)     BUG_daemon_is_unavailable_on_nommu()
-# define bb_daemonize(a) BUG_bb_daemonize_is_unavailable_on_nommu()
-#endif
-void bb_daemonize_or_rexec(int flags, char **argv) FAST_FUNC;
-void bb_sanitize_stdio(void) FAST_FUNC;
-#define bb_daemon_helper(arg) bb_daemonize_or_rexec((arg) | DAEMON_ONLY_SANITIZE, NULL)
-/* Clear dangerous stuff, set PATH. Return 1 if was run by different user. */
-int sanitize_env_if_suid(void) FAST_FUNC;
-
-
-/* For top, ps. Some argv[i] are replaced by malloced "-opt" strings */
-void make_all_argv_opts(char **argv) FAST_FUNC;
-char* single_argv(char **argv) FAST_FUNC;
-extern const char *const bb_argv_dash[]; /* { "-", NULL } */
-extern uint32_t option_mask32;
-uint32_t getopt32(char **argv, const char *applet_opts, ...) FAST_FUNC;
-# define No_argument "\0"
-# define Required_argument "\001"
-# define Optional_argument "\002"
-#if ENABLE_LONG_OPTS
-uint32_t getopt32long(char **argv, const char *optstring, const char *longopts, ...) FAST_FUNC;
-#else
-#define getopt32long(argv,optstring,longopts,...) \
-	getopt32(argv,optstring,##__VA_ARGS__)
-#endif
-/* BSD-derived getopt() functions require that optind be set to 1 in
- * order to reset getopt() state.  This used to be generally accepted
- * way of resetting getopt().  However, glibc's getopt()
- * has additional getopt() state beyond optind (specifically, glibc
- * extensions such as '+' and '-' at the start of the string), and requires
- * that optind be set to zero to reset its state.  BSD-derived versions
- * of getopt() misbehaved if optind is set to 0 in order to reset getopt(),
- * and glibc's getopt() used to coredump if optind is set 1 in order
- * to reset getopt().
- * Then BSD introduced additional variable "optreset" which should be
- * set to 1 in order to reset getopt().  Sigh.  Standards, anyone?
- *
- * By ~2008, OpenBSD 3.4 was changed to survive glibc-like optind = 0
- * (to interpret it as if optreset was set).
- */
-#if 1 /*def __GLIBC__*/
-#define GETOPT_RESET() (optind = 0)
-#else /* BSD style */
-#define GETOPT_RESET() (optind = 1)
-#endif
-
-
-/* Having next pointer as a first member allows easy creation
- * of "llist-compatible" structs, and using llist_FOO functions
- * on them.
- */
-typedef struct llist_t {
-	struct llist_t *link;
-	char *data;
-} llist_t;
-void llist_add_to(llist_t **old_head, void *data) FAST_FUNC;
-void llist_add_to_end(llist_t **list_head, void *data) FAST_FUNC;
-void *llist_pop(llist_t **elm) FAST_FUNC;
-void llist_unlink(llist_t **head, llist_t *elm) FAST_FUNC;
-void llist_free(llist_t *elm, void (*freeit)(void *data)) FAST_FUNC;
-llist_t *llist_rev(llist_t *list) FAST_FUNC;
-llist_t *llist_find_str(llist_t *first, const char *str) FAST_FUNC;
-/* BTW, surprisingly, changing API to
- *   llist_t *llist_add_to(llist_t *old_head, void *data)
- * etc does not result in smaller code... */
-
-/* start_stop_daemon and udhcpc are special - they want
- * to create pidfiles regardless of FEATURE_PIDFILE */
-#if ENABLE_FEATURE_PIDFILE || defined(WANT_PIDFILE)
-/* True only if we created pidfile which is *file*, not /dev/null etc */
-extern smallint wrote_pidfile;
-void write_pidfile(const char *path) FAST_FUNC;
-void write_pidfile_std_path_and_ext(const char *path) FAST_FUNC;
-void remove_pidfile_std_path_and_ext(const char *path) FAST_FUNC;
-#define remove_pidfile(path) do { if (wrote_pidfile) unlink(path); } while (0)
-#else
-enum { wrote_pidfile = 0 };
-#define write_pidfile_std_path_and_ext(path)  ((void)0)
-#define remove_pidfile_std_path_and_ext(path) ((void)0)
-#define write_pidfile(path)  ((void)0)
-#define remove_pidfile(path) ((void)0)
-#endif
-
-enum {
-	LOGMODE_NONE = 0,
-	LOGMODE_STDIO = (1 << 0),
-	LOGMODE_SYSLOG = (1 << 1) * ENABLE_FEATURE_SYSLOG,
-	LOGMODE_BOTH = LOGMODE_SYSLOG + LOGMODE_STDIO,
-};
-extern const char *msg_eol;
-extern smallint logmode;
-extern uint8_t xfunc_error_retval;
-extern void (*die_func)(void);
-void xfunc_die(void) NORETURN FAST_FUNC;
-void bb_show_usage(void) NORETURN FAST_FUNC;
-void bb_error_msg(const char *s, ...) __attribute__ ((format (printf, 1, 2))) FAST_FUNC;
-void bb_simple_error_msg(const char *s) FAST_FUNC;
-void bb_error_msg_and_die(const char *s, ...) __attribute__ ((noreturn, format (printf, 1, 2))) FAST_FUNC;
-void bb_simple_error_msg_and_die(const char *s) NORETURN FAST_FUNC;
-void bb_perror_msg(const char *s, ...) __attribute__ ((format (printf, 1, 2))) FAST_FUNC;
-void bb_simple_perror_msg(const char *s) FAST_FUNC;
-void bb_perror_msg_and_die(const char *s, ...) __attribute__ ((noreturn, format (printf, 1, 2))) FAST_FUNC;
-void bb_simple_perror_msg_and_die(const char *s) NORETURN FAST_FUNC;
-void bb_herror_msg(const char *s, ...) __attribute__ ((format (printf, 1, 2))) FAST_FUNC;
-void bb_simple_herror_msg(const char *s) FAST_FUNC;
-void bb_herror_msg_and_die(const char *s, ...) __attribute__ ((noreturn, format (printf, 1, 2))) FAST_FUNC;
-void bb_simple_herror_msg_and_die(const char *s) NORETURN FAST_FUNC;
-void bb_perror_nomsg_and_die(void) NORETURN FAST_FUNC;
-void bb_perror_nomsg(void) FAST_FUNC;
-void bb_verror_msg(const char *s, va_list p, const char *strerr) FAST_FUNC;
-void bb_die_memory_exhausted(void) NORETURN FAST_FUNC;
-void bb_logenv_override(void) FAST_FUNC;
-
-#if ENABLE_FEATURE_SYSLOG_INFO
-void bb_info_msg(const char *s, ...) __attribute__ ((format (printf, 1, 2))) FAST_FUNC;
-void bb_simple_info_msg(const char *s) FAST_FUNC;
-void bb_vinfo_msg(const char *s, va_list p) FAST_FUNC;
-#else
-#define bb_info_msg bb_error_msg
-#define bb_simple_info_msg bb_simple_error_msg
-#define bb_vinfo_msg(s,p) bb_verror_msg(s,p,NULL)
-#endif
-
-#if ENABLE_WARN_SIMPLE_MSG
-/* If enabled, cause calls to bb_error_msg() et al that only take a single
- * parameter to generate a warning.
- */
-static inline void __attribute__ ((deprecated("use bb_simple_error_msg instead")))
-	bb_not_simple_error_msg(const char *s) { bb_simple_error_msg(s); }
-static inline void __attribute__ ((deprecated("use bb_simple_error_msg_and_die instead"))) NORETURN
-	bb_not_simple_error_msg_and_die(const char *s) { bb_simple_error_msg_and_die(s); }
-static inline void __attribute__ ((deprecated("use bb_simple_perror_msg instead")))
-	bb_not_simple_perror_msg(const char *s) { bb_simple_perror_msg(s); }
-static inline void __attribute__ ((deprecated("use bb_simple_perror_msg_and_die instead"))) NORETURN
-	bb_not_simple_perror_msg_and_die(const char *s) { bb_simple_perror_msg_and_die(s); }
-static inline void __attribute__ ((deprecated("use bb_simple_herror_msg instead")))
-	bb_not_simple_herror_msg(const char *s) { bb_simple_herror_msg(s); }
-static inline void __attribute__ ((deprecated("use bb_simple_herror_msg_and_die instead"))) NORETURN
-	bb_not_simple_herror_msg_and_die(const char *s) { bb_simple_herror_msg_and_die(s); }
-static inline void __attribute__ ((deprecated("use bb_simple_info_msg instead")))
-	bb_not_simple_info_msg(const char *s) { bb_simple_info_msg(s); }
-/* Override bb_error_msg() and related functions with macros that will
- * substitute them for the equivalent bb_not_simple_error_msg() function when
- * they are used with only a single parameter. Macro approach inspired by
- * https://gustedt.wordpress.com/2010/06/08/detect-empty-macro-arguments and
- * https://gustedt.wordpress.com/2010/06/03/default-arguments-for-c99
- */
-#define _ARG18(_0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, ...) _17
-#define BB_MSG_KIND(...)           _ARG18(__VA_ARGS__, , , , , , , , , , , , , , , , , _not_simple)
-#define _BB_MSG(name, kind, ...)   bb##kind##name(__VA_ARGS__)
-#define BB_MSG(name, kind, ...)    _BB_MSG(name, kind, __VA_ARGS__)
-#define bb_error_msg(...)          BB_MSG(_error_msg, BB_MSG_KIND(__VA_ARGS__), __VA_ARGS__)
-#define bb_error_msg_and_die(...)  BB_MSG(_error_msg_and_die, BB_MSG_KIND(__VA_ARGS__), __VA_ARGS__)
-#define bb_perror_msg(...)         BB_MSG(_perror_msg, BB_MSG_KIND(__VA_ARGS__), __VA_ARGS__)
-#define bb_perror_msg_and_die(...) BB_MSG(_perror_msg_and_die, BB_MSG_KIND(__VA_ARGS__), __VA_ARGS__)
-#define bb_herror_msg(...)         BB_MSG(_herror_msg, BB_MSG_KIND(__VA_ARGS__), __VA_ARGS__)
-#define bb_herror_msg_and_die(...) BB_MSG(_herror_msg_and_die, BB_MSG_KIND(__VA_ARGS__), __VA_ARGS__)
-#if ENABLE_FEATURE_SYSLOG_INFO
-#define bb_info_msg(...)           BB_MSG(_info_msg, BB_MSG_KIND(__VA_ARGS__), __VA_ARGS__)
-#endif
-#endif
-
-/* We need to export XXX_main from libbusybox
- * only if we build "individual" binaries
- */
-#if ENABLE_FEATURE_INDIVIDUAL
-#define MAIN_EXTERNALLY_VISIBLE EXTERNALLY_VISIBLE
-#else
-#define MAIN_EXTERNALLY_VISIBLE
-#endif
-
-/* Embedded script support */
-char *get_script_content(unsigned n) FAST_FUNC;
-int scripted_main(int argc, char** argv) MAIN_EXTERNALLY_VISIBLE;
-
-/* Applets which are useful from another applets */
-int bb_cat(char** argv) FAST_FUNC;
-int ash_main(int argc, char** argv) IF_SHELL_ASH(MAIN_EXTERNALLY_VISIBLE);
-int hush_main(int argc, char** argv) IF_SHELL_HUSH(MAIN_EXTERNALLY_VISIBLE);
-/* If shell needs them, they exist even if not enabled as applets */
-int echo_main(int argc, char** argv) IF_ECHO(MAIN_EXTERNALLY_VISIBLE);
-int printf_main(int argc, char **argv) IF_PRINTF(MAIN_EXTERNALLY_VISIBLE);
-int test_main(int argc, char **argv)
-#if ENABLE_TEST || ENABLE_TEST1 || ENABLE_TEST2
-		MAIN_EXTERNALLY_VISIBLE
-#endif
-;
-int kill_main(int argc, char **argv)
-#if ENABLE_KILL || ENABLE_KILLALL || ENABLE_KILLALL5
-		MAIN_EXTERNALLY_VISIBLE
-#endif
-;
-/* Similar, but used by chgrp, not shell */
-int chown_main(int argc, char **argv) IF_CHOWN(MAIN_EXTERNALLY_VISIBLE);
-/* Used by ftpd */
-int ls_main(int argc, char **argv) IF_LS(MAIN_EXTERNALLY_VISIBLE);
-/* Don't need IF_xxx() guard for these */
-int gunzip_main(int argc, char **argv) MAIN_EXTERNALLY_VISIBLE;
-int bunzip2_main(int argc, char **argv) MAIN_EXTERNALLY_VISIBLE;
-
-#if ENABLE_ROUTE
-void bb_displayroutes(int noresolve, int netstatfmt) FAST_FUNC;
-#endif
-
-struct number_state {
-	unsigned width;
-	unsigned start;
-	unsigned inc;
-	const char *sep;
-	const char *empty_str;
-	smallint all, nonempty;
-};
-int print_numbered_lines(struct number_state *ns, const char *filename) FAST_FUNC;
-
-
-/* Networking */
-/* This structure defines protocol families and their handlers. */
-struct aftype {
-	const char *name;
-	const char *title;
-	int af;
-	int alen;
-	char*       FAST_FUNC (*print)(unsigned char *);
-	const char* FAST_FUNC (*sprint)(struct sockaddr *, int numeric);
-	int         FAST_FUNC (*input)(/*int type,*/ const char *bufp, struct sockaddr *);
-	void        FAST_FUNC (*herror)(char *text);
-	int         FAST_FUNC (*rprint)(int options);
-	int         FAST_FUNC (*rinput)(int typ, int ext, char **argv);
-	/* may modify src */
-	int         FAST_FUNC (*getmask)(char *src, struct sockaddr *mask, char *name);
-};
-/* This structure defines hardware protocols and their handlers. */
-struct hwtype {
-	const char *name;
-	const char *title;
-	int type;
-	int alen;
-	char* FAST_FUNC (*print)(unsigned char *);
-	int   FAST_FUNC (*input)(const char *, struct sockaddr *);
-	int   FAST_FUNC (*activate)(int fd);
-	int suppress_null_addr;
-};
-#define IFNAME_SHOW_DOWNED_TOO ((char*)(intptr_t)1)
-int display_interfaces(char *ifname) FAST_FUNC;
-int in_ether(const char *bufp, struct sockaddr *sap) FAST_FUNC;
-#if ENABLE_FEATURE_HWIB
-int in_ib(const char *bufp, struct sockaddr *sap) FAST_FUNC;
-#else
-#define in_ib(a, b) 1 /* fail */
-#endif
-const struct aftype *get_aftype(const char *name) FAST_FUNC;
-const struct hwtype *get_hwtype(const char *name) FAST_FUNC;
-const struct hwtype *get_hwntype(int type) FAST_FUNC;
-
-
-extern int fstype_matches(const char *fstype, const char *comma_list) FAST_FUNC;
-#ifdef HAVE_MNTENT_H
-extern struct mntent *find_mount_point(const char *name, int subdir_too) FAST_FUNC;
-#endif
-extern void erase_mtab(const char * name) FAST_FUNC;
-extern unsigned int tty_baud_to_value(speed_t speed) FAST_FUNC;
-extern speed_t tty_value_to_baud(unsigned int value) FAST_FUNC;
-#if ENABLE_DESKTOP
-extern void bb_warn_ignoring_args(char *arg) FAST_FUNC;
-#else
-# define bb_warn_ignoring_args(arg) ((void)0)
-#endif
-
-extern int get_linux_version_code(void) FAST_FUNC;
-
-char *query_loop(const char *device) FAST_FUNC;
-int get_free_loop(void) FAST_FUNC;
-int del_loop(const char *device) FAST_FUNC;
-/*
- * If *devname is not NULL, use that name, otherwise try to find free one,
- * malloc and return it in *devname.
- * return value is the opened fd to the loop device, or < on error
- */
-int set_loop(char **devname, const char *file, unsigned long long offset,
-		unsigned long long sizelimit, unsigned flags) FAST_FUNC;
-/* These constants match linux/loop.h (without BB_ prefix): */
-#define BB_LO_FLAGS_READ_ONLY 1
-#define BB_LO_FLAGS_AUTOCLEAR 4
-#define BB_LO_FLAGS_PARTSCAN  8
-
-/* Returns malloced str */
-char *bb_ask_noecho(int fd, int timeout, const char *prompt) FAST_FUNC;
-/* Like bb_ask_noecho, but asks on stdin with no timeout.  */
-char *bb_ask_noecho_stdin(const char *prompt) FAST_FUNC;
-
-int bb_ask_y_confirmation_FILE(FILE *fp) FAST_FUNC;
-int bb_ask_y_confirmation(void) FAST_FUNC;
-
-/* Returns -1 if input is invalid. cur_mode is a base for e.g. "u+rw" */
-int bb_parse_mode(const char* s, unsigned cur_mode) FAST_FUNC;
+#endif          /* FEATURE_HTTPD_CGI */
 
 /*
- * Config file parser
- */
-enum {
-	PARSE_COLLAPSE  = 0x00010000, // treat consecutive delimiters as one
-	PARSE_TRIM      = 0x00020000, // trim leading and trailing delimiters
-// TODO: COLLAPSE and TRIM seem to always go in pair
-	PARSE_GREEDY    = 0x00040000, // last token takes entire remainder of the line
-	PARSE_MIN_DIE   = 0x00100000, // die if < min tokens found
-	// keep a copy of current line
-	PARSE_KEEP_COPY = 0x00200000 * ENABLE_FEATURE_CROND_D,
-	PARSE_EOL_COMMENTS = 0x00400000, // comments are recognized even if they aren't the first char
-	PARSE_ALT_COMMENTS = 0x00800000, // delim[0] and delim[1] are two different allowed comment chars
-	// (so far, delim[0] will only work as comment char for full-line comment)
-	// (IOW: it works as if PARSE_EOL_COMMENTS is not set. sysctl applet is okay with this)
-	PARSE_WS_COMMENTS  = 0x01000000, // comments are recognized even if there is whitespace before
-	// ("line start><space><tab><space>#comment" is also comment, not only "line start>#comment")
-	// NORMAL is:
-	// * remove leading and trailing delimiters and collapse
-	//   multiple delimiters into one
-	// * warn and continue if less than mintokens delimiters found
-	// * grab everything into last token
-	// * comments are recognized even if they aren't the first char
-	PARSE_NORMAL    = PARSE_COLLAPSE | PARSE_TRIM | PARSE_GREEDY | PARSE_EOL_COMMENTS,
-};
-typedef struct parser_t {
-	FILE *fp;
-	char *data;
-	char *line, *nline;
-	size_t line_alloc, nline_alloc;
-	int lineno;
-} parser_t;
-parser_t* config_open(const char *filename) FAST_FUNC;
-parser_t* config_open2(const char *filename, FILE* FAST_FUNC (*fopen_func)(const char *path)) FAST_FUNC;
-/* delims[0] is a comment char (use '\0' to disable), the rest are token delimiters */
-int config_read(parser_t *parser, char **tokens, unsigned flags, const char *delims) FAST_FUNC;
-#define config_read(parser, tokens, max, min, str, flags) \
-	config_read(parser, tokens, ((flags) | (((min) & 0xFF) << 8) | ((max) & 0xFF)), str)
-void config_close(parser_t *parser) FAST_FUNC;
-
-/* Concatenate path and filename to new allocated buffer.
- * Add "/" only as needed (no duplicate "//" are produced).
- * If path is NULL, it is assumed to be "/".
- * filename should not be NULL. */
-char *concat_path_file(const char *path, const char *filename) FAST_FUNC;
-/* Returns NULL on . and .. */
-char *concat_subpath_file(const char *path, const char *filename) FAST_FUNC;
-
-
-int bb_make_directory(char *path, long mode, int flags) FAST_FUNC;
-
-int get_signum(const char *name) FAST_FUNC;
-const char *get_signame(int number) FAST_FUNC;
-void print_signames(void) FAST_FUNC;
-
-char *bb_simplify_path(const char *path) FAST_FUNC;
-/* Returns ptr to NUL */
-char *bb_simplify_abs_path_inplace(char *path) FAST_FUNC;
-
-void pause_after_failed_login(void) FAST_FUNC;
-void bb_do_delay(unsigned seconds) FAST_FUNC;
-void msleep(unsigned ms) FAST_FUNC;
-void sleep1(void) FAST_FUNC;
-void change_identity(const struct passwd *pw) FAST_FUNC;
-void exec_shell(const char *shell, int loginshell, const char **args) NORETURN FAST_FUNC;
-void exec_login_shell(const char *shell) NORETURN FAST_FUNC;
-void exec_prog_or_SHELL(char **argv) NORETURN FAST_FUNC;
-
-/* Returns $SHELL, getpwuid(getuid())->pw_shell, or DEFAULT_SHELL.
- * Note that getpwuid result might need xstrdup'ing
- * if there is a possibility of intervening getpwxxx() calls.
- */
-const char *get_shell_name(void) FAST_FUNC;
-
-#if ENABLE_FEATURE_SETPRIV_CAPABILITIES || ENABLE_RUN_INIT
-unsigned cap_name_to_number(const char *cap) FAST_FUNC;
-void printf_cap(const char *pfx, unsigned cap_no) FAST_FUNC;
-void drop_capability(int cap_ordinal) FAST_FUNC;
-/* Structures inside "struct caps" are Linux-specific and libcap-specific: */
-#define DEFINE_STRUCT_CAPS \
-struct caps { \
-	struct __user_cap_header_struct header; \
-	unsigned u32s; \
-	struct __user_cap_data_struct data[2]; \
-}
-void getcaps(void *caps) FAST_FUNC;
-#endif
-
-#if ENABLE_SELINUX
-extern void renew_current_security_context(void) FAST_FUNC;
-extern void set_current_security_context(security_context_t sid) FAST_FUNC;
-extern context_t set_security_context_component(security_context_t cur_context,
-						char *user, char *role, char *type, char *range) FAST_FUNC;
-extern void setfscreatecon_or_die(security_context_t scontext) FAST_FUNC;
-extern void selinux_preserve_fcontext(int fdesc) FAST_FUNC;
-#else
-#define selinux_preserve_fcontext(fdesc) ((void)0)
-#endif
-extern void selinux_or_die(void) FAST_FUNC;
-
-
-/* setup_environment:
- * if SETUP_ENV_CHDIR:
- *   if cd(pw->pw_dir): ok: else if SETUP_ENV_TO_TMP: cd(/tmp) else: cd(/) or die
- * if SETUP_ENV_CLEARENV: cd(pw->pw_dir), clear environment, then set
- *   TERM=(old value)
- *   USER=pw->pw_name, LOGNAME=pw->pw_name
- *   PATH=bb_default_[root_]path
- *   HOME=pw->pw_dir
- *   SHELL=shell
- * else if SETUP_ENV_CHANGEENV | SETUP_ENV_CHANGEENV_LOGNAME:
- *   if not root (if pw->pw_uid != 0) or if SETUP_ENV_CHANGEENV_LOGNAME:
- *     USER=pw->pw_name, LOGNAME=pw->pw_name
- *   HOME=pw->pw_dir
- *   SHELL=shell
- * else does nothing
+ * Send a file response to a HTTP request, and exit
  *
- * NB: CHANGEENV and CLEARENV use setenv() - this leaks memory!
- * If setup_environment() is used is vforked child, this leaks memory _in parent too_!
+ * Parameters:
+ * const char *url  The requested URL (with leading /).
+ * what             What to send (headers/body/both).
  */
-#define SETUP_ENV_CHANGEENV         (1 << 0)
-#define SETUP_ENV_CHANGEENV_LOGNAME (1 << 1)
-#define SETUP_ENV_CLEARENV          (1 << 2)
-#define SETUP_ENV_TO_TMP            (1 << 3)
-#define SETUP_ENV_CHDIR             (1 << 4)
-void setup_environment(const char *shell, int flags, const struct passwd *pw) FAST_FUNC;
-void nuke_str(char *str) FAST_FUNC;
-#if ENABLE_FEATURE_SECURETTY && !ENABLE_PAM
-int is_tty_secure(const char *short_tty) FAST_FUNC;
-#else
-static ALWAYS_INLINE int is_tty_secure(const char *short_tty UNUSED_PARAM) { return 1; }
-#endif
-#define CHECKPASS_PW_HAS_EMPTY_PASSWORD 2
-int check_password(const struct passwd *pw, const char *plaintext) FAST_FUNC;
-int ask_and_check_password_extended(const struct passwd *pw, int timeout, const char *prompt) FAST_FUNC;
-int ask_and_check_password(const struct passwd *pw) FAST_FUNC;
-/* Returns a malloced string */
-#if !ENABLE_USE_BB_CRYPT
-#define pw_encrypt(clear, salt, cleanup) pw_encrypt(clear, salt)
-#endif
-extern char *pw_encrypt(const char *clear, const char *salt, int cleanup) FAST_FUNC;
-extern int obscure(const char *old, const char *newval, const struct passwd *pwdp) FAST_FUNC;
-/*
- * rnd is additional random input. New one is returned.
- * Useful if you call crypt_make_salt many times in a row:
- * rnd = crypt_make_salt(buf1, 4, 0);
- * rnd = crypt_make_salt(buf2, 4, rnd);
- * rnd = crypt_make_salt(buf3, 4, rnd);
- * (otherwise we risk having same salt generated)
- */
-extern int crypt_make_salt(char *p, int cnt /*, int rnd*/) FAST_FUNC;
-/* "$N$" + sha_salt_16_bytes + NUL */
-#define MAX_PW_SALT_LEN (3 + 16 + 1)
-extern char* crypt_make_pw_salt(char p[MAX_PW_SALT_LEN], const char *algo) FAST_FUNC;
-
-
-/* Returns number of lines changed, or -1 on error */
-#if !(ENABLE_FEATURE_ADDUSER_TO_GROUP || ENABLE_FEATURE_DEL_USER_FROM_GROUP)
-#define update_passwd(filename, username, data, member) \
-	update_passwd(filename, username, data)
-#endif
-extern int update_passwd(const char *filename,
-		const char *username,
-		const char *data,
-		const char *member) FAST_FUNC;
-
-int index_in_str_array(const char *const string_array[], const char *key) FAST_FUNC;
-int index_in_strings(const char *strings, const char *key) FAST_FUNC;
-int index_in_substr_array(const char *const string_array[], const char *key) FAST_FUNC;
-int index_in_substrings(const char *strings, const char *key) FAST_FUNC;
-const char *nth_string(const char *strings, int n) FAST_FUNC;
-
-extern void print_login_issue(const char *issue_file, const char *tty) FAST_FUNC;
-extern void print_login_prompt(void) FAST_FUNC;
-
-char *xmalloc_ttyname(int fd) FAST_FUNC RETURNS_MALLOC;
-int is_TERM_dumb(void) FAST_FUNC;
-/* NB: typically you want to pass fd 0, not 1. Think 'applet | grep something' */
-int get_terminal_width_height(int fd, unsigned *width, unsigned *height) FAST_FUNC;
-int get_terminal_width(int fd) FAST_FUNC;
-
-int tcsetattr_stdin_TCSANOW(const struct termios *tp) FAST_FUNC;
-#define TERMIOS_CLEAR_ISIG      (1 << 0)
-#define TERMIOS_RAW_CRNL_INPUT  (1 << 1)
-#define TERMIOS_RAW_CRNL_OUTPUT (1 << 2)
-#define TERMIOS_RAW_CRNL        (TERMIOS_RAW_CRNL_INPUT|TERMIOS_RAW_CRNL_OUTPUT)
-#define TERMIOS_RAW_INPUT       (1 << 3)
-int get_termios_and_make_raw(int fd, struct termios *newterm, struct termios *oldterm, int flags) FAST_FUNC;
-int set_termios_to_raw(int fd, struct termios *oldterm, int flags) FAST_FUNC;
-
-/* NB: "unsigned request" is crucial! "int request" will break some arches! */
-int ioctl_or_perror(int fd, unsigned request, void *argp, const char *fmt,...) __attribute__ ((format (printf, 4, 5))) FAST_FUNC;
-int ioctl_or_perror_and_die(int fd, unsigned request, void *argp, const char *fmt,...) __attribute__ ((format (printf, 4, 5))) FAST_FUNC;
-#if ENABLE_IOCTL_HEX2STR_ERROR
-int bb_ioctl_or_warn(int fd, unsigned request, void *argp, const char *ioctl_name) FAST_FUNC;
-int bb_xioctl(int fd, unsigned request, void *argp, const char *ioctl_name) FAST_FUNC;
-#define ioctl_or_warn(fd,request,argp) bb_ioctl_or_warn(fd,request,argp,#request)
-#define xioctl(fd,request,argp)        bb_xioctl(fd,request,argp,#request)
-#else
-int bb_ioctl_or_warn(int fd, unsigned request, void *argp) FAST_FUNC;
-int bb_xioctl(int fd, unsigned request, void *argp) FAST_FUNC;
-#define ioctl_or_warn(fd,request,argp) bb_ioctl_or_warn(fd,request,argp)
-#define xioctl(fd,request,argp)        bb_xioctl(fd,request,argp)
-#endif
-
-char *is_in_ino_dev_hashtable(const struct stat *statbuf) FAST_FUNC;
-void add_to_ino_dev_hashtable(const struct stat *statbuf, const char *name) FAST_FUNC;
-void reset_ino_dev_hashtable(void) FAST_FUNC;
-#ifdef __GLIBC__
-/* At least glibc has horrendously large inline for this, so wrap it */
-unsigned long long bb_makedev(unsigned major, unsigned minor) FAST_FUNC;
-#undef makedev
-#define makedev(a,b) bb_makedev(a,b)
-#endif
-
-
-/* "Keycodes" that report an escape sequence.
- * We use something which fits into signed char,
- * yet doesn't represent any valid Unicode character.
- * Also, -1 is reserved for error indication and we don't use it. */
-enum {
-	KEYCODE_UP        =  -2,
-	KEYCODE_DOWN      =  -3,
-	KEYCODE_RIGHT     =  -4,
-	KEYCODE_LEFT      =  -5,
-	KEYCODE_HOME      =  -6,
-	KEYCODE_END       =  -7,
-	KEYCODE_INSERT    =  -8,
-	KEYCODE_DELETE    =  -9,
-	KEYCODE_PAGEUP    = -10,
-	KEYCODE_PAGEDOWN  = -11,
-	KEYCODE_BACKSPACE = -12, /* Used only if Alt/Ctrl/Shifted */
-	KEYCODE_D         = -13, /* Used only if Alted */
-#if 0
-	KEYCODE_FUN1      = ,
-	KEYCODE_FUN2      = ,
-	KEYCODE_FUN3      = ,
-	KEYCODE_FUN4      = ,
-	KEYCODE_FUN5      = ,
-	KEYCODE_FUN6      = ,
-	KEYCODE_FUN7      = ,
-	KEYCODE_FUN8      = ,
-	KEYCODE_FUN9      = ,
-	KEYCODE_FUN10     = ,
-	KEYCODE_FUN11     = ,
-	KEYCODE_FUN12     = ,
-#endif
-	/* ^^^^^ Be sure that last defined value is small enough.
-	 * Current read_key() code allows going up to -32 (0xfff..fffe0).
-	 * This gives three upper bits in LSB to play with:
-	 * KEYCODE_foo values are 0xfff..fffXX, lowest XX bits are: scavvvvv,
-	 * s=0 if SHIFT, c=0 if CTRL, a=0 if ALT,
-	 * vvvvv bits are the same for same key regardless of "shift bits".
-	 */
-	//KEYCODE_SHIFT_...   = KEYCODE_...   & ~0x80,
-	KEYCODE_CTRL_RIGHT    = KEYCODE_RIGHT & ~0x40,
-	KEYCODE_CTRL_LEFT     = KEYCODE_LEFT  & ~0x40,
-	KEYCODE_ALT_RIGHT     = KEYCODE_RIGHT & ~0x20,
-	KEYCODE_ALT_LEFT      = KEYCODE_LEFT  & ~0x20,
-	KEYCODE_ALT_BACKSPACE = KEYCODE_BACKSPACE & ~0x20,
-	KEYCODE_ALT_D         = KEYCODE_D     & ~0x20,
-
-	KEYCODE_CURSOR_POS = -0x100, /* 0xfff..fff00 */
-	/* How long is the longest ESC sequence we know?
-	 * We want it big enough to be able to contain
-	 * cursor position sequence "ESC [ 9999 ; 9999 R"
-	 */
-	KEYCODE_BUFFER_SIZE = 16
-};
-/* Note: fd may be in blocking or non-blocking mode, both make sense.
- * For one, less uses non-blocking mode.
- * Only the first read syscall inside read_key may block indefinitely
- * (unless fd is in non-blocking mode),
- * subsequent reads will time out after a few milliseconds.
- * Return of -1 means EOF or error (errno == 0 on EOF).
- * Nonzero errno is not preserved across the call:
- * if there was no error, errno will be cleared to 0.
- * buffer[0] is used as a counter of buffered chars and must be 0
- * on first call.
- * timeout:
- * -2: do not poll(-1) for input - read() it, return on EAGAIN at once
- * -1: poll(-1) (i.e. block even on NONBLOCKed fd)
- * >=0: poll() for TIMEOUT milliseconds, return -1/EAGAIN on timeout
- */
-int64_t read_key(int fd, char *buffer, int timeout) FAST_FUNC;
-/* This version loops on EINTR: */
-int64_t safe_read_key(int fd, char *buffer, int timeout) FAST_FUNC;
-void read_key_ungets(char *buffer, const char *str, unsigned len) FAST_FUNC;
-
-
-#if ENABLE_FEATURE_EDITING
-/* It's NOT just ENABLEd or disabled. It's a number: */
-# if defined CONFIG_FEATURE_EDITING_HISTORY && CONFIG_FEATURE_EDITING_HISTORY > 0
-#  define MAX_HISTORY (CONFIG_FEATURE_EDITING_HISTORY + 0)
-unsigned size_from_HISTFILESIZE(const char *hp) FAST_FUNC;
-# else
-#  define MAX_HISTORY 0
-# endif
-typedef const char *get_exe_name_t(int i) FAST_FUNC;
-typedef struct line_input_t {
-	int flags;
-	int timeout;
-# if ENABLE_FEATURE_TAB_COMPLETION
-#  if ENABLE_SHELL_ASH
-	const char *path_lookup;
-#   define EDITING_HAS_path_lookup 1
-#  else
-#   define EDITING_HAS_path_lookup 0
-#  endif
-#  if ENABLE_SHELL_ASH || ENABLE_SHELL_HUSH
-	/* function to fetch additional application-specific names to match */
-	get_exe_name_t *get_exe_name;
-#   define EDITING_HAS_get_exe_name 1
-#  else
-#   define EDITING_HAS_get_exe_name 0
-#  endif
-# endif
-# if MAX_HISTORY
-	int cnt_history;
-	int cur_history;
-	int max_history; /* must never be <= 0 */
-#  if ENABLE_FEATURE_EDITING_SAVEHISTORY
-	/* meaning of this field depends on FEATURE_EDITING_SAVE_ON_EXIT:
-	 * if !FEATURE_EDITING_SAVE_ON_EXIT: "how many lines are
-	 * in on-disk history"
-	 * if FEATURE_EDITING_SAVE_ON_EXIT: "how many in-memory lines are
-	 * also in on-disk history (and thus need to be skipped on save)"
-	 */
-	unsigned cnt_history_in_file;
-	const char *hist_file;
-#  endif
-	char *history[MAX_HISTORY + 1];
-# endif
-} line_input_t;
-enum {
-	DO_HISTORY       = 1 * (MAX_HISTORY > 0),
-	TAB_COMPLETION   = 2 * ENABLE_FEATURE_TAB_COMPLETION,
-	USERNAME_COMPLETION = 4 * ENABLE_FEATURE_USERNAME_COMPLETION,
-	VI_MODE          = 8 * ENABLE_FEATURE_EDITING_VI,
-	WITH_PATH_LOOKUP = 0x10,
-	LI_INTERRUPTIBLE = 0x20,
-	FOR_SHELL        = DO_HISTORY | TAB_COMPLETION | USERNAME_COMPLETION | LI_INTERRUPTIBLE,
-};
-line_input_t *new_line_input_t(int flags) FAST_FUNC;
-#if ENABLE_FEATURE_EDITING_SAVEHISTORY
-void free_line_input_t(line_input_t *n) FAST_FUNC;
-#else
-# define free_line_input_t(n) free(n)
-#endif
-/*
- * maxsize must be >= 2.
- * Returns:
- * -1 on read errors or EOF, or on bare Ctrl-D,
- * 0  on ctrl-C (the line entered is still returned in 'command'),
- * >0 length of input string, including terminating '\n'
- */
-int read_line_input(line_input_t *st, const char *prompt, char *command, int maxsize) FAST_FUNC;
-void show_history(const line_input_t *st) FAST_FUNC;
-# if ENABLE_FEATURE_EDITING_SAVE_ON_EXIT
-void save_history(line_input_t *st);
-# endif
-#else
-#define MAX_HISTORY 0
-int read_line_input(const char* prompt, char* command, int maxsize) FAST_FUNC;
-#define read_line_input(state, prompt, command, maxsize) \
-	read_line_input(prompt, command, maxsize)
-#endif
-
-#ifndef EDITING_HAS_get_exe_name
-# define EDITING_HAS_get_exe_name 0
-#endif
-
-
-#ifndef COMM_LEN
-# ifdef TASK_COMM_LEN
-enum { COMM_LEN = TASK_COMM_LEN };
-# else
-/* synchronize with sizeof(task_struct.comm) in /usr/include/linux/sched.h */
-enum { COMM_LEN = 16 };
-# endif
-#endif
-
-struct smaprec {
-	unsigned long mapped_rw;
-	unsigned long mapped_ro;
-	unsigned long shared_clean;
-	unsigned long shared_dirty;
-	unsigned long private_clean;
-	unsigned long private_dirty;
-	unsigned long stack;
-	unsigned long smap_pss, smap_swap;
-	unsigned long smap_size;
-	// For mixed 32/64 userspace, 32-bit pmap still needs
-	// 64-bit field here to correctly show 64-bit processes:
-	unsigned long long smap_start;
-	// (strictly speaking, other fields need to be wider too,
-	// but they are in kbytes, not bytes, and they hold sizes,
-	// not start addresses, sizes tend to be less than 4 terabytes)
-	char smap_mode[5];
-	char *smap_name;
-};
-
-#if !ENABLE_PMAP
-#define procps_read_smaps(pid, total, cb, data) \
-	procps_read_smaps(pid, total)
-#endif
-int FAST_FUNC procps_read_smaps(pid_t pid, struct smaprec *total,
-		void (*cb)(struct smaprec *, void *), void *data);
-
-typedef struct procps_status_t {
-	DIR *dir;
-	IF_FEATURE_SHOW_THREADS(DIR *task_dir;)
-	uint8_t shift_pages_to_bytes;
-	uint8_t shift_pages_to_kb;
-/* Fields are set to 0/NULL if failed to determine (or not requested) */
-	uint16_t argv_len;
-	char *argv0;
-	char *exe;
-	IF_SELINUX(char *context;)
-	IF_FEATURE_SHOW_THREADS(unsigned main_thread_pid;)
-	/* Everything below must contain no ptrs to malloc'ed data:
-	 * it is memset(0) for each process in procps_scan() */
-	unsigned long vsz, rss; /* we round it to kbytes */
-	unsigned long stime, utime;
-	unsigned long start_time;
-	unsigned pid;
-	unsigned ppid;
-	unsigned pgid;
-	unsigned sid;
-	unsigned uid;
-	unsigned gid;
-#if ENABLE_FEATURE_PS_ADDITIONAL_COLUMNS
-	unsigned ruid;
-	unsigned rgid;
-	int niceness;
-#endif
-	unsigned tty_major,tty_minor;
-#if ENABLE_FEATURE_TOPMEM
-	struct smaprec smaps;
-#endif
-	char state[4];
-	/* basename of executable in exec(2), read from /proc/N/stat
-	 * (if executable is symlink or script, it is NOT replaced
-	 * by link target or interpreter name) */
-	char comm[COMM_LEN];
-	/* user/group? - use passwd/group parsing functions */
-#if ENABLE_FEATURE_TOP_SMP_PROCESS
-	int last_seen_on_cpu;
-#endif
-} procps_status_t;
-/* flag bits for procps_scan(xx, flags) calls */
-enum {
-	PSSCAN_PID      = 1 << 0,
-	PSSCAN_PPID     = 1 << 1,
-	PSSCAN_PGID     = 1 << 2,
-	PSSCAN_SID      = 1 << 3,
-	PSSCAN_UIDGID   = 1 << 4,
-	PSSCAN_COMM     = 1 << 5,
-	/* PSSCAN_CMD      = 1 << 6, - use read_cmdline instead */
-	PSSCAN_ARGV0    = 1 << 7,
-	PSSCAN_EXE      = 1 << 8,
-	PSSCAN_STATE    = 1 << 9,
-	PSSCAN_VSZ      = 1 << 10,
-	PSSCAN_RSS      = 1 << 11,
-	PSSCAN_STIME    = 1 << 12,
-	PSSCAN_UTIME    = 1 << 13,
-	PSSCAN_TTY      = 1 << 14,
-	PSSCAN_SMAPS	= (1 << 15) * ENABLE_FEATURE_TOPMEM,
-	/* NB: used by find_pid_by_name(). Any applet using it
-	 * needs to be mentioned here. */
-	PSSCAN_ARGVN    = (1 << 16) * (ENABLE_KILLALL
-				|| ENABLE_PGREP || ENABLE_PKILL
-				|| ENABLE_PIDOF
-				|| ENABLE_SESTATUS
-				),
-	PSSCAN_CONTEXT  = (1 << 17) * ENABLE_SELINUX,
-	PSSCAN_START_TIME = 1 << 18,
-	PSSCAN_CPU      = (1 << 19) * ENABLE_FEATURE_TOP_SMP_PROCESS,
-	PSSCAN_NICE     = (1 << 20) * ENABLE_FEATURE_PS_ADDITIONAL_COLUMNS,
-	PSSCAN_RUIDGID  = (1 << 21) * ENABLE_FEATURE_PS_ADDITIONAL_COLUMNS,
-	PSSCAN_TASKS	= (1 << 22) * ENABLE_FEATURE_SHOW_THREADS,
-};
-//procps_status_t* alloc_procps_scan(void) FAST_FUNC;
-void free_procps_scan(procps_status_t* sp) FAST_FUNC;
-procps_status_t* procps_scan(procps_status_t* sp, int flags) FAST_FUNC;
-/* Format cmdline (up to col chars) into char buf[size] */
-/* Puts [comm] if cmdline is empty (-> process is a kernel thread) */
-void read_cmdline(char *buf, int size, unsigned pid, const char *comm) FAST_FUNC;
-pid_t *find_pid_by_name(const char* procName) FAST_FUNC;
-pid_t *pidlist_reverse(pid_t *pidList) FAST_FUNC;
-int starts_with_cpu(const char *str) FAST_FUNC;
-unsigned get_cpu_count(void) FAST_FUNC;
-
-
-/* Use strict=1 if you process input from untrusted source:
- * it will return NULL on invalid %xx (bad hex chars)
- * and str + 1 if decoded char is / or NUL.
- * In non-strict mode, it always succeeds (returns str),
- * and also it additionally decoded '+' to space.
- */
-char *percent_decode_in_place(char *str, int strict) FAST_FUNC;
-
-
-extern const char bb_uuenc_tbl_base64[] ALIGN1;
-extern const char bb_uuenc_tbl_base32[] ALIGN1;
-extern const char bb_uuenc_tbl_std[] ALIGN1;
-void bb_uuencode(char *store, const void *s, int length, const char *tbl) FAST_FUNC;
-enum {
-	BASE64_FLAG_UU_STOP = 0x100,
-	BASE64_32           = 0x200, /* base32 */
-	/* Sign-extends to a value which never matches fgetc result: */
-	BASE64_FLAG_NO_STOP_CHAR = 0x80,
-};
-char *decode_base64(char *dst, const char **pp_src) FAST_FUNC;
-char *decode_base32(char *dst, const char **pp_src) FAST_FUNC;
-void read_base64(FILE *src_stream, FILE *dst_stream, int flags) FAST_FUNC;
-
-typedef struct md5_ctx_t {
-	uint8_t wbuffer[64]; /* always correctly aligned for uint64_t */
-	void (*process_block)(struct md5_ctx_t*) FAST_FUNC;
-	uint64_t total64;    /* must be directly before hash[] */
-	uint32_t hash[8];    /* 4 elements for md5, 5 for sha1, 8 for sha256 */
-} md5_ctx_t;
-typedef struct md5_ctx_t sha1_ctx_t;
-typedef struct md5_ctx_t sha256_ctx_t;
-typedef struct sha512_ctx_t {
-	uint64_t total64[2];  /* must be directly before hash[] */
-	uint64_t hash[8];
-	uint8_t wbuffer[128]; /* always correctly aligned for uint64_t */
-} sha512_ctx_t;
-typedef struct sha3_ctx_t {
-	uint64_t state[25];
-	unsigned bytes_queued;
-	unsigned input_block_bytes;
-} sha3_ctx_t;
-void md5_begin(md5_ctx_t *ctx) FAST_FUNC;
-void md5_hash(md5_ctx_t *ctx, const void *buffer, size_t len) FAST_FUNC;
-unsigned md5_end(md5_ctx_t *ctx, void *resbuf) FAST_FUNC;
-void sha1_begin(sha1_ctx_t *ctx) FAST_FUNC;
-#define sha1_hash md5_hash
-unsigned sha1_end(sha1_ctx_t *ctx, void *resbuf) FAST_FUNC;
-void sha256_begin(sha256_ctx_t *ctx) FAST_FUNC;
-#define sha256_hash md5_hash
-#define sha256_end  sha1_end
-void sha512_begin(sha512_ctx_t *ctx) FAST_FUNC;
-void sha512_hash(sha512_ctx_t *ctx, const void *buffer, size_t len) FAST_FUNC;
-unsigned sha512_end(sha512_ctx_t *ctx, void *resbuf) FAST_FUNC;
-void sha3_begin(sha3_ctx_t *ctx) FAST_FUNC;
-void sha3_hash(sha3_ctx_t *ctx, const void *buffer, size_t len) FAST_FUNC;
-unsigned sha3_end(sha3_ctx_t *ctx, void *resbuf) FAST_FUNC;
-/* TLS benefits from knowing that sha1 and sha256 share these. Give them "agnostic" names too */
-typedef struct md5_ctx_t md5sha_ctx_t;
-#define md5sha_hash md5_hash
-#define sha_end sha1_end
-enum {
-	MD5_OUTSIZE    = 16,
-	SHA1_OUTSIZE   = 20,
-	SHA256_OUTSIZE = 32,
-	SHA512_OUTSIZE = 64,
-	SHA3_OUTSIZE   = 28,
-};
-
-extern uint32_t *global_crc32_table;
-uint32_t *crc32_filltable(uint32_t *tbl256, int endian) FAST_FUNC;
-uint32_t *crc32_new_table_le(void) FAST_FUNC;
-uint32_t *global_crc32_new_table_le(void) FAST_FUNC;
-uint32_t crc32_block_endian1(uint32_t val, const void *buf, unsigned len, uint32_t *crc_table) FAST_FUNC;
-uint32_t crc32_block_endian0(uint32_t val, const void *buf, unsigned len, uint32_t *crc_table) FAST_FUNC;
-
-typedef struct masks_labels_t {
-	const char *labels;
-	const int masks[];
-} masks_labels_t;
-int print_flags_separated(const int *masks, const char *labels,
-		int flags, const char *separator) FAST_FUNC;
-int print_flags(const masks_labels_t *ml, int flags) FAST_FUNC;
-
-typedef struct bb_progress_t {
-	unsigned last_size;
-	unsigned last_update_sec;
-	unsigned last_change_sec;
-	unsigned start_sec;
-	/*unsigned last_eta;*/
-	const char *curfile;
-} bb_progress_t;
-
-#define is_bb_progress_inited(p) ((p)->curfile != NULL)
-#define bb_progress_free(p) do { \
-	if (ENABLE_UNICODE_SUPPORT) free((char*)((p)->curfile)); \
-	(p)->curfile = NULL; \
-} while (0)
-void bb_progress_init(bb_progress_t *p, const char *curfile) FAST_FUNC;
-int bb_progress_update(bb_progress_t *p,
-			uoff_t beg_range,
-			uoff_t transferred,
-			uoff_t totalsize) FAST_FUNC;
-
-unsigned ubi_devnum_from_devname(const char *str) FAST_FUNC;
-int ubi_get_volid_by_name(unsigned ubi_devnum, const char *vol_name) FAST_FUNC;
-
-
-extern const char *applet_name;
-
-/* Some older linkers don't perform string merging, we used to have common strings
- * as global arrays to do it by hand. But:
- * (1) newer linkers do it themselves,
- * (2) however, they DONT merge string constants with global arrays,
- * even if the value is the same (!). Thus global arrays actually
- * increased size a bit: for example, "/etc/passwd" string from libc
- * wasn't merged with bb_path_passwd_file[] array!
- * Therefore now we use #defines.
- */
-/* "BusyBox vN.N.N (timestamp or extra_version)" */
-extern const char bb_banner[] ALIGN1;
-extern const char bb_msg_memory_exhausted[] ALIGN1;
-extern const char bb_msg_invalid_date[] ALIGN1;
-#define bb_msg_read_error "read error"
-#define bb_msg_write_error "write error"
-extern const char bb_msg_unknown[] ALIGN1;
-extern const char bb_msg_can_not_create_raw_socket[] ALIGN1;
-extern const char bb_msg_perm_denied_are_you_root[] ALIGN1;
-extern const char bb_msg_you_must_be_root[] ALIGN1;
-extern const char bb_msg_requires_arg[] ALIGN1;
-extern const char bb_msg_invalid_arg_to[] ALIGN1;
-extern const char bb_msg_standard_input[] ALIGN1;
-extern const char bb_msg_standard_output[] ALIGN1;
-
-/* NB: (bb_hexdigits_upcase[i] | 0x20) -> lowercase hex digit */
-extern const char bb_hexdigits_upcase[] ALIGN1;
-
-extern const char bb_path_wtmp_file[] ALIGN1;
-
-/* Busybox mount uses either /proc/mounts or /etc/mtab to
- * get the list of currently mounted filesystems */
-#define bb_path_mtab_file IF_FEATURE_MTAB_SUPPORT("/etc/mtab")IF_NOT_FEATURE_MTAB_SUPPORT("/proc/mounts")
-
-#define bb_path_passwd_file  _PATH_PASSWD
-#define bb_path_group_file   _PATH_GROUP
-#define bb_path_shadow_file  _PATH_SHADOW
-#define bb_path_gshadow_file _PATH_GSHADOW
-
-#define bb_path_motd_file "/etc/motd"
-
-#define bb_dev_null "/dev/null"
-extern const char bb_busybox_exec_path[] ALIGN1;
-/* allow default system PATH to be extended via CFLAGS */
-#ifndef BB_ADDITIONAL_PATH
-#define BB_ADDITIONAL_PATH ""
-#endif
-#define BB_PATH_ROOT_PATH "PATH=/sbin:/usr/sbin:/bin:/usr/bin" BB_ADDITIONAL_PATH
-extern const char bb_PATH_root_path[] ALIGN1; /* BB_PATH_ROOT_PATH */
-#define bb_default_root_path (bb_PATH_root_path + sizeof("PATH"))
-/* util-linux manpage says /sbin:/bin:/usr/sbin:/usr/bin,
- * but I want to save a few bytes here:
- */
-#define bb_default_path      (bb_PATH_root_path + sizeof("PATH=/sbin:/usr/sbin"))
-
-extern const int const_int_0;
-//extern const int const_int_1;
-
-
-/* This struct is deliberately not defined. */
-/* See docs/keep_data_small.txt */
-struct globals;
-/* '*const' ptr makes gcc optimize code much better.
- * Magic prevents ptr_to_globals from going into rodata.
- * If you want to assign a value, use SET_PTR_TO_GLOBALS(x) */
-extern struct globals *const ptr_to_globals;
-
-#define barrier() asm volatile ("":::"memory")
-
-#if defined(__clang_major__) && __clang_major__ >= 9
-/* Clang/llvm drops assignment to "constant" storage. Silently.
- * Needs serious convincing to not eliminate the store.
- */
-static ALWAYS_INLINE void* not_const_pp(const void *p)
+static NOINLINE void send_file_and_exit(const char *url, int what)
 {
-	void *pp;
-	asm volatile (
-		"# forget that p points to const"
-		: /*outputs*/ "=r" (pp)
-		: /*inputs*/ "0" (p)
+	char *suffix;
+	int fd;
+	ssize_t count;
+
+	if (content_gzip) {
+		/* does <url>.gz exist? Then use it instead */
+		char *gzurl = xasprintf("%s.gz", url);
+		fd = open(gzurl, O_RDONLY);
+		free(gzurl);
+		if (fd != -1) {
+			struct stat sb;
+			fstat(fd, &sb);
+			file_size = sb.st_size;
+			last_mod = sb.st_mtime;
+		} else {
+			IF_FEATURE_HTTPD_GZIP(content_gzip = 0;)
+			fd = open(url, O_RDONLY);
+		}
+	} else {
+		fd = open(url, O_RDONLY);
+		/* file_size and last_mod are already populated */
+	}
+	if (fd < 0) {
+		dbg("can't open '%s'\n", url);
+		/* Error pages are sent by using send_file_and_exit(SEND_BODY).
+		 * IOW: it is unsafe to call send_headers_and_exit
+		 * if what is SEND_BODY! Can recurse! */
+		if (what != SEND_BODY)
+			send_headers_and_exit(HTTP_NOT_FOUND);
+		log_and_exit();
+	}
+#if ENABLE_FEATURE_HTTPD_ETAG
+	/* ETag is "hex(last_mod)-hex(file_size)" e.g. "5e132e20-417" */
+	sprintf(G.etag, "\"%llx-%llx\"", (unsigned long long)last_mod, (unsigned long long)file_size);
+
+	if (G.if_none_match) {
+		dbg("If-None-Match:'%s' file's ETag:'%s'\n", G.if_none_match, G.etag);
+		/* Weak ETag comparision.
+		 * If-None-Match may have many ETags but they are quoted so we can use simple substring search */
+		if (strstr(G.if_none_match, G.etag))
+			send_headers_and_exit(HTTP_NOT_MODIFIED);
+	}
+#endif
+	/* If you want to know about EPIPE below
+	 * (happens if you abort downloads from local httpd): */
+	signal(SIGPIPE, SIG_IGN);
+
+	/* If not found, default is to not send "Content-type:" */
+	/*found_mime_type = NULL; - already is */
+	suffix = strrchr(url, '.');
+	if (suffix) {
+		static const char suffixTable[] ALIGN1 =
+			/* Shorter suffix must be first:
+			 * ".html.htm" will fail for ".htm"
+			 */
+			".txt.h.c.cc.cpp\0" "text/plain\0"
+			/* .htm line must be after .h line */
+			".htm.html\0" "text/html\0"
+			".jpg.jpeg\0" "image/jpeg\0"
+			".gif\0"      "image/gif\0"
+			".png\0"      "image/png\0"
+			".svg\0"      "image/svg+xml\0"
+			/* .css line must be after .c line */
+			".css\0"      "text/css\0"
+			".js\0"       "application/javascript\0"
+			".wav\0"      "audio/wav\0"
+			".avi\0"      "video/x-msvideo\0"
+			".qt.mov\0"   "video/quicktime\0"
+			".mpe.mpeg\0" "video/mpeg\0"
+			".mid.midi\0" "audio/midi\0"
+			".mp3\0"      "audio/mpeg\0"
+#if 0  /* unpopular */
+			".au\0"       "audio/basic\0"
+			".pac\0"      "application/x-ns-proxy-autoconfig\0"
+			".vrml.wrl\0" "model/vrml\0"
+#endif
+			/* compiler adds another "\0" here */
+		;
+		Htaccess *cur;
+
+		/* Examine built-in table */
+		const char *table = suffixTable;
+		const char *table_next;
+		for (; *table; table = table_next) {
+			const char *try_suffix;
+			const char *mime_type;
+			mime_type  = table + strlen(table) + 1;
+			table_next = mime_type + strlen(mime_type) + 1;
+			try_suffix = strstr(table, suffix);
+			if (!try_suffix)
+				continue;
+			try_suffix += strlen(suffix);
+			if (*try_suffix == '\0' || *try_suffix == '.') {
+				found_mime_type = mime_type;
+				break;
+			}
+			/* Example: strstr(table, ".av") != NULL, but it
+			 * does not match ".avi" after all and we end up here.
+			 * The table is arranged so that in this case we know
+			 * that it can't match anything in the following lines,
+			 * and we stop the search: */
+			break;
+		}
+		/* ...then user's table */
+		for (cur = mime_a; cur; cur = cur->next) {
+			if (strcmp(cur->before_colon, suffix) == 0) {
+				found_mime_type = cur->after_colon;
+				break;
+			}
+		}
+	}
+
+	dbg("sending file '%s' content-type:%s\n", url, found_mime_type);
+
+#if ENABLE_FEATURE_HTTPD_RANGES
+	if (what == SEND_BODY /* err pages and ranges don't mix */
+	 || content_gzip /* we are sending compressed page: can't do ranges */  ///why?
+	) {
+		range_start = -1;
+	}
+	range_len = MAXINT(off_t);
+	if (range_start >= 0) {
+		if (!range_end || range_end > file_size - 1) {
+			range_end = file_size - 1;
+		}
+		if (range_end < range_start
+		 || lseek(fd, range_start, SEEK_SET) != range_start
+		) {
+			lseek(fd, 0, SEEK_SET);
+			range_start = -1;
+		} else {
+			range_len = range_end - range_start + 1;
+			send_headers(HTTP_PARTIAL_CONTENT);
+			what = SEND_BODY;
+		}
+	}
+#endif
+	if (what & SEND_HEADERS)
+		send_headers(HTTP_OK);
+#if ENABLE_FEATURE_USE_SENDFILE
+	{
+		off_t offset;
+		if (range_start < 0)
+			range_start = 0;
+		offset = range_start;
+		while (1) {
+			/* sz is rounded down to 64k */
+			ssize_t sz = MAXINT(ssize_t) - 0xffff;
+			IF_FEATURE_HTTPD_RANGES(if (sz > range_len) sz = range_len;)
+			count = sendfile(STDOUT_FILENO, fd, &offset, sz);
+			if (count < 0) {
+				if (offset == range_start) /* was it the very 1st sendfile? */
+					break; /* fall back to read/write loop */
+				goto fin;
+			}
+			IF_FEATURE_HTTPD_RANGES(range_len -= count;)
+			if (count == 0 || range_len == 0)
+				log_and_exit();
+		}
+	}
+#endif
+	while ((count = safe_read(fd, iobuf, IOBUF_SIZE)) > 0) {
+		ssize_t n;
+		IF_FEATURE_HTTPD_RANGES(if (count > range_len) count = range_len;)
+		n = full_write(STDOUT_FILENO, iobuf, count);
+		if (count != n)
+			break;
+		IF_FEATURE_HTTPD_RANGES(range_len -= count;)
+		if (range_len == 0)
+			break;
+	}
+	if (count < 0) {
+ IF_FEATURE_USE_SENDFILE(fin:)
+		if (verbose > 1)
+			bb_simple_perror_msg("error");
+	}
+	log_and_exit();
+}
+
+#if ENABLE_FEATURE_HTTPD_ACL_IP
+static void if_ip_denied_send_HTTP_FORBIDDEN_and_exit(unsigned remote_ip)
+{
+	Htaccess_IP *cur;
+
+	for (cur = G.ip_a_d; cur; cur = cur->next) {
+		dbg("checkPermIP: '%s' ? '%u.%u.%u.%u/%u.%u.%u.%u'\n",
+			rmt_ip_str,
+			(unsigned char)(cur->ip >> 24),
+			(unsigned char)(cur->ip >> 16),
+			(unsigned char)(cur->ip >> 8),
+			(unsigned char)(cur->ip),
+			(unsigned char)(cur->mask >> 24),
+			(unsigned char)(cur->mask >> 16),
+			(unsigned char)(cur->mask >> 8),
+			(unsigned char)(cur->mask)
+		);
+		if ((remote_ip & cur->mask) == cur->ip) {
+			if (cur->allow_deny == 'A')
+				return;
+			send_headers_and_exit(HTTP_FORBIDDEN);
+		}
+	}
+
+	if (flg_deny_all) /* depends on whether we saw "D:*" */
+		send_headers_and_exit(HTTP_FORBIDDEN);
+}
+#else
+# define if_ip_denied_send_HTTP_FORBIDDEN_and_exit(arg) ((void)0)
+#endif
+
+#if ENABLE_FEATURE_HTTPD_BASIC_AUTH
+
+# if ENABLE_PAM
+struct pam_userinfo {
+	const char *name;
+	const char *pw;
+};
+
+static int pam_talker(int num_msg,
+		const struct pam_message **msg,
+		struct pam_response **resp,
+		void *appdata_ptr)
+{
+	int i;
+	struct pam_userinfo *userinfo = (struct pam_userinfo *) appdata_ptr;
+	struct pam_response *response;
+
+	if (!resp || !msg || !userinfo)
+		return PAM_CONV_ERR;
+
+	/* allocate memory to store response */
+	response = xzalloc(num_msg * sizeof(*response));
+
+	/* copy values */
+	for (i = 0; i < num_msg; i++) {
+		const char *s;
+
+		switch (msg[i]->msg_style) {
+		case PAM_PROMPT_ECHO_ON:
+			s = userinfo->name;
+			break;
+		case PAM_PROMPT_ECHO_OFF:
+			s = userinfo->pw;
+			break;
+		case PAM_ERROR_MSG:
+		case PAM_TEXT_INFO:
+			s = "";
+			break;
+		default:
+			free(response);
+			return PAM_CONV_ERR;
+		}
+		response[i].resp = xstrdup(s);
+		if (PAM_SUCCESS != 0)
+			response[i].resp_retcode = PAM_SUCCESS;
+	}
+	*resp = response;
+	return PAM_SUCCESS;
+}
+# endif
+
+/*
+ * Config file entries are of the form "/<path>:<user>:<passwd>".
+ * If config file has no prefix match for path, access is allowed.
+ *
+ * path                 The file path
+ * user_and_passwd      "user:passwd" to validate
+ *
+ * Returns 1 if user_and_passwd is OK.
+ */
+static int check_user_passwd(const char *path, char *user_and_passwd)
+{
+	Htaccess *cur;
+	const char *prev = NULL;
+
+	for (cur = g_auth; cur; cur = cur->next) {
+		const char *dir_prefix;
+		size_t len;
+		int r;
+
+		dir_prefix = cur->before_colon;
+
+		/* WHY? */
+		/* If already saw a match, don't accept other different matches */
+		if (prev && strcmp(prev, dir_prefix) != 0)
+			continue;
+
+		dbg("checkPerm: '%s' ? '%s'\n", dir_prefix, user_and_passwd);
+
+		/* If it's not a prefix match, continue searching */
+		len = strlen(dir_prefix);
+		if (len != 1 /* dir_prefix "/" matches all, don't need to check */
+		 && (strncmp(dir_prefix, path, len) != 0
+		    || (path[len] != '/' && path[len] != '\0')
+		    )
+		) {
+			continue;
+		}
+
+		/* Path match found */
+		prev = dir_prefix;
+
+		if (ENABLE_FEATURE_HTTPD_AUTH_MD5) {
+			char *colon_after_user;
+			const char *passwd;
+# if ENABLE_FEATURE_SHADOWPASSWDS && !ENABLE_PAM
+			char sp_buf[256];
+# endif
+
+			colon_after_user = strchr(user_and_passwd, ':');
+			if (!colon_after_user)
+				goto bad_input;
+
+			/* compare "user:" */
+			if (cur->after_colon[0] != '*'
+			 && strncmp(cur->after_colon, user_and_passwd,
+					colon_after_user - user_and_passwd + 1) != 0
+			) {
+				continue;
+			}
+			/* this cfg entry is '*' or matches username from peer */
+
+			passwd = strchr(cur->after_colon, ':');
+			if (!passwd)
+				goto bad_input;
+			passwd++;
+			if (passwd[0] == '*') {
+# if ENABLE_PAM
+				struct pam_userinfo userinfo;
+				struct pam_conv conv_info = { &pam_talker, (void *) &userinfo };
+				pam_handle_t *pamh;
+
+				*colon_after_user = '\0';
+				userinfo.name = user_and_passwd;
+				userinfo.pw = colon_after_user + 1;
+				r = pam_start("httpd", user_and_passwd, &conv_info, &pamh) != PAM_SUCCESS;
+				if (r == 0) {
+					r = pam_authenticate(pamh, PAM_DISALLOW_NULL_AUTHTOK) != PAM_SUCCESS
+					 || pam_acct_mgmt(pamh, PAM_DISALLOW_NULL_AUTHTOK)    != PAM_SUCCESS
+					;
+					pam_end(pamh, PAM_SUCCESS);
+				}
+				*colon_after_user = ':';
+				goto end_check_passwd;
+# else
+#  if ENABLE_FEATURE_SHADOWPASSWDS
+				/* Using _r function to avoid pulling in static buffers */
+				struct spwd spw;
+#  endif
+				struct passwd *pw;
+
+				*colon_after_user = '\0';
+				pw = getpwnam(user_and_passwd);
+				*colon_after_user = ':';
+				if (!pw || !pw->pw_passwd)
+					continue;
+				passwd = pw->pw_passwd;
+#  if ENABLE_FEATURE_SHADOWPASSWDS
+				if ((passwd[0] == 'x' || passwd[0] == '*') && !passwd[1]) {
+					/* getspnam_r may return 0 yet set result to NULL.
+					 * At least glibc 2.4 does this. Be extra paranoid here. */
+					struct spwd *result = NULL;
+					r = getspnam_r(pw->pw_name, &spw, sp_buf, sizeof(sp_buf), &result);
+					if (r == 0 && result)
+						passwd = result->sp_pwdp;
+				}
+#  endif
+				/* In this case, passwd is ALWAYS encrypted:
+				 * it came from /etc/passwd or /etc/shadow!
+				 */
+				goto check_encrypted;
+# endif /* ENABLE_PAM */
+			}
+			/* Else: passwd is from httpd.conf, it is either plaintext or encrypted */
+
+			if (passwd[0] == '$' && isdigit(passwd[1])) {
+				char *encrypted;
+# if !ENABLE_PAM
+ check_encrypted:
+# endif
+				/* encrypt pwd from peer and check match with local one */
+				encrypted = pw_encrypt(
+					/* pwd (from peer): */  colon_after_user + 1,
+					/* salt: */ passwd,
+					/* cleanup: */ 0
+				);
+				r = strcmp(encrypted, passwd);
+				free(encrypted);
+			} else {
+				/* local passwd is from httpd.conf and it's plaintext */
+				r = strcmp(colon_after_user + 1, passwd);
+			}
+			goto end_check_passwd;
+		}
+ bad_input:
+		/* Comparing plaintext "user:pass" in one go */
+		r = strcmp(cur->after_colon, user_and_passwd);
+ end_check_passwd:
+		if (r == 0) {
+			remoteuser = xstrndup(user_and_passwd,
+				strchrnul(user_and_passwd, ':') - user_and_passwd
+			);
+			return 1; /* Ok */
+		}
+	} /* for */
+
+	/* 0(bad) if prev is set: matches were found but passwd was wrong */
+	return (prev == NULL);
+}
+#endif  /* FEATURE_HTTPD_BASIC_AUTH */
+
+#if ENABLE_FEATURE_HTTPD_PROXY
+static Htaccess_Proxy *find_proxy_entry(const char *url)
+{
+	Htaccess_Proxy *p;
+	for (p = proxy; p; p = p->next) {
+		if (is_prefixed_with(url, p->url_from))
+			return p;
+	}
+	return NULL;
+}
+#endif
+
+/*
+ * Handle timeouts
+ */
+static void send_REQUEST_TIMEOUT_and_exit(int sig) NORETURN;
+static void send_REQUEST_TIMEOUT_and_exit(int sig UNUSED_PARAM)
+{
+	send_headers_and_exit(HTTP_REQUEST_TIMEOUT);
+}
+
+/*
+ * Handle an incoming http request and exit.
+ */
+static void handle_incoming_and_exit(const len_and_sockaddr *fromAddr) NORETURN;
+static void handle_incoming_and_exit(const len_and_sockaddr *fromAddr)
+{
+	struct stat sb;
+	char *urlcopy;
+	char *urlp;
+	char *tptr;
+#if ENABLE_FEATURE_HTTPD_ACL_IP
+	unsigned remote_ip;
+#endif
+#if ENABLE_FEATURE_HTTPD_CGI
+	unsigned total_headers_len;
+#endif
+	const char *prequest;
+	static const char request_GET[]  ALIGN1 = "GET";
+	static const char request_HEAD[] ALIGN1 = "HEAD";
+#if ENABLE_FEATURE_HTTPD_CGI
+	static const char request_POST[] ALIGN1 = "POST";
+	unsigned long POST_length;
+	enum CGI_type {
+		CGI_NONE = 0,
+		CGI_NORMAL,
+		CGI_INDEX,
+		CGI_INTERPRETER,
+	} cgi_type = CGI_NONE;
+#endif
+#if ENABLE_FEATURE_HTTPD_PROXY
+	Htaccess_Proxy *proxy_entry;
+#endif
+#if ENABLE_FEATURE_HTTPD_BASIC_AUTH
+	smallint authorized = -1;
+#endif
+	char *HTTP_slash;
+
+	/* Allocation of iobuf is postponed until now
+	 * (IOW, server process doesn't need to waste 8k) */
+	iobuf = xmalloc(IOBUF_SIZE);
+
+	if (ENABLE_FEATURE_HTTPD_CGI || DEBUG || verbose) {
+		/* NB: can be NULL (user runs httpd -i by hand?) */
+		rmt_ip_str = xmalloc_sockaddr2dotted(&fromAddr->u.sa);
+	}
+	if (verbose) {
+		/* this trick makes -v logging much simpler */
+		if (rmt_ip_str)
+			applet_name = rmt_ip_str;
+		if (verbose > 2)
+			bb_simple_error_msg("connected");
+	}
+#if ENABLE_FEATURE_HTTPD_ACL_IP
+	remote_ip = 0;
+	if (fromAddr->u.sa.sa_family == AF_INET) {
+		remote_ip = ntohl(fromAddr->u.sin.sin_addr.s_addr);
+	}
+# if ENABLE_FEATURE_IPV6
+	if (fromAddr->u.sa.sa_family == AF_INET6
+	 && fromAddr->u.sin6.sin6_addr.s6_addr32[0] == 0
+	 && fromAddr->u.sin6.sin6_addr.s6_addr32[1] == 0
+	 && ntohl(fromAddr->u.sin6.sin6_addr.s6_addr32[2]) == 0xffff)
+		remote_ip = ntohl(fromAddr->u.sin6.sin6_addr.s6_addr32[3]);
+# endif
+	if_ip_denied_send_HTTP_FORBIDDEN_and_exit(remote_ip);
+#endif
+
+	/* Install timeout handler. get_line() needs it. */
+	signal(SIGALRM, send_REQUEST_TIMEOUT_and_exit);
+
+	if (!get_line()) { /* EOF or error or empty line */
+		/* Observed Firefox to "speculatively" open
+		 * extra connections to a new site on first access,
+		 * they are closed in ~5 seconds with nothing
+		 * being sent at all.
+		 * (Presumably it's a method to decrease latency?)
+		 */
+		if (verbose > 2)
+			bb_simple_error_msg("eof on read, closing");
+		/* Don't bother generating error page in this case,
+		 * just close the socket.
+		 */
+		//send_headers_and_exit(HTTP_BAD_REQUEST);
+		_exit(xfunc_error_retval);
+	}
+	dbg("Request:'%s'\n", iobuf);
+
+	/* Find URL */
+	// rfc2616: method and URI is separated by exactly one space
+	//urlp = strpbrk(iobuf, " \t"); - no, tab isn't allowed
+	urlp = strchr(iobuf, ' ');
+	if (urlp == NULL)
+		send_headers_and_exit(HTTP_BAD_REQUEST);
+	*urlp++ = '\0';
+	//urlp = skip_whitespace(urlp); - should not be necessary
+	if (urlp[0] != '/')
+		send_headers_and_exit(HTTP_BAD_REQUEST);
+	/* Find end of URL */
+	HTTP_slash = strchr(urlp, ' ');
+	/* Is it " HTTP/"? */
+	if (!HTTP_slash || strncmp(HTTP_slash + 1, HTTP_200, 5) != 0)
+		send_headers_and_exit(HTTP_BAD_REQUEST);
+	*HTTP_slash++ = '\0';
+
+#if ENABLE_FEATURE_HTTPD_PROXY
+	proxy_entry = find_proxy_entry(urlp);
+	if (proxy_entry) {
+		int proxy_fd;
+		len_and_sockaddr *lsa;
+
+		if (verbose > 1)
+			bb_error_msg("proxy:%s", urlp);
+		lsa = host2sockaddr(proxy_entry->host_port, 80);
+		if (!lsa)
+			send_headers_and_exit(HTTP_INTERNAL_SERVER_ERROR);
+		proxy_fd = socket(lsa->u.sa.sa_family, SOCK_STREAM, 0);
+		if (proxy_fd < 0)
+			send_headers_and_exit(HTTP_INTERNAL_SERVER_ERROR);
+		if (connect(proxy_fd, &lsa->u.sa, lsa->len) < 0)
+			send_headers_and_exit(HTTP_INTERNAL_SERVER_ERROR);
+		/* Disable peer header reading timeout */
+		alarm(0);
+		/* Config directive was of the form:
+		 *   P:/url:[http://]hostname[:port]/new/path
+		 * When /urlSFX is requested, reverse proxy it
+		 * to http://hostname[:port]/new/pathSFX
+		 */
+		fdprintf(proxy_fd, "%s %s%s %s\r\n",
+				iobuf, /* "GET" / "POST" / etc */
+				proxy_entry->url_to, /* "/new/path" */
+				urlp + strlen(proxy_entry->url_from), /* "SFX" */
+				HTTP_slash /* "HTTP/xyz" */
+		);
+		cgi_io_loop_and_exit(proxy_fd, proxy_fd, /*max POST length:*/ INT_MAX);
+	}
+#endif
+
+	/* Determine type of request (GET/POST/...) */
+	prequest = request_GET;
+	if (strcasecmp(iobuf, prequest) == 0)
+		goto found;
+	prequest = request_HEAD;
+	if (strcasecmp(iobuf, prequest) == 0)
+		goto found;
+#if !ENABLE_FEATURE_HTTPD_CGI
+	send_headers_and_exit(HTTP_NOT_IMPLEMENTED);
+#else
+	prequest = request_POST;
+	if (strcasecmp(iobuf, prequest) == 0)
+		goto found;
+	/* For CGI, allow DELETE, PUT, OPTIONS, etc too */
+	prequest = alloca(16);
+	safe_strncpy((char*)prequest, iobuf, 16);
+#endif
+ found:
+	/* Copy URL to stack-allocated char[] */
+	urlcopy = alloca((HTTP_slash - urlp) + 2 + strlen(index_page));
+	strcpy(urlcopy, urlp);
+	/* NB: urlcopy ptr is never changed after this */
+
+	/* Extract url args if present */
+	g_query = strchr(urlcopy, '?');
+	if (g_query)
+		*g_query++ = '\0';
+
+	/* Decode URL escape sequences */
+	tptr = percent_decode_in_place(urlcopy, /*strict:*/ 1);
+	if (tptr == NULL)
+		send_headers_and_exit(HTTP_BAD_REQUEST);
+	if (tptr == urlcopy + 1) {
+		/* '/' or NUL is encoded */
+		send_headers_and_exit(HTTP_NOT_FOUND);
+	}
+
+	/* Canonicalize path */
+	/* Algorithm stolen from libbb bb_simplify_path(),
+	 * but don't strdup, retain trailing slash, protect root */
+	urlp = tptr = urlcopy;
+	while (1) {
+		if (*urlp == '/') {
+			/* skip duplicate (or initial) slash */
+			if (*tptr == '/') {
+				goto next_char;
+			}
+			if (*tptr == '.') {
+				if (tptr[1] == '.' && (tptr[2] == '/' || tptr[2] == '\0')) {
+					/* "..": be careful */
+					/* protect root */
+					if (urlp == urlcopy)
+						send_headers_and_exit(HTTP_BAD_REQUEST);
+					/* omit previous dir */
+					while (*--urlp != '/')
+						continue;
+					/* skip to "./" or ".<NUL>" */
+					tptr++;
+				}
+				if (tptr[1] == '/' || tptr[1] == '\0') {
+					/* skip extra "/./" */
+					goto next_char;
+				}
+			}
+		}
+		*++urlp = *tptr;
+		if (*tptr == '\0')
+			break;
+ next_char:
+		tptr++;
+	}
+
+	/* Log it */
+	if (verbose > 1)
+		bb_error_msg("url:%s", urlcopy);
+
+	tptr = urlcopy;
+	while ((tptr = strchr(tptr + 1, '/')) != NULL) {
+		/* have path1/path2 */
+		*tptr = '\0';
+		/* may have subdir config */
+		if (parse_conf(urlcopy + 1, SUBDIR_PARSE) == 0)
+			if_ip_denied_send_HTTP_FORBIDDEN_and_exit(remote_ip);
+		*tptr = '/';
+	}
+
+	tptr = urlcopy + 1;      /* skip first '/' */
+
+#if ENABLE_FEATURE_HTTPD_CGI
+	if (is_prefixed_with(tptr, "cgi-bin/")) {
+		if (tptr[8] == '\0') {
+			/* protect listing "cgi-bin/" */
+			send_headers_and_exit(HTTP_FORBIDDEN);
+		}
+		cgi_type = CGI_NORMAL;
+	}
+#endif
+
+	if (urlp[-1] == '/') {
+		/* When index_page string is appended to <dir>/ URL, it overwrites
+		 * the query string. If we fall back to call /cgi-bin/index.cgi,
+		 * query string would be lost and not available to the CGI.
+		 * Work around it by making a deep copy.
+		 */
+		if (ENABLE_FEATURE_HTTPD_CGI)
+			g_query = xstrdup(g_query); /* ok for NULL too */
+		strcpy(urlp, index_page);
+	}
+	if (stat(tptr, &sb) == 0) {
+		/* If URL is a directory with no slash, set up
+		 * "HTTP/1.1 302 Found" "Location: /dir/" reply */
+		if (urlp[-1] != '/' && S_ISDIR(sb.st_mode)) {
+			found_moved_temporarily = urlcopy;
+		} else {
+#if ENABLE_FEATURE_HTTPD_CONFIG_WITH_SCRIPT_INTERPR
+			char *suffix = strrchr(tptr, '.');
+			if (suffix) {
+				Htaccess *cur;
+				for (cur = script_i; cur; cur = cur->next) {
+					if (strcmp(cur->before_colon + 1, suffix) == 0) {
+						cgi_type = CGI_INTERPRETER;
+						break;
+					}
+				}
+			}
+#endif
+			file_size = sb.st_size;
+			last_mod = sb.st_mtime;
+		}
+	}
+#if ENABLE_FEATURE_HTTPD_CGI
+	else if (urlp[-1] == '/') {
+		/* It's a dir URL and there is no index.html */
+		/* Is there cgi-bin/index.cgi? */
+		if (access("/cgi-bin/index.cgi"+1, X_OK) != 0)
+			send_headers_and_exit(HTTP_NOT_FOUND); /* no */
+		cgi_type = CGI_INDEX;
+	}
+#endif
+
+#if ENABLE_FEATURE_HTTPD_BASIC_AUTH || ENABLE_FEATURE_HTTPD_CGI
+	/* check_user_passwd() would be confused by added .../index.html, truncate it */
+	urlp[0] = '\0';
+#endif
+
+#if ENABLE_FEATURE_HTTPD_CGI
+	total_headers_len = 0;
+	POST_length = 0;
+#endif
+
+	/* Read until blank line */
+	while (1) {
+		unsigned iobuf_len = get_line();
+		if (!iobuf_len)
+			break; /* EOF or error or empty line */
+#if ENABLE_FEATURE_HTTPD_CGI
+		/* Prevent unlimited growth of HTTP_xyz envvars */
+		total_headers_len += iobuf_len;
+		if (total_headers_len >= MAX_HTTP_HEADERS_SIZE)
+			send_headers_and_exit(HTTP_ENTITY_TOO_LARGE);
+#endif
+		dbg("header:'%s'\n", iobuf);
+#if ENABLE_FEATURE_HTTPD_CGI
+		/* Only POST needs to know POST_length */
+		if (prequest == request_POST && STRNCASECMP(iobuf, "Content-Length:") == 0) {
+			tptr = skip_whitespace(iobuf + sizeof("Content-Length:") - 1);
+			if (!tptr[0])
+				send_headers_and_exit(HTTP_BAD_REQUEST);
+			/* not using strtoul: it ignores leading minus! */
+			POST_length = bb_strtou(tptr, NULL, 10);
+			/* length is "ulong", but we need to pass it to int later */
+			if (errno || POST_length > INT_MAX)
+				send_headers_and_exit(HTTP_BAD_REQUEST);
+			continue;
+		}
+#endif
+#if ENABLE_FEATURE_HTTPD_BASIC_AUTH
+		if (STRNCASECMP(iobuf, "Authorization:") == 0) {
+			/* We only allow Basic credentials.
+			 * It shows up as "Authorization: Basic <user>:<passwd>" where
+			 * "<user>:<passwd>" is base64 encoded.
+			 */
+			tptr = skip_whitespace(iobuf + sizeof("Authorization:")-1);
+			if (STRNCASECMP(tptr, "Basic") == 0) {
+				tptr += sizeof("Basic")-1;
+				/* decodeBase64() skips whitespace itself */
+				decodeBase64(tptr);
+				authorized = check_user_passwd(urlcopy, tptr);
+				continue;
+			}
+		}
+#endif
+#if ENABLE_FEATURE_HTTPD_RANGES
+		if (STRNCASECMP(iobuf, "Range:") == 0) {
+			/* We know only bytes=NNN-[MMM] */
+			char *s = skip_whitespace(iobuf + sizeof("Range:")-1);
+			s = is_prefixed_with(s, "bytes=");
+			if (s) {
+				range_start = BB_STRTOOFF(s, &s, 10);
+				if (s[0] != '-' || range_start < 0) {
+					range_start = -1;
+				} else if (s[1]) {
+					range_end = BB_STRTOOFF(s+1, NULL, 10);
+					if (errno || range_end < range_start)
+						range_start = -1;
+				}
+			}
+			continue;
+		}
+#endif
+#if ENABLE_FEATURE_HTTPD_GZIP
+		if (STRNCASECMP(iobuf, "Accept-Encoding:") == 0) {
+			/* Note: we do not support "gzip;q=0"
+			 * method of _disabling_ gzip
+			 * delivery. No one uses that, though */
+			const char *s = strstr(iobuf, "gzip");
+			if (s) {
+				// want more thorough checks?
+				//if (s[-1] == ' '
+				// || s[-1] == ','
+				// || s[-1] == ':'
+				//) {
+					content_gzip = 1;
+				//}
+			}
+			continue;
+		}
+#endif
+#if ENABLE_FEATURE_HTTPD_ETAG
+		if (STRNCASECMP(iobuf, "If-None-Match:") == 0) {
+			free(G.if_none_match);
+			G.if_none_match = xstrdup(skip_whitespace(iobuf + sizeof("If-None-Match:") - 1));
+			continue;
+		}
+#endif
+#if ENABLE_FEATURE_HTTPD_CGI
+		if (cgi_type != CGI_NONE) {
+			bool ct = (STRNCASECMP(iobuf, "Content-Type:") == 0);
+			char *cp;
+			char *colon = strchr(iobuf, ':');
+
+			if (!colon)
+				continue;
+			cp = iobuf;
+			while (cp < colon) {
+				/* a-z => A-Z, not-alnum => _ */
+				char c = (*cp & ~0x20); /* toupper for A-Za-z, undef for others */
+				if ((unsigned)(c - 'A') <= ('Z' - 'A')) {
+					*cp++ = c;
+					continue;
+				}
+				if (!isdigit(*cp))
+					*cp = '_';
+				cp++;
+			}
+			/* "Content-Type:" gets no HTTP_ prefix, all others do */
+			cp = xasprintf(ct ? "HTTP_%.*s=%s" + 5 : "HTTP_%.*s=%s",
+				(int)(colon - iobuf), iobuf,
+				skip_whitespace(colon + 1)
+			);
+			putenv(cp);
+		}
+#endif
+	} /* while extra header reading */
+
+	/* We are done reading headers, disable peer timeout */
+	alarm(0);
+
+	if (strcmp(bb_basename(urlcopy), HTTPD_CONF) == 0) {
+		/* protect listing [/path]/httpd.conf or IP deny */
+		send_headers_and_exit(HTTP_FORBIDDEN);
+	}
+
+#if ENABLE_FEATURE_HTTPD_BASIC_AUTH
+	/* Case: no "Authorization:" was seen, but page might require passwd.
+	 * Check that with dummy user:pass */
+	if (authorized < 0)
+		authorized = check_user_passwd(urlcopy, (char *) "");
+	if (!authorized)
+		send_headers_and_exit(HTTP_UNAUTHORIZED);
+#endif
+
+	if (found_moved_temporarily)
+		send_headers_and_exit(HTTP_MOVED_TEMPORARILY);
+
+#if ENABLE_FEATURE_HTTPD_CGI
+	if (cgi_type != CGI_NONE) {
+		send_cgi_and_exit(
+			(cgi_type == CGI_INDEX) ? "/cgi-bin/index.cgi"
+			/*CGI_NORMAL or CGI_INTERPRETER*/ : urlcopy,
+			urlcopy, prequest, POST_length
+		);
+	}
+#endif
+
+#if ENABLE_FEATURE_HTTPD_CGI
+	if (prequest != request_GET && prequest != request_HEAD) {
+		/* POST / DELETE / PUT / OPTIONS for files do not make sense */
+		send_headers_and_exit(HTTP_NOT_IMPLEMENTED);
+	}
+#else
+	/* !CGI: it can be only GET or HEAD */
+#endif
+
+#if ENABLE_FEATURE_HTTPD_BASIC_AUTH
+	/* Restore truncated .../index.html */
+	if (urlp[-1] == '/')
+		urlp[0] = index_page[0];
+#endif
+	send_file_and_exit(urlcopy + 1,
+		(prequest != request_HEAD ? (SEND_HEADERS + SEND_BODY) : SEND_HEADERS)
 	);
-	return pp;
 }
-# define ASSIGN_CONST_PTR(pptr, v) do { \
-	*(void**)not_const_pp(pptr) = (void*)(v); \
-	barrier(); \
-} while (0)
-/* XZALLOC_CONST_PTR() is an out-of-line function to prevent
- * clang from reading pointer before it is assigned.
+
+/*
+ * The main http server function.
+ * Given a socket, listen for new connections and farm out
+ * the processing as a [v]forked process.
+ * Never returns.
  */
-void XZALLOC_CONST_PTR(const void *pptr, size_t size) FAST_FUNC;
+#if BB_MMU
+static void mini_httpd(int server_socket) NORETURN;
+static void mini_httpd(int server_socket)
+{
+	/* NB: it's best to not use xfuncs in this loop before fork().
+	 * Otherwise server may die on transient errors (temporary
+	 * out-of-memory condition, etc), which is Bad(tm).
+	 * Try to do any dangerous calls after fork.
+	 */
+	while (1) {
+		int n;
+		len_and_sockaddr fromAddr;
+
+		/* Wait for connections... */
+		fromAddr.len = LSA_SIZEOF_SA;
+		n = accept(server_socket, &fromAddr.u.sa, &fromAddr.len);
+		if (n < 0)
+			continue;
+//TODO: we can reject connects from denied IPs right away;
+//also, we might want to do one MSG_DONTWAIT'ed recv() here
+//to detect immediate EOF,
+//to avoid forking a whole new process for attackers
+//who open and close lots of connections.
+//(OTOH, the real mitigtion for this sort of thing is
+//to ratelimit connects in iptables)
+
+		/* set the KEEPALIVE option to cull dead connections */
+		setsockopt_keepalive(n);
+
+		if (fork() == 0) {
+			/* child */
+			/* Do not reload config on HUP */
+			signal(SIGHUP, SIG_IGN);
+			close(server_socket);
+			xmove_fd(n, 0);
+			xdup2(0, 1);
+
+			handle_incoming_and_exit(&fromAddr);
+		}
+		/* parent, or fork failed */
+		close(n);
+	} /* while (1) */
+	/* never reached */
+}
 #else
-# define ASSIGN_CONST_PTR(pptr, v) do { \
-	*(void**)(pptr) = (void*)(v); \
-	/* At least gcc 3.4.6 on mipsel needs optimization barrier */ \
-	barrier(); \
-} while (0)
-# define XZALLOC_CONST_PTR(pptr, size) ASSIGN_CONST_PTR(pptr, xzalloc(size))
+static void mini_httpd_nommu(int server_socket, int argc, char **argv) NORETURN;
+static void mini_httpd_nommu(int server_socket, int argc, char **argv)
+{
+	char *argv_copy[argc + 2];
+
+	argv_copy[0] = argv[0];
+	argv_copy[1] = (char*)"-i";
+	memcpy(&argv_copy[2], &argv[1], argc * sizeof(argv[0]));
+
+	/* NB: it's best to not use xfuncs in this loop before vfork().
+	 * Otherwise server may die on transient errors (temporary
+	 * out-of-memory condition, etc), which is Bad(tm).
+	 * Try to do any dangerous calls after fork.
+	 */
+	while (1) {
+		int n;
+
+		/* Wait for connections... */
+		n = accept(server_socket, NULL, NULL);
+		if (n < 0)
+			continue;
+
+		/* set the KEEPALIVE option to cull dead connections */
+		setsockopt_keepalive(n);
+
+		if (vfork() == 0) {
+			/* child */
+			/* Do not reload config on HUP */
+			signal(SIGHUP, SIG_IGN);
+			close(server_socket);
+			xmove_fd(n, 0);
+			xdup2(0, 1);
+
+			/* Run a copy of ourself in inetd mode */
+			re_exec(argv_copy);
+		}
+		argv_copy[0][0] &= 0x7f;
+		/* parent, or vfork failed */
+		close(n);
+	} /* while (1) */
+	/* never reached */
+}
 #endif
 
-#define SET_PTR_TO_GLOBALS(x) ASSIGN_CONST_PTR(&ptr_to_globals, x)
-#define FREE_PTR_TO_GLOBALS() do { \
-	if (ENABLE_FEATURE_CLEAN_UP) { \
-		free(ptr_to_globals); \
-	} \
-} while (0)
-
-
-/* You can change LIBBB_DEFAULT_LOGIN_SHELL, but don't use it,
- * use bb_default_login_shell and following defines.
- * If you change LIBBB_DEFAULT_LOGIN_SHELL,
- * don't forget to change increment constant. */
-#define LIBBB_DEFAULT_LOGIN_SHELL  "-/bin/sh"
-extern const char bb_default_login_shell[] ALIGN1;
-/* "/bin/sh" */
-#define DEFAULT_SHELL              (bb_default_login_shell+1)
-/* "sh" */
-#define DEFAULT_SHELL_SHORT_NAME   (bb_default_login_shell+6)
-
-/* The following devices are the same on all systems.  */
-#define CURRENT_TTY "/dev/tty"
-#define DEV_CONSOLE "/dev/console"
-
-#if defined(__FreeBSD_kernel__)
-# define CURRENT_VC CURRENT_TTY
-# define VC_1 "/dev/ttyv0"
-# define VC_2 "/dev/ttyv1"
-# define VC_3 "/dev/ttyv2"
-# define VC_4 "/dev/ttyv3"
-# define VC_5 "/dev/ttyv4"
-# define VC_FORMAT "/dev/ttyv%d"
-#elif defined(__GNU__)
-# define CURRENT_VC CURRENT_TTY
-# define VC_1 "/dev/tty1"
-# define VC_2 "/dev/tty2"
-# define VC_3 "/dev/tty3"
-# define VC_4 "/dev/tty4"
-# define VC_5 "/dev/tty5"
-# define VC_FORMAT "/dev/tty%d"
-#elif ENABLE_FEATURE_DEVFS
-/*Linux, obsolete devfs names */
-# define CURRENT_VC "/dev/vc/0"
-# define VC_1 "/dev/vc/1"
-# define VC_2 "/dev/vc/2"
-# define VC_3 "/dev/vc/3"
-# define VC_4 "/dev/vc/4"
-# define VC_5 "/dev/vc/5"
-# define VC_FORMAT "/dev/vc/%d"
-# define LOOP_FORMAT "/dev/loop/%u"
-# define LOOP_NAMESIZE (sizeof("/dev/loop/") + sizeof(int)*3 + 1)
-# define LOOP_NAME "/dev/loop/"
-# define FB_0 "/dev/fb/0"
-#else
-/*Linux, normal names */
-# define CURRENT_VC "/dev/tty0"
-# define VC_1 "/dev/tty1"
-# define VC_2 "/dev/tty2"
-# define VC_3 "/dev/tty3"
-# define VC_4 "/dev/tty4"
-# define VC_5 "/dev/tty5"
-# define VC_FORMAT "/dev/tty%d"
-# define LOOP_FORMAT "/dev/loop%u"
-# define LOOP_NAMESIZE (sizeof("/dev/loop") + sizeof(int)*3 + 1)
-# define LOOP_NAME "/dev/loop"
-# define FB_0 "/dev/fb0"
-#endif
-
-// storage helpers for mk*fs utilities
-char BUG_wrong_field_size(void);
-#define STORE_LE(field, value) \
-do { \
-	if (sizeof(field) == 4) \
-		field = SWAP_LE32((uint32_t)(value)); \
-	else if (sizeof(field) == 2) \
-		field = SWAP_LE16((uint16_t)(value)); \
-	else if (sizeof(field) == 1) \
-		field = (uint8_t)(value); \
-	else \
-		BUG_wrong_field_size(); \
-} while (0)
-
-#define FETCH_LE32(field) \
-	(sizeof(field) == 4 ? SWAP_LE32(field) : BUG_wrong_field_size())
-
-
-#define ARRAY_SIZE(x) ((unsigned)(sizeof(x) / sizeof((x)[0])))
-#define BUILD_BUG_ON(condition) ((void)sizeof(char[1 - 2*!!(condition)]))
-
-
-/* We redefine ctype macros. Unicode-correct handling of char types
- * can't be done with such byte-oriented operations anyway,
- * we don't lose anything.
+/*
+ * Process a HTTP connection on stdin/out.
+ * Never returns.
  */
-#undef isalnum
-#undef isalpha
-#undef isascii
-#undef isblank
-#undef iscntrl
-#undef isdigit
-#undef isgraph
-#undef islower
-#undef isprint
-#undef ispunct
-#undef isspace
-#undef isupper
-#undef isxdigit
-#undef toupper
-#undef tolower
+static void mini_httpd_inetd(void) NORETURN;
+static void mini_httpd_inetd(void)
+{
+	len_and_sockaddr fromAddr;
 
-/* We save ~500 bytes on isdigit alone.
- * BTW, x86 likes (unsigned char) cast more than (unsigned). */
-
-/* These work the same for ASCII and Unicode,
- * assuming no one asks "is this a *Unicode* letter?" using isalpha(letter) */
-#define isascii(a) ((unsigned char)(a) <= 0x7f)
-#define isdigit(a) ((unsigned char)((a) - '0') <= 9)
-#define isupper(a) ((unsigned char)((a) - 'A') <= ('Z' - 'A'))
-#define islower(a) ((unsigned char)((a) - 'a') <= ('z' - 'a'))
-#define isalpha(a) ((unsigned char)(((a)|0x20) - 'a') <= ('z' - 'a'))
-#define isblank(a) ({ unsigned char bb__isblank = (a); bb__isblank == ' ' || bb__isblank == '\t'; })
-#define iscntrl(a) ({ unsigned char bb__iscntrl = (a); bb__iscntrl < ' ' || bb__iscntrl == 0x7f; })
-/* In POSIX/C locale isspace is only these chars: "\t\n\v\f\r" and space.
- * "\t\n\v\f\r" happen to have ASCII codes 9,10,11,12,13.
- */
-#define isspace(a) ({ unsigned char bb__isspace = (a) - 9; bb__isspace == (' ' - 9) || bb__isspace <= (13 - 9); })
-// Unsafe wrt NUL: #define ispunct(a) (strchr("!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~", (a)) != NULL)
-#define ispunct(a) (strchrnul("!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~", (a))[0])
-// Bigger code: #define isalnum(a) ({ unsigned char bb__isalnum = (a) - '0'; bb__isalnum <= 9 || ((bb__isalnum - ('A' - '0')) & 0xdf) <= 25; })
-#define isalnum(a) bb_ascii_isalnum(a)
-static ALWAYS_INLINE int bb_ascii_isalnum(unsigned char a)
-{
-	unsigned char b = a - '0';
-	if (b <= 9)
-		return (b <= 9);
-	b = (a|0x20) - 'a';
-	return b <= 'z' - 'a';
-}
-#define isxdigit(a) bb_ascii_isxdigit(a)
-static ALWAYS_INLINE int bb_ascii_isxdigit(unsigned char a)
-{
-	unsigned char b = a - '0';
-	if (b <= 9)
-		return (b <= 9);
-	b = (a|0x20) - 'a';
-	return b <= 'f' - 'a';
-}
-#define toupper(a) bb_ascii_toupper(a)
-static ALWAYS_INLINE unsigned char bb_ascii_toupper(unsigned char a)
-{
-	unsigned char b = a - 'a';
-	if (b <= ('z' - 'a'))
-		a -= 'a' - 'A';
-	return a;
-}
-#define tolower(a) bb_ascii_tolower(a)
-static ALWAYS_INLINE unsigned char bb_ascii_tolower(unsigned char a)
-{
-	unsigned char b = a - 'A';
-	if (b <= ('Z' - 'A'))
-		a += 'a' - 'A';
-	return a;
+	memset(&fromAddr, 0, sizeof(fromAddr));
+	fromAddr.len = LSA_SIZEOF_SA;
+	/* NB: can fail if user runs it by hand and types in http cmds */
+	getpeername(0, &fromAddr.u.sa, &fromAddr.len);
+	handle_incoming_and_exit(&fromAddr);
 }
 
-/* In ASCII and Unicode, these are likely to be very different.
- * Let's prevent ambiguous usage from the start */
-#define isgraph(a) isgraph_is_ambiguous_dont_use(a)
-#define isprint(a) isprint_is_ambiguous_dont_use(a)
-/* NB: must not treat EOF as isgraph or isprint */
-#define isgraph_asciionly(a) ((unsigned)((a) - 0x21) <= 0x7e - 0x21)
-#define isprint_asciionly(a) ((unsigned)((a) - 0x20) <= 0x7e - 0x20)
+static void sighup_handler(int sig UNUSED_PARAM)
+{
+	int sv = errno;
+	parse_conf(DEFAULT_PATH_HTTPD_CONF, SIGNALED_PARSE);
+	errno = sv;
+}
 
-
-/* Simple unit-testing framework */
-
-typedef void (*bbunit_testfunc)(void);
-
-struct bbunit_listelem {
-	const char* name;
-	bbunit_testfunc testfunc;
+enum {
+	c_opt_config_file = 0,
+	d_opt_decode_url,
+	h_opt_home_httpd,
+	IF_FEATURE_HTTPD_ENCODE_URL_STR(e_opt_encode_url,)
+	IF_FEATURE_HTTPD_BASIC_AUTH(    r_opt_realm     ,)
+	IF_FEATURE_HTTPD_AUTH_MD5(      m_opt_md5       ,)
+	IF_FEATURE_HTTPD_SETUID(        u_opt_setuid    ,)
+	p_opt_port      ,
+	p_opt_inetd     ,
+	p_opt_foreground,
+	p_opt_verbose   ,
+	OPT_CONFIG_FILE = 1 << c_opt_config_file,
+	OPT_DECODE_URL  = 1 << d_opt_decode_url,
+	OPT_HOME_HTTPD  = 1 << h_opt_home_httpd,
+	OPT_ENCODE_URL  = IF_FEATURE_HTTPD_ENCODE_URL_STR((1 << e_opt_encode_url)) + 0,
+	OPT_REALM       = IF_FEATURE_HTTPD_BASIC_AUTH(    (1 << r_opt_realm     )) + 0,
+	OPT_MD5         = IF_FEATURE_HTTPD_AUTH_MD5(      (1 << m_opt_md5       )) + 0,
+	OPT_SETUID      = IF_FEATURE_HTTPD_SETUID(        (1 << u_opt_setuid    )) + 0,
+	OPT_PORT        = 1 << p_opt_port,
+	OPT_INETD       = 1 << p_opt_inetd,
+	OPT_FOREGROUND  = 1 << p_opt_foreground,
+	OPT_VERBOSE     = 1 << p_opt_verbose,
 };
 
-void bbunit_registertest(struct bbunit_listelem* test);
-void bbunit_settestfailed(void);
 
-#define BBUNIT_DEFINE_TEST(NAME) \
-	static void bbunit_##NAME##_test(void); \
-	static struct bbunit_listelem bbunit_##NAME##_elem = { \
-		.name = #NAME, \
-		.testfunc = bbunit_##NAME##_test, \
-	}; \
-	static void INIT_FUNC bbunit_##NAME##_register(void) \
-	{ \
-		bbunit_registertest(&bbunit_##NAME##_elem); \
-	} \
-	static void bbunit_##NAME##_test(void)
+int httpd_main(int argc, char **argv) MAIN_EXTERNALLY_VISIBLE;
+int httpd_main(int argc UNUSED_PARAM, char **argv)
+{
+	int server_socket = server_socket; /* for gcc */
+	unsigned opt;
+	char *url_for_decode;
+	IF_FEATURE_HTTPD_ENCODE_URL_STR(const char *url_for_encode;)
+	IF_FEATURE_HTTPD_SETUID(const char *s_ugid = NULL;)
+	IF_FEATURE_HTTPD_SETUID(struct bb_uidgid_t ugid;)
+	IF_FEATURE_HTTPD_AUTH_MD5(const char *pass;)
 
-/*
- * Both 'goto bbunit_end' and 'break' are here only to get rid
- * of compiler warnings.
- */
-#define BBUNIT_ENDTEST \
-	do { \
-		goto bbunit_end; \
-	bbunit_end: \
-		break; \
-	} while (0)
+	INIT_G();
 
-#define BBUNIT_PRINTASSERTFAIL \
-	do { \
-		bb_error_msg( \
-			"[ERROR] Assertion failed in file %s, line %d", \
-			__FILE__, __LINE__); \
-	} while (0)
-
-#define BBUNIT_ASSERTION_FAILED \
-	do { \
-		bbunit_settestfailed(); \
-		goto bbunit_end; \
-	} while (0)
-
-/*
- * Assertions.
- * For now we only offer assertions which cause tests to fail
- * immediately. In the future 'expects' might be added too -
- * similar to those offered by the gtest framework.
- */
-#define BBUNIT_ASSERT_EQ(EXPECTED, ACTUAL) \
-	do { \
-		if ((EXPECTED) != (ACTUAL)) { \
-			BBUNIT_PRINTASSERTFAIL; \
-			bb_error_msg("[ERROR] '%s' isn't equal to '%s'", \
-						#EXPECTED, #ACTUAL); \
-			BBUNIT_ASSERTION_FAILED; \
-		} \
-	} while (0)
-
-#define BBUNIT_ASSERT_NOTEQ(EXPECTED, ACTUAL) \
-	do { \
-		if ((EXPECTED) == (ACTUAL)) { \
-			BBUNIT_PRINTASSERTFAIL; \
-			bb_error_msg("[ERROR] '%s' is equal to '%s'", \
-						#EXPECTED, #ACTUAL); \
-			BBUNIT_ASSERTION_FAILED; \
-		} \
-	} while (0)
-
-#define BBUNIT_ASSERT_NOTNULL(PTR) \
-	do { \
-		if ((PTR) == NULL) { \
-			BBUNIT_PRINTASSERTFAIL; \
-			bb_error_msg("[ERROR] '%s' is NULL!", #PTR); \
-			BBUNIT_ASSERTION_FAILED; \
-		} \
-	} while (0)
-
-#define BBUNIT_ASSERT_NULL(PTR) \
-	do { \
-		if ((PTR) != NULL) { \
-			BBUNIT_PRINTASSERTFAIL; \
-			bb_error_msg("[ERROR] '%s' is not NULL!", #PTR); \
-			BBUNIT_ASSERTION_FAILED; \
-		} \
-	} while (0)
-
-#define BBUNIT_ASSERT_FALSE(STATEMENT) \
-	do { \
-		if ((STATEMENT)) { \
-			BBUNIT_PRINTASSERTFAIL; \
-			bb_error_msg("[ERROR] Statement '%s' evaluated to true!", \
-								#STATEMENT); \
-			BBUNIT_ASSERTION_FAILED; \
-		} \
-	} while (0)
-
-#define BBUNIT_ASSERT_TRUE(STATEMENT) \
-	do { \
-		if (!(STATEMENT)) { \
-			BBUNIT_PRINTASSERTFAIL; \
-			bb_error_msg("[ERROR] Statement '%s' evaluated to false!", \
-					#STATEMENT); \
-			BBUNIT_ASSERTION_FAILED; \
-		} \
-	} while (0)
-
-#define BBUNIT_ASSERT_STREQ(STR1, STR2) \
-	do { \
-		if (strcmp(STR1, STR2) != 0) { \
-			BBUNIT_PRINTASSERTFAIL; \
-			bb_error_msg("[ERROR] Strings '%s' and '%s' " \
-					"are not the same", STR1, STR2); \
-			BBUNIT_ASSERTION_FAILED; \
-		} \
-	} while (0)
-
-#define BBUNIT_ASSERT_STRNOTEQ(STR1, STR2) \
-	do { \
-		if (strcmp(STR1, STR2) == 0) { \
-			BBUNIT_PRINTASSERTFAIL; \
-			bb_error_msg("[ERROR] Strings '%s' and '%s' " \
-					"are the same, but were " \
-					"expected to differ", STR1, STR2); \
-			BBUNIT_ASSERTION_FAILED; \
-		} \
-	} while (0)
-
-
-POP_SAVED_FUNCTION_VISIBILITY
-
+#if ENABLE_LOCALE_SUPPORT
+	/* Undo busybox.c: we want to speak English in http (dates etc) */
+	setlocale(LC_TIME, "C");
 #endif
+
+	home_httpd = xrealloc_getcwd_or_warn(NULL);
+	/* We do not "absolutize" path given by -h (home) opt.
+	 * If user gives relative path in -h,
+	 * $SCRIPT_FILENAME will not be set. */
+	opt = getopt32(argv, "^"
+			"c:d:h:"
+			IF_FEATURE_HTTPD_ENCODE_URL_STR("e:")
+			IF_FEATURE_HTTPD_BASIC_AUTH("r:")
+			IF_FEATURE_HTTPD_AUTH_MD5("m:")
+			IF_FEATURE_HTTPD_SETUID("u:")
+			"p:ifv"
+			"\0"
+			/* -v counts, -i implies -f */
+			"vv:if",
+			&opt_c_configFile, &url_for_decode, &home_httpd
+			IF_FEATURE_HTTPD_ENCODE_URL_STR(, &url_for_encode)
+			IF_FEATURE_HTTPD_BASIC_AUTH(, &g_realm)
+			IF_FEATURE_HTTPD_AUTH_MD5(, &pass)
+			IF_FEATURE_HTTPD_SETUID(, &s_ugid)
+			, &bind_addr_or_port
+			, &verbose
+		);
+	if (opt & OPT_DECODE_URL) {
+		fputs_stdout(percent_decode_in_place(url_for_decode, /*strict:*/ 0));
+		return 0;
+	}
+#if ENABLE_FEATURE_HTTPD_ENCODE_URL_STR
+	if (opt & OPT_ENCODE_URL) {
+		fputs_stdout(encodeString(url_for_encode));
+		return 0;
+	}
+#endif
+#if ENABLE_FEATURE_HTTPD_AUTH_MD5
+	if (opt & OPT_MD5) {
+		char salt[sizeof("$1$XXXXXXXX")];
+		salt[0] = '$';
+		salt[1] = '1';
+		salt[2] = '$';
+		crypt_make_salt(salt + 3, 4);
+		puts(pw_encrypt(pass, salt, /*cleanup:*/ 0));
+		return 0;
+	}
+#endif
+#if ENABLE_FEATURE_HTTPD_SETUID
+	if (opt & OPT_SETUID) {
+		xget_uidgid(&ugid, s_ugid);
+	}
+#endif
+
+#if !BB_MMU
+	if (!(opt & OPT_FOREGROUND)) {
+		bb_daemonize_or_rexec(0, argv); /* don't change current directory */
+		re_execed = 0; /* for the following chdir to work */
+	}
+#endif
+	/* Chdir to home (unless we were re_exec()ed for NOMMU case
+	 * in mini_httpd_nommu(): we are already in the home dir then).
+	 */
+	if (!re_execed)
+		xchdir(home_httpd);
+
+	if (!(opt & OPT_INETD)) {
+		signal(SIGCHLD, SIG_IGN);
+		server_socket = openServer();
+#if ENABLE_FEATURE_HTTPD_SETUID
+		/* drop privileges */
+		if (opt & OPT_SETUID) {
+			if (ugid.gid != (gid_t)-1) {
+				if (setgroups(1, &ugid.gid) == -1)
+					bb_simple_perror_msg_and_die("setgroups");
+				xsetgid(ugid.gid);
+			}
+			xsetuid(ugid.uid);
+		}
+#endif
+	}
+
+#if 0
+	/* User can do it himself: 'env - PATH="$PATH" httpd'
+	 * We don't do it because we don't want to screw users
+	 * which want to do
+	 * 'env - VAR1=val1 VAR2=val2 httpd'
+	 * and have VAR1 and VAR2 values visible in their CGIs.
+	 * Besides, it is also smaller. */
+	{
+		char *p = getenv("PATH");
+		/* env strings themself are not freed, no need to xstrdup(p): */
+		clearenv();
+		if (p)
+			putenv(p - 5);
+//		if (!(opt & OPT_INETD))
+//			setenv_long("SERVER_PORT", ???);
+	}
+#endif
+
+	parse_conf(DEFAULT_PATH_HTTPD_CONF, FIRST_PARSE);
+	if (!(opt & OPT_INETD))
+		signal(SIGHUP, sighup_handler);
+
+	xfunc_error_retval = 0;
+	if (opt & OPT_INETD)
+		mini_httpd_inetd(); /* never returns */
+#if BB_MMU
+	if (!(opt & OPT_FOREGROUND))
+		bb_daemonize(0); /* don't change current directory */
+	mini_httpd(server_socket); /* never returns */
+#else
+	mini_httpd_nommu(server_socket, argc, argv); /* never returns */
+#endif
+	/* return 0; */
+}
