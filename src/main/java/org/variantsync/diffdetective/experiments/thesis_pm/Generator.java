@@ -157,7 +157,7 @@ public class Generator {
 		// Since we have no feature model, we create a naive problem space model:
 		// We just collect all features without constraints.
 		final Set<Object> featureModel = spl.computeAllFeatureNames();
-		Logger.info("Extracted feature names: {}", featureModel);
+//		Logger.info("Extracted feature names: {}", featureModel);
 
 		// To sample variants, we just pick a random subset of features to set to true,
 		// set the rest to false
@@ -172,8 +172,8 @@ public class Generator {
 		final Map<Object, Boolean> config2 = mutateByWeightedCoinFlip(config1, 0.5);
 
 		// FIXME: We should probably ensure that config1 != config2.
-		Logger.info("Configuration 1: {}", config1);
-		Logger.info("Configuration 2: {}", config2);
+//		Logger.info("Configuration 1: {}", config1);
+//		Logger.info("Configuration 2: {}", config2);
 		// TODO: We could also distinguish the two major scenarios from these
 		// configurations:
 		// There are features in source that are not in target and vice versa? (assumes
@@ -184,7 +184,7 @@ public class Generator {
 
 		// To configure our variation trees and diffs, we need to convert our
 		// configurations to relevance predicates.
-		writeToFile(spl.project(Time.BEFORE).unparse(), Path.of("spl-before.txt"));
+//		writeToFile(spl.project(Time.BEFORE).unparse(), Path.of("spl-before.txt"));
 //		logDiff("spl before",spl.project(Time.BEFORE).unparse());
 //		logDiff("spl after",spl.project(Time.AFTER).unparse());
 		
@@ -487,7 +487,7 @@ public class Generator {
 		// TODO: configure mpatch
 		// reset target variant
 		resetTargetVariantBefore(targetVariantBefore, code, commitHash);
-		Path mpatchPath = Path.of("..", "..", "..", "mpatch", "target", "debug", "mpatch");
+		Path mpatchPath = Path.of("..", "..", "..", "mpatch", "target", "release", "mpatch");
 		ShellExecutor shell = new ShellExecutor(Logger::info, Logger::error,
 				Path.of(directory + commitHash, targetVariant));
 		MPatchCommand command = new MPatchCommand(mpatchPath.toString(), "--strip", "1", "--sourcedir",
