@@ -752,10 +752,8 @@ public class Patching {
 //				Show.tree(targetVariantBeforeRedToUnchanged, "target variant before red. to unchanged"));
 
 		return new Pair<Boolean, Boolean>(
-				Patching.compareIgnoreEmptyLines(sourceVariantAfterRedToCrossVarFeatures.unparse(),
-						targetVariantAfterRedToCrossVarFeatures.unparse()),
-				Patching.compareIgnoreEmptyLines(patchedTargetVariantRedToUnchanged.unparse(),
-						targetVariantBeforeRedToUnchanged.unparse()));
+				sourceVariantAfterRedToCrossVarFeatures.unparse().equals(targetVariantAfterRedToCrossVarFeatures.unparse()),
+				patchedTargetVariantRedToUnchanged.unparse().equals(targetVariantBeforeRedToUnchanged.unparse()));
 
 	}
 
