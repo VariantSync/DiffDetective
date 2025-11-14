@@ -99,8 +99,8 @@ public class PatchingExperiment implements Analysis.Hooks {
 	private static final AnalysisResult.ResultKey<MPATCHViewSuccessfullyAppliedPatchesCounter> MPATCHVIEW_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
 			"MPATCH View - successfully applied patches");
 
-	private static final AnalysisResult.ResultKey<SkippedPatchesCounter> SKIPPED_PATCHES_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
-			"skipped patches");
+	private static final AnalysisResult.ResultKey<ProcessedPatchesCounter> PROCESSED_PATCHES_COUNTER_RESULT_KEY = new AnalysisResult.ResultKey<>(
+			"processed patches (my)");
 
 	private static final String PATCH = "patch.txt";
 	private static final String CODE = "code.txt";
@@ -312,9 +312,9 @@ public class PatchingExperiment implements Analysis.Hooks {
 		}
 	}
 
-	private static class SkippedPatchesCounter extends SimpleMetadata<Integer, SkippedPatchesCounter> {
-		public SkippedPatchesCounter() {
-			super(0, "skipped patches", Integer::sum);
+	private static class ProcessedPatchesCounter extends SimpleMetadata<Integer, ProcessedPatchesCounter> {
+		public ProcessedPatchesCounter() {
+			super(0, "processed patches (my)", Integer::sum);
 		}
 	}
 
@@ -357,7 +357,7 @@ public class PatchingExperiment implements Analysis.Hooks {
 		analysis.append(MPATCHVIEW_INCORRECTLY_APPLIED_PATCHES_UNCH_COUNTER_RESULT_KEY, new MPATCHViewIncorrectlyAppliedPatchesUnchCounter());
 		analysis.append(MPATCHVIEW_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY,
 				new MPATCHViewSuccessfullyAppliedPatchesCounter());
-		analysis.append(SKIPPED_PATCHES_COUNTER_RESULT_KEY, new SkippedPatchesCounter());
+		analysis.append(PROCESSED_PATCHES_COUNTER_RESULT_KEY, new ProcessedPatchesCounter());
 	}
 
 	@Override
@@ -378,7 +378,7 @@ public class PatchingExperiment implements Analysis.Hooks {
 			// something went wrong when generating the patching scenario
 			return false;
 		}
-
+		analysis.get(PROCESSED_PATCHES_COUNTER_RESULT_KEY).value++;
 		// TODO: Run Pia's new patcher here and store the result.
 		Result<VariationTree<DiffLinesLabel>, Error> patchTransformerResult = Generator.runPatchTransformer(
 				scenario.sourcePatch, scenario.targetVariantBefore, scenario.sourceVariantConfig,
@@ -391,14 +391,14 @@ public class PatchingExperiment implements Analysis.Hooks {
 						scenario.sourceVariantConfig, scenario.unchangedAfter);
 				if (!equiv.first()) {
 					analysis.get(PT_INCORRECTLY_APPLIED_PATCHES_CONF_COUNTER_RESULT_KEY).value++;
-					analysis.get(PT_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++;
 				}
 				if (!equiv.second()) {
 					analysis.get(PT_INCORRECTLY_APPLIED_PATCHES_UNCH_COUNTER_RESULT_KEY).value++;
-					analysis.get(PT_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++;
 				}
 				if (equiv.first() && equiv.second()) {
 					analysis.get(PT_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++;
+				} else {
+					analysis.get(PT_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++;
 				}
 			} else {
 				PatchingExperiment.incorrectPatchesPT++;
@@ -423,15 +423,17 @@ public class PatchingExperiment implements Analysis.Hooks {
 							scenario.unchangedAfter);
 					if (!equiv.first()) {
 						analysis.get(GNU_INCORRECTLY_APPLIED_PATCHES_CONF_COUNTER_RESULT_KEY).value++;
-						analysis.get(GNU_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++;
 					}
 					if (!equiv.second()) {
 						analysis.get(GNU_INCORRECTLY_APPLIED_PATCHES_UNCH_COUNTER_RESULT_KEY).value++;
-						analysis.get(GNU_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++;
 					}
 					if (equiv.first() && equiv.second()) {
 						analysis.get(GNU_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++;
+					} else {
+						analysis.get(GNU_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++;
 					}
+				} else {
+					analysis.get(GNU_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++;
 				}
 			}, error -> analysis.get(GNU_REJECTED_PATCHES_COUNTER_RESULT_KEY).value++);
 		} catch (IOException e) {
@@ -449,15 +451,17 @@ public class PatchingExperiment implements Analysis.Hooks {
 							scenario.unchangedAfter);
 					if (!equiv.first()) {
 						analysis.get(MPATCH_INCORRECTLY_APPLIED_PATCHES_CONF_COUNTER_RESULT_KEY).value++;
-						analysis.get(MPATCH_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++;
 					}
 					if (!equiv.second()) {
 						analysis.get(MPATCH_INCORRECTLY_APPLIED_PATCHES_UNCH_COUNTER_RESULT_KEY).value++;
-						analysis.get(MPATCH_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++;
 					}
 					if (equiv.first() && equiv.second()) {
 						analysis.get(MPATCH_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++;
+					} else {
+						analysis.get(MPATCH_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++;
 					}
+				} else {
+					analysis.get(MPATCH_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++;
 				}
 			}, error -> analysis.get(MPATCH_REJECTED_PATCHES_COUNTER_RESULT_KEY).value++);
 		} catch (IOException e) {
@@ -477,15 +481,17 @@ public class PatchingExperiment implements Analysis.Hooks {
 								scenario.unchangedAfter);
 						if (!equiv.first()) {
 							analysis.get(GNUVIEW_INCORRECTLY_APPLIED_PATCHES_CONF_COUNTER_RESULT_KEY).value++;
-							analysis.get(GNUVIEW_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++;
 						}
 						if (!equiv.second()) {
 							analysis.get(GNUVIEW_INCORRECTLY_APPLIED_PATCHES_UNCH_COUNTER_RESULT_KEY).value++;
-							analysis.get(GNUVIEW_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++;
 						}
 						if (equiv.first() && equiv.second()) {
 							analysis.get(GNUVIEW_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++;
+						} else {
+							analysis.get(GNUVIEW_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++;
 						}
+					} else {
+						analysis.get(GNUVIEW_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++;
 					}
 				}, error -> analysis.get(GNUVIEW_REJECTED_PATCHES_COUNTER_RESULT_KEY).value++);
 			} catch (IOException e) {
@@ -503,15 +509,17 @@ public class PatchingExperiment implements Analysis.Hooks {
 								scenario.unchangedAfter);
 						if (!equiv.first()) {
 							analysis.get(MPATCHVIEW_INCORRECTLY_APPLIED_PATCHES_CONF_COUNTER_RESULT_KEY).value++;
-							analysis.get(MPATCHVIEW_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++;
 						}
 						if (!equiv.second()) {
 							analysis.get(MPATCHVIEW_INCORRECTLY_APPLIED_PATCHES_UNCH_COUNTER_RESULT_KEY).value++;
-							analysis.get(MPATCHVIEW_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++;
 						}
 						if (equiv.first() && equiv.second()) {
 							analysis.get(MPATCHVIEW_SUCCESSFULLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++;
+						} else {
+							analysis.get(MPATCHVIEW_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++;
 						}
+					} else {
+						analysis.get(MPATCHVIEW_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++;
 					}
 				}, error -> analysis.get(MPATCHVIEW_REJECTED_PATCHES_COUNTER_RESULT_KEY).value++);
 			} catch (IOException e) {
@@ -590,7 +598,7 @@ public class PatchingExperiment implements Analysis.Hooks {
 		try {
 			AnalysisRunner.run(analysisOptions, (repository, path) -> Analysis
 					.forEachCommit(() -> PatchingExperiment.Create(repository, path, experiment), 50, 8));
-		} catch (Exception e) {
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		try {
