@@ -40,7 +40,7 @@ import static org.variantsync.diffdetective.util.fide.FormulaUtils.*;
  * @author Paul Bittner
  */
 public class EliminateEmptyAlternatives implements Transformer<VariationTree<DiffLinesLabel>> {
-	private static List<VariationTreeNode> nodesToDrop;
+	private List<VariationTreeNode> nodesToDrop;
     /**
      * Creates a copy of the given label but where the formula is set to the given formula.
      * This method also updates the text in the DiffLinesLabel accordingly so that the text is
@@ -77,7 +77,7 @@ public class EliminateEmptyAlternatives implements Transformer<VariationTree<Dif
         );
     }
 
-    private static void elim(VariationTreeNode<DiffLinesLabel> subtree) {
+    private void elim(VariationTreeNode<DiffLinesLabel> subtree) {
         // We simplify only annotations.
         if (!subtree.isAnnotation()) return;
 
@@ -112,7 +112,7 @@ public class EliminateEmptyAlternatives implements Transformer<VariationTree<Dif
     @Override
     public void transform(VariationTree<DiffLinesLabel> tree) {
     	nodesToDrop = new ArrayList<>();
-        tree.forAllPostorder(EliminateEmptyAlternatives::elim);
+        tree.forAllPostorder(subtree -> elim(subtree));
         for (VariationTreeNode<DiffLinesLabel> node : nodesToDrop) {
         	node.drop();
         }
