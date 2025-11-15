@@ -107,9 +107,8 @@ public class PatchingExperiment implements Analysis.Hooks {
 
 	private int commits = 0;
 	private static int incorrectPatchesPT = 0;
-	private static int rejectedPatchesPT = 0;
 	private static Map<Integer, Pair<PatchScenario<DiffLinesLabel>, VariationTree<DiffLinesLabel>>> failedPatches = new HashMap<>();
-	private static Map<Integer, PatchScenario<DiffLinesLabel>> rejectedPatches = new HashMap<>();
+	private static Map<String, PatchScenario<DiffLinesLabel>> rejectedPatches = new HashMap<>();
 
 	private static class PTErrorPatchesCounter extends SimpleMetadata<Integer, PTErrorPatchesCounter> {
 		public PTErrorPatchesCounter() {
@@ -407,8 +406,7 @@ public class PatchingExperiment implements Analysis.Hooks {
 				analysis.get(PT_INCORRECTLY_APPLIED_PATCHES_COUNTER_RESULT_KEY).value++;
 			}
 		}, error -> {
-			PatchingExperiment.rejectedPatchesPT++;
-			PatchingExperiment.rejectedPatches.put(PatchingExperiment.rejectedPatchesPT, scenario);
+			PatchingExperiment.rejectedPatches.put(commitHash, scenario);
 			analysis.get(PT_REJECTED_PATCHES_COUNTER_RESULT_KEY).value++;
 		});
 
@@ -550,15 +548,15 @@ public class PatchingExperiment implements Analysis.Hooks {
 //			PatchScenario<DiffLinesLabel> scenario = pair.first();
 //			writeScenarioToFilesystem("failed", key, scenario, pair.second());
 //		}
-//		for (Integer key: PatchingExperiment.rejectedPatches.keySet()) {
-//			writeScenarioToFilesystem("rejected", key, PatchingExperiment.rejectedPatches.get(key), null);
-//		}
-//		PatchingExperiment.failedPatches.clear();
-//		PatchingExperiment.rejectedPatches.clear();
-//		Logger.info("Batch done: {} commits analyzed", commits);
+		for (Map.Entry<String, PatchScenario<DiffLinesLabel>> entry: PatchingExperiment.rejectedPatches.entrySet()) {
+			writeScenarioToFilesystem("rejected", entry.getKey(), entry.getValue(), null);
+		}
+		PatchingExperiment.failedPatches.clear();
+		PatchingExperiment.rejectedPatches.clear();
+		Logger.info("Batch done: {} commits analyzed", commits);
 	}
 
-	private void writeScenarioToFilesystem(String filePrefix, Integer key, PatchScenario<DiffLinesLabel> scenario,
+	private void writeScenarioToFilesystem(String filePrefix, String key, PatchScenario<DiffLinesLabel> scenario,
 			VariationTree<DiffLinesLabel> patchedVariant) {
 		VariationDiff<DiffLinesLabel> diff = scenario.sourcePatch;
 		VariationTree<DiffLinesLabel> tree = scenario.targetVariantBefore;
@@ -597,7 +595,7 @@ public class PatchingExperiment implements Analysis.Hooks {
 				defaultOptions.getFilterForRepo(), true, false);
 		try {
 			AnalysisRunner.run(analysisOptions, (repository, path) -> Analysis
-					.forEachCommit(() -> PatchingExperiment.Create(repository, path, experiment), 50, 8));
+					.forEachCommit(() -> PatchingExperiment.Create(repository, path, experiment), 1000, 8));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
