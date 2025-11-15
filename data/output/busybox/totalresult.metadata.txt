@@ -1,55 +1,48 @@
 analysis: my analysis
 repository: busybox
 filtered commits: 15
-PT - successfully applied patches: 31370
-PT - incorrectly applied patches: 4092
-PT - incorrectly applied patches (configure failed): 102
-PT - incorrectly applied patches (unchanged failed): 3990
-PT - rejected patches: 213
+GNU View - incorrectly applied patches (unchanged failed): 7650
+MPATCH - incorrectly applied patches (configure failed): 4987
 PT - error patches: 0
-
-GNU - successfully applied patches: 23086
-GNU - incorrectly applied patches: 7876
-GNU - incorrectly applied patches (configure failed): 869
-GNU - incorrectly applied patches (unchanged failed): 7007
-GNU - rejected patches: 5436
-GNU - error patches: 0
-
-GNU (View) - successfully applied patches: 24335
-GNU (View) - incorrectly applied patches: 7905
-GNU View - incorrectly applied patches (configure failed): 282
-GNU View - incorrectly applied patches (unchanged failed): 7623
-GNU (View) - rejected patches: 1765
-GNU (View) - error patches: 0
-
-MPATCH - successfully applied patches: 23103
-MPATCH - incorrectly applied patches: 16479
-MPATCH - incorrectly applied patches (configure failed): 4865
-MPATCH - incorrectly applied patches (unchanged failed): 11614
-MPATCH - rejected patches: 625
-MPATCH - error patches: 6
-
-MPATCH (View) - successfully applied patches: 22616
-MPATCH (View) - incorrectly applied patches: 14480
-MPATCH View - incorrectly applied patches (configure failed): 3498
-MPATCH View - incorrectly applied patches (unchanged failed): 10982
-MPATCH (View) - rejected patches: 9
+MPATCH (View) - incorrectly applied patches: 11343
 MPATCH (View) - error patches: 7
-
-runtime with multithreading in seconds: 16493.961
-skipped patches: 0
-
+runtime with multithreading in seconds: 15670.77
+GNU - error patches: 0
+PT - incorrectly applied patches (unchanged failed): 4020
+GNU - successfully applied patches: 23013
+PT - incorrectly applied patches (configure failed): 114
+GNU (View) - successfully applied patches: 24260
+MPATCH (View) - successfully applied patches: 22552
+GNU - rejected patches: 5400
+PT - successfully applied patches: 31277
+MPATCH View - incorrectly applied patches (configure failed): 3525
+MPATCH View - incorrectly applied patches (unchanged failed): 11037
+PT - incorrectly applied patches: 4105
+MPATCH - successfully applied patches: 22971
+PT - rejected patches: 250
+GNU View - incorrectly applied patches (configure failed): 307
+GNU (View) - error patches: 0
+MPATCH - error patches: 8
+GNU (View) - rejected patches: 1815
+MPATCH - rejected patches: 614
+GNU (View) - incorrectly applied patches: 7832
+GNU - incorrectly applied patches: 7219
+MPATCH (View) - rejected patches: 5
 total commits: 17447
+processed patches (my): 35632
 failed commits: 0
-empty commits: 4977
-processed commits: 12455
+empty commits: 4985
+processed commits: 12447
 total patches: 41588
-processed patches: 35655
-fastestCommit: 942e137679ef3e07036cc32689ea7c802304cd1d___busybox___20ms
-slowestCommit: 2870d964f8c849d00be20927085f45a30e4e8e53___busybox___2513462ms
-runtime in seconds: 107978.76000000002
-
-#Error[not all annotations closed]: 17
+processed patches: 35632
+fastestCommit: 6ba8bbe88a3bcb48df882793faea6713ad3bbc4e___busybox___21ms
+slowestCommit: c470f4477ad7f548ee3ccd3662c83899a5648297___busybox___2427348ms
+runtime in seconds: 106287.85099999994
+MPATCH - incorrectly applied patches (unchanged failed): 11696
+GNU - incorrectly applied patches (unchanged failed): 7057
+MPATCH - incorrectly applied patches: 12039
+GNU - incorrectly applied patches (configure failed): 991
 #Error[the extracted formula cannot be parsed]: 14
 #Error[#endif without #if]: 4
 #Error[#else or #elif without #if]: 2
+#Error[not all annotations closed]: 17
