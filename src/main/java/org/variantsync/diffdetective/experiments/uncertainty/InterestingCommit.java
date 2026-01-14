@@ -14,8 +14,6 @@ import java.util.Map;
 public record InterestingCommit(String commitHash, List<String> filenames) implements Metadata<InterestingCommit> {
 
     public static Semigroup<InterestingCommit> SEMIGROUP = (a, b) -> {
-//        a.totalAmount += b.totalAmount;
-//        a.uniqueCommits.addAll(b.uniqueCommits);
         throw new RuntimeException("Key Collision");
     };
 

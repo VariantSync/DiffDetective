@@ -4,13 +4,25 @@ import org.variantsync.diffdetective.analysis.Analysis;
 import org.variantsync.diffdetective.editclass.EditClass;
 import org.variantsync.diffdetective.editclass.proposed.ProposedEditClasses;
 import org.variantsync.diffdetective.metadata.EditClassCount;
+import org.variantsync.diffdetective.show.Show;
+import org.variantsync.diffdetective.util.fide.FixTrueFalse;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
+import org.variantsync.diffdetective.variation.Label;
+import org.variantsync.diffdetective.variation.diff.DiffNode;
 import org.variantsync.diffdetective.variation.diff.Time;
 import org.variantsync.diffdetective.variation.diff.transform.NaiveMovedArtifactDetection;
+import org.variantsync.diffdetective.variation.tree.HasNodeType;
 
 import java.nio.file.Files;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.function.Predicate;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.variantsync.diffdetective.editclass.proposed.ProposedEditClasses.*;
 
@@ -18,8 +30,15 @@ public class DebugAnalysis implements Analysis.Hooks {
 
     private boolean isInterestingCommit = false;
     private boolean isInterestingClassification = false;
-    private boolean commitHadInterestingClassification = false;
+    private int uninterestingPatches = 0;
+    private int interestingPatches = 0;
     private List<String> interestingFilesList;
+    private static final Pattern bugStringPattern = Pattern.compile("(fix)|(problem)|(issue)|(solve)|(error)|((?<!e)bug)");
+
+    public static boolean isIfFalse(DiffNode<?> d) {
+        // There might be other edge cases as well.
+        return (d.isIf() || d.isElif()) && FixTrueFalse.isFalse(d.getFormula());
+    }
 
     @Override
     public void initializeResults(Analysis analysis) {
@@ -33,13 +52,12 @@ public class DebugAnalysis implements Analysis.Hooks {
 
     @Override
     public boolean beginCommit(Analysis analysis) throws Exception {
-        String commitMessage = analysis.getCurrentCommit().getFullMessage();
-        if (commitMessage.contains("fix") || commitMessage.contains("problem") || commitMessage.contains("issue") || commitMessage.contains("solve") || commitMessage.contains("bug") || commitMessage.contains("error")) { // TODO complete list of keywords
+        if (bugStringPattern.matcher(analysis.getCurrentCommit().getFullMessage().toLowerCase()).find()) { // TODO complete list of keywords
             isInterestingCommit = true;
             interestingFilesList = new ArrayList<>();
             return true;
         }
-        return Analysis.Hooks.super.beginCommit(analysis);
+        return false;
     }
 
     @Override
@@ -69,19 +87,47 @@ public class DebugAnalysis implements Analysis.Hooks {
         }
         NaiveMovedArtifactDetection<DiffLinesLabel> detectTwins = new NaiveMovedArtifactDetection<>(); //TODO investigate changed trees
         detectTwins.transform(analysis.getCurrentVariationDiff());
-        if(analysis.getCurrentVariationDiff().anyMatch(node -> {
-            if (node.isArtifact()) {
-                EditClass editClass = ProposedEditClasses.Instance.match(node);
-                if(editClass.equals(Specialization) || editClass.equals(Generalization) || editClass.equals(Reconfiguration)) { // TODO think about classifications
-                    return true;
-                }
-            }
-            return false;
-        })) {
+        int newInterestingLines = analysis.getCurrentVariationDiff().count(node -> (node.isArtifact() && isInterestingClassification(node) && !isCommented(node)));
+        interestingPatches += newInterestingLines; //TODO 1 Patch = 1 ganzer Variation diff. rename (interestingNode)
+        uninterestingPatches += analysis.getCurrentVariationDiff().count(node -> (node.isArtifact() && (!isInterestingClassification(node) || isCommented(node)))); //TODO wollen wir hier überhaupt die isArtifact Überprüfung?
+
+        if(newInterestingLines > 0){
+            isInterestingClassification = true;
             interestingFilesList.add(analysis.getCurrentPatch().getFileName(Time.BEFORE));
             return true;
         }
         return false;
+    }
+
+    private <T extends Label> boolean isCommented(DiffNode<T> diffNode) {
+        DiffNode<T> childOfChangedNode = getChangedNode(diffNode);
+        if(childOfChangedNode == null) {
+            return false;
+        }
+        return isIfFalse(childOfChangedNode.getParent(Time.BEFORE)) || isIfFalse(childOfChangedNode.getParent(Time.AFTER));
+//        return false;
+    }
+
+    /**
+     *
+     * @param diffNode
+     * @return the first parent node (in depth) that was changed of a given node or null if no parent was changed up to the root
+     */
+    private <T extends Label> DiffNode<T> getChangedNode(DiffNode<T> diffNode) { //TODO change naming of method
+        if (diffNode.isRoot()) {
+            return null;
+        } else if (!diffNode.getParent(Time.BEFORE).equals(diffNode.getParent(Time.AFTER))) {
+            return diffNode;
+        } else {
+            return getChangedNode(diffNode.getParent(Time.AFTER));
+        }
+    }
+
+    private boolean isInterestingClassification(DiffNode<DiffLinesLabel> diffNode) {
+        EditClass match = Instance.match(diffNode);
+        return match.equals(Specialization) ||
+            match.equals(Generalization) ||
+            match.equals(Reconfiguration);
     }
 
     @Override
@@ -92,11 +138,17 @@ public class DebugAnalysis implements Analysis.Hooks {
     @Override
     public void endCommit(Analysis analysis) throws Exception {
         Analysis.Hooks.super.endCommit(analysis);
-        if(isInterestingCommit) {
+        if(isInterestingClassification) {
+            interestingFilesList.add("Number uninteresting Patches: " + uninterestingPatches);
+            interestingFilesList.add("Number interesting Patches: " + interestingPatches);
+            interestingFilesList.add("Year: " + analysis.getCurrentCommit().getAuthorIdent().getWhenAsInstant().atZone(ZoneId.systemDefault()).getYear());
             InterestingCommit c = new InterestingCommit(analysis.getRepository().getRemoteURI().toString() + "/commit/" +analysis.getCurrentCommit().getName(), interestingFilesList);
             analysis.append(c.getKey(), c);
+            isInterestingCommit = false;
+            isInterestingClassification = false;
         }
-        isInterestingCommit = false;
+        uninterestingPatches = 0;
+        interestingPatches = 0;
     }
 
     @Override

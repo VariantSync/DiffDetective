@@ -3,12 +3,14 @@ package org.variantsync.diffdetective.experiments.uncertainty;
 import org.variantsync.diffdetective.AnalysisRunner;
 import org.variantsync.diffdetective.analysis.Analysis;
 import org.variantsync.diffdetective.analysis.FilterAnalysis;
+import org.variantsync.diffdetective.analysis.PreprocessingAnalysis;
 import org.variantsync.diffdetective.analysis.StatisticsAnalysis;
 import org.variantsync.diffdetective.datasets.PatchDiffParseOptions;
 import org.variantsync.diffdetective.datasets.Repository;
 import org.variantsync.diffdetective.experiments.views.ViewAnalysis;
 import org.variantsync.diffdetective.variation.diff.filter.VariationDiffFilter;
 import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParseOptions;
+import org.variantsync.diffdetective.variation.diff.transform.CutNonEditedSubtrees;
 import org.variantsync.diffdetective.variation.tree.view.relevance.Search;
 
 import java.io.IOException;
@@ -51,6 +53,11 @@ public class Main {
         return new Analysis(
                 "Uncertainty Analysis",
                 new ArrayList<>(List.of(
+                        //*
+                        new PreprocessingAnalysis(
+                            new CutNonEditedSubtrees<>()
+                        ),
+                        //**/
                         new FilterAnalysis( // filters unwanted trees
                                 VariationDiffFilter.notEmpty()
                         ),
