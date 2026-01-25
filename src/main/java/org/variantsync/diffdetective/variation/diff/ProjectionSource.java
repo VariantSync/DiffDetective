@@ -1,7 +1,23 @@
 package org.variantsync.diffdetective.variation.diff;
 
-import org.variantsync.diffdetective.variation.Label;
-import org.variantsync.diffdetective.variation.tree.source.VariationTreeSource;
+import java.util.List;
 
-public record ProjectionSource<L extends Label>(VariationDiff<L> origin, Time time) implements VariationTreeSource {
+import org.variantsync.diffdetective.util.Source;
+import org.variantsync.diffdetective.variation.Label;
+
+public record ProjectionSource<L extends Label>(VariationDiff<L> origin, Time time) implements Source {
+    @Override
+    public String getSourceExplanation() {
+        return "Projection";
+    }
+
+    @Override
+    public List<Source> getSources() {
+        return List.of(origin);
+    }
+
+    @Override
+    public List<Object> getSourceArguments() {
+        return List.of(time);
+    }
 }

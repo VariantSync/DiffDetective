@@ -19,7 +19,7 @@ import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
  * of our edit classes in our ESEC/FSE'22 paper.
  * @author Paul Bittner
  */
-public class CutNonEditedSubtrees<L extends Label> implements VariationDiffTransformer<L>, VariationDiffVisitor<L> {
+public class CutNonEditedSubtrees<L extends Label> implements Transformer<VariationDiff<L>>, VariationDiffVisitor<L> {
     private final boolean keepDummy;
 
     /**

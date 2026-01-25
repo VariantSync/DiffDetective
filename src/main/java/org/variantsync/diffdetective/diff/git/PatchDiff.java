@@ -123,4 +123,9 @@ public class PatchDiff implements GitPatch {
     public GitPatch shallowClone() {
         return new GitPatch.SimpleGitPatch(getDiff(), getChangeType(), getFileName(Time.BEFORE), getFileName(Time.AFTER), getCommitHash(), getParentCommitHash());
     }
+
+    @Override
+    public String getSourceExplanation() {
+        return "PatchDiff";
+    }
 }

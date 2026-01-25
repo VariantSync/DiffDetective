@@ -1,7 +1,7 @@
 package org.variantsync.diffdetective.variation.diff;
 
+import org.variantsync.diffdetective.util.Source;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
-import org.variantsync.diffdetective.variation.diff.source.VariationDiffSource;
 
 import java.util.Collection;
 
@@ -20,10 +20,10 @@ public final class DiffGraph {
     private DiffGraph() {}
 
     /**
-     * Invokes {@link DiffGraph#fromNodes(Collection, VariationDiffSource)} )} with an unknown VariationDiffSource.
+     * Invokes {@link DiffGraph#fromNodes(Collection, Source)} )} with an unknown source.
      */
     public static VariationDiff<DiffLinesLabel> fromNodes(final Collection<DiffNode<DiffLinesLabel>> nodes) {
-        return fromNodes(nodes, VariationDiffSource.Unknown);
+        return fromNodes(nodes, Source.Unknown);
     }
 
     /**
@@ -33,7 +33,7 @@ public final class DiffGraph {
      * @param source the source where the DiffGraph came from.
      * @return A VariationDiff representing the DiffGraph with a synthetic root node.
      */
-    public static VariationDiff<DiffLinesLabel> fromNodes(final Collection<DiffNode<DiffLinesLabel>> nodes, final VariationDiffSource source) {
+    public static VariationDiff<DiffLinesLabel> fromNodes(final Collection<DiffNode<DiffLinesLabel>> nodes, final Source source) {
         final DiffNode<DiffLinesLabel> newRoot = DiffNode.createRoot(DiffLinesLabel.ofCodeBlock(DIFFGRAPH_LABEL));
         nodes.stream()
                 .filter(DiffNode::isRoot)

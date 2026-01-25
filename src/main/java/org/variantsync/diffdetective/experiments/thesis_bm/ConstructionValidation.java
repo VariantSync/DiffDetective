@@ -5,6 +5,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -42,6 +43,7 @@ import org.variantsync.diffdetective.variation.diff.Projection;
 import org.variantsync.diffdetective.variation.diff.Time;
 import org.variantsync.diffdetective.variation.diff.filter.VariationDiffFilter;
 import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParser;
+import org.variantsync.diffdetective.variation.tree.source.GitSource;
 import org.variantsync.functjonal.category.InplaceSemigroup;
 import org.variantsync.functjonal.map.MergeMap;
 
@@ -375,6 +377,7 @@ public class ConstructionValidation implements Analysis.Hooks {
     }
 
     private VariationDiff<DiffLinesLabel> parseVariationTree(Analysis analysis, RevCommit commit) throws IOException, DiffParseException {
+        String fileName = analysis.getCurrentPatch().getFileName(AFTER);
         try (BufferedReader afterFile =
             new BufferedReader(
                 /*
@@ -386,10 +389,14 @@ public class ConstructionValidation implements Analysis.Hooks {
                     GitDiffer.getBeforeFullFile(
                         analysis.getRepository(),
                         commit,
-                        analysis.getCurrentPatch().getFileName(AFTER)),
+                        fileName),
                     0xfeff)) // BOM, same as GitDiffer.BOM_PATTERN
         ) {
-            return VariationDiffParser.createVariationTree(afterFile, analysis.getRepository().getParseOptions().variationDiffParseOptions());
+            return VariationDiffParser.createVariationTree(
+                afterFile,
+                new GitSource(analysis.getRepository(), commit.getId().name(), Path.of(fileName)),
+                analysis.getRepository().getParseOptions().variationDiffParseOptions()
+            );
         }
     }
 

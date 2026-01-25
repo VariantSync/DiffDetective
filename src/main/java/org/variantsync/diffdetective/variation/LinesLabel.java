@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.util.StringUtils;
 
 /**
@@ -12,21 +13,36 @@ import org.variantsync.diffdetective.util.StringUtils;
  */
 public class LinesLabel implements Label {
     private final List<String> lines;
+    private final List<String> trailingLines;
 
     public LinesLabel() {
-        this(new ArrayList<>());
+        this(new ArrayList<>(), new ArrayList<>());
     }
 
     public LinesLabel(List<String> lines) {
+        this(lines, new ArrayList<>());
+    }
+
+    public LinesLabel(List<String> lines, List<String> trailingLines) {
+        Assert.assertNotNull(lines);
+        Assert.assertNotNull(trailingLines);
+
         this.lines = lines;
+        this.trailingLines = trailingLines;
     }
 
     public static LinesLabel ofCodeBlock(String codeBlock) {
         return new LinesLabel(Arrays.asList(StringUtils.LINEBREAK_REGEX.split(codeBlock, -1)));
     }
 
+    @Override
     public List<String> getLines() {
         return lines;
+    }
+
+    @Override
+    public List<String> getTrailingLines() {
+        return trailingLines;
     }
 
     @Override
@@ -38,6 +54,15 @@ public class LinesLabel implements Label {
 
     @Override
     public LinesLabel clone() {
-        return new LinesLabel(new ArrayList<>(lines));
+        return new LinesLabel(new ArrayList<>(lines), new ArrayList<>(trailingLines));
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        LinesLabel that = (LinesLabel) o;
+        return lines.equals(that.lines) &&
+            trailingLines.equals(that.trailingLines);
     }
 }

@@ -30,7 +30,7 @@ public class Show {
     }
 
     public static GameEngine diff(final VariationDiff<?> d) {
-        return diff(d, d.getSource().toString());
+        return diff(d, d.getSource().functionExplanation());
     }
 
     public static <L extends Label> GameEngine tree(final VariationTree<L> t, final String title, List<DiffNodeLabelFormat<L>> availableFormats) {
@@ -47,7 +47,7 @@ public class Show {
     }
 
     public static GameEngine tree(final VariationTree<?> t) {
-        return tree(t, t.source().toString());
+        return tree(t, t.getSource().functionExplanation());
     }
 
     public static <L extends Label> GameEngine baddiff(final BadVDiff<L> badVDiff, final String title, List<DiffNodeLabelFormat<L>> availableFormats) {
@@ -80,6 +80,6 @@ public class Show {
     }
 
     public static GameEngine baddiff(final BadVDiff<?> badVDiff) {
-        return baddiff(badVDiff, badVDiff.diff().source().toString());
+        return baddiff(badVDiff, badVDiff.functionExplanation());
     }
 }

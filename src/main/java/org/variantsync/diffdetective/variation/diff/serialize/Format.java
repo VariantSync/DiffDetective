@@ -1,11 +1,16 @@
 package org.variantsync.diffdetective.variation.diff.serialize;
 
+import org.eclipse.jgit.diff.DiffAlgorithm;
+import org.eclipse.jgit.diff.EditList;
+import org.eclipse.jgit.diff.Sequence;
+import org.eclipse.jgit.diff.SequenceComparator;
 import org.variantsync.diffdetective.variation.Label;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
 import org.variantsync.diffdetective.variation.diff.VariationDiff;
 import org.variantsync.diffdetective.variation.diff.serialize.edgeformat.EdgeLabelFormat;
 import org.variantsync.diffdetective.variation.diff.serialize.nodeformat.DiffNodeLabelFormat;
 
+import java.util.List;
 import java.util.function.Consumer;
 
 import static org.variantsync.diffdetective.variation.diff.Time.AFTER;
@@ -69,19 +74,54 @@ public class Format<L extends Label> {
      */
     public <La extends L> void forEachEdge(VariationDiff<La> variationDiff, Consumer<StyledEdge<La>> callback) {
         variationDiff.forAll((node) -> {
-            var beforeParent = node.getParent(BEFORE);
-            var afterParent = node.getParent(AFTER);
+            List<DiffNode<La>> beforeChildren = node.getChildOrder(BEFORE);
+            List<DiffNode<La>> afterChildren = node.getChildOrder(AFTER);
 
-            // Are both parent edges the same?
-            if (beforeParent != null && afterParent != null && beforeParent == afterParent) {
-                sortedEdgeWithLabel(node, node.getParent(BEFORE), StyledEdge.ALWAYS, callback);
-            } else {
-                if (beforeParent != null) {
-                    sortedEdgeWithLabel(node, node.getParent(BEFORE), StyledEdge.BEFORE, callback);
+            class ListSequence<E> extends Sequence {
+                public final List<E> list;
+
+                public ListSequence(List<E> list) {
+                    this.list = list;
                 }
-                if (afterParent != null) {
-                    sortedEdgeWithLabel(node, node.getParent(AFTER), StyledEdge.AFTER, callback);
+
+                @Override
+                public int size() {
+                    return list.size();
                 }
+            }
+
+            class ListSequenceComparator<E> extends SequenceComparator<ListSequence<E>> {
+                @Override
+                public boolean equals(ListSequence<E> sequence1, int index1, ListSequence<E> sequence2, int index2) {
+                    return sequence1.list.get(index1) == sequence2.list.get(index2);
+                }
+
+                @Override
+                public int hash(ListSequence<E> sequence, int index) {
+                    return System.identityHashCode(sequence.list.get(index));
+                }
+            }
+
+            final EditList editList = DiffAlgorithm.getAlgorithm(DiffAlgorithm.SupportedAlgorithm.MYERS).diff(
+                new ListSequenceComparator<DiffNode<La>>(),
+                new ListSequence<>(beforeChildren),
+                new ListSequence<>(afterChildren)
+            );
+
+            int beforeIndex = 0;
+            for (var edit : editList) {
+                for (; beforeIndex < edit.getBeginA(); ++beforeIndex) {
+                    sortedEdgeWithLabel(beforeChildren.get(beforeIndex), node, StyledEdge.ALWAYS, callback);
+                }
+                for (; beforeIndex < edit.getEndA(); ++beforeIndex) {
+                    sortedEdgeWithLabel(beforeChildren.get(beforeIndex), node, StyledEdge.BEFORE, callback);
+                }
+                for (int afterIndex = edit.getBeginB(); afterIndex < edit.getEndB(); ++afterIndex) {
+                    sortedEdgeWithLabel(afterChildren.get(afterIndex), node, StyledEdge.AFTER, callback);
+                }
+            }
+            for (; beforeIndex < beforeChildren.size(); ++beforeIndex) {
+                sortedEdgeWithLabel(beforeChildren.get(beforeIndex), node, StyledEdge.ALWAYS, callback);
             }
         });
     }

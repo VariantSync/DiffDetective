@@ -8,6 +8,7 @@ import org.variantsync.diffdetective.shell.ShellException;
 import org.variantsync.diffdetective.shell.ShellExecutor;
 import org.variantsync.diffdetective.util.Assert;
 import org.variantsync.diffdetective.util.IO;
+import org.variantsync.diffdetective.util.Source;
 import org.variantsync.diffdetective.util.StringUtils;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.Label;
@@ -17,7 +18,6 @@ import org.variantsync.diffdetective.variation.diff.serialize.VariationDiffSeria
 import org.variantsync.diffdetective.variation.diff.serialize.LineGraphConstants;
 import org.variantsync.diffdetective.variation.diff.serialize.LineGraphExport;
 import org.variantsync.diffdetective.variation.diff.serialize.LineGraphExportOptions;
-import org.variantsync.diffdetective.variation.diff.source.VariationDiffSource;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -193,7 +193,7 @@ public class VariationDiffRenderer {
      *                   The function is invoked on the given treeAndFileName as first argument and the given VariationDiff's source as second argument.
      * @return True iff rendering was successful. False iff an error occurred.
      */
-    private <L extends Label> boolean render(final VariationDiff<? extends L> tree, final String treeAndFileName, final Path directory, RenderOptions<? super L> options, LineGraphExportOptions<? super L> exportOptions, BiFunction<String, VariationDiffSource, String> treeHeader) {
+    private <L extends Label> boolean render(final VariationDiff<? extends L> tree, final String treeAndFileName, final Path directory, RenderOptions<? super L> options, LineGraphExportOptions<? super L> exportOptions, BiFunction<String, Source, String> treeHeader) {
         final Path tempFile = directory.resolve(treeAndFileName + ".lg");
 
         try (var destination = IO.newBufferedOutputStream(tempFile)) {

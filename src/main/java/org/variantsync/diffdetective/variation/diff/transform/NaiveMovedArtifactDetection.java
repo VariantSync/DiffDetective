@@ -20,7 +20,7 @@ import static org.variantsync.diffdetective.variation.diff.Time.BEFORE;
  * but for each line in the nodes individually.
  * @author Paul Bittner
  */
-public class NaiveMovedArtifactDetection<L extends Label> implements VariationDiffTransformer<L> {
+public class NaiveMovedArtifactDetection<L extends Label> implements Transformer<VariationDiff<L>> {
     @Override
     public void transform(final VariationDiff<L> variationDiff) {
         final List<Pair<DiffNode<L>, DiffNode<L>>> twins = findArtifactTwins(variationDiff);

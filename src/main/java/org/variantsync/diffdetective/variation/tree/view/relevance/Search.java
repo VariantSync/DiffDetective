@@ -1,5 +1,7 @@
 package org.variantsync.diffdetective.variation.tree.view.relevance;
 
+import java.util.List;
+
 import org.variantsync.diffdetective.variation.tree.VariationNode;
 
 /**
@@ -17,12 +19,12 @@ public record Search(String artifact) implements Relevance {
     }
 
     @Override
-    public String parametersToString() {
-        return artifact();
+    public List<Object> getSourceArguments() {
+        return List.of(artifact());
     }
 
     @Override
-    public String getFunctionName() {
+    public String getSourceExplanation() {
         return "is";
     }
 

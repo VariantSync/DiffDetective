@@ -15,8 +15,8 @@ import java.util.List;
  * All other nodes will be labeled by the {@link NodeType#name name of their node type}.
  * @author Paul Bittner
  */
-public class LabelWithEditClass implements VariationDiffTransformer<DiffLinesLabel> {
-    private final VariationDiffTransformer<DiffLinesLabel> relabelNodes;
+public class LabelWithEditClass implements Transformer<VariationDiff<DiffLinesLabel>> {
+    private final Transformer<VariationDiff<DiffLinesLabel>> relabelNodes;
 
     /**
      * Creates a new transformation that will use the given catalog of edit classes
@@ -39,7 +39,7 @@ public class LabelWithEditClass implements VariationDiffTransformer<DiffLinesLab
     }
 
     @Override
-    public List<Class<? extends VariationDiffTransformer<DiffLinesLabel>>> getDependencies() {
+    public List<Class<? extends Transformer<VariationDiff<DiffLinesLabel>>>> getDependencies() {
         return relabelNodes.getDependencies();
     }
 }

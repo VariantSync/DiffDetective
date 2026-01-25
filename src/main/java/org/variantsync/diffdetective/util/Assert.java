@@ -86,7 +86,7 @@ public class Assert {
     }
 
     /** Throws {@link AssertionError} with {@code errorMessage} as error message. */
-    public static void fail(String errorMessage) {
+    public static <T> T fail(String errorMessage) {
         throw new AssertionError(errorMessage);
     }
 
@@ -105,12 +105,18 @@ public class Assert {
     }
 
     public static <T> void assertEquals(T expected, T actual) {
+        assertEquals(expected, actual, null);
+    }
+
+    public static <T> void assertEquals(T expected, T actual, String message) {
+        String prefix = message == null ? "" : message + ": ";
+
         if (expected == null) {
             if (actual != null) {
-                fail("expected is null but actual is not!");
+                fail(prefix + "expected is null but actually it is " + actual);
             }
         } else {
-            assertTrue(expected.equals(actual), expected + " != " + actual);
+            assertTrue(expected.equals(actual), prefix + expected + " != " + actual);
         }
     }
 }

@@ -4,6 +4,8 @@ import org.apache.commons.io.IOUtils;
 import org.eclipse.jgit.diff.*;
 import org.variantsync.diffdetective.diff.git.GitDiffer;
 import org.variantsync.diffdetective.diff.result.DiffParseException;
+import org.variantsync.diffdetective.util.CompositeSource;
+import org.variantsync.diffdetective.util.Source;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.diff.Time;
 import org.variantsync.diffdetective.variation.diff.VariationDiff;
@@ -122,9 +124,11 @@ public final class JGitDiff {
      * Uses JGit to diff the two files using the specified {@code options}, and afterwards, creates the variation diff.
      * Creates a variation diff from to line-based text inputs.
      * First creates a line-based diff with {@link #textDiff(String, String, DiffAlgorithm.SupportedAlgorithm)}
-     * and then parses that diff with {@link VariationDiff#fromDiff(String, VariationDiffParseOptions)}.
+     * and then parses that diff with {@link VariationDiff#fromDiff(String, Source, VariationDiffParseOptions)}.
      * @param linesBefore State of annotated lines before the change.
      * @param linesAfter State of annotated lines after the change.
+     * @param sourceBefore the {@link Source} of {@code linesBefore}
+     * @param sourceAfter the {@link Source} of {@code linesAfter}
      * @param algorithm Specification of which algorithm to use for diffing with JGit.
      * @param options various options for parsing
      * @return A variation diff comprising the changes.
@@ -134,9 +138,15 @@ public final class JGitDiff {
     public static VariationDiff<DiffLinesLabel> diff(
             String linesBefore,
             String linesAfter,
+            Source sourceBefore,
+            Source sourceAfter,
             DiffAlgorithm.SupportedAlgorithm algorithm,
             VariationDiffParseOptions options
     ) throws IOException, DiffParseException {
-        return VariationDiff.fromDiff(textDiff(linesBefore, linesAfter, algorithm), options);
+        return VariationDiff.fromDiff(
+            textDiff(linesBefore, linesAfter, algorithm),
+            new CompositeSource("JGitDiff.textDiff", sourceBefore, sourceAfter),
+            options
+        );
     }
 }

@@ -7,7 +7,7 @@ import org.variantsync.diffdetective.variation.diff.filter.VariationDiffFilter;
 import org.variantsync.diffdetective.variation.diff.filter.ExplainedFilter;
 import org.variantsync.diffdetective.variation.diff.filter.TaggedPredicate;
 import org.variantsync.diffdetective.variation.diff.transform.CutNonEditedSubtrees;
-import org.variantsync.diffdetective.variation.diff.transform.VariationDiffTransformer;
+import org.variantsync.diffdetective.variation.diff.transform.Transformer;
 
 import java.util.List;
 import java.util.Map;
@@ -17,7 +17,7 @@ import java.util.Map;
  * Patterns are represented as VariationDiffs and might be filtered or transformed.
  */
 public class Postprocessor<L extends Label> {
-    private final List<VariationDiffTransformer<L>> transformers;
+    private final List<Transformer<VariationDiff<L>>> transformers;
     private final ExplainedFilter<VariationDiff<L>> filters;
 
     /**
@@ -30,7 +30,7 @@ public class Postprocessor<L extends Label> {
     public record Result<L extends Label>(List<VariationDiff<L>> processedTrees, Map<String, Integer> filterCounts) {}
 
     private Postprocessor(
-            final List<VariationDiffTransformer<L>> transformers,
+            final List<Transformer<VariationDiff<L>>> transformers,
             final List<TaggedPredicate<String, ? super VariationDiff<L>>> namedFilters) {
         this.transformers = transformers;
         this.filters = new ExplainedFilter<VariationDiff<L>>(namedFilters.stream());
@@ -66,7 +66,7 @@ public class Postprocessor<L extends Label> {
     public Result<L> postprocess(final List<VariationDiff<L>> frequentSubgraphs) {
         final List<VariationDiff<L>> processedTrees = frequentSubgraphs.stream()
                 .filter(filters)
-                .peek(tree -> VariationDiffTransformer.apply(transformers, tree))
+                .peek(tree -> Transformer.apply(transformers, tree))
                 .toList();
 
         final Map<String, Integer> filterCounts = new ExplainedFilterSummary(filters).snapshot();

@@ -1,0 +1,6 @@
+-#if A
+   foo
+ #if A
+   bar
+ #endif
+-#endif
