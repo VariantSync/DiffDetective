@@ -40,7 +40,6 @@ import static org.variantsync.diffdetective.util.fide.FormulaUtils.*;
  * @author Paul Bittner
  */
 public class EliminateEmptyAlternatives implements Transformer<VariationTree<DiffLinesLabel>> {
-	private List<VariationTreeNode> nodesToDrop;
     /**
      * Creates a copy of the given label but where the formula is set to the given formula.
      * This method also updates the text in the DiffLinesLabel accordingly so that the text is
@@ -61,11 +60,7 @@ public class EliminateEmptyAlternatives implements Transformer<VariationTree<Dif
         Assert.assertTrue(head.content().contains("if"));
         final String indent = StringUtils.getLeadingWhitespace(head.content());
 
-        final NodeWriter nw = new NodeWriter(formula);
-		nw.setSymbols(NodeWriter.javaSymbols);
-		nw.setEnquoteWhitespace(true);
-		nw.setEnforceBrackets(true);
-		final String newText = indent + "#if " + nw.nodeToString();
+        final String newText = indent + "#if " + formula.toString(NodeWriter.javaSymbols);
 
         // We might have replaced multiple lines by a single line here.
         // In this case, some line numbers got lost and any variation tree using this updated label somewhere might not
@@ -77,7 +72,7 @@ public class EliminateEmptyAlternatives implements Transformer<VariationTree<Dif
         );
     }
 
-    private void elim(VariationTreeNode<DiffLinesLabel> subtree) {
+    private static void elim(VariationTreeNode<DiffLinesLabel> subtree) {
         // We simplify only annotations.
         if (!subtree.isAnnotation()) return;
 
@@ -90,7 +85,7 @@ public class EliminateEmptyAlternatives implements Transformer<VariationTree<Dif
         }
         // When there is exactly one child and that child is an 'else' or 'elif' we can simplify that nesting.
         else if (children.size() == 1) {
-            final VariationTreeNode<DiffLinesLabel> child = children.get(0);
+            final VariationTreeNode<DiffLinesLabel> child = children.getFirst();
 
             if ((subtree.isIf() || subtree.isElif()) && (child.isElif() || child.isElse())) {
                 // determine new feaure mapping
@@ -111,10 +106,6 @@ public class EliminateEmptyAlternatives implements Transformer<VariationTree<Dif
 
     @Override
     public void transform(VariationTree<DiffLinesLabel> tree) {
-    	nodesToDrop = new ArrayList<>();
-        tree.forAllPostorder(subtree -> elim(subtree));
-        for (VariationTreeNode<DiffLinesLabel> node : nodesToDrop) {
-        	node.drop();
-        }
+        tree.forAllPostorder(EliminateEmptyAlternatives::elim);
     }
 }
