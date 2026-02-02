@@ -80,121 +80,6 @@ public class Patching {
 		return aIt.hasNext() == bIt.hasNext();
 	}
 
-	private static Set<String> calculateSetMinusOfFeatureSets(Set<String> featureSet1, Set<String> featureSet2,
-			boolean debug) {
-		Set<String> intersectSet1 = new HashSet<>(featureSet1);
-		intersectSet1.removeAll(featureSet2);
-		Set<String> intersectSet2 = new HashSet<>(featureSet2);
-		intersectSet2.removeAll(featureSet1);
-		intersectSet1.addAll(intersectSet2);
-		if (debug) {
-			System.out.println(featureSet1);
-			System.out.println(featureSet2);
-			System.out.println(intersectSet1);
-		}
-		return intersectSet1;
-	}
-
-	private static Relevance calculateFormulaForDeselection(Set<String> set, boolean debug) {
-
-		Node[] f = new Node[set.size()];
-		Iterator<String> iterator = set.iterator();
-		for (int i = 0; i < f.length; i++) {
-			f[i] = new Literal(iterator.next(), false);
-		}
-		Node formula = new And(f);
-
-		if (debug) {
-			System.out.println(formula);
-		}
-
-		return new Configure(formula);
-	}
-
-	/**
-	 * Adds a feature to the feature map, if it is not contained in the map or the
-	 * diffType is different from the value in the map. If the diffTypes are
-	 * different, then DiffType NON is written in the map as the value.
-	 * 
-	 * @param featureMap the map has all features of the variant1 as keys and saves
-	 *                   if the feature is only occurring in added lines, and
-	 *                   therefore a new feature.
-	 * @param feature    the current feature to put in the map
-	 * @param diffType   the diffType of the node
-	 */
-	private static void addFeatureToFeatureMap(Map<String, DiffType> featureMap, String feature, DiffType diffType) {
-		if (featureMap.containsKey(feature)) {
-			if (!diffType.equals(featureMap.get(feature))) {
-				featureMap.replace(feature, DiffType.NON);
-			}
-		} else {
-			featureMap.put(feature, diffType);
-		}
-	}
-
-	private static Set<String> calculateFeatureSetToDeselectFromDiff(VariationDiff<DiffLinesLabel> diff,
-			VariationTree<DiffLinesLabel> variant2, boolean debug, boolean patchNewFeatures) {
-		// HashMap of Features which only occur in the revision of Variant1 (new
-		// features) -> DiffType is ADD
-		Map<String, DiffType> featuresMapV1 = new HashMap<String, DiffType>();
-		// HashSet of Feature Names of Variant1
-		Set<String> featuresV1 = new HashSet<String>();
-		// Collect all features of the conditional annotation nodes of variant1
-		diff.forAll(node -> {
-
-			if (node.isConditionalAnnotation() && node.getDiffType().existsAtTime(Time.BEFORE)) {
-				node.getFeatureMapping(Time.BEFORE).getUniqueContainedFeatures().forEach(feature -> {
-					Patching.addFeatureToFeatureMap(featuresMapV1, feature, node.getDiffType());
-				});
-			}
-			if (node.isConditionalAnnotation() && node.getDiffType().existsAtTime(Time.AFTER)) {
-				node.getFeatureMapping(Time.AFTER).getUniqueContainedFeatures().forEach(feature -> {
-					Patching.addFeatureToFeatureMap(featuresMapV1, feature, node.getDiffType());
-				});
-			}
-		});
-		featuresV1 = featuresMapV1.keySet();
-
-		// Collect all features of the conditional annotation nodes of variant2
-		Set<String> featuresV2 = new HashSet<String>();
-		variant2.forAllPreorder(node -> {
-			if (node.isConditionalAnnotation()) {
-				featuresV2.addAll(node.getFeatureMapping().getUniqueContainedFeatures());
-			}
-		});
-
-		// Calculate the features which are not in both variants
-		Set<String> features = calculateSetMinusOfFeatureSets(featuresV1, featuresV2, debug);
-
-		// If new features should be patched, then remove new features from the
-		// deselected features if they only occur as ADD in the diff
-		if (patchNewFeatures) {
-			featuresMapV1.forEach((feature, diffType) -> {
-				if (diffType == DiffType.ADD) {
-					if (features.contains(feature)) {
-						features.remove(feature);
-					}
-				}
-			});
-		}
-
-		return features;
-	}
-
-	private static boolean checkForZeroVariantDrift(VariationDiff<DiffLinesLabel> diffVariant1,
-			VariationTree<DiffLinesLabel> variant2, Relevance deselectedFeatures, boolean debug) {
-		diffVariant1 = DiffView.optimized(diffVariant1.project(Time.BEFORE).toCompletelyUnchangedVariationDiff(),
-				deselectedFeatures);
-		VariationDiff<DiffLinesLabel> diffVariant2 = DiffView.optimized(variant2.toCompletelyUnchangedVariationDiff(),
-				deselectedFeatures);
-		if (debug)
-			GameEngine.showAndAwaitAll(Show.diff(diffVariant1), Show.diff(diffVariant2));
-		if (Patching.isSameAs(diffVariant1, diffVariant2)) {
-			return true;
-		}
-		return false;
-	}
-
 	private static Set<DiffNode<DiffLinesLabel>> findRootsOfSubtrees(Set<DiffNode<DiffLinesLabel>> nodes, DiffType type,
 			boolean debug) {
 		Time time = (type == DiffType.ADD) ? Time.AFTER : Time.BEFORE;
@@ -529,18 +414,6 @@ public class Patching {
 		return identifier;
 	}
 
-//	private static VariationDiff<DiffLinesLabel> patch(VariationTree<DiffLinesLabel> sourceVariantVersion1,
-//			VariationTree<DiffLinesLabel> sourceVariantVersion2, VariationTree<DiffLinesLabel> targetVariant,
-//			boolean debug, boolean patchNewFeatures) throws Exception {
-//		if (sourceVariantVersion1 == null || sourceVariantVersion2 == null || targetVariant == null) {
-//			if (debug)
-//				System.out.println("Parsing error");
-//			return null;
-//		}
-//		VariationDiff<DiffLinesLabel> diff = VariationDiff.fromTrees(sourceVariantVersion1, sourceVariantVersion2);
-//		return patch(diff, targetVariant, debug, patchNewFeatures);
-//	}
-
 	public static void changeType(DiffNode<DiffLinesLabel> node, VariationDiff<DiffLinesLabel> modDiff, DiffType type) {
 		if (!node.isLeaf()) {
 			node.getAllChildrenStream().forEach(child -> changeType(child, modDiff, type));
@@ -617,10 +490,6 @@ public class Patching {
 	public static VariationDiff<DiffLinesLabel> patch(VariationDiff<DiffLinesLabel> sourcePatch,
 			VariationTree<DiffLinesLabel> targetVariant, ConfigureWithFullConfig configSource, ConfigureWithFullConfig configTarget, boolean debug,
 			boolean patchNewFeatures) throws Exception {
-
-//		if (!checkForZeroVariantDrift(diff, targetVariant, rho, debug)) {
-//			throw new Exception("Variants evolved independently: No Zero Variant Drift");
-//		}
 
 		VariationDiff<DiffLinesLabel> optimizedDiff = DiffView.optimized(sourcePatch, configTarget);
 //		GameEngine.showAndAwaitAll(Show.diff(optimizedDiff));
@@ -723,12 +592,6 @@ public class Patching {
 			e.printStackTrace();
 		}
 		return null;
-	}
-
-	private static boolean compareIgnoreEmptyLines(String s1, String s2) {
-		List<String> lines1 = s1.lines().filter(line -> !line.trim().isEmpty()).collect(Collectors.toList());
-		List<String> lines2 = s2.lines().filter(line -> !line.trim().isEmpty()).collect(Collectors.toList());
-		return lines1.equals(lines2);
 	}
 
 	public static Pair<Boolean, Boolean> arePatchedVariantsEquivalent(
