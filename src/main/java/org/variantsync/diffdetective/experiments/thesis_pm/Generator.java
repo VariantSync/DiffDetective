@@ -56,10 +56,6 @@ public class Generator {
 	final private static String targetVariant = "targetVariant";
 	final private static String code = "code.txt";
 	final private static String patch = "patch.txt";
-//	final private static ShellExecutor shellSourceVariantDir = new ShellExecutor(Logger::info, Logger::error,
-//			Path.of(directory, sourceVariant));
-//	final private static ShellExecutor shellTargetVariantDir = new ShellExecutor(Logger::info, Logger::error,
-//			Path.of(directory, targetVariant));
 
 	enum Error {
 		FAILED, ERROR
@@ -157,36 +153,22 @@ public class Generator {
 		// Since we have no feature model, we create a naive problem space model:
 		// We just collect all features without constraints.
 		final Set<Object> featureModel = spl.computeAllFeatureNames();
-//		Logger.info("Extracted feature names: {}", featureModel);
+		Logger.info("Extracted feature names: {}", featureModel);
 
 		// To sample variants, we just pick a random subset of features to set to true,
 		// set the rest to false
 		// We could use more sophisticated algorithms here, for example based on how
 		// often features occur.
-		// Maybe should ask Sebastian.
 		// The configurations we produce are complete.
-		// Hypothesis: the lower the probability value (i.e., the more deselected
-		// features), the harder the patching challenge.
 
 		final Map<Object, Boolean> config1 = randomPartition(featureModel, 0.6);
 		final Map<Object, Boolean> config2 = mutateByWeightedCoinFlip(config1, 0.5);
 
-		// FIXME: We should probably ensure that config1 != config2.
-//		Logger.info("Configuration 1: {}", config1);
-//		Logger.info("Configuration 2: {}", config2);
-		// TODO: We could also distinguish the two major scenarios from these
-		// configurations:
-		// There are features in source that are not in target and vice versa? (assumes
-		// that nothing is labeled to the negation of a feature)
-		// TODO: Decide how many variants we want to generate per commit / patch and how
-		// we want to compare them? Have every generated variant be the source once? I
-		// think this is what Alex did in his ICSME'22 paper.
+		Logger.info("Configuration 1: {}", config1);
+		Logger.info("Configuration 2: {}", config2);
 
-		// To configure our variation trees and diffs, we need to convert our
-		// configurations to relevance predicates.
-//		writeToFile(spl.project(Time.BEFORE).unparse(), Path.of("spl-before.txt"));
-//		logDiff("spl before",spl.project(Time.BEFORE).unparse());
-//		logDiff("spl after",spl.project(Time.AFTER).unparse());
+		logDiff("spl before",spl.project(Time.BEFORE).unparse());
+		logDiff("spl after",spl.project(Time.AFTER).unparse());
 		
 		final ConfigureWithFullConfig configureTo1 = new ConfigureWithFullConfig(config1);
 		final ConfigureWithFullConfig configureTo2 = new ConfigureWithFullConfig(config2);
@@ -206,7 +188,7 @@ public class Generator {
 		VariationDiff<L> sourcePatchElimEmptyAlt;
 		try {
 			sourcePatchElimEmptyAlt = (VariationDiff<L>) VariationDiff.fromLines(sourceBefore.unparse(),
-					sourceAfter.unparse(), DiffAlgorithm.SupportedAlgorithm.MYERS, VariationDiffParseOptions.Default);
+					sourceAfter.unparse(), sourceBefore, sourceAfter, DiffAlgorithm.SupportedAlgorithm.MYERS, VariationDiffParseOptions.Default);
 		} catch (DiffParseException e) {
 			return null;
 		}
@@ -220,7 +202,7 @@ public class Generator {
 		VariationDiff<L> targetPatchElimEmptyAlt;
 		try {
 			targetPatchElimEmptyAlt = (VariationDiff<L>) VariationDiff.fromLines(before.unparse(), after.unparse(),
-					DiffAlgorithm.SupportedAlgorithm.MYERS, VariationDiffParseOptions.Default);
+					before, after, DiffAlgorithm.SupportedAlgorithm.MYERS, VariationDiffParseOptions.Default);
 		} catch (DiffParseException e) {
 			return null;
 		}
@@ -233,14 +215,6 @@ public class Generator {
 
 		VariationDiff<L> targetView = DiffView.optimized(targetPatchModified.deepCopy(), configureTo1);
 
-//		GameEngine.showAndAwaitAll(Show.diff(targetPatchModified));
-//		logDiff("modified target patch (before)", targetPatchModified.project(Time.BEFORE).unparse());
-
-//		GameEngine.showAndAwaitAll(Show.diff(sourcePatch, "source patch"),
-//				Show.diff(targetPatchModified, "target patch elim empty altern and resolved"),
-//				Show.diff(targetPatchElimEmptyAlt, "target patch elim empty altern"),
-//				Show.diff(targetView, "V' (from target patch)"));
-
 		// revert the changes made in B but not in A
 		new RevertSomeChanges<DiffLinesLabel>(node -> {
 			if (targetView.getNodeWithID(node.getID()) == null && !node.isNon()) {
@@ -251,32 +225,16 @@ public class Generator {
 
 		targetPatch = targetPatchModified;
 
-//		GameEngine.showAndAwaitAll(Show.diff(sourcePatch, "source patch"), Show.diff(targetPatch, "target patch"));
-
-		// FIXME: Maybe we want to distinguish cases where one of the patches (or both)
-		// are empty (i.e., noop / id)?
-
 		final VariationTree<L> sourceVariantBefore = sourcePatch.project(Time.BEFORE); // input
 		final VariationTree<L> sourceVariantAfter = sourcePatch.project(Time.AFTER); // input
 		final VariationTree<L> targetVariantBefore = targetPatch.project(Time.BEFORE); // input
-		final VariationTree<L> targetVariantAfter = targetPatch.project(Time.AFTER); // ground truth for how the patched
-																						// target variant should ideally
-																						// look like
-
-		// GameEngine.showAndAwaitAll(Show.diff(spl));
-//		GameEngine.showAndAwaitAll(Show.diff(sourcePatch, "Source Patch " + config1),
-//				Show.diff(targetPatch, "Target Patch " + config2));
-//		GameEngine.showAndAwaitAll(Show.tree(sourceVariantBefore, "Source Before " + config1),
-//				Show.tree(sourceVariantAfter, "Source After " + config1),
-//				Show.tree(targetVariantBefore, "Target Before " + config2),
-//				Show.tree(targetVariantAfter, "Target After" + config2));
+		final VariationTree<L> targetVariantAfter = targetPatch.project(Time.AFTER); 
 
 		// ## 3. To use command-line patchers such as GNU patch and mpatch, we need to
 		// write our variants to disk.
 		deleteFilesAndCreateNewDirectories(commitHash);
 		Path patchPath = writeVariantsToFileSystem(sourceVariantBefore, sourceVariantAfter, targetVariantBefore, code,
 				patch, commitHash);
-//        writeToFile(targetVariantCodeAfter, targetVariantAfterPath);
 
 		if (!runGnuDiff(patchPath, commitHash)) {
 			return null;
@@ -291,7 +249,6 @@ public class Generator {
 		try {
 			deleteFilesAndCreateNewDirectories(commitHash);
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		final VariationDiff<L> sourceVariantCrossVariantView = DiffView.optimized(sourcePatch, configureTo2);
@@ -304,7 +261,6 @@ public class Generator {
 					sourceVariantCrossVariantViewAfter, targetVariantBefore, code, patch, commitHash);
 			return runGnuDiff(patchPath2, commitHash);
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return false;
@@ -315,14 +271,7 @@ public class Generator {
 			final String patch, String commitHash) throws Exception {
 		final String sourceVariantCodeBefore = sourceVariantBefore.unparse();
 		final String sourceVariantCodeAfter = sourceVariantAfter.unparse();
-		final String targetVariantCodeBefore = targetVariantBefore.unparse(); // ground truth for fast comparisons
-																				// (beware
-																				// of differences in line breaks and
-																				// whitespaces!)
-//		logDiff("Source Before:", sourceVariantCodeBefore);
-//		logDiff("Source After:", sourceVariantCodeAfter);
-//		logDiff("Target Before:", targetVariantCodeBefore);
-//		logDiff("Target After:", targetVariantCodeAfter);
+		final String targetVariantCodeBefore = targetVariantBefore.unparse(); 
 		String newDir = directory + commitHash;
 		Path sourceVariantBeforePath = Path.of(newDir, sourceVariant, version1, code);
 		Path sourceVariantAfterPath = Path.of(newDir, sourceVariant, version2, code);
@@ -383,7 +332,7 @@ public class Generator {
 		gameEngine.add(Show.diff(scenario.patchGroundTruth, "targetPatch"));
 		gameEngine.add(Show.tree(scenario.patchedVariantGroundTruth, "ground truth"));
 
-		// TODO: Run Pia's new patcher here and store the result.
+		// Runs Pia's new patcher here and stores the result.
 		Result<VariationTree<DiffLinesLabel>, Error> patchTransformerResult = runPatchTransformer(scenario.sourcePatch,
 				scenario.targetVariantBefore, scenario.sourceVariantConfig, scenario.targetVariantConfig);
 		if (patchTransformerResult.isSuccess()) {
@@ -409,7 +358,6 @@ public class Generator {
 				return equiv.first() && equiv.second();
 			}, error -> false);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -426,7 +374,6 @@ public class Generator {
 				return equiv.first() && equiv.second();
 			}, error -> false);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -445,7 +392,6 @@ public class Generator {
 				return equiv.first() && equiv.second();
 			}, error -> false);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -462,11 +408,10 @@ public class Generator {
 				return equiv.first() && equiv.second();
 			}, error -> false);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
-		// TODO: Read the results of the patchers. The patchers should produce the
+		// Read the results of the patchers. The patchers should produce the
 		// target variants as string if they did not fail.
 		GameEngine[] gameEngineArray = new GameEngine[gameEngine.size()];
 		gameEngineArray = gameEngine.toArray(gameEngineArray);
@@ -484,7 +429,7 @@ public class Generator {
 	public static <L extends Label> Result<VariationTree<DiffLinesLabel>, Error> runMPatch(
 			final VariationTree<L> targetVariantBefore, String patch, String code, String commitHash)
 			throws IOException {
-		// TODO: configure mpatch
+		// configure mpatch
 		// reset target variant
 		resetTargetVariantBefore(targetVariantBefore, code, commitHash);
 		Path mpatchPath = Path.of("..", "..", "..", "mpatch", "target", "release", "mpatch");
@@ -495,12 +440,6 @@ public class Generator {
 		try {
 			shell.execute(command);
 		} catch (ShellException e) {
-			// FIXME: When a shell exception occurs, we know that patching failed.
-			// Either there is a bug or the patcher was not successful!
-			// We should not throw and catch exceptions in these cases.
-			// It is probably best to write new ShellCommand subclasses for mpatch and GNU
-			// patch with a proper interpretResult method.
-			// We have to distinguish patch success from patch failure anyway somewhere.
 			Logger.error(e);
 			return Result.Failure(Error.ERROR);
 		}
@@ -525,7 +464,7 @@ public class Generator {
 	public static <L extends Label> Result<VariationTree<DiffLinesLabel>, Error> runGnuPatch(
 			final VariationTree<L> targetVariantBefore, String patch, String code, String commitHash)
 			throws IOException {
-		// TODO: run mpatch and gnu patch. Here is a sketch for this can be done.
+		// run mpatch and gnu patch. Here is a sketch for this can be done.
 		// reset target variant
 		resetTargetVariantBefore(targetVariantBefore, code, commitHash);
 		Path pathToTargetVariantCode = Path.of("..", targetVariant, code);
@@ -535,7 +474,6 @@ public class Generator {
 		GnuPatchCommand command = new GnuPatchCommand("patch", pathToTargetVariantCode.toString(),
 				pathToSourceVariantPatch.toString());
 		try {
-			// TODO: configure GNU patch
 			shell.execute(command);
 			// reset target variant
 		} catch (ShellException e) {
@@ -560,13 +498,11 @@ public class Generator {
 			ConfigureWithFullConfig sourceVariantConfig, ConfigureWithFullConfig targetVariantConfig) {
 		VariationTree<DiffLinesLabel> patchTransformerResult = null;
 		try {
-//			GameEngine.showAndAwaitAll(Show.tree(targetVariantBefore));
 			VariationDiff<DiffLinesLabel> diff = Patching.patch((VariationDiff<DiffLinesLabel>) sourcePatch,
 					(VariationTree<DiffLinesLabel>) targetVariantBefore, sourceVariantConfig, targetVariantConfig,
 					false, true);
 			patchTransformerResult = diff.project(Time.AFTER);
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return Result.Failure(Error.FAILED);
 		}
