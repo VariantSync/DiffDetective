@@ -9,7 +9,6 @@ import static org.variantsync.diffdetective.variation.DiffLinesLabel.Line;
 import org.variantsync.diffdetective.variation.tree.VariationTree;
 import org.variantsync.diffdetective.variation.tree.VariationTreeNode;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.variantsync.diffdetective.util.fide.FormulaUtils.*;
@@ -80,8 +79,7 @@ public class EliminateEmptyAlternatives implements Transformer<VariationTree<Dif
 
         // When there are no children, 'subtree' is an empty annotation that can be eliminated.
         if (children.isEmpty()) {
-//            subtree.drop();
-        	nodesToDrop.add(subtree);
+            subtree.drop();
         }
         // When there is exactly one child and that child is an 'else' or 'elif' we can simplify that nesting.
         else if (children.size() == 1) {
@@ -97,8 +95,7 @@ public class EliminateEmptyAlternatives implements Transformer<VariationTree<Dif
                 subtree.setLabel(updatedLabel(subtree.getLabel(), newFormula));
 
                 // simplify tree
-//                child.drop();
-                nodesToDrop.add(child);
+                child.drop();
                 subtree.stealChildrenOf(child);
             }
         }

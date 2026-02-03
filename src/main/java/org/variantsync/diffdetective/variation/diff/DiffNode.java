@@ -823,7 +823,7 @@ public class DiffNode<L extends Label> implements HasNodeType {
                 variationNode.getLabel()
         );
     }
-    
+
     /**
      * Transforms a {@code VariationNode} into a {@code DiffNode} by diffing {@code variationNode}
      * to itself. Recursively translates all children.
@@ -846,7 +846,7 @@ public class DiffNode<L extends Label> implements HasNodeType {
 
         return diffNode;
     }
-    
+
     public DiffNode<L> deepCopy() {
         return deepCopy(new HashMap<>());
     }
@@ -948,7 +948,7 @@ public class DiffNode<L extends Label> implements HasNodeType {
     public static <T extends VariationNode<T, L>, L extends Label> DiffNode<L> unchanged(VariationNode<T, L> variationNode) {
         return unchanged(DiffNode::unchangedFlat, variationNode);
     }
-    
+
     /**
      * Returns true if this subtree is exactly equal to {@code other}.
      * This check uses equality checks instead of identity.

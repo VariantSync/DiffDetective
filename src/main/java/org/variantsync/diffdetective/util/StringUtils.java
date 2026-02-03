@@ -48,7 +48,7 @@ public class StringUtils {
     public static String clamp(int maxlen, String s) {
         return s.substring(0, Math.min(s.length(), maxlen));
     }
-    
+
     /**
      * @return the longest prefix of the given string that contains only of whitespace
      */

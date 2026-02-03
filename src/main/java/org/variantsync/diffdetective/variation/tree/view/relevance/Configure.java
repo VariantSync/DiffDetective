@@ -14,11 +14,6 @@ import org.variantsync.diffdetective.variation.NodeType;
 import org.variantsync.diffdetective.variation.tree.VariationNode;
 import org.variantsync.diffdetective.variation.tree.view.relevance.spec.ConfigureSpec;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.function.Consumer;
-
 /**
  * Relevance predicate that generates (partial) variants from variation trees.
  * This relevance predicate is the implementation of Equation 5 in our SPLC'23 paper.
@@ -64,7 +59,7 @@ public class Configure implements Relevance {
      * then we construct a formula A ∧ (¬ B) ∧ C.
      */
     public Configure(final Map<String, Boolean> assignment) {
-        // We use commutativity if ∧ to iterate the map only once instead of twice as shown in the formula above.
+        // We use commutativity of ∧ to iterate the map only once instead of twice as shown in the formula above.
         final Formula[] fixedFeatures = new Formula[assignment.size()];
         int i = 0;
         for (Entry<String, Boolean> entry : assignment.entrySet()) {
