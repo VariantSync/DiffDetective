@@ -8,7 +8,6 @@ import java.nio.file.Path;
 
 import org.variantsync.diffdetective.AnalysisRunner;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
-import org.variantsync.diffdetective.variation.diff.patching.Patching;
 import org.variantsync.diffdetective.variation.diff.transform.CutNonEditedSubtrees;
 import org.variantsync.diffdetective.variation.tree.VariationTree;
 import org.variantsync.diffdetective.variation.tree.view.TreeView;
@@ -383,7 +382,7 @@ public class PatchingExperiment implements Analysis.Hooks {
 
 		patchTransformerResult.match(tree -> {
 			if (tree != null) {
-				Pair<Boolean, Boolean> equiv = Patching.arePatchedVariantsEquivalent(tree,
+				Pair<Boolean, Boolean> equiv = Utils.arePatchedVariantsEquivalent(tree,
 						scenario.sourceVariantAfterRedToCrossVarFeatures, scenario.targetVariantBeforeRedToUnchanged,
 						scenario.sourceVariantConfig, scenario.unchangedAfter);
 				if (!equiv.first()) {
@@ -413,7 +412,7 @@ public class PatchingExperiment implements Analysis.Hooks {
 			gnuPatchResult = Generator.runGnuPatch(scenario.targetVariantBefore, PATCH, CODE, commitHash);
 			gnuPatchResult.match(tree -> {
 				if (tree != null) {
-					Pair<Boolean, Boolean> equiv = Patching.arePatchedVariantsEquivalent(tree,
+					Pair<Boolean, Boolean> equiv = Utils.arePatchedVariantsEquivalent(tree,
 							scenario.sourceVariantAfterRedToCrossVarFeatures,
 							scenario.targetVariantBeforeRedToUnchanged, scenario.sourceVariantConfig,
 							scenario.unchangedAfter);
@@ -441,7 +440,7 @@ public class PatchingExperiment implements Analysis.Hooks {
 			mpatchResult = Generator.runMPatch(scenario.targetVariantBefore, PATCH, CODE, commitHash);
 			mpatchResult.match(tree -> {
 				if (tree != null) {
-					Pair<Boolean, Boolean> equiv = Patching.arePatchedVariantsEquivalent(tree,
+					Pair<Boolean, Boolean> equiv = Utils.arePatchedVariantsEquivalent(tree,
 							scenario.sourceVariantAfterRedToCrossVarFeatures,
 							scenario.targetVariantBeforeRedToUnchanged, scenario.sourceVariantConfig,
 							scenario.unchangedAfter);
@@ -471,7 +470,7 @@ public class PatchingExperiment implements Analysis.Hooks {
 				gnuPatchResultView = Generator.runGnuPatch(scenario.targetVariantBefore, PATCH, CODE, commitHash);
 				gnuPatchResultView.match(tree -> {
 					if (tree != null) {
-						Pair<Boolean, Boolean> equiv = Patching.arePatchedVariantsEquivalent(tree,
+						Pair<Boolean, Boolean> equiv = Utils.arePatchedVariantsEquivalent(tree,
 								scenario.sourceVariantAfterRedToCrossVarFeatures,
 								scenario.targetVariantBeforeRedToUnchanged, scenario.sourceVariantConfig,
 								scenario.unchangedAfter);
@@ -499,7 +498,7 @@ public class PatchingExperiment implements Analysis.Hooks {
 				mpatchResultView = Generator.runMPatch(scenario.targetVariantBefore, PATCH, CODE, commitHash);
 				mpatchResultView.match(tree -> {
 					if (tree != null) {
-						Pair<Boolean, Boolean> equiv = Patching.arePatchedVariantsEquivalent(tree,
+						Pair<Boolean, Boolean> equiv = Utils.arePatchedVariantsEquivalent(tree,
 								scenario.sourceVariantAfterRedToCrossVarFeatures,
 								scenario.targetVariantBeforeRedToUnchanged, scenario.sourceVariantConfig,
 								scenario.unchangedAfter);

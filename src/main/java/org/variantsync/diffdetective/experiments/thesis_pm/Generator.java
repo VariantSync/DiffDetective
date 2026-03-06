@@ -339,7 +339,7 @@ public class Generator {
 			gameEngine.add(Show.tree(patchTransformerResult.getSuccess(), "patch transformer result"));
 		}
 		isPatchTransformerCorrect = patchTransformerResult.match(tree -> {
-			Pair<Boolean, Boolean> equiv = Patching.arePatchedVariantsEquivalent(tree,
+			Pair<Boolean, Boolean> equiv = Utils.arePatchedVariantsEquivalent(tree,
 					scenario.sourceVariantAfterRedToCrossVarFeatures, scenario.targetVariantBeforeRedToUnchanged,
 					scenario.sourceVariantConfig, scenario.unchangedAfter);
 			return equiv.first() && equiv.second();
@@ -352,7 +352,7 @@ public class Generator {
 				gameEngine.add(Show.tree(gnuPatchResult.getSuccess(), "gnu patch result"));
 			}
 			isGnuPatchCorrect = gnuPatchResult.match(tree -> {
-				Pair<Boolean, Boolean> equiv = Patching.arePatchedVariantsEquivalent(tree,
+				Pair<Boolean, Boolean> equiv = Utils.arePatchedVariantsEquivalent(tree,
 						scenario.sourceVariantAfterRedToCrossVarFeatures, scenario.targetVariantBeforeRedToUnchanged,
 						scenario.sourceVariantConfig, scenario.unchangedAfter);
 				return equiv.first() && equiv.second();
@@ -368,7 +368,7 @@ public class Generator {
 				gameEngine.add(Show.tree(mpatchResult.getSuccess(), "mpatch result"));
 			}
 			isMpatchCorrect = mpatchResult.match(tree -> {
-				Pair<Boolean, Boolean> equiv = Patching.arePatchedVariantsEquivalent(tree,
+				Pair<Boolean, Boolean> equiv = Utils.arePatchedVariantsEquivalent(tree,
 						scenario.sourceVariantAfterRedToCrossVarFeatures, scenario.targetVariantBeforeRedToUnchanged,
 						scenario.sourceVariantConfig, scenario.unchangedAfter);
 				return equiv.first() && equiv.second();
@@ -386,7 +386,7 @@ public class Generator {
 				gameEngine.add(Show.tree(mpatchResult2.getSuccess(), "mpatch result"));
 			}
 			isMpatchCorrect2 = mpatchResult2.match(tree -> {
-				Pair<Boolean, Boolean> equiv = Patching.arePatchedVariantsEquivalent(tree,
+				Pair<Boolean, Boolean> equiv = Utils.arePatchedVariantsEquivalent(tree,
 						scenario.sourceVariantAfterRedToCrossVarFeatures, scenario.targetVariantBeforeRedToUnchanged,
 						scenario.sourceVariantConfig, scenario.unchangedAfter);
 				return equiv.first() && equiv.second();
@@ -402,7 +402,7 @@ public class Generator {
 				gameEngine.add(Show.tree(gnuPatchResult2.getSuccess(), "gnu patch result"));
 			}
 			isGnuPatchCorrect2 = gnuPatchResult2.match(tree -> {
-				Pair<Boolean, Boolean> equiv = Patching.arePatchedVariantsEquivalent(tree,
+				Pair<Boolean, Boolean> equiv = Utils.arePatchedVariantsEquivalent(tree,
 						scenario.sourceVariantAfterRedToCrossVarFeatures, scenario.targetVariantBeforeRedToUnchanged,
 						scenario.sourceVariantConfig, scenario.unchangedAfter);
 				return equiv.first() && equiv.second();
