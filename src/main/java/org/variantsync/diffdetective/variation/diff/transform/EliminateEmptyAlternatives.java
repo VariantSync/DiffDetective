@@ -83,7 +83,7 @@ public class EliminateEmptyAlternatives implements Transformer<VariationTree<Dif
         }
         // When there is exactly one child and that child is an 'else' or 'elif' we can simplify that nesting.
         else if (children.size() == 1) {
-            final VariationTreeNode<DiffLinesLabel> child = children.getFirst();
+            final VariationTreeNode<DiffLinesLabel> child = children.get(0);
 
             if ((subtree.isIf() || subtree.isElif()) && (child.isElif() || child.isElse())) {
                 // determine new feaure mapping

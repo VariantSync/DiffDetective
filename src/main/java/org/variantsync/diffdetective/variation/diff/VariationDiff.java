@@ -378,16 +378,16 @@ public class VariationDiff<L extends Label> implements Source {
      * This method is deterministic: It will return the feature names always in the same order, assuming the variation diff is not changed inbetween.
      * @return A set of every occuring feature name.
      */
-    public LinkedHashSet<String> computeAllFeatureNames() {
-        LinkedHashSet<String> features = new LinkedHashSet<>();
+    public LinkedHashSet<Object> computeAllFeatureNames() {
+        LinkedHashSet<Object> features = new LinkedHashSet<>();
         forAll(node -> {
                 if (node.isConditionalAnnotation()) {
                     features.addAll(node.getFormula().getUniqueContainedFeatures());
                 }
             });
         // Since FeatureIDE falsely reports constants "True" and "False" as feature names, we have to remove them from the resulting set.
-        features.removeIf(FixTrueFalse::isTrueLiteral);
-        features.removeIf(FixTrueFalse::isFalseLiteral);
+        features.removeIf(f -> FixTrueFalse.isTrueLiteral((String) f));
+        features.removeIf(f -> FixTrueFalse.isFalseLiteral((String) f));
         return features;
     }
 
