@@ -94,6 +94,17 @@ In principle, any generic differencing algorithm (i.e, any algorithm that may op
 
 ## Publications
 
+When referring to DiffDetective as a tool, we recommend reading and citing our publication _"Variability-Aware Differencing with DiffDetective"_. For formal foundations on variability-aware differencing, we refer to the PhD Thesis _"Analyzing Edits to Static Variability"_. For research based on variability-aware differencing and DiffDetective, we recommend to have a look at the respective individual publications below, as well as the PhD thesis as a comprehensive overview.
+
+### Analyzing Edits to Static Variability (PhD Thesis)
+
+[![Thesis](https://img.shields.io/badge/Thesis-Read-purple)](https://doi.org/10.18725/OPARU-58798)
+[![Slides](https://img.shields.io/badge/Slides-Here-purple)](https://github.com/TUBS-ISF/Slides/raw/main/2025/2025-08-12-PhD-Defense-Bittner.pdf)
+
+> P. M. Bittner. _Analyzing Edits to Static Variability_. PhD Thesis, University of Ulm, August 2025. Reviewed by Thomas Thüm, Matthias Tichy, and Martin Erwig.
+
+The PhD thesis gives an exhaustive and detailed overview on DiffDetective and all corresponding research. Chapter 4 motivates and introduces the mathematical foundations for variability-aware differencing, and presents DiffDetective as an implementation and research framework. Chapter 5 presents research based on variability-aware differencing and DiffDetective in particular.
+
 ### Variability-Aware Differencing with DiffDetective (FSE 2024, ⭐ [Best Demo Paper](https://2024.esec-fse.org/info/awards) ⭐)
 
 [![Preprint](https://img.shields.io/badge/Preprint-Read-purple)](https://github.com/SoftVarE-Group/Papers/raw/main/2024/2024-FSE-Bittner.pdf)
