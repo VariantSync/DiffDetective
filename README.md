@@ -70,7 +70,6 @@ In case you are using Nix Flakes, you can skip cloning the repository as usual: 
 
 Afterward, the [result](result) symlink points to the [Javadoc](result/share/github-pages/DiffDetective/docs/javadoc/index.html), a [DiffDetective jar for use as a library](result/share/java/DiffDetective.jar), a [self contained DiffDetective jar with all dependencies included](result/share/java/DiffDetective/DiffDetective-jar-with-dependencies.jar) and a simple [script](result/bin/DiffDetective) for executing a DiffDetective main class provided as argument (e.g., evaluations used in previous research, see below under 'Publications').
 
-
 ## How to Get Started
 
 For a demonstration on how to get started using the library, we have prepared a demo repository [here][demo].
@@ -78,7 +77,6 @@ You may clone it as a template and example for including the library into your o
 Additionally, there is a screencast available on YouTube, guiding you through the demo's setup and source code:
 
 [![DiffDetective Demonstration](docs/yt_thumbnail.png)](https://www.youtube.com/watch?v=q6ight5EDQY)
-
 
 ## Supported Differencing Algorithms
 
@@ -91,8 +89,18 @@ In principle, any generic differencing algorithm (i.e, any algorithm that may op
 ### Extra Modules
 - [TrueDiff](https://gitlab.rlp.net/plmz/truediff): Support for TrueDiff comes as [a separate Maven project](https://github.com/VariantSync/TrueDiffDetective).
 
-
 ## Publications
+
+When referring to DiffDetective as a tool, we recommend reading and citing our publication _"Variability-Aware Differencing with DiffDetective"_. For formal foundations on variability-aware differencing, we refer to the PhD Thesis _"Analyzing Edits to Static Variability"_. For research based on variability-aware differencing and DiffDetective, we recommend to have a look at the respective individual publications below, as well as the PhD thesis as a comprehensive overview.
+
+### Analyzing Edits to Static Variability (PhD Thesis)
+
+[![Thesis](https://img.shields.io/badge/Thesis-Read-purple)](https://doi.org/10.18725/OPARU-58798)
+[![Slides](https://img.shields.io/badge/Slides-Here-purple)](https://github.com/TUBS-ISF/Slides/raw/main/2025/2025-08-12-PhD-Defense-Bittner.pdf)
+
+> P. M. Bittner. _Analyzing Edits to Static Variability_. PhD Thesis, University of Ulm, August 2025. Reviewed by Thomas Thüm, Matthias Tichy, and Martin Erwig.
+
+The PhD thesis gives an exhaustive and detailed overview on DiffDetective and all corresponding research. Chapter 4 motivates and introduces the mathematical foundations for variability-aware differencing, and presents DiffDetective as an implementation and research framework. Chapter 5 presents research based on variability-aware differencing and DiffDetective in particular.
 
 ### Variability-Aware Differencing with DiffDetective (FSE 2024, ⭐ [Best Demo Paper](https://2024.esec-fse.org/info/awards) ⭐)
 
@@ -101,7 +109,6 @@ In principle, any generic differencing algorithm (i.e, any algorithm that may op
 [![Slides](https://img.shields.io/badge/Slides-Here-purple)](https://github.com/SoftVarE-Group/Slides/raw/main/2024/2024-07-17-FSE-DiffDetective.pdf)
 [![Screencast](https://img.shields.io/badge/Screencast-Watch-purple)][screencast]
 [![Demo Repository](https://img.shields.io/badge/Demo-Try-blue)][demo]
-
 
 > P. M. Bittner, A. Schultheiß, B. Moosherr, T. Kehrer, T. Thüm. _Variability-Aware Differencing with DiffDetective_. Demonstrations at International Conference on the Foundations of Software Engineering 2024, ACM, New York, NY, July 2024
 
@@ -132,7 +139,6 @@ The empirical evaluation of the classification, including a respective `main` me
 
 The original replication package can be found on the [esecfse](https://github.com/VariantSync/DiffDetective/tree/esecfse22) branch or via the DOI [10.5281/zenodo.7110095](https://doi.org/10.5281/zenodo.7110095). The replication is also available for the most recent version of DiffDetective with various improvements, which will likely yield to slightly different results than the initial study. The updated replication package can be found in the [replication/esecfse22](replication/esecfse22) subdirectory with its own [README](replication/esecfse22/README.md).
 
-
 ### Views on Edits to Variational Software (SPLC 2023)
 
 [![Preprint](https://img.shields.io/badge/Preprint-Read-purple)](https://github.com/SoftVarE-Group/Papers/raw/main/2023/2023-SPLC-Bittner.pdf)
@@ -157,7 +163,6 @@ Views are implemented within the [org.variantsync.diffdetective.variation.tree.v
 The empirical evaluation of the view algorithms, including a respective `main` method, is implemented in the [org.variantsync.diffdetective.experiments.views](src/main/java/org/variantsync/diffdetective/experiments/views) package.
 
 The original replication package can be found on the `splc23-views` branch within the directory [replication/splc23-views](https://github.com/VariantSync/DiffDetective/tree/splc23-views/replication/splc23-views) or via the DOI [10.5281/zenodo.8027920](https://doi.org/10.5281/zenodo.8027920). The replication is also available for the most recent version of DiffDetective with an up-to-date version of DiffDetective, which will likely yield to slightly different results than the initial study. The updated replication package can be found in the [replication/splc23-views](replication/splc23-views) subdirectory with it's own [README](replication/splc23-views/README.md).
-
 
 ### Explaining Edits to Variability Annotations in Evolving Software Product Lines (VaMoS 2024)
 
