@@ -2,26 +2,16 @@ package org.variantsync.diffdetective.experiments.uncertainty;
 
 import org.variantsync.diffdetective.analysis.Analysis;
 import org.variantsync.diffdetective.editclass.EditClass;
-import org.variantsync.diffdetective.editclass.proposed.ProposedEditClasses;
-import org.variantsync.diffdetective.metadata.EditClassCount;
-import org.variantsync.diffdetective.show.Show;
 import org.variantsync.diffdetective.util.fide.FixTrueFalse;
 import org.variantsync.diffdetective.variation.DiffLinesLabel;
 import org.variantsync.diffdetective.variation.Label;
 import org.variantsync.diffdetective.variation.diff.DiffNode;
 import org.variantsync.diffdetective.variation.diff.Time;
 import org.variantsync.diffdetective.variation.diff.transform.NaiveMovedArtifactDetection;
-import org.variantsync.diffdetective.variation.tree.HasNodeType;
 
-import java.nio.file.Files;
 import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
-import java.util.function.Predicate;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static org.variantsync.diffdetective.editclass.proposed.ProposedEditClasses.*;
@@ -33,7 +23,7 @@ public class DebugAnalysis implements Analysis.Hooks {
     private int uninterestingPatches = 0;
     private int interestingPatches = 0;
     private List<String> interestingFilesList;
-    private static final Pattern bugStringPattern = Pattern.compile("(fix)|(problem)|(issue)|(solve)|(error)|((?<!e)bug)");
+    private static final Pattern bugStringPattern = Pattern.compile("(fix)|(problem)|(issue)|(solve)|(error)|((?<!e)bug(?!=b:))");
 
     public static boolean isIfFalse(DiffNode<?> d) {
         // There might be other edge cases as well.
@@ -104,7 +94,12 @@ public class DebugAnalysis implements Analysis.Hooks {
         if(childOfChangedNode == null) {
             return false;
         }
-        return isIfFalse(childOfChangedNode.getParent(Time.BEFORE)) || isIfFalse(childOfChangedNode.getParent(Time.AFTER));
+        DiffNode<T> parentBefore = childOfChangedNode.getParent(Time.BEFORE);
+        DiffNode<T> parentAfter = childOfChangedNode.getParent(Time.AFTER);
+        boolean beforeIsFalse = parentBefore != null && isIfFalse(parentBefore);
+        boolean afterIsFalse = parentAfter != null && isIfFalse(parentAfter);
+
+        return beforeIsFalse || afterIsFalse;
 //        return false;
     }
 
@@ -116,10 +111,17 @@ public class DebugAnalysis implements Analysis.Hooks {
     private <T extends Label> DiffNode<T> getChangedNode(DiffNode<T> diffNode) { //TODO change naming of method
         if (diffNode.isRoot()) {
             return null;
-        } else if (!diffNode.getParent(Time.BEFORE).equals(diffNode.getParent(Time.AFTER))) {
+        }
+        DiffNode<T> parentBefore = diffNode.getParent(Time.BEFORE);
+        DiffNode<T> parentAfter = diffNode.getParent(Time.AFTER);
+
+        if (parentBefore == null || parentAfter == null) {
+            return diffNode;
+        }
+        if (!parentBefore.equals(parentAfter)) {
             return diffNode;
         } else {
-            return getChangedNode(diffNode.getParent(Time.AFTER));
+            return getChangedNode(parentAfter);
         }
     }
 
