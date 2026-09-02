@@ -11,7 +11,9 @@ import org.variantsync.diffdetective.variation.diff.transform.NaiveMovedArtifact
 
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import static org.variantsync.diffdetective.editclass.proposed.ProposedEditClasses.*;
@@ -22,7 +24,12 @@ public class DebugAnalysis implements Analysis.Hooks {
     private boolean isInterestingClassification = false;
     private int uninterestingPatches = 0;
     private int interestingPatches = 0;
+    private int totalCommitNumber = 0;
+    private int commitsWithSearchButWithoutClassification = 0;
+    private int commitsWithClassificationButWithoutSearch = 0;
+    private int finalCommitNumber = 0;
     private List<String> interestingFilesList;
+    private Map<String, List<String>> chunkClassesPerFile = new LinkedHashMap<>();
     private static final Pattern bugStringPattern = Pattern.compile("(fix)|(problem)|(issue)|(solve)|(error)|((?<!e)bug(?!=b:))");
 
     public static boolean isIfFalse(DiffNode<?> d) {
@@ -42,12 +49,21 @@ public class DebugAnalysis implements Analysis.Hooks {
 
     @Override
     public boolean beginCommit(Analysis analysis) throws Exception {
-        if (bugStringPattern.matcher(analysis.getCurrentCommit().getFullMessage().toLowerCase()).find()) { // TODO complete list of keywords
+        totalCommitNumber++;
+
+        chunkClassesPerFile = new LinkedHashMap<>();
+
+        isInterestingCommit = false;
+        isInterestingClassification = false;
+
+        if (bugStringPattern.matcher(analysis.getCurrentCommit().getFullMessage().toLowerCase()).find()) { // TODO complete list of keyword
+            //commitsWithSearchButWithoutClassification++;
             isInterestingCommit = true;
             interestingFilesList = new ArrayList<>();
-            return true;
+            // return true;
         }
-        return false;
+        //return false;
+        return true; // analyze every commit to get number of classification filter but not search
     }
 
     @Override
@@ -72,26 +88,37 @@ public class DebugAnalysis implements Analysis.Hooks {
 
     @Override
     public boolean analyzeVariationDiff(Analysis analysis) throws Exception {
-        if(!isInterestingCommit) {
+        /*if(!isInterestingCommit) {
             return false;
-        }
+        }*/
+
         NaiveMovedArtifactDetection<DiffLinesLabel> detectTwins = new NaiveMovedArtifactDetection<>(); //TODO investigate changed trees
         detectTwins.transform(analysis.getCurrentVariationDiff());
         int newInterestingLines = analysis.getCurrentVariationDiff().count(node -> (node.isArtifact() && isInterestingClassification(node) && !isCommented(node)));
         interestingPatches += newInterestingLines; //TODO 1 Patch = 1 ganzer Variation diff. rename (interestingNode)
         uninterestingPatches += analysis.getCurrentVariationDiff().count(node -> (node.isArtifact() && (!isInterestingClassification(node) || isCommented(node)))); //TODO wollen wir hier überhaupt die isArtifact Überprüfung?
 
-        if(newInterestingLines > 0){
+        if (newInterestingLines > 0) {
             isInterestingClassification = true;
-            interestingFilesList.add(analysis.getCurrentPatch().getFileName(Time.BEFORE));
-            return true;
+
+            if (isInterestingCommit) {
+                // interestingFilesList.add(analysis.getCurrentPatch().getFileName(Time.BEFORE));
+                List<String> chunkCategories = new ArrayList<>();
+                analysis.getCurrentVariationDiff().forAll(node -> {
+                    if (node.isArtifact() && isInterestingClassification(node) && !isCommented(node)) {
+                        chunkCategories.add(Instance.match(node).getName());
+                    }
+                });
+                chunkClassesPerFile.put(analysis.getCurrentPatch().getFileName(Time.BEFORE), chunkCategories);
+                return true;
+            }
         }
         return false;
     }
 
     private <T extends Label> boolean isCommented(DiffNode<T> diffNode) {
         DiffNode<T> childOfChangedNode = getChangedNode(diffNode);
-        if(childOfChangedNode == null) {
+        if (childOfChangedNode == null) {
             return false;
         }
         DiffNode<T> parentBefore = childOfChangedNode.getParent(Time.BEFORE);
@@ -140,15 +167,29 @@ public class DebugAnalysis implements Analysis.Hooks {
     @Override
     public void endCommit(Analysis analysis) throws Exception {
         Analysis.Hooks.super.endCommit(analysis);
-        if(isInterestingClassification) {
+
+        if (isInterestingCommit) {
+            commitsWithSearchButWithoutClassification++;
+        }
+
+        if (isInterestingClassification) {
+            commitsWithClassificationButWithoutSearch++;
+        }
+
+        if (isInterestingCommit && isInterestingClassification) {
+            finalCommitNumber++;
+
+            chunkClassesPerFile.forEach((fileName, chunkCategories) ->
+                interestingFilesList.add(fileName + " (" + String.join(",", chunkCategories) + ")")
+            );
             interestingFilesList.add("Number uninteresting Patches: " + uninterestingPatches);
             interestingFilesList.add("Number interesting Patches: " + interestingPatches);
             interestingFilesList.add("Year: " + analysis.getCurrentCommit().getAuthorIdent().getWhenAsInstant().atZone(ZoneId.systemDefault()).getYear());
             InterestingCommit c = new InterestingCommit(analysis.getRepository().getRemoteURI().toString() + "/commit/" +analysis.getCurrentCommit().getName(), interestingFilesList);
             analysis.append(c.getKey(), c);
-            isInterestingCommit = false;
-            isInterestingClassification = false;
         }
+        isInterestingCommit = false;
+        isInterestingClassification = false;
         uninterestingPatches = 0;
         interestingPatches = 0;
     }
@@ -156,5 +197,22 @@ public class DebugAnalysis implements Analysis.Hooks {
     @Override
     public void endBatch(Analysis analysis) throws Exception {
         Analysis.Hooks.super.endBatch(analysis);
+    }
+
+    // Getter
+    public int getTotalCommitNumber() {
+        return totalCommitNumber;
+    }
+
+    public int getCommitsWithSearchButWithoutClassification() {
+        return commitsWithSearchButWithoutClassification;
+    }
+
+    public int getFinalCommitNumber() {
+        return finalCommitNumber;
+    }
+
+    public int getCommitsWithClassificationButWithoutSearch() {
+        return commitsWithClassificationButWithoutSearch;
     }
 }

@@ -44,6 +44,7 @@ def process_file(txt_path, csv_path):
             if match:
                 link = match.group(1)
                 filenames = " ".join(match.group(2).split())  # Leerzeichen zwischen Dateinamen behalten
+                filenames = re.sub(r"\s*\([^)]*\)", "", filenames) # Alles innerhalb der runden Klammern entfernen (Edit Classification aus total results)
                 num_uninteresting = match.group(3)
                 num_interesting = match.group(4)
                 year = match.group(5)

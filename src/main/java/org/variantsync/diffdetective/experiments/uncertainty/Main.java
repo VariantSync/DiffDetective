@@ -4,16 +4,15 @@ import org.variantsync.diffdetective.AnalysisRunner;
 import org.variantsync.diffdetective.analysis.Analysis;
 import org.variantsync.diffdetective.analysis.FilterAnalysis;
 import org.variantsync.diffdetective.analysis.PreprocessingAnalysis;
-import org.variantsync.diffdetective.analysis.StatisticsAnalysis;
 import org.variantsync.diffdetective.datasets.PatchDiffParseOptions;
 import org.variantsync.diffdetective.datasets.Repository;
-import org.variantsync.diffdetective.experiments.views.ViewAnalysis;
 import org.variantsync.diffdetective.variation.diff.filter.VariationDiffFilter;
 import org.variantsync.diffdetective.variation.diff.parse.VariationDiffParseOptions;
 import org.variantsync.diffdetective.variation.diff.transform.CutNonEditedSubtrees;
 import org.variantsync.diffdetective.variation.tree.view.relevance.Search;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -38,10 +37,10 @@ public class Main {
      */
     private static final Search bugRelevance = new Search("  /* Check both of the above conditions, for symbols.  */");
     public static VariationDiffParseOptions VARIATION_DIFF_PARSE_OPTIONS =
-            new VariationDiffParseOptions(
-                    true,
-                    false
-            );
+        new VariationDiffParseOptions(
+            true,
+            false
+        );
 
     /**
      * Creates the analysis to perform on the given repository to run our uncertainty search.
@@ -49,23 +48,24 @@ public class Main {
      * @param repoOutputDir The directory to which output should be written.
      * @return The analysis to run.
      */
-    private static Analysis AnalysisFactory(Repository repo, Path repoOutputDir) {
+    private static Analysis AnalysisFactory(Repository repo, Path repoOutputDir, DebugAnalysis debugAnalysis) {
         return new Analysis(
-                "Uncertainty Analysis",
-                new ArrayList<>(List.of(
-                        //*
-                        new PreprocessingAnalysis(
-                            new CutNonEditedSubtrees<>()
-                        ),
-                        //**/
-                        new FilterAnalysis( // filters unwanted trees
-                                VariationDiffFilter.notEmpty()
-                        ),
-                        new DebugAnalysis()//,
+            "Uncertainty Analysis",
+            new ArrayList<>(List.of(
+                //*
+                new PreprocessingAnalysis(
+                    new CutNonEditedSubtrees<>()
+                ),
+                //**/
+                new FilterAnalysis( // filters unwanted trees
+                    VariationDiffFilter.notEmpty()
+                ),
+                debugAnalysis
+                //new DebugAnalysis()//,
 //                        new StatisticsAnalysis()
-                )),
-                repo,
-                repoOutputDir
+            )),
+            repo,
+            repoOutputDir
         );
     }
 
@@ -77,22 +77,58 @@ public class Main {
     public static void main(String[] args) throws IOException {
         final AnalysisRunner.Options defaultOptions = AnalysisRunner.Options.DEFAULT(args);
         final AnalysisRunner.Options analysisOptions = new AnalysisRunner.Options(
-                Paths.get("..", "DiffDetectiveReplicationDatasets"),
-                Paths.get("results", "uncertainty", "current"),
-                defaultOptions.datasetsFile(),
-                repo -> new PatchDiffParseOptions(
-                        PatchDiffParseOptions.DiffStoragePolicy.DO_NOT_REMEMBER,
-                        VARIATION_DIFF_PARSE_OPTIONS
-                ),
-                defaultOptions.getFilterForRepo(),
-                true,
-                false
+            Paths.get("..", "DiffDetectiveReplicationDatasets"),
+            Paths.get("results", "uncertainty", "current"),
+            defaultOptions.datasetsFile(),
+            repo -> new PatchDiffParseOptions(
+                PatchDiffParseOptions.DiffStoragePolicy.DO_NOT_REMEMBER,
+                VARIATION_DIFF_PARSE_OPTIONS
+            ),
+            defaultOptions.getFilterForRepo(),
+            true,
+            false
         );
 
-        AnalysisRunner.run(analysisOptions, (repository, path) -> {
-            Analysis.forEachCommit(() -> AnalysisFactory(repository, path)
-//                    , 1000, 1
-            );
-        });
+//        AnalysisRunner.run(analysisOptions, (repository, path) -> {
+//        DebugAnalysis debugAnalysis = new DebugAnalysis();
+//            Analysis.forEachCommit(() -> AnalysisFactory(repository, path, debugAnalysis)
+////                    , 1000, 1
+//            );
+//        });
+
+        Path outputDir = Paths.get("results", "uncertainty");
+        Files.createDirectories(outputDir);
+
+        Path outputFile = outputDir.resolve("repos_summary.txt");
+
+        try (var writer = Files.newBufferedWriter(outputFile)) {
+            AnalysisRunner.run(analysisOptions, (repository, path) -> {
+                DebugAnalysis debugAnalysis = new DebugAnalysis();
+                Analysis.forEachCommit(() -> AnalysisFactory(repository, path, debugAnalysis)
+                    , 1000, 1
+                );
+                try {
+                    writer.write("Repository: " + repository.getRemoteURI());
+                    writer.newLine();
+                    writer.write("Total number of commits: " + debugAnalysis.getTotalCommitNumber());
+                    writer.newLine();
+                    writer.write("Number of commits with search-string but without classification filter: " + debugAnalysis.getCommitsWithSearchButWithoutClassification());
+                    writer.newLine();
+                    writer.write("Number of commits with classification but without search-string filter: " + debugAnalysis.getCommitsWithClassificationButWithoutSearch());
+                    writer.newLine();
+                    writer.write("Number of commits with classification and with search-string filter: " + debugAnalysis.getFinalCommitNumber());
+                    writer.newLine();
+                    writer.write("----------------------------------------------");
+                    writer.newLine();
+                } catch (IOException e) {
+                    System.err.println(e.getMessage());
+                }
+            });
+        } catch (IOException e) {
+            System.err.println(e.getMessage());
+            //e.printStackTrace();
+        }
+
+
     }
 }
