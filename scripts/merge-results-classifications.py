@@ -167,7 +167,7 @@ def main():
     metadata_by_repo = load_all_metadata(repositories)
 
     # Split rows into commit groups.
-    #    A new group starts whenever column B (Commit) starts with "http".
+    # A new group starts whenever column B (Commit) starts with "http".
     groups = []  # list of lists of (row_index_in_data_rows, row)
     current_group = None
     current_repo = None
@@ -230,8 +230,6 @@ def main():
 
             meta_filename, meta_classes = metadata_list[pos_in_group]
 
-            # Plausibility check of the filename (does not block the mapping, but
-            # produces a warning in the log)
             interesting_files_field = (
                 row[COL_INTERESTING_FILES].strip() if len(row) > COL_INTERESTING_FILES else ""
             )
